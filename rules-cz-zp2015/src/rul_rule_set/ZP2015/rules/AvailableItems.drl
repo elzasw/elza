@@ -349,12 +349,8 @@ when $activeLevel: ActiveLevel( )
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři
-        "ZP2015_ENTITY_ROLE_1",
         // autoři textů
         "ZP2015_ENTITY_ROLE_11",        
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
         // vydavatelé
         "ZP2015_ENTITY_ROLE_15",
         // vydavatelé / nakladatelé
@@ -369,10 +365,12 @@ when $activeLevel: ActiveLevel( )
         "ZP2015_ENTITY_ROLE_24",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
+        // redaktor
+        "ZP2015_ENTITY_ROLE_32",
         // kartografové
         "ZP2015_ENTITY_ROLE_33",
-        // editoři / redaktoři
-        "ZP2015_ENTITY_ROLE_35",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // překladatelé
         "ZP2015_ENTITY_ROLE_44",
         // svědci
@@ -1717,8 +1715,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemSpec: RulItemSpecExt( code in (
         // autoři textů
         "ZP2015_ENTITY_ROLE_11",
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // písaři
         "ZP2015_ENTITY_ROLE_48",
         // výrobci
@@ -1854,8 +1852,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     not DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_HDB") ) from $ownItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři
-        "ZP2015_ENTITY_ROLE_1",
+        // autoři textu
+        "ZP2015_ENTITY_ROLE_11",
         // objednatelé / příjemci
         "ZP2015_ENTITY_ROLE_19",
         // tvůrci výtvarné stránky 
@@ -1937,8 +1935,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři
-        "ZP2015_ENTITY_ROLE_1",
+        // autoři textu
+        "ZP2015_ENTITY_ROLE_11",
         // tvůrci výtvarné stránky 
         "ZP2015_ENTITY_ROLE_39"
      ) ) from $itemType.rulItemSpecList
@@ -1959,8 +1957,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři
-        "ZP2015_ENTITY_ROLE_1",
+        // autoři textu
+        "ZP2015_ENTITY_ROLE_11",
         // tvůrci výtvarné stránky 
         "ZP2015_ENTITY_ROLE_39"
      ) ) from $itemType.rulItemSpecList
@@ -1982,8 +1980,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři
-        "ZP2015_ENTITY_ROLE_1",
+        // autoři textu
+        "ZP2015_ENTITY_ROLE_11",
         // objednatelé / příjemci
         "ZP2015_ENTITY_ROLE_19",
         // tvůrci výtvarné stránky 
@@ -2015,10 +2013,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_10",
         // autoři doprovodných textů
         "ZP2015_ENTITY_ROLE_3",
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
         // objednatelé / příjemci 
         "ZP2015_ENTITY_ROLE_19",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // tiskárny/tiskaři
         "ZP2015_ENTITY_ROLE_52",
         // místa vzniku jednotek popisu
@@ -2105,10 +2103,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_10",        
         // autoři doprovodných textů
         "ZP2015_ENTITY_ROLE_3",
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
         // objednatelé / příjemci 
         "ZP2015_ENTITY_ROLE_19",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // tiskárny/tiskaři
         "ZP2015_ENTITY_ROLE_52",
         // místa vzniku jednotek popisu
@@ -2168,10 +2166,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemSpec: RulItemSpecExt( code in (
         // majitelé typářů
         "ZP2015_ENTITY_ROLE_37",
-        // výrobci typářů
-        "ZP2015_ENTITY_ROLE_54",
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
+        // výrobce
+        "ZP2015_ENTITY_ROLE_53",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61",
         // místa vzniku předloh popisovaných kopií
@@ -2193,8 +2191,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_37",
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61",
-        // místa vydání dokumentů
-        "ZP2015_ENTITY_ROLE_59"
+        // místa vydání
+        "ZP2015_ENTITY_ROLE_58"
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
@@ -2210,8 +2208,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemSpec: RulItemSpecExt( code in (
         // majitelé typářů
         "ZP2015_ENTITY_ROLE_37",
-        // výrobci odlitků otisků / otisků typářů
-        "ZP2015_ENTITY_ROLE_55",
+        // výrobce
+        "ZP2015_ENTITY_ROLE_53",
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61",
         // místa vzniku předloh popisovaných kopií
@@ -2421,10 +2419,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemSpec: RulItemSpecExt( code in (
         // majitelé typářů
         "ZP2015_ENTITY_ROLE_37",
-        // výrobci typářů
-        "ZP2015_ENTITY_ROLE_54",
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
+        // výrobce
+        "ZP2015_ENTITY_ROLE_53",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61",
         // místa vzniku předloh popisovaných kopií
@@ -2561,8 +2559,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemSpec: RulItemSpecExt( code in (
         // majitelé typářů
         "ZP2015_ENTITY_ROLE_37",
-        // výrobci odlitků otisků / otisků typářů
-        "ZP2015_ENTITY_ROLE_55",
+        // výrobce
+        "ZP2015_ENTITY_ROLE_53",
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61",
         // místa vzniku předloh popisovaných kopií
@@ -2669,8 +2667,6 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_33",
         // autoři textů
         "ZP2015_ENTITY_ROLE_11",
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
         // redaktoři
@@ -2679,6 +2675,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_34",
         // kresliči
         "ZP2015_ENTITY_ROLE_36",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // výrobci nosičů záznamů
         "ZP2015_ENTITY_ROLE_50",
         // tiskárny/tiskaři
@@ -2755,14 +2753,14 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_33",
         // autoři textů
         "ZP2015_ENTITY_ROLE_11",
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
         // redaktoři
         "ZP2015_ENTITY_ROLE_32",
         // editoři
         "ZP2015_ENTITY_ROLE_34",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // výrobci nosičů záznamů
         "ZP2015_ENTITY_ROLE_50",
         // tiskárny/tiskaři
@@ -2845,8 +2843,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemSpec: RulItemSpecExt( code in (
         // objednatelé/příjemci 
         "ZP2015_ENTITY_ROLE_19",
-        // autoři
-        "ZP2015_ENTITY_ROLE_1",
+        // autoři textu
+        "ZP2015_ENTITY_ROLE_11",
         // schvalovatelé
         "ZP2015_ENTITY_ROLE_25",
         // stavitelé
@@ -2878,8 +2876,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in ( 
-        // autoři
-        "ZP2015_ENTITY_ROLE_1", 
+        // autoři textu
+        "ZP2015_ENTITY_ROLE_11", 
         // objednatelé/příjemci 
         "ZP2015_ENTITY_ROLE_19",
         // typová označení a názvy výrobků a typových staveb
@@ -2902,8 +2900,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in ( 
-        // autoři
-        "ZP2015_ENTITY_ROLE_1", 
+        // autoři textu
+        "ZP2015_ENTITY_ROLE_11", 
         // objednatelé/příjemci 
         "ZP2015_ENTITY_ROLE_19",
         // typová označení a názvy výrobků a typových staveb
@@ -2926,8 +2924,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři
-        "ZP2015_ENTITY_ROLE_1", 
+        // autoři textu
+        "ZP2015_ENTITY_ROLE_11", 
         // objednatelé/příjemci 
         "ZP2015_ENTITY_ROLE_19",
         // schvalovatelé
@@ -2977,14 +2975,14 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_GLI", "ZP2015_UNIT_TYPE_KRE") ) from $ownItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
         // vydavatelé / nakladatelé 
         "ZP2015_ENTITY_ROLE_16",
         // příjemci
         "ZP2015_ENTITY_ROLE_21",
         // tvůrci technického zpracování
         "ZP2015_ENTITY_ROLE_38",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // tiskárny/tiskaři
         "ZP2015_ENTITY_ROLE_52",
         // místa vzniku jednotek popisu
@@ -3064,10 +3062,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in ( 
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
         // tvůrci technického zpracování
-        "ZP2015_ENTITY_ROLE_38"
+        "ZP2015_ENTITY_ROLE_38",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39"        
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
@@ -3085,10 +3083,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in ( 
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
         // tvůrci technického zpracování
-        "ZP2015_ENTITY_ROLE_38"
+        "ZP2015_ENTITY_ROLE_38",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39"        
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
@@ -3107,14 +3105,14 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in ( 
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
         // vydavatelé / nakladatelé 
         "ZP2015_ENTITY_ROLE_16",
         // příjemci
         "ZP2015_ENTITY_ROLE_21",
         // tvůrci technického zpracování
         "ZP2015_ENTITY_ROLE_38",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",        
         // tiskárny/tiskaři
         "ZP2015_ENTITY_ROLE_52",
         // místa vzniku jednotek popisu
@@ -3236,8 +3234,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     "ZP2015_UNIT_TYPE_FAL", "ZP2015_UNIT_TYPE_DFO") ) from $ownItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři fotografií
-        "ZP2015_ENTITY_ROLE_4",
+        // fotograf
+        "ZP2015_ENTITY_ROLE_31",
         // příjemci
         "ZP2015_ENTITY_ROLE_21",
         // odesílatelé
@@ -3265,8 +3263,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři fotografií
-        "ZP2015_ENTITY_ROLE_4",
+        // fotograf
+        "ZP2015_ENTITY_ROLE_31",
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61"
      ) ) from $itemType.rulItemSpecList
@@ -3288,8 +3286,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři fotografií
-        "ZP2015_ENTITY_ROLE_4",
+        // fotograf
+        "ZP2015_ENTITY_ROLE_31",
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61"
      ) ) from $itemType.rulItemSpecList
@@ -3312,8 +3310,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři fotografií
-        "ZP2015_ENTITY_ROLE_4",
+        // fotograf
+        "ZP2015_ENTITY_ROLE_31",
         // příjemci
         "ZP2015_ENTITY_ROLE_21",
         // odesílatelé
@@ -3870,16 +3868,16 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 		"ZP2015_ENTITY_ROLE_16",
 		// příjemci 
 		"ZP2015_ENTITY_ROLE_21",		
-		// autoři
-		"ZP2015_ENTITY_ROLE_1",
-		// autoři výtvarné stránky
-		"ZP2015_ENTITY_ROLE_14",
+		// autoři textu
+		"ZP2015_ENTITY_ROLE_11",
 		// fotografové
 		"ZP2015_ENTITY_ROLE_31",
+        // redaktor
+        "ZP2015_ENTITY_ROLE_32",		
 		// kartografové
 		"ZP2015_ENTITY_ROLE_33",
-		// editoři / redaktoři
-		"ZP2015_ENTITY_ROLE_35",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",		
 		// překladatelé
 		"ZP2015_ENTITY_ROLE_44",
 		// lektoři
@@ -3911,8 +3909,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 	$itemSpec: RulItemSpecExt( code in ( 
 		// vydavatelé/nakladatelé 
 		"ZP2015_ENTITY_ROLE_16",
-		// autoři
-		"ZP2015_ENTITY_ROLE_1",
+		// autoři textu
+		"ZP2015_ENTITY_ROLE_11",
 		// místa vydání
 		"ZP2015_ENTITY_ROLE_58",
         // místa vzniku předloh popisovaných kopií
@@ -3936,8 +3934,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 	$itemSpec: RulItemSpecExt( code in ( 
 		// vydavatelé/nakladatelé 
 		"ZP2015_ENTITY_ROLE_16",
-		// autoři
-		"ZP2015_ENTITY_ROLE_1",
+		// autoři textu
+		"ZP2015_ENTITY_ROLE_11",
 		// místa vydání
 		"ZP2015_ENTITY_ROLE_58",
         // místa vzniku předloh popisovaných kopií
@@ -3963,16 +3961,16 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 		"ZP2015_ENTITY_ROLE_16",
 		// příjemci 
 		"ZP2015_ENTITY_ROLE_21",		
-		// autoři
-		"ZP2015_ENTITY_ROLE_1",
-		// autoři výtvarné stránky
-		"ZP2015_ENTITY_ROLE_14",
+		// autoři textu
+		"ZP2015_ENTITY_ROLE_11",
 		// fotografové
 		"ZP2015_ENTITY_ROLE_31",
+        // redaktor
+        "ZP2015_ENTITY_ROLE_32",		
 		// kartografové
 		"ZP2015_ENTITY_ROLE_33",
-		// editoři / redaktoři
-		"ZP2015_ENTITY_ROLE_35",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",		
 		// překladatelé
 		"ZP2015_ENTITY_ROLE_44",
 		// lektoři
@@ -4038,8 +4036,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_21",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // tiskárny/tiskaři
         "ZP2015_ENTITY_ROLE_52",
         // místa vydání
@@ -4071,8 +4069,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_21",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // tiskárny/tiskaři
         "ZP2015_ENTITY_ROLE_52",
         // místa vydání
@@ -4113,10 +4111,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_16",
         // autoři textů
         "ZP2015_ENTITY_ROLE_11",        
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",        
         // tiskárny/tiskaři
         "ZP2015_ENTITY_ROLE_52",
         // místa vydání
@@ -4144,10 +4142,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_16",
         // autoři textů
         "ZP2015_ENTITY_ROLE_11",        
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",        
         // tiskárny/tiskaři
         "ZP2015_ENTITY_ROLE_52",
         // místa vydání
@@ -4189,12 +4187,12 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_16",
         // autoři textů
         "ZP2015_ENTITY_ROLE_11",        
-        // autoři výtvarné a obrazové stránky
-        "ZP2015_ENTITY_ROLE_13",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
         // kartografové
         "ZP2015_ENTITY_ROLE_33",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61",
         // místa vzniku předloh popisovaných kopií
@@ -4220,12 +4218,12 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_16",
         // autoři textů
         "ZP2015_ENTITY_ROLE_11",        
-        // autoři výtvarné a obrazové stránky
-        "ZP2015_ENTITY_ROLE_13",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
         // kartografové
         "ZP2015_ENTITY_ROLE_33",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // místa vzniku jednotek popisu
         "ZP2015_ENTITY_ROLE_61",
         // místa vzniku předloh popisovaných kopií
@@ -4295,10 +4293,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 		"ZP2015_ENTITY_ROLE_15",
 		// držitelé
 		"ZP2015_ENTITY_ROLE_23",		
-		// autoři výtvarné stránky
-		"ZP2015_ENTITY_ROLE_14",
-		// tiskárny
-		"ZP2015_ENTITY_ROLE_51",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
+		// tiskárna/tiskař
+		"ZP2015_ENTITY_ROLE_52",
 		// místa vydání
 		"ZP2015_ENTITY_ROLE_58",
 		// místa vzniku předloh popisovaných kopií
@@ -4363,10 +4361,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 		"ZP2015_ENTITY_ROLE_15",
 		// držitelé
 		"ZP2015_ENTITY_ROLE_23",		
-		// autoři výtvarné stránky
-		"ZP2015_ENTITY_ROLE_14",
-		// tiskárny
-		"ZP2015_ENTITY_ROLE_51",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
+		// tiskárna/tiskař
+		"ZP2015_ENTITY_ROLE_52",
 		// místa vydání
 		"ZP2015_ENTITY_ROLE_58",
 		// místa vzniku předloh popisovaných kopií
@@ -4432,8 +4430,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_15",
         // příjemci
         "ZP2015_ENTITY_ROLE_21",        
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // výrobci
         "ZP2015_ENTITY_ROLE_53",
         // místa vydavatelů
@@ -4482,8 +4480,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_15",
         // příjemci
         "ZP2015_ENTITY_ROLE_21",        
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // výrobci
         "ZP2015_ENTITY_ROLE_53",
         // místa vydavatelů
@@ -4541,8 +4539,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_15",
         // příjemci
         "ZP2015_ENTITY_ROLE_21",        
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // výrobci
         "ZP2015_ENTITY_ROLE_53",
         // místa výroby jednotek popisu
@@ -4591,8 +4589,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_15",
         // příjemci
         "ZP2015_ENTITY_ROLE_21",        
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",
         // výrobci
         "ZP2015_ENTITY_ROLE_53",
         // místa výroby jednotek popisu
@@ -4616,16 +4614,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_JIN") ) from $ownItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři
-        "ZP2015_ENTITY_ROLE_1",
-        // autoři fotografií
-        "ZP2015_ENTITY_ROLE_4",        
         // autoři textů
         "ZP2015_ENTITY_ROLE_11",
-        // autoři výtvarné a obrazové stránky
-        "ZP2015_ENTITY_ROLE_13",        
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
         // vydavatelé
         "ZP2015_ENTITY_ROLE_15",
         // vydavatelé / nakladatelé
@@ -4644,10 +4634,10 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_26",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
+        // redaktor
+        "ZP2015_ENTITY_ROLE_32",        
         // kartografové
         "ZP2015_ENTITY_ROLE_33",
-        // editoři / redaktoři
-        "ZP2015_ENTITY_ROLE_35",
         // kresliči
         "ZP2015_ENTITY_ROLE_36",
         // tvůrci technického zpracování
@@ -4703,12 +4693,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_OTHER") ) from $ownItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři
-        "ZP2015_ENTITY_ROLE_1",
         // autoři textů
         "ZP2015_ENTITY_ROLE_11",        
-        // autoři výtvarné stránky
-        "ZP2015_ENTITY_ROLE_14",
         // vydavatelé
         "ZP2015_ENTITY_ROLE_15",
         // vydavatelé / nakladatelé
@@ -4723,10 +4709,12 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ENTITY_ROLE_24",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
+        // redaktor
+        "ZP2015_ENTITY_ROLE_32",        
         // kartografové
         "ZP2015_ENTITY_ROLE_33",
-        // editoři / redaktoři
-        "ZP2015_ENTITY_ROLE_35",
+        // tvůrce výtvarné stránky
+        "ZP2015_ENTITY_ROLE_39",        
         // překladatelé
         "ZP2015_ENTITY_ROLE_44",
         // svědci
