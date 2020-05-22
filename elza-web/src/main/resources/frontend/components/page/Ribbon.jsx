@@ -110,6 +110,12 @@ class Ribbon extends AbstractReactComponent {
                             <span className="btnText">{i18n('ribbon.action.admin.packages')}</span>
                         </Button>
                     </LinkContainer>,
+                    <LinkContainer key="ribbon-btn-admin-bundleActions" to="/admin/bundleActions">
+                        <Button>
+                             <Icon glyph="fa-list-alt"/>
+                             <span className="btnText">{i18n('ribbon.action.admin.bundleActions')}</span>
+                        </Button>
+                    </LinkContainer>,
                     <LinkContainer key="ribbon-btn-admin-requestsQueue" to="/admin/requestsQueue">
                         <Button>
                             <Icon glyph="fa-shopping-basket"/>

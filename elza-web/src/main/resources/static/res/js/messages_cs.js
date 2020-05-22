@@ -293,6 +293,7 @@ var messages = {
     "ribbon.action.admin.package.export.title": "Exportovat balíček",
     "ribbon.action.admin.package.delete": "Smazat balíček",
     "ribbon.action.admin.package.delete.title": "Smazat balíček",
+    "ribbon.action.admin.bundleActions": "Hromadné akce",
     "ribbon.action.admin.requestsQueue": "Fronta požadavků",
     "ribbon.action.admin.user": "Uživatelé",
     "ribbon.action.admin.user.edit": "Upravit",
