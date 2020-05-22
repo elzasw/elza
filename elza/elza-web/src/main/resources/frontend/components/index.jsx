@@ -89,6 +89,9 @@ export {default as AdminExtSystemList} from 'components/admin/AdminExtSystemList
 export {default as AdminExtSystemListItem} from 'components/admin/AdminExtSystemListItem.jsx';
 export {default as AdminExtSystemDetail} from 'components/admin/AdminExtSystemDetail.jsx';
 export {default as AdminLogsDetail} from 'components/admin/AdminLogsDetail.jsx';
+export {default as AdminBundleList} from 'components/admin/AdminBundleList.jsx';
+export {default as AdminBundleHeader} from 'components/admin/AdminBundleHeader.jsx';
+export {default as AdminBundleBody} from 'components/admin/AdminBundleBody.jsx';
 export {default as ExtSystemForm} from 'components/admin/ExtSystemForm.jsx';
 export {default as AdminPackagesUpload} from 'components/admin/AdminPackagesUpload.jsx';
 export {default as AdminFulltextReindex} from 'components/admin/AdminFulltextReindex.jsx';
