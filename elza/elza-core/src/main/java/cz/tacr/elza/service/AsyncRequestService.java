@@ -133,6 +133,10 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         runningNodeIdMap = new ConcurrentHashMap<>();
         waitingNodeRequestMap = new ConcurrentHashMap<>();
         runningBulkActionMap = new ConcurrentHashMap<>();
+
+        nodeFundStatistics = new ArrayList<>();
+        bulkFundStatistics = new ArrayList<>();
+        outputFundStatistics = new ArrayList<>();
     }
 
     /**
