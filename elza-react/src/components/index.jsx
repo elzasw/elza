@@ -74,6 +74,9 @@ export {default as AdminExtSystemList} from 'components/admin/AdminExtSystemList
 export {default as AdminExtSystemListItem} from 'components/admin/AdminExtSystemListItem';
 export {default as AdminExtSystemDetail} from 'components/admin/AdminExtSystemDetail';
 export {default as AdminLogsDetail} from 'components/admin/AdminLogsDetail';
+export {default as AdminBulkList} from 'components/admin/AdminBulkList';
+export {default as AdminBulkHeader} from 'components/admin/AdminBulkHeader';
+export {default as AdminBulkBody} from 'components/admin/AdminBulkBody';
 export {default as ExtSystemForm} from 'components/admin/ExtSystemForm';
 export {default as AdminPackagesUpload} from 'components/admin/AdminPackagesUpload';
 export {default as AdminFulltextReindex} from 'components/admin/AdminFulltextReindex';

@@ -1117,6 +1117,14 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/externalSystems/simple');
     }
 
+    getAsyncRequestInfo() {
+        return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/asyncRequests');
+    }
+
+    getAsyncRequestDetail(requestType){
+        return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/asyncRequests/' + requestType);
+    }
+
     getLogs(lineCount, firstLine) {
         return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/logs', {lineCount, firstLine});
     }
