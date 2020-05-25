@@ -349,12 +349,10 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                     PriorityQueue<AsyncRequestVO> requests = nodeMap.get(fundVersionId);
                     requests.add(request);
                     nodeMap.put(fundVersionId, requests);
-                    addToFundStatistics(AsyncTypeEnum.NODE, fundVersionId, 1);
                 } else {
                     PriorityQueue<AsyncRequestVO> requests = new PriorityQueue<>(1000, new NodePriorityComparator());
                     requests.add(request);
                     nodeMap.put(fundVersionId, requests);
-                    addToFundStatistics(AsyncTypeEnum.NODE, fundVersionId, 1);
                 }
                 waitingNodeRequestMap.put(request.getNodeId(), request.getRequestId());
                 break;
@@ -369,12 +367,10 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                     Queue<AsyncRequestVO> requests = bulkActionMap.get(fundVersionId);
                     requests.add(request);
                     bulkActionMap.put(fundVersionId, requests);
-                    addToFundStatistics(AsyncTypeEnum.BULK, fundVersionId, 1);
                 } else {
                     Queue<AsyncRequestVO> requests = new LinkedList<>();
                     requests.add(request);
                     bulkActionMap.put(fundVersionId, requests);
-                    addToFundStatistics(AsyncTypeEnum.BULK, fundVersionId, 1);
                 }
                 break;
             case OUTPUT:
@@ -385,7 +381,6 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                     outputFundStatistics = new ArrayList<>();
                 }
                 outputQueue.add(request);
-                addToFundStatistics(AsyncTypeEnum.OUTPUT, fundVersionId, 1);
                 break;
         }
     }
@@ -565,65 +560,6 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             runningNodeWorkers.put(worker.getFundVersionId(), workers);
         }
         nodeTaskExecutor.execute(worker);
-    }
-
-    /**
-     * Přidání požadavku do statistiky požadavků pro jednotlivé AS
-     *
-     * @param type
-     * @param fundVersionId
-     * @param requestCount
-     */
-    private void addToFundStatistics(AsyncTypeEnum type, int fundVersionId, int requestCount) {
-        switch (type) {
-            case NODE:
-                boolean nodeFundStatFound = false;
-                for (FundStatisticsVO stat : nodeFundStatistics) {
-                    if (stat.getFundVersionId() == fundVersionId) {
-                        int count = stat.getRequestCount();
-                        count += requestCount;
-                        stat.setRequestCount(count);
-                        nodeFundStatFound = true;
-                        break;
-                    }
-                }
-                if (!nodeFundStatFound) {
-                    nodeFundStatistics.add(createFundStatisticsVO(fundVersionId));
-                }
-                break;
-            case BULK:
-                boolean bulkFundStatFound = false;
-                for (FundStatisticsVO stat : bulkFundStatistics) {
-                    if (stat.getFundVersionId() == fundVersionId) {
-                        int count = stat.getRequestCount();
-                        count += requestCount;
-                        stat.setRequestCount(count);
-                        bulkFundStatFound = true;
-                        break;
-                    }
-                }
-                if (!bulkFundStatFound) {
-                    bulkFundStatistics.add(createFundStatisticsVO(fundVersionId));
-                }
-                break;
-            case OUTPUT:
-                boolean outputFundStatFound = false;
-                for (FundStatisticsVO stat : outputFundStatistics) {
-                    if (stat.getFundVersionId() == fundVersionId) {
-                        int count = stat.getRequestCount();
-                        count += requestCount;
-                        stat.setRequestCount(count);
-                        outputFundStatFound = true;
-                        break;
-                    }
-                }
-                if (!outputFundStatFound) {
-                    outputFundStatistics.add(createFundStatisticsVO(fundVersionId));
-                }
-                break;
-            default:
-                throw new NotImplementedException("Typ requestu pro smazání neni implementován: " + type);
-        }
     }
 
     /**
@@ -902,7 +838,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         int second = now.getSecond() + 60 * now.getMinute();
         threadLoadInfo.getNodeSlots()[second] = getRunningThreadsCount(AsyncTypeEnum.NODE);
         threadLoadInfo.getBulkSlots()[second] = getRunningThreadsCount(AsyncTypeEnum.BULK);
-        threadLoadInfo.getBulkSlots()[second] = getRunningThreadsCount(AsyncTypeEnum.OUTPUT);
+        threadLoadInfo.getOutputSlots()[second] = getRunningThreadsCount(AsyncTypeEnum.OUTPUT);
         logger.debug("Fixed delay task : " + System.currentTimeMillis());
     }
 
@@ -983,16 +919,89 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     public List<FundStatisticsVO> getFundStatistics(AsyncTypeEnum type) {
         switch (type) {
             case NODE:
+                createNodeFundStatistics();
                 Collections.sort(nodeFundStatistics, Collections.reverseOrder());
                 return nodeFundStatistics.subList(0, Math.min(nodeFundStatistics.size(), 100));
             case BULK:
+                createBulkFundStatistics();
                 Collections.sort(bulkFundStatistics, Collections.reverseOrder());
                 return bulkFundStatistics.subList(0, Math.min(bulkFundStatistics.size(), 100));
             case OUTPUT:
+                createOutputFundStatistics();
                 Collections.sort(outputFundStatistics, Collections.reverseOrder());
                 return outputFundStatistics.subList(0, Math.min(outputFundStatistics.size(), 100));
             default:
                 throw new NotImplementedException("Typ requestu neni implementován: " + type);
+        }
+    }
+
+    private void createNodeFundStatistics() {
+        Iterator<Map.Entry<Integer, PriorityQueue<AsyncRequestVO>>> nodeIterator = nodeMap.entrySet().iterator();
+        if (!nodeIterator.hasNext()) {
+            nodeFundStatistics = new ArrayList<>();
+        }
+        while (nodeIterator.hasNext()) {
+            boolean nodeFundStatFound = false;
+            Map.Entry<Integer, PriorityQueue<AsyncRequestVO>> nodeEntry = nodeIterator.next();
+            for (FundStatisticsVO stat : nodeFundStatistics) {
+                if (stat.getFundVersionId() == nodeEntry.getKey()) {
+                    stat.setRequestCount(nodeEntry.getValue().size());
+                    nodeFundStatFound = true;
+                    break;
+                }
+            }
+            if (!nodeFundStatFound) {
+                FundStatisticsVO fundStatisticsVO = createFundStatisticsVO(nodeEntry.getKey());
+                fundStatisticsVO.setRequestCount(nodeEntry.getValue().size());
+                nodeFundStatistics.add(fundStatisticsVO);
+
+            }
+        }
+    }
+
+    private void createBulkFundStatistics() {
+        Iterator<Map.Entry<Integer, Queue<AsyncRequestVO>>> bulkActionIterator = bulkActionMap.entrySet().iterator();
+        if (!bulkActionIterator.hasNext()) {
+            bulkFundStatistics = new ArrayList<>();
+        }
+        while (bulkActionIterator.hasNext()) {
+            boolean bulkFundStatFound = false;
+            Map.Entry<Integer, Queue<AsyncRequestVO>> bulkEntry = bulkActionIterator.next();
+            for (FundStatisticsVO stat : bulkFundStatistics) {
+                if (stat.getFundVersionId() == bulkEntry.getKey()) {
+                    stat.setRequestCount(bulkEntry.getValue().size());
+                    bulkFundStatFound = true;
+                    break;
+                }
+            }
+            if (!bulkFundStatFound) {
+                FundStatisticsVO fundStatisticsVO = createFundStatisticsVO(bulkEntry.getKey());
+                fundStatisticsVO.setRequestCount(bulkEntry.getValue().size());
+                bulkFundStatistics.add(fundStatisticsVO);
+            }
+        }
+    }
+
+    private void createOutputFundStatistics() {
+        if (outputQueue == null || outputQueue.isEmpty()) {
+            outputFundStatistics = new ArrayList<>();
+        }
+        for (AsyncRequestVO requestVO : outputQueue) {
+            boolean outputFundStatFound = false;
+            for (FundStatisticsVO stat : outputFundStatistics) {
+                if (stat.getFundVersionId() == requestVO.getFundVersionId()) {
+                    int count = stat.getRequestCount();
+                    count++;
+                    stat.setRequestCount(count);
+                    outputFundStatFound = true;
+                    break;
+                }
+            }
+            if (!outputFundStatFound) {
+                FundStatisticsVO fundStatisticsVO = createFundStatisticsVO(requestVO.getFundVersionId());
+                fundStatisticsVO.setRequestCount(1);
+                outputFundStatistics.add(fundStatisticsVO);
+            }
         }
     }
 
@@ -1021,7 +1030,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     private List<AsyncWorkerVO> convertWorkerList(Collection<IAsyncWorker> workers) {
         List<AsyncWorkerVO> runningVOList = new ArrayList<>();
-        for(IAsyncWorker worker : workers) {
+        for (IAsyncWorker worker : workers) {
             AsyncWorkerVO workerVO = new AsyncWorkerVO(worker.getFundVersionId(), worker.getRequestId(), worker.getBeginTime(), worker.getRunningTime(), worker.getCurrentId());
             runningVOList.add(workerVO);
         }
