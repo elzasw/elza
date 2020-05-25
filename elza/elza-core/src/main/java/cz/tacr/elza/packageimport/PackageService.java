@@ -577,7 +577,7 @@ public class PackageService {
             }
         }
 
-        if (oldPackageDir != null) {
+        if (oldPackageDir != null && !oldPackageDir.equals(packageDir)) {
             FileSystemUtils.deleteRecursively(oldPackageDir);
         }
 
