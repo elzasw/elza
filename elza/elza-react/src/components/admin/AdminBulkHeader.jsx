@@ -1,6 +1,6 @@
 import React from "react";
 import {Table} from 'react-bootstrap';
-import './AdminBulkHeader.less';
+import './AdminBulkHeader.scss';
 import i18n from "../i18n";
 import {dateToDateTimeString, localUTCToDateTime} from "../../shared/utils/commons";
 

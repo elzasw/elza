@@ -43,6 +43,7 @@ import i18n from '../components/i18n';
 import RegistryUsageForm from '../components/form/RegistryUsageForm';
 import PartyUsageForm from '../components/form/PartyUsageForm';
 import {FOCUS_KEYS} from '../constants.tsx';
+import AdminBulkActionPage from "./admin/AdminBulkActionPage";
 
 let _gameRunner = null;
 
@@ -179,6 +180,7 @@ class Layout extends AbstractReactComponent {
                                     <Route path="/admin/group" component={AdminGroupPage} />
                                     <Route path="/admin/fund" component={AdminFundPage} />
                                     <Route path="/admin/packages" component={AdminPackagesPage} />
+                                    <Route path="/admin/bulkActions" component={AdminBulkActionPage} />
                                     <Route path="/admin/requestsQueue" component={AdminRequestsQueuePage} />
                                     <Route path="/admin/extSystem" component={AdminExtSystemPage} />
                                     <Route path="/admin/logs" component={AdminLogsPage} />

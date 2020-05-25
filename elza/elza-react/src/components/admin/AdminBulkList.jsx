@@ -7,7 +7,7 @@ import {WebApi} from 'actions/index.jsx';
 import AdminBulkHeader from "./AdminBulkHeader";
 import AdminBulkBody from "./AdminBulkBody";
 
-import './AdminBulkList.less';
+import './AdminBulkList.scss';
 import i18n from "../i18n";
 import Loading from "../shared/loading/Loading";
 

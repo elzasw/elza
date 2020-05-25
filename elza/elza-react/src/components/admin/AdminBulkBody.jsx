@@ -1,6 +1,6 @@
 import React from "react";
 import {WebApi} from 'actions/index.jsx';
-import './AdminBulkBody.less';
+import './AdminBulkBody.scss';
 import i18n from "../i18n";
 
 class AdminBulkBody extends React.Component {
