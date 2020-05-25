@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 // import * as ModalActions from '../../shared/reducers/modal/ModalActions';
 import { Action, Dispatch } from 'redux';
 // import SharedModal, { SharedModalProps } from '../SharedModal';
-import './RecordDetailSide.scss';
+import './DetailSide.scss';
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // import { IconDefinition } from '@fortawesome/fontawesome-common-types';
 /*
@@ -26,7 +26,7 @@ import Icon from "../../shared/icon/Icon";
 
 type Props = ReturnType<typeof mapDispatchToProps>;
 
-const RecordDetailSide = (props: Props) => {
+const DetailSide = (props: Props) => {
   const [editMode, setEditMode] = useState<boolean>(true);
 
   const onEyeClick = () => {
@@ -145,4 +145,4 @@ const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
 export default connect(
   null,
   mapDispatchToProps
-)(RecordDetailSide);
+)(DetailSide);

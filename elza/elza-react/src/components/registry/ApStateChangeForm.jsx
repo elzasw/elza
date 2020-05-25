@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {reduxForm} from 'redux-form';
+import {formValueSelector, reduxForm} from 'redux-form';
 import {AbstractReactComponent, Autocomplete, i18n} from 'components/shared';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
@@ -11,6 +11,7 @@ import {getTreeItemById} from './registryUtils';
 import Scope from '../shared/scope/Scope';
 import * as StateApproval from '../enum/StateApproval';
 import FormInput from 'components/shared/form/FormInput';
+import {connect} from "react-redux";
 
 class ApStateChangeForm extends AbstractReactComponent {
     static validate = (values, props) => {
@@ -29,7 +30,7 @@ class ApStateChangeForm extends AbstractReactComponent {
         hideType: PropTypes.bool,
     };
 
-    static defultProps = {
+    static defaultProps = {
         hideType: false,
     };
 
@@ -51,6 +52,7 @@ class ApStateChangeForm extends AbstractReactComponent {
     }
 
     render() {
+        console.log('PROPS', this.props);
         const {
             fields: {typeId, scopeId, state, comment},
             handleSubmit,
@@ -64,15 +66,15 @@ class ApStateChangeForm extends AbstractReactComponent {
 
         const items = registryRegionRecordTypes.item ? registryRegionRecordTypes.item : [];
 
-        let scopeIdValue = scopeId.value;
-        if (!scopeId.value) {
+        let scopeIdValue = scopeId;
+        if (!scopeId) {
             let index = scopesData.scopes ? indexById(scopesData.scopes, versionId, 'versionId') : false;
             if (index && scopesData.scopes[index].scopes) {
                 scopeIdValue = scopesData.scopes[index].scopes[0].id;
             }
         }
 
-        const value = getTreeItemById(typeId ? typeId.value : '', items);
+        const value = getTreeItemById(typeId ? typeId : '', items);
 
         return (
             <div key={this.props.key}>
@@ -133,14 +135,18 @@ class ApStateChangeForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm(
-    {
-        form: 'apStateChangeForm',
-        fields: ['comment', 'typeId', 'scopeId', 'state'],
-        validate: ApStateChangeForm.validate,
-    },
-    state => ({
+const mapStateToProps = (state) => {
+    const selector = formValueSelector('apStateChangeForm');
+
+    return {
+        fields: selector(state, 'scopeId', 'typeId', 'state', 'comment'),
         refTables: state.refTables,
         registryRegionRecordTypes: state.registryRegionRecordTypes,
-    }),
-)(ApStateChangeForm);
+    };
+};
+
+export default connect(mapStateToProps)(reduxForm({
+    form: 'apStateChangeForm',
+    // fields: ['comment', 'typeId', 'scopeId', 'state'],
+    validate: ApStateChangeForm.validate,
+})(ApStateChangeForm));

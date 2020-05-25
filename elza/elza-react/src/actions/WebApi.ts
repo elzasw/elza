@@ -2,11 +2,17 @@
 import AjaxUtils from '../components/AjaxUtils';
 import {DEFAULT_LIST_SIZE} from '../constants';
 import {CommentVO, IssueListVO, IssueStateVO, IssueVO} from '../types';
-import {ApPartFormVO} from "../api/generated/model";
-import {ApAttributesInfoVO} from "../api/generated/model";
 import {ApAccessPointCreateVO} from "../api/ApAccessPointCreateVO";
 import {ApAccessPointVO} from "../api/ApAccessPointVO";
 import {ApValidationErrorsVO} from "../api/ApValidationErrorsVO";
+import {ApStateHistoryVO} from "../api/ApStateHistoryVO";
+import {ApAttributesInfoVO} from "../api/ApAttributesInfoVO";
+import {ApPartFormVO} from "../api/ApPartFormVO";
+import {ApTypeVO} from "../api/ApTypeVO";
+import {RulDataTypeVO} from "../api/RulDataTypeVO";
+import {RulDescItemTypeExtVO} from "../api/RulDescItemTypeExtVO";
+import {RulPartTypeVO} from "../api/RulPartTypeVO";
+import {FilteredResultVO} from "../api/FilteredResultVO";
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 
@@ -754,7 +760,7 @@ export class WebApiCls {
         scopeId = null,
         excludeInvalid = true,
         state = null,
-    ) {
+    ): Promise<FilteredResultVO<ApAccessPointVO>> {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {
             search,
             from,
@@ -788,7 +794,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId);
     }
 
-    findStateHistories(accessPointId) {
+    findStateHistories(accessPointId: number): Promise<ApStateHistoryVO[]> {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/history');
     }
 
@@ -975,6 +981,19 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/available/items', null, apAccessPointCreateVO);
     }
 
+    /**
+     * Vrátí seznam typů rejstříku (typů hesel).
+     *
+     * @return  seznam typů rejstříku (typů hesel)
+     */
+    getApTypes(): Promise<ApTypeVO[]> {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/recordTypes');
+    }
+
+    findPartTypes(): Promise<RulPartTypeVO[]> {
+        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/part-type');
+    }
+
     // End registry
 
     getFundNodeForm(versionId, nodeId) {
@@ -1045,11 +1064,11 @@ export class WebApiCls {
         );
     }
 
-    getRulDataTypes(versionId, nodeId) {
+    getRulDataTypes(): Promise<RulDataTypeVO[]> {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/dataTypes');
     }
 
-    getDescItemTypes() {
+    getDescItemTypes(): Promise<RulDescItemTypeExtVO[]> {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/descItemTypes');
     }
 

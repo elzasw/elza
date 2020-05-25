@@ -1,126 +1,113 @@
-import { Col, Row } from 'react-bootstrap';
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import DetailHistoryItem from './DetailHistoryItem';
-import { ThunkDispatch } from 'redux-thunk';
-import { Action } from 'redux';
-import { SimpleListActions as SimpleListAction } from '../../../shared/list';
-import { connect } from 'react-redux';
-import { AeStateHistoryVO } from '../../../api/generated/model';
+import {ThunkDispatch} from 'redux-thunk';
+import {Action} from 'redux';
+import {SimpleListActions as SimpleListAction} from '../../../shared/list';
+import {connect} from 'react-redux';
 import './DetailHistory.scss';
-//import * as EntitiesClientApiCall from '../../api/call/EntitiesClientApiCall';
 import Icon from '../../shared/icon/Icon';
 import Loading from '../../shared/loading/Loading';
+import {WebApi} from "../../../actions/WebApi";
+import * as Constants from '../../../constants';
+import {ApStateHistoryVO} from "../../../api/ApStateHistoryVO";
+import {SimpleListStoreState} from "../../../types";
+import {storeFromArea} from "../../../shared/utils";
 
 type Props = {
-  entityId: number;
-  commentCount?: number;
+    apId: number;
+    commentCount?: number;
 };
 
 type AllProps = ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps> & Props;
 
 const DetailHistory: React.FC<AllProps> = props => {
-  const [collapsed, setCollapsed] = useState(true);
+    const [collapsed, setCollapsed] = useState(false);
 
-  const { fetchHistoryList, entityId, historyList } = props;
-  useEffect(() => {
-    if (!collapsed) {
-      fetchHistoryList(entityId);
-    }
-  }, [fetchHistoryList, entityId, collapsed]);
+    const {fetchRegistryDetailHistory, apId, registryDetailHistory} = props;
+    useEffect(() => {
+        if (!collapsed) {
+            fetchRegistryDetailHistory(apId);
+        }
+    }, [fetchRegistryDetailHistory, apId, collapsed]);
 
-  const [isFetching, setIsFetching] = useState(false);
-  const [isListFetched, setIsListFetched] = useState(false);
+    const renderCollapsedContent = () => {
+        return <div style={{textAlign: 'center'}} className="pt-2">
+            <Icon glyph="fa-comments" size={'2x'}/>
+            <h3>{props.commentCount}</h3>
+        </div>;
+    };
 
-  useEffect(() => {
-    setIsFetching(!historyList.fetched || historyList.isFetching);
-    setIsListFetched(historyList.fetched);
-  }, [historyList.fetched, historyList.isFetching]);
+    const renderList = () => {
+        const itemCount = registryDetailHistory.fetched ? registryDetailHistory.count : props.commentCount;
+        return <div>
+            <h3>Historie stavů ({itemCount})</h3>
+            {registryDetailHistory.fetched && registryDetailHistory.rows!.map(item => (
+                <DetailHistoryItem historyItem={item}/>))}
+            {!registryDetailHistory.fetched && <Loading/>}
+        </div>
+    };
 
+    const renderExtendedContent = () => {
+        return <>
+            {registryDetailHistory.fetched ? renderList() : <Loading/>}
+        </>;
+    };
 
-  const renderCollapsedContent = () => {
-    return <div style={{ textAlign: 'center' }} className="pt-2">
-      <Icon glyph="fa-coments" size={'2x'}/>
-      <h3>{props.commentCount}</h3>
-    </div>;
-  };
+    const renderContent = () => {
+        if (collapsed) {
+            return renderCollapsedContent();
+        } else {
+            return renderExtendedContent();
+        }
+    };
 
-  const renderList = () => {
-    const itemCount = isListFetched ? historyList.count : props.commentCount;
-    return <div>
-        <Row className="p-2">
-            <Col className="pr-2">
-                <Icon glyph="fa-coments" size={'2x'}/>
-            </Col>
-            <Col>
-                <h3>Historie stavů ({itemCount})</h3>
-            </Col>
-        </Row>
-        {isListFetched && historyList.rows.map(item => (<DetailHistoryItem historyItem={item as AeStateHistoryVO}/>))}
-        {!isListFetched && <Loading />}
-    </div>
-  };
+    const renderTrigger = () => {
+        let content;
+        if (collapsed) {
+            content = <Icon type={'left'}/>;
+        } else {
+            content = <><Icon type={'right'}/> Skrýt panel</>;
+        }
 
-  const renderExtendedContent = () => {
-    return <>
-      {isListFetched ? renderList() : <Loading/>}
-    </>;
-  };
+        return <div className="brt-1 brb-1">
+            {content}
+        </div>;
+    };
 
-  const renderContent = () => {
-    if (collapsed) {
-      return renderCollapsedContent();
-    } else {
-      return renderExtendedContent();
-    }
-  };
-
-  const renderTrigger = () => {
-    let content;
-    if (collapsed) {
-      content = <Icon type={'left'}/>;
-    } else {
-      content = <><Icon type={'right'}/> Skrýt panel</>;
-    }
-
-    return <div className="brt-1 brb-1">
-      {content}
-    </div>;
-  };
-
-  return (
-    <div
-      // collapsible
-      // collapsed={collapsed}
-      // onCollapse={() => setCollapsed(!collapsed)}
-      // width="300"
-      // reverseArrow={true}
-      // trigger={renderTrigger()}
-      className="brl-1 history-sider"
-    >
-      <div className="layout-scroll">
-        {renderContent()}
-      </div>
-    </div>
-  );
+    return (
+        <div
+            // collapsible
+            // collapsed={collapsed}
+            // onCollapse={() => setCollapsed(!collapsed)}
+            // width="300"
+            // reverseArrow={true}
+            // trigger={renderTrigger()}
+            className="brl-1 history-sider"
+        >
+            <div className="layout-scroll">
+                {renderContent()}
+            </div>
+        </div>
+    );
 };
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => ({
-  fetchHistoryList: (id: number) => {
-    /*dispatch(
-      SimpleListAction.fetchIfNeeded(Constants.DETAIL_HISTORY_LIST, id, (id) =>
-          EntitiesClientApiCall.standardApi
-            .getStateHistory(id)
-            .then(x => x.data)
-      )
-    );*/
-  }
+    fetchRegistryDetailHistory: (id: number) => {
+        dispatch(SimpleListAction.fetchIfNeeded(
+            Constants.REGISTRY_DETAIL_HISTORY,
+            id,
+            (id) => WebApi.findStateHistories(id).then((data) => {
+                return {rows: data, count: data.length};
+            })
+        ));
+    }
 });
 
-const mapStateToProps = ({ app }: any) => ({
-  historyList: {} as any//app[Constants.DETAIL_HISTORY_LIST]
+const mapStateToProps = (state) => ({
+    registryDetailHistory: storeFromArea(state, Constants.REGISTRY_DETAIL_HISTORY) as SimpleListStoreState<ApStateHistoryVO>,
 });
 
 export default connect(
-  mapStateToProps,
-  mapDispatchToProps
+    mapStateToProps,
+    mapDispatchToProps
 )(DetailHistory);

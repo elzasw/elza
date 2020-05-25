@@ -44,6 +44,11 @@ import {accessPointFormActions} from '../accesspoint/AccessPointFormActions';
 import TooltipTrigger from '../shared/tooltip/TooltipTrigger';
 import {structureTypesFetchIfNeeded} from '../../actions/refTables/structureTypes';
 import * as StateApproval from './../../components/enum/StateApproval';
+import {refApTypesFetch, refApTypesFetchIfNeeded} from "../../actions/refTables/apTypes";
+import {ApAccessPointVO} from "../../api/ApAccessPointVO";
+import {DetailStoreState} from "../../types";
+import storeFromArea from "../../shared/utils/storeFromArea";
+import * as registry from "../../actions/registry/registry";
 
 class RegistryDetail extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
@@ -98,6 +103,7 @@ class RegistryDetail extends AbstractReactComponent {
         } = props;
         dispatch(refPartyTypesFetchIfNeeded()); // nacteni typu osob (osoba, rod, událost, ...)
         dispatch(calendarTypesFetchIfNeeded()); // načtení typů kalendářů (gregoriánský, juliánský, ...)
+        dispatch(refApTypesFetchIfNeeded());
         dispatch(descItemTypesFetchIfNeeded());
         dispatch(refRulDataTypesFetchIfNeeded());
         dispatch(requestScopesIfNeeded());
@@ -363,7 +369,7 @@ class RegistryDetail extends AbstractReactComponent {
         }
     };
 
-    renderApItemsError = data => {
+    renderApItemsError = (data) => {
         const {ap} = this.props;
         const subNodeForm = ap.form;
         const {state, errorDescription} = data;
@@ -415,8 +421,8 @@ class RegistryDetail extends AbstractReactComponent {
         }
     };
 
-    renderApNameItemsError = data => {
-        const {ap, refTables} = this.props;
+    renderApNameItemsError = (data) => {
+        const {refTables} = this.props;
 
         const itemTypes = refTables.descItemTypes.items;
         if (!refTables.descItemTypes.fetched) {
@@ -491,7 +497,8 @@ class RegistryDetail extends AbstractReactComponent {
 
     render() {
         const {registryDetail, scopes, eidTypes, ap, refTables, apTypeIdMap} = this.props;
-        const {data, fetched, isFetching, id} = registryDetail;
+        const {fetched, isFetching, id} = registryDetail;
+        const data = registryDetail.data;
         const {activeIndexes} = this.state;
 
         let icon = 'fa-folder';
@@ -585,7 +592,7 @@ class RegistryDetail extends AbstractReactComponent {
                             header={
                                 <div>
                                     {i18n('accesspoint.detail.formNames')}
-                                    {this.renderApNamesError(data.names)}
+                                    {/*{this.renderApNamesError(data.names)}*/}
                                 </div>
                             }
                             eventKey={'NAMES'}

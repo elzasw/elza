@@ -1,8 +1,11 @@
+import {getMapFromList} from "../../../shared/utils";
+
 export const genericRefTableState = {
     isFetching: false,
     fetched: false,
     dirty: false,
     items: [],
+    itemsMap: {},
 };
 
 /**
@@ -28,6 +31,7 @@ export default function genericRefTable(request, receive, state, action) {
                 fetched: true,
                 dirty: false,
                 items: action.items,
+                itemsMap: getMapFromList(action.items),
                 lastUpdated: action.receivedAt,
             };
         default:

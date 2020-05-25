@@ -1,12 +1,5 @@
 export interface ApItemVO {
     /**
-     * Discriminator
-     * @type {string}
-     * @memberof AeItemVO
-     */
-    '@class': string;
-
-    /**
      * identifikátor
      */
     id: number;

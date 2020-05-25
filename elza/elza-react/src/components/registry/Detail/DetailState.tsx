@@ -1,28 +1,27 @@
 import React from 'react';
 import {Col, Row} from 'react-bootstrap';
-import {ApState} from "../../../api/generated/model";
-import * as AeStateEnumInfo from "../../../api/old/ApStateEnumInfo";
 import "./DetailState.scss";
 import {Icon} from "../../index";
+import {StateApproval, StateApprovalCaption, StateApprovalColor, StateApprovalIcon} from "../../../api/StateApproval";
 
 interface Props {
-  state: ApState;
+    state: StateApproval;
 }
 
 /**
  * Zobrazí stav AE včetně ikony.
  */
-const RecordDetailState: React.FC<Props> = ({state}) => (
-  <Row className="detail-state justify-content-between align-middle">
-    <Col className="detail-state-icon" style={{backgroundColor: AeStateEnumInfo.getColor(state)}}>
-      <Icon
-        glyph={AeStateEnumInfo.getIcon(state)}
-      />
-    </Col>
-    <Col style={{marginLeft: '2px'}}>
-      {AeStateEnumInfo.getLabel(state)}
-    </Col>
-  </Row>
+const DetailState: React.FC<Props> = ({state}) => (<div>
+    <Row className="detail-state justify-content-between align-middle ml-0">
+        <Col className="detail-state-icon" style={{backgroundColor: StateApprovalColor(state)}}>
+            <Icon
+                glyph={StateApprovalIcon(state)}
+            />
+        </Col>
+        <Col style={{marginLeft: '2px'}}>
+            {StateApprovalCaption(state)}
+        </Col>
+    </Row></div>
 );
 
-export default RecordDetailState;
+export default DetailState;

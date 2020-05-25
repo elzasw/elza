@@ -95,6 +95,6 @@ export const APPROVE_GLOBAL_AE_DETAIL_AREA = "approveGlobalAeDetail";
 
 export const PART_EDIT_FORM_ATTRIBUTES = "partEditFormAttributes";
 
-export const DETAIL_HISTORY_LIST = "detailHistoryList";
+export const REGISTRY_DETAIL_HISTORY = "registryDetailHistory";
 
 export const DETAIL_VALIDATION_RESULT = "detailValidationResult";

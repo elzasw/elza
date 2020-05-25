@@ -1,8 +1,8 @@
+import {DescItemSpecLiteVO} from "./DescItemSpecLiteVO";
+
 /**
  * VO Odlehčená verze specifikace hodnoty atributu.
  */
-import {DescItemSpecLiteVO} from "./DescItemSpecLiteVO";
-
 export interface ItemTypeLiteVO {
     /**
      * identifikator typu

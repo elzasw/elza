@@ -1,9 +1,9 @@
-import {ApAccessPointNameVO} from "./ApAccessPointNameVO";
 import {ApStateVO} from "./ApStateVO";
-import {ApFormVO} from "./ApFormVO";
 import {ApExternalIdVO} from "./ApExternalIdVO";
 import {ApPartVO} from "./ApPartVO";
 import {StateApproval} from "./StateApproval";
+import {UserVO} from "./UserVO";
+import {ApChangeVO} from "./ApChangeVO";
 
 /**
  * VO rejstříkového záznamu.
@@ -37,31 +37,21 @@ export interface ApAccessPointVO {
     comment: string;
 
     /**
-     * Rejstříkové heslo.
+     * Jméno přistupového bodu.
      */
-    record: string;
+    name: string;
 
     /**
-     * Podrobná charakteristika rejstříkového hesla.
+     * Podrobný popis přístupového bodu.
      */
-    characteristics: string;
+    description: string;
 
     invalid: boolean;
-
-    /**
-     * Id osoby.
-     */
-    partyId: number;
 
     /**
      * Externí identifikátory rejstříkového hesla.
      */
     externalIds: ApExternalIdVO[];
-
-    /**
-     * Seznam jmen přístupového bodu.
-     */
-    names: ApAccessPointNameVO[];
 
     /**
      * Kód pravidla pro AP.
@@ -79,11 +69,6 @@ export interface ApAccessPointVO {
     errorDescription?: string;
 
     /**
-     * Strukturované data formuláře pro AP. Vyplněné pouze v případě, že se jedná o strukturovaný typ.
-     */
-    form?: ApFormVO;
-
-    /**
      * Identifikátor preferované části
      */
     preferredPart: number;
@@ -92,4 +77,19 @@ export interface ApAccessPointVO {
      * Seznam částí přístupového bodu
      */
     parts: ApPartVO[];
+
+    /**
+     * Poslední změna přístupového bodu
+     */
+    lastChange: ApChangeVO;
+
+    /**
+     * Vlastník přístupového bodu
+     */
+    ownerUser: UserVO;
+
+    /**
+     * Počet komentářů
+     */
+    comments: number;
 }
