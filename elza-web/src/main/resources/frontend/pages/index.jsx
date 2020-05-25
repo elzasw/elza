@@ -5,7 +5,7 @@ export AdminLogsPage from 'pages/admin/AdminLogsPage.jsx';
 export AdminUserPage from 'pages/admin/AdminUserPage.jsx';
 export AdminGroupPage from 'pages/admin/AdminGroupPage.jsx';
 export AdminFundPage from 'pages/admin/AdminFundPage.jsx';
-export AdminBundleActionPage from 'pages/admin/AdminBundleActionPage.jsx';
+export AdminBulkActionPage from 'pages/admin/AdminBulkActionPage.jsx';
 export AdminRequestsQueuePage from 'pages/admin/AdminRequestsQueuePage.jsx';
 
 export ArrPage from 'pages/arr/ArrPage.jsx';

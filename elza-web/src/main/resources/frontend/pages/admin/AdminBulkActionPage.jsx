@@ -1,16 +1,13 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
 import {connect} from 'react-redux'
-import {Ribbon, AdminBundleList, i18n, Icon, RibbonGroup} from 'components';
-import {UrlFactory} from 'actions/index.jsx';
-import {Button} from 'react-bootstrap'
+import {AdminBulkList, Ribbon} from 'components';
 
 import './AdminPackagesPage.less';
 import PageLayout from "../shared/layout/PageLayout";
 
 
-class AdminBundleActionPage extends React.Component {
+class AdminBulkActionPage extends React.Component {
 
     buildRibbon = () => {
         return (
@@ -22,13 +19,13 @@ class AdminBundleActionPage extends React.Component {
         const {splitter} = this.props;
 
         const centerPanel = <div>
-            <AdminBundleList />
+            <AdminBulkList />
         </div>;
 
         return (
             <PageLayout
                 splitter={splitter}
-                className='admin-bundleAction-page'
+                className='admin-bulkAction-page'
                 ribbon={this.buildRibbon()}
                 centerPanel={centerPanel}
             />
@@ -50,4 +47,4 @@ function mapStateToProps(state) {
     }
 }
 
-export default connect(mapStateToProps)(AdminBundleActionPage);
+export default connect(mapStateToProps)(AdminBulkActionPage);
