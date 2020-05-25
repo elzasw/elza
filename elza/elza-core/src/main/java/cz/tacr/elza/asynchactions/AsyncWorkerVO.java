@@ -15,7 +15,7 @@ public class AsyncWorkerVO {
     public AsyncWorkerVO(Integer fundVersionId, Long requestId, Long beginTime, Long runningTime, Integer currentId) {
         this.fundVersionId = fundVersionId;
         this.requestId = requestId;
-        this.beginTime =  Instant.ofEpochMilli(beginTime).atZone(ZoneId.systemDefault()).toLocalDateTime();
+        this.beginTime = beginTime != null ? Instant.ofEpochMilli(beginTime).atZone(ZoneId.systemDefault()).toLocalDateTime() : null;
         this.runningTime = runningTime;
         this.currentId = currentId;
     }
