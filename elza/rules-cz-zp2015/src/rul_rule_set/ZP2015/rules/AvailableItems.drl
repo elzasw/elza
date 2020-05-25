@@ -4686,6 +4686,21 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
+//----------------------------------
+// Neevidovaná jednotlivost
+//----------------------------------
+
+// Pridano na zaklade: https://bugzilla.lightcomp.cz/show_bug.cgi?id=6173
+rule "Možné prvky popisu pro neevidované jednotlivosti ve starší pomůcce"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_OTHER") ) from $ownItems
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER") ) from $activeLevel.descItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_IMPRINT_COUNT" ) )
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
 
 rule "Možné role entit pro neevidované jednotlivosti"
 no-loop
