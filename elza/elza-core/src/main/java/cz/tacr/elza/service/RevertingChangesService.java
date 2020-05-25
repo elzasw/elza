@@ -367,7 +367,6 @@ public class RevertingChangesService {
 
             sobjVrequestDelete(fund, toChange);
 
-            structuredObjectDelete(fund, toChange);
             structuredObjectUpdate(fund, toChange);
         }
 
@@ -400,6 +399,11 @@ public class RevertingChangesService {
         deleteNotUseChangesQuery.executeUpdate();
 
         entityManager.flush();
+
+        // strukt typy lze smazat az po vymazani vsech ref. na ne
+        if (nodeId == null) {
+            structuredObjectDelete(fund, toChange);
+        }
 
         // Drop unused node ids
         // Find nodes
