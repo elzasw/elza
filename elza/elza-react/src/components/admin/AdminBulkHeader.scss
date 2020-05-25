@@ -1,0 +1,28 @@
+.bulk-containter{
+    display: flex;
+    flex-direction: row;
+
+    .bulk-type {
+        font-weight: bold;
+        width: 10%;
+        padding: 0 15px;
+    }
+
+    .bulk-description{
+        display: flex;
+        flex-direction: row;
+        width: 55%;
+        padding: 0 15px;
+
+        .bulk-stat{
+            display: flex;
+            flex-direction: column;
+            margin: 0 15px;
+        }
+    }
+
+    .bulk-threads {
+        width: 40%;
+        padding: 0 15px;
+    }
+}
