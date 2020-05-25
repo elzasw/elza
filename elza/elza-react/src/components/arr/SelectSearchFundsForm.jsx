@@ -140,6 +140,7 @@ class SelectSearchFundsForm extends AbstractReactComponent {
         const nodes = fundSearch.funds.find(fund => fund.id === fundId).nodes;
 
         let searchedData = [];
+        // eslint-disable-next-line
         nodes.map((node) => {
             let parentNode = getParentNode(node, activeFund.nodes.nodes);
             if (parentNode === null) {

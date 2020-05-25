@@ -212,6 +212,7 @@ class AddRegistryForm extends AbstractReactComponent {
     };
 
     render() {
+        console.log('PRRRR', this.props);
         const {
             fields: {name, description, complement, languageCode, typeId, scopeId, structured},
             handleSubmit,

@@ -59,3 +59,42 @@ export const PERSISTENT_SORT_CODE = "PERZISTENTNI_RAZENI";
 export const ZP2015_INTRO_VYPOCET_EJ = "ZP2015_INTRO_VYPOCET_EJ";
 
 export const ELZA_SCHEME_NODE = "elza-node";
+
+
+// Migrated from CAM
+
+// const appWindow = window as any;
+// const appConfig = appWindow.appConfig;
+// let baseUrl = 'http://localhost:3000';
+//
+// if (appConfig) {
+//     baseUrl = window.location.origin;
+//
+//     if (appConfig.serverContextPath) {
+//         baseUrl += appConfig.serverContextPath;
+//     }
+// }
+//
+//
+// export const BASE_API_URL =  baseUrl;
+
+export const AUTH_INFO = "authInfo";
+
+export const GLOBAL_AE_LIST_AREA = "globalAeList";
+export const GLOBAL_AE_DETAIL_AREA = "globalAeDetail";
+export const GLOBAL_EDIT_AE_DETAIL_AREA = "globalEditAeDetail";
+export const GLOBAL_APPROVE_AE_DETAIL_AREA = "globalApproveAeDetail";
+
+export const EDIT_AE_LIST_AREA = "editAeList";
+export const EDIT_AE_DETAIL_AREA = "editAeDetail";
+export const EDIT_GLOBAL_AE_DETAIL_AREA = "editGlobalAeDetail";
+
+export const APPROVE_AE_LIST_AREA = "approveAeList";
+export const APPROVE_AE_DETAIL_AREA = "approveAeDetail";
+export const APPROVE_GLOBAL_AE_DETAIL_AREA = "approveGlobalAeDetail";
+
+export const PART_EDIT_FORM_ATTRIBUTES = "partEditFormAttributes";
+
+export const REGISTRY_DETAIL_HISTORY = "registryDetailHistory";
+
+export const DETAIL_VALIDATION_RESULT = "detailValidationResult";

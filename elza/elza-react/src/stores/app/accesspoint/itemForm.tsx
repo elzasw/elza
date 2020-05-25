@@ -6,6 +6,7 @@ import {DisplayType} from '../../../constants';
 import {getMapFromList, objectById} from '../utils2';
 import {DataTypeCode} from './itemFormInterfaces';
 import {consolidateDescItems, createItem, ItemAvailability, mergeAfterUpdate, updateFormData} from './itemFormUtils';
+import {ApFormVO} from "../../../api/ApFormVO";
 
 export interface ILocation {
     itemType: ItemTypeExt;
@@ -132,11 +133,6 @@ export interface ItemTypeExt extends ItemTypeLiteVO {
 
 export interface IFormData {
     itemTypes: ItemTypeExt[];
-}
-
-export interface ApFormVO {
-    items: ApItemVO<any>[];
-    itemTypes: ItemTypeLiteVO[];
 }
 
 export interface ItemData extends ApFormVO {

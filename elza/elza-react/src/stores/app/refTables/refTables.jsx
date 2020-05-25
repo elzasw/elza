@@ -1,4 +1,3 @@
-import * as types from 'actions/constants/ActionTypes.js';
 
 import ruleSet from './ruleSet.jsx';
 import institutions from './institutions.jsx';
@@ -16,12 +15,17 @@ import externalSystems from './externalSystems.jsx';
 import structureTypes from './structureTypes';
 import DetailReducer from '../../../shared/detail/DetailReducer';
 import processAreaStores from '../../../shared/utils/processAreaStores';
+import apTypes from "./apTypes";
+import partTypes from "./partTypes";
+import * as types from "../../../actions/constants/ActionTypes";
 
 const initialState = {
     ruleSet: ruleSet(),
     institutions: institutions(),
     partyNameFormTypes: partyNameFormTypes(),
+    partTypes: partTypes(),
     partyTypes: partyTypes(),
+    apTypes: apTypes(),
     recordTypes: recordTypes(),
     rulDataTypes: rulDataTypes(),
     calendarTypes: calendarTypes(),
@@ -52,6 +56,13 @@ export default function refTables(state = initialState, action = {}) {
                 templates: templates(state.templates, action),
             };
         }
+        case types.REF_AP_TYPES_REQUEST:
+        case types.REF_AP_TYPES_RECEIVE: {
+            return {
+                ...state,
+                apTypes: apTypes(state.templates, action),
+            };
+        }
         case types.REF_RULE_SET_REQUEST:
         case types.REF_RULE_SET_RECEIVE: {
             return {
@@ -72,6 +83,13 @@ export default function refTables(state = initialState, action = {}) {
             return {
                 ...state,
                 partyNameFormTypes: partyNameFormTypes(state.partyNameFormTypes, action),
+            };
+        }
+        case types.REF_PART_TYPES_REQUEST:
+        case types.REF_PART_TYPES_RECEIVE: {
+            return {
+                ...state,
+                partTypes: partTypes(state.partTypes, action),
             };
         }
         case types.REF_PARTY_TYPES_REQUEST:

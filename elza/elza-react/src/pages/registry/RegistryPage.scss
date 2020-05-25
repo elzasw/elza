@@ -62,6 +62,7 @@ $registry-panel-actions-height: 26px;
 
 .registry-page {
     height: 100%;
+    overflow-x: auto;
 
     .registry {
         height: 100%;

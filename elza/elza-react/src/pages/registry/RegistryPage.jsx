@@ -31,6 +31,12 @@ import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
 import ApStateChangeForm from '../../components/registry/ApStateChangeForm';
 import {registryDetailInvalidate} from '../../actions/registry/registry';
 import {WebApi} from '../../actions';
+import ApDetailPageWrapper from '../../components/registry/ApDetailPageWrapper';
+import {refApTypesFetchIfNeeded} from "../../actions/refTables/apTypes";
+import {refPartTypesFetchIfNeeded} from "../../actions/refTables/partTypes";
+import {descItemTypesFetchIfNeeded} from "../../actions/refTables/descItemTypes";
+import {refRulDataTypesFetchIfNeeded} from "../../actions/refTables/rulDataTypes";
+import DetailHistory from "../../components/registry/Detail/DetailHistory";
 
 /**
  * Stránka rejstříků.
@@ -70,7 +76,7 @@ class RegistryPage extends AbstractReactComponent {
             registryDetail: {id, data},
             refTables,
         } = this.props;
-        const apTypeIdMap = refTables.recordTypes.typeIdMap;
+        const apTypeIdMap = refTables.apTypes.itemsMap;
 
         return id && data && apTypeIdMap[data.typeId] && apTypeIdMap[data.typeId].ruleSystemId !== null && data.ruleSystemId === null;
     };
@@ -83,10 +89,19 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     initData = (props = this.props) => {
-        props.dispatch(refRecordTypesFetchIfNeeded());
-        props.dispatch(eidTypes.fetchIfNeeded());
+        const {dispatch} = this.props;
+
+        //todo: prevest na apTypes
+        dispatch(refRecordTypesFetchIfNeeded());
+
+        dispatch(refApTypesFetchIfNeeded());
+        dispatch(eidTypes.fetchIfNeeded());
+        dispatch(refPartTypesFetchIfNeeded());
+        dispatch(descItemTypesFetchIfNeeded());
+        dispatch(refRulDataTypesFetchIfNeeded());
+
         if (props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
-            props.dispatch(apExtSystemListFetchIfNeeded());
+            dispatch(apExtSystemListFetchIfNeeded());
         }
 
         this.trySetFocus(props);
@@ -399,13 +414,21 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     render() {
-        const {splitter, status} = this.props;
+        const {splitter, status, registryDetail} = this.props;
 
         const centerPanel = (
             <div className="registry-page">
-                <RegistryDetail goToPartyPerson={this.props.goToPartyPerson} />
+                <ApDetailPageWrapper
+                    id={registryDetail.id}
+                />
             </div>
         );
+
+        const rightPanel = registryDetail.fetched ? (
+            <div className={'registry-history'}>
+                <DetailHistory apId={registryDetail.id} commentCount={registryDetail.data.comments}/>
+            </div>
+        ) : false;
 
         return (
             <Shortcuts
@@ -421,6 +444,7 @@ class RegistryPage extends AbstractReactComponent {
                     ribbon={this.buildRibbon()}
                     leftPanel={<RegistryList />}
                     centerPanel={centerPanel}
+                    rightPanel={rightPanel}
                     status={status}
                 />
             </Shortcuts>
