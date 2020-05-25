@@ -36,8 +36,6 @@ class ApStateHistoryForm extends AbstractReactComponent {
         });
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {}
-
     renderItemContent = item => {
         if (item === null) {
             return null;

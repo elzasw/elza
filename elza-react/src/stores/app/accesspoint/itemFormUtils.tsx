@@ -4,7 +4,6 @@ import { DisplayType } from '../../../constants';
 import { getMapFromList, indexById } from '../utils2';
 import {
     ApItemExt,
-    ApItemVO,
     IFormData,
     IItemFormState,
     ItemData,
@@ -14,6 +13,7 @@ import {
     RefTypeExt,
 } from './itemForm';
 import { DataTypeCode } from './itemFormInterfaces';
+import {ApItemVO} from "../../../api/ApItemVO";
 
 export enum ItemAvailability {
     REQUIRED = 'REQUIRED',
@@ -939,7 +939,7 @@ function merge(state: IItemFormState) {
 
     const data = state.data!!;
 
-    const idTypeToItemsMap = new Map<number, ApItemVO<any>[]>();
+    const idTypeToItemsMap = new Map<number, ApItemVO[]>();
     data.items &&
         data.items.forEach(item => {
             if (!idTypeToItemsMap.has(item.typeId!!)) {
@@ -996,7 +996,7 @@ export function updateFormData(
     data: ItemData,
     refTypesMap: Map<any, RefType>,
     dirty,
-    updatedItem?: ApItemVO<any>,
+    updatedItem?: ApItemVO,
 ): IItemFormState {
     // Přechozí a nová verze node
     // const currentNodeVersionId = state.data ? state.data.parent.version : -1;

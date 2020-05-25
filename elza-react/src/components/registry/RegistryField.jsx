@@ -252,10 +252,10 @@ class RegistryField extends AbstractReactComponent {
 export default connect(state => {
     const {
         userDetail,
-        refTables: {recordTypes, eidTypes},
+        refTables: {apTypes, eidTypes},
     } = state;
     return {
-        apTypeIdMap: recordTypes.typeIdMap,
+        apTypeIdMap: apTypes.itemsMap,
         userDetail,
         eidTypes: eidTypes.data,
     };

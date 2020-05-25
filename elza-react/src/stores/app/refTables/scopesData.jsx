@@ -1,5 +1,5 @@
-import * as types from 'actions/constants/ActionTypes.js';
 import {indexById} from 'stores/app/utils.jsx';
+import * as types from "../../../actions/constants/ActionTypes";
 
 const initialState = {
     scopes: [],

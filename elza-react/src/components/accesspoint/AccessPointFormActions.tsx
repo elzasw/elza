@@ -19,7 +19,8 @@ export class AccessPointFormActions extends ItemFormActions {
     _getItemFormData(getState, dispatch) {
         // není podpora kešování
         const state = getState();
-        return WebApi.getAccessPoint(state.app.registryDetail.id).then(data => ({...data.form, parent: {id: data.id}}));
+        // return WebApi.getAccessPoint(state.app.registryDetail.id).then(data => ({...data.form, parent: {id: data.id}}));
+        return WebApi.getAccessPoint(state.app.registryDetail.id).then(data => ({parent: {id: data.id}}));
     }
 
     // @Override

@@ -1,3 +1,8 @@
+import {ApTypeVO} from "./api/ApTypeVO";
+import {RulDataTypeVO} from "./api/RulDataTypeVO";
+import {RulDescItemTypeExtVO} from "./api/RulDescItemTypeExtVO";
+import {RulPartTypeVO} from "./api/RulPartTypeVO";
+
 export interface IssueListVO {
     id: number;
     fundId: number;
@@ -48,7 +53,24 @@ export interface UsrUserVO {
     groups: Object[];
 }
 
-export type FundScope = {id: number, code: string, name: string, language: null | string};
+export interface CodelistData {
+    aeTypes: ApTypeVO[];
+    aeTypesMap: Record<number, ApTypeVO>;
+    aeTypesTree: Array<ApTypeTreeVO>;
+    dataTypes: RulDataTypeVO[];
+    dataTypesMap: Record<number, RulDataTypeVO>;
+    itemTypes: RulDescItemTypeExtVO[];
+    itemTypesMap: Record<number, RulDescItemTypeExtVO>;
+    partTypes: RulPartTypeVO[];
+    partItemTypeInfoMap: Record<string, Record<number, RulPartTypeVO>>;
+}
+
+export interface ApTypeTreeVO extends ApTypeVO {
+    children: Array<ApTypeTreeVO>;
+    parent?: ApTypeTreeVO;
+}
+
+export type FundScope = { id: number, code: string, name: string, language: null | string };
 
 export interface IFundFormData {
     name: string
@@ -143,4 +165,25 @@ export interface Fund {
 export interface FindFundsResult {
     funds: Fund[];
     totalCount: number;
+}
+
+export interface DetailStoreState<T> {
+    data?: T;
+    id?: any;
+    isFetching: boolean;
+    fetched: boolean;
+    currentDataKey: string;
+    filter: Object;
+}
+
+export interface SimpleListStoreState<T> {
+    rows?: T[];
+    sourceRows?: T[];
+    filteredRows?: T[];
+    count: number;
+    parent?: any;
+    isFetching: boolean;
+    fetched: boolean;
+    currentDataKey: string;
+    filter: Object;
 }
