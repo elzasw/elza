@@ -1,8 +1,9 @@
 import React from "react";
 import {WebApi} from 'actions/index.jsx';
-import './AdminBundleBody.less';
+import './AdminBulkBody.less';
+import i18n from "../i18n";
 
-class AdminBundleBody extends React.Component {
+class AdminBulkBody extends React.Component {
     constructor(props) {
         super(props);
         this.stop = false;
@@ -13,13 +14,7 @@ class AdminBundleBody extends React.Component {
     }
 
     componentDidMount() {
-        WebApi.getAsyncRequestInfo(this.props.type).then(
-            data => {
-                this.setState({asyncRequestDetail: data, fetched: true}, () => {
-                        this.refresh();
-                });
-            }
-        )
+        this.refresh();
     }
 
     componentWillUnmount() {
@@ -49,17 +44,17 @@ class AdminBundleBody extends React.Component {
             {
                 (this.state.asyncRequestDetail.length > 0) ?
                     this.state.asyncRequestDetail.map((row) => (
-                         <div className={"bundle-row"}>
+                         <div className={"bulk-row"}>
                              {row.fund &&
-                                 <div className={"bundle-detail"}>
+                                 <div className={"bulk-detail"}>
                                      <b title={row.fund.name + " (id: " + row.fund.id + ")"}>{row.fund.name}: </b>
                                      {row.requestCount}x
                                  </div>
                              }
                         </div>
                     )) :
-                    <div className={"bundle-detail"}>
-                        <b>Nebyly nalezeny žádné akce</b>
+                    <div className={"bulk-detail"}>
+                        <b>{i18n('admin.bulk.detail.queue.empty')}</b>
                     </div>
             }
         </div>
@@ -67,4 +62,4 @@ class AdminBundleBody extends React.Component {
 }
 
 
-export default AdminBundleBody;
+export default AdminBulkBody;
