@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 //import * as ModalActions from '../../shared/reducers/modal/ModalActions';
 import {Action, Dispatch} from 'redux';
 //import SharedModal, {SharedModalProps} from '../SharedModal';
-import './RecordDetailSide.scss';
+import './DetailSide.scss';
 import Icon from '../../shared/icon/Icon';
 //import StyledButton from "../StyledButton";
 

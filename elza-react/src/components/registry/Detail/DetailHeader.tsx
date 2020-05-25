@@ -1,7 +1,6 @@
 import React, {FC} from 'react';
-import RecordDetailState from './DetailState';
+import DetailState from './DetailState';
 import {Button, Col, Row} from 'react-bootstrap';
-import {AeDetailHeadVO} from '../../../api/generated/model';
 import DetailDescriptions from "./DetailDescriptions";
 import DetailDescriptionsItem from "./DetailDescriptionsItem";
 //import {CodelistData} from "../../shared/reducers/codelist/CodelistTypes";
@@ -13,59 +12,62 @@ import Icon from '../../shared/icon/Icon';
 //import {formatDate, formatDateTime} from "../../dateutils";
 //import ValidationResultIcon from "../ValidationResultIcon";
 import ArchiveEntityName from "./ArchiveEntityName";
-import {MOCK_CODE_DATA} from './mock';
 import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
+import {ApAccessPointVO} from "../../../api/ApAccessPointVO";
 
 interface Props {
-  head: AeDetailHeadVO;
-  codelist: any;
-  onToggleCollapsed?: () => void;
-  collapsed: boolean;
-  id?: number;
-  validationResult?: ApValidationErrorsVO;
+    item: ApAccessPointVO;
+    onToggleCollapsed?: () => void;
+    collapsed: boolean;
+    id?: number;
+    validationResult?: ApValidationErrorsVO;
+    apTypesMap: object;
 }
+
 const formatDate = (a: any, ...other) => a;
 const formatDateTime = (a: any, ...other) => a;
 
-const DetailHeader: FC<Props> = ({head, codelist, id, collapsed, onToggleCollapsed, validationResult}) => {
-  const aeType = codelist.aeTypesMap[head.aeTypeId];
+const DetailHeader: FC<Props> = ({item, id, collapsed, onToggleCollapsed, validationResult, apTypesMap}) => {
+    const apType = apTypesMap[item.typeId];
 
-  const showValidationError = () => {
-    if (validationResult && validationResult.errors && validationResult.errors.length > 0) {
-      return <Col>
-        ValidationResultIcon message={validationResult.errors}
-        </Col>;
-    }
-  };
-
-  return <Row className="mt-2 ml-3 mr-3 pb-2 brb-3 space-between middle">
-    <Col className={"pr-2"}>
-      <img height={75} width={75} src={`/client/code/ae-type/${aeType.code}/icon`} />
-    </Col>
-    <Col style={{flex: 1}}>
-      <h1><ArchiveEntityName name={head.name} description={head.description}/> {showValidationError()}</h1>
-      <h3>{aeType.name}</h3>
-      <DetailDescriptions className="mt-1">
-        <DetailDescriptionsItem><RecordDetailState state={head.aeState}/></DetailDescriptionsItem>
-        {id && <DetailDescriptionsItem label="ID:">{id}</DetailDescriptionsItem>}
-        {head.lastChange && <DetailDescriptionsItem label="Upravil:">
-          {head.lastChange.user.displayName} <span
-          title={"Upraveno " + formatDateTime(head.lastChange.change, {})}>({formatDate(head.lastChange.change)})</span>
-        </DetailDescriptionsItem>}
-      </DetailDescriptions>
-    </Col>
-    <Col>
-      <Button onClick={onToggleCollapsed} size="sm" title={collapsed ? "Zobrazit podrobnosti" : "Skrýt podrobnosti"}>
-        <Icon className="icon" glyph={collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'}/>
-      </Button>
-    </Col>
-  </Row>
+    const showValidationError = () => {
+        if (validationResult && validationResult.errors && validationResult.errors.length > 0) {
+            return <Col>
+                ValidationResultIcon message={validationResult.errors}
+            </Col>;
+        }
+    };
+console.log('COLL', collapsed);
+    return <Row className="ml-3 mt-3 mr-3 pb-3 border-bottom space-between middle">
+        <Col className={'p-0'} style={{flex: 1}}>
+            <h1><ArchiveEntityName name={item.name} description={item.description}/> {showValidationError()}</h1>
+            <h3>{apType.name}</h3>
+            <DetailDescriptions className="mt-1">
+                {item.state && <DetailDescriptionsItem>
+                    <DetailState state={item.stateApproval}/>
+                </DetailDescriptionsItem>}
+                {id && <DetailDescriptionsItem label="ID:">
+                    {id}
+                </DetailDescriptionsItem>}
+                {item.lastChange && item.lastChange.user && <DetailDescriptionsItem label="Upravil:">
+                    {item.lastChange.user.displayName} <span
+                    title={'Upraveno ' + formatDateTime(item.lastChange.change, {})}>({formatDate(item.lastChange.change)})</span>
+                </DetailDescriptionsItem>}
+            </DetailDescriptions>
+        </Col>
+        {/*<Col>*/}
+        {/*    <Button onClick={onToggleCollapsed} size="sm" className={'btn-secondary'}*/}
+        {/*            title={collapsed ? "Zobrazit podrobnosti" : "Skrýt podrobnosti"}>*/}
+        {/*        <Icon className="icon" glyph={collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'}/>*/}
+        {/*    </Button>*/}
+        {/*</Col>*/}
+    </Row>
 };
 
-const mapStateToProps = ({codelist}: any) => ({
-    codelist: MOCK_CODE_DATA
+const mapStateToProps = (state) => ({
+    apTypesMap: state.refTables.recordTypes.typeIdMap,
 });
 
 export default connect(
-  mapStateToProps
+    mapStateToProps
 )(DetailHeader);

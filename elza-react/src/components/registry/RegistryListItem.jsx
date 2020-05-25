@@ -14,7 +14,7 @@ class RegistryListItem extends AbstractReactComponent {
         //partyType: PropTypes.object.isRequired,
         relationTypesForClass: PropTypes.object,
         eidTypes: PropTypes.object.isRequired,
-        record: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
         relations: PropTypes.array,
         invalid: PropTypes.bool,
     };
@@ -46,7 +46,7 @@ class RegistryListItem extends AbstractReactComponent {
     };
 
     render() {
-        const {className, isActive, id, record, invalid, scopeName} = this.props;
+        const {className, isActive, id, invalid, scopeName, name} = this.props;
 
         const cls = classNames(className, 'registry-list-item', {
             active: isActive,
@@ -60,8 +60,8 @@ class RegistryListItem extends AbstractReactComponent {
             <div key={'record-id-' + id} className={cls}>
                 <div>
                     <Icon glyph="fa-file-o" />
-                    <span className="name" title={record}>
-                        {record}
+                    <span className="name" title={name}>
+                        {name}
                     </span>
                 </div>
                 <div>

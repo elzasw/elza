@@ -177,7 +177,7 @@ class RegistryList extends AbstractReactComponent {
     renderListItem = props => {
         const {item} = props;
         const {eidTypes, apTypeIdMap} = this.props;
-        console.log('item', item);
+
         return (
             <RegistryListItem
                 {...item}
@@ -303,12 +303,10 @@ class RegistryList extends AbstractReactComponent {
                         inputProps={{placeholder: !filter.registryTypeId ? this.registryTypeDefaultValue : ''}}
                         items={apTypesWithAll}
                         disabled={
-                            !registryTypes ||
-                            registryList.filter.parents.length ||
-                            registryList.filter.itemSpecId ||
-                            registryList.filter.itemTypeId
-                                ? true
-                                : false
+                            (!registryTypes ||
+                                registryList.filter.parents.length ||
+                                registryList.filter.itemSpecId ||
+                                registryList.filter.itemTypeId)
                         }
                         tree
                         alwaysExpanded

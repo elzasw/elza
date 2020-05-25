@@ -16,9 +16,9 @@ interface Props extends ReturnType<typeof mapStateToProps> {
     globalEntity: boolean;
 }
 
-const DetailItemContent: FC<Props> = ({item, globalEntity, codelist}) => {
-    const itemType = codelist.itemTypesMap[item.typeId];
-    const dataType = codelist.dataTypesMap[itemType.dataTypeId];
+const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descItemTypes}) => {
+    const itemType = descItemTypes.itemsMap[item.typeId];
+    const dataType = rulDataTypes.itemsMap[itemType.dataTypeId];
 
     let customFieldRender = false;  // pro ty, co chtějí jinak renderovat skupinu...,  pokud je true, task se nerenderuje specifikace, ale pouze valueField a v tom musí být již vše...
 
@@ -39,7 +39,7 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, codelist}) => {
 
             textValue = typeof recordRefItem.value !== 'undefined' && recordRefItem.value ? recordRefItem.value : '?';
             if (itemType.useSpecification) {
-                displayValue = recordRefItem.specId ? `${codelist.itemSpecsMap[recordRefItem.specId].name}: ${textValue}` : textValue;
+                displayValue = recordRefItem.specId ? `${descItemTypes.itemsMap[recordRefItem.specId].name}: ${textValue}` : textValue;
             } else {
                 displayValue = recordRefItem.value;
             }
@@ -59,8 +59,8 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, codelist}) => {
 
     let valueSpecification;
     if (!customFieldRender && itemType.useSpecification) {
-        if (!!item.specId) {
-            valueSpecification = codelist.itemSpecsMap[item.specId].name;
+        if (!!item.specId && descItemTypes.itemsMap[item.specId]) {
+            valueSpecification = descItemTypes.itemsMap[item.specId].name;
         } else {
             valueSpecification = <i>Bez specifikace</i>
         }
@@ -73,8 +73,10 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, codelist}) => {
     );
 };
 
-const mapStateToProps = (state: { codelist }) => ({
-    codelist: MOCK_CODE_DATA
+const mapStateToProps = (state) => ({
+    rulDataTypes: state.refTables.rulDataTypes,
+    descItemTypes: state.refTables.descItemTypes,
+
 });
 
 export default connect(mapStateToProps)(DetailItemContent);

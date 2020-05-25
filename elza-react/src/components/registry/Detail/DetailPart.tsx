@@ -1,6 +1,5 @@
 import React, {FC, useEffect, useState} from 'react';
 import {Col, Row} from 'react-bootstrap';
-import {ApPartNameVO} from '../../../api/generated/model';
 import DetailItem from './DetailItem';
 //import EditModal from '../EditModal';
 import classNames from "classnames";
@@ -24,21 +23,20 @@ interface Props {
     part: ApPartVO;
     globalCollapsed: boolean;
     preferred?: boolean;
-    onSetPreferred?: (part: ApPartNameVO) => void;
+    onSetPreferred?: (part: ApPartVO) => void;
     onDelete?: (part: ApPartVO) => void;
     onEdit?: (part: ApPartVO) => void;
     onAddRelated?: (part: ApPartVO) => void;
     editMode?: boolean;
     singlePart: boolean;
-    codelist: any;
     globalEntity: boolean;
     validationResult?: ApValidationErrorsVO;
+    descItemTypesMap: object;
 }
 
-const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePart, onDelete, onEdit, globalCollapsed, preferred, codelist, onAddRelated, globalEntity, validationResult}) => {
+const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePart, onDelete, onEdit, globalCollapsed, preferred, onAddRelated, globalEntity, validationResult, descItemTypesMap}) => {
     const [collapsed, setCollapsed] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
-    const partType = PartTypeInfo.getPartType(part["@class"]);
 
     useEffect(() => {
         setCollapsed(globalCollapsed);
@@ -68,7 +66,7 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
         showPreferredSwitch = !singlePart;
     }
 
-    const renderItems = (items: Array<ApItemVO>) => {
+    const renderItems = (items: ApItemVO[]) => {
         if (items.length === 0) {
             return <Col className={"mt-1"}><i>Nejsou definovány žádné hodnoty atributů</i></Col>;
         }
@@ -83,8 +81,8 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
             }
 
             let itemInfo;
-            if (codelist.partItemTypeInfoMap[partType]) {
-                itemInfo = codelist.partItemTypeInfoMap[partType][items[index].typeId];
+            if (descItemTypesMap[items[index].typeId]) {
+                itemInfo = descItemTypesMap[items[index].typeId];
             }
             let width = itemInfo ? itemInfo.width : 2;
 
@@ -106,7 +104,7 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
         return result;
     };
 
-    const sortedItems = part.items //sortItems(partType, part.items, codelist);
+    const sortedItems = part.items ? part.items : []; //sortItems(partType, part.items, codelist);
 
     const showValidationError = () => {
         if (validationResult && validationResult.partErrors && validationResult.partErrors.length > 0) {
@@ -139,7 +137,7 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
                 {showPreferredSwitch && !preferred && <Icon
                     className={'mr-2'}
                     glyph={'fa-star'}
-                    onClick={() => onSetPreferred && onSetPreferred((part as ApPartNameVO))}
+                    onClick={() => onSetPreferred && onSetPreferred(part)}
                     style={{visibility: preferred ? "hidden" : "inherit"}}
                 />}
 
@@ -179,9 +177,9 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
     </div>
 };
 
-const mapStateToProps = ({codelist, app}: any) => ({
-    codelist: MOCK_CODE_DATA,
-    //validationResult: app[DETAIL_VALIDATION_RESULT].data,
+const mapStateToProps = (state) => ({
+//    partTypesMap: state.refTables.partTypes.itemsMap,
+    descItemTypesMap: state.refTables.descItemTypes.itemsMap,
 });
 
 export default connect(

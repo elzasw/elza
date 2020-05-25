@@ -9,28 +9,6 @@ import {
   AePartRelationClass
 } from "./ApPartInfo";
 
-export function getLabel(value: PartType) {
-  switch (value) {
-    case PartType.BODY:
-      return "Tělo";
-    case PartType.CRE:
-      return "Vznik";
-    case PartType.EVENT:
-      return "Událost";
-    case PartType.EXT:
-      return "Zánik";
-    case PartType.IDENT:
-      return "Identifikátor";
-    case PartType.NAME:
-      return "Označení";
-    case PartType.REL:
-      return "Vztah";
-    default:
-      console.warn("Nepřeložená hodnota", value);
-      return "?";
-  }
-}
-
 export function getPartEditDialogLabel(value: PartType, createDialog: boolean) {
   switch (value) {
     case PartType.BODY:
@@ -51,22 +29,6 @@ export function getPartEditDialogLabel(value: PartType, createDialog: boolean) {
       console.warn("Nepřeložená hodnota", value);
       return "?";
   }
-}
-
-export function getValues(): Array<PartType> {
-  return [
-    PartType.REL,
-    PartType.NAME,
-    PartType.IDENT,
-    PartType.EXT,
-    PartType.EVENT,
-    PartType.CRE,
-    PartType.BODY,
-  ];
-}
-
-export function getValuesSorted(): Array<PartType> {
-  return getValues().sort((a, b) => getLabel(a).localeCompare(getLabel(b)));
 }
 
 export function getPartType(partClass: string | undefined) : PartType {

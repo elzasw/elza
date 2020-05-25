@@ -18,7 +18,6 @@ let AddRegistryForm;
 import('../../components/registry/AddRegistryForm').then(a => {
     AddRegistryForm = a.default;
 });
-//import AddRegistryForm from "../../components/registry/AddRegistryForm";
 
 /**
  * Načtení seznamu rejstříků dle filtru

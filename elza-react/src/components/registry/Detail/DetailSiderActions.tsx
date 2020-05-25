@@ -1,5 +1,5 @@
 import React, {FC} from 'react';
-import {AeDetailHeadGlobalVO, AeDetailHeadLocalVO, ApState, AuthRole} from '../../../api/generated/model';
+import {ApState} from '../../../api/generated/model';
 import {connect} from 'react-redux';
 /*
 import {
@@ -111,7 +111,7 @@ const DetailSiderActions: FC<ComponentProps> = (
 
   const canShowNewRecord = (): boolean => {
     if (detail && detail.head) {
-      const sourceState = (detail.head as AeDetailHeadLocalVO).sourceState;
+      const sourceState = (detail.head).sourceState;
       return sourceState === null || sourceState === ApState.APSNEW;
     }
     return false;
@@ -120,7 +120,7 @@ const DetailSiderActions: FC<ComponentProps> = (
   let showGlobal;
   if (globalDetailUrlPrefix) {
     if (type === DetailActionsEnum.APPROVE || type === DetailActionsEnum.EDIT) {
-      const globalId = (detail.head as AeDetailHeadLocalVO).globalId;
+      const globalId = (detail.head).globalId;
       if (!!globalId) {
         showGlobal = <NavLink to={globalDetailUrlPrefix + globalId}>
             <Button>
@@ -163,7 +163,7 @@ const DetailSiderActions: FC<ComponentProps> = (
   </Button>;
 
   const userIsOwner = (): boolean => {
-    const user = (detail.head as AeDetailHeadLocalVO).ownerUser;
+    const user = (detail.head).ownerUser;
     return authInfo && authInfo.id === user.id;
   };
 

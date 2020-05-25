@@ -1,24 +1,24 @@
 import React from 'react';
-import {Row, Col} from 'react-bootstrap';
-import {ApState, AeStateHistoryVO} from "../../../api/generated/model";
-//import {formatDateTime} from "../../dateutils";
-import {getLabel} from "../../../api/old/ApStateEnumInfo";
+import {Col, Row} from 'react-bootstrap';
+import {ApStateHistoryVO} from "../../../api/ApStateHistoryVO";
+import {formatDate} from "../../validate";
+import {StateApprovalCaption} from "../../../api/StateApproval";
 
 type Props = {
-  historyItem: AeStateHistoryVO
+    historyItem: ApStateHistoryVO
 }
 
 const DetailHistoryItem: React.FC<Props> = props => (
-  <div className="p-2 history-item">
-    <h4>{getLabel(props.historyItem.state)}</h4>
-    <Row className="justify-space-between">
-      <Col>{props.historyItem.user.displayName}</Col>
-      <Col>TODO FORMAT {props.historyItem.change}</Col>
-    </Row>
-    <div className="mt-1">
-      {props.historyItem.comment}
+    <div className="mt-2 history-item">
+        <h4>{StateApprovalCaption(props.historyItem.state)}</h4>
+        <Row className="justify-space-between">
+            <Col>{props.historyItem.username}</Col>
+            <Col>{formatDate(new Date(props.historyItem.changeDate))}</Col>
+        </Row>
+        <div className="mt-1">
+            {props.historyItem.comment}
+        </div>
     </div>
-  </div>
 );
 
 export default DetailHistoryItem;
