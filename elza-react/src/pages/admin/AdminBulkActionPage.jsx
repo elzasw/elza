@@ -3,7 +3,7 @@ import React from 'react';
 import {connect} from 'react-redux'
 import {AdminBulkList, Ribbon} from 'components';
 
-import './AdminPackagesPage.less';
+import './AdminPackagesPage.scss';
 import PageLayout from "../shared/layout/PageLayout";
 
 
