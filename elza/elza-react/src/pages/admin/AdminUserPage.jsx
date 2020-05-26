@@ -14,8 +14,8 @@ import {
     RibbonGroup,
     Search,
     StoreHorizontalLoader,
-} from 'components/shared';
-import {AddUserForm, Ribbon, UserDetail} from 'components/index.jsx';
+} from '../../components/shared';
+import {AddUserForm, Ribbon, UserDetail} from '../../components/index.jsx';
 import {
     adminPasswordChange,
     adminUserChangeActive,
@@ -24,11 +24,11 @@ import {
     usersSearch,
     usersSelectUser,
     userUpdate,
-} from 'actions/admin/user.jsx';
-import {indexById} from 'stores/app/utils.jsx';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
-import {renderUserItem} from 'components/admin/adminRenderUtils.jsx';
+} from '../../actions/admin/user.jsx';
+import {indexById} from '../../stores/app/utils.jsx';
+import {modalDialogShow} from '../../actions/global/modalDialog.jsx';
+import {requestScopesIfNeeded} from '../../actions/refTables/scopesData.jsx';
+import {renderUserItem} from '../../components/admin/adminRenderUtils.jsx';
 import PasswordForm from '../../components/admin/PasswordForm';
 
 /**
@@ -85,13 +85,13 @@ class AdminUserPage extends AbstractReactComponent {
             modalDialogShow(
                 this,
                 i18n('admin.user.add.title'),
-                <AddUserForm create onSubmitForm={this.handleCreateUser}/>,
+                <AddUserForm create onSubmitForm={this.handleCreateUser} />,
             ),
         );
     }
 
     handleCreateUser(data) {
-        return this.props.dispatch(userCreate(data.username, data.valuesMap, data.party.id));
+        return this.props.dispatch(userCreate(data.username, data.valuesMap, data.id));
     }
 
     handleChangeUserPasswordForm() {
@@ -99,26 +99,26 @@ class AdminUserPage extends AbstractReactComponent {
             modalDialogShow(
                 this,
                 i18n('admin.user.passwordChange.title'),
-                <PasswordForm admin={true} onSubmitForm={this.handleChangeUserPassword}/>,
+                <PasswordForm admin={true} onSubmitForm={this.handleChangeUserPassword} />,
             ),
         );
     }
 
     handleChangeUserPassword(data) {
         const {
-                  user: {
-                      userDetail: {id},
-                  },
-              } = this.props;
+            user: {
+                userDetail: {id},
+            },
+        } = this.props;
         return this.props.dispatch(adminPasswordChange(id, data.password));
     }
 
     handleUpdateUser(data) {
         const {
-                  user: {
-                      userDetail: {id},
-                  },
-              } = this.props;
+            user: {
+                userDetail: {id},
+            },
+        } = this.props;
         return this.props.dispatch(userUpdate(id, data.username, data.valuesMap));
     }
 
@@ -138,7 +138,7 @@ class AdminUserPage extends AbstractReactComponent {
                 modalDialogShow(
                     this,
                     i18n('admin.user.update.title'),
-                    <AddUserForm initialValues={initData} onSubmitForm={this.handleUpdateUser}/>,
+                    <AddUserForm initialValues={initData} onSubmitForm={this.handleUpdateUser} />,
                 ),
             );
         }
@@ -158,7 +158,7 @@ class AdminUserPage extends AbstractReactComponent {
         const itemActions = [];
         altActions.push(
             <Button key="add-user" onClick={this.handleCreateUserForm}>
-                <Icon glyph="fa-plus-circle"/>
+                <Icon glyph="fa-plus-circle" />
                 <div>
                     <span className="btnText">{i18n('ribbon.action.admin.user.add')}</span>
                 </div>
@@ -170,7 +170,7 @@ class AdminUserPage extends AbstractReactComponent {
         if (userDetail.id != null) {
             itemActions.push(
                 <Button key="change-active-user" onClick={this.handleChangeUserActive}>
-                    <Icon glyph={user.userDetail.active ? 'fa-ban' : 'fa-check'}/>
+                    <Icon glyph={user.userDetail.active ? 'fa-ban' : 'fa-check'} />
                     <div>
                         <span className="btnText">
                             {user.userDetail.active
@@ -184,7 +184,7 @@ class AdminUserPage extends AbstractReactComponent {
             if (userData && userData.authTypes.indexOf('PASSWORD') >= 0) {
                 itemActions.push(
                     <Button key="password-change-user" onClick={this.handleChangeUserPasswordForm}>
-                        <Icon glyph="fa-key"/>
+                        <Icon glyph="fa-key" />
                         <div>
                             <span className="btnText">{i18n('ribbon.action.admin.user.passwordChange')}</span>
                         </div>
@@ -193,7 +193,7 @@ class AdminUserPage extends AbstractReactComponent {
             }
             itemActions.push(
                 <Button key="username-change-user" onClick={this.handleChangeUsernameForm}>
-                    <Icon glyph="fa-edit"/>
+                    <Icon glyph="fa-edit" />
                     <div>
                         <span className="btnText">{i18n('ribbon.action.admin.user.edit')}</span>
                     </div>
@@ -218,7 +218,7 @@ class AdminUserPage extends AbstractReactComponent {
             );
         }
 
-        return <Ribbon admin {...this.props} altSection={altSection} itemSection={itemSection}/>;
+        return <Ribbon admin {...this.props} altSection={altSection} itemSection={itemSection} />;
     }
 
     handleFilterStateChange(e) {
@@ -245,7 +245,7 @@ class AdminUserPage extends AbstractReactComponent {
                     <option value="all">{i18n('admin.user.filter.all')}</option>
                     <option value="onlyActive">{i18n('admin.user.filter.onlyActive')}</option>
                 </FormControl>
-                <StoreHorizontalLoader store={user}/>
+                <StoreHorizontalLoader store={user} />
                 {user.fetched && (
                     <ListBox
                         className="user-listbox"
@@ -262,7 +262,7 @@ class AdminUserPage extends AbstractReactComponent {
 
         let centerPanel;
         if (user.userDetail.id) {
-            centerPanel = <UserDetail userDetail={user.userDetail} userCount={user.users.length}/>;
+            centerPanel = <UserDetail userDetail={user.userDetail} userCount={user.users.length} />;
         }
 
         return (
