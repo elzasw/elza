@@ -33,7 +33,7 @@ import('../../registry/RegistryField').then(a => {
 
 class DescItemRecordRef extends AbstractReactComponent {
     focus() {
-        this.registryField.wrappedInstance.focus();
+        this.registryField.focus();
     }
 
     static defaultProps = {
@@ -48,15 +48,7 @@ class DescItemRecordRef extends AbstractReactComponent {
     };
 
     handleSelectModule = ({onSelect, filterText, value}) => {
-        const {
-            hasSpecification,
-            descItem,
-            registryList,
-            fundName,
-            nodeName,
-            itemName,
-            specName,
-        } = this.props;
+        const {hasSpecification, descItem, registryList, fundName, nodeName, itemName, specName} = this.props;
         const oldFilter = {...registryList.filter};
         const open = (hasParty = false) => {
             // if (hasParty) {
@@ -162,7 +154,7 @@ class DescItemRecordRef extends AbstractReactComponent {
                 <ItemTooltipWrapper tooltipTitle="dataType.recordRef.format" className="tooltipWrapper">
                     <RegistryField
                         {...otherProps}
-                        ref={ref => this.registryField = ref}
+                        ref={ref => (this.registryField = ref)}
                         itemSpecId={descItem.descItemSpecId}
                         value={record}
                         footer={!singleDescItemTypeEdit}
@@ -184,26 +176,31 @@ class DescItemRecordRef extends AbstractReactComponent {
     }
 }
 
-export default connect((state, props) => {
-    let fundName = null,
-        nodeName = null;
-    if (props.typePrefix !== 'output' && props.typePrefix !== 'accesspoint' && props.typePrefix !== 'ap-name') {
-        const {
-            arrRegion: {activeIndex, funds},
-        } = state;
-        const fund = funds[activeIndex];
-        const {nodes} = fund;
-        fundName = fund.name;
-        const node = nodes.nodes[nodes.activeIndex];
-        const {selectedSubNodeId} = node;
-        const subNode = objectById(node.childNodes, selectedSubNodeId);
-        subNode && subNode.name && (nodeName = subNode.name);
-    }
+export default connect(
+    (state, props) => {
+        let fundName = null,
+            nodeName = null;
+        if (props.typePrefix !== 'output' && props.typePrefix !== 'accesspoint' && props.typePrefix !== 'ap-name') {
+            const {
+                arrRegion: {activeIndex, funds},
+            } = state;
+            const fund = funds[activeIndex];
+            const {nodes} = fund;
+            fundName = fund.name;
+            const node = nodes.nodes[nodes.activeIndex];
+            const {selectedSubNodeId} = node;
+            const subNode = objectById(node.childNodes, selectedSubNodeId);
+            subNode && subNode.name && (nodeName = subNode.name);
+        }
 
-    const registryList = storeFromArea(state, AREA_REGISTRY_LIST);
-    return {
-        registryList,
-        fundName,
-        nodeName,
-    };
-}, null, null, {forwardRef: true})(DescItemRecordRef);
+        const registryList = storeFromArea(state, AREA_REGISTRY_LIST);
+        return {
+            registryList,
+            fundName,
+            nodeName,
+        };
+    },
+    null,
+    null,
+    {forwardRef: true},
+)(DescItemRecordRef);

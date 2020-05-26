@@ -30,7 +30,6 @@ import {Button} from '../ui';
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 class SubNodeForm extends AbstractReactComponent {
-
     refNodeForm = null;
 
     refObjects = {};
@@ -109,7 +108,7 @@ class SubNodeForm extends AbstractReactComponent {
         const unusedItemTypeIds = subNodeForm.unusedItemTypeIds;
         this.setState({
             unusedItemTypeIds: unusedItemTypeIds,
-            unusedItemTypeInitIds: unusedItemTypeIds
+            unusedItemTypeInitIds: unusedItemTypeIds,
         });
     }
 
@@ -145,7 +144,10 @@ class SubNodeForm extends AbstractReactComponent {
                     this.setState({}, () => {
                         const ref = this.refObjects['descItemType' + focus.item.descItemTypeId];
                         if (ref) {
-                            const descItemType = ref.getWrappedInstance();
+                            let descItemType = ref;
+                            if (ref.getWrappedInstance) {
+                                descItemType = ref.getWrappedInstance();
+                            }
                             descItemType.focus(focus.item);
                         }
                         focusWasSet();
@@ -164,8 +166,7 @@ class SubNodeForm extends AbstractReactComponent {
         }
     }
 
-    handleShortcuts(action) {
-    }
+    handleShortcuts(action) {}
 
     /**
      * Renderování skupiny atributů.
@@ -180,7 +181,7 @@ class SubNodeForm extends AbstractReactComponent {
         const descItemTypes = [];
         descItemGroup.descItemTypes.forEach((descItemType, descItemTypeIndex) => {
             const render =
-                      !singleDescItemTypeEdit || (singleDescItemTypeEdit && singleDescItemTypeId === descItemType.id);
+                !singleDescItemTypeEdit || (singleDescItemTypeEdit && singleDescItemTypeId === descItemType.id);
 
             if (render) {
                 const i = this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting);
@@ -220,8 +221,8 @@ class SubNodeForm extends AbstractReactComponent {
         // Focus musíme zjišťovat před DISPATCH formActions.fundSubNodeFormValueDelete, jinak bychom neměli ve formData správná data, protože ty nejsou immutable!
         let setFocusFunc;
         const {
-                  subNodeForm: {formData},
-              } = this.props;
+            subNodeForm: {formData},
+        } = this.props;
         const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
         if (descItemIndex + 1 < descItemType.descItems.length) {
             // následující hodnota
@@ -271,14 +272,14 @@ class SubNodeForm extends AbstractReactComponent {
         };
 
         const {
-                  subNodeForm: {formData},
-                  versionId,
-                  routingKey,
-              } = this.props;
+            subNodeForm: {formData},
+            versionId,
+            routingKey,
+        } = this.props;
         const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
 
         const msgI18n =
-                  descItemType.calSt === 1 ? 'subNodeForm.calculate-auto.confirm' : 'subNodeForm.calculate-user.confirm';
+            descItemType.calSt === 1 ? 'subNodeForm.calculate-auto.confirm' : 'subNodeForm.calculate-user.confirm';
 
         if (window.confirm(i18n(msgI18n))) {
             this.props.dispatch(
@@ -302,8 +303,8 @@ class SubNodeForm extends AbstractReactComponent {
         // Focus musíme zjišťovat před DISPATCH formActions.fundSubNodeFormDescItemTypeDelete, jinak bychom neměli ve formData správná data, protože ty nejsou immutable!
         let setFocusFunc;
         const {
-                  subNodeForm: {formData},
-              } = this.props;
+            subNodeForm: {formData},
+        } = this.props;
         const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
         const types = this.getFlatDescItemTypes(true);
         const indexUnused = this.state.unusedItemTypeInitIds.indexOf(descItemType.id);
@@ -313,8 +314,8 @@ class SubNodeForm extends AbstractReactComponent {
                 unusedItemTypeIds: [
                     ...unusedItemTypeIds.slice(0, indexUnused),
                     descItemType.id,
-                    ...unusedItemTypeIds.slice(indexUnused)
-                ]
+                    ...unusedItemTypeIds.slice(indexUnused),
+                ],
             });
         }
         const index = indexById(types, descItemType.id);
@@ -352,8 +353,8 @@ class SubNodeForm extends AbstractReactComponent {
 
     getFlatDescItemTypes(onlyNotLocked) {
         const {
-                  subNodeForm: {formData},
-              } = this.props;
+            subNodeForm: {formData},
+        } = this.props;
 
         let nodeSetting;
         if (onlyNotLocked) {
@@ -390,8 +391,8 @@ class SubNodeForm extends AbstractReactComponent {
 
         // Focus na novou hodnotu
         const {
-                  subNodeForm: {formData},
-              } = this.props;
+            subNodeForm: {formData},
+        } = this.props;
         const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
         const index = descItemType.descItems.length;
 
@@ -489,9 +490,9 @@ class SubNodeForm extends AbstractReactComponent {
             // nastavení focus zpět na prvek
             const formData = subNodeForm.formData;
             const descItemType =
-                      formData.descItemGroups[valueLocation.descItemGroupIndex].descItemTypes[
-                          valueLocation.descItemTypeIndex
-                          ];
+                formData.descItemGroups[valueLocation.descItemGroupIndex].descItemTypes[
+                    valueLocation.descItemTypeIndex
+                ];
             this.props.dispatch(
                 setFocus(FOCUS_KEYS.ARR, 2, 'subNodeForm', {
                     descItemTypeId: descItemType.id,
@@ -562,7 +563,7 @@ class SubNodeForm extends AbstractReactComponent {
             modalDialogShow(
                 this,
                 i18n('dms.file.title.add'),
-                <AddFileForm onSubmitForm={this.handleCreateFileFormSubmit.bind(this, valueLocation)}/>,
+                <AddFileForm onSubmitForm={this.handleCreateFileFormSubmit.bind(this, valueLocation)} />,
             ),
         );
     }
@@ -719,14 +720,14 @@ class SubNodeForm extends AbstractReactComponent {
         // Updates the error value in descItem.
         // Only when error exists
         error &&
-        this.props.dispatch(
-            this.props.formActions._fundSubNodeFormValueValidateResult(
-                this.props.versionId,
-                this.props.routingKey,
-                valueLocation,
-                error,
-            ),
-        );
+            this.props.dispatch(
+                this.props.formActions._fundSubNodeFormValueValidateResult(
+                    this.props.versionId,
+                    this.props.routingKey,
+                    valueLocation,
+                    error,
+                ),
+            );
     }
 
     /**
@@ -840,22 +841,22 @@ class SubNodeForm extends AbstractReactComponent {
      */
     renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) {
         const {
-                  fundId,
-                  subNodeForm,
-                  descItemCopyFromPrevEnabled,
-                  singleDescItemTypeEdit,
-                  structureTypes,
-                  calendarTypes,
-                  closed,
-                  showNodeAddons,
-                  conformityInfo,
-                  versionId,
-                  readMode,
-                  userDetail,
-                  arrRegion,
-                  typePrefix,
-                  arrPerm,
-              } = this.props;
+            fundId,
+            subNodeForm,
+            descItemCopyFromPrevEnabled,
+            singleDescItemTypeEdit,
+            structureTypes,
+            calendarTypes,
+            closed,
+            showNodeAddons,
+            conformityInfo,
+            versionId,
+            readMode,
+            userDetail,
+            arrRegion,
+            typePrefix,
+            arrPerm,
+        } = this.props;
 
         const refType = subNodeForm.refTypesMap[descItemType.id];
         const infoType = subNodeForm.infoTypesMap[descItemType.id];
@@ -904,7 +905,7 @@ class SubNodeForm extends AbstractReactComponent {
             <DescItemType
                 key={descItemType.id}
                 typePrefix={typePrefix}
-                ref={ref => this.refObjects['descItemType' + descItemType.id] = ref}
+                ref={ref => (this.refObjects['descItemType' + descItemType.id] = ref)}
                 descItemType={descItemType}
                 singleDescItemTypeEdit={singleDescItemTypeEdit}
                 refType={refType}
@@ -1014,7 +1015,7 @@ class SubNodeForm extends AbstractReactComponent {
                                                 key={itemTypeId}
                                                 onClick={() => this.handleAddUnusedItem(itemTypeId, index)}
                                             >
-                                                <Icon glyph="fa-plus"/> {refType.name}
+                                                <Icon glyph="fa-plus" /> {refType.name}
                                             </Button>
                                         );
                                     } else {
@@ -1043,7 +1044,7 @@ class SubNodeForm extends AbstractReactComponent {
         return (
             <div className="node-form">
                 {unusedGeneratedItems}
-                <div ref={ref => this.refNodeForm = ref} className="desc-item-groups">
+                <div ref={ref => (this.refNodeForm = ref)} className="desc-item-groups">
                     {descItemGroups}
                 </div>
             </div>
@@ -1051,11 +1052,16 @@ class SubNodeForm extends AbstractReactComponent {
     }
 }
 
-export default connect(state => {
-    const {userDetail, arrRegion} = state;
+export default connect(
+    state => {
+        const {userDetail, arrRegion} = state;
 
-    return {
-        userDetail,
-        arrRegion,
-    };
-}, null, null, {forwardRef: true})(SubNodeForm);
+        return {
+            userDetail,
+            arrRegion,
+        };
+    },
+    null,
+    null,
+    {forwardRef: true},
+)(SubNodeForm);

@@ -1,6 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, FormInput, i18n, Icon, NoFocusButton, TooltipTrigger, Utils} from '../../../components/shared';
+import {
+    AbstractReactComponent,
+    FormInput,
+    i18n,
+    Icon,
+    NoFocusButton,
+    TooltipTrigger,
+    Utils,
+} from '../../../components/shared';
 import {connect} from 'react-redux';
 import {valuesEquals} from '../../Utils';
 import {nodeFormActions} from '../../../actions/arr/subNodeForm.jsx';
@@ -85,7 +93,6 @@ class DescItemType extends AbstractReactComponent {
     getChildContext() {
         return {shortcuts: this.shortcutManager};
     }
-
 
     /** Object pro dynamické ref */
     refObjects = {};
@@ -217,7 +224,10 @@ class DescItemType extends AbstractReactComponent {
                 }
             } else {
                 // focus bude na vlastní hodnotu atributu
-                descItem = ref.getWrappedInstance();
+                descItem = ref;
+                if (ref.getWrappedInstance) {
+                    descItem = ref.getWrappedInstance();
+                }
                 if (descItem.focus) {
                     descItem.focus();
                 } else {
@@ -241,7 +251,7 @@ class DescItemType extends AbstractReactComponent {
         return (
             <DescItemTypeSpec
                 key={key}
-                ref={(ref) => this.refObjects[key] = ref}
+                ref={ref => (this.refObjects[key] = ref)}
                 descItem={descItem}
                 locked={locked || descItem.undefined}
                 infoType={infoType}
@@ -715,7 +725,7 @@ class DescItemType extends AbstractReactComponent {
             onFocus: this.handleFocus.bind(this, descItemIndex),
             locked: locked,
             readMode: readMode,
-            ref: (ref) => this.refObjects[key] = ref,
+            ref: ref => (this.refObjects[key] = ref),
             cal: infoType.cal && !infoType.calSt,
             typePrefix,
             readOnly: descItem.saving,
@@ -1053,7 +1063,7 @@ class DescItemType extends AbstractReactComponent {
                             className="hidden"
                             accept="application/vnd.google-earth.kml+xml"
                             type="file"
-                            ref={(ref) => this.refUploadInput = ref}
+                            ref={ref => (this.refUploadInput = ref)}
                             onChange={this.handleCoordinatesUpload}
                         />,
                     );
@@ -1078,7 +1088,7 @@ class DescItemType extends AbstractReactComponent {
                             className="hidden"
                             accept="text/csv"
                             type="file"
-                            ref={ref => this.refUploadInput = ref}
+                            ref={ref => (this.refUploadInput = ref)}
                             onChange={this.handleJsonTableUploadUpload}
                         />,
                     );
@@ -1254,7 +1264,7 @@ class DescItemType extends AbstractReactComponent {
             >
                 {label}
                 <div
-                    ref={(ref) => this.refDragOverContainer = ref}
+                    ref={ref => (this.refDragOverContainer = ref)}
                     className="desc-item-type-desc-items"
                     onDragOver={this.handleDragOver}
                     onDragLeave={this.handleDragLeave}
