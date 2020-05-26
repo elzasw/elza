@@ -11,8 +11,9 @@ import './DescItemUnitdate.scss';
  * Input prvek pro desc item - typ UNITDATE.
  */
 class DescItemUnitdate extends AbstractReactComponent {
+    focusEl = null;
     focus = () => {
-        this.refs.focusEl.focus();
+        this.focusEl.focus();
     };
 
     handleValueChange = e => {
@@ -86,7 +87,7 @@ class DescItemUnitdate extends AbstractReactComponent {
                             locked || descItem.undefined,
                             cls,
                         )}
-                        ref="focusEl"
+                        ref={ref => this.focusEl = ref}
                         type="text"
                         value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}
                         onChange={this.handleValueChange}

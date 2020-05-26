@@ -14,9 +14,10 @@ import Moment from 'moment';
 import DateTimePicker from 'react-widgets/lib/DateTimePicker';
 import {formatDate} from '../../validate';
 
-const DescItemDate = class DescItemDate extends AbstractReactComponent {
+class DescItemDate extends AbstractReactComponent {
+    focusEl = null;
     focus() {
-        this.refs.focusEl.refs.inner.focus();
+        this.focusEl.refs.inner.focus();
     }
 
     handleChange = e => {
@@ -49,7 +50,7 @@ const DescItemDate = class DescItemDate extends AbstractReactComponent {
             <div className="desc-item-value">
                 <ItemTooltipWrapper tooltipTitle="dataType.date.format">
                     <DateTimePicker
-                        ref="focusEl"
+                        ref={ref => this.focusEl = ref}
                         {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                         time={false}
                         value={value == null ? null : new Date(value)}

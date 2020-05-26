@@ -14,9 +14,11 @@ import './DescItemCoordinates.scss';
  * Input prvek pro desc item - typ STRING.
  */
 class DescItemCoordinates extends AbstractReactComponent {
+    focusEl = null;
+    uploadInput = null;
+
     constructor(props) {
         super(props);
-
         this.state = objectFromWKT(props.descItem.value);
     }
 
@@ -33,11 +35,11 @@ class DescItemCoordinates extends AbstractReactComponent {
     }
 
     focus = () => {
-        this.refs.focusEl.focus();
+        this.focusEl.focus();
     };
 
     handleUploadClick = () => {
-        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
+        ReactDOM.findDOMNode(this.uploadInput.refs.input).click();
     };
 
     handleChangeData = e => {
@@ -73,7 +75,7 @@ class DescItemCoordinates extends AbstractReactComponent {
                         <ItemTooltipWrapper tooltipTitle="dataType.coordinates.format">
                             <input
                                 {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
-                                ref="focusEl"
+                                ref={ref => this.focusEl = ref}
                                 disabled={locked || descItem.undefined}
                                 onChange={this.handleChangeData}
                                 value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : data}
@@ -102,7 +104,7 @@ class DescItemCoordinates extends AbstractReactComponent {
                             className="hidden"
                             accept="application/vnd.google-earth.kml+xml"
                             type="file"
-                            ref="uploadInput"
+                            ref={ref => this.uploadInput = ref}
                             onChange={onUpload}
                         />
                     </div>

@@ -12,6 +12,7 @@ import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 const DescItemString_MAX_LENGTH = 250;
 
 class DescItemUnitid extends AbstractReactComponent {
+    focusEl = null;
     constructor(props) {
         super(props);
 
@@ -19,7 +20,7 @@ class DescItemUnitid extends AbstractReactComponent {
     }
 
     focus() {
-        this.refs.focusEl.focus();
+        this.focusEl.focus();
     }
 
     handleChange(e) {
@@ -49,7 +50,7 @@ class DescItemUnitid extends AbstractReactComponent {
                 <ItemTooltipWrapper tooltipTitle="dataType.unitid.format">
                     <input
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                        ref="focusEl"
+                        ref={ref => this.focusEl = ref}
                         type="text"
                         disabled={locked || descItem.undefined}
                         value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}

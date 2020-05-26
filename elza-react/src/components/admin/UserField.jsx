@@ -20,20 +20,21 @@ class UserField extends AbstractReactComponent {
         excludedGroupId: PropTypes.number,
     };
 
+    refAutocomplete = null;
+
     constructor(props) {
         super(props);
-        this.bindMethods('handleChange', 'handleSearchChange', 'focus');
 
         this.state = {
             dataList: [],
         };
     }
 
-    focus() {
-        this.refs.autocomplete.focus();
-    }
+    focus = () => {
+        this.refAutocomplete.focus();
+    };
 
-    handleSearchChange(text) {
+    handleSearchChange = text => {
         text = text === '' ? null : text;
 
         WebApi.findUser(text, true, false, 200, this.props.excludedGroupId).then(json => {
@@ -41,7 +42,7 @@ class UserField extends AbstractReactComponent {
                 dataList: json.users,
             });
         });
-    }
+    };
 
     render() {
         // onChange nutno excludnout z other props - jinak by vlezno na autocomplete a přestal by fugnovat event on Change na komponentě
@@ -51,7 +52,7 @@ class UserField extends AbstractReactComponent {
         return (
             <Autocomplete
                 tags={tags}
-                ref="autocomplete"
+                ref={ref => (this.refAutocomplete = ref)}
                 className="form-group"
                 customFilter
                 value={value}

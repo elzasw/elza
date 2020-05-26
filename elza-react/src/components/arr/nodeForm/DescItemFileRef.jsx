@@ -20,8 +20,10 @@ class DescItemFileRef extends AbstractReactComponent {
         fileList: [],
     };
 
+    focusEl = null;
+
     focus = () => {
-        this.refs.autocomplete.focus();
+        this.focusEl.focus();
     };
 
     handleSearchChange = text => {
@@ -91,7 +93,7 @@ class DescItemFileRef extends AbstractReactComponent {
                     )}
                 >
                     <Autocomplete
-                        ref="autocomplete"
+                        ref={ref => this.focusEl = ref}
                         customFilter
                         value={descItem.undefined ? {name: i18n('subNodeForm.descItemType.notIdentified')} : value}
                         items={this.state.fileList}

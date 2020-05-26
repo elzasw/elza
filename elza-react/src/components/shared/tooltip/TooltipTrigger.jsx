@@ -38,6 +38,8 @@ class TooltipTrigger extends AbstractReactComponent {
         tooltipClass: '',
     };
 
+    ttTarget = null;
+
     constructor(props) {
         super(props);
 
@@ -77,7 +79,7 @@ class TooltipTrigger extends AbstractReactComponent {
                 const wh = window.innerHeight;
                 let usePlacement;
                 let maxWidth, maxHeight;
-                const node = ReactDOM.findDOMNode(this.refs.ttTarget);
+                const node = ReactDOM.findDOMNode(this.ttTarget);
                 const rect = node.getBoundingClientRect();
                 switch (placement) {
                     case 'left':
@@ -267,7 +269,7 @@ class TooltipTrigger extends AbstractReactComponent {
         return (
             <span
                 className={'tooltip-trigger ' + (className ? className : '')}
-                ref="ttTarget"
+                ref={ref => this.ttTarget = ref}
                 onFocus={() => this.handleFocus(true)}
                 onBlur={() => this.handleFocus(false)}
                 onMouseOver={() => this.showTooltip(true, this.getDelay(true))}
@@ -279,7 +281,7 @@ class TooltipTrigger extends AbstractReactComponent {
                     <Overlay
                         show={this.state.showTooltip}
                         placement={this.state.placement}
-                        target={() => this.refs.ttTarget}
+                        target={() => this.ttTarget}
                     >
                         <Tooltip
                             onMouseOver={() => this.handleTooltipHover(true)}

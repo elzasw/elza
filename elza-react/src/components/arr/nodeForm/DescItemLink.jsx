@@ -22,9 +22,10 @@ const DescItemString_MAX_LENGTH = 1000;
  * Input prvek pro desc item - typ STRING.
  */
 class DescItemString extends AbstractReactComponent {
-
+    focusEl = null;
+    focusEl2 = null;
     focus = () => {
-        this.refs.focusEl.focus()
+        this.focusEl.focus()
     };
 
     handleChange = (e) => {
@@ -109,7 +110,7 @@ class DescItemString extends AbstractReactComponent {
                 <div className='desc-item-value desc-item-link'>
                     <input
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                        ref='focusEl'
+                        ref={ref => this.focusEl = ref}
                         type="text"
                         disabled={locked || descItem.undefined}
                         value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}
@@ -121,7 +122,7 @@ class DescItemString extends AbstractReactComponent {
                 <div className='desc-item-value'>
                     <input
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                        ref='focusEl2'
+                        ref={ref => this.focusEl2 = ref}
                         type="text"
                         disabled={locked || descItem.undefined}
                         value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : description}
@@ -134,4 +135,4 @@ class DescItemString extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null)(DescItemString);
+export default connect(null, null, null, {forwardRef: true})(DescItemString);

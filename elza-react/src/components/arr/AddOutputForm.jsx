@@ -1,19 +1,23 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {connect} from "react-redux";
+import {reduxForm, Field, formValueSelector} from 'redux-form';
+import {AbstractReactComponent, FormInput, FormInputField, i18n} from '../../components/shared';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
-import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx';
-import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx';
-import {indexById} from 'stores/app/utils.jsx';
+import {decorateFormField, submitForm} from '../form/FormUtils';
+import {outputTypesFetchIfNeeded} from '../../actions/refTables/outputTypes.jsx';
+import {templatesFetchIfNeeded} from '../../actions/refTables/templates.jsx';
+import {indexById} from '../../stores/app/utils.jsx';
 
 /**
  * Formulář přidání výstupu.
  */
 
 class AddOutputForm extends AbstractReactComponent {
+
+    static FORM = 'addOutputForm';
+
     static defaultProps = {
         create: false,
     };
@@ -43,8 +47,8 @@ class AddOutputForm extends AbstractReactComponent {
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(outputTypesFetchIfNeeded());
-        if (nextProps.fields.outputTypeId.value) {
-            const index = indexById(nextProps.outputTypes, nextProps.fields.outputTypeId.value);
+        if (nextProps.outputTypeId) {
+            const index = indexById(nextProps.outputTypes, nextProps.outputTypeId);
             if (index !== null) {
                 this.props.dispatch(templatesFetchIfNeeded(nextProps.outputTypes[index].code));
             }
@@ -60,17 +64,17 @@ class AddOutputForm extends AbstractReactComponent {
 
     render() {
         const {
-            fields: {name, internalCode, templateId, outputTypeId},
             create,
             handleSubmit,
             onClose,
             outputTypes,
             allTemplates,
+            outputTypeId
         } = this.props;
 
         let templates = false;
-        if (outputTypeId.value) {
-            const index = indexById(outputTypes, outputTypeId.value);
+        if (outputTypeId) {
+            const index = indexById(outputTypes, outputTypeId);
             if (index !== null) {
                 const temp = allTemplates[outputTypes[index].code];
                 if (temp && temp.fetched) {
@@ -83,19 +87,19 @@ class AddOutputForm extends AbstractReactComponent {
             <div className="add-output-form-container">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FormInput type="text" label={i18n('arr.output.name')} {...name} {...decorateFormField(name)} />
-                        <FormInput
+                        <FormInput type="text" label={i18n('arr.output.name')} name={"name"} />
+                        <Field
+                            component={FormInputField}
                             type="text"
                             label={i18n('arr.output.internalCode')}
-                            {...internalCode}
-                            {...decorateFormField(internalCode)}
+                            name={"internalCode"}
                         />
                         {create && (
-                            <FormInput
+                            <Field
+                                component={FormInputField}
                                 as="select"
                                 label={i18n('arr.output.outputType')}
-                                {...outputTypeId}
-                                {...decorateFormField(outputTypeId)}
+                                name={"outputTypeId"}
                             >
                                 <option key="-outputTypeId" />
                                 {outputTypes.map(i => (
@@ -103,13 +107,14 @@ class AddOutputForm extends AbstractReactComponent {
                                         {i.name}
                                     </option>
                                 ))}
-                            </FormInput>
+                            </Field>
                         )}
-                        <FormInput
+                        <Field
+                            component={FormInputField}
                             as="select"
                             label={i18n('arr.output.template')}
-                            {...templateId}
-                            disabled={!outputTypeId.value || !templates}
+                            name={"templateId"}
+                            disabled={!outputTypeId || !templates}
                         >
                             <option key="-templateId" />
                             {templates &&
@@ -118,7 +123,7 @@ class AddOutputForm extends AbstractReactComponent {
                                         {i.name}
                                     </option>
                                 ))}
-                        </FormInput>
+                        </Field>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary">
@@ -134,16 +139,18 @@ class AddOutputForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm(
-    {
-        form: 'addOutputForm',
-        fields: ['name', 'internalCode', 'outputTypeId', 'templateId'],
-    },
-    (state, props) => {
-        return {
-            initialValues: props.initData,
-            outputTypes: state.refTables.outputTypes.items,
-            allTemplates: state.refTables.templates.items,
-        };
-    },
-)(AddOutputForm);
+
+const form = reduxForm({
+    form: AddOutputForm.FORM,
+})(AddOutputForm);
+
+const selector = formValueSelector(AddOutputForm.FORM)
+
+export default connect((state, props) => {
+    return {
+        outputTypeId: selector(state, 'outputTypeId'),
+        initialValues: props.initData,
+        outputTypes: state.refTables.outputTypes.items,
+        allTemplates: state.refTables.templates.items,
+    };
+})(form);

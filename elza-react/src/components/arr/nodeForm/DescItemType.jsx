@@ -1,20 +1,20 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {AbstractReactComponent, FormInput, i18n, Icon, NoFocusButton, TooltipTrigger, Utils} from 'components/shared';
+import {AbstractReactComponent, FormInput, i18n, Icon, NoFocusButton, TooltipTrigger, Utils} from '../../../components/shared';
 import {connect} from 'react-redux';
-import {valuesEquals} from 'components/Utils.jsx';
-import {nodeFormActions} from 'actions/arr/subNodeForm.jsx';
-import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx';
-import {indexById} from 'stores/app/utils.jsx';
+import {valuesEquals} from '../../Utils';
+import {nodeFormActions} from '../../../actions/arr/subNodeForm.jsx';
+import {hasDescItemTypeValue} from '../../../components/arr/ArrUtils.jsx';
+import {indexById} from '../../../stores/app/utils.jsx';
 import classNames from 'classnames';
-import * as perms from 'actions/user/Permission.jsx';
+import * as perms from '../../../actions/user/Permission.jsx';
 import {Shortcuts} from 'react-shortcuts';
 import DescItemTypeSpec from './DescItemTypeSpec';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DescItemTypeKeymap.jsx';
 import './AbstractDescItem.scss';
-import {convertValue, validate} from 'stores/app/arr/subNodeForm.jsx';
-import {WebApi} from 'actions/index.jsx';
+import {convertValue, validate} from '../../../stores/app/arr/subNodeForm.jsx';
+import {WebApi} from '../../../actions/index';
 import objectById from '../../../shared/utils/objectById';
 
 const placeholder = document.createElement('div');
@@ -33,6 +33,51 @@ class DescItemType extends AbstractReactComponent {
         onCreatePacket: () => {},
     };
 
+    static propTypes = {
+        onChange: PropTypes.func.isRequired,
+        onChangeSpec: PropTypes.func.isRequired,
+        onChangePosition: PropTypes.func.isRequired,
+        onBlur: PropTypes.func.isRequired,
+        onFocus: PropTypes.func.isRequired,
+        onCreateParty: PropTypes.func.isRequired,
+        onCoordinatesDownload: PropTypes.func.isRequired,
+        onJsonTableDownload: PropTypes.func.isRequired,
+        onCoordinatesUpload: PropTypes.func.isRequired,
+        onDetailParty: PropTypes.func.isRequired,
+        onCreateRecord: PropTypes.func.isRequired,
+        onDetailRecord: PropTypes.func.isRequired,
+        onCreatePacket: PropTypes.func.isRequired,
+        onCreateFile: PropTypes.func.isRequired,
+        onFundFiles: PropTypes.func.isRequired,
+        onDescItemTypeRemove: PropTypes.func.isRequired,
+        onDescItemTypeLock: PropTypes.func.isRequired,
+        onDescItemTypeCopy: PropTypes.func.isRequired,
+        onDescItemTypeCopyFromPrev: PropTypes.func.isRequired,
+        onDescItemRemove: PropTypes.func.isRequired,
+        onDescItemAdd: PropTypes.func.isRequired,
+        refType: PropTypes.object.isRequired,
+        infoType: PropTypes.object.isRequired,
+        descItemType: PropTypes.object.isRequired,
+        rulDataType: PropTypes.object.isRequired,
+        calendarTypes: PropTypes.object.isRequired,
+        structureTypes: PropTypes.object.isRequired,
+        locked: PropTypes.bool.isRequired,
+        hideDelete: PropTypes.bool,
+        readMode: PropTypes.bool.isRequired,
+        arrPerm: PropTypes.bool.isRequired,
+        notIdentified: PropTypes.bool.isRequired,
+        onDescItemNotIdentified: PropTypes.func.isRequired,
+        closed: PropTypes.bool.isRequired,
+        copy: PropTypes.bool.isRequired,
+        conformityInfo: PropTypes.object.isRequired,
+        versionId: PropTypes.number.isRequired,
+        fundId: PropTypes.number.isRequired,
+        userDetail: PropTypes.object.isRequired,
+        showNodeAddons: PropTypes.bool.isRequired,
+        strictMode: PropTypes.bool.isRequired,
+        descItemFactory: PropTypes.func.isRequired,
+    };
+
     UNSAFE_componentWillMount() {
         Utils.addShortcutManager(this, defaultKeymap);
     }
@@ -40,6 +85,13 @@ class DescItemType extends AbstractReactComponent {
     getChildContext() {
         return {shortcuts: this.shortcutManager};
     }
+
+
+    /** Object pro dynamické ref */
+    refObjects = {};
+
+    /**  **/
+    refDragOverContainer = null;
 
     constructor(props) {
         super(props);
@@ -144,15 +196,15 @@ class DescItemType extends AbstractReactComponent {
             // konkrétní hodnota
             descItem =
                 descItemType.descItems[indexById(descItemType.descItems, item.descItemObjectId, 'descItemObjectId')];
-            ref = this.refs[refPrefix + descItem.formKey];
+            ref = this.refObjects[refPrefix + descItem.formKey];
         } else if (typeof item.descItemIndex !== 'undefined' && item.descItemIndex !== null) {
             // konkrétní index
             descItem = descItemType.descItems[item.descItemIndex];
-            ref = this.refs[refPrefix + descItem.formKey];
+            ref = this.refObjects[refPrefix + descItem.formKey];
         } else {
             // obecně atribut - dáme na první hodnotu
             descItem = descItemType.descItems[0];
-            ref = this.refs[refPrefix + descItem.formKey];
+            ref = this.refObjects[refPrefix + descItem.formKey];
         }
 
         if (ref) {
@@ -189,7 +241,7 @@ class DescItemType extends AbstractReactComponent {
         return (
             <DescItemTypeSpec
                 key={key}
-                ref={key}
+                ref={(ref) => this.refObjects[key] = ref}
                 descItem={descItem}
                 locked={locked || descItem.undefined}
                 infoType={infoType}
@@ -501,7 +553,7 @@ class DescItemType extends AbstractReactComponent {
 
         this.dragged.style.display = 'none';
 
-        const dragOverContainer = ReactDOM.findDOMNode(this.refs.dragOverContainer);
+        const dragOverContainer = ReactDOM.findDOMNode(this.refDragOverContainer);
         if (!this.isUnderContainer(e.target, dragOverContainer)) {
             e.dataTransfer.dropEffect = 'none';
             this.over = null;
@@ -545,11 +597,11 @@ class DescItemType extends AbstractReactComponent {
     }
 
     handleCoordinatesUploadButtonClick() {
-        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
+        ReactDOM.findDOMNode(this.refUploadInput.refs.input).click();
     }
 
     handleJsonTableUploadButtonClick() {
-        ReactDOM.findDOMNode(this.refs.uploadInput.refs.input).click();
+        ReactDOM.findDOMNode(this.refUploadInput.refs.input).click();
     }
 
     handleCoordinatesUpload(e) {
@@ -663,7 +715,7 @@ class DescItemType extends AbstractReactComponent {
             onFocus: this.handleFocus.bind(this, descItemIndex),
             locked: locked,
             readMode: readMode,
-            ref: key,
+            ref: (ref) => this.refObjects[key] = ref,
             cal: infoType.cal && !infoType.calSt,
             typePrefix,
             readOnly: descItem.saving,
@@ -1001,7 +1053,7 @@ class DescItemType extends AbstractReactComponent {
                             className="hidden"
                             accept="application/vnd.google-earth.kml+xml"
                             type="file"
-                            ref="uploadInput"
+                            ref={(ref) => this.refUploadInput = ref}
                             onChange={this.handleCoordinatesUpload}
                         />,
                     );
@@ -1026,7 +1078,7 @@ class DescItemType extends AbstractReactComponent {
                             className="hidden"
                             accept="text/csv"
                             type="file"
-                            ref="uploadInput"
+                            ref={ref => this.refUploadInput = ref}
                             onChange={this.handleJsonTableUploadUpload}
                         />,
                     );
@@ -1202,7 +1254,7 @@ class DescItemType extends AbstractReactComponent {
             >
                 {label}
                 <div
-                    ref="dragOverContainer"
+                    ref={(ref) => this.refDragOverContainer = ref}
                     className="desc-item-type-desc-items"
                     onDragOver={this.handleDragOver}
                     onDragLeave={this.handleDragLeave}
@@ -1222,49 +1274,4 @@ function mapStateToProps(state) {
     };
 }
 
-DescItemType.propTypes = {
-    onChange: PropTypes.func.isRequired,
-    onChangeSpec: PropTypes.func.isRequired,
-    onChangePosition: PropTypes.func.isRequired,
-    onBlur: PropTypes.func.isRequired,
-    onFocus: PropTypes.func.isRequired,
-    onCreateParty: PropTypes.func.isRequired,
-    onCoordinatesDownload: PropTypes.func.isRequired,
-    onJsonTableDownload: PropTypes.func.isRequired,
-    onCoordinatesUpload: PropTypes.func.isRequired,
-    onDetailParty: PropTypes.func.isRequired,
-    onCreateRecord: PropTypes.func.isRequired,
-    onDetailRecord: PropTypes.func.isRequired,
-    onCreatePacket: PropTypes.func.isRequired,
-    onCreateFile: PropTypes.func.isRequired,
-    onFundFiles: PropTypes.func.isRequired,
-    onDescItemTypeRemove: PropTypes.func.isRequired,
-    onDescItemTypeLock: PropTypes.func.isRequired,
-    onDescItemTypeCopy: PropTypes.func.isRequired,
-    onDescItemTypeCopyFromPrev: PropTypes.func.isRequired,
-    onDescItemRemove: PropTypes.func.isRequired,
-    onDescItemAdd: PropTypes.func.isRequired,
-    refType: PropTypes.object.isRequired,
-    infoType: PropTypes.object.isRequired,
-    descItemType: PropTypes.object.isRequired,
-    rulDataType: PropTypes.object.isRequired,
-    calendarTypes: PropTypes.object.isRequired,
-    structureTypes: PropTypes.object.isRequired,
-    locked: PropTypes.bool.isRequired,
-    hideDelete: PropTypes.bool,
-    readMode: PropTypes.bool.isRequired,
-    arrPerm: PropTypes.bool.isRequired,
-    notIdentified: PropTypes.bool.isRequired,
-    onDescItemNotIdentified: PropTypes.func.isRequired,
-    closed: PropTypes.bool.isRequired,
-    copy: PropTypes.bool.isRequired,
-    conformityInfo: PropTypes.object.isRequired,
-    versionId: PropTypes.number.isRequired,
-    fundId: PropTypes.number.isRequired,
-    userDetail: PropTypes.object.isRequired,
-    showNodeAddons: PropTypes.bool.isRequired,
-    strictMode: PropTypes.bool.isRequired,
-    descItemFactory: PropTypes.func.isRequired,
-};
-
-export default connect(mapStateToProps)(DescItemType);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(DescItemType);

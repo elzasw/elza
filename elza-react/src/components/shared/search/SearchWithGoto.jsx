@@ -19,7 +19,7 @@ class SearchWithGoto extends AbstractReactComponent {
         allItemsCount: PropTypes.number,
         textAreaInput: PropTypes.bool,
         selIndex: PropTypes.number,
-        showFilterResult: PropTypes.bool.isRequired,
+        showFilterResult: PropTypes.bool,
         onFulltextChange: PropTypes.func,
         onFulltextSearch: PropTypes.func,
         onFulltextNextItem: PropTypes.func,

@@ -288,4 +288,4 @@ class DescItemStructureRef extends AbstractReactComponent {
 	}
 }
 
-export default connect()(DescItemStructureRef);
+export default connect(null, null, null, {forwardRef: true})(DescItemStructureRef);

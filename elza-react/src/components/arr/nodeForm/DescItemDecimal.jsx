@@ -10,6 +10,8 @@ import DescItemLabel from './DescItemLabel.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
 class DescItemDecimal extends AbstractReactComponent {
+    focusEl = null;
+
     constructor(props) {
         super(props);
 
@@ -39,7 +41,7 @@ class DescItemDecimal extends AbstractReactComponent {
     }
 
     focus() {
-        this.refs.focusEl.focus();
+        this.focusEl.focus();
     }
 
     handleChange(e) {
@@ -82,7 +84,7 @@ class DescItemDecimal extends AbstractReactComponent {
                 <ItemTooltipWrapper tooltipTitle="dataType.decimal.format">
                     <input
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                        ref="focusEl"
+                        ref={ref => this.focusEl = ref}
                         type="text"
                         disabled={locked || descItem.undefined}
                         onChange={this.handleChange}

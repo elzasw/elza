@@ -11,7 +11,8 @@ import ItemTooltipWrapper from './ItemTooltipWrapper';
 
 const DescItemString_MAX_LENGTH = 1000;
 
-const DescItemString = class DescItemString extends AbstractReactComponent {
+class DescItemString extends AbstractReactComponent {
+    focusEl = null;
     constructor(props) {
         super(props);
 
@@ -19,7 +20,7 @@ const DescItemString = class DescItemString extends AbstractReactComponent {
     }
 
     focus() {
-        this.refs.focusEl.focus();
+        this.focusEl.focus();
     }
 
     handleChange(e) {
@@ -49,7 +50,7 @@ const DescItemString = class DescItemString extends AbstractReactComponent {
                 <ItemTooltipWrapper tooltipTitle="dataType.string.format">
                     <input
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                        ref="focusEl"
+                        ref={ref => this.focusEl = ref}
                         type="text"
                         disabled={locked || descItem.undefined}
                         value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}
@@ -59,6 +60,6 @@ const DescItemString = class DescItemString extends AbstractReactComponent {
             </div>
         );
     }
-};
+}
 
 export default DescItemString;

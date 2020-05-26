@@ -12,6 +12,8 @@ import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import './DescItemJsonTable.scss';
 
 class DescItemJsonTable extends AbstractReactComponent {
+    focusEl = null;
+    dataGrid = null;
     constructor(props) {
         super(props);
 
@@ -81,7 +83,7 @@ class DescItemJsonTable extends AbstractReactComponent {
     }
 
     focus() {
-        this.refs.dataGrid.getWrappedInstance().focus();
+        this.dataGrid.getWrappedInstance().focus();
     }
 
     handleBlur() {
@@ -125,7 +127,7 @@ class DescItemJsonTable extends AbstractReactComponent {
             return;
         }
 
-        const dataGridComp = this.refs.dataGrid.getWrappedInstance();
+        const dataGridComp = this.dataGrid.getWrappedInstance();
         const cellEl = dataGridComp.getCellElement(rowIndex, colIndex);
         const cellRect = cellEl.getBoundingClientRect();
 
@@ -240,14 +242,14 @@ class DescItemJsonTable extends AbstractReactComponent {
                     {descItem.undefined ? (
                         <input
                             {...decorateValue(this, descItem.hasFocus, descItem.error.value, true)}
-                            ref="focusEl"
+                            ref={ref => this.focusEl = ref}
                             type="text"
                             value={i18n('subNodeForm.descItemType.notIdentified')}
                         />
                     ) : (
                         <DataGrid
                             key="grid"
-                            ref="dataGrid"
+                            ref={ref => this.dataGrid = ref}
                             rows={rows}
                             cols={cols}
                             onFocus={onFocus}
@@ -269,4 +271,4 @@ class DescItemJsonTable extends AbstractReactComponent {
     }
 }
 
-export default connect()(DescItemJsonTable);
+export default connect(null, null, null, {forwardRef: true})(DescItemJsonTable);

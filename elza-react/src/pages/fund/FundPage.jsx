@@ -3,12 +3,11 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import {connect} from 'react-redux';
-import {i18n, Icon} from 'components/index.jsx';
-import {AbstractReactComponent, ListBox, RibbonGroup, SearchWithGoto, Utils} from 'components/shared';
-import {ExportForm, FundDetail, FundDetailExt, FundForm, ImportForm, Ribbon} from 'components';
+import {AbstractReactComponent, ListBox, RibbonGroup, SearchWithGoto, Utils} from '../../components/shared';
+import {i18n, Icon, ExportForm, FundDetail, FundDetailExt, FundForm, ImportForm, Ribbon} from '../../components';
 import {Button} from '../../components/ui';
 import PageLayout from '../shared/layout/PageLayout';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {modalDialogShow} from '../../actions/global/modalDialog.jsx';
 import {
     approveFund,
     createFund,
@@ -17,10 +16,10 @@ import {
     exportFund,
     selectFundTab,
     updateFund,
-} from 'actions/arr/fund.jsx';
-import {WebApi} from 'actions/index.jsx';
-import {indexById} from 'stores/app/utils.jsx';
-import {routerNavigate} from 'actions/router.jsx';
+} from '../../actions/arr/fund.jsx';
+import {WebApi} from '../../actions/index.jsx';
+import {indexById} from '../../stores/app/utils.jsx';
+import {routerNavigate} from '../../actions/router.jsx';
 import {
     DEFAULT_FUND_LIST_MAX_SIZE,
     fundsFetchIfNeeded,
@@ -28,10 +27,10 @@ import {
     fundsFundDetailFetchIfNeeded,
     fundsSearch,
     fundsSelectFund,
-} from 'actions/fund/fund.jsx';
-import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
-import {scopesDirty} from 'actions/refTables/scopesData.jsx';
-import * as perms from 'actions/user/Permission.jsx';
+} from '../../actions/fund/fund.jsx';
+import {getFundFromFundAndVersion} from '../../components/arr/ArrUtils';
+import {scopesDirty} from '../../actions/refTables/scopesData.jsx';
+import * as perms from '../../actions/user/Permission.jsx';
 import {globalFundTreeInvalidate} from '../../actions/arr/globalFundTree';
 import SearchFundsForm from '../../components/arr/SearchFundsForm';
 import IssueLists from '../../components/arr/IssueLists';
@@ -400,9 +399,11 @@ class FundPage extends AbstractReactComponent {
         this.props.dispatch(routerNavigate('/arr'));
 
         // Otevření archivního souboru
-        var fundObj = getFundFromFundAndVersion(item, item.versions[0]);
-        this.props.dispatch(globalFundTreeInvalidate());
-        this.props.dispatch(selectFundTab(fundObj));
+        WebApi.getFundDetail(item.id).then((data) => {
+            const fundObj = getFundFromFundAndVersion(data, data.versions[0]);
+            this.props.dispatch(globalFundTreeInvalidate());
+            this.props.dispatch(selectFundTab(fundObj));
+        })
     }
 
     renderListItem(props) {
@@ -410,9 +411,9 @@ class FundPage extends AbstractReactComponent {
         return [
             <div className="item-row" key={item.id}>
                 <div className="name">{item.name}</div>
-                <div className="btn btn-action" onClick={this.handleShowInArr.bind(this, item)} variant="link">
+                <Button variant="action" onClick={this.handleShowInArr.bind(this, item)}>
                     <Icon glyph="fa-folder-open" />
-                </div>
+                </Button>
             </div>,
             <div className="item-row desc"  key={item.id + "-x"}>
                 <div>{item.internalCode}</div>
