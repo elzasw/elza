@@ -1,6 +1,7 @@
 package cz.tacr.elza.web.controller;
 
 import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +38,14 @@ public class ElzaWebController {
     @ModelAttribute("isDefaultUserEnabled")
     public Boolean isDefaultUserEnabled() {
         return allowDefaultUser;
+    }
+
+    @Value("${elza.security.displayUserInfo:true}")
+    private Boolean displayUserInfo;
+
+    @ModelAttribute("displayUserInfo")
+    public Boolean getDisplayUserInfo() {
+        return displayUserInfo;
     }
 
     @Value("${version:0.0.0}")
@@ -77,6 +86,12 @@ public class ElzaWebController {
 
     @RequestMapping(value = "/node/**", method = RequestMethod.GET)
     public String nodePage(final HttpServletRequest request, final Model model) {
+        initDefaults(request, model);
+        return "web";
+    }
+
+    @RequestMapping(value = "/entity/**", method = RequestMethod.GET)
+    public String entityPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);
         return "web";
     }

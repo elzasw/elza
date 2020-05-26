@@ -268,7 +268,15 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                 calendarTypeId: replaceText.value.calendarTypeId
                             },
                         };
-                        operationInputs.push(<FormInput componentClass={DescItemUnitdate} label={i18n('arr.fund.bulkModifications.replace.replaceText')} calendarTypes={calendarTypes} {...replaceText} {...data} />);
+                        operationInputs.push(
+                            <FormInput 
+                                componentClass={DescItemUnitdate} 
+                                label={i18n('arr.fund.bulkModifications.replace.replaceText')} 
+                                calendarTypes={calendarTypes} 
+                                {...replaceText} 
+                                {...data} 
+                            />
+                        );
                     }
                         break;
                     case "RECORD_REF": {
@@ -321,14 +329,38 @@ class FundBulkModificationsForm extends AbstractReactComponent {
 
                 <FormGroup>
                     <ControlLabel>{i18n('arr.fund.bulkModifications.itemsArea')}</ControlLabel>
+                    {checkedItemsCount > 0 && checkedItemsCount < allItemsCount && 
+                        <Radio 
+                            {...itemsArea} 
+                            value='selected' 
+                            checked={itemsArea.value === 'selected'}
+                        >
+                            {i18n('arr.fund.bulkModifications.itemsArea.selected', checkedItemsCount)}
+                        </Radio>
+                    }
+                    {uncheckedItemsCount > 0 && checkedItemsCount > 0 && 
+                        <Radio 
+                            {...itemsArea} 
+                            value='unselected' 
+                            checked={itemsArea.value === 'unselected'}
+                        >
+                            {i18n('arr.fund.bulkModifications.itemsArea.unselected', uncheckedItemsCount)}
+                        </Radio>
+                    }
                     <Radio
-                        {...itemsArea} value='page' checked={itemsArea.value === 'page'}
-                    >{i18n('arr.fund.bulkModifications.itemsArea.page', allItemsCount)}</Radio>
-                    {checkedItemsCount > 0 && checkedItemsCount < allItemsCount && <Radio {...itemsArea} value='selected' checked={itemsArea.value === 'selected'}>{i18n('arr.fund.bulkModifications.itemsArea.selected', checkedItemsCount)}</Radio>}
-                    {uncheckedItemsCount > 0 && checkedItemsCount > 0 && <Radio {...itemsArea} value='unselected' checked={itemsArea.value === 'unselected'}>{i18n('arr.fund.bulkModifications.itemsArea.unselected', uncheckedItemsCount)}</Radio>}
+                        {...itemsArea} 
+                        value='page' 
+                        checked={itemsArea.value === 'page'}
+                    >
+                        {i18n('arr.fund.bulkModifications.itemsArea.page', allItemsCount)}
+                    </Radio>
                     <Radio
-                        {...itemsArea} value='all' checked={itemsArea.value === 'all'}
-                    >{i18n('arr.fund.bulkModifications.itemsArea.all')}</Radio>
+                        {...itemsArea} 
+                        value='all' 
+                        checked={itemsArea.value === 'all'}
+                    >
+                        {i18n('arr.fund.bulkModifications.itemsArea.all')}
+                    </Radio>
                 </FormGroup>
                 <FormInput componentClass='select' label={i18n('arr.fund.bulkModifications.operationType')} {...operationType} {...decorateFormField(operationType)}>
                     {this.supportFindAndReplace() && <option key='findAndReplace' value='findAndReplace'>{i18n('arr.fund.bulkModifications.operationType.findAndReplace')}</option>}
@@ -361,7 +393,15 @@ export default reduxForm({
         }
 
         return {
-            initialValues: {findText: '', replaceText: val, itemsArea: getDefaultItemsArea(props), operationType: getDefaultOperationType(props), specs: {type: 'unselected'}},
+            initialValues: {
+                findText: '', 
+                replaceText: val, 
+                itemsArea: getDefaultItemsArea(props), 
+                operationType: getDefaultOperationType(props), 
+                specs: {
+                    type: 'unselected'
+                }
+            },
             descItemTypes: state.refTables.descItemTypes
         }
     },

@@ -38,7 +38,6 @@ import cz.tacr.elza.core.fund.TreeNode;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -66,7 +65,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.print.item.ItemType;
-import cz.tacr.elza.print.item.convertors.ItemConvertor;
 import cz.tacr.elza.print.item.convertors.ItemConvertorContext;
 import cz.tacr.elza.print.item.convertors.OutputItemConvertor;
 import cz.tacr.elza.print.party.Dynasty;
@@ -88,7 +86,6 @@ import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.output.OutputParams;
@@ -363,42 +360,17 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             throw new NotImplementedException("Load nodes for closed fund version not implemented");
         }
 
+        OutputItemConvertor conv = new OutputItemConvertor(this);
+
         Map<Integer, RestoredNode> cachedNodeMap = nodeCacheService.getNodes(arrNodeIds);
         for (Node node : nodes) {
             Integer arrNodeId = node.getNodeId().getArrNodeId();
             RestoredNode cachedNode = cachedNodeMap.get(arrNodeId);
             Validate.notNull(cachedNode);
-            initNode(node, cachedNode);
+            node.load(cachedNode, conv);
         }
 
         return nodes;
-    }
-
-    private List<Item> convert(List<? extends ArrItem> srcItems) {
-        ItemConvertor conv = new OutputItemConvertor();
-        List<Item> result = srcItems.stream()
-                .map(i -> conv.convert(i, this))
-                /*
-                // add packet reference
-                if (item instanceof ItemStructuredRef) {
-                    item.getValue(Structured.class).addNodeId(node.getNodeId());
-                }*/
-                .filter(Objects::nonNull)
-                .sorted(Item::compareTo)
-                .collect(Collectors.toList());
-        return result;
-    }
-
-    /**
-     * Init output node from node cache.
-     */
-    private void initNode(Node node, CachedNode cachedNode) {
-        // set node items
-        List<ArrDescItem> descItems = cachedNode.getDescItems();
-        if (descItems != null) {
-            List<Item> items = convert(descItems);
-            node.setItems(items);
-        }
     }
 
     /**
@@ -441,9 +413,9 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.fund.setInstitution(inst);
 
         // init direct items
-        ItemConvertor conv = new OutputItemConvertor();
+        OutputItemConvertor conv = new OutputItemConvertor(this);
         this.outputItems = params.getOutputItems().stream()
-                .map(i -> conv.convert(i, this))
+                .map(i -> conv.convert(i))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
@@ -476,7 +448,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             TreeNode treeNode = fundTree.getNode(outputNodeId);
 
             // convert output node to NodeId with all parents up to root
-            NodeId nodeId = createNodeIdWithParents(treeNode, nodeIdMap);
+            NodeId nodeId = createNodeIdWithParents(treeNode, nodeIdMap, true);
 
             // convert node tree of each output node child to NodeIds
             treeNode.getChildren().forEach(child -> initNodeIdSubtree(child, nodeId, nodeIdMap));
@@ -488,7 +460,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     /**
      * Creates NodeId with all parent nodes up to root.
      */
-    private NodeId createNodeIdWithParents(TreeNode treeNode, Map<Integer, NodeId> nodeIdMap) {
+    private NodeId createNodeIdWithParents(TreeNode treeNode, Map<Integer, NodeId> nodeIdMap, boolean published) {
         Integer arrNodeId = new Integer(treeNode.getNodeId());
 
         NodeId nodeId = nodeIdMap.get(arrNodeId);
@@ -497,11 +469,12 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         if (treeNode.isRoot()) {
-            nodeId = new NodeId(treeNode.getNodeId(), treeNode.getPosition());
+            nodeId = new NodeId(treeNode.getNodeId(), treeNode.getPosition(), published);
         } else {
             // recursively create parents up to root or existing node
-            NodeId parentNodeId = createNodeIdWithParents(treeNode.getParent(), nodeIdMap);
-            nodeId = new NodeId(treeNode.getNodeId(), parentNodeId, treeNode.getPosition());
+            // such nodes exists or are created, created nodes are marked as not published
+            NodeId parentNodeId = createNodeIdWithParents(treeNode.getParent(), nodeIdMap, false);
+            nodeId = new NodeId(treeNode.getNodeId(), parentNodeId, treeNode.getPosition(), published);
             parentNodeId.addChild(nodeId);
         }
 
@@ -520,7 +493,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     private void initNodeIdSubtree(TreeNode treeNode, NodeId parentNodeId, Map<Integer, NodeId> nodeIdMap) {
         Integer arrNodeId = new Integer(treeNode.getNodeId());
 
-        NodeId nodeId = new NodeId(treeNode.getNodeId(), parentNodeId, treeNode.getPosition());
+        // method is called from published node
+        NodeId nodeId = new NodeId(treeNode.getNodeId(), parentNodeId, treeNode.getPosition(), true);
         parentNodeId.addChild(nodeId);
 
         // add to lookup
@@ -818,7 +792,15 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     public List<Item> loadStructItems(Integer structObjId) {
         List<ArrStructuredItem> items = structItemRepos.findByStructuredObjectAndDeleteChangeIsNullFetchData(
                 structObjId);
-        List<Item> result = convert(items);
+        List<Item> result = convert(items, new OutputItemConvertor(this));
         return result;
+    }
+
+    static public List<Item> convert(List<? extends ArrItem> items, OutputItemConvertor conv) {
+        return items.stream()
+                .map(i -> conv.convert(i))
+                .filter(Objects::nonNull)
+                .sorted(Item::compareTo)
+                .collect(Collectors.toList());
     }
 }

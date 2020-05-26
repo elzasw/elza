@@ -367,7 +367,6 @@ public class RevertingChangesService {
 
             sobjVrequestDelete(fund, toChange);
 
-            structuredObjectDelete(fund, toChange);
             structuredObjectUpdate(fund, toChange);
         }
 
@@ -400,6 +399,11 @@ public class RevertingChangesService {
         deleteNotUseChangesQuery.executeUpdate();
 
         entityManager.flush();
+
+        // strukt typy lze smazat az po vymazani vsech ref. na ne
+        if (nodeId == null) {
+            structuredObjectDelete(fund, toChange);
+        }
 
         // Drop unused node ids
         // Find nodes
@@ -693,7 +697,9 @@ public class RevertingChangesService {
     public Query createDeleteNotUseChangesQuery() {
 
         StringBuilder sqlBuilder = new StringBuilder();
-        sqlBuilder.append("DELETE FROM arr_change c WHERE c.change_id NOT IN (");
+        sqlBuilder.append(
+                          "DELETE FROM arr_change c WHERE c.change_id IN (SELECT distinct c.change_id FROM arr_change c");
+        sqlBuilder.append(" LEFT JOIN (");
 
         String[][] configUnionTables = new String[][]{
                 { ArrLevel.TABLE_NAME, ArrLevel.FIELD_CREATE_CHANGE_ID },
@@ -733,13 +739,18 @@ public class RevertingChangesService {
 
             String columnName = ins.columnName(changeTable[1]);
 
-            unionPart.add(String.format("SELECT distinct t%1$d.%3$s FROM %2$s t%1$d", index, changeTable[0],
+            unionPart.add(String.format("SELECT distinct t%1$d.%3$s as change_id FROM %2$s t%1$d", index,
+                                        changeTable[0],
                                         columnName));
         }
         sqlBuilder.append(String.join("\nUNION\n", unionPart));
-
+        sqlBuilder.append(") as used_change ON c.change_id = used_change.change_id ");
+        sqlBuilder.append("WHERE used_change.change_id IS NULL");
         sqlBuilder.append(")");
+
         String sql = sqlBuilder.toString();
+
+        logger.debug("Prepared query: {}", sql);
 
         return entityManager.createNativeQuery(sql);
     }

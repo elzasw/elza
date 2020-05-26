@@ -28,6 +28,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
@@ -140,7 +141,7 @@ public class StructObjService {
      * @return hodnota strukt. datového typu -> nalezené položky
      */
     public Map<ArrStructuredObject, List<ArrStructuredItem>> findStructureItems(final List<ArrStructuredObject> structureDataList) {
-        List<List<ArrStructuredObject>> parts = Lists.partition(structureDataList, 1000);
+        List<List<ArrStructuredObject>> parts = Lists.partition(structureDataList, HibernateConfiguration.MAX_IN_SIZE);
         List<ArrStructuredItem> structureItems = new ArrayList<>();
         for (List<ArrStructuredObject> part : parts) {
             structureItems.addAll(structureItemRepository.findByStructuredObjectListAndDeleteChangeIsNullFetchData(part));
@@ -681,18 +682,38 @@ public class StructObjService {
 
     /**
      * Vrátí strukt. data podle identifikátorů včetně načtených návazných entit.
+     * 
+     * Funkce zachovává pořadí vracených objektů.
      *
-     * @param structureDataIds identifikátory hodnoty strukt. datového typu
-     * @return entity
+     * @param structureDataIds
+     *            identifikátory hodnoty strukt. datového typu
+     * @return entity strukturované typy ve stejném pořadí jako byl požadavek
      */
     public List<ArrStructuredObject> getStructObjByIds(final List<Integer> structureDataIds) {
-        List<List<Integer>> idsParts = Lists.partition(structureDataIds, 1000);
-        List<ArrStructuredObject> structureDataList = new ArrayList<>();
+        List<List<Integer>> idsParts = Lists.partition(structureDataIds, HibernateConfiguration.MAX_IN_SIZE);
+
+        final Map<Integer, ArrStructuredObject> soMap = new HashMap<>();
         for (List<Integer> idsPart : idsParts) {
-            structureDataList.addAll(structObjRepository.findByIdsFetch(idsPart));
+            List<ArrStructuredObject> objs = structObjRepository.findByIdsFetch(idsPart);
+            objs.forEach(so -> soMap.put(so.getStructuredObjectId(), so));
         }
-        if (structureDataList.size() != structureDataIds.size()) {
-            throw new ObjectNotFoundException("Nenalezeny všechny rozšíření", BaseCode.ID_NOT_EXIST).setId(structureDataIds);
+        // final sort
+        List<ArrStructuredObject> structureDataList = new ArrayList<>();
+        List<Integer> notFoundItems = null;
+        for (Integer srcId : structureDataIds) {
+            ArrStructuredObject so = soMap.get(srcId);
+            if (so == null) {
+                if (notFoundItems == null) {
+                    notFoundItems = new ArrayList<>();
+                }
+                notFoundItems.add(srcId);
+            } else {
+                structureDataList.add(so);
+            }
+        }
+        if (notFoundItems != null) {
+            throw new ObjectNotFoundException("Nenalezeny všechny strukturované typye", BaseCode.ID_NOT_EXIST)
+                    .setId(notFoundItems);
         }
         return structureDataList;
     }

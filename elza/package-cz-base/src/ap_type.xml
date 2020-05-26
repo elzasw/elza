@@ -88,18 +88,23 @@
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="FAMILY" party-type="DYNASTY" parent-ap-type="PERSON">
-        <name>rodina, rod</name>
+    <ap-type code="DYNASTY">
+        <name>rod / rodina</name>
+        <hierarchical>false</hierarchical>
+        <read-only>true</read-only>
+    </ap-type>
+    <ap-type code="FAMILY" party-type="DYNASTY" parent-ap-type="DYNASTY">
+        <name>rod, rodina</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="FAMILY_BRANCH" party-type="DYNASTY" parent-ap-type="PERSON">
+    <ap-type code="FAMILY_BRANCH" party-type="DYNASTY" parent-ap-type="DYNASTY">
         <name>větev rodu</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="FICTIVE_DYNASTY" parent-ap-type="PERSON">
-        <name>fiktivní rod</name>
+    <ap-type code="FICTIVE_DYNASTY" parent-ap-type="DYNASTY">
+        <name>fiktivní rod, fiktivní rodina</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
@@ -107,6 +112,11 @@
         <name>geografický objekt</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
+    </ap-type>
+    <ap-type code="GEO_UNIT" parent-ap-type="GEO">
+        <name>administrativně či jinak lidmi vymezená území</name>
+        <hierarchical>true</hierarchical>
+        <read-only>false</read-only>
     </ap-type>
     <ap-type code="GEO_NATURE_RES" parent-ap-type="GEO">
         <name>administrativně vymezené části přírody</name>
@@ -144,7 +154,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="GEO_SPACE" parent-ap-type="GEO">
-        <name>Vesmír a jeho části</name>
+        <name>vesmír a jeho části</name>
         <hierarchical>true</hierarchical>
         <read-only>false</read-only>
     </ap-type>
@@ -173,18 +183,13 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="ARTWORK">
-        <name>dílo, výtvor</name>
+        <name>dílo / výtvor</name>
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
     <ap-type code="ARTWORK_ARTWORK" parent-ap-type="ARTWORK">
         <name>autorská a umělecká díla</name>
         <hierarchical>false</hierarchical>
-        <read-only>false</read-only>
-    </ap-type>
-    <ap-type code="GEO_UNIT" parent-ap-type="GEO">
-        <name>administrativně či jinak lidmi vymezená území</name>
-        <hierarchical>true</hierarchical>
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="ARTWORK_CHARTER" parent-ap-type="ARTWORK">
@@ -208,7 +213,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="ARTWORK_PROJ" parent-ap-type="ARTWORK">
-        <name>programy, projekty, granty</name>
+        <name>programy, projekty, granty, rozvojové plány, kampaně, nemají-li charakter korporace</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>

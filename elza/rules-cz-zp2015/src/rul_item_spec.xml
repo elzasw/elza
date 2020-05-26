@@ -1,4 +1,4 @@
-<item-specs>
+<item-specs>ově 
     <item-spec code="ZP2015_ARRANGEMENT_MAN" item-type="ZP2015_ARRANGEMENT_TYPE">
         <name>Manipulační seznam</name>
         <description>Manipulační seznam</description>
@@ -294,8 +294,8 @@
         <shortcut>hdb</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_STV" item-type="ZP2015_UNIT_SUBTYPE">
-        <name>Státní vyznamenání</name>
-        <description>Státní vyznamenání</description>
+        <name>Státní vyznamenání / cena</name>
+        <description>Státní vyznamenání nebo cena</description>
         <shortcut>stv</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_PA" item-type="ZP2015_UNIT_SUBTYPE">
@@ -304,8 +304,8 @@
         <shortcut>pa</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_STVR" item-type="ZP2015_UNIT_SUBTYPE">
-        <name>Rozhodnutí o udělení / propůjčení státního vyznamenání / ceny</name>
-        <description>Rozhodnutí o udělení / propůjčení státního vyznamenání / ceny</description>
+        <name>Udělení / propůjčení státního vyznamenání / ceny</name>
+        <description>Udělení / propůjčení státního vyznamenání / ceny</description>
         <shortcut>stvr</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_JMF" item-type="ZP2015_UNIT_SUBTYPE">
@@ -2035,27 +2035,29 @@
             <category>umělé</category>
         </categories>
     </item-spec>
+    <!-- zastaralé, nově většinou autor textu (ZP2015_ENTITY_ROLE_11) -->
     <item-spec code="ZP2015_ENTITY_ROLE_1" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři</name>
-        <description>autoři</description>
+        <name>autor</name>
+        <description>zastaralé, nově většinou autor textu</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
-    </item-spec>
+    </item-spec>    
     <item-spec code="ZP2015_ENTITY_ROLE_2" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři dialogů</name>
-        <description>autoři dialogů</description>
+        <name>autor dialogu</name>
+        <description>5.13.2, 5.14.2 pro kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
+    <!-- nahrazen fotografem, dále nepoužívat (ZP2015_ENTITY_ROLE_31) -->
     <item-spec code="ZP2015_ENTITY_ROLE_4" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři fotografií</name>
-        <description>autoři fotografií</description>
+        <name>autor fotografií</name>
+        <description>nově viz též fotograf</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2063,8 +2065,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_5" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři hudební složky</name>
-        <description>autoři hudební složky</description>
+        <name>skladatel</name>
+        <description>5.6.1 - hudebniny (dříve i autor hudební složky)</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2072,8 +2074,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_10" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři textové složky</name>
-        <description>autoři textové složky</description>
+        <name>autor textové složky/textař</name>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2081,8 +2083,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_6" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři hudby</name>
-        <description>autoři hudby</description>
+        <name>autor hudby/skladatel</name>
+        <description>5.13.2, 5.14.2, kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2090,8 +2092,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_7" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři choreografií</name>
-        <description>autoři choreografií</description>
+        <name>autor choreografie/choreograf</name>
+        <description>5.13.2, kinematografické filmy</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2099,8 +2101,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_8" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři komentářů</name>
-        <description>autoři komentářů</description>
+        <name>autor komentáře</name>
+        <description>5.13.2, 5.14.2, kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2108,8 +2110,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_9" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři námětů</name>
-        <description>autoři námětů</description>
+        <name>autor námětu</name>
+        <description>5.13.2, 5.14.2, kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2117,8 +2119,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_11" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři textů</name>
-        <description>autoři textů</description>
+        <name>autor textu</name>
+        <description>5.4.1, 5.5.1, 5.6.1, 5.9.1, 5.15.1, 5.17.1, 5.18.1 - úřední knihy (registraturní pomůcky, kartotéky), rukopisy, hudebniny, mapy (mapová díla, atlasy), tisky, plakáty, štočky</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2126,8 +2128,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_3" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři doprovodných textů</name>
-        <description>autoři doprovodných textů</description>
+        <name>autor doprovodnéno textu</name>
+        <description>5.6.1, hudebniny</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2135,26 +2137,28 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_12" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři triků a speciálních efektů</name>
-        <description>autoři triků a speciálních efektů</description>
+        <name>autor triků a speciálních efektů</name>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
+    <!-- zastaralé, nahrazeno rolí tvůrce výtvarné stránky (ZP2015_ENTITY_ROLE_39) -->
     <item-spec code="ZP2015_ENTITY_ROLE_13" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři výtvarné a obrazové stránky</name>
-        <description>autoři výtvarné a obrazové stránky</description>
+        <name>autor výtvarné a obrazové stránky</name>
+        <description>zastaralé, nahrazeno rolí tvůrce výtvarné stránky</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
+    <!-- zastaralé, nahrazeno rolí tvůrce výtvarné stránky (ZP2015_ENTITY_ROLE_39) -->
     <item-spec code="ZP2015_ENTITY_ROLE_14" item-type="ZP2015_ENTITY_ROLE">
-        <name>autoři výtvarné stránky</name>
-        <description>autoři výtvarné stránky</description>
+        <name>autor výtvarné stránky</name>
+        <description>zastaralé, nahrazeno rolí tvůrce výtvarné stránky</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2162,8 +2166,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_15" item-type="ZP2015_ENTITY_ROLE">
-        <name>vydavatelé</name>
-        <description>vydavatelé</description>
+        <name>vydavatel</name>
+        <description>5.3.1, 5.19.1, 5.21.1, 5.22.1 - listiny (před i po roce 1850), cenné papíry, faleristické předměty, numizmatické předměty</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2171,8 +2175,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_16" item-type="ZP2015_ENTITY_ROLE">
-        <name>vydavatelé / nakladatelé</name>
-        <description>vydavatelé / nakladatelé</description>
+        <name>vydavatel / nakladatel</name>
+        <description>5.6.1, 5.9.1, 5.11.2, 5.16.1, 5.17.1, 5.18.1 - hudebniny, mapy (mapová díla, atlasy), grafické listy, pohlednice, plakáty, štočky</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2180,8 +2184,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_17" item-type="ZP2015_ENTITY_ROLE">
-        <name>pečetitelé</name>
-        <description>pečetitelé</description>
+        <name>pečetitel</name>
+        <description>5.3.1 - listiny (před i po roce 1850)</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2189,8 +2193,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_18" item-type="ZP2015_ENTITY_ROLE">
-        <name>produkční společnosti/producenti</name>
-        <description>produkční společnosti/producenti</description>
+        <name>produkční společnost/producent</name>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2198,8 +2202,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_19" item-type="ZP2015_ENTITY_ROLE">
-        <name>objednatelé / příjemci</name>
-        <description>objednatelé / příjemci</description>
+        <name>objednatel / příjemce</name>
+        <description>5.5.1, 5.6.1, 5.9.1, 5.13.2, 5.14.2 - rukopisy, hudebniny, mapy (mapová díla, atlasy), kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2207,8 +2211,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_20" item-type="ZP2015_ENTITY_ROLE">
-        <name>distributoři</name>
-        <description>distributoři</description>
+        <name>distributor</name>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2216,8 +2220,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_21" item-type="ZP2015_ENTITY_ROLE">
-        <name>příjemci</name>
-        <description>příjemci</description>
+        <name>příjemce</name>
+        <description>5.3.1, 5.11.2, 5.12.1, 5.15.1, 5.16.1, 5.21.1, 5.22.1 - listiny (před i po roce 1850), grafické listy, fotografické archiválie, tisky, pohlednice, faleristické předměty, numizmatické předměty</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2225,8 +2229,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_22" item-type="ZP2015_ENTITY_ROLE">
-        <name>žadatelé</name>
-        <description>žadatelé</description>
+        <name>žadatel</name>
+        <description>5.3.1 - listiny (před i po roce 1850)</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2234,8 +2238,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_23" item-type="ZP2015_ENTITY_ROLE">
-        <name>držitelé</name>
-        <description>držitelé</description>
+        <name>držitel</name>
+        <description>5.19.1 - cenné papíry</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2243,8 +2247,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_24" item-type="ZP2015_ENTITY_ROLE">
-        <name>odesilatelé</name>
-        <description>odesilatelé</description>
+        <name>odesilatel</name>
+        <description>5.12.1, 5.16.1 - fotografické archiválie, pohlednice</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2252,8 +2256,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_25" item-type="ZP2015_ENTITY_ROLE">
-        <name>schvalovatelé</name>
-        <description>schvalovatelé</description>
+        <name>schvalovatel</name>
+        <description>5.10.1 - technické výkresy</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2261,8 +2265,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_26" item-type="ZP2015_ENTITY_ROLE">
-        <name>stavitelé</name>
-        <description>stavitelé</description>
+        <name>stavitel</name>
+        <description>5.10.1 - technické výkresy</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2270,32 +2274,32 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_27" item-type="ZP2015_ENTITY_ROLE">
-        <name>režiséři</name>
-        <description>režiséři</description>
+        <name>režisér</name>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_28" item-type="ZP2015_ENTITY_ROLE">
-        <name>scénáristé</name>
-        <description>scénáristé</description>
+        <name>scénárista</name>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_29" item-type="ZP2015_ENTITY_ROLE">
-        <name>kameramani</name>
-        <description>kameramani</description>
+        <name>kameraman</name>
+        <description>5.13.2 - kinematografické filmy</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_30" item-type="ZP2015_ENTITY_ROLE">
-        <name>interpreti hudby</name>
-        <description>interpreti hudby</description>
+        <name>interpret hudby</name>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2303,8 +2307,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_31" item-type="ZP2015_ENTITY_ROLE">
-        <name>fotografové</name>
-        <description>fotografové</description>
+        <name>fotograf</name>
+        <description>5.9.1, 5.12.1, 5.15.1, 5.16.1, 5.17.1, 5.18.1 - mapy (mapová díla, atlasy), fotografické archiválie, tisky, pohlednice, plakáty, štočky</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2312,16 +2316,16 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_32" item-type="ZP2015_ENTITY_ROLE">
-        <name>redaktoři</name>
-        <description>redaktoři</description>
+        <name>redaktor</name>
+        <description>5.9.1, 5.15.1 - mapy (mapová díla, atlasy), tisky</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_33" item-type="ZP2015_ENTITY_ROLE">
-        <name>kartografové</name>
-        <description>kartografové</description>
+        <name>kartograf</name>
+        <description>5.9.1, 5.15.1, 5.18.1 - mapy (mapová díla, atlasy), tisky, štočky</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2329,32 +2333,33 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_34" item-type="ZP2015_ENTITY_ROLE">
-        <name>editoři</name>
-        <description>editoři</description>
+        <name>editor</name>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
+    <!-- zastaralé, nahrazeno rolí redaktor -->
     <item-spec code="ZP2015_ENTITY_ROLE_35" item-type="ZP2015_ENTITY_ROLE">
-        <name>editoři / redaktoři</name>
-        <description>editoři / redaktoři</description>
+        <name>editor / redaktor</name>
+        <description>zastaralé, nahrazeno rolí redaktor</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_36" item-type="ZP2015_ENTITY_ROLE">
-        <name>kresliči</name>
-        <description>kresliči</description>
+        <name>kreslič</name>
+        <description>5.9.1, 5.10.1 - mapy (mapová díla, atlasy), technické výkresy</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_37" item-type="ZP2015_ENTITY_ROLE">
-        <name>majitelé typářů</name>
-        <description>majitelé typářů</description>
+        <name>majitel</name>
+        <description>5.7.6 - typáře (otisky, kopie otisků)</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2362,8 +2367,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_38" item-type="ZP2015_ENTITY_ROLE">
-        <name>tvůrci technického zpracování</name>
-        <description>tvůrci technického zpracování</description>
+        <name>tvůrce technického zpracování</name>
+        <description>5.11.2 - grafické listy</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2371,8 +2376,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_39" item-type="ZP2015_ENTITY_ROLE">
-        <name>tvůrci výtvarné stránky</name>
-        <description>tvůrci výtvarné stránky</description>
+        <name>tvůrce výtvarné stránky</name>
+        <description>5.4.1, 5.5.1, 5.6.1, 5.7.6, 5.9.1, 5.11.2, 5.13.2, , 5.14.2, 5.15.1, 5.16.1, 5.18.1, 5.19.1, 5.21.1, 5.22.1 - úřední knihy (registraturní pomůcky, kartotéky), rukopisy, hudebniny, typáře (otisky, kopie otisků), mapy (mapová díla, atlasy), grafické listy, kinematografické filmy, zvukové archiválie, tisky, pohlednice, štočky, cenné papíry, faleristické předměty, numizmatické předměty</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2380,16 +2385,16 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_40" item-type="ZP2015_ENTITY_ROLE">
-        <name>dramaturgové</name>
-        <description>dramaturgové</description>
+        <name>dramaturg</name>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_41" item-type="ZP2015_ENTITY_ROLE">
-        <name>střih</name>
-        <description>střih</description>
+        <name>střih/střihač</name>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2397,8 +2402,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_42" item-type="ZP2015_ENTITY_ROLE">
-        <name>zvuk</name>
-        <description>zvuk</description>
+        <name>zvuk/zvukař</name>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2407,7 +2412,7 @@
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_43" item-type="ZP2015_ENTITY_ROLE">
         <name>účinkující</name>
-        <description>účinkující</description>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2415,8 +2420,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_44" item-type="ZP2015_ENTITY_ROLE">
-        <name>překladatelé</name>
-        <description>překladatelé</description>
+        <name>překladatel</name>
+        <description>5.5.1, 5.13.2, 5.14.2, 5.15.1 - rukopisy, kinematografické filmy, zvukové archiválie, tisky</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2424,40 +2429,40 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_45" item-type="ZP2015_ENTITY_ROLE">
-        <name>lektoři</name>
-        <description>lektoři</description>
+        <name>lektor</name>
+        <description>5.15.1 - tisky</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_46" item-type="ZP2015_ENTITY_ROLE">
-        <name>svědci</name>
-        <description>svědci</description>
+        <name>svědek</name>
+        <description>5.3.1 - listiny (před i po roce 1850)</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_47" item-type="ZP2015_ENTITY_ROLE">
-        <name>ručitelé (rukojmě)</name>
-        <description>ručitelé (rukojmě)</description>
+        <name>ručitel (rukojmě)</name>
+        <description>5.3.1 - (před i po roce 1850)</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_48" item-type="ZP2015_ENTITY_ROLE">
-        <name>písaři</name>
-        <description>písaři</description>
+        <name>písař</name>
+        <description>5.3.1, 5.4.1, 5.5.1 - listiny (před i po roce 1850), úřední knihy (registraturní pomůcky, kartotéky), rukopisy</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_49" item-type="ZP2015_ENTITY_ROLE">
-        <name>zpracovatelé nosičů záznamů</name>
-        <description>zpracovatelé nosičů záznamů</description>
+        <name>zpracovatel nosičů záznamů</name>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2465,25 +2470,26 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_50" item-type="ZP2015_ENTITY_ROLE">
-        <name>výrobci nosičů záznamů</name>
-        <description>výrobci nosičů záznamů</description>
+        <name>výrobce nosičů záznamů</name>
+        <description>5.12.1, 5.13.2, 5.9.1, 5.14.2, 5.15.1 - fotografické archiválie, kinematografické filmy, mapy (mapová díla, atlasy), zvukové archiválie, tisky</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
+    <!-- zastaralé, nahrazeno rolí tiskárna/tiskař (nově ZP2015_ENTITY_ROLE_52)-->
     <item-spec code="ZP2015_ENTITY_ROLE_51" item-type="ZP2015_ENTITY_ROLE">
-        <name>tiskárny</name>
-        <description>tiskárny</description>
+        <name>tiskárna</name>
+        <description>zastaralé, nahrazeno rolí tiskárna/tiskař</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_52" item-type="ZP2015_ENTITY_ROLE">
-        <name>tiskárny/tiskaři</name>
-        <description>tiskárny/tiskaři</description>
+        <name>tiskárna/tiskař</name>
+        <description>5.6.1, 5.9.1, 5.11.2, 5.15.1, 5.16.1, 5.17.1, , 5.19.1 - hudebniny, mapy (mapová díla, atlasy), grafické listy, tisky, pohlednice, plakáty, , cenné papíry</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2491,26 +2497,28 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_53" item-type="ZP2015_ENTITY_ROLE">
-        <name>výrobci</name>
-        <description>výrobci</description>
+        <name>výrobce</name>
+        <description>5.4.1, 5.7.6, 5.10.1, 5.21.1, 5.22.1 - úřední knihy (registraturní pomůcky, kartotéky), typáře (otisky, kopie otisků), technické výkresy, faleristické předměty, numizmatické předměty</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
+    <!-- zastaralé, bude nahrazeno rolí výrobce (ZP2015_ENTITY_ROLE_53) -->
     <item-spec code="ZP2015_ENTITY_ROLE_54" item-type="ZP2015_ENTITY_ROLE">
-        <name>výrobci typářů</name>
-        <description>výrobci typářů</description>
+        <name>výrobce typářů</name>
+        <description>zastaralé, bude nahrazeno rolí výrobce</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
+    <!-- zastaralé, bude nahrazeno rolí výrobce (ZP2015_ENTITY_ROLE_53) -->
     <item-spec code="ZP2015_ENTITY_ROLE_55" item-type="ZP2015_ENTITY_ROLE">
-        <name>výrobci odlitků otisků / otisků typářů</name>
-        <description>výrobci odlitků otisků / otisků typářů</description>
+        <name>výrobce odlitků otisků / otisků typářů</name>
+        <description>zastaralé, bude nahrazeno rolí výrobce</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2518,72 +2526,74 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_56" item-type="ZP2015_ENTITY_ROLE">
-        <name>místa vzniku záznamů</name>
-        <description>místa vzniku záznamů</description>
+        <name>místo natáčení</name>
+        <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_57" item-type="ZP2015_ENTITY_ROLE">
-        <name>místa vydavatelů</name>
-        <description>místa vydavatelů</description>
+        <name>místo vydavatele</name>
+        <description>5.21.1, 5.22.1 - faleristické předměty, numizmatické předměty</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_58" item-type="ZP2015_ENTITY_ROLE">
-        <name>místa vydání</name>
-        <description>místa vydání</description>
+        <name>místo vydání</name>
+        <description>5.3.1, 5.7.6, 5.15.1, 5.17.1, 5.16.1, 5.19.1 - listiny (před i po roce 1850), typáře (otisky, kopie otisků), tisky, plakáty, pohlednice, cenné papíry</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
     </item-spec>
+    <!-- zastaralé, bude nahrazeno místem vydání -->
     <item-spec code="ZP2015_ENTITY_ROLE_59" item-type="ZP2015_ENTITY_ROLE">
-        <name>místa vydání dokumentů</name>
-        <description>místa vydání dokumentů</description>
+        <name>místo vydání dokumentů</name>
+        <description>zastaralé, bude nahrazeno místem vydání</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_60" item-type="ZP2015_ENTITY_ROLE">
-        <name>místa výroby jednotek popisu</name>
-        <description>místa výroby jednotek popisu</description>
+        <name>místo výroby</name>
+        <description>5.13.2, 5.14.2, 5.21.1, 5.22.1 - kinematografické filmy, zvukové archiválie, faleristické předměty, numizmatické předměty</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_61" item-type="ZP2015_ENTITY_ROLE">
-        <name>místa vzniku jednotek popisu</name>
-        <description>místa vzniku jednotek popisu</description>
+        <name>místo vzniku jednotky popisu</name>
+        <description>5.3.1, 5.4.1, 5.5.1, 5.6.1, 5.7.6, 5.9.1, 5.10.1, 5.11.2, 5.12.1, 5.18.1 - listiny (před i po roce 1850), úřední knihy (registraturní pomůcky, kartotéky), rukopisy, hudebniny, typáře (otisky, kopie otisků), mapy (mapová díla, atlasy), technické výkresy, grafické listy, fotografické archiválie, štočky</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_62" item-type="ZP2015_ENTITY_ROLE">
-        <name>místa vzniku předloh popisovaných kopií</name>
-        <description>místa vzniku předloh popisovaných kopií</description>
+        <name>místo vzniku předlohy popisované kopie</name>
+        <description>5.3.1, 5.4.1, 5.5.1, 5.6.1, 5.7.6, 5.9.1, 5.10.1, 5.11.2, 5.15.1, 5.16.1, 5.17.1, 5.18.1, 5.19.1, 5.21.1, 5.22.1 - listiny (před i po roce 1850), úřední knihy (registraturní pomůcky, kartotéky), rukopisy, hudebniny, typáře (otisky, kopie otisků), mapy (mapová díla, atlasy), technické výkresy, grafické listy, tisky, pohlednice, plakáty, štočky, cenné papíry, faleristické předměty, numizmatické předměty</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_63" item-type="ZP2015_ENTITY_ROLE">
-        <name>typová označení a názvy výrobků a typových staveb</name>
-        <description>typová označení a názvy výrobků a typových staveb</description>
+        <name>typové označení a název výrobku a typové stavby</name>
+        <description>5.10.1 - technické výkresy</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="ARTWORK"/>
         </item-aptypes>
     </item-spec>
+    <!-- Zneplatněno viz https://bugzilla.lightcomp.cz/show_bug.cgi?id=6146 -->
     <item-spec code="ZP2015_ENTITY_ROLE_64" item-type="ZP2015_ENTITY_ROLE">
-        <name>entity zachycené jednotkami popisu</name>
-        <description>entity zachycené jednotkami popisu</description>
+        <name>entita zachycená jednotkami popisu</name>
+        <description>entita zachycená jednotkami popisu</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2593,9 +2603,10 @@
             <item-aptype register-type="ARTWORK"/>
         </item-aptypes>
     </item-spec>
+    <!-- Zneplatněno viz https://bugzilla.lightcomp.cz/show_bug.cgi?id=6146 -->
     <item-spec code="ZP2015_ENTITY_ROLE_65" item-type="ZP2015_ENTITY_ROLE">
-        <name>ostatní entity zachycené jednotkami popisu</name>
-        <description>ostatní entity zachycené jednotkami popisu</description>
+        <name>ostatní entita zachycená jednotkami popisu</name>
+        <description>ostatní entita zachycená jednotkami popisu</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
@@ -2603,6 +2614,62 @@
             <item-aptype register-type="GEO"/>
             <item-aptype register-type="EVENT"/>
             <item-aptype register-type="ARTWORK"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_66" item-type="ZP2015_ENTITY_ROLE">
+        <name>osoba/bytost zachycená jednotkou popisu</name>
+        <description>všechny typy a podtypy archiválií</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>    
+    <item-spec code="ZP2015_ENTITY_ROLE_67" item-type="ZP2015_ENTITY_ROLE">
+        <name>rod/rodina zachycený/á jednotkou popisu</name>
+        <description>všechny typy a podtypy archiválií</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>    
+    <item-spec code="ZP2015_ENTITY_ROLE_68" item-type="ZP2015_ENTITY_ROLE">
+        <name>korporace zachycená jednotkou popisu</name>
+        <description>všechny typy a podtypy archiválií</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>    
+    <item-spec code="ZP2015_ENTITY_ROLE_69" item-type="ZP2015_ENTITY_ROLE">
+        <name>událost zachycená jednotkou popisu</name>
+        <description>všechny typy a podtypy archiválií</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="EVENT"/>
+        </item-aptypes>
+    </item-spec>    
+    <item-spec code="ZP2015_ENTITY_ROLE_70" item-type="ZP2015_ENTITY_ROLE">
+        <name>dílo/výtvor zachycené/ý jednotkou popisu</name>
+        <description>platné pro všechny typy a podtypy archiválií</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK"/>
+        </item-aptypes>
+    </item-spec>    
+    <item-spec code="ZP2015_ENTITY_ROLE_71" item-type="ZP2015_ENTITY_ROLE">
+        <name>geografický objekt zachycený jednotkou popisu</name>
+        <description>platné pro všechny typy a podtypy archiválií</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>    
+    <item-spec code="ZP2015_ENTITY_ROLE_72" item-type="ZP2015_ENTITY_ROLE">
+        <name>obecný pojem vztahující se k jednotce popisu</name>
+        <description>platné pro všechny typy a podtypy archiválií</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
         </item-aptypes>
     </item-spec>
     <!-- Nezjištěné hodnoty -->
@@ -2613,82 +2680,82 @@
     </item-spec>
     <!-- jiné typy datace -->
     <item-spec code="ZP2015_DATE_OF_CONTENT" item-type="ZP2015_DATE_OTHER">
-        <name>Datace obsahu</name>
+        <name>obsahu</name>
         <description>Datace obsahu jednotky popisu</description>
         <shortcut>obsah</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_DECLARED" item-type="ZP2015_DATE_OTHER">
-        <name>Datace deklarovaná</name>
+        <name>deklarovaná</name>
         <description>Datace, k níž se jednotka popisu hlásí</description>
         <shortcut>deklarovaná</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_ORIG" item-type="ZP2015_DATE_OTHER">
-        <name>Datace vzniku předlohy</name>
+        <name>vzniku předlohy</name>
         <description>Datace vzniku předlohy, pokud je popisována kopie, která nenahrazuje předlohu</description>
         <shortcut>vznik předlohy</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_OF_COPY" item-type="ZP2015_DATE_OTHER">
-        <name>Datace vzniku kopie</name>
+        <name>vzniku kopie</name>
         <description>Datace vzniku kopie, která nahrazuje zničenou archiválii</description>
         <shortcut>vznik kopie</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_SEALING" item-type="ZP2015_DATE_OTHER">
-        <name>Datace zpečetění</name>
+        <name>zpečetění</name>
         <description>Datace zpečetění jednotky popisu</description>
         <shortcut>zpečetění</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_ACT_PUBLISHING" item-type="ZP2015_DATE_OTHER">
-        <name>Datace vydání listiny</name>
+        <name>vydání listiny</name>
         <description>Datace vydání listiny</description>
         <shortcut>vydání listiny</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_INSERT" item-type="ZP2015_DATE_OTHER">
-        <name>Datace insertu/transeptu</name>
+        <name>insertu/transeptu</name>
         <description>Datace insertu/transeptu</description>
         <shortcut>insert/transept</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_MOLD_CREATION" item-type="ZP2015_DATE_OTHER">
-        <name>Datace vzniku matrice</name>
+        <name>vzniku matrice</name>
         <description>Datace vzniku matrice, z níž byla jednotka popisu zhotovena</description>
         <shortcut>vznik matrice</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_USAGE" item-type="ZP2015_DATE_OTHER">
-        <name>Datace užívání typáře</name>
+        <name>užívání typáře</name>
         <description>Doba užívání typáře</description>
         <shortcut>užívání typáře</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_PUBLISHING" item-type="ZP2015_DATE_OTHER">
-        <name>Datace vydání dokumentu</name>
+        <name>vydání dokumentu</name>
         <description>Datace vydání dokumentu, k němuž byl popisovaný otisk připojen</description>
         <shortcut>vydání dokumentu</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_MAP_UPDATE" item-type="ZP2015_DATE_OTHER">
-        <name>Datace reambulace mapy</name>
+        <name>reambulace mapy</name>
         <description>Datace reambulace (aktualizace) mapy</description>
         <shortcut>reambulace mapy</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_CAPTURING" item-type="ZP2015_DATE_OTHER">
-        <name>Datace pořízení obrazového záznamu</name>
+        <name>pořízení obrazového záznamu</name>
         <description>Datace pořízení obrazového záznamu</description>
         <shortcut>pořízení obrazového záznamu</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_RECORDING" item-type="ZP2015_DATE_OTHER">
-        <name>Datace pořízení filmového / zvukového záznamu</name>
+        <name>pořízení filmového / zvukového záznamu</name>
         <description>Datace pořízení filmového / zvukového záznamu</description>
         <shortcut>pořízení filmového / zvukového záznamu</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_AWARDING" item-type="ZP2015_DATE_OTHER">
-        <name>Datace udělení / propůjčení faleristického předmětu</name>
+        <name>udělení / propůjčení faleristického předmětu</name>
         <description>Datace udělení / propůjčení faleristického předmětu</description>
         <shortcut>udělení / propůjčení faleristického předmětu</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_AWARD_CER" item-type="ZP2015_DATE_OTHER">
-        <name>Datace předání faleristického předmětu</name>
+        <name>předání faleristického předmětu</name>
         <description>Datace předání faleristického předmětu</description>
         <shortcut>předání faleristického předmětu</shortcut>
     </item-spec>
     <item-spec code="ZP2015_DATE_WITHDRAWAL" item-type="ZP2015_DATE_OTHER">
-        <name>Datace odnětí / vrácení faleristického předmětu</name>
+        <name>odnětí / vrácení faleristického předmětu</name>
         <description>Datace odnětí / vrácení faleristického předmětu</description>
         <shortcut>odnětí / vrácení faleristického předmětu</shortcut>
     </item-spec>

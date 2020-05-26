@@ -13,8 +13,9 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +55,7 @@ import cz.tacr.elza.ws.types.v1.DaoPackage;
 import cz.tacr.elza.ws.types.v1.Daoset;
 import cz.tacr.elza.ws.types.v1.Did;
 import cz.tacr.elza.ws.types.v1.File;
-import cz.tacr.elza.ws.types.v1.Foder;
+import cz.tacr.elza.ws.types.v1.Folder;
 import cz.tacr.elza.ws.types.v1.FolderGroup;
 
 @Component
@@ -63,7 +64,12 @@ import cz.tacr.elza.ws.types.v1.FolderGroup;
         endpointInterface = "cz.tacr.elza.ws.core.v1.DaoService")
 public class DaoCoreServiceImpl implements DaoService {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(DaoCoreServiceImpl.class);
+
+    /**
+     * Name of JSON object containing items and its values
+     */
+    public final static String ITEMS = "ITEMS";
 
     @Autowired
     private DaoPackageRepository daoPackageRepository;
@@ -218,7 +224,7 @@ public class DaoCoreServiceImpl implements DaoService {
     }
 
     private ArrDaoPackage createArrDaoPackage(final DaoPackage daoPackage) {
-        Assert.notNull(daoPackage, "DAO obal musí být vyplněn");
+        Validate.notNull(daoPackage, "DAO obal musí být vyplněn");
 
         ArrFund fund = getArrFund(daoPackage.getFundIdentifier());
         ArrDigitalRepository repository = digitalRepositoryRepository.findOneByCode(daoPackage
@@ -285,22 +291,22 @@ public class DaoCoreServiceImpl implements DaoService {
 
                 ArrDao arrDao = daoSyncService.createArrDao(arrDaoPackage, dao);
 
-                if (dao.getFileGroup() != null) {
-                    for (File file : dao.getFileGroup().getFile()) {
+                if (dao.getFiles() != null) {
+                    for (File file : dao.getFiles().getFile()) {
                         daoSyncService.createArrDaoFile(arrDao, file);
                     }
                 }
 
-                FolderGroup fg = dao.getFolderGroup();
+                FolderGroup fg = dao.getFolders();
                 if(fg!=null)
                 {
-                    for (Foder folder : fg.getFoder()) {
+                    for (Folder folder : fg.getFolder()) {
 
                         ArrDaoFileGroup arrDaoFileGroup = daoSyncService.createArrDaoFileGroup(arrDao,
                                                                                                folder);
 
-                        if (folder.getFileGroup() != null) {
-                            for (File file : folder.getFileGroup().getFile()) {
+                        if (folder.getFiles() != null) {
+                            for (File file : folder.getFiles().getFile()) {
                                 daoSyncService.createArrDaoFileGroup(arrDaoFileGroup, file);
                             }
                         }
@@ -346,7 +352,7 @@ public class DaoCoreServiceImpl implements DaoService {
             // původní zneplatnění - nahrazeno skutečným kaskádovým smazáním - výslovně požadováno 10.1. LightCompem
             // final List<ArrDao> arrDaoList = daoService.deleteDaosWithoutLinks(arrDaos);
 
-            daoService.deleteDaoPackageWithCascade(packageIdentifier, arrDaoPackage);
+            daoService.deleteDaoPackageWithCascade(arrDaoPackage);
 
             logger.info("Ending operation removePackage");
         } catch (Exception e) {
@@ -390,8 +396,21 @@ public class DaoCoreServiceImpl implements DaoService {
                 throw new ObjectNotFoundException("Digitalizát s ID=" + daoIdentifier + " nenalezen",
                         DigitizationCode.DAO_NOT_FOUND).set("code", daoIdentifier);
             }
+            
+            ArrDaoPackage daoPackage = arrDao.getDaoPackage();
+            ArrFund fund = daoPackage.getFund();
 
-            daoService.deleteDaosWithoutLinks(Collections.singletonList(arrDao));
+            daoService.deleteDaosWithoutLinks(fund, Collections.singletonList(arrDao));
+
+            /* TODO: Maji se automaticky mazat daoPackage?            
+            // check if whole package can be deleted and delete it
+            List<ArrDao> daos = daoService.findDaosByPackage(fund.getFundId(), daoPackage, null,
+                                                             null,
+                                                             false);
+            if (!daos.stream().anyMatch(dao -> dao.getValid() == true)) {
+                // all are invalid -> remove whole package
+                daoService.deleteDaoPackageWithCascade(daoPackage);
+            }*/
 
             logger.info("Ending operation removeDao");
         } catch (Exception e) {

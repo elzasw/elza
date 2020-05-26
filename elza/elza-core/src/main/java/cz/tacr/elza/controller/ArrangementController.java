@@ -1,16 +1,27 @@
 package cz.tacr.elza.controller;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -36,6 +47,32 @@ import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.AddLevelParam;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
+import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
+import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.CreateFundVO;
+import cz.tacr.elza.controller.vo.DataGridExportType;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FulltextFundRequest;
+import cz.tacr.elza.controller.vo.FundListCountResult;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.SelectNodeResult;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -81,7 +118,6 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
@@ -109,6 +145,7 @@ import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FilterTreeService;
 import cz.tacr.elza.service.FundLevelService;
+import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PolicyService;
@@ -126,9 +163,6 @@ import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.service.vo.UpdateDescItemsParam;
-
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 /**
  * Kontroler pro pořádání.
@@ -252,6 +286,9 @@ public class ArrangementController {
 
 	@Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    private FundLevelService fundLevelService;
 
     /**
      *  Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
@@ -393,7 +430,8 @@ public class ArrangementController {
             final ArrDaoPackage arrDaoPackage = daoPackageRepository.getOneCheckExist(daoPackageId);
 
 
-            final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion, arrDaoPackage, index, maxResults,
+            final List<ArrDao> arrDaoList = daoService.findDaosByPackage(fundVersion.getFundId(), arrDaoPackage, index,
+                                                                         maxResults,
                     BooleanUtils.isTrue(unassigned));
 
             final List<ArrDaoVO> daoList = factoryVo.createDaoList(arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
@@ -415,18 +453,34 @@ public class ArrangementController {
                 method = RequestMethod.PUT,
                 consumes = MediaType.APPLICATION_JSON_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
-    public void createDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+    public ArrDaoLinkVO createDaoLink(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                               @PathVariable(value = "daoId") final Integer daoId,
                               @PathVariable(value = "nodeId") final Integer nodeId) {
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(daoId, "Identifikátor DAO musí být vyplněn");
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(daoId, "Identifikátor DAO musí být vyplněn");
+        Validate.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDao dao = daoRepository.getOneCheckExist(daoId);
         final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
 
-        final ArrDaoLink daoLink = daoService.createOrFindDaoLink(fundVersion, dao, node);
+        ArrDaoLink daoLink;
+        // specializace dle typu DAO
+        switch (dao.getDaoType()) {
+        case LEVEL:
+            ArrLevel level = fundLevelService.addNewLevel(fundVersion, node, node,
+                                                          AddLevelDirection.CHILD, null, null);
+            daoLink = daoService.createOrFindDaoLink(fundVersion, dao, level.getNode());
+            break;
+        case ATTACHMENT:
+            daoLink = daoService.createOrFindDaoLink(fundVersion, dao, node);
+            break;
+        default:
+            throw new SystemException("Unrecognized dao type");
+        }
+
+        ArrDaoLinkVO daoLinkVo = this.factoryVo.createDaoLink(daoLink, fundVersion);
+        return daoLinkVo;
     }
 
     /**
@@ -482,8 +536,20 @@ public class ArrangementController {
 
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDaoLink daoLink = daoLinkRepository.getOneCheckExist(daoLinkId);
+        final ArrDao dao = daoLink.getDao();
 
-        final ArrDaoLink deleteDaoLink = daoService.deleteDaoLink(fundVersion, daoLink);
+        switch (dao.getDaoType()) {
+        case LEVEL:
+            // odstraneni urovne
+            ArrNode deleteNode = daoLink.getNode();
+            fundLevelService.deleteLevel(fundVersion, deleteNode, null);
+            break;
+        case ATTACHMENT:
+            daoService.deleteDaoLink(fundVersion, daoLink);
+            break;
+        default:
+            throw new SystemException("Unrecognized dao type");
+        }
     }
 
     /**
@@ -1056,7 +1122,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/output/{outputId}/{fundVersionId}/{itemTypeId}/switch", method = RequestMethod.POST)
-    public void switchOutputCalculating(@PathVariable(value = "outputId") final Integer outputId,
+    public boolean switchOutputCalculating(@PathVariable(value = "outputId") final Integer outputId,
                                         @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                         @PathVariable(value = "itemTypeId") final Integer itemTypeId,
                                         @RequestParam(value = "strict", required = false, defaultValue = "false") final Boolean strict) {
@@ -1064,7 +1130,7 @@ public class ArrangementController {
         ArrOutput output = outputService.getOutput(outputId);
         RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
 
-        outputService.switchOutputCalculating(output, fundVersion, itemType, strict);
+        return outputService.switchOutputCalculating(output, fundVersion, itemType, strict);
     }
 
     /**

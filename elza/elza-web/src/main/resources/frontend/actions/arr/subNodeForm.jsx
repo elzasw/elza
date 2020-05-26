@@ -757,7 +757,11 @@ export class ItemFormActions {
             const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
             if (fundIndex !== null) {
                 const getOutputId = state.arrRegion.funds[fundIndex].fundOutput.fundOutputDetail.subNodeForm.fetchingId;
-                return WebApi.switchOutputCalculating(versionId, getOutputId, itemTypeId, strict);
+                return WebApi.switchOutputCalculating(versionId, getOutputId, itemTypeId, strict).then(data => {
+                    if (!data) {
+                        dispatch(this.fundSubNodeFormDescItemTypeAdd(versionId, 1, itemTypeId));
+                    }
+                });
             }
         }
     }
@@ -1020,7 +1024,10 @@ class NodeFormActions extends ItemFormActions {
                     // ##
 
                     // výpočet pozice záznamu
-                    let indexFrom = node.viewStartIndex - node.viewStartIndex % (node.pageSize / 2);
+                    // pokud neznáme node.nodeIndex, nastavíme na -1 (necháme výpočet indexu na serveru)
+                    let indexFrom = node.nodeIndex == null ? -1 : node.nodeIndex - node.nodeIndex % (node.pageSize / 2);
+                    //původní výpočet z viewStartIndex
+                    //let indexFrom = node.viewStartIndex - node.viewStartIndex % (node.pageSize / 2);
 
                     const nodeParam = {nodeId};
                     const resultParam = {

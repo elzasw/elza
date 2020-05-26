@@ -8,14 +8,36 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.Item;
 
-public class OutputItemConvertor implements ItemConvertor {
+public class OutputItemConvertor {
 
-    @Override
-    public Item convert(ArrItem arrItem, ItemConvertorContext context) {
+    final ItemConvertorContext context;
+
+    final List<ItemConvertor> convertors;
+
+    public OutputItemConvertor(final ItemConvertorContext context) {
+        this.context = context;
+
+        this.convertors = Arrays
+                .asList(
+                                   new StringItemConvertor(),
+                                   new IntegerItemConvertor(),
+                                   new DecimalItemConvertor(),
+                                   new UnitDateItemConvertor(),
+                                   new CoordinatesItemConvertor(),
+                                   new EnumItemConvertor(),
+                                   new RecordRefItemConvertor(),
+                                   new PartyRefItemConvertor(),
+                                   new StructuredObjectRefItemConvertor(),
+                                   new FileRefItemConvertor(),
+                                   new JsonTableItemConvertor(),
+                                   new DateItemConvertor());
+    }
+
+    public Item convert(ArrItem arrItem) {
         if (arrItem.isUndefined()) {
             return null;
         }
-        for (ItemConvertor conv : getConvertors()) {
+        for (ItemConvertor conv : convertors) {
             Item item = conv.convert(arrItem, context);
             if (item != null) {
                 return item;
@@ -26,19 +48,4 @@ public class OutputItemConvertor implements ItemConvertor {
                 .set("itemTypeId", arrItem.getItemTypeId());
     }
 
-    private List<ItemConvertor> getConvertors() {
-        return Arrays.asList(
-                             new StringItemConvertor(),
-                             new IntegerItemConvertor(),
-                             new DecimalItemConvertor(),
-                             new UnitDateItemConvertor(),
-                             new CoordinatesItemConvertor(),
-                             new EnumItemConvertor(),
-                             new RecordRefItemConvertor(),
-                             new PartyRefItemConvertor(),
-                             new StructuredObjectRefItemConvertor(),
-                             new FileRefItemConvertor(),
-                             new JsonTableItemConvertor(),
-                             new DateItemConvertor());
-    }
 }
