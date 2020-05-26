@@ -38,10 +38,12 @@ export function fundSubNodeDaosFetchIfNeeded(versionId, nodeId, routingKey) {
                 // pokud chceme reálně načíst objekt, provedeme fetch
                 return WebApi.getFundNodeDaos(versionId, nodeId).then(json => {
                     const newStore = getSubNodeDaos(getState(), versionId, routingKey);
-                    const newDataKey = newStore.currentDataKey;
-                    if (newDataKey === dataKey) {
-                        // jen pokud příchozí objekt odpovídá dtům, které chceme ve store
-                        dispatch(fundSubNodeDaosReceive(versionId, nodeId, routingKey, json));
+                    if (newStore !== null) {
+                        const newDataKey = newStore.currentDataKey;
+                        if (newDataKey === dataKey) {
+                            // jen pokud příchozí objekt odpovídá dtům, které chceme ve store
+                            dispatch(fundSubNodeDaosReceive(versionId, nodeId, routingKey, json));
+                        }
                     }
                 });
             } else {

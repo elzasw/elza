@@ -75,7 +75,7 @@ class FundTreeMovementsRight extends AbstractReactComponent {
         e.preventDefault();
         e.stopPropagation();
 
-        var menu = <ul className="dropdown-menu"></ul>;
+        const menu = <ul className="dropdown-menu"></ul>;
 
         this.props.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, this.props.versionId, node));
         this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));

@@ -46,6 +46,7 @@
             }
             .history-button {
                 &:hover{
+                    color: #333;
                     background-color: $homepage-button-bg-hover;
                 }
             }

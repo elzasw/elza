@@ -175,8 +175,8 @@ function getFundForTree(state, area, versionId) {
  */
 function changeCurrentIndex(dispatch, area, fund, versionId, fundTree, newIndex) {
     if (newIndex != fundTree.filterCurrentIndex) {
-        var nodeId = fundTree.searchedIds[newIndex];
-        var nodeParent = fundTree.searchedParents[nodeId];
+        const nodeId = fundTree.searchedIds[newIndex];
+        let nodeParent = fundTree.searchedParents[nodeId];
 
         if (nodeParent === null) {
             nodeParent = createFundRoot(fund);
@@ -490,11 +490,12 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
         }
         if (selectedIds.length > 0) {
             selectedIds.forEach(selectedId => {
-                includeIds.push(selectedId);
+                const id = parseInt(selectedId);
+                includeIds.push(id);
 
-                const isInView = indexById(fundTree.nodes, selectedId);
+                const isInView = indexById(fundTree.nodes, id);
                 if (isInView == null) {
-                    if (!fundTree.fetchingIncludeIds[selectedId]) {
+                    if (!fundTree.fetchingIncludeIds[id]) {
                         fetch = true;
                     }
                 }
