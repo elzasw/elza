@@ -614,6 +614,17 @@ export default function subNodeForm(state = initialState, action = {}) {
                 var infoType = state.infoTypesMap[loc.descItemType.id]
                 var refType = state.refTypesMap[loc.descItemType.id]
 
+                state = {
+                    ...state,
+                    infoTypesMap: {
+                        ...state.infoTypesMap,
+                        [loc.descItemType.id]: {
+                            ...infoType,
+                            calSt: 0
+                        }
+                    }
+                };
+
                 // Odebereme pouze pokud je pole jiné než: REQUIRED nebo RECOMMENDED
                 if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') { // ponecháme, pouze odebereme hodnoty
                     // Hodnoty odebereme

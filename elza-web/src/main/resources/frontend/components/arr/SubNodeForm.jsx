@@ -61,6 +61,7 @@ class SubNodeForm extends AbstractReactComponent {
 
     state = {
         unusedItemTypeIds: [],
+        unusedItemTypeInitIds: [],
         // Priznak pro podrobne logovani
         // standardne false
         detailLogging: false
@@ -127,7 +128,8 @@ class SubNodeForm extends AbstractReactComponent {
         const {subNodeForm} = this.props;
         const unusedItemTypeIds = subNodeForm.unusedItemTypeIds;
         this.setState({
-            unusedItemTypeIds: unusedItemTypeIds
+            unusedItemTypeIds: unusedItemTypeIds,
+            unusedItemTypeInitIds: unusedItemTypeIds
         });
     }
 
@@ -289,6 +291,17 @@ class SubNodeForm extends AbstractReactComponent {
         const {subNodeForm: {formData}} = this.props;
         const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
         const types = this.getFlatDescItemTypes(true);
+        const indexUnused = (this.state.unusedItemTypeInitIds!=null)?this.state.unusedItemTypeInitIds.indexOf(descItemType.id):-1;
+        if (indexUnused !== -1) {
+            const unusedItemTypeIds = this.state.unusedItemTypeIds;
+            this.setState({
+                unusedItemTypeIds: [
+                    ...unusedItemTypeIds.slice(0, indexUnused),
+                    descItemType.id,
+                    ...unusedItemTypeIds.slice(indexUnused)
+                ]
+            });
+        }
         const index = indexById(types, descItemType.id);
         if (index + 1 < types.length) {
             let focusDescItemType = types[index + 1];

@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Lists;
 
+import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -118,7 +119,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                                                     final RulItemType itemType,
                                                     final List<Integer> nodeIds) {
         Set<Integer> result = new HashSet<>();
-        for (List<Integer> partOfNodeIds : Lists.partition(nodeIds, 1000)) {
+        for (List<Integer> partOfNodeIds : Lists.partition(nodeIds, HibernateConfiguration.MAX_IN_SIZE)) {
             CriteriaBuilder builder = entityManager.getCriteriaBuilder();
             CriteriaQuery<RulItemSpec> query = builder.createQuery(RulItemSpec.class);
 

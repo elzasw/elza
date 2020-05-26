@@ -37,6 +37,7 @@ import {
     AdminExtSystemPage,
     AdminRequestsQueuePage,
     NodePage,
+    EntityPage,
 } from 'pages'
 
 import './Layout.less';
@@ -143,6 +144,7 @@ class Layout extends AbstractReactComponent {
                 {this.props.login.logged && <Switch>
                     <Route path="/fund" component={FundPage} />
                     <Route path="/node/:uuid" component={NodePage} />
+                    <Route path="/entity/:uuid" component={EntityPage} />
                     <Route path="/arr">
                         <Switch>
                             <Route path="/arr/dataGrid" component={ArrDataGridPage} />

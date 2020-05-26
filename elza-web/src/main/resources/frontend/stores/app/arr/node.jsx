@@ -13,6 +13,19 @@ let _nextRoutingKey = 1;
 const _routingKeyAreaPrefix = 'NODE|';
 const _pageSize = 50;
 
+function initNodeChild(node) {
+    return {
+        accordionLeft: null,
+        accordionRight: null,
+        digitizationRequests: null,
+        issues: [],
+        nodeConformity: {},
+        referenceMark: [],
+        version: 0,
+        ...node,
+    }
+}
+
 export function nodeInitState(node, prevNodesNode) {
     var result = {
         ...node,
@@ -404,6 +417,7 @@ export function node(state = nodeInitialState, action) {
             // Změna view tak, aby byla daná položka vidět
             if (state.selectedSubNodeId !== null && !action.viewStartIndexInvalidate) {
                 result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
+                console.log("change viewStartIndex", result.viewStartIndex)
             }
 
             return result;
@@ -471,16 +485,23 @@ export function node(state = nodeInitialState, action) {
                      * direction - BEFORE/AFTER - před/za
                      * newNode - Node objekt
                      */
-                    var nodeIndex = indexById(state.childNodes, action.indexNode.id);
+                    let nodeIndex = indexById(state.childNodes, action.indexNode.id);
+
+                    const existsNode = indexById(state.childNodes, action.newNode.id);
+                    if (existsNode != null) {
+                        // JS bylo již přidáno
+                        return state;
+                    }
+
                     if (nodeIndex != null) {
                         switch (action.direction) {
                             case "AFTER":
-                            case "BEFORE":
-                                nodeIndex = action.direction == "BEFORE" ? nodeIndex : nodeIndex + 1;
+                            case "BEFORE": {
+                                nodeIndex = action.direction === "BEFORE" ? nodeIndex : nodeIndex + 1;
 
-                                var childNodes = [
+                                let childNodes = [
                                     ...state.childNodes.slice(0, nodeIndex),
-                                    nodeInitState(action.newNode),
+                                    initNodeChild(action.newNode),
                                     ...state.childNodes.slice(nodeIndex)
                                 ]
 
@@ -491,10 +512,11 @@ export function node(state = nodeInitialState, action) {
                                     filterText: '',
                                     searchedIds: {}
                                 };
-                            case "CHILD":
-                                var childNodes = [
+                            }
+                            case "CHILD": {
+                                let childNodes = [
                                     ...state.childNodes,
-                                    nodeInitState(action.newNode)
+                                    initNodeChild(action.newNode),
                                 ]
 
                                 return {
@@ -502,16 +524,17 @@ export function node(state = nodeInitialState, action) {
                                     version: action.parentNode.version,
                                     childNodes: [...childNodes],
                                     filterText: '',
-                                    searchedIds: {}
+                                    searchedIds: {},
                                 };
+                            }
                         }
                     }
                     return {
                         ...state,
                         version: action.parentNode.version,
                     };
-                case "DELETE":
-                    var nodeIndex = indexById(state.childNodes, action.node.id);
+                case "DELETE": {
+                    let nodeIndex = indexById(state.childNodes, action.node.id);
                     if (nodeIndex != null) {
                         return {
                             ...state,
@@ -526,6 +549,7 @@ export function node(state = nodeInitialState, action) {
                         ...state,
                         version: action.parentNode.version,
                     };
+                }
                 default:
                     return state;
             }

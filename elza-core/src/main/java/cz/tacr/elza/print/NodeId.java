@@ -23,23 +23,33 @@ public class NodeId {
     private List<NodeId> children;
 
     /**
+     * Flag is node is published
+     * 
+     * Added parent nodes are not published
+     */
+    private final boolean published;
+
+    /**
      * Creates internal or leaf node.
      */
-    NodeId(int arrNodeId, NodeId parentNodeId, int position) {
+    NodeId(final int arrNodeId, final NodeId parentNodeId,
+           final int position, final boolean published) {
         this.arrNodeId = arrNodeId;
         this.parentNodeId = parentNodeId;
         this.position = position;
         this.depth = parentNodeId.getDepth() + 1;
+        this.published = published;
     }
 
     /**
      * Creates root node.
      */
-    NodeId(int arrNodeId, int position) {
+    NodeId(int arrNodeId, int position, final boolean published) {
         this.arrNodeId = arrNodeId;
         this.parentNodeId = null;
         this.position = position;
         this.depth = 1;
+        this.published = published;
     }
 
     public int getArrNodeId() {
@@ -66,6 +76,10 @@ public class NodeId {
             return Collections.emptyList();
         }
         return children;
+    }
+
+    public boolean isPublished() {
+        return published;
     }
 
     /**

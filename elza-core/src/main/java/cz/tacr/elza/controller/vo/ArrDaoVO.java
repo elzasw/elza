@@ -1,17 +1,16 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.domain.ArrDao;
-import org.apache.commons.collections4.ListUtils;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.collections4.ListUtils;
+
+import cz.tacr.elza.domain.ArrDao;
+
 /**
  * Value objekt {@link ArrDao}
  *
- * @author Martin Šlapa
- * @since 07.12.2016
  */
 public class ArrDaoVO {
 
@@ -25,6 +24,8 @@ public class ArrDaoVO {
 
     private String url;
 
+    private ArrDao.DaoType daoType;
+
     private Boolean existInArrDaoRequest;
 
     private List<ArrDaoFileVO> fileList = new ArrayList<>();
@@ -35,6 +36,17 @@ public class ArrDaoVO {
 
     private ArrDaoLinkVO daoLink; // null pokud vazba neexistuje
 
+
+    public ArrDaoVO() {
+    }
+
+    public ArrDaoVO(final ArrDao dao) {
+        this.id = dao.getDaoId();
+        this.valid = dao.getValid();
+        this.code = dao.getCode();
+        this.label = dao.getLabel();
+        this.daoType = dao.getDaoType();
+    }
 
     /**
      * Zařazení nového daoFile do seznamu na vo, zároveň nastaví položku fileCount na novou délku seznamu
@@ -86,6 +98,14 @@ public class ArrDaoVO {
 
     public void setId(final Integer id) {
         this.id = id;
+    }
+
+    public ArrDao.DaoType getDaoType() {
+        return daoType;
+    }
+
+    public void setDaoType(ArrDao.DaoType daoType) {
+        this.daoType = daoType;
     }
 
     public Boolean getValid() {
@@ -150,5 +170,10 @@ public class ArrDaoVO {
 
     public void setExistInArrDaoRequest(Boolean existInArrDaoRequest) {
         this.existInArrDaoRequest = existInArrDaoRequest;
+    }
+
+    public static ArrDaoVO newInstance(ArrDao dao) {
+        ArrDaoVO daoVo = new ArrDaoVO(dao);
+        return daoVo;
     }
 }

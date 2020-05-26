@@ -26,9 +26,6 @@ import cz.tacr.elza.controller.factory.RuleFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrChangeVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
@@ -100,13 +97,9 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDate;
 import cz.tacr.elza.domain.ArrDataDecimal;
@@ -814,25 +807,6 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(RulStructuredType.class, RulStructureTypeVO.class)
                 .byDefault()
                 .field("structuredTypeId", "id")
-                .register();
-
-        mapperFactory.classMap(ArrDao.class, ArrDaoVO.class)
-                .field("daoId", "id")
-                .byDefault()
-                .register();
-
-        mapperFactory.classMap(ArrDaoFile.class, ArrDaoFileVO.class)
-                .field("daoFileId", "id")
-                .exclude("dao")
-                .byDefault()
-                .register();
-
-        mapperFactory.classMap(ArrDaoFileGroup.class, ArrDaoFileGroupVO.class)
-                .field("daoFileGroupId", "id")
-                .exclude("fileList")
-                .exclude("fileCount")
-                .exclude("dao")
-                .byDefault()
                 .register();
 
         mapperFactory.classMap(ArrDataCoordinates.class, ArrItemCoordinatesVO.class)

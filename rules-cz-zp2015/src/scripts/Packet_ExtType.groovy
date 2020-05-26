@@ -84,11 +84,13 @@ String toStringValue(String itemTypeCode) {
 void appendValueWithSpecName(StringBuilder sb, String itemTypeCode) {    
     for (ArrStructuredItem item : items) {
         if (item.getItemType().getCode().equalsIgnoreCase(itemTypeCode)) {
-            RulItemSpec spec = item.getItemSpec();
            if(sb.length()>0) {
                sb.append(" ");
            }
-           sb.append(spec.getName());
+           RulItemSpec spec = item.getItemSpec();
+           if(spec!=null) {
+             sb.append(spec.getName());
+           }
            ArrData data = item.getData();
            if(data!=null) {
                String fullText = data.getFulltextValue();
