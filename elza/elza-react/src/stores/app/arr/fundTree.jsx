@@ -222,8 +222,8 @@ export default function fundTree(state = initialState, action = {}) {
                     lastSelectedId: null,
                     ensureItemVisible: action.ensureItemVisible,
                     filterCurrentIndex: newCurrentIndex,
+                    selectedIds: {...state.selectedIds},
                 };
-                newState.selectedIds = {...state.selectedIds};
 
                 if (action.ctrl) {
                     if (newState.selectedIds[action.nodeId]) {
@@ -343,7 +343,8 @@ export default function fundTree(state = initialState, action = {}) {
         case types.FUND_FUND_TREE_EXPAND_NODE:
             if (action.addWaitingNode) {
                 const index = indexById(state.nodes, action.node.id);
-                return Object.assign({}, state, {
+                return {
+                    ...state,
                     expandedIds: {...state.expandedIds, [action.node.id]: true},
                     ensureItemVisible: false,
                     nodes: [
@@ -356,15 +357,17 @@ export default function fundTree(state = initialState, action = {}) {
                         },
                         ...state.nodes.slice(index + 1),
                     ],
-                });
+                };
             } else {
-                return Object.assign({}, state, {
+                return {
+                    ...state,
                     ensureItemVisible: false,
                     expandedIds: {...state.expandedIds, [action.node.id]: true},
-                });
+                };
             }
         case types.FUND_FUND_TREE_COLLAPSE:
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 isFetching: false,
                 fetched: true,
                 ensureItemVisible: false,
@@ -372,7 +375,7 @@ export default function fundTree(state = initialState, action = {}) {
                 nodes: [state.nodes[0]],
                 selectedId: initialState.selectedId,
                 selectedIds: initialState.selectedIds,
-            });
+            };
         case types.FUND_FUND_TREE_COLLAPSE_NODE: {
             let expandedIds = {...state.expandedIds};
             delete expandedIds[action.node.id];
@@ -409,35 +412,37 @@ export default function fundTree(state = initialState, action = {}) {
                 }
             }
 
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 ensureItemVisible: false,
                 expandedIds: expandedIds,
                 nodes: removeInfo.nodes,
                 selectedId: newSelectedId,
                 selectedIds: newSelectedIds,
-            });
+            };
         }
         case types.FUND_FUND_TREE_REQUEST:
-            var fetchingIncludeIds = [];
+            const fetchingIncludeIds = [];
             if (action.includeIds != null) {
                 action.includeIds.forEach(id => {
                     fetchingIncludeIds[id] = true;
                 });
             }
-            return Object.assign({}, state, {
+            return {
+                ...state,
                 isFetching: true,
                 ensureItemVisible: false,
                 fetchingIncludeIds: fetchingIncludeIds,
-            });
+            };
         case types.FUND_FUND_TREE_RECEIVE:
             if (action.nodeId !== null && typeof action.nodeId !== 'undefined') {
                 if (state.expandedIds[action.nodeId]) {
                     // ještě je stále rozbalený
                     index = indexById(state.nodes, action.nodeId);
                     if (index != null) {
-                        var node = state.nodes[index];
+                        const node = state.nodes[index];
                         removeInfo = removeChildren(state.nodes, node, {});
-                        var nodes = removeInfo.nodes;
+                        const nodes = removeInfo.nodes;
 
                         ensureItemVisible = false;
                         oneSelectedId = getOneSelectedIdIfExists(state);
@@ -448,26 +453,27 @@ export default function fundTree(state = initialState, action = {}) {
                             }
                         }
 
-                        result = Object.assign({}, state, {
+                        result = {
+                            ...state,
                             ensureItemVisible: ensureItemVisible,
                             isFetching: false,
                             fetched: true,
                             nodes: [...nodes.slice(0, index + 1), ...action.nodes, ...nodes.slice(index + 1)],
                             fetchingIncludeIds: {},
                             lastUpdated: action.receivedAt,
-                        });
+                            expandedIds: {...state.expandedIds},
+                        };
 
-                        result.expandedIds = {...result.expandedIds};
                         action.expandedIdsExtension.forEach(id => {
                             result.expandedIds[id] = true;
                         });
 
                         return result;
                     } else {
-                        return Object.assign({}, state, {ensureItemVisible: false, fetchingIncludeIds: {}});
+                        return {...state, ensureItemVisible: false, fetchingIncludeIds: {}};
                     }
                 } else {
-                    return Object.assign({}, state, {ensureItemVisible: false, fetchingIncludeIds: {}});
+                    return {...state, ensureItemVisible: false, fetchingIncludeIds: {}};
                 }
             } else {
                 ensureItemVisible = false;
@@ -479,7 +485,8 @@ export default function fundTree(state = initialState, action = {}) {
                     }
                 }
 
-                result = Object.assign({}, state, {
+                result = {
+                    ...state,
                     isFetching: false,
                     fetched: true,
                     dirty: false,
@@ -488,7 +495,7 @@ export default function fundTree(state = initialState, action = {}) {
                     expandedIds: action.expandedIds,
                     fetchingIncludeIds: {},
                     lastUpdated: action.receivedAt,
-                });
+                };
 
                 result.expandedIds = {...result.expandedIds};
                 action.expandedIdsExtension.forEach(id => {
@@ -498,14 +505,13 @@ export default function fundTree(state = initialState, action = {}) {
             }
 
         case types.CHANGE_MOVE_LEVEL:
-            return Object.assign({}, state, {ensureItemVisible: false, dirty: true});
-
+            return {...state, ensureItemVisible: false, dirty: true};
         case types.CHANGE_NODES:
         case types.CHANGE_CONFORMITY_INFO:
         case types.CHANGE_NODE_REQUESTS:
-            var isDirty = false;
-            var nodeId;
-            for (var i = 0; i < state.nodes.length; i++) {
+            let isDirty = false;
+            let nodeId;
+            for (let i = 0; i < state.nodes.length; i++) {
                 nodeId = state.nodes[i].id;
                 if (action.nodeIds && action.nodeIds.indexOf(nodeId) >= 0) {
                     isDirty = true;
@@ -514,7 +520,7 @@ export default function fundTree(state = initialState, action = {}) {
             }
             // pouze, pokud mám některý načtený
             if (isDirty) {
-                return Object.assign({}, state, {ensureItemVisible: false, dirty: true});
+                return {...state, ensureItemVisible: false, dirty: true};
             }
 
             return state;
@@ -523,15 +529,18 @@ export default function fundTree(state = initialState, action = {}) {
             let nodes = state.nodes;
             let nodeId = action.data.node ? action.data.node.id : action.data.parent.id;
             let index = indexById(nodes, nodeId);
-            let updatedNode = nodes[index];
+            let updatedNode = {...nodes[index]};
 
             for (let i in updatedNode) {
                 if (typeof data[i] !== 'undefined') {
                     updatedNode[i] = data[i];
                 }
             }
-            state.nodes[index] = updatedNode;
-            return {...state};
+
+            return {
+                ...state,
+                nodes: [...state.slice(0, index), updatedNode, ...state.slice(index + 1)],
+            };
         }
         case types.NODES_DELETE: {
             result = {

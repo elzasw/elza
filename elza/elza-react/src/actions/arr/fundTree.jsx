@@ -222,11 +222,10 @@ function changeCurrentIndex(dispatch, area, fund, versionId, fundTree, newIndex)
  */
 export function fundTreeFulltextNextItem(area, versionId) {
     return (dispatch, getState) => {
-        var state = getState();
-        var fundTree = getFundTreeForFund(state, area, versionId);
-        console.log(123, fundTree);
+        const state = getState();
+        const fundTree = getFundTreeForFund(state, area, versionId);
         if (fundTree && fundTree.searchedIds.length > 0) {
-            var newIndex;
+            let newIndex;
             if (fundTree.filterCurrentIndex == -1) {
                 newIndex = 0;
             } else {
@@ -244,11 +243,11 @@ export function fundTreeFulltextNextItem(area, versionId) {
  */
 export function fundTreeFulltextPrevItem(area, versionId) {
     return (dispatch, getState) => {
-        var state = getState();
-        var fundTree = getFundTreeForFund(state, area, versionId);
+        const state = getState();
+        const fundTree = getFundTreeForFund(state, area, versionId);
 
         if (fundTree && fundTree.searchedIds.length > 0) {
-            var newIndex;
+            let newIndex;
             if (fundTree.filterCurrentIndex == -1) {
                 newIndex = 0;
             } else {
@@ -373,7 +372,6 @@ export function fundTreeNodeExpand(area, node) {
             activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
             versionId = activeFund.versionId;
             fundTree = getFundTree(activeFund, area);
-            console.log(activeFund.nodes.nodes[activeFund.nodes.activeIndex].selectedSubNodeId, node.id);
         }
         dispatch(_fundTreeNodeExpand(area, versionId, node, true));
 
@@ -456,10 +454,10 @@ function getFundTree(fund, area) {
  */
 export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, selectedIdInfo) {
     return (dispatch, getState) => {
-        var state = getState();
+        const state = getState();
 
-        var fundTree;
-        var versionId;
+        let fundTree;
+        let versionId;
         if (area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {
             // fundRegion
             versionId = state.fundRegion.fundDetail.versionId;
@@ -472,14 +470,15 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
             fundTree = state.arrRegion.customFund.fundTreeNodes;
         } else {
             // arrRegion
-            var activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
+            const activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
             versionId = activeFund.versionId;
             fundTree = getFundTree(activeFund, area);
         }
 
-        var fetch = false;
-        var includeIds = [];
+        let fetch = false;
+        let includeIds = [];
         let selectedIds;
+
         if (fundTree.multipleSelection) {
             selectedIds = Object.keys(fundTree.selectedIds);
         } else {
@@ -493,7 +492,7 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
             selectedIds.forEach(selectedId => {
                 includeIds.push(selectedId);
 
-                var isInView = indexById(fundTree.nodes, selectedId);
+                const isInView = indexById(fundTree.nodes, selectedId);
                 if (isInView == null) {
                     if (!fundTree.fetchingIncludeIds[selectedId]) {
                         fetch = true;
@@ -511,7 +510,7 @@ export function fundTreeFetchIfNeeded(area, sourceVersionId, expandedIds, select
         }
 
         if (fetch) {
-            return dispatch(fundTreeFetch(area, versionId, null, expandedIds, includeIds));
+            dispatch(fundTreeFetch(area, versionId, null, expandedIds, includeIds));
         }
 
         return Promise.resolve(fundTree);
@@ -530,7 +529,6 @@ export function fundTreeFetch(area, versionId, nodeId, expandedIds, includeIds =
         dispatch(fundTreeRequest(area, versionId, nodeId, expandedIds, includeIds));
         return WebApi.getFundTree(versionId, nodeId, expandedIds, includeIds).then(json => {
             dispatch(fundTreeReceive(area, versionId, nodeId, expandedIds, includeIds, json));
-            console.log('fundTree', json);
             return json;
         });
     };
