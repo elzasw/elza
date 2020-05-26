@@ -34,6 +34,9 @@ actions:
     create:
       - itemType: ZP2015_STORAGE_ID
         structuredObject:
+          type:
+            itemType: ZP2015_PACKET_TYPE
+            itemSpec: ZP2015_PACKET_TYPE_SAMOST
           prefix:
             itemType: ZP2015_PACKET_PREFIX
             valueFrom: ZP2015_UNIT_TYPE

@@ -9,6 +9,7 @@ public class ItemGeneratorConfig
     
     public static class StructuredObjectItemConfig {
         String itemType;
+        String itemSpec;
         String valueFrom;
         Map<String, String> valueSpecMapping;
 
@@ -24,6 +25,14 @@ public class ItemGeneratorConfig
 
         public void setItemType(String itemType) {
             this.itemType = itemType;
+        }
+
+        public String getItemSpec() {
+            return itemSpec;
+        }
+
+        public void setItemSpec(String itemSpec) {
+            this.itemSpec = itemSpec;
         }
 
         public String getValueFrom() {
@@ -53,6 +62,7 @@ public class ItemGeneratorConfig
 
     public static class StructuredObjectConfig {
         StructuredObjectItemConfig prefix;
+        StructuredObjectItemConfig type;
         StructuredObjectItemConfig mainValue;
         
         public StructuredObjectItemConfig getPrefix() {
@@ -66,6 +76,14 @@ public class ItemGeneratorConfig
         }
         public void setMainValue(StructuredObjectItemConfig mainValue) {
             this.mainValue = mainValue;
+        }
+
+        public StructuredObjectItemConfig getType() {
+            return type;
+        }
+
+        public void setType(StructuredObjectItemConfig type) {
+            this.type = type;
         }
     }
     
