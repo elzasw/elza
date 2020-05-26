@@ -8,7 +8,7 @@ import {AbstractReactComponent, Icon} from '../../components/shared';
 import {Button} from '../../components/ui';
 import indexById from '../../shared/utils/indexById';
 import storeFromArea from '../../shared/utils/storeFromArea';
-import IssueListForm from '../form/IssueListForm';
+import IssueListForm, {IssueListFormInitial} from '../form/IssueListForm';
 import i18n from '../i18n';
 import FormInput from 'components/shared/form/FormInput';
 import ListBox from '../shared/listbox/ListBox';
@@ -63,7 +63,7 @@ class IssueLists extends AbstractReactComponent {
     filter = ({target: {value}}) => {
         this.props.dispatch(issuesActions.protocolsConfig.filter({open: value === 'true'}));
         // @ts-ignore
-        this.setState({id: null, initialValues: IssueListForm.initialValues});
+        this.setState({id: null, initialValues: IssueListFormInitial});
     };
 
     render() {
@@ -106,6 +106,7 @@ class IssueLists extends AbstractReactComponent {
                                     onCreate={this.onCreate}
                                     onSave={this.onSave}
                                     initialValues={initialValues}
+                                    enableReinitialize={true}
                                 />
                             )}
                         </Col>
@@ -121,10 +122,10 @@ class IssueLists extends AbstractReactComponent {
     }
 }
 
-export default (connect((state) => {
+export default connect(state => {
     return {
         issueTypes: state.refTables.issueTypes,
         issueList: storeFromArea(state, issuesActions.AREA_LIST),
         issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS_CONFIG),
     };
-})(IssueLists));
+})(IssueLists);

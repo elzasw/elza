@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import * as React from 'react';
+import {connect} from 'react-redux';
 import {Col, Form, Row} from 'react-bootstrap';
 import {Button} from '../ui';
 import {AbstractReactComponent, Icon} from 'components/shared';
@@ -7,8 +8,9 @@ import UserField from '../admin/UserField';
 import FormInput from 'components/shared/form/FormInput';
 import i18n from '../i18n';
 import ListBox from '../shared/listbox/ListBox';
-import {reduxForm} from 'redux-form';
+import {formValueSelector, Field, FieldArray, reduxForm} from 'redux-form';
 import {WebApi} from '../../actions';
+import FormInputField from '../shared/form/FormInputField';
 
 class IssueListForm extends AbstractReactComponent {
     static propTypes = {
@@ -43,17 +45,17 @@ class IssueListForm extends AbstractReactComponent {
 
     static initialValues = {open: true, rdUsers: [], wrUsers: []};
 
+    static FORM = 'issueList';
+
     componentDidUpdate(prevProps, prevState, prevContext) {
         if (prevProps.id && !this.props.id) {
-            this.props.resetForm();
+            this.props.reset();
         } else if (
-            this.props.fields &&
-            prevProps.fields &&
             this.props.id &&
             prevProps.id &&
             prevProps.id === this.props.id &&
-            (this.props.fields.rdUsers.length !== prevProps.fields.rdUsers.length ||
-                this.props.fields.wrUsers.length !== prevProps.fields.wrUsers.length)
+            (this.props.rdUsers.length !== prevProps.rdUsers.length ||
+                this.props.wrUsers.length !== prevProps.wrUsers.length)
         ) {
             this.props.asyncValidate();
         }
@@ -63,16 +65,16 @@ class IssueListForm extends AbstractReactComponent {
         if (!value || target.filter(i => i.id.value === value.id).length > 0) {
             return;
         }
-        target.addField(value);
+        target.add(value);
     };
 
     deleteUser = (target, index, e) => {
-        target.removeField(index);
+        target.remove(index);
     };
 
     renderUser = target => ({item, index}) => {
         return (
-            <div>
+            <div key={item.username}>
                 {item.username.value}{' '}
                 <Button
                     variant="action"
@@ -87,10 +89,7 @@ class IssueListForm extends AbstractReactComponent {
     };
 
     render() {
-        const {
-            fields: {name, open, rdUsers, wrUsers},
-            id,
-        } = this.props;
+        const {id} = this.props;
 
         const customProps = {
             disabled: id == null,
@@ -98,32 +97,59 @@ class IssueListForm extends AbstractReactComponent {
 
         return (
             <Form onSubmit={null}>
-                <FormInput type="text" {...name} {...customProps} label={i18n('issueList.name')} />
-                <FormInput as="select" {...open} {...customProps} label={i18n('issueList.open')}>
+                <Field
+                    component={FormInputField}
+                    type="text"
+                    name={'name'}
+                    {...customProps}
+                    label={i18n('issueList.name')}
+                />
+                <Field
+                    component={FormInputField}
+                    as="select"
+                    name={'open'}
+                    {...customProps}
+                    label={i18n('issueList.open')}
+                >
                     <option value={true}>{i18n('issueList.open.true')}</option>
                     <option value={false}>{i18n('issueList.open.false')}</option>
-                </FormInput>
+                </Field>
                 <label>{i18n('arr.issuesList.form.permission')}</label>
                 <Row>
-                    <Col xs={6}>
-                        <label>{i18n('arr.issuesList.form.permission.read')}</label>
-                        <UserField onChange={this.addUser(rdUsers)} {...customProps} value={null} />
-                        <ListBox items={rdUsers} renderItemContent={this.renderUser(rdUsers)} />
-                    </Col>
-                    <Col xs={6}>
-                        <label>{i18n('arr.issuesList.form.permission.write')}</label>
-                        <UserField onChange={this.addUser(wrUsers)} {...customProps} value={null} />
-                        <ListBox items={wrUsers} renderItemContent={this.renderUser(wrUsers)} />
-                    </Col>
+                    <FieldArray
+                        name={'rdUsers'}
+                        component={({fields, meta}) => {
+                            return (
+                                <Col xs={6}>
+                                    <label>{i18n('arr.issuesList.form.permission.read')}</label>
+                                    <UserField onChange={this.addUser(fields)} {...customProps} value={null} />
+                                    <ListBox items={fields.getAll()} renderItemContent={this.renderUser(fields)} />
+                                </Col>
+                            );
+                        }}
+                    />
+                    <FieldArray
+                        name={'wrUsers'}
+                        component={({fields, meta}) => {
+                            return (
+                                <Col xs={6}>
+                                    <label>{i18n('arr.issuesList.form.permission.write')}</label>
+                                    <UserField onChange={this.addUser(fields)} {...customProps} value={null} />
+                                    <ListBox items={fields.getAll()} renderItemContent={this.renderUser(fields)} />
+                                </Col>
+                            );
+                        }}
+                    />
                 </Row>
             </Form>
         );
     }
 }
 
-export default reduxForm({
-    form: 'issueList',
-    fields: IssueListForm.fields,
+export const IssueListFormInitial = IssueListForm.initialValues;
+
+const form = reduxForm({
+    form: IssueListForm.FORM,
     initialValues: IssueListForm.initialValues,
     validate: IssueListForm.validate,
     asyncBlurFields: IssueListForm.fields,
@@ -147,3 +173,12 @@ export default reduxForm({
         }
     },
 })(IssueListForm);
+
+const selector = formValueSelector(IssueListForm.FORM);
+
+export default connect((state, props) => {
+    return {
+        rdUsers: selector(state, 'rdUsers'),
+        wrUsers: selector(state, 'wrUsers'),
+    };
+})(form);

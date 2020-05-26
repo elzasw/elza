@@ -89,12 +89,7 @@ class AddUserForm extends AbstractReactComponent {
         submitForm(AddUserForm.validate.bind(this, this.state), values, this.props, this.transformData, dispatch);
 
     render() {
-        const {
-                  create,
-                  handleSubmit,
-                  onClose,
-                  submitting,
-              } = this.props;
+        const {create, handleSubmit, onClose, submitting} = this.props;
         const {setPassword, setShibboleth} = this.state;
         return (
             <Form className="add-user-form" onSubmit={handleSubmit(this.submitReduxForm)}>
@@ -220,6 +215,7 @@ function mapState(state) {
 }
 
 const connector = connect(mapState);
+
 export default reduxForm({
     form: 'addUserForm',
 })(connector(AddUserForm));

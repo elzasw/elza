@@ -232,6 +232,7 @@ export class ItemFormActions {
             this._getItemFormData(getState, dispatch, versionId, nodeId, routingKey, showChildren, showParents).then(
                 json => {
                     const state = getState();
+                    console.log(state, versionId, routingKey);
                     const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
                     if (subNodeForm.fetchingId == nodeId) {
                         dispatch(
@@ -1113,7 +1114,8 @@ class NodeFormActions extends ItemFormActions {
 
                     // výpočet pozice záznamu
                     // pokud neznáme node.nodeIndex, nastavíme na -1 (necháme výpočet indexu na serveru)
-                    let indexFrom = node.nodeIndex == null ? -1 : node.nodeIndex - node.nodeIndex % (node.pageSize / 2);
+                    let indexFrom =
+                        node.nodeIndex == null ? -1 : node.nodeIndex - (node.nodeIndex % (node.pageSize / 2));
                     //původní výpočet z viewStartIndex
                     //let indexFrom = node.viewStartIndex - node.viewStartIndex % (node.pageSize / 2);
 
