@@ -28,7 +28,6 @@ class DescItemText extends AbstractReactComponent {
         let textareaProps = {
             key: 'val',
             disabled: locked || descItem.undefined,
-            defaultValue: '',
         };
 
         if (cal) {
@@ -38,7 +37,7 @@ class DescItemText extends AbstractReactComponent {
             textareaProps.disabled = true;
             textareaProps.onBlur = null;
             textareaProps.onFocus = null;
-            textareaProps.defaultValue = i18n('subNodeForm.descItemType.calculable');
+            textareaProps.placeholder = i18n('subNodeForm.descItemType.calculable');
             if (value) {
                 textareaProps.value = value;
             }

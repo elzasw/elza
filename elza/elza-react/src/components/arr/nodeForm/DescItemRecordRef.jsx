@@ -161,10 +161,8 @@ class DescItemRecordRef extends AbstractReactComponent {
             <div className="desc-item-value desc-item-value-parts">
                 <ItemTooltipWrapper tooltipTitle="dataType.recordRef.format" className="tooltipWrapper">
                     <RegistryField
-                        ref={registryField => {
-                            this.registryField = registryField;
-                        }}
                         {...otherProps}
+                        ref={ref => this.registryField = ref}
                         itemSpecId={descItem.descItemSpecId}
                         value={record}
                         footer={!singleDescItemTypeEdit}
@@ -208,4 +206,4 @@ export default connect((state, props) => {
         fundName,
         nodeName,
     };
-})(DescItemRecordRef);
+}, null, null, {forwardRef: true})(DescItemRecordRef);

@@ -33,6 +33,7 @@ export default class DescItemFactory {
     };
 
     static createDescItem = (type, props) => {
+        props.ref && typeof props.ref === "string" && console.log("ref", props.ref, props);
         const DescItem = DescItemFactory.typeComponentMap[type];
         if (!DescItem) {
             if (type === DataTypeCode.PARTY_REF) {

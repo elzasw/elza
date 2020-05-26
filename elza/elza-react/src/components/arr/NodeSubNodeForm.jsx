@@ -45,6 +45,38 @@ import './NodeSubNodeForm.scss';
  */
 
 class NodeSubNodeForm extends AbstractReactComponent {
+
+    static propTypes = {
+        versionId: PropTypes.number.isRequired,
+        fundId: PropTypes.number.isRequired,
+        parentNode: PropTypes.object.isRequired,
+        selectedSubNode: PropTypes.object.isRequired,
+        selectedSubNodeId: PropTypes.number.isRequired,
+        routingKey: PropTypes.string.isRequired,
+        nodeId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+        nodeSettings: PropTypes.object.isRequired,
+        rulDataTypes: PropTypes.object.isRequired,
+        calendarTypes: PropTypes.object.isRequired,
+        descItemTypes: PropTypes.object.isRequired,
+        structureTypes: PropTypes.object.isRequired,
+        subNodeForm: PropTypes.object.isRequired,
+        closed: PropTypes.bool.isRequired,
+        conformityInfo: PropTypes.object.isRequired,
+        descItemCopyFromPrevEnabled: PropTypes.bool.isRequired,
+        focus: PropTypes.object.isRequired,
+        userDetail: PropTypes.object.isRequired,
+        onAddDescItemType: PropTypes.func.isRequired,
+        onVisiblePolicy: PropTypes.func.isRequired,
+        onDigitizationRequest: PropTypes.func.isRequired,
+        onDigitizationSync: PropTypes.func.isRequired,
+        singleDescItemTypeId: PropTypes.number,
+        singleDescItemTypeEdit: PropTypes.bool,
+        readMode: PropTypes.bool,
+        arrPerm: PropTypes.bool,
+    };
+
+    refSubNodeForm = null;
+
     constructor(props) {
         super(props);
 
@@ -740,7 +772,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     };
 
     initFocus() {
-        this.refs.subNodeForm.getWrappedInstance().initFocus();
+        this.refSubNodeForm.getWrappedInstance().initFocus();
     }
 
     render() {
@@ -776,7 +808,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
             <div className="node-item-form-container">
                 {formActions}
                 <SubNodeForm
-                    ref="subNodeForm"
+                    ref={ref => this.refSubNodeForm = ref}
                     typePrefix="desc"
                     structureTypes={structureTypes}
                     versionId={versionId}
@@ -827,33 +859,4 @@ function mapStateToProps(state) {
     };
 }
 
-NodeSubNodeForm.propTypes = {
-    versionId: PropTypes.number.isRequired,
-    fundId: PropTypes.number.isRequired,
-    parentNode: PropTypes.object.isRequired,
-    selectedSubNode: PropTypes.object.isRequired,
-    selectedSubNodeId: PropTypes.number.isRequired,
-    routingKey: PropTypes.string.isRequired,
-    nodeId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-    nodeSettings: PropTypes.object.isRequired,
-    rulDataTypes: PropTypes.object.isRequired,
-    calendarTypes: PropTypes.object.isRequired,
-    descItemTypes: PropTypes.object.isRequired,
-    structureTypes: PropTypes.object.isRequired,
-    subNodeForm: PropTypes.object.isRequired,
-    closed: PropTypes.bool.isRequired,
-    conformityInfo: PropTypes.object.isRequired,
-    descItemCopyFromPrevEnabled: PropTypes.bool.isRequired,
-    focus: PropTypes.object.isRequired,
-    userDetail: PropTypes.object.isRequired,
-    onAddDescItemType: PropTypes.func.isRequired,
-    onVisiblePolicy: PropTypes.func.isRequired,
-    onDigitizationRequest: PropTypes.func.isRequired,
-    onDigitizationSync: PropTypes.func.isRequired,
-    singleDescItemTypeId: PropTypes.number,
-    singleDescItemTypeEdit: PropTypes.bool,
-    readMode: PropTypes.bool,
-    arrPerm: PropTypes.bool,
-};
-
-export default connect(mapStateToProps)(NodeSubNodeForm);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(NodeSubNodeForm);

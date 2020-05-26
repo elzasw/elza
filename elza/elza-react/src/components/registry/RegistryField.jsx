@@ -22,6 +22,8 @@ import {refRecordTypesFetchIfNeeded} from '../../actions/refTables/recordTypes';
 const AUTOCOMPLETE_REGISTRY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
 class RegistryField extends AbstractReactComponent {
+    refAutocomplete = null;
+
     static defaultProps = {
         detail: false,
         footer: false,
@@ -44,7 +46,7 @@ class RegistryField extends AbstractReactComponent {
         undefined: PropTypes.bool,
         onChange: PropTypes.func.isRequired,
         onDetail: PropTypes.func,
-        onCreate: PropTypes.func.isRequired,
+        onCreateRecord: PropTypes.func,
         registryParent: PropTypes.number,
         apTypeId: PropTypes.number,
         itemSpecId: PropTypes.number,
@@ -61,7 +63,7 @@ class RegistryField extends AbstractReactComponent {
     }
 
     focus = () => {
-        this.refs.autocomplete.focus();
+        this.refAutocomplete.focus();
     };
 
     handleSearchChange = debounce(text => {
@@ -95,7 +97,7 @@ class RegistryField extends AbstractReactComponent {
         const {searchText} = this.state;
         const {onDetail, onSelectModule, value} = this.props;
 
-        this.refs.autocomplete.closeMenu();
+        this.refAutocomplete.closeMenu();
 
         if (onSelectModule) {
             onSelectModule({
@@ -116,7 +118,7 @@ class RegistryField extends AbstractReactComponent {
 
     handleImport = () => {
         const {versionId} = this.props;
-        this.refs.autocomplete.closeMenu();
+        this.refAutocomplete.closeMenu();
         this.props.dispatch(
             modalDialogShow(
                 this,
@@ -128,8 +130,8 @@ class RegistryField extends AbstractReactComponent {
     };
 
     handleCreateRecord = () => {
-        this.refs.autocomplete.closeMenu();
-        this.props.onCreateRecord();
+        this.refAutocomplete.closeMenu();
+        this.props.onCreateRecord && this.props.onCreateRecord();
     };
 
     handleChange = e => {
@@ -178,6 +180,7 @@ class RegistryField extends AbstractReactComponent {
 
         return (
             <TooltipTrigger
+                key={item.id}
                 content={item.characteristics}
                 holdOnHover
                 placement="horizontal"
@@ -186,6 +189,7 @@ class RegistryField extends AbstractReactComponent {
             >
                 <RegistryListItem
                     {...item}
+                    key={"reg-" + item.id}
                     eidTypes={eidTypes}
                     apTypeIdMap={apTypeIdMap}
                     className={classNames('item', {focus: highlighted, active: selected})}
@@ -217,7 +221,7 @@ class RegistryField extends AbstractReactComponent {
         let actions = [];
         if (detail) {
             actions.push(
-                <div onClick={this.handleDetail.bind(this, value ? value.id : null)} className="btn btn-default detail">
+                <div key={"detail"} onClick={this.handleDetail.bind(this, value ? value.id : null)} className="btn btn-default detail">
                     <Icon glyph="fa-th-list" />
                 </div>,
             );
@@ -231,7 +235,7 @@ class RegistryField extends AbstractReactComponent {
         return (
             <Autocomplete
                 {...otherProps}
-                ref="autocomplete"
+                ref={ref => this.refAutocomplete = ref}
                 customFilter
                 className={classNames('autocomplete-record', className)}
                 footer={footerRender}
@@ -259,4 +263,4 @@ export default connect(state => {
         userDetail,
         eidTypes: eidTypes.data,
     };
-})(RegistryField);
+}, null, null, {forwardRef: true})(RegistryField);

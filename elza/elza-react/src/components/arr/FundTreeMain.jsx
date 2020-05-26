@@ -301,4 +301,4 @@ class FundTreeMain extends AbstractReactComponent {
     }
 }
 
-export default connect()(FundTreeMain);
+export default connect(null, null, null, {forwardRef: true})(FundTreeMain);

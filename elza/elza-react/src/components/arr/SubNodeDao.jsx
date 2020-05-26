@@ -15,7 +15,7 @@ class SubNodeDao extends AbstractReactComponent {
         versionId: PropTypes.number.isRequired,
         nodeId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
         selectedSubNodeId: PropTypes.number.isRequired,
-        routingKey: PropTypes.number.isRequired,
+        routingKey: PropTypes.string.isRequired,
         readMode: PropTypes.bool.isRequired,
     };
 

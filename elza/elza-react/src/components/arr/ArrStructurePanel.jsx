@@ -651,4 +651,4 @@ export default connect((state, props) => {
         store: storeFromArea(state, AREA),
         descItemTypes: state.refTables.descItemTypes.items,
     };
-})(ArrStructurePanel);
+}, null, null, {forwardRef: true})(ArrStructurePanel);

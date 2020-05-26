@@ -689,7 +689,7 @@ export default class Autocomplete extends AbstractReactComponent {
                             onChange={this.handleChange}
                             value={inputStrValue || ''}
                         />
-                        <div ref="actions" className="actions">
+                        <div ref={ref => this.actionsRef = ref} className="actions">
                             {this.renderActions()}
                         </div>
                     </div>

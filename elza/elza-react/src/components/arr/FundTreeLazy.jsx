@@ -59,7 +59,7 @@ class FundTreeLazy extends AbstractReactComponent {
         filterCurrentIndex: PropTypes.number,
         nodes: PropTypes.array.isRequired,
         focusId: PropTypes.number,
-        rowHeight: PropTypes.number.isRequired,
+        //rowHeight: PropTypes.number.isRequired,
         isFetching: PropTypes.bool.isRequired,
         fetched: PropTypes.bool.isRequired,
         onNodeClick: PropTypes.func,

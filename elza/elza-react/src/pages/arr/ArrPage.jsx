@@ -14,7 +14,7 @@ import {i18n, Icon, LazyListBox, ListBox2, Loading, RibbonGroup, Tabs, Utils} fr
 
 import ArrParentPage from './ArrParentPage.jsx';
 
-import {FundFiles, FundSettingsForm, FundTreeMain, NodeTabs, Ribbon} from 'components/index.jsx';
+import {FundFiles, FundSettingsForm, FundTreeMain, NodeTabs, Ribbon} from '../../components/index.jsx';
 import {Dropdown, DropdownButton} from 'react-bootstrap';
 import {Button} from '../../components/ui';
 import {WebApi} from 'actions/index.jsx';
@@ -78,6 +78,15 @@ class ArrPage extends ArrParentPage {
         fundNodesError: null,
         tabs: null,
     };
+
+    /** Object pro dynamické ref */
+    refObjects = {};
+
+    /** ref Fund errors */
+    refFundErrors = null;
+
+    /** ref Tree */
+    refTree = null;
 
     constructor(props) {
         super(props, 'fa-page');
@@ -155,8 +164,8 @@ class ArrPage extends ArrParentPage {
 
             if (this.state.fundNodesError !== activeFund.fundNodesError) {
                 this.setState({fundNodesError: activeFund.fundNodesError});
-                if (this.refs.fundErrors) {
-                    this.refs.fundErrors.fetchNow();
+                if (this.refFundErrors) {
+                    this.refFundErrors.fetchNow();
                 }
             }
             if (activeFund.nodes.activeIndex === null && activeFund.fundTree.nodes[0]) {
@@ -190,18 +199,18 @@ class ArrPage extends ArrParentPage {
     }
 
     wrappedFocus = ref => {
-        if (this.refs[ref]) {
+        if (this.refObjects[ref]) {
             this.setState({}, () => {
-                if (this.refs[ref].getWrappedInstance().focus()) {
+                if (this.refObjects[ref].getWrappedInstance().focus()) {
                     focusWasSet();
                 }
             });
         }
     };
     refFocus = ref => {
-        if (this.refs[ref]) {
+        if (this.refObjects[ref]) {
             this.setState({}, () => {
-                ReactDOM.findDOMNode(this.refs[ref]).focus();
+                ReactDOM.findDOMNode(this.refObjects[ref]).focus();
                 focusWasSet();
             });
         }
@@ -834,7 +843,7 @@ class ArrPage extends ArrParentPage {
         return (
             <div className="errors-listbox-container">
                 <LazyListBox
-                    ref="fundErrors"
+                    ref={(ref) => this.refFundErrors = ref}
                     getItems={(fromIndex, toIndex) => {
                         return WebApi.getValidationItems(activeFund.versionId, fromIndex, toIndex);
                     }}
@@ -1188,7 +1197,7 @@ class ArrPage extends ArrParentPage {
                         <ArrStructurePanel
                             {...i}
                             key={tabKey}
-                            ref={tabKey}
+                            ref={(ref) => this.refObjects[tabKey] = ref}
                             readMode={readMode}
                             fundId={activeFund.id}
                             fundVersionId={activeFund.versionId}
@@ -1301,7 +1310,7 @@ class ArrPage extends ArrParentPage {
     renderFundFiles(activeFund, readMode) {
         return (
             <FundFiles
-                ref="fundFiles"
+                ref={ref => this.refObjects['fundFiles'] = ref}
                 versionId={activeFund.versionId}
                 fundId={activeFund.id}
                 fundFiles={activeFund.fundFiles}
@@ -1397,7 +1406,7 @@ class ArrPage extends ArrParentPage {
                     cutLongLabels={true}
                     versionId={activeFund.versionId}
                     {...activeFund.fundTree}
-                    ref="tree"
+                    ref={ref => this.refTree = ref}
                     focus={focus}
                     actionAddons={
                         <Button

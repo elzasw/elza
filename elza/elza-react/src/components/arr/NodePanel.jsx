@@ -46,6 +46,19 @@ class NodePanel extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
+    static propTypes = {
+        versionId: PropTypes.number.isRequired,
+        fund: PropTypes.object.isRequired,
+        node: PropTypes.object.isRequired,
+        calendarTypes: PropTypes.object.isRequired,
+        descItemTypes: PropTypes.object.isRequired,
+        rulDataTypes: PropTypes.object.isRequired,
+        fundId: PropTypes.number,
+        displayAccordion: PropTypes.bool,
+        closed: PropTypes.bool.isRequired,
+        userDetail: PropTypes.object.isRequired,
+    };
+
     UNSAFE_componentWillMount() {
         Utils.addShortcutManager(this, defaultKeymap);
     }
@@ -53,6 +66,10 @@ class NodePanel extends AbstractReactComponent {
     getChildContext() {
         return {shortcuts: this.shortcutManager};
     }
+
+    refSubNodeForm = null;
+    refContent = null;
+    refObjects = {};
 
     constructor(props) {
         super(props);
@@ -213,7 +230,7 @@ class NodePanel extends AbstractReactComponent {
                 (node.selectedSubNodeId === null && isFocusFor(focus, FOCUS_KEYS.ARR, 2))
             ) {
                 this.setState({}, () => {
-                    ReactDOM.findDOMNode(this.refs.content).focus();
+                    ReactDOM.findDOMNode(this.refContent).focus();
                     focusWasSet();
                 });
             }
@@ -221,7 +238,7 @@ class NodePanel extends AbstractReactComponent {
             // Voláno jen pokud formulář úspěšně focus nenastavil - např. pokud jsou všechna pole formuláře zamčena
             else if (isFocusExactFor(focus, FOCUS_KEYS.ARR, 2)) {
                 this.setState({}, () => {
-                    ReactDOM.findDOMNode(this.refs.content).focus();
+                    ReactDOM.findDOMNode(this.refContent).focus();
                     focusWasSet();
                 });
             }
@@ -481,9 +498,9 @@ class NodePanel extends AbstractReactComponent {
 
     ensureItemVisible() {
         if (this.props.node.selectedSubNodeId !== null) {
-            var itemNode = ReactDOM.findDOMNode(this.refs['accheader-' + this.props.node.selectedSubNodeId]);
+            var itemNode = ReactDOM.findDOMNode(this.refObjects['accheader-' + this.props.node.selectedSubNodeId]);
             if (itemNode !== null) {
-                var contentNode = ReactDOM.findDOMNode(this.refs.accordionContent);
+                var contentNode = ReactDOM.findDOMNode(this.refAccordionContent);
                 //scrollIntoView(itemNode, contentNode, { onlyScrollIfNeeded: true, alignWithTop:false })
                 contentNode.scrollTop = itemNode.offsetTop - contentNode.offsetHeight / 2;
             }
@@ -493,9 +510,9 @@ class NodePanel extends AbstractReactComponent {
     ensureItemVisibleNoForm(index) {
         const {node} = this.props;
 
-        var itemNode = ReactDOM.findDOMNode(this.refs['accheader-' + node.childNodes[index].id]);
+        var itemNode = ReactDOM.findDOMNode(this.refObjects['accheader-' + node.childNodes[index].id]);
         if (itemNode !== null) {
-            var containerNode = ReactDOM.findDOMNode(this.refs.accordionContent);
+            var containerNode = ReactDOM.findDOMNode(this.refAccordionContent);
             scrollIntoView(itemNode, containerNode, {onlyScrollIfNeeded: true, alignWithTop: false});
         }
     }
@@ -894,7 +911,7 @@ class NodePanel extends AbstractReactComponent {
                     rows.push(
                         <div
                             key={item.id}
-                            ref={'accheader-' + item.id}
+                            ref={(ref) => this.refObjects['accheader-' + item.id] = ref}
                             className={
                                 'accordion-item opened' + (focused ? ' focused' : '') + (disabled ? ' disabled' : '')
                             }
@@ -999,13 +1016,13 @@ class NodePanel extends AbstractReactComponent {
                 name="Accordion"
                 key="content"
                 className="content"
-                ref="content"
+                ref={ref => this.refContent = ref}
                 handler={(action, e) => this.handleAccordionShortcuts(action, e)}
                 tabIndex={0}
                 global
                 stopPropagation={false}
             >
-                <div className="inner-wrapper" ref="innerAccordionWrapper">
+                <div className="inner-wrapper">
                     <div className="menu-wrapper">
                         <NodeActionsBar
                             simplified={!displayAccordion}
@@ -1019,7 +1036,7 @@ class NodePanel extends AbstractReactComponent {
                             onSwitchNode={this.handleAccordionShortcuts.bind(this)}
                         />
                     </div>
-                    <div className="content-wrapper" ref="accordionContent">
+                    <div className="content-wrapper" ref={ref => this.refAccordionContent = ref}>
                         {rows}
                     </div>
                 </div>
@@ -1065,7 +1082,7 @@ class NodePanel extends AbstractReactComponent {
             form = (
                 <NodeSubNodeForm
                     key={'sub-node-form-' + node.selectedSubNodeId}
-                    ref="subNodeForm"
+                    ref={ref => this.refSubNodeForm = ref}
                     singleDescItemTypeEdit={false}
                     nodeId={node.id}
                     versionId={versionId}
@@ -1215,18 +1232,5 @@ function mapState(state) {
         nodeExtensions: allExtensions,
     };
 }
-
-NodePanel.propTypes = {
-    versionId: PropTypes.number.isRequired,
-    fund: PropTypes.object.isRequired,
-    node: PropTypes.object.isRequired,
-    calendarTypes: PropTypes.object.isRequired,
-    descItemTypes: PropTypes.object.isRequired,
-    rulDataTypes: PropTypes.object.isRequired,
-    fundId: PropTypes.number,
-    displayAccordion: PropTypes.bool.isRequired,
-    closed: PropTypes.bool.isRequired,
-    userDetail: PropTypes.object.isRequired,
-};
 
 export default connect(mapState)(NodePanel);

@@ -35,8 +35,6 @@ class FundFiles extends AbstractReactComponent {
         fundId: PropTypes.number.isRequired,
         versionId: PropTypes.number.isRequired,
         files: PropTypes.array,
-        filterText: PropTypes.string.isRequired,
-        fetched: PropTypes.bool.isRequired,
         fundFiles: PropTypes.object.isRequired, // store fund files
         dms: PropTypes.object.isRequired,
         readMode: PropTypes.bool,
@@ -46,6 +44,7 @@ class FundFiles extends AbstractReactComponent {
         selectedId: 0,
     };
 
+    listBox = null;
     uploadInput = null;
 
     componentDidMount() {
@@ -146,7 +145,7 @@ class FundFiles extends AbstractReactComponent {
     handleReplaceSubmit = e => {
         const fileList = e.target.files;
 
-        if (fileList.length != 1) {
+        if (fileList.length !== 1) {
             return;
         }
         const file = fileList[0];
@@ -157,8 +156,8 @@ class FundFiles extends AbstractReactComponent {
     };
 
     focus = () => {
-        if (this.refs.listBox) {
-            this.refs.listBox.focus();
+        if (this.listBox) {
+            this.listBox.focus();
             return true;
         } else {
             return false;
@@ -220,7 +219,7 @@ class FundFiles extends AbstractReactComponent {
 
                 {fundFiles.fetched && (
                     <FileListBox
-                        ref="listBox"
+                        ref={ref => (this.listBox = ref)}
                         items={fundFiles.data.rows}
                         searchable
                         filterText={fundFiles.filterText}
@@ -246,4 +245,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(FundFiles);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(FundFiles);

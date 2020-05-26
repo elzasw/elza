@@ -11,8 +11,11 @@ import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import {DisplayType} from '../../../constants.tsx';
 
 class DescItemInt extends AbstractReactComponent {
+
+    focusEl = null;
+
     focus = () => {
-        this.refs.focusEl.focus();
+        this.focusEl.focus();
     };
 
     handleChange = e => {
@@ -55,7 +58,7 @@ class DescItemInt extends AbstractReactComponent {
                 <ItemTooltipWrapper tooltipTitle="dataType.int.format">
                     <input
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                        ref="focusEl"
+                        ref={ref => this.focusEl = ref}
                         type="text"
                         disabled={locked || descItem.undefined}
                         value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}

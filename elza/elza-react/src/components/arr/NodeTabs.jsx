@@ -18,6 +18,20 @@ import {FOCUS_KEYS} from '../../constants.tsx';
  */
 
 class NodeTabs extends AbstractReactComponent {
+    static propTypes = {
+        versionId: PropTypes.number.isRequired,
+        fund: PropTypes.object.isRequired,
+        nodes: PropTypes.array.isRequired,
+        activeIndex: PropTypes.number,
+        fundId: PropTypes.number,
+        rulDataTypes: PropTypes.object.isRequired,
+        calendarTypes: PropTypes.object.isRequired,
+        descItemTypes: PropTypes.object.isRequired,
+        showRegisterJp: PropTypes.bool.isRequired,
+        displayAccordion: PropTypes.bool,
+        closed: PropTypes.bool.isRequired,
+    };
+
     constructor(props) {
         super(props);
 
@@ -35,7 +49,7 @@ class NodeTabs extends AbstractReactComponent {
     }
 
     trySetFocus(props) {
-        var {focus} = props;
+        const {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, FOCUS_KEYS.ARR, 2, 'tabs')) {
@@ -80,7 +94,7 @@ class NodeTabs extends AbstractReactComponent {
             displayAccordion,
         } = this.props;
 
-        if (nodes.length == 0) {
+        if (nodes.length === 0) {
             return <div></div>;
         }
 
@@ -135,20 +149,6 @@ class NodeTabs extends AbstractReactComponent {
         );
     }
 }
-
-NodeTabs.propTypes = {
-    versionId: PropTypes.number.isRequired,
-    fund: PropTypes.object.isRequired,
-    nodes: PropTypes.array.isRequired,
-    activeIndex: PropTypes.number,
-    fundId: PropTypes.number,
-    rulDataTypes: PropTypes.object.isRequired,
-    calendarTypes: PropTypes.object.isRequired,
-    descItemTypes: PropTypes.object.isRequired,
-    showRegisterJp: PropTypes.bool.isRequired,
-    displayAccordion: PropTypes.bool.isRequired,
-    closed: PropTypes.bool.isRequired,
-};
 
 function mapStateToProps(state) {
     const {focus} = state;
