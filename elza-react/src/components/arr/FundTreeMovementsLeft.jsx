@@ -18,7 +18,7 @@ import {
     fundTreeNodeCollapse,
     fundTreeNodeExpand,
     fundTreeSelectNode,
-} from 'actions/arr/fundTree.jsx';
+} from '../../actions/arr/fundTree.jsx';
 import {contextMenuShow} from 'actions/global/contextMenu.jsx';
 
 class FundTreeMovementsLeft extends AbstractReactComponent {
@@ -75,7 +75,7 @@ class FundTreeMovementsLeft extends AbstractReactComponent {
         e.preventDefault();
         e.stopPropagation();
 
-        var menu = <ul className="dropdown-menu"></ul>;
+        const menu = <ul className="dropdown-menu"></ul>;
 
         this.props.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, node));
         this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));

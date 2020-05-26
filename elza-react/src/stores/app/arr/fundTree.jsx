@@ -422,7 +422,7 @@ export default function fundTree(state = initialState, action = {}) {
             };
         }
         case types.FUND_FUND_TREE_REQUEST:
-            const fetchingIncludeIds = [];
+            const fetchingIncludeIds = {};
             if (action.includeIds != null) {
                 action.includeIds.forEach(id => {
                     fetchingIncludeIds[id] = true;

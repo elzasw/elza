@@ -64,11 +64,9 @@ $movementButtonSize: 8em;
         }
         }
         .btn {
-            display:flex;
             width: $movementButtonSize;
             height: $movementButtonSize;
             display: block;
-            margin: 0 auto;
             position: relative;
             margin: 5px 0;
             padding:1.2em;
@@ -78,6 +76,7 @@ $movementButtonSize: 8em;
             line-height: 1.2em;
             border:none;
             background-color: $homepage-button-bg;
+            color: #333;
 
             &:hover{
                 background-color: $homepage-button-bg-hover;
