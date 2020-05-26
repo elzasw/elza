@@ -83,8 +83,8 @@ class NodeSettingsForm extends AbstractReactComponent {
             let activeVersion = activeFund.activeVersion;
             visiblePolicyTypeItems = {};
 
-            for (let id in visiblePolicyTypes.items) {
-                let item = visiblePolicyTypes.items[id];
+            for (let id in visiblePolicyTypes.itemsMap) {
+                let item = visiblePolicyTypes.itemsMap[id];
                 if (activeVersion.ruleSetId === item.ruleSetId) {
                     visiblePolicyTypeItems[id] = item;
                 }
