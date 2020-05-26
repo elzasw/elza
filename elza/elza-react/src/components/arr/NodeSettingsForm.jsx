@@ -25,6 +25,7 @@ class NodeSettingsForm extends AbstractReactComponent {
     state = {activeView: VIEW_KEYS.RULES};
 
     static VIEW_POLICY_STATE = VIEW_POLICY_STATE;
+    static FORM = 'nodeSettingsForm';
 
     componentDidMount() {
         this.loadVisiblePolicy();
@@ -47,26 +48,26 @@ class NodeSettingsForm extends AbstractReactComponent {
         const {activeView} = this.state;
 
         const {
-                  rulesValue,
-                  handleSubmit,
-                  onClose,
-                  pristine,
-                  submitting,
-                  visiblePolicy,
-                  visiblePolicyTypes,
-                  arrRegion,
-              } = this.props;
+            rulesValue,
+            handleSubmit,
+            onClose,
+            pristine,
+            submitting,
+            visiblePolicy,
+            visiblePolicyTypes,
+            arrRegion,
+        } = this.props;
         if (!visiblePolicy.fetched) {
             return (
                 <Modal.Body>
-                    <Loading/>
+                    <Loading />
                 </Modal.Body>
             );
         }
 
         const {
-                  otherData: {parentExtensions, availableExtensions},
-              } = visiblePolicy;
+            otherData: {parentExtensions, availableExtensions},
+        } = visiblePolicy;
 
         const availableExtensionsMap = getMapFromList(availableExtensions, 'id');
 
@@ -91,8 +92,6 @@ class NodeSettingsForm extends AbstractReactComponent {
             }
         }
 
-        console.log(":::", visiblePolicyTypeItems);
-
         return (
             <Form className="node-settings-form" onSubmit={handleSubmit}>
                 <Modal.Body>
@@ -100,9 +99,7 @@ class NodeSettingsForm extends AbstractReactComponent {
                         <Col sm={3} className="menu">
                             <Nav variant="pills" activeKey={activeView} onSelect={this.changeView}>
                                 <Nav.Item>
-                                    <Nav.Link eventKey={VIEW_KEYS.RULES}>
-                                        {i18n('visiblePolicy.rules')}
-                                    </Nav.Link>
+                                    <Nav.Link eventKey={VIEW_KEYS.RULES}>{i18n('visiblePolicy.rules')}</Nav.Link>
                                 </Nav.Item>
                                 <Nav.Item>
                                     <Nav.Link eventKey={VIEW_KEYS.EXTENSIONS}>
@@ -165,8 +162,8 @@ class NodeSettingsForm extends AbstractReactComponent {
                                             <div className="listbox-container">
                                                 {parentExtensions && parentExtensions.length > 0
                                                     ? parentExtensions.map((i, index) => (
-                                                        <div key={index}>{i.name}</div>
-                                                    ))
+                                                          <div key={index}>{i.name}</div>
+                                                      ))
                                                     : 'Nejsou aktivní žádná rozšíření'}
                                             </div>
                                         </div>
@@ -229,18 +226,17 @@ class NodeSettingsForm extends AbstractReactComponent {
     }
 }
 
-const selector = formValueSelector('nodeSettingsForm');
+const form = reduxForm({
+    form: NodeSettingsForm.FORM,
+})(NodeSettingsForm);
 
-const mapState = (state) => {
+const selector = formValueSelector(NodeSettingsForm.FORM);
+
+export default connect(state => {
     return {
         visiblePolicy: state.arrRegion.visiblePolicy,
         visiblePolicyTypes: state.refTables.visiblePolicyTypes,
         rulesValue: selector(state, 'rules'),
         arrRegion: state.arrRegion,
     };
-};
-const connector = connect(mapState);
-
-export default reduxForm({
-    form: 'nodeSettingsForm',
-})(connector(NodeSettingsForm));
+})(form);
