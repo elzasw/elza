@@ -107,9 +107,9 @@ class FundOutputFunctions extends AbstractReactComponent {
 
         if (!readMode && outputState !== OutputState.FINISHED && outputState !== OutputState.OUTDATED) {
             if (!item.state || ACTION_NOT_RUNNING_STATE.indexOf(item.state) !== -1) {
-                actions.push(<Icon glyph="fa-play" onClick={() => this.handleActionRun(item.code)} />);
+                actions.push(<Icon key="run" glyph="fa-play" onClick={() => this.handleActionRun(item.code)} />);
             } else if (ACTION_RUNNING_STATE.indexOf(item.state) !== -1) {
-                actions.push(<Icon glyph="fa-stop" onClick={() => this.handleActionInterrupt(item.id)} />);
+                actions.push(<Icon key="stop" glyph="fa-stop" onClick={() => this.handleActionInterrupt(item.id)} />);
             }
         }
         return actions;
@@ -208,4 +208,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(FundOutputFunctions);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(FundOutputFunctions);

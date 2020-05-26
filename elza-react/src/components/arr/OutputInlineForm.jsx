@@ -1,19 +1,23 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {reduxForm} from 'redux-form';
+import {connect} from 'react-redux';
+import {formValueSelector, Field, reduxForm} from 'redux-form';
 import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
 import {decorateFormField} from 'components/form/FormUtils.jsx';
 import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx';
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx';
 import {initForm} from 'actions/form/inlineForm.jsx';
 import {indexById} from 'stores/app/utils.jsx';
-import RegistryField from "../registry/RegistryField";
+import RegistryField from '../registry/RegistryField';
+import {FormInputField} from '../shared';
 
 /**
  * Formulář inline editace výstupu.
  */
 class OutputInlineForm extends AbstractReactComponent {
     static fields = ['name', 'outputTypeId', 'internalCode', 'templateId', 'anonymizedApId'];
+
+    static FORM = 'outputEditForm';
 
     /**
      * Validace formuláře.
@@ -30,12 +34,8 @@ class OutputInlineForm extends AbstractReactComponent {
 
     static propTypes = {
         create: PropTypes.bool,
-        initData: PropTypes.object,
         onSave: PropTypes.func.isRequired,
-        templates: PropTypes.array.isRequired,
     };
-
-    state = {};
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         const {
@@ -43,8 +43,8 @@ class OutputInlineForm extends AbstractReactComponent {
             outputTypes,
         } = nextProps;
         this.props.dispatch(outputTypesFetchIfNeeded());
-        if (outputTypeId.value) {
-            const index = indexById(outputTypes, outputTypeId.value);
+        if (outputTypeId) {
+            const index = indexById(outputTypes, outputTypeId);
             if (index !== null) {
                 this.props.dispatch(templatesFetchIfNeeded(outputTypes[index].code));
             }
@@ -54,26 +54,20 @@ class OutputInlineForm extends AbstractReactComponent {
     componentDidMount() {
         this.props.dispatch(outputTypesFetchIfNeeded());
         this.props.dispatch(templatesFetchIfNeeded());
-        this.props.initForm(this.props.onSave);
     }
 
     render() {
-        const {
-            fields: {name, internalCode, templateId, outputTypeId, anonymizedApId},
-            disabled,
-            outputTypes,
-            allTemplates,
-        } = this.props;
+        const {outputTypeId, disabled, outputTypes, allTemplates} = this.props;
 
         let outputType = false;
         if (outputTypes) {
-            const index = indexById(outputTypes, this.props.initData.outputTypeId);
+            const index = indexById(outputTypes, this.props.initialValues.outputTypeId);
             outputType = index !== null ? outputTypes[index].name : false;
         }
 
         let templates = false;
-        if (outputTypeId.value) {
-            const index = indexById(outputTypes, outputTypeId.value);
+        if (outputTypeId) {
+            const index = indexById(outputTypes, outputTypeId);
             if (index !== null) {
                 const temp = allTemplates[outputTypes[index].code];
                 if (temp && temp.fetched) {
@@ -85,32 +79,38 @@ class OutputInlineForm extends AbstractReactComponent {
         return (
             <div className="edit-output-form-container">
                 <form>
-                    <FormInput
+                    <Field
+                        component={FormInputField}
                         type="text"
                         label={i18n('arr.output.name')}
                         disabled={disabled}
-                        {...name}
-                        {...decorateFormField(name, true)}
+                        name={'name'}
                     />
-                    <FormInput
+                    <Field
+                        component={FormInputField}
                         type="text"
                         label={i18n('arr.output.internalCode')}
                         disabled={disabled}
-                        {...internalCode}
-                        {...decorateFormField(internalCode, true)}
+                        name={'internalCode'}
                     />
                     <div>
-                        <label className="control-label">{i18n("arr.output.title.anonymizedAp")}</label>
-                        <RegistryField {...anonymizedApId} useIdAsValue={true} disabled={disabled} />
+                        <label className="control-label">{i18n('arr.output.title.anonymizedAp')}</label>
+                        <Field
+                            component={FormInputField}
+                            input={RegistryField}
+                            name={'anonymizedApId'}
+                            useIdAsValue={true}
+                            disabled={disabled}
+                        />
                     </div>
                     <div className="row-layout">
                         <FormInput type="text" label={i18n('arr.output.outputType')} disabled value={outputType} />
-                        <FormInput
+                        <Field
+                            component={FormInputField}
                             as="select"
                             label={i18n('arr.output.template')}
-                            disabled={disabled || !outputTypeId.value || !templates}
-                            {...templateId}
-                            {...decorateFormField(templateId, true)}
+                            disabled={disabled || !outputTypeId || !templates}
+                            name={'templateId'}
                         >
                             <option key="-templateId" />
                             {templates &&
@@ -119,7 +119,7 @@ class OutputInlineForm extends AbstractReactComponent {
                                         {i.name}
                                     </option>
                                 ))}
-                        </FormInput>
+                        </Field>
                     </div>
                 </form>
             </div>
@@ -127,18 +127,22 @@ class OutputInlineForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm(
-    {
-        form: 'outputEditForm',
-        fields: OutputInlineForm.fields,
-        validate: OutputInlineForm.validate,
+const form = reduxForm({
+    form: OutputInlineForm.FORM,
+    fields: OutputInlineForm.fields,
+    validate: OutputInlineForm.validate,
+    asyncBlurFields: OutputInlineForm.fields,
+    asyncValidate: (values, dispatch, props, blurredField) => {
+        return props.onSave(values);
     },
-    (state, props) => {
-        return {
-            initialValues: props.initData,
-            outputTypes: state.refTables.outputTypes.items,
-            allTemplates: state.refTables.templates.items,
-        };
-    },
-    {initForm: onSave => initForm('outputEditForm', OutputInlineForm.validate, onSave)},
-)(OutputInlineForm);
+})(OutputInlineForm);
+
+const selector = formValueSelector(OutputInlineForm.FORM);
+
+export default connect((state, props) => {
+    return {
+        outputTypeId: selector(state, 'outputTypeId'),
+        outputTypes: state.refTables.outputTypes.items,
+        allTemplates: state.refTables.templates.items,
+    };
+})(form);

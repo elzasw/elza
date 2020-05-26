@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {connect} from "react-redux";
+import {connect} from 'react-redux';
 import {reduxForm, Field, formValueSelector} from 'redux-form';
 import {AbstractReactComponent, FormInput, FormInputField, i18n} from '../../components/shared';
 import {Form, Modal} from 'react-bootstrap';
@@ -15,7 +15,6 @@ import {indexById} from '../../stores/app/utils.jsx';
  */
 
 class AddOutputForm extends AbstractReactComponent {
-
     static FORM = 'addOutputForm';
 
     static defaultProps = {
@@ -63,14 +62,7 @@ class AddOutputForm extends AbstractReactComponent {
         submitForm(AddOutputForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-        const {
-            create,
-            handleSubmit,
-            onClose,
-            outputTypes,
-            allTemplates,
-            outputTypeId
-        } = this.props;
+        const {create, handleSubmit, onClose, outputTypes, allTemplates, outputTypeId} = this.props;
 
         let templates = false;
         if (outputTypeId) {
@@ -87,19 +79,19 @@ class AddOutputForm extends AbstractReactComponent {
             <div className="add-output-form-container">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FormInput type="text" label={i18n('arr.output.name')} name={"name"} />
+                        <Field component={FormInputField} type="text" label={i18n('arr.output.name')} name={'name'} />
                         <Field
                             component={FormInputField}
                             type="text"
                             label={i18n('arr.output.internalCode')}
-                            name={"internalCode"}
+                            name={'internalCode'}
                         />
                         {create && (
                             <Field
                                 component={FormInputField}
                                 as="select"
                                 label={i18n('arr.output.outputType')}
-                                name={"outputTypeId"}
+                                name={'outputTypeId'}
                             >
                                 <option key="-outputTypeId" />
                                 {outputTypes.map(i => (
@@ -113,7 +105,7 @@ class AddOutputForm extends AbstractReactComponent {
                             component={FormInputField}
                             as="select"
                             label={i18n('arr.output.template')}
-                            name={"templateId"}
+                            name={'templateId'}
                             disabled={!outputTypeId || !templates}
                         >
                             <option key="-templateId" />
@@ -139,12 +131,11 @@ class AddOutputForm extends AbstractReactComponent {
     }
 }
 
-
 const form = reduxForm({
     form: AddOutputForm.FORM,
 })(AddOutputForm);
 
-const selector = formValueSelector(AddOutputForm.FORM)
+const selector = formValueSelector(AddOutputForm.FORM);
 
 export default connect((state, props) => {
     return {

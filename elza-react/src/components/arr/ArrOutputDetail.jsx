@@ -8,7 +8,7 @@ import {
     fundOutputDetailFetchIfNeeded,
     fundOutputEdit,
     fundOutputRemoveNodes,
-} from 'actions/arr/fundOutput.jsx';
+} from '../../actions/arr/fundOutput.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx';
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
@@ -116,7 +116,7 @@ class ArrOutputDetail extends AbstractReactComponent {
 
     handleSaveOutput = data => {
         const {fund, fundOutputDetail} = this.props;
-        this.props.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data));
+        return this.props.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data));
     };
 
     handleRemoveNode = node => {
@@ -225,7 +225,7 @@ class ArrOutputDetail extends AbstractReactComponent {
                 <div className="output-definition-commons">
                     <OutputInlineForm
                         disabled={closed || readMode || !this.isEditable()}
-                        initData={fundOutputDetail}
+                        initialValues={fundOutputDetail}
                         onSave={this.handleSaveOutput}
                     />
                     {fundOutputDetail.error && (
