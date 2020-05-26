@@ -43,6 +43,8 @@ class FundNodesSelect extends AbstractReactComponent {
         nodes: {},
     };
 
+    refTree = null;
+
     componentDidMount() {
         const {
             multipleSelection,
@@ -175,7 +177,7 @@ class FundNodesSelect extends AbstractReactComponent {
         return (
             <div className="add-nodes-form-container">
                 <FundTreeLazy
-                    ref="tree"
+                    ref={ref => (this.refTree = ref)}
                     {...fundTreeNodes}
                     cutLongLabels={true}
                     onOpenCloseNode={this.handleNodeExpandCollapse}
@@ -198,4 +200,4 @@ function mapStateToProps(state, props) {
     };
 }
 
-export default connect(mapStateToProps)(FundNodesSelect);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(FundNodesSelect);

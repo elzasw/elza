@@ -7,6 +7,7 @@ import FundNodesSelect from './FundNodesSelect';
 import {customFundActionFetchListIfNeeded} from '../../actions/arr/customFundAction';
 import * as types from '../../actions/constants/ActionTypes.js';
 import Loading from '../shared/loading/Loading';
+import PropTypes from 'prop-types';
 
 /**
  * Dialogový formulář vybrání uzlů v konkrétní verzi souboru - výběr uzlů na základě konfigurace - např. single nebo multiple select.
@@ -14,7 +15,8 @@ import Loading from '../shared/loading/Loading';
  */
 class FundNodesSelectForm extends AbstractReactComponent {
     static propTypes = {
-        ...FundNodesSelect.propTypes,
+        multipleSelection: PropTypes.bool,
+        multipleSelectionOneLevel: PropTypes.bool,
     };
 
     static defaultProps = {

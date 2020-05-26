@@ -75,7 +75,7 @@ class FundTreeLazy extends AbstractReactComponent {
     selectorMoveUp = () => {
         const {nodes, selectedId, multipleSelection} = this.props;
         if (!multipleSelection && selectedId !== null) {
-            var index = indexById(nodes, selectedId);
+            const index = indexById(nodes, selectedId);
             if (index !== null && index > 0) {
                 this.handleNodeClick(nodes[index - 1], true);
             }
@@ -86,7 +86,7 @@ class FundTreeLazy extends AbstractReactComponent {
         if (!multipleSelection) {
             if (selectedId !== null) {
                 // něco je označeno
-                var index = indexById(nodes, selectedId);
+                const index = indexById(nodes, selectedId);
                 if (index !== null && index + 1 < nodes.length) {
                     this.handleNodeClick(nodes[index + 1], true);
                 }
@@ -101,15 +101,15 @@ class FundTreeLazy extends AbstractReactComponent {
     selectorMoveToParentOrClose = () => {
         const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode} = this.props;
         if (!multipleSelection && selectedId !== null) {
-            var index = indexById(nodes, selectedId);
+            const index = indexById(nodes, selectedId);
             if (index !== null) {
-                var node = nodes[index];
+                const node = nodes[index];
                 if (node.hasChildren && expandedIds[node.id]) {
                     // je rozbalen, zabalíme ho
                     onOpenCloseNode(node, false);
                 } else {
                     // jdeme na parenta
-                    var parent = getNodeParent(nodes, selectedId);
+                    const parent = getNodeParent(nodes, selectedId);
                     parent && this.handleNodeClick(parent, true);
                 }
             }
@@ -118,16 +118,16 @@ class FundTreeLazy extends AbstractReactComponent {
     selectorMoveToChildOrOpen = () => {
         const {nodes, selectedId, multipleSelection, expandedIds, onOpenCloseNode} = this.props;
         if (!multipleSelection && selectedId !== null) {
-            var index = indexById(nodes, selectedId);
+            const index = indexById(nodes, selectedId);
             if (index !== null) {
-                var node = nodes[index];
+                const node = nodes[index];
                 if (node.hasChildren) {
                     if (!expandedIds[node.id]) {
                         // je zabalen, rozbalíme ho
                         onOpenCloseNode(node, true);
                     } else {
                         // jdeme na prvního potomka
-                        var firstChild = getNodeFirstChild(nodes, selectedId);
+                        const firstChild = getNodeFirstChild(nodes, selectedId);
                         firstChild && parseInt(firstChild.id) && this.handleNodeClick(firstChild, true);
                     }
                 } else {
@@ -166,7 +166,7 @@ class FundTreeLazy extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         }
-        var eqProps = [
+        const eqProps = [
             'ensureItemVisible',
             'filterText',
             'expandedIds',
@@ -234,7 +234,7 @@ class FundTreeLazy extends AbstractReactComponent {
             'node-icon': true,
             'node-icon-color': this.props.colorCoded,
         });
-        var levels = createReferenceMark(node, clickProps);
+        const levels = createReferenceMark(node, clickProps);
 
         let name = node.name ? node.name : i18n('fundTree.node.name.undefined', node.id);
         const title = name;
