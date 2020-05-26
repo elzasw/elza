@@ -27,15 +27,7 @@ export function visiblePolicyTypesFetchIfNeeded() {
 export function visiblePolicyTypesFetch() {
     return dispatch => {
         dispatch(visiblePolicyTypesRequest());
-        return WebApi.getVisiblePolicyTypes().then(json => {
-            var data = {};
-            json.forEach(item => {
-                data[item.id] = {
-                    code: item.code,
-                    name: item.name,
-                    ruleSetId: item.ruleSetId,
-                };
-            });
+        return WebApi.getVisiblePolicyTypes().then(data => {
             dispatch(visiblePolicyTypesReceive(data));
         });
     };
