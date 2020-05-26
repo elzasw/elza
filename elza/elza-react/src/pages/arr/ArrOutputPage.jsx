@@ -51,8 +51,6 @@ import FundNodesSelectForm from '../../components/arr/FundNodesSelectForm';
 import {fundOutputAddNodes} from '../../actions/arr/fundOutput';
 import {versionValidate} from '../../actions/arr/versionValidation';
 
-let _selectedTab = 0;
-
 const OutputState = {
     OPEN: 'OPEN',
     COMPUTING: 'COMPUTING',
@@ -74,6 +72,9 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         let newKeymap = Utils.mergeKeymaps(ArrParentPage.defaultKeymap, defaultKeymap);
         Utils.addShortcutManager(this, newKeymap);
     }
+
+    refFundOutputFunctions = null;
+    refFundOutputList = null;
 
     constructor(props) {
         super(props, 'arr-output-page');
@@ -100,6 +101,10 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             'isEditable',
         );
     }
+
+    state = {
+        selectedTab: '0',
+    };
 
     componentDidMount() {
         super.componentDidMount();
@@ -130,9 +135,9 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         if (canSetFocus()) {
             if (isFocusFor(focus, FOCUS_KEYS.FUND_OUTPUT, 1)) {
-                this.refs.fundOutputList &&
+                this.refFundOutputList &&
                     this.setState({}, () => {
-                        ReactDOM.findDOMNode(this.refs.fundOutputList).focus();
+                        ReactDOM.findDOMNode(this.refFundOutputList).focus();
                     });
                 focusWasSet();
             }
@@ -190,9 +195,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 <AddOutputForm
                     create
                     onSubmitForm={data => {
-                        return this.props.dispatch(fundOutputCreate(fund.versionId, data)).then(output => {
-                            return output;
-                        });
+                        return this.props.dispatch(fundOutputCreate(fund.versionId, data));
                     }}
                     onSubmitSuccess={data => {
                         this.handleAddNodes(data);
@@ -502,28 +505,26 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         if (!fetched) {
             return null;
         }
+        const {selectedTab} = this.state;
 
         // Záložky a obsah aktuálně vybrané založky
         const items = [];
         let tabContent;
         let tabIndex = 0;
 
-        items.push({id: tabIndex, title: i18n('arr.output.panel.title.function')});
-        if (_selectedTab === tabIndex) tabContent = this.renderFunctionsPanel(readMode);
+        items.push({id: '' + tabIndex, title: i18n('arr.output.panel.title.function')});
+        if (selectedTab === '' + tabIndex) tabContent = this.renderFunctionsPanel(readMode);
         tabIndex++;
 
-        items.push({id: tabIndex, title: i18n('arr.output.panel.title.template')});
-        if (_selectedTab === tabIndex) tabContent = this.renderTemplatesPanel(readMode);
-        tabIndex++;
+        items.push({id: '' + tabIndex, title: i18n('arr.output.panel.title.template')});
 
-        // items.push({id: tabIndex, title: i18n('arr.output.panel.title.output')});
-        // if (_selectedTab === tabIndex) tabContent = this.renderOutputPanel();
+        if (selectedTab === '' + tabIndex) tabContent = this.renderTemplatesPanel(readMode);
         tabIndex++;
 
         return (
             <div className="fund-output-right-panel-container">
                 <Tabs.Container>
-                    <Tabs.Tabs items={items} activeItem={{id: _selectedTab}} onSelect={this.handleTabSelect} />
+                    <Tabs.Tabs items={items} activeItem={{id: selectedTab}} onSelect={this.handleTabSelect} />
                     <Tabs.Content>{tabContent}</Tabs.Content>
                 </Tabs.Container>
             </div>
@@ -567,7 +568,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 {fundOutput.fetched && (
                     <ListBox
                         className="fund-output-listbox"
-                        ref="fundOutputList"
+                        ref={ref => (this.refFundOutputList = ref)}
                         items={fundOutput.outputs}
                         activeIndex={activeIndex}
                         renderItemContent={this.renderListItem}
@@ -617,7 +618,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const {fundOutput} = activeFund;
         return (
             <FundOutputFunctions
-                ref="fundOutputFunctions"
+                ref={ref => (this.refFundOutputFunctions = ref)}
                 readMode={readMode}
                 versionId={activeFund.versionId}
                 outputId={fundOutput.fundOutputDetail.id}
@@ -654,9 +655,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         );
     }
 
-    handleTabSelect(item) {
-        _selectedTab = item.id;
-        this.setState({});
+    handleTabSelect(key) {
+        this.setState({selectedTab: key.id});
     }
 
     handleGenerateOutput(outputId) {
