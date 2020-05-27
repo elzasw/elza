@@ -26,6 +26,7 @@ import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.groovy.GroovyResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -176,6 +177,9 @@ public class AccessPointService {
 
     @Autowired
     private StructObjService structObjService;
+
+    @Autowired
+    private GroovyService groovyService;
 
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
@@ -713,6 +717,7 @@ public class AccessPointService {
         accessPoint.setPreferredPart(apPart);
 
         partService.createPartItems(apChange, apPart, apPartFormVO);
+        updatePartValue(apPart);
 
         publishAccessPointCreateEvent(accessPoint);
 
@@ -738,6 +743,21 @@ public class AccessPointService {
                 apAccessPointRepository.save(apAccessPoint);
             }
 //        }
+    }
+
+    public void updatePartValue(final ApPart apPart) {
+        ApState state = getState(apPart.getAccessPoint());
+        List<ApPart> childrenParts = partService.findPartsByParentPart(apPart);
+
+        List<ApPart> parts = new ArrayList<>();
+        parts.add(apPart);
+        parts.addAll(childrenParts);
+
+        List<ApItem> items = apItemService.findItemsByParts(parts);
+
+        GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items);
+
+        partService.updatePartValue(apPart, result);
     }
 
     /**

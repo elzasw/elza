@@ -321,4 +321,8 @@ public class AccessPointItemService {
         return position;
     }
 
+    public List<ApItem> findItemsByParts(List<ApPart> parts) {
+        return itemRepository.findValidItemsByParts(parts);
+    }
+
 }

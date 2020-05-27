@@ -15,7 +15,7 @@ public class StaticDataProvider {
 
     private List<RulPackage> packages;
 
-    private List<ApType> apTypes;
+    private static List<ApType> apTypes;
 
     private List<StructType> structuredTypes;
 
@@ -35,7 +35,7 @@ public class StaticDataProvider {
 
     private Map<Integer, ApType> apTypeIdMap;
 
-    private Map<String, ApType> apTypeCodeMap;
+    private static Map<String, ApType> apTypeCodeMap;
 
     private Map<Integer, StructType> structuredTypeIdMap = new HashMap<>();
 
@@ -47,7 +47,7 @@ public class StaticDataProvider {
 
     private Map<Integer, ItemType> itemTypeIdMap;
 
-    private Map<String, ItemType> itemTypeCodeMap;
+    private static Map<String, ItemType> itemTypeCodeMap;
 
     private Map<Integer, RulRuleSet> ruleSetIdMap;
 
@@ -74,7 +74,7 @@ public class StaticDataProvider {
         return packages;
     }
 
-    public List<ApType> getApTypes() {
+    public static List<ApType> getApTypes() {
         return apTypes;
     }
 
@@ -104,7 +104,7 @@ public class StaticDataProvider {
         return apTypeIdMap.get(id);
     }
 
-    public ApType getApTypeByCode(String code) {
+    public static ApType getApTypeByCode(String code) {
         Validate.notEmpty(code);
         return apTypeCodeMap.get(code);
     }
@@ -131,6 +131,10 @@ public class StaticDataProvider {
 
     public List<StructType> getStructuredTypes() {
         return structuredTypes;
+    }
+
+    public List<RulPartType> getPartTypes() {
+        return partTypes;
     }
 
     public StructType getStructuredTypeById(Integer id) {
@@ -167,7 +171,7 @@ public class StaticDataProvider {
      * @param code
      * @return Return null if item type does not exists
      */
-    public ItemType getItemTypeByCode(String code) {
+    public static ItemType getItemTypeByCode(String code) {
         Validate.notEmpty(code);
         return itemTypeCodeMap.get(code);
     }
@@ -311,6 +315,8 @@ public class StaticDataProvider {
                 partTypeCodeMap.put(partType.getCode(), partType);
             }
         }
+
+        this.partTypes = Collections.unmodifiableList(partTypes);
     }
 
     private void initPackages(PackageRepository packageRepository) {

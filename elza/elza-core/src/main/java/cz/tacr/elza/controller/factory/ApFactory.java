@@ -190,8 +190,7 @@ public class ApFactory {
         vo.setErrorDescription(ap.getErrorDescription());
 
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
-        //TODO fantis groovy
-//        vo.setName(preferredPart != null ? preferredPart.getValue() : null);
+        vo.setName(preferredPart != null ? preferredPart.getValue() : null);
         if (desc != null) {
             vo.setDescription(desc);
         }
@@ -200,27 +199,7 @@ public class ApFactory {
         vo.setLastChange(createVO(apState.getCreateChange()));
         vo.setComments(comments);
         vo.setOwnerUser(ownerUser);
-        vo.setName(getName(vo));
         return vo;
-    }
-
-    private String getName(ApAccessPointVO apAccessPointVO) {
-        StaticDataProvider sdp = staticDataService.getData();
-        if (CollectionUtils.isNotEmpty(apAccessPointVO.getParts())) {
-            for (ApPartVO apPartVO : apAccessPointVO.getParts()) {
-                if (apPartVO.getId().equals(apAccessPointVO.getPreferredPart())) {
-                    if (CollectionUtils.isNotEmpty(apPartVO.getItems())) {
-                        for (ApItemVO apItemVO : apPartVO.getItems()) {
-                            RulItemType rulItemType = sdp.getItemTypeById(apItemVO.getTypeId()).getEntity();
-                            if (rulItemType.getCode().equals("NM_MAIN")) {
-                                return ((ApItemStringVO) apItemVO).getValue();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     private String getDescription(List<ApPart> parts, Map<Integer, List<ApItem>> items) {

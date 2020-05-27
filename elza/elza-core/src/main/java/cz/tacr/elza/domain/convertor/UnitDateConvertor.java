@@ -90,6 +90,16 @@ public class UnitDateConvertor {
      */
     public static final String ESTIMATE_INTERVAL_DELIMITER = "/";
 
+    /**
+     * Suffix př. n. l.
+     */
+    public static final String PR_N_L = " př. n. l.";
+
+    /**
+     * Záporná reprezentace v ISO formátu.
+     */
+    public static final String BC_ISO = "-";
+
     private static final DateTimeFormatter FORMATTER_DATE = DateTimeFormatter.ofPattern(FORMAT_DATE);
     private static final DateTimeFormatter FORMATTER_DATE_TIME = DateTimeFormatter.ofPattern(FORMAT_DATE_TIME);
     private static final DateTimeFormatter FORMATTER_DATE_TIME2 = DateTimeFormatter.ofPattern(FORMAT_DATE_TIME2);
@@ -192,13 +202,13 @@ public class UnitDateConvertor {
 	 * @param unitdate
 	 * @return
 	 */
-	public static String beginToString(final IUnitdate unitdate) {
+	public static String beginToString(final IUnitdate unitdate, final boolean allowEstimate) {
 		String format = unitdate.getFormat();
 		if (isInterval(format)) {
 			String[] data = format.split(DEFAULT_INTERVAL_DELIMITER);
 			format = data[0];
 		}
-        String formatted = convertToken(format, unitdate, true, true);
+        String formatted = convertToken(format, unitdate, true, allowEstimate);
 		return formatted;
     }
 
@@ -208,13 +218,13 @@ public class UnitDateConvertor {
 	 * @param unitdate
 	 * @return
 	 */
-	public static String endToString(final IUnitdate unitdate) {
+	public static String endToString(final IUnitdate unitdate, final boolean allowEstimate) {
 		String format = unitdate.getFormat();
 		if (isInterval(format)) {
 			String[] data = format.split(DEFAULT_INTERVAL_DELIMITER);
 			format = data[1];
 		}
-        String formatted = convertToken(format, unitdate, false, true);
+        String formatted = convertToken(format, unitdate, false, allowEstimate);
 		return formatted;
 	}
 
@@ -412,6 +422,28 @@ public class UnitDateConvertor {
             }
         }
         return format;
+    }
+
+    /**
+     * Konverze roku.
+     *
+     * @param unitdate doplňovaný objekt
+     * @param first zda-li se jedná o první datum
+     * @return výsledný řetězec
+     */
+    public static String convertYear(final IUnitdate unitdate, final boolean first) {
+        if (first) {
+            if (unitdate.getValueFrom() != null) {
+                LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
+                return date.getYear() + (unitdate.getValueFrom().startsWith(BC_ISO) ? PR_N_L : "");
+            }
+        } else {
+            if (unitdate.getValueTo() != null) {
+                LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo());
+                return date.getYear() + (unitdate.getValueTo().startsWith(BC_ISO) ? PR_N_L : "");
+            }
+        }
+        return unitdate.getFormat();
     }
 
     /**

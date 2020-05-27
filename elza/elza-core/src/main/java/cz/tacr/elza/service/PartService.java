@@ -5,7 +5,9 @@ import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
@@ -15,10 +17,9 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
 @Service
 public class PartService {
@@ -88,7 +89,7 @@ public class PartService {
 
     public void changeParentPart(final ApPart oldPart,
                                  final ApPart newPart) {
-        List<ApPart> partList = partRepository.findPartsByParentPartAndDeleteChangeIsNull(oldPart);
+        List<ApPart> partList = findPartsByParentPart(oldPart);
         for (ApPart part : partList) {
             part.setParentPart(newPart);
         }
@@ -245,4 +246,25 @@ public class PartService {
         }
     }
 
+    public List<ApPart> findPartsByAccessPoint(ApAccessPoint accessPoint) {
+        return partRepository.findValidPartByAccessPoint(accessPoint);
+    }
+
+    public List<ApPart> findPartsByParentPart(ApPart part) {
+        return partRepository.findPartsByParentPartAndDeleteChangeIsNull(part);
+    }
+
+    public void updatePartValue(ApPart apPart, GroovyResult result) {
+        Map<String, String> indexMap = result.getIndexes();
+
+        String displayName = indexMap != null ? indexMap.get(DISPLAY_NAME) : null;
+        if (displayName == null) {
+            throw new SystemException("Povinný index typu [" + DISPLAY_NAME + "] není vyplněn");
+        }
+
+        if (!displayName.equals(apPart.getValue())) {
+            apPart.setValue(displayName);
+            partRepository.save(apPart);
+        }
+    }
 }
