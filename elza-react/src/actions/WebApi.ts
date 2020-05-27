@@ -1646,11 +1646,11 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/group/' + groupId + '/leave/' + userId, null, null);
     }
 
-    createUser(username, valuesMap, partyId) {
+    createUser(username, valuesMap, accessPointId) {
         const params = {
             username: username,
             valuesMap: valuesMap,
-            partyId: partyId,
+            accessPointId: accessPointId,
         };
         return AjaxUtils.ajaxPost(WebApiCls.userUrl, null, params);
     }

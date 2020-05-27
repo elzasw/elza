@@ -161,9 +161,9 @@ function usersUserDetailReceive(data) {
     };
 }
 
-export function userCreate(username, valuesMap, partyId) {
+export function userCreate(username, valuesMap, accessPointId) {
     return (dispatch, getState) => {
-        return savingApiWrapper(dispatch, WebApi.createUser(username, valuesMap, partyId)).then(response => {
+        return savingApiWrapper(dispatch, WebApi.createUser(username, valuesMap, accessPointId)).then(response => {
             dispatch(addToastrSuccess(i18n('admin.user.add.success')));
             dispatch(usersSelectUser(response.id));
         });

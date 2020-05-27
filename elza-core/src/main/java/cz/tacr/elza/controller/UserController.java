@@ -116,7 +116,7 @@ public class UserController {
     public UsrUserVO createUser(@RequestBody final CreateUserVO params) {
         Assert.notNull(params, "Parametry musí být vyplněny");
         Assert.notNull(params.getValuesMap(), "Typy autentizací musí být vyplněny");
-        UsrUser user = userService.createUser(params.getUsername(), params.getValuesMap(), params.getPartyId());
+        UsrUser user = userService.createUser(params.getUsername(), params.getValuesMap(), params.getAccessPointId());
         return factoryVO.createUser(user, true, true);
     }
 
