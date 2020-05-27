@@ -278,7 +278,7 @@ public class DateRangeAction extends Action {
                 && (dateMin == null || datePriorMin.getNormalizedFrom() < dateMin.getNormalizedFrom())) {
             sb.append("(");
             // add only start of interval
-            sb.append(UnitDateConvertor.beginToString(datePriorMin));
+            sb.append(UnitDateConvertor.beginToString(datePriorMin, true));
             //appendTimeInterval(sb, datePriorMin, priorMaxAsDateMin ? null : datePriorMax);
             sb.append(") ");
         }
@@ -293,7 +293,7 @@ public class DateRangeAction extends Action {
                 && (dateMax == null || datePosteriorMax.getNormalizedTo() > dateMax.getNormalizedTo())) {
             sb.append(" (");
             // add only end of interval
-            sb.append(UnitDateConvertor.endToString(datePosteriorMax));
+            sb.append(UnitDateConvertor.endToString(datePosteriorMax, true));
             //appendTimeInterval(sb, posteriorMinAsDateMax ? null : datePosteriorMin, datePosteriorMax);
             sb.append(")");
         }
@@ -312,11 +312,11 @@ public class DateRangeAction extends Action {
      */
     private void appendTimeInterval(StringBuilder sb, ArrDataUnitdate minDate, ArrDataUnitdate maxDate) {
         if (minDate != null) {
-            sb.append(UnitDateConvertor.beginToString(minDate));
+            sb.append(UnitDateConvertor.beginToString(minDate, true));
         }
         sb.append("-");
         if (maxDate != null) {
-            sb.append(UnitDateConvertor.endToString(maxDate));
+            sb.append(UnitDateConvertor.endToString(maxDate, true));
         }
     }
 
