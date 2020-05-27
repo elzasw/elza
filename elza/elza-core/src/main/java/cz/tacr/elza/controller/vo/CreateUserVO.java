@@ -9,7 +9,7 @@ public class CreateUserVO {
     /**
      * Identifikátor osoby
      */
-    private Integer partyId;
+    private Integer accessPointId;
 
     /**
      * Uživatelské jméno
@@ -21,12 +21,12 @@ public class CreateUserVO {
      */
     private Map<UsrAuthentication.AuthType, String> valuesMap;
 
-    public Integer getPartyId() {
-        return partyId;
+    public Integer getAccessPointId() {
+        return accessPointId;
     }
 
-    public void setPartyId(final Integer partyId) {
-        this.partyId = partyId;
+    public void setAccessPointId(final Integer accessPointId) {
+        this.accessPointId = accessPointId;
     }
 
     public String getUsername() {
