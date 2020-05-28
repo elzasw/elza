@@ -80,7 +80,7 @@ class FundNodesSelectForm extends AbstractReactComponent {
                     />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button disabled={!someSelected} onClick={this.handleSubmit}>
+                    <Button disabled={!someSelected} variant={"outline-secondary"} onClick={this.handleSubmit}>
                         {i18n('global.action.select')}
                     </Button>
                     <Button variant="link" onClick={onClose}>
