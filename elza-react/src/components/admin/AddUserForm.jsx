@@ -147,7 +147,7 @@ class AddUserForm extends AbstractReactComponent {
                                 {i18n('admin.user.add.password.message')}
                             </Col>
                             <Col xs={6}>
-                                <Button disabled={submitting} onClick={() => this.setState({setPassword: true})}>
+                                <Button disabled={submitting} variant="outline-secondary" onClick={() => this.setState({setPassword: true})}>
                                     {i18n('global.action.change')}
                                 </Button>
                             </Col>
@@ -180,7 +180,7 @@ class AddUserForm extends AbstractReactComponent {
                                 {i18n('admin.user.add.shibboleth.message')}
                             </Col>
                             <Col xs={6}>
-                                <Button disabled={submitting} onClick={() => this.setState({setShibboleth: true})}>
+                                <Button disabled={submitting} variant="outline-secondary" onClick={() => this.setState({setShibboleth: true})}>
                                     {i18n('global.action.change')}
                                 </Button>
                             </Col>
