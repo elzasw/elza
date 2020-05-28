@@ -1001,7 +1001,7 @@ class SubNodeForm extends AbstractReactComponent {
                 <Accordion>
                     <Card eventKey="1">
                         <Card.Header>
-                            i18n("arr.output.title.unusedGeneratedItems", unusedItemTypeIds.length)
+                            {i18n("arr.output.title.unusedGeneratedItems", unusedItemTypeIds.length)}
                         </Card.Header>
                         <Accordion.Collapse eventKey={'1'}>
                             <Card.Body>
