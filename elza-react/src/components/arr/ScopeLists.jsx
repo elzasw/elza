@@ -60,12 +60,12 @@ class ScopeLists extends AbstractReactComponent {
 
     renderScope = value => {
         return (
-            <div>
+            <div className={"d-flex align-items-center pl-1"}>
                 {value.item.name}{' '}
                 <Button
                     variant="action"
                     bsSize="xs"
-                    className="pull-right"
+                    className="ml-auto"
                     onClick={this.delete.bind(this, value.item)}
                 >
                     <Icon glyph="fa-trash" />
@@ -89,7 +89,7 @@ class ScopeLists extends AbstractReactComponent {
             <div className={'scope-list'}>
                 <Modal.Body>
                     <Row className="flex">
-                        <Col xs={6} sm={3} className="flex flex-column">
+                        <Col xs={6} sm={4} className="flex flex-column">
                             <div className="flex" style={{alignItems: 'baseline'}}>
                                 <FormLabel>{i18n('accesspoint.scope.list')}</FormLabel>
                                 <Button variant={'action'} onClick={this.create}>
@@ -108,7 +108,7 @@ class ScopeLists extends AbstractReactComponent {
                                 <Loading />
                             )}
                         </Col>
-                        <Col xs={6} sm={9}>
+                        <Col xs={6} sm={8}>
                             {isLoading ? (
                                 <Loading />
                             ) : (
