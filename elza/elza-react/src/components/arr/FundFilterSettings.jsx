@@ -783,7 +783,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
         var hasAllValues = true;
 
         let okButtons = [
-            <Button key="clear" className="pull-left" onClick={this.handleClearSubmit}>
+            <Button key="clear" variant="outline-secondary" className="mr-auto" onClick={this.handleClearSubmit}>
                 {i18n('arr.fund.filterSettings.action.clear')}
             </Button>,
         ];
@@ -808,7 +808,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
             const okDisabled = conditionHasErrors || !hasAllValues;
             okButtons.push(
-                <Button key="store" disabled={okDisabled} onClick={this.handleSubmit}>
+                <Button key="store" variant="outline-secondary" disabled={okDisabled} onClick={this.handleSubmit}>
                     {i18n('global.action.store')}
                 </Button>,
             );
