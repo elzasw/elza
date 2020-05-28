@@ -17,6 +17,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
 
 import cz.tacr.elza.api.interfaces.IApAccessPoint;
@@ -27,6 +28,7 @@ import cz.tacr.elza.domain.interfaces.Versionable;
  * Rejstříkové heslo.
  */
 @Entity(name = "ap_access_point")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "preferredPart", "lastUpdate"})
 public class ApAccessPoint extends AbstractVersionableEntity implements Versionable, IApAccessPoint {
 
     public static final String FIELD_ACCESS_POINT_ID = "accessPointId";

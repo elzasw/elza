@@ -2,6 +2,9 @@
     <structure-type code="ZP2015_PACKET" validValueFromVersion="149" >
         <name>Uložení</name>
     </structure-type>
+    <structure-type code="ZP2015_TEST_TYP" validValueFromVersion="149" >
+        <name>Agregace původce</name>
+    </structure-type>
     <structure-type code="PT_NAME">
         <name>Označení</name>
     </structure-type>

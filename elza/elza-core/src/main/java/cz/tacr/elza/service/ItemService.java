@@ -242,7 +242,7 @@ public class ItemService {
      *
      * @param dataItems seznam položek, které je potřeba donačíst podle ID návazných entit
      */
-    public void refItemsLoader(final Collection<ArrItem> dataItems) {
+    public void refItemsLoader(final Collection<? extends ArrItem> dataItems) {
 
         // mapy pro naplnění ID entit
         Map<Integer, ArrDataStructureRef> structureMap = new HashMap<>();
