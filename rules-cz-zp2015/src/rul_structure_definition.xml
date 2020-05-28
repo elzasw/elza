@@ -11,4 +11,16 @@
         <def-type>PARSE_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
+    <structure-definition structure-type="ZP2015_TEST_TYP" filename="Testtyp.drl">
+        <def-type>ATTRIBUTE_TYPES</def-type>
+        <priority>100</priority>
+    </structure-definition>
+   <!-- <structure-definition structure-type="ZP2015_TEST_TYP" filename="Testtyp.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
+    <structure-definition structure-type="ZP2015_TEST_TYP" filename="Testtyp-parse.groovy">
+        <def-type>PARSE_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>-->
 </structure-definitions>

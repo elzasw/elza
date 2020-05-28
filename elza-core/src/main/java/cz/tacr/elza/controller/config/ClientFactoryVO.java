@@ -339,7 +339,7 @@ public class ClientFactoryVO {
         Assert.notNull(arrFund, "AS musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         Fund fund = mapper.map(arrFund, Fund.class);
-        fund.setInstitutionIdentifier(arrFund.getInstitution().getInternalCode()); //TODO : gotzy - nebo accesspoint uuid ?
+        fund.setInstitutionIdentifier(arrFund.getInstitution().getInternalCode());
         fund.setFundNumber(arrFund.getFundNumber());
         fund.setName(arrFund.getName());
         fund.setInternalCode(arrFund.getInternalCode());
@@ -352,7 +352,7 @@ public class ClientFactoryVO {
         Assert.notNull(arrFund, "AS musí být vyplněn");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         FundDetail fundDetail = mapper.map(arrFund, FundDetail.class);
-        fundDetail.setInstitutionIdentifier(arrFund.getInstitution().getInternalCode());//TODO : gotzy - nebo accesspoint uuid ?
+        fundDetail.setInstitutionIdentifier(arrFund.getInstitution().getInternalCode());
         fundDetail.setFundNumber(arrFund.getFundNumber());
         fundDetail.setName(arrFund.getName());
         fundDetail.setInternalCode(arrFund.getInternalCode());

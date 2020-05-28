@@ -18,19 +18,19 @@ actions:
         outputType: ZP2015_UNIT_HIST
 
     # ZP4.3.3 Způsob uspořádání jednotky popisu
-    - !TextAggregation    
+    - !TextAggregation
         inputTypes:
             - ZP2015_UNIT_ARR
         outputType: ZP2015_UNIT_ARR
-        
+
     # ZP4.3.4 Tematický popis jednotky popisu
-    - !TextAggregation    
+    - !TextAggregation
         inputTypes:
             - ZP2015_UNIT_CONTENT
-        outputType: ZP2015_UNIT_CONTENT        
+        outputType: ZP2015_UNIT_CONTENT
 
     # ZP4.3.6 Budoucí přírůstky
-    - !TextAggregation    
+    - !TextAggregation
         inputTypes:
             - ZP2015_FUTURE_UNITS
         outputType: ZP2015_FUTURE_UNITS
@@ -42,12 +42,12 @@ actions:
         outputType: ZP2015_UNIT_CURRENT_STATUS
 
     # 4.5.2 Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání
-    - !TextAggregation    
+    - !TextAggregation
         createEmpty: false
         inputTypes:
             - ZP2015_RELATED_UNITS
         outputType: ZP2015_RELATED_UNITS
-        
+
     # 4.7.1 Zpracovatel jednotky popisu
     - !Copy
         inputType: ZP2015_ARRANGER
@@ -81,13 +81,13 @@ actions:
     - !Copy
         inputType: ZP2015_LANGUAGE
         distinct: true
-        
+
     # Agregace příloh
     - !Copy
         inputType: ZP2015_ATTACHMENT
-        distinct: true        
+        distinct: true
 
-    # Počet JP v pomůcce        
+    # Počet JP v pomůcce
     - !NodeCount
         outputType: ZP2015_UNIT_COUNT_SUM
 
@@ -237,3 +237,53 @@ actions:
              objectItemMapping:
                ZP2015_PACKET_TYPE_KAR: kar
                ZP2015_PACKET_TYPE_FAS: fas
+    # úprava dějin původce
+    - !AccessPointAggregation
+      inputTypes:
+        - ZP2015_ORIGINATOR
+      outputType: ZP2015_TEST_STRUCT
+      outputTypeApRef: ZP2015_ORIGINATOR # určuje typ atrubutu ve strukturovaném typu, do kterého se ukládá odkaz na zdrojový AP
+      mapping:
+        # kopíruje serializovanou hodnotu partu AP do itemu výstupního struct. typu
+        - PART_VALUE:
+            fromPrefferedName: true    # nepovinná položka (výchozí nastavit na false) - zahrnout pouze preferované označení
+            fromPart:
+              - PT_BODY
+            toItem:
+              - ZP2015_NOTE
+            group: true                # nepovinná položka (výchozí nastavit na false) - tzn. vstupní řetězce partů se spojí do jediného výstupního itemu
+            groupSeparator: ', '       # nepovinná položka (výchozí nastavit na prázdný řetězec) - separátor pro spojení vstupních řetězců partů (pokud je vyžadováno)
+
+        # kopíruje serializovanou hodnotu partu AP do itemu výstupního struct. typu
+        - PART_VALUE:
+            fromPrefferedName: true    # nepovinná položka (výchozí nastavit na false) - zahrnout pouze preferované označení
+            fromPart:
+              - PT_BODY
+            toItem:
+              - ZP2015_NOTE
+            group: true                # nepovinná položka (výchozí nastavit na false) - tzn. vstupní řetězce partů se spojí do jediného výstupního itemu
+            groupSeparator: ', '       # nepovinná položka (výchozí nastavit na prázdný řetězec) - separátor pro spojení vstupních řetězců partů (pokud je vyžadováno)
+
+        # kopíruje jeden typ itemu z AP s možností určení partu do typu výstupního struct. typu
+        - PART_ITEM:
+
+            fromPrefferedName: true    # nepovinná položka (výchozí nastavit na false) - zahrnout pouze preferované označení
+            fromPart: # 0..N partů (pokude je 0, znamená to, že se berou všechny party)
+              - PT_BODY
+              - PT_NAME
+            fromType: DESCRIPTION
+            toItem: ZP2015_NOTE
+            group: true                # nepovinná položka (výchozí nastavit na false) - tzn. vstupní itemy se spojí do jediného výstupního itemu
+            groupSeparator: ', '       # nepovinná položka (výchozí nastavit na prázdný řetězec) - separátor pro spojení vstupních itemů (pokud je vyžadováno)
+
+        # kopíruje jeden nebo více itemů z AP s možností určení partu do itemu výstupního struct. typu
+        - PART_ITEMS:
+            fromPrefferedName: true    # nepovinná položka (výchozí nastavit na false) - zahrnout pouze preferované označení
+            fromPart:       # 0..N partů (pokude je 0, znamená to, že se berou všechny party)
+              - PT_BODY
+              - PT_NAME
+            fromType:
+              - DESCRIPTION
+              - SOURCE_INFO
+            toItem: ZP2015_NOTE
+            groupSeparator: ', '       # nepovinná položka (výchozí nastavit na prázdný řetězec)

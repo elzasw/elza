@@ -133,7 +133,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
     }
 
     @Override
-    public void addItems(Collection<ArrItem> items, ItemType rsit) {
+    public void addItems(Collection<? extends ArrItem> items, ItemType rsit) {
         // fetch data
         itemService.refItemsLoader(items);
 

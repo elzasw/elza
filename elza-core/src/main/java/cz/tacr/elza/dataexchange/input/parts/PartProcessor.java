@@ -1,5 +1,6 @@
 package cz.tacr.elza.dataexchange.input.parts;
 
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.DEImportException;
@@ -19,6 +20,8 @@ import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -229,9 +232,12 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
                 data = itemInteger;
                 break;
             case "DATE":
-                ArrDataDate itemDate = new ArrDataDate();
-                //TODO: gotzy doresit
-                //itemDate.setValue();
+                ArrDataDate dataDate = new ArrDataDate();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDate localDate = LocalDate.parse(value, formatter);
+                dataDate.setValue(localDate);
+                dataDate.setDataType(DataType.DATE.getEntity());
+                data = dataDate;
                 break;
             case "UNITID":
                 ArrDataUnitid itemUnitid = new ArrDataUnitid();

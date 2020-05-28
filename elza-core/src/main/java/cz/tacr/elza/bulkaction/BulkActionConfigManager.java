@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.bulkaction.generator.multiple.*;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +34,6 @@ import cz.tacr.elza.bulkaction.generator.PersistentSortConfig;
 import cz.tacr.elza.bulkaction.generator.SealUnitIdConfig;
 import cz.tacr.elza.bulkaction.generator.SerialNumberConfig;
 import cz.tacr.elza.bulkaction.generator.TestDataConfig;
-import cz.tacr.elza.bulkaction.generator.multiple.CopyConfig;
-import cz.tacr.elza.bulkaction.generator.multiple.DateRangeConfig;
-import cz.tacr.elza.bulkaction.generator.multiple.ItemGeneratorConfig;
-import cz.tacr.elza.bulkaction.generator.multiple.NodeCountConfig;
-import cz.tacr.elza.bulkaction.generator.multiple.StorageOrderGeneratorConfig;
-import cz.tacr.elza.bulkaction.generator.multiple.TextAggregationConfig;
-import cz.tacr.elza.bulkaction.generator.multiple.UnitCountConfig;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.repository.ActionRepository;
@@ -186,7 +180,7 @@ public class BulkActionConfigManager {
         yamlCtor.addTypeDescription(new TypeDescription(MoveDescItemConfig.class, "!MoveDescItem"));
         yamlCtor.addTypeDescription(new TypeDescription(PersistentSortConfig.class, "!PersistentSort"));
         yamlCtor.addTypeDescription(new TypeDescription(DeleteItemConfig.class, "!DeleteItem"));
-
+        yamlCtor.addTypeDescription(new TypeDescription(AccessPointAggregationConfig.class, "!AccessPointAggregation"));
         return new Yaml(yamlCtor);
     }
 }

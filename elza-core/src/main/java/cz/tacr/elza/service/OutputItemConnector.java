@@ -30,7 +30,7 @@ public interface OutputItemConnector {
 
     void addTableItem(ElzaTable value, ItemType rsit, Integer itemSpecId);
 
-    void addItems(Collection<ArrItem> items, ItemType rsit);
+    void addItems(Collection<? extends ArrItem> items, ItemType rsit);
 
     /**
      * Returns item type ids which were modified by any call of addXXXItem() method.

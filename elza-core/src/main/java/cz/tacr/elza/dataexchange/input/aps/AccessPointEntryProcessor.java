@@ -1,5 +1,7 @@
 package cz.tacr.elza.dataexchange.input.aps;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -266,6 +268,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         entity.setPartType(type);
         entity.setCreateChange(context.getCreateChange());
         entity.setState(ApStateEnum.OK);
+
         return entity;
     }
 
@@ -382,9 +385,12 @@ public class AccessPointEntryProcessor implements ItemProcessor {
                 data = itemInteger;
                 break;
             case "DATE":
-                ArrDataDate itemDate = new ArrDataDate();
-                //TODO: gotzy doresit
-                //itemDate.setValue();
+                ArrDataDate dataDate = new ArrDataDate();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDate localDate = LocalDate.parse(value, formatter);
+                dataDate.setValue(localDate);
+                dataDate.setDataType(DataType.DATE.getEntity());
+                data = dataDate;
                 break;
             case "UNITID":
                 ArrDataUnitid itemUnitid = new ArrDataUnitid();

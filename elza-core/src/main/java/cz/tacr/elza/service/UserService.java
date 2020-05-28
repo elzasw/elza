@@ -1195,8 +1195,7 @@ public class UserService {
     public boolean hasPermission(final UsrPermission.Permission permission,
                                  final Integer entityId) {
 		UserDetail userDetail = getLoggedUserDetail();
-        //TODO : gotzy upravit return userDetail.hasPermission(permission, entityId);
-		return true;
+        return userDetail.hasPermission(permission, entityId);
     }
 
     /**
