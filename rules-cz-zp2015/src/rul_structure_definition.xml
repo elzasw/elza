@@ -23,4 +23,28 @@
         <def-type>PARSE_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>-->
+    <structure-definition structure-type="PT_BODY" filename="PT_BODY.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
+    <structure-definition structure-type="PT_CRE" filename="PT_CRE.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
+    <structure-definition structure-type="PT_EVENT" filename="PT_EVENT.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
+    <structure-definition structure-type="PT_EXT" filename="PT_EXT.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
+    <structure-definition structure-type="PT_IDENT" filename="PT_IDENT.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
+    <structure-definition structure-type="PT_REL" filename="PT_REL.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
 </structure-definitions>

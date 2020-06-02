@@ -192,6 +192,10 @@ public class PackageContext {
 			throw new IllegalStateException("Soubor " + file.getPath() + " jiz existuje");
 		}
 
+		if (filename.contains("/")) {
+            file.getParentFile().mkdirs();
+		}
+
 		BufferedWriter output = null;
 		try {
 			output = new BufferedWriter(new FileWriter(file));

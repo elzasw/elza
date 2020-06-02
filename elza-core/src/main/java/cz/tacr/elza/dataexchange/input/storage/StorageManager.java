@@ -104,7 +104,7 @@ public class StorageManager implements StoredEntityCallback {
         }
         ApPartStorage storage = new ApPartStorage(session, this, initHelper);
         storage.store(pws);
-
+        initHelper.getAccessPointService().updatePartValues(pws);
     }
 
     public void storeItems(Collection<ItemWrapper> iws) {

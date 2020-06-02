@@ -39,8 +39,9 @@ public class GroovyAe {
 
     public boolean isChildOf(final String aeTypeCode) {
         Validate.notNull(aeTypeCode, "Kód typu archivní entity musí být vyplněn");
-        ApType apType = StaticDataProvider.getApTypeByCode(aeTypeCode);
-        List<ApType> apTypes = StaticDataProvider.getApTypes();
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        ApType apType = sdp.getApTypeByCode(aeTypeCode);
+        List<ApType> apTypes = sdp.getApTypes();
         List<ApType> treeAeTypes = findTreeAeTypes(apTypes, apType.getApTypeId());
         for (ApType treeAeType : treeAeTypes) {
             if (treeAeType.getCode().equalsIgnoreCase(aeType)) {
@@ -87,7 +88,7 @@ public class GroovyAe {
 
     public List<GroovyAe> findParents(final String itemTypeStruct) {
         Validate.notNull(itemTypeStruct, "Kód typu hodnoty atributu musí být vyplněna");
-        ItemType itemType = StaticDataProvider.getItemTypeByCode(itemTypeStruct);
+        ItemType itemType = StaticDataProvider.getInstance().getItemTypeByCode(itemTypeStruct);
 
         if (itemType.getDataType() != DataType.RECORD_REF) {
             throw new IllegalArgumentException("Kód typu hodnoty atributu musí být odkaz na jinou AE");

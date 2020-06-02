@@ -8,4 +8,31 @@
     <structure-extension code="ZP2015_PACKET_EXTTYPE" structure-type="ZP2015_PACKET" >
         <name>Uložení s typem ukládací jednotky</name>
     </structure-extension>
+    <structure-extension code="ARTWORK/PT_NAME" structure-type="PT_NAME">
+        <name>ARTWORK/PT_NAME</name>
+    </structure-extension>
+    <structure-extension code="EVENT/PT_NAME" structure-type="PT_NAME">
+        <name>EVENT/PT_NAME</name>
+    </structure-extension>
+    <structure-extension code="FAMILY/PT_NAME" structure-type="PT_NAME">
+        <name>FAMILY/PT_NAME</name>
+    </structure-extension>
+    <structure-extension code="FAMILY_BRANCH/PT_NAME" structure-type="PT_NAME">
+        <name>FAMILY_BRANCH/PT_NAME</name>
+    </structure-extension>
+    <structure-extension code="FICTIVE_DYNASTY/PT_NAME" structure-type="PT_NAME">
+        <name>FICTIVE_DYNASTY/PT_NAME</name>
+    </structure-extension>
+    <structure-extension code="GEO/PT_NAME" structure-type="PT_NAME">
+        <name>GEO/PT_NAME</name>
+    </structure-extension>
+    <structure-extension code="PARTY_GROUP/PT_NAME" structure-type="PT_NAME">
+        <name>PARTY_GROUP/PT_NAME</name>
+    </structure-extension>
+    <structure-extension code="PERSON/PT_NAME" structure-type="PT_NAME">
+        <name>PERSON/PT_NAME</name>
+    </structure-extension>
+    <structure-extension code="TERM/PT_NAME" structure-type="PT_NAME">
+        <name>TERM/PT_NAME</name>
+    </structure-extension>
 </structure-extensions>

@@ -35,6 +35,10 @@ public class PartWrapper implements EntityWrapper {
         return partInfo;
     }
 
+    public List<ItemWrapper> getItemQueue() {
+        return itemQueue;
+    }
+
     @Override
     public ApPart getEntity() {
         return entity;
