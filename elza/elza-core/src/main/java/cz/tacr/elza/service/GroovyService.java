@@ -1,12 +1,19 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.groovy.*;
 import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.StructureDefinitionRepository;
+import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +46,18 @@ public class GroovyService {
     @Autowired
     private ApStateRepository apStateRepository;
 
+    @Autowired
+    private StructuredTypeRepository structuredTypeRepository;
+
+    @Autowired
+    private StructureDefinitionRepository structureDefinitionRepository;
+
+    @Autowired
+    private StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
+
+    @Autowired
+    private ResourcePathResolver resourcePathResolver;
+
     @PostConstruct
     public void setStatic() {
         _self = this;
@@ -67,7 +86,7 @@ public class GroovyService {
                                       @Nullable final List<ApPart> childrenParts,
                                       @NotNull final List<ApItem> items) {
         GroovyPart groovyPart = convertPart(state, part, childrenParts, items);
-        return new GroovyResult();
+        return groovyScriptService.process(groovyPart, getGroovyFilePath(groovyPart));
     }
 
     public GroovyPart convertPart(@NotNull final ApState state,
@@ -77,7 +96,7 @@ public class GroovyService {
         StaticDataProvider sdp = staticDataService.getData();
         ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
         boolean preferred = false;
-        if (Objects.equals(preferredNamePart.getPartId(), part.getPartId())) {
+        if (preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), part.getPartId())) {
             preferred = true;
         }
 
@@ -184,5 +203,57 @@ public class GroovyService {
 
     public static List<GroovyAe> findParentAe(final Integer recordId, final ItemType itemType) {
         return _self.findAllParents(recordId, itemType);
+    }
+
+    public String getGroovyFilePath(GroovyPart part) {
+        RulStructuredType structureType = structuredTypeRepository.findByCode(part.getPartTypeCode());
+        List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
+                .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE);
+
+        RulComponent component;
+        RulPackage rulPackage;
+        RulStructureExtensionDefinition structureExtensionDefinition = getRulStructureExtensionDefinitionByApType(structureExtensionDefinitions, part);
+
+        if (structureExtensionDefinition != null) {
+            component = structureExtensionDefinition.getComponent();
+            rulPackage = structureExtensionDefinition.getRulPackage();
+        } else {
+            List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
+                    .findByStructTypeAndDefTypeOrderByPriority(structureType, RulStructureDefinition.DefType.SERIALIZED_VALUE);
+            if (structureDefinitions.size() > 0) {
+                RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
+                component = structureDefinition.getComponent();
+                rulPackage = structureDefinition.getRulPackage();
+            } else {
+                throw new SystemException("Strukturovaný typ '" + structureType.getCode() + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
+            }
+        }
+
+        return resourcePathResolver.getGroovyDir(rulPackage)
+                .resolve(component.getFilename())
+                .toString();
+    }
+
+    private RulStructureExtensionDefinition getRulStructureExtensionDefinitionByApType(List<RulStructureExtensionDefinition> structureExtensionDefinitions,
+                                                                                       GroovyPart part) {
+        if (CollectionUtils.isEmpty(structureExtensionDefinitions)) {
+            return null;
+        }
+
+        StaticDataProvider std = staticDataService.getData();
+        ApType apType = std.getApTypeByCode(part.getAeType());
+        do {
+            for (RulStructureExtensionDefinition ed : structureExtensionDefinitions) {
+                if (ed.getStructuredTypeExtension().getCode().equals(apType.getCode() + "/" + part.getPartTypeCode())) {
+                    return ed;
+                }
+            }
+            if (apType.getParentApType() == null) {
+                return null;
+            } else {
+                apType = std.getApTypeById(apType.getParentApTypeId());
+            }
+        } while (true);
+
     }
 }

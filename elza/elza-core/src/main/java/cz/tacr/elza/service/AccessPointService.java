@@ -26,6 +26,8 @@ import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
+import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import cz.tacr.elza.groovy.GroovyResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -743,6 +745,57 @@ public class AccessPointService {
                 apAccessPointRepository.save(apAccessPoint);
             }
 //        }
+    }
+
+    public void updatePartValues(final Collection<PartWrapper> partWrappers) {
+        for (PartWrapper partWrapper : partWrappers) {
+            ApPart apPart = partWrapper.getEntity();
+            ApState state = partWrapper.getPartInfo().getApInfo().getApState();
+
+            List<PartWrapper> childrenPartWrappers = findChildrenParts(apPart, partWrappers);
+            List<ApPart> childrenParts = getChildrenParts(childrenPartWrappers);
+
+            List<ApItem> items = getItemsFromPartWrappers(partWrapper, childrenPartWrappers);
+
+            GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items);
+
+            partService.updatePartValue(apPart, result);
+        }
+    }
+
+    private List<PartWrapper> findChildrenParts(ApPart apPart, Collection<PartWrapper> partWrappers) {
+        List<PartWrapper> childrenPartWrappers = new ArrayList<>();
+        for (PartWrapper partWrapper : partWrappers) {
+            ApPart entity = partWrapper.getEntity();
+            if (entity.getParentPart() != null && entity.getParentPart().getPartId().equals(apPart.getPartId())) {
+                childrenPartWrappers.add(partWrapper);
+            }
+        }
+        return childrenPartWrappers;
+    }
+
+    private List<ApPart> getChildrenParts(List<PartWrapper> childrenPartWrappers) {
+        List<ApPart> childrenPart = new ArrayList<>();
+        for (PartWrapper partWrapper : childrenPartWrappers) {
+            childrenPart.add(partWrapper.getEntity());
+        }
+        return childrenPart;
+    }
+
+    private List<ApItem> getItemsFromPartWrappers(PartWrapper partWrapper, List<PartWrapper> childrenPartWrappers) {
+        List<ApItem> items = new ArrayList<>(getItemsFromPartWrapper(partWrapper));
+        for (PartWrapper pw : childrenPartWrappers) {
+            items.addAll(getItemsFromPartWrapper(pw));
+        }
+        return items;
+    }
+
+    private List<ApItem> getItemsFromPartWrapper(PartWrapper pw) {
+        List<ApItem> items = new ArrayList<>();
+        for (ItemWrapper itemWrapper : pw.getItemQueue()) {
+            items.add((ApItem) itemWrapper.getEntity());
+        }
+        return items;
     }
 
     public void updatePartValue(final ApPart apPart) {

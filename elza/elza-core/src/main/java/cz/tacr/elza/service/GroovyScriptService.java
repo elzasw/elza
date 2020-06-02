@@ -3,6 +3,8 @@ package cz.tacr.elza.service;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.groovy.GroovyPart;
+import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.ws.types.v1.Did;
@@ -39,6 +41,8 @@ public class GroovyScriptService {
     private final GroovyScriptFile createDidScriptFile;
 
     private final NodeCacheService nodeCacheService;
+
+    private static final String PART = "PART";
 
     @Autowired
     public GroovyScriptService(ResourcePathResolver resourcePathResolver,
@@ -84,6 +88,20 @@ public class GroovyScriptService {
             result.add((Did) createDidScriptFile.evaluate(input));
         }
         return result;
+    }
+
+    public GroovyResult process(GroovyPart part, String groovyFilePath) {
+        GroovyScriptFile groovyScriptFile;
+        try {
+            groovyScriptFile = new GroovyScriptFile(new File(groovyFilePath));
+        } catch (Throwable t) {
+            throw new SystemException("Failed to initialize groovy scripts", t);
+        }
+
+        Map<String, Object> input = new HashMap<>();
+        input.put(PART, part);
+
+        return (GroovyResult) groovyScriptFile.evaluate(input);
     }
 
     public static class GroovyScriptFile {

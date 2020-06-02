@@ -7,4 +7,40 @@
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>1</priority>
     </structure-extension-definition>
+    <structure-extension-definition structure-type="PT_NAME" structure-extension="ARTWORK/PT_NAME" filename="ARTWORK/PT_NAME.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-extension-definition>
+    <structure-extension-definition structure-type="PT_NAME" structure-extension="EVENT/PT_NAME" filename="EVENT/PT_NAME.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-extension-definition>
+    <structure-extension-definition structure-type="PT_NAME" structure-extension="FAMILY/PT_NAME" filename="FAMILY/PT_NAME.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-extension-definition>
+    <structure-extension-definition structure-type="PT_NAME" structure-extension="FAMILY_BRANCH/PT_NAME" filename="FAMILY_BRANCH/PT_NAME.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-extension-definition>
+    <structure-extension-definition structure-type="PT_NAME" structure-extension="FICTIVE_DYNASTY/PT_NAME" filename="FICTIVE_DYNASTY/PT_NAME.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-extension-definition>
+    <structure-extension-definition structure-type="PT_NAME" structure-extension="GEO/PT_NAME" filename="GEO/PT_NAME.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-extension-definition>
+    <structure-extension-definition structure-type="PT_NAME" structure-extension="PARTY_GROUP/PT_NAME" filename="PARTY_GROUP/PT_NAME.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-extension-definition>
+    <structure-extension-definition structure-type="PT_NAME" structure-extension="PERSON/PT_NAME" filename="PERSON/PT_NAME.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-extension-definition>
+    <structure-extension-definition structure-type="PT_NAME" structure-extension="TERM/PT_NAME" filename="TERM/PT_NAME.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-extension-definition>
 </structure-extension-definitions>
