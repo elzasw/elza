@@ -128,12 +128,12 @@ public class BulkActionHelperService {
     @Transactional(Transactional.TxType.MANDATORY)
     public void onFinished(final ArrBulkActionRun bulkActionRun) {
         // find action nodes for output update
-        ArrBulkActionRun bulkActionRunUnproxy = HibernateUtils.unproxy(bulkActionRun);
-        List<ArrBulkActionNode> arrBulkActionNodes = bulkActionRunUnproxy.getArrBulkActionNodes();
+        ArrBulkActionRun bulkActionRunReload = bulkActionRepository.findOne(bulkActionRun.getBulkActionRunId());
+        List<ArrBulkActionNode> arrBulkActionNodes = bulkActionRunReload.getArrBulkActionNodes();
         List<Integer> nodeIds = arrBulkActionNodes.stream().map(ArrBulkActionNode::getNodeId).collect(Collectors.toList());
 
         // find all related output outputss
-        List<ArrOutput> outputs = outputServiceInternal.findOutputsByNodes(bulkActionRunUnproxy.getFundVersion(), nodeIds, ArrOutput.OutputState.OPEN, ArrOutput.OutputState.COMPUTING);
+        List<ArrOutput> outputs = outputServiceInternal.findOutputsByNodes(bulkActionRunReload.getFundVersion(), nodeIds, ArrOutput.OutputState.OPEN, ArrOutput.OutputState.COMPUTING);
 
         // prepare ArrChange provider applied only if update occurs, change shared between connectors
         Supplier<ArrChange> changeSupplier = new Supplier<ArrChange>() {
@@ -151,11 +151,11 @@ public class BulkActionHelperService {
         // update each output output
         logger.debug("Dispatching result to outputs");
         for (ArrOutput output : outputs) {
-            OutputItemConnector connector = outputServiceInternal.createItemConnector(bulkActionRunUnproxy.getFundVersion(), output);
+            OutputItemConnector connector = outputServiceInternal.createItemConnector(bulkActionRunReload.getFundVersion(), output);
             connector.setChangeSupplier(changeSupplier);
 
             // update output by each result
-            Result actionResult = bulkActionRunUnproxy.getResult();
+            Result actionResult = bulkActionRunReload.getResult();
             if (actionResult != null) {
                 for (ActionResult result : actionResult.getResults()) {
                     result.createOutputItems(connector);
@@ -164,7 +164,7 @@ public class BulkActionHelperService {
 
             // update to open state
             output.setState(ArrOutput.OutputState.OPEN); // saved by commit
-            outputServiceInternal.publishOutputStateChanged(output, bulkActionRunUnproxy.getFundVersionId());
+            outputServiceInternal.publishOutputStateChanged(output, bulkActionRunReload.getFundVersionId());
         }
         logger.debug("Result dispatched to outputs");
     }

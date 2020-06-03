@@ -1,7 +1,7 @@
 package cz.tacr.elza.bulkaction.generator.result;
 
 import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.service.OutputItemConnector;
 
 import java.util.List;
@@ -10,9 +10,7 @@ public class AccessPointAggregationResult extends ActionResult {
 
     private String outputType;
 
-    private String outputTypeApRef;
-
-    private List<ArrStructuredItem> dataItems;
+    private List<AccessPointAggregationStructResult> structs;
 
     public String getOutputType() {
         return outputType;
@@ -22,28 +20,23 @@ public class AccessPointAggregationResult extends ActionResult {
         this.outputType = outputType;
     }
 
-    public String getOutputTypeApRef() {
-        return outputTypeApRef;
+    public List<AccessPointAggregationStructResult> getStructs() {
+        return structs;
     }
 
-    public void setOutputTypeApRef(String outputTypeApRef) {
-        this.outputTypeApRef = outputTypeApRef;
-    }
-
-    public List<ArrStructuredItem> getDataItems() {
-        return dataItems;
-    }
-
-    public void setDataItems(List<ArrStructuredItem> dataItems) {
-        this.dataItems = dataItems;
+    public void setStructs(List<AccessPointAggregationStructResult> structs) {
+        this.structs = structs;
     }
 
     @Override
     public void createOutputItems(OutputItemConnector connector) {
-        if (dataItems == null) {
+        if (structs == null) {
             return;
         }
-        ItemType rsit = connector.getItemTypeByCode(outputType);
-        connector.addItems(dataItems, rsit);
+        ItemType outputType = connector.getItemTypeByCode(this.outputType);
+        StructType structuredType = connector.getStructuredTypeByCode(outputType.getEntity().getStructuredType().getCode());
+        for (AccessPointAggregationStructResult struct : structs) {
+            connector.addStructuredItem(outputType, structuredType, struct.getItems());
+        }
     }
 }

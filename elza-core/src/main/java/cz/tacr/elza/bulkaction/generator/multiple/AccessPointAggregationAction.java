@@ -3,17 +3,37 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.AccessPointAggregationResult;
+import cz.tacr.elza.bulkaction.generator.result.AccessPointAggregationStructResult;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataBit;
+import cz.tacr.elza.domain.ArrDataDate;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +44,11 @@ import org.springframework.util.Assert;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -34,21 +58,18 @@ public class AccessPointAggregationAction extends Action {
     private final static Logger logger = LoggerFactory.getLogger(BulkActionService.class);
 
     @Autowired
-    ApPartRepository partRepository;
+    private ApPartRepository partRepository;
 
     @Autowired
-    ApItemRepository itemRepository;
+    private ApItemRepository itemRepository;
 
     @Autowired
-    ItemTypeRepository itemTypeRepository;
-
-    @Autowired
-    ApAccessPointRepository apAccessPointRepository;
+    private ApAccessPointRepository apAccessPointRepository;
 
     /**
      * Vstupní atributy
      */
-    private Map<Integer, ItemType> inputItemTypes = new HashMap<>();
+    private final Map<Integer, ItemType> inputItemTypes = new HashMap<>();
 
     /**
      * Výstupní atribut
@@ -59,7 +80,7 @@ public class AccessPointAggregationAction extends Action {
 
     protected AccessPointAggregationConfig config;
 
-    private List<ArrStructuredItem> resultItems;
+    private Map<Integer, ApResult> apStructItems;
 
     private StaticDataProvider ruleSystem;
 
@@ -70,26 +91,27 @@ public class AccessPointAggregationAction extends Action {
 
     @Override
     public void init(ArrBulkActionRun bulkActionRun) {
-        resultItems = new ArrayList<>();
+        apStructItems = new LinkedHashMap<>();
         ruleSystem = getStaticDataProvider();
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
 
         String outputType = config.getOutputType();
-        outputItemType = ruleSystem.getItemTypeByCode(outputType);
+        outputItemType = sdp.getItemTypeByCode(outputType);
         checkValidDataType(outputItemType, DataType.STRUCTURED);
 
         for (String inputTypeCode : config.getInputTypes()) {
-            ItemType inputType = ruleSystem.getItemTypeByCode(inputTypeCode);
+            ItemType inputType = sdp.getItemTypeByCode(inputTypeCode);
             checkValidDataType(inputType, DataType.RECORD_REF);
             inputItemTypes.put(inputType.getItemTypeId(), inputType);
         }
 
         String outputTypeApRef = config.getOutputTypeApRef();
-        outputItemTypeApRef = ruleSystem.getItemTypeByCode(outputTypeApRef);
+        outputItemTypeApRef = sdp.getItemTypeByCode(outputTypeApRef);
         checkValidDataType(outputItemTypeApRef, DataType.RECORD_REF);
 
         for (ApAggregationPartConfig partConfig : config.getMappingPartValue()) {
-            Assert.notNull(ruleSystem.getPartTypeByCode(partConfig.getFromPart()), "Neexistujíci typ Partu pro mapování");
-            Assert.notNull(ruleSystem.getItemTypeByCode(partConfig.getToItem()), "Neexistující typ Itemu pro mapování");
+            Assert.notNull(ruleSystem.getPartTypeByCode(partConfig.getFromPart()), "Neexistujíci typ Partu pro mapování: " + partConfig.getFromPart());
+            Assert.notNull(sdp.getItemTypeByCode(partConfig.getToItem()), "Neexistující typ Itemu pro mapování: " + partConfig.getToItem());
         }
 
     }
@@ -109,33 +131,44 @@ public class AccessPointAggregationAction extends Action {
     /**
      * Zpracování AP
      *
-     * @param dataId
+     * @param apId identifikátor dat
      */
-    private void processAP(Integer dataId) {
-        logger.debug("Zpracovnání AP ID : " + dataId);
+    private void processAP(Integer apId) {
+        logger.debug("Zpracovnání AP ID : " + apId);
 
-        ApAccessPoint ap = apAccessPointRepository.findOne(dataId);
+        ApResult apResult = apStructItems.get(apId);
+        if (apResult != null) {
+            logger.debug("Konec zpracování AP : " + apId + " - již byl přidán");
+            return;
+        }
+        ApAccessPoint ap = apAccessPointRepository.findOne(apId);
         List<ApPart> parts = partRepository.findValidPartByAccessPoint(ap);
         List<ApItem> items = itemRepository.findValidItemsByAccessPointMultiFetch(ap);
 
+        apResult = new ApResult();
+        apStructItems.put(ap.getAccessPointId(), apResult);
+
         // Procházení prvků PART_VALUE
-        createPartValueResults(ap, parts);
+        createPartValueResults(apResult, ap, parts);
 
         //Procházení prvků PART_ITEM
-        createPartItemResults(ap, items);
+        createPartItemResults(apResult, ap, items);
 
         //Procházení prvků PART_ITEMS
-        createPartItemsResults(ap, items);
+        createPartItemsResults(apResult, ap, items);
+
+        //Vložení odkazu na zdrojový AP
+        createApRefItem(apResult, ap);
 
         logger.debug("Konec zpracování AP : " + ap.getAccessPointId());
     }
 
-    private void createPartValueResults(ApAccessPoint ap, List<ApPart> parts) {
+    private void createPartValueResults(final ApResult apResult, ApAccessPoint ap, List<ApPart> parts) {
         for (ApAggregationPartConfig partConfig : config.getMappingPartValue()) {
             RulPartType fromPart = ruleSystem.getPartTypeByCode(partConfig.getFromPart());
             // pro value jen z fromPrefferedName
             if (partConfig.fromPrefferedName) {
-                createResultItem(partConfig.getToItem(), ap.getPreferredPart().getValue());
+                createResultItem(apResult, partConfig.getToItem(), ap.getPreferredPart().getValue());
             }
             //pro všechny value z Partů daného typu
             else {
@@ -143,22 +176,22 @@ public class AccessPointAggregationAction extends Action {
                         .filter(apPart -> apPart.getPartType().getPartTypeId().equals(fromPart.getPartTypeId()))
                         .map(ApPart::getValue)
                         .collect(Collectors.toList());
-                if (partConfig.group && foundPartValues != null && foundPartValues.size() > 0) {
-                    createResultItem(partConfig.getToItem(), String.join(partConfig.groupSeparator, foundPartValues));
-                } else if (foundPartValues != null && foundPartValues.size() > 0) {
+                if (partConfig.group && foundPartValues.size() > 0) {
+                    createResultItem(apResult, partConfig.getToItem(), String.join(partConfig.groupSeparator, foundPartValues));
+                } else if (foundPartValues.size() > 0) {
                     for (String partValue : foundPartValues) {
-                        createResultItem(partConfig.getToItem(), partValue);
+                        createResultItem(apResult, partConfig.getToItem(), partValue);
                     }
                 }
             }
         }
     }
 
-    private void createPartItemResults(ApAccessPoint ap, List<ApItem> items) {
+    private void createPartItemResults(final ApResult apResult, ApAccessPoint ap, List<ApItem> items) {
         for (ApAggregationItemConfig itemConfig : config.getMappingPartItem()) {
             // pro value jen z fromPrefferedName
             if (itemConfig.fromPrefferedName) {
-                createResultItem(itemConfig.getToItem(), ap.getPreferredPart().getValue());
+                createResultItem(apResult, itemConfig.getToItem(), ap.getPreferredPart().getValue());
             }
             //pro všechny value z Itemů daného typu
             else {
@@ -170,22 +203,22 @@ public class AccessPointAggregationAction extends Action {
                         .map(ApItem::getData)
                         .map(ArrData::getFulltextValue)
                         .collect(Collectors.toList());
-                if (itemConfig.group && foundItemValues != null && foundItemValues.size() > 0) {
-                    createResultItem(itemConfig.getToItem(), String.join(itemConfig.groupSeparator, foundItemValues));
-                } else if (foundItemValues != null && foundItemValues.size() > 0) {
+                if (itemConfig.group && foundItemValues.size() > 0) {
+                    createResultItem(apResult, itemConfig.getToItem(), String.join(itemConfig.groupSeparator, foundItemValues));
+                } else if (foundItemValues.size() > 0) {
                     for (String partValue : foundItemValues) {
-                        createResultItem(itemConfig.getToItem(), partValue);
+                        createResultItem(apResult, itemConfig.getToItem(), partValue);
                     }
                 }
             }
         }
     }
 
-    private void createPartItemsResults(ApAccessPoint ap, List<ApItem> items) {
+    private void createPartItemsResults(final ApResult apResult, ApAccessPoint ap, List<ApItem> items) {
         for (ApAggregationItemsConfig itemsConfig : config.getMappingPartItems()) {
             // pro value jen z fromPrefferedName
             if (itemsConfig.fromPrefferedName) {
-                createResultItem(itemsConfig.getToItem(), ap.getPreferredPart().getValue());
+                createResultItem(apResult, itemsConfig.getToItem(), ap.getPreferredPart().getValue());
             }
             //pro všechny value z Itemů daných typu
             else {
@@ -198,8 +231,8 @@ public class AccessPointAggregationAction extends Action {
                         .map(ApItem::getData)
                         .map(ArrData::getFulltextValue)
                         .collect(Collectors.toList());
-                if (foundItemValues != null && foundItemValues.size() > 0) {
-                    createResultItem(itemsConfig.getToItem(), String.join(itemsConfig.groupSeparator, foundItemValues));
+                if (foundItemValues.size() > 0) {
+                    createResultItem(apResult, itemsConfig.getToItem(), String.join(itemsConfig.groupSeparator, foundItemValues));
                 }
             }
         }
@@ -209,11 +242,11 @@ public class AccessPointAggregationAction extends Action {
         List<String> fromPartCodeList;
         if (fromParts == null || fromParts.isEmpty()) {
             fromPartCodeList = ruleSystem.getPartTypes().stream()
-                    .map(rulPartType -> rulPartType.getCode()).collect(Collectors.toList());
+                    .map(RulPartType::getCode).collect(Collectors.toList());
         } else {
             fromPartCodeList = ruleSystem.getPartTypes().stream()
                     .filter(rulPartType -> fromParts.contains(rulPartType.getCode()))
-                    .map(rulPartType -> rulPartType.getCode())
+                    .map(RulPartType::getCode)
                     .collect(Collectors.toList());
         }
         return fromPartCodeList;
@@ -232,43 +265,61 @@ public class AccessPointAggregationAction extends Action {
         return fromTypeCodeList;
     }
 
-    private void createResultItem(String itemCode, String value) {
+    private void createApRefItem(final ApResult apResult, ApAccessPoint ap) {
         ArrStructuredItem item = new ArrStructuredItem();
-        item.setItemType(itemTypeRepository.findOneByCode(itemCode));
-        ArrData data = createItemData(ruleSystem.getItemTypeByCode(itemCode), value);
+        RulItemType entity = outputItemTypeApRef.getEntity();
+        item.setItemType(entity);
+        ArrDataRecordRef data = new ArrDataRecordRef();
+        data.setDataType(entity.getDataType());
+        data.setRecord(ap);
         item.setData(data);
-        resultItems.add(item);
+        apResult.addItem(item);
+    }
+
+    private void createResultItem(final ApResult apResult, String itemCode, String value) {
+        ArrStructuredItem item = new ArrStructuredItem();
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        item.setItemType(sdp.getItemTypeByCode(itemCode).getEntity());
+        ArrData data = createItemData(sdp.getItemTypeByCode(itemCode), value);
+        item.setData(data);
+        apResult.addItem(item);
     }
 
     @Override
     public ActionResult getResult() {
         AccessPointAggregationResult accessPointAggregationResult = new AccessPointAggregationResult();
         accessPointAggregationResult.setOutputType(outputItemType.getCode());
-        accessPointAggregationResult.setOutputTypeApRef(outputItemTypeApRef.getCode());
-        accessPointAggregationResult.setDataItems(resultItems);
+        List<AccessPointAggregationStructResult> structs = new ArrayList<>();
+        for (ApResult apResult : apStructItems.values()) {
+            AccessPointAggregationStructResult struct = new AccessPointAggregationStructResult();
+            struct.setItems(apResult.items);
+            structs.add(struct);
+        }
+        accessPointAggregationResult.setStructs(structs);
         return accessPointAggregationResult;
     }
 
     protected ArrData createItemData(ItemType itemType, String value) {
-        ArrData data = null;
-        switch (itemType.getDataType().getCode()) {
-            case "FORMATTED_TEXT":
-            case "TEXT":
+        ArrData data;
+        DataType dataType = itemType.getDataType();
+        switch (dataType) {
+            case FORMATTED_TEXT:
+            case TEXT:
                 ArrDataText dataText = new ArrDataText();
                 dataText.setValue(value);
                 data = dataText;
                 break;
-            case "STRING":
+            case STRING:
                 ArrDataString itemString = new ArrDataString();
                 itemString.setValue(value);
                 data = itemString;
                 break;
-            case "INT":
+            case INT:
                 ArrDataInteger itemInteger = new ArrDataInteger();
                 itemInteger.setValue(Integer.valueOf(value));
                 data = itemInteger;
                 break;
-            case "DATE":
+            case DATE:
                 ArrDataDate dataDate = new ArrDataDate();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate localDate = LocalDate.parse(value, formatter);
@@ -276,36 +327,48 @@ public class AccessPointAggregationAction extends Action {
                 dataDate.setDataType(DataType.DATE.getEntity());
                 data = dataDate;
                 break;
-            case "UNITID":
+            case UNITID:
                 ArrDataUnitid itemUnitid = new ArrDataUnitid();
                 itemUnitid.setUnitId(value);
                 data = itemUnitid;
                 break;
-            case "COORDINATES":
-                break;
-            case "BIT":
+            case BIT:
                 ArrDataBit itemBit = new ArrDataBit();
                 itemBit.setValue(Boolean.valueOf(value));
                 data = itemBit;
                 break;
-            case "URI-REF":
+            case URI_REF:
                 ArrDataUriRef itemUriRef = new ArrDataUriRef();
                 itemUriRef.setValue(value);
                 data = itemUriRef;
                 break;
-            case "DECIMAL":
+            case ENUM:
+                data = new ArrDataNull();
                 break;
-            case "STRUCTURED":
-                break;
-            case "ENUM":
-                ArrDataNull itemNull = new ArrDataNull();
-                data = itemNull;
-                break;
+            case COORDINATES:
+            case DECIMAL:
+            case RECORD_REF:
+            case UNITDATE:
+            case JSON_TABLE:
+            case FILE_REF:
+            case APFRAG_REF:
+            case STRUCTURED:
+                throw new NotImplementedException("Data nejsou podporovány: " + dataType);
             default:
-                throw new SystemException("Není implementováno, nebo neplatný typ atributu " + itemType.getDataType().getCode(), BaseCode.INVALID_STATE);
+                throw new SystemException("Není implementováno, nebo neplatný typ atributu " + dataType.getCode(), BaseCode.INVALID_STATE);
         }
-        data.setDataType(itemType.getDataType().getEntity());
+        data.setDataType(dataType.getEntity());
         return data;
+    }
+
+    private static class ApResult {
+
+        List<ArrStructuredItem> items = new ArrayList<>();
+
+        void addItem(ArrStructuredItem item) {
+            items.add(item);
+        }
+
     }
 }
 

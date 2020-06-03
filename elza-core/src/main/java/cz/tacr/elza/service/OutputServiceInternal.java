@@ -16,15 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import cz.tacr.elza.common.TaskExecutor;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.exception.BusinessException;
@@ -42,7 +38,6 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.output.OutputGeneratorWorker;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
 
@@ -89,6 +84,8 @@ public class OutputServiceInternal {
 
     private final RevertingChangesService revertingChangesService;
 
+    private final StructObjService structObjService;
+
     @Autowired
     @Lazy
     private AsyncRequestService asyncRequestService;
@@ -111,7 +108,8 @@ public class OutputServiceInternal {
                                  RuleService ruleService,
                                  ActionRepository actionRepository,
                                  BulkActionRunRepository bulkActionRunRepository,
-                                 RevertingChangesService revertingChangesService) {
+                                 RevertingChangesService revertingChangesService,
+                                 StructObjService structObjService) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
@@ -130,6 +128,7 @@ public class OutputServiceInternal {
         this.actionRepository = actionRepository;
         this.bulkActionRunRepository = bulkActionRunRepository;
         this.revertingChangesService = revertingChangesService;
+        this.structObjService = structObjService;
     }
 
     /**
@@ -330,7 +329,7 @@ public class OutputServiceInternal {
 
     @Transactional(TxType.MANDATORY)
     public OutputItemConnector createItemConnector(ArrFundVersion fundVersion, ArrOutput output) {
-        OutputItemConnectorImpl connector = new OutputItemConnectorImpl(fundVersion, output, staticDataService, this, itemService);
+        OutputItemConnectorImpl connector = new OutputItemConnectorImpl(fundVersion, output, staticDataService, this, itemService, structObjService);
 
         Set<Integer> ignoredItemTypeIds = getIgnoredItemTypeIds(output);
         connector.setIgnoredItemTypeIds(ignoredItemTypeIds);

@@ -17,7 +17,7 @@ import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
 import './RegistryField.scss';
 import RegistryListItem from './RegistryListItem';
 import ExtImportForm from '../form/ExtImportForm';
-import {refRecordTypesFetchIfNeeded} from '../../actions/refTables/recordTypes';
+import {refApTypesFetchIfNeeded} from "../../actions/refTables/apTypes";
 
 const AUTOCOMPLETE_REGISTRY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
@@ -59,7 +59,7 @@ class RegistryField extends AbstractReactComponent {
     state = {registryList: [], count: null, searchText: null};
 
     componentDidMount() {
-        this.props.dispatch(refRecordTypesFetchIfNeeded());
+        this.props.dispatch(refApTypesFetchIfNeeded());
     }
 
     focus = () => {
@@ -241,7 +241,7 @@ class RegistryField extends AbstractReactComponent {
                 footer={footerRender}
                 items={this.state.registryList}
                 getItemId={item => (item ? item.id : null)}
-                getItemName={item => (item && item.record ? item.record : tmpVal)}
+                getItemName={item => (item && item.name ? item.name : tmpVal)}
                 onSearchChange={this.handleSearchChange}
                 renderItem={this.renderRecord}
                 actions={[actions]}

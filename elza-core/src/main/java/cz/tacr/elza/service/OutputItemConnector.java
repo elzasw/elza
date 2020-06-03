@@ -1,12 +1,15 @@
 package cz.tacr.elza.service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.table.ElzaTable;
 
 /**
@@ -38,4 +41,8 @@ public interface OutputItemConnector {
     Set<Integer> getModifiedItemTypeIds();
 
     ItemType getItemTypeByCode(String itemType);
+
+    StructType getStructuredTypeByCode(String outputType);
+
+    void addStructuredItem(ItemType outputTypeApRef, StructType structuredType, List<ArrStructuredItem> dataItems);
 }

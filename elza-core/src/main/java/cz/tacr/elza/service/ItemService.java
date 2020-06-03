@@ -237,6 +237,10 @@ public class ItemService {
         }
     }
 
+    public ApAccessPoint getApProxy(Integer apId) {
+        return recordRepository.getOne(apId);
+    }
+
     /**
      * Donačítá položky, které jsou typově jako odkaz, podle ID.
      *

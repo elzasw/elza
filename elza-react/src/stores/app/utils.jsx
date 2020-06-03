@@ -98,3 +98,24 @@ function selectedAfterClose(arr, index) {
 }
 
 exports.selectedAfterClose = selectedAfterClose;
+
+function flatRecursiveMap(map, prop = 'children') {
+    let result = {};
+
+    const keys = Object.keys(map);
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        const value = map[key];
+        result[key] = value;
+        if (value[prop]) {
+            result = {
+                ...result,
+                ...flatRecursiveMap(getMapFromList(value[prop]))
+            }
+        }
+    }
+
+    return result;
+}
+
+exports.flatRecursiveMap = flatRecursiveMap;

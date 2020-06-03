@@ -1,7 +1,6 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.util.List;
-import java.util.Map;
 
 public class AccessPointAggregationConfig implements ActionConfig {
 
