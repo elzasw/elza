@@ -81,18 +81,21 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
     }
 
     @Override
-    @Transactional
+    @Transactional(Transactional.TxType.NEVER)
     public void run() {
         beginTime = System.currentTimeMillis();
-        bulkActionRun = bulkActionHelperService.getArrBulkActionRun(bulkActionRunId);
-        bulkAction = bulkActionHelperService.prepareToRun(bulkActionRun);
-        inputNodeIds = bulkActionHelperService.getBulkActionNodeIds(bulkActionRun);
-        logger.info("Bulk action started: {}", this);
+        new TransactionTemplate(transactionManager).execute(status -> {
+            bulkActionRun = bulkActionHelperService.getArrBulkActionRun(bulkActionRunId);
+            bulkAction = bulkActionHelperService.prepareToRun(bulkActionRun);
+            inputNodeIds = bulkActionHelperService.getBulkActionNodeIds(bulkActionRun);
+            logger.info("Bulk action started: {}", this);
 
-        // start action - mark it as running
-        bulkActionRun.setDateStarted(new Date());
-        bulkActionRun.setState(ArrBulkActionRun.State.RUNNING);
-        bulkActionHelperService.updateAction(bulkActionRun);
+            // start action - mark it as running
+            bulkActionRun.setDateStarted(new Date());
+            bulkActionRun.setState(ArrBulkActionRun.State.RUNNING);
+            bulkActionHelperService.updateAction(bulkActionRun);
+            return null;
+        });
 
         try {
             new TransactionTemplate(transactionManager).execute(status -> {

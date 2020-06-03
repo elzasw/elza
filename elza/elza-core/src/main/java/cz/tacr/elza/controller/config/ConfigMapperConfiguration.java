@@ -569,6 +569,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemStructureVO itemStructureVO,
                                         final MappingContext context) {
                         super.mapAtoB(itemStructureDataRef, itemStructureVO, context);
+                        itemStructureVO.setStructureData(ArrStructureDataVO.newInstance(itemStructureDataRef.getStructuredObject()));
                         if (itemStructureDataRef.getStructuredObject() != null) {
                             itemStructureVO.setValue(itemStructureDataRef.getStructuredObjectId());
                         }
@@ -582,7 +583,6 @@ public class ConfigMapperConfiguration {
                         itemStructureRef.setStructuredObject(itemStructureVO.getValue() == null ? null : structureDataRepository.findOne(itemStructureVO.getValue()));
                     }
                 })
-                .field("structuredObject", "structureData")
                 .byDefault().register();
         mapperFactory.classMap(ArrDataFileRef.class, ArrItemFileRefVO.class).customize(
                 new CustomMapper<ArrDataFileRef, ArrItemFileRefVO>() {

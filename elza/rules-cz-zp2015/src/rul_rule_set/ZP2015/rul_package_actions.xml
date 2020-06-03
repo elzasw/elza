@@ -60,4 +60,10 @@
     <!-- Generování ukládacích jednotek -->
     <package-action filename="GENEROVANI_UKL_JEDNOTEK.yaml" />
     <package-action filename="MAZANI_UKL_JEDNOTEK.yaml" />
+    <!-- Test AP -->
+    <package-action filename="ZP2015_AP_TEST.yaml">
+        <action-item-types>
+            <action-item-type item-type="ZP2015_TEST_STRUCT" />
+        </action-item-types>
+    </package-action>
 </package-actions>

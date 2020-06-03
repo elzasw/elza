@@ -7,6 +7,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
@@ -26,6 +27,7 @@ public class ArrDataRecordRef extends ArrData {
     @RestResource(exported = false)
 	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
     @JoinColumn(name = "recordId", nullable = false)
+    @JsonIgnore
     private ApAccessPoint record;
 
     @Column(name = "recordId", updatable = false, insertable = false)

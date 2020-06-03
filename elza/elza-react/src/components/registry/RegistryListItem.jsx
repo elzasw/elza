@@ -4,6 +4,7 @@ import {AbstractReactComponent, Icon} from 'components/shared';
 import classNames from 'classnames';
 
 import './RegistryListItem.scss';
+import {flatRecursiveMap} from "../../stores/app/utils";
 
 /**
  * Komponenta item listu osob
@@ -36,7 +37,8 @@ class RegistryListItem extends AbstractReactComponent {
     };
 
     getApTypeNames = () => {
-        const type = this.props.apTypeIdMap[this.props.typeId];
+        const types = flatRecursiveMap(this.props.apTypeIdMap);
+        const type = types[this.props.typeId];
 
         let names = [type.name];
         if (type.parents) {

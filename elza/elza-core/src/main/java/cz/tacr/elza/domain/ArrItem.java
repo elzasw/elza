@@ -298,6 +298,7 @@ public abstract class ArrItem implements NodeCacheSerializable, IntItem {
         this.data = data;
     }
 
+    @JsonIgnore
     public boolean isUndefined() {
         return data == null;
     }

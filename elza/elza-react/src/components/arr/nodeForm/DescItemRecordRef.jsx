@@ -129,7 +129,7 @@ class DescItemRecordRef extends AbstractReactComponent {
                 return (
                     <DescItemLabel
                         onClick={onDetail.bind(this, record.id)}
-                        value={record.record}
+                        value={record.name}
                         notIdentified={descItem.undefined}
                     />
                 );

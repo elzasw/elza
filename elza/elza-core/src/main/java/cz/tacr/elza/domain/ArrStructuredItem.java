@@ -43,21 +43,25 @@ public class ArrStructuredItem extends ArrItem {
     }
 
     @Override
+    @JsonIgnore
     public Integer getNodeId() {
         return null;
     }
 
     @Override
+    @JsonIgnore
     public Integer getFundId() {
         return null;
     }
 
     @Override
+    @JsonIgnore
     public ArrNode getNode() {
         return null;
     }
 
     @Override
+    @JsonIgnore
     public ArrOutput getOutput() {
         return null;
     }

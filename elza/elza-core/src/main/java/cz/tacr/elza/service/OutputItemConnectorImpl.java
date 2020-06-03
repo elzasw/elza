@@ -2,9 +2,18 @@ package cz.tacr.elza.service;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StructType;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.RulDataType;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,16 +58,19 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
 
     private final ItemService itemService;
 
+    private final StructObjService structObjService;
+
     public OutputItemConnectorImpl(ArrFundVersion fundVersion,
                                    ArrOutput output,
                                    StaticDataService staticDataService,
                                    OutputServiceInternal outputServiceInternal,
-                                   ItemService itemService) {
+                                   ItemService itemService, final StructObjService structObjService) {
         this.fundVersion = fundVersion;
         this.output = output;
         this.staticDataService = staticDataService;
         this.outputServiceInternal = outputServiceInternal;
         this.itemService = itemService;
+        this.structObjService = structObjService;
     }
 
     public void setIgnoredItemTypeIds(Collection<Integer> ignoredItemTypeIds) {
@@ -166,6 +178,38 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
     @Override
     public ItemType getItemTypeByCode(String code) {
         return staticDataService.getData().getItemTypeByCode(code);
+    }
+
+    @Override
+    public StructType getStructuredTypeByCode(final String outputType) {
+        return staticDataService.getData().getStructuredTypeByCode(outputType);
+    }
+
+    @Override
+    public void addStructuredItem(final ItemType itemType,
+                                  final StructType structuredType,
+                                  final List<ArrStructuredItem> items) {
+        StaticDataProvider data = staticDataService.getData();
+        ArrChange change = changeSupplier.get();
+        for (ArrStructuredItem item : items) {
+            ItemType type = data.getItemTypeById(item.getItemTypeId());
+            item.setItemType(type.getEntity());
+            item.setPosition(1);
+            if (item.getItemSpecId() != null) {
+                item.setItemSpec(data.getItemSpecById(item.getItemSpecId()));
+            }
+
+            if (type.getDataType().equals(DataType.RECORD_REF)) {
+                ArrDataRecordRef recordRef = (ArrDataRecordRef) item.getData();
+                ApAccessPoint apProxy = itemService.getApProxy(recordRef.getRecordId());
+                recordRef.setRecord(apProxy);
+            }
+        }
+        ArrStructuredObject structObj = structObjService.createStructObj(fundVersion.getFund(), change, structuredType.getStructuredType(), ArrStructuredObject.State.OK, items);
+        ArrDataStructureRef structureRef = new ArrDataStructureRef();
+        structureRef.setDataType(itemType.getDataType().getEntity());
+        structureRef.setStructuredObject(structObj);
+        addOutputItem(structureRef, itemType, null);
     }
 
     private void addOutputItem(ArrData data, ItemType rsit, Integer itemSpecId) {
