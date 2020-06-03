@@ -1,4 +1,4 @@
-function findByRoutingKeyInNodes(nodesState, versionId, routingKey) {
+export function findByRoutingKeyInNodes(nodesState, versionId, routingKey) {
     const nodes = nodesState.nodes;
     for (let a = 0; a < nodes.length; a++) {
         // TODO May need revision for type comparison
@@ -8,16 +8,12 @@ function findByRoutingKeyInNodes(nodesState, versionId, routingKey) {
     return null;
 }
 
-exports.findByRoutingKeyInNodes = findByRoutingKeyInNodes;
-
-function getRoutingKeyType(routingKey) {
+export function getRoutingKeyType(routingKey) {
     const i = routingKey.indexOf('|');
     return i === -1 ? routingKey : routingKey.substring(0, i);
 }
 
-exports.getRoutingKeyType = getRoutingKeyType;
-
-function findByRoutingKeyInGlobalState(globalState, versionId, routingKey) {
+export function findByRoutingKeyInGlobalState(globalState, versionId, routingKey) {
     const fundIndex = indexById(globalState.arrRegion.funds, versionId, 'versionId');
     if (fundIndex != null) {
         const fund = globalState.arrRegion.funds[fundIndex];
@@ -32,9 +28,7 @@ function findByRoutingKeyInGlobalState(globalState, versionId, routingKey) {
     return null;
 }
 
-exports.findByRoutingKeyInGlobalState = findByRoutingKeyInGlobalState;
-
-function getMapFromList(list, attrName = 'id') {
+export function getMapFromList(list, attrName = 'id') {
     let map = {};
     list.forEach(x => {
         map[x[attrName]] = x;
@@ -42,9 +36,7 @@ function getMapFromList(list, attrName = 'id') {
     return map;
 }
 
-exports.getMapFromList = getMapFromList;
-
-function getSetFromIdsList(list) {
+export function getSetFromIdsList(list) {
     let map = {};
     list &&
         list.forEach(x => {
@@ -53,15 +45,11 @@ function getSetFromIdsList(list) {
     return map;
 }
 
-exports.getSetFromIdsList = getSetFromIdsList;
-
-function getIdsList(objectList, attrName = 'id') {
+export function getIdsList(objectList, attrName = 'id') {
     return objectList.map(obj => obj[attrName]);
 }
 
-exports.getIdsList = getIdsList;
-
-function indexById(arr, id, attrName = 'id') {
+export function indexById(arr, id, attrName = 'id') {
     if (arr == null) return null;
 
     for (let a = 0; a < arr.length; a++) {
@@ -71,9 +59,7 @@ function indexById(arr, id, attrName = 'id') {
     return null;
 }
 
-exports.indexById = indexById;
-
-function objectById(arr, id, attrName = 'id') {
+export function objectById(arr, id, attrName = 'id') {
     if (arr == null) return null;
 
     for (let a = 0; a < arr.length; a++) {
@@ -83,9 +69,7 @@ function objectById(arr, id, attrName = 'id') {
     return null;
 }
 
-exports.objectById = objectById;
-
-function selectedAfterClose(arr, index) {
+export function selectedAfterClose(arr, index) {
     if (index >= arr.length - 1) {
         if (index - 1 >= 0) {
             return index - 1;
@@ -97,9 +81,7 @@ function selectedAfterClose(arr, index) {
     }
 }
 
-exports.selectedAfterClose = selectedAfterClose;
-
-function flatRecursiveMap(map, prop = 'children') {
+export function flatRecursiveMap(map, prop = 'children') {
     let result = {};
 
     const keys = Object.keys(map);
@@ -117,5 +99,3 @@ function flatRecursiveMap(map, prop = 'children') {
 
     return result;
 }
-
-exports.flatRecursiveMap = flatRecursiveMap;
