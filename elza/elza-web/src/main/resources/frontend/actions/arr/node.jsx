@@ -102,9 +102,13 @@ export function fundSelectSubNode(versionId, subNodeId, subNodeParentNode, openN
         if (subNodeId >= 0 && nodeIndex === null) {
             // pokud není ve stromu, tak se zkusí i akordeon - při přidání položky
             // je někdy dříve v akordeonu než-li ve stromu
+            const node = fund.nodes.nodes[fund.nodes.activeIndex];
+            const viewStartIndex = node.depth === subNodeParentNode.depth ? node.viewStartIndex : 0;
             const childNodes = fund.nodes.nodes[fund.nodes.activeIndex].childNodes;
-            nodeIndex = indexById(childNodes, subNodeId);
+            // index zacatku plovouciho okna + index polozky v akordeonu = realny index
+            nodeIndex = indexById(childNodes, subNodeId) + viewStartIndex;
         }
+
 
         dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible, nodeIndex));
         dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.routingKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
@@ -203,23 +207,6 @@ export function nodesReceive(versionId, nodes) {
         versionId,
         nodes,
         nodeMap
-    }
-}
-
-/**
- * Výsledek hledání v seznamu sourozenců - Accordion.
- * {int} versionId verze AS
- * {int} nodeId id node dané záložky NODE
- * {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
- * {Array} nodeIds seznam vyfiltrovaných node
- */
-export function fundNodeSubNodeFulltextResult(versionId, nodeId, routingKey, nodeIds) {
-    return {
-        type: types.FUND_FUND_SUBNODES_FULLTEXT_RESULT,
-        versionId,
-        nodeId,
-        routingKey,
-        nodeIds
     }
 }
 
