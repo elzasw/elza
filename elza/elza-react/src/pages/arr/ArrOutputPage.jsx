@@ -50,6 +50,7 @@ import {FOCUS_KEYS} from '../../constants.tsx';
 import FundNodesSelectForm from '../../components/arr/FundNodesSelectForm';
 import {fundOutputAddNodes} from '../../actions/arr/fundOutput';
 import {versionValidate} from '../../actions/arr/versionValidation';
+import {structureTypesFetchIfNeeded} from "../../actions/refTables/structureTypes";
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -109,6 +110,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     componentDidMount() {
         super.componentDidMount();
         this.props.dispatch(templatesFetchIfNeeded());
+        this.props.dispatch(structureTypesFetchIfNeeded(null));
 
         const fund = this.getActiveFund(this.props);
         if (fund) {

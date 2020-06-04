@@ -81,11 +81,10 @@ class OutputSubNodeForm extends AbstractReactComponent {
 function mapStateToProps(state) {
     const {arrRegion, focus, refTables} = state;
     let fund = null;
-    let structureTypes = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
-        structureTypes = objectById(refTables.structureTypes.data, fund.versionId, 'versionId');
     }
+    let structureTypes = objectById(refTables.structureTypes.data, null, 'versionId');
 
     return {
         fund,
