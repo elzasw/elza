@@ -288,4 +288,13 @@ class DescItemStructureRef extends AbstractReactComponent {
 	}
 }
 
-export default connect(null, null, null, {forwardRef: true})(DescItemStructureRef);
+export default connect((state, props) => {
+		const { structures } = state;
+		const key = props.descItem.id;
+		return {
+			structureNodeForm: key && structures.stores.hasOwnProperty(key) ? structures.stores[key] : null
+		};
+	},
+	null,
+	null,
+	{ forwardRef: true })(DescItemStructureRef);

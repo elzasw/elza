@@ -160,10 +160,9 @@ class StructureSubNodeForm extends AbstractReactComponent {
 function mapStateToProps(state, props) {
     const {arrRegion, focus, refTables, userDetail, structures} = state;
     let fund = null;
-    let structureTypes = null;
+    let structureTypes = objectById(refTables.structureTypes.data, null, 'versionId');;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
-        structureTypes = objectById(refTables.structureTypes.data, fund.versionId, 'versionId');
     }
 
     return {
