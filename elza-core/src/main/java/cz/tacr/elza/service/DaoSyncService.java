@@ -59,7 +59,6 @@ import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.ws.WsClient;
-import cz.tacr.elza.ws.types.v1.Attributes;
 import cz.tacr.elza.ws.types.v1.ChecksumType;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoSyncRequest;
@@ -71,6 +70,7 @@ import cz.tacr.elza.ws.types.v1.File;
 import cz.tacr.elza.ws.types.v1.FileGroup;
 import cz.tacr.elza.ws.types.v1.Folder;
 import cz.tacr.elza.ws.types.v1.FolderGroup;
+import cz.tacr.elza.ws.types.v1.Items;
 import cz.tacr.elza.ws.types.v1.NonexistingDaos;
 import cz.tacr.elza.ws.types.v1.ObjectFactory;
 import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
@@ -139,13 +139,13 @@ public class DaoSyncService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    static JAXBContext jaxbAttrsContext;
+    static JAXBContext jaxItemsContext;
 
     private ObjectFactory wsObjectFactory = new ObjectFactory();
 
     static {
         try {
-            jaxbAttrsContext = JAXBContext.newInstance(Attributes.class);
+            jaxItemsContext = JAXBContext.newInstance(Items.class);
         } catch (JAXBException e) {
             throw new IllegalStateException("Failed to initialize JAXB Context", e);
         }
@@ -395,24 +395,24 @@ public class DaoSyncService {
         arrDao.setValid(true);
 
         // serialize attributes
-        Attributes attrs = dao.getAttributes();
-        if (attrs != null) {
+        Items items = dao.getItems();
+        if (items != null) {
 
-            JAXBElement<Attributes> elemAttrs = wsObjectFactory.createDaoAttributes(attrs);
+            JAXBElement<Items> elemAttrs = wsObjectFactory.createDescriptionItems(items);
             
             try (StringWriter sw = new StringWriter()) {
-                Marshaller mar = jaxbAttrsContext.createMarshaller();
+                Marshaller mar = jaxItemsContext.createMarshaller();
                 mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-
+            
                 mar.marshal(elemAttrs, sw);
-
+            
                 arrDao.setAttributes(sw.toString());
             } catch (IOException | JAXBException e) {
                 logger.error("Failed to serialize attributes to XML: " + e.getMessage());
                 throw new SystemException("Failed to serialize attributes to XML", e,
                         BaseCode.INVALID_STATE)
                         .set("dao.identifier", dao.getIdentifier());
-
+            
             }
         }
 
