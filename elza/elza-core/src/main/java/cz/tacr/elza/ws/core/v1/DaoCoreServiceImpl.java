@@ -66,11 +66,6 @@ public class DaoCoreServiceImpl implements DaoService {
 
     private Logger logger = LoggerFactory.getLogger(DaoCoreServiceImpl.class);
 
-    /**
-     * Name of JSON object containing items and its values
-     */
-    public final static String ITEMS = "ITEMS";
-
     @Autowired
     private DaoPackageRepository daoPackageRepository;
 

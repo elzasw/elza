@@ -8,8 +8,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.restassured.RestAssured;
 
 import cz.tacr.elza.controller.AbstractControllerTest;
@@ -23,12 +21,7 @@ import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.ws.core.v1.DaoCoreServiceImpl;
 import cz.tacr.elza.ws.core.v1.DaoService;
-import cz.tacr.elza.ws.core.v1.items.ItemString;
-import cz.tacr.elza.ws.core.v1.items.Items;
-import cz.tacr.elza.ws.types.v1.Attribute;
-import cz.tacr.elza.ws.types.v1.Attributes;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoImport;
 import cz.tacr.elza.ws.types.v1.DaoLinks;
@@ -60,7 +53,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     }
 
     @Test
-    public void importTest() throws JsonProcessingException {
+    public void importTest() {
         createDigitalRepo();
 
         String address = RestAssured.baseURI + ":" + RestAssured.port + "/services"
@@ -119,7 +112,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     }
 
     private DaoPackage createDaoPackage(String fundCode, String digitRepoCode, String packageId, DaoType daoType,
-                                        String label) throws JsonProcessingException {
+                                        String label) {
         DaoPackage daoPackage = objFactory.createDaoPackage();
         daoPackage.setFundIdentifier(fundCode);
         daoPackage.setRepositoryIdentifier(digitRepoCode);
@@ -129,23 +122,15 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         dao.setDaoType(daoType);
         dao.setIdentifier(packageId);
         dao.setLabel(label);
-        Attributes attrs = objFactory.createAttributes();
-        List<Attribute> attrList = attrs.getAttribute();
-        Attribute attr = objFactory.createAttribute();
 
-        Items items = new Items();
-        ItemString its = new ItemString();
-        its.setItemType("SRD_TITLE");
+        cz.tacr.elza.ws.types.v1.Items items = objFactory.createItems();
+        cz.tacr.elza.ws.types.v1.ItemString its = objFactory.createItemString();
+        its.setType("SRD_TITLE");
         its.setValue("value xy");
         its.setReadOnly(true);
-        items.getItems().add(its);
-        String itemValues = new ObjectMapper().writeValueAsString(items);
+        items.getStrOrLongOrEnm().add(its);
 
-        attr.setName(DaoCoreServiceImpl.ITEMS);
-        attr.setValue(itemValues);
-        attrList.add(attr);
-
-        dao.setAttributes(attrs);
+        dao.setItems(items);
         daoset.getDao().add(dao);
         daoPackage.setDaos(daoset);
         return daoPackage;
