@@ -13,11 +13,11 @@ import cz.tacr.elza.dao.bo.resource.DaoConfig;
 import cz.tacr.elza.dao.bo.resource.DaoConfigResource;
 import cz.tacr.elza.dao.common.PathResolver;
 import cz.tacr.elza.dao.exception.DaoComponentException;
-import cz.tacr.elza.ws.types.v1.Attribute;
-import cz.tacr.elza.ws.types.v1.Attributes;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoLink;
 import cz.tacr.elza.ws.types.v1.FileGroup;
+import cz.tacr.elza.ws.types.v1.ItemString;
+import cz.tacr.elza.ws.types.v1.Items;
 
 public class DaoBo {
 
@@ -94,15 +94,15 @@ public class DaoBo {
 		dao.setLabel(getConfig().getLabel());
         Map<String, String> attrs = getConfig().getAttributes();
         if (attrs != null && attrs.size() > 0) {
-            Attributes attributes = new Attributes();
+            Items items = new Items();
             attrs.forEach((name, value) -> {
-                Attribute attribute = new Attribute();
-                attribute.setName(name);
-                attribute.setValue(value);
-                attributes.getAttribute().add(attribute);
+                ItemString item = new ItemString();
+                item.setType(name);
+                item.setValue(value);
+                items.getStrOrLongOrEnm().add(item);
             });
 
-            dao.setAttributes(attributes);
+            dao.setItems(items);
         }
 		FileGroup fileGroup = new FileGroup();
 		for (DaoFileBo daoFile : getAllDaoFiles()) {
