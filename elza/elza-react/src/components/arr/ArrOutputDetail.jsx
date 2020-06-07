@@ -251,7 +251,7 @@ class ArrOutputDetail extends AbstractReactComponent {
                 <hr className="small" />
                 {this.renderOutputFiles()}
                 <h4 className={'desc-items-title'}>{i18n('developer.title.descItems')}</h4>
-                <ToggleContent opened={false} withText>
+                <ToggleContent opened={true} withText>
                     {form}
                 </ToggleContent>
             </Shortcuts>
