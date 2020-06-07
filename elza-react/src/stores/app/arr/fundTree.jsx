@@ -539,7 +539,7 @@ export default function fundTree(state = initialState, action = {}) {
 
             return {
                 ...state,
-                nodes: [...state.slice(0, index), updatedNode, ...state.slice(index + 1)],
+                nodes: [...state.nodes.slice(0, index), updatedNode, ...state.nodes.slice(index + 1)],
             };
         }
         case types.NODES_DELETE: {
