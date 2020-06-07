@@ -22,6 +22,7 @@ import {RulDataTypeVO} from "../api/RulDataTypeVO";
 import {RulDescItemTypeExtVO} from "../api/RulDescItemTypeExtVO";
 import {RulPartTypeVO} from "../api/RulPartTypeVO";
 import {FilteredResultVO} from "../api/FilteredResultVO";
+import {ApSearchType} from "../typings/globals";
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 
@@ -771,6 +772,8 @@ export class WebApiCls {
         scopeId = null,
         excludeInvalid = true,
         state = null,
+        searchTypeName?: ApSearchType,
+        searchTypeUsername?: ApSearchType
     ): Promise<FilteredResultVO<ApAccessPointVO>> {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {
             search,
@@ -784,6 +787,8 @@ export class WebApiCls {
             scopeId,
             excludeInvalid,
             state,
+            searchTypeName,
+            searchTypeUsername,
         });
     }
 

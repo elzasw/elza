@@ -91,7 +91,7 @@ class AdminUserPage extends AbstractReactComponent {
     }
 
     handleCreateUser(data) {
-        return this.props.dispatch(userCreate(data.username, data.valuesMap, data.id));
+        return this.props.dispatch(userCreate(data.username, data.valuesMap, data.accessPointId));
     }
 
     handleChangeUserPasswordForm() {

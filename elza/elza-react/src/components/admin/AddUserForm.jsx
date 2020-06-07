@@ -14,6 +14,8 @@ import './AddUserForm.scss';
 import {storeFromArea} from 'shared/utils';
 import {AREA_EXT_SYSTEM_DETAIL} from 'actions/admin/extSystem';
 import {connect} from 'react-redux';
+import ApField from '../registry/ApField';
+import ReduxFormFieldErrorDecorator from '../shared/form/ReduxFormFieldErrorDecorator';
 
 class AddUserForm extends AbstractReactComponent {
     static defaultProps = {
@@ -94,6 +96,22 @@ class AddUserForm extends AbstractReactComponent {
         return (
             <Form className="add-user-form" onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
+                    {create && (
+                        <Row>
+                            <Col xs={12}>
+                                <Field
+                                    component={ReduxFormFieldErrorDecorator}
+                                    passOnly={true}
+                                    renderComponent={ApField}
+                                    disabled={submitting}
+                                    label={i18n('admin.user.add.party')}
+                                    detail={false}
+                                    name={"accessPointId"}
+                                    useIdAsValue
+                                />
+                            </Col>
+                        </Row>
+                    )}
                     <Row>
                         <Col xs={12}>
                             <Field
@@ -147,7 +165,11 @@ class AddUserForm extends AbstractReactComponent {
                                 {i18n('admin.user.add.password.message')}
                             </Col>
                             <Col xs={6}>
-                                <Button disabled={submitting} variant="outline-secondary" onClick={() => this.setState({setPassword: true})}>
+                                <Button
+                                    disabled={submitting}
+                                    variant="outline-secondary"
+                                    onClick={() => this.setState({setPassword: true})}
+                                >
                                     {i18n('global.action.change')}
                                 </Button>
                             </Col>
@@ -180,7 +202,11 @@ class AddUserForm extends AbstractReactComponent {
                                 {i18n('admin.user.add.shibboleth.message')}
                             </Col>
                             <Col xs={6}>
-                                <Button disabled={submitting} variant="outline-secondary" onClick={() => this.setState({setShibboleth: true})}>
+                                <Button
+                                    disabled={submitting}
+                                    variant="outline-secondary"
+                                    onClick={() => this.setState({setShibboleth: true})}
+                                >
                                     {i18n('global.action.change')}
                                 </Button>
                             </Col>

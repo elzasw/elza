@@ -18,6 +18,7 @@ import './RegistryField.scss';
 import RegistryListItem from './RegistryListItem';
 import ExtImportForm from '../form/ExtImportForm';
 import {refApTypesFetchIfNeeded} from "../../actions/refTables/apTypes";
+import {JAVA_CLASS_AP_ACCESS_POINT_VO} from "../../constants";
 
 const AUTOCOMPLETE_REGISTRY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
@@ -205,7 +206,7 @@ class RegistryField extends AbstractReactComponent {
         // změna typu aby se objekt dal použít jako návazný
         const newobj = {
             ...obj,
-            '@class': 'cz.tacr.elza.controller.vo.ApAccessPointVO',
+            '@class': JAVA_CLASS_AP_ACCESS_POINT_VO,
         };
         return newobj;
     };

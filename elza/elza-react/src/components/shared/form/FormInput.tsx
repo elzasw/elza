@@ -68,7 +68,7 @@ const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo(
                             {...otherProps}
                             {...inlineProps}
                         />
-                        {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
+                        {!inline && hasError && <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>}
                     </Form.Group>
                 );
             case 'checkbox':
@@ -82,7 +82,7 @@ const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo(
                             {...otherProps}
                             {...inlineProps}
                         />
-                        {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
+                        {!inline && hasError && <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>}
                     </Form.Group>
                 );
             case 'select':

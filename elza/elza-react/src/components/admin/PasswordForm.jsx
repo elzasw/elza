@@ -1,10 +1,11 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {reduxForm} from 'redux-form';
+import {reduxForm, Field} from 'redux-form';
 import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
+import FormInputField from '../shared/form/FormInputField';
 
 /**
  * Formulář přidání nebo uzavření AS.
@@ -45,37 +46,34 @@ class PasswordForm extends AbstractReactComponent {
         submitForm(PasswordForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-        const {
-            fields: {oldPassword, password, passwordAgain},
-            handleSubmit,
-            onClose,
-            admin,
-            submitting,
-        } = this.props;
+        const {handleSubmit, onClose, admin, submitting} = this.props;
 
         return (
             <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
                     {!admin && (
-                        <FormInput
+                        <Field
+                            component={FormInputField}
                             label={i18n('admin.user.oldPassword')}
                             autoComplete="off"
                             type="password"
-                            {...oldPassword}
+                            name={'oldPassword'}
                         />
                     )}
-                    <FormInput
+                    <Field
+                        component={FormInputField}
                         label={i18n('admin.user.newPassword')}
                         autoComplete="off"
                         type="password"
-                        {...password}
+                        name={'password'}
                     />
                     {!admin && (
-                        <FormInput
+                        <Field
+                            component={FormInputField}
                             label={i18n('admin.user.passwordAgain')}
                             autoComplete="off"
                             type="password"
-                            {...passwordAgain}
+                            name={'passwordAgain'}
                         />
                     )}
                 </Modal.Body>

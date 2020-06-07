@@ -98,3 +98,5 @@ export const PART_EDIT_FORM_ATTRIBUTES = "partEditFormAttributes";
 export const REGISTRY_DETAIL_HISTORY = "registryDetailHistory";
 
 export const DETAIL_VALIDATION_RESULT = "detailValidationResult";
+
+export const JAVA_CLASS_AP_ACCESS_POINT_VO = 'cz.tacr.elza.controller.vo.ApAccessPointVO';
