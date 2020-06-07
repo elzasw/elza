@@ -234,7 +234,7 @@ export class ItemFormActions {
                     const state = getState();
                     console.log(state, versionId, routingKey);
                     const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
-                    if (subNodeForm.fetchingId == nodeId) {
+                    if (subNodeForm && subNodeForm.fetchingId == nodeId) {
                         dispatch(
                             this.fundSubNodeFormReceive(
                                 versionId,
