@@ -11,7 +11,7 @@ import Tags from 'components/form/Tags.jsx';
 /**
  * Formulář pro vybrání několika položek pomocí tag input.
  */
-const SelectItemsForm = class extends AbstractReactComponent {
+class SelectItemsForm extends AbstractReactComponent {
     static propTypes = {
         renderItem: PropTypes.func.isRequired, // render položky v tag input, přepis: (item, isHighlighted = false, isSelected = false) => {}
         fieldComponent: PropTypes.func.isRequired, // reference na komponentu fieldu pro input - dohledání položky, např. GroupField
@@ -74,6 +74,7 @@ const SelectItemsForm = class extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button
+                        variant={'outline-secondary'}
                         onClick={() => {
                             onSubmitForm(items);
                         }}
@@ -87,6 +88,6 @@ const SelectItemsForm = class extends AbstractReactComponent {
             </div>
         );
     }
-};
+}
 
 export default SelectItemsForm;

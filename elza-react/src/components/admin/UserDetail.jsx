@@ -178,7 +178,7 @@ class UserDetail extends AbstractReactComponent {
                         header={
                             <DetailHeader
                                 icon={<Icon glyph="fa-user"/>}
-                                title={userDetail.party.accessPoint.record}
+                                title={userDetail.accessPoint.name}
                                 rowFlagColor={userDetail.active ? 'success' : 'warning'}
                                 flagLeft={
                                     userDetail.active

@@ -12,3 +12,10 @@ export interface AppFetchingStore {
 	fetching: boolean,
 	currentDataKey: any,
 }
+
+export enum ApSearchType {
+    DISABLED='DISABLED',
+    JOIN='JOIN',
+    FULLTEXT='FULLTEXT',
+    RIGHT_SIDE_LIKE='RIGHT_SIDE_LIKE'
+}

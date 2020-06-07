@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {formValueSelector, reduxForm} from 'redux-form';
+import {formValueSelector, reduxForm, Field} from 'redux-form';
 import {AbstractReactComponent, Autocomplete, i18n} from 'components/shared';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
@@ -10,7 +10,7 @@ import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTyp
 import {getTreeItemById} from './registryUtils';
 import Scope from '../shared/scope/Scope';
 import * as StateApproval from '../enum/StateApproval';
-import FormInput from 'components/shared/form/FormInput';
+import FormInputField from '../../components/shared/form/FormInputField';
 import {connect} from "react-redux";
 
 class ApStateChangeForm extends AbstractReactComponent {
@@ -27,6 +27,7 @@ class ApStateChangeForm extends AbstractReactComponent {
     static propTypes = {
         accessPointId: PropTypes.number.isRequired,
         partyTypeId: PropTypes.number,
+        versionId: PropTypes.number,
         hideType: PropTypes.bool,
     };
 
@@ -49,76 +50,63 @@ class ApStateChangeForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.props.dispatch(getRegistryRecordTypesIfNeeded(this.props.partyTypeId));
+        if (!this.props.scopeId) {
+            const {refTables: {scopesData}, versionId} = this.props;
+            let index = scopesData.scopes ? indexById(scopesData.scopes, versionId, 'versionId') : false;
+            if (index && scopesData.scopes[index].scopes && scopesData.scopes[index].scopes[0].id) {
+                this.props.change('scopeId', scopesData.scopes[index].scopes[0].id);
+            }
+        }
     }
 
     render() {
-        console.log('PROPS', this.props);
         const {
-            fields: {typeId, scopeId, state, comment},
+            fields: {typeId, state, comment},
             handleSubmit,
             onClose,
             hideType,
             versionId,
-            refTables: {scopesData},
-            submitting,
-            registryRegionRecordTypes,
+            refTables: {scopesData, apTypes},
+            submitting
         } = this.props;
-
-        const items = registryRegionRecordTypes.item ? registryRegionRecordTypes.item : [];
-
-        let scopeIdValue = scopeId;
-        if (!scopeId) {
-            let index = scopesData.scopes ? indexById(scopesData.scopes, versionId, 'versionId') : false;
-            if (index && scopesData.scopes[index].scopes) {
-                scopeIdValue = scopesData.scopes[index].scopes[0].id;
-            }
-        }
-
-        const value = getTreeItemById(typeId ? typeId : '', items);
 
         return (
             <div key={this.props.key}>
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
-                        <Scope
+                        <Field
+                            component={Scope}
                             disabled={submitting}
                             versionId={versionId}
                             label={i18n('ap.state.title.scope')}
-                            {...scopeId}
-                            value={scopeIdValue}
-                            {...decorateFormField(scopeId)}
+                            name={"scopeId"}
                         />
                         {!hideType && (
-                            <Autocomplete
+                            <Field
+                                component={Autocomplete}
                                 label={i18n('ap.state.title.type')}
-                                items={items}
+                                items={apTypes.items ? apTypes.items : []}
                                 tree
                                 alwaysExpanded
                                 allowSelectItem={item => item.addRecord}
-                                {...typeId}
-                                {...decorateFormField(typeId)}
-                                onChange={item => {
-                                    typeId.onChange(item ? item.id : null);
-                                }}
-                                onBlur={item => {
-                                    typeId.onBlur(item ? item.id : null);
-                                }}
-                                value={value}
+                                name={"typeId"}
+                                useIdAsValue
                                 disabled={submitting}
                             />
                         )}
-                        <Autocomplete
+                        <Field
+                            component={Autocomplete}
                             disabled={submitting}
                             label={i18n('ap.state.title.state')}
                             items={this.getStateWithAll()}
-                            {...state}
+                            name={"state"}
                         />
-                        <FormInput
+                        <Field
+                            component={FormInputField}
                             disabled={submitting}
                             type="text"
                             label={i18n('ap.state.title.comment')}
-                            {...comment}
-                            {...decorateFormField(comment)}
+                            name={"comment"}
                         />
                     </Modal.Body>
                     <Modal.Footer>
@@ -139,9 +127,9 @@ const mapStateToProps = (state) => {
     const selector = formValueSelector('apStateChangeForm');
 
     return {
-        fields: selector(state, 'scopeId', 'typeId', 'state', 'comment'),
+        scopeId: selector(state, 'scopeId'),
+        typeId: selector(state, 'typeId'),
         refTables: state.refTables,
-        registryRegionRecordTypes: state.registryRegionRecordTypes,
     };
 };
 
