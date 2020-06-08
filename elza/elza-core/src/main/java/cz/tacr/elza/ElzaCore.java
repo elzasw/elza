@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.MultipartConfigElement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -137,13 +135,5 @@ public class ElzaCore {
             eventBus().register(listenerEntry.getValue());
 
         }
-    }
-
-    @Bean
-    public MultipartConfigElement multipartConfigElement() {
-        MultipartConfigFactory factory = new MultipartConfigFactory();
-        factory.setMaxFileSize("25MB");
-        factory.setMaxRequestSize("100MB");
-        return factory.createMultipartConfig();
     }
 }
