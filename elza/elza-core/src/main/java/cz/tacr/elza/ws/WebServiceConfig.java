@@ -20,7 +20,16 @@ import cz.tacr.elza.ws.core.v1.DaoRequestsServiceImpl;
 import cz.tacr.elza.ws.core.v1.ExportServiceImpl;
 import cz.tacr.elza.ws.core.v1.FundServiceImpl;
 
-
+/**
+ * CXF Servlet configuration
+ * 
+ *
+ * Sevlet is by default binded to URL/services/...
+ * Binding URL can be changed using cxf.servlet.init
+ * 
+ * Since CXF 3.3 we can use CXF default binding constant
+ * see org.apache.cxf.spring.boot.autoconfigure.CxfProperties
+ */
 @Configuration
 @ImportResource({"classpath:META-INF/cxf/cxf.xml", "classpath:META-INF/cxf/cxf-servlet.xml"})
 public class WebServiceConfig {
