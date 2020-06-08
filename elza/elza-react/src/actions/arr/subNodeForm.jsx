@@ -18,6 +18,8 @@ import {fundNodeInfoReceive} from './nodeInfo.jsx';
 import NodeRequestController from 'websocketController.jsx';
 import {fundSubNodeInfoReceive} from './subNodeInfo';
 import {fromDuration} from '../../components/validate';
+import {ItemAvailabilityNumToEnumMap} from "../../stores/app/accesspoint/itemFormUtils";
+import {getMapFromList} from "../../shared/utils";
 
 // Konfigurace velikosti cache dat pro formulář
 const CACHE_SIZE = 20;
@@ -235,6 +237,9 @@ export class ItemFormActions {
                     console.log(state, versionId, routingKey);
                     const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
                     if (subNodeForm && subNodeForm.fetchingId == nodeId) {
+                        // Nastavení správných typů u itemTypes - ze serveru chodí čísla místo enumů
+                        this.updateItemTypesTypes(json);
+
                         dispatch(
                             this.fundSubNodeFormReceive(
                                 versionId,
@@ -263,6 +268,21 @@ export class ItemFormActions {
     /** Metoda pro volání API, vložení hodnoty */
     // @Abstract
     _callCreateDescItem(versionId, parentId, parentVersionId, descItemTypeId, descItem) {}
+
+    /**
+     * Aktualizace čísel typů item a specs - na enumy (tedy např. hodnota 0 na IMPOSSIBLE)
+     * @param json
+     */
+    updateItemTypesTypes(json) {
+        // Nastavení správných typů u itemTypes - ze serveru chodí čísla místo enumů
+        json.itemTypes.forEach(itemType => {
+            itemType.type = ItemAvailabilityNumToEnumMap[itemType.type];
+            itemType.specs.forEach(itemSpec => {
+                itemSpec.type = ItemAvailabilityNumToEnumMap[itemSpec.type];
+            });
+            itemType.descItemSpecsMap = getMapFromList(itemType.specs);
+        });
+    }
 
     /**
      * Odeslání hodnoty atributu na server - buď vytvoření nebo aktualizace.
@@ -299,6 +319,9 @@ export class ItemFormActions {
                 dispatch(statusSaving());
                 this._callUpdateDescItem(dispatch, subNodeForm, versionId, parentVersionId, parentId, descItem).then(
                     json => {
+                        // Nastavení správných typů u itemTypes - ze serveru chodí čísla místo enumů
+                        this.updateItemTypesTypes(json);
+
                         if (this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA) {
                             dispatch(
                                 this._fundSubNodeFormDescItemResponse(

@@ -2,6 +2,7 @@ import {getMapFromList, indexById} from 'stores/app/utils.jsx';
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx';
 import {DisplayType} from '../../../constants.tsx';
 import {isNormalizeDurationLength, normalizeDurationLength, toDuration} from '../../../components/validate';
+import {ItemAvailability, ItemAvailabilityNumToEnumMap} from "../accesspoint/itemFormUtils";
 
 const availability = {
     REQUIRED: 'REQUIRED',
@@ -404,8 +405,9 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
  * @return FlatFormData
  */
 function prepareFlatData(data) {
-    data.types = replaceIdsWithString(data.types, typesNumToStrMap);
-    data.specs = replaceIdsWithString(data.specs, typesNumToStrMap);
+    // Již nahrazeno před posláním akce, zatím necháno, možná se bude celé refaktorovat
+    // data.types = replaceIdsWithString(data.types, typesNumToStrMap);
+    // data.specs = replaceIdsWithString(data.specs, typesNumToStrMap);
     data.types = insertDescItemSpecsMap(data.types, data.specs);
     return data;
 }
@@ -1079,7 +1081,7 @@ function fillImpossibleTypes(data, refTypesMap) {
                 if (specIndex == null) {
                     return {
                         id: spec.id,
-                        type: 0,
+                        type: ItemAvailabilityNumToEnumMap[0],
                         rep: 0,
                     };
                 } else {
@@ -1094,7 +1096,7 @@ function fillImpossibleTypes(data, refTypesMap) {
 
             const resultItemType = {
                 id: itemType.id,
-                type: 0,
+                type: ItemAvailabilityNumToEnumMap[0],
                 rep: 0,
                 cal: 0,
                 calSt: 0,
@@ -1160,21 +1162,22 @@ export function updateFormData(state, data, refTypesMap, groups, updatedItem, di
                               if (specIndex == null) {
                                   return {
                                       id: spec.id,
-                                      type: 'IMPOSSIBLE',
+                                      type: ItemAvailability.IMPOSSIBLE,
                                       rep: 0,
                                   };
                               } else {
                                   const dataSpec = dataItemSpecs[specIndex];
                                   return {
                                       ...dataSpec,
-                                      type: typesNumToStrMap[dataSpec.type],
+                                      // type: typesNumToStrMap[dataSpec.type],
                                   };
                               }
                           });
 
                           const finalItemType = {
                               ...dataItemType,
-                              type: dataItemType.type ? typesNumToStrMap[dataItemType.type] : 'IMPOSSIBLE',
+                              type: dataItemType.type ? dataItemType.type : ItemAvailability.IMPOSSIBLE,
+                              // type: dataItemType.type ? typesNumToStrMap[dataItemType.type] : ItemAvailability.IMPOSSIBLE,
                               specs: finalItemSpecs,
                               descItemSpecsMap: getMapFromList(finalItemSpecs),
                           };
@@ -1188,7 +1191,7 @@ export function updateFormData(state, data, refTypesMap, groups, updatedItem, di
                               ind: 0,
                               rep: 0,
                               specs: [],
-                              type: 'IMPOSSIBLE',
+                              type: ItemAvailability.IMPOSSIBLE,
                               width: 1,
                               ...finalItemType,
                           };
