@@ -110,7 +110,7 @@ class ArrPage extends ArrParentPage {
 
     constructor(props) {
         super(props,"fa-page");
-        this.bindMethods('getActiveInfo', 'buildRibbon', 'handleRegisterJp',
+        this.bindMethods('getActiveInfo', 'buildRibbon',
             'handleSelectVisiblePoliciesNode', 'handleShowVisiblePolicies',
             'handleShortcuts', 'renderFundErrors', 'renderFundVisiblePolicies', 'handleSetVisiblePolicy',
             'renderPanel', 'renderDeveloperDescItems', 'handleShowHideSpecs', 'handleTabSelect', 'handleSelectErrorNode',
@@ -223,9 +223,6 @@ class ArrPage extends ArrParentPage {
         console.log("#handleShortcuts ArrPage", '[' + action + ']', this);
         e.preventDefault();
         switch (action) {
-            case 'registerJp':
-                this.handleRegisterJp();
-                break;
             case 'area1':
                 this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1));
                 break;
