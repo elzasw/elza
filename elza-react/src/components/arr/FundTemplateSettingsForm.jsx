@@ -12,6 +12,7 @@ import NoFocusButton from '../shared/button/NoFocusButton';
 import FormInput from '../shared/form/FormInput';
 
 import './FundTemplateSettingsForm.scss';
+import {JAVA_ATTR_CLASS} from '../../constants';
 
 class FundTemplateSettingsForm extends AbstractReactComponent {
     /**
@@ -62,7 +63,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
         if (item.descItemSpecId) {
             const itemSpec = itemType.descItemSpecs[indexById(itemType.descItemSpecs, item.descItemSpecId)];
             let csl = 'item-spec';
-            if (item['@class'] !== '.ArrItemEnumVO') {
+            if (item[JAVA_ATTR_CLASS] !== '.ArrItemEnumVO') {
                 csl += ' item-noenum';
             }
             spec = <span className={csl}>{itemSpec.name}</span>;
@@ -70,7 +71,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
 
         let val;
 
-        switch (item['@class']) {
+        switch (item[JAVA_ATTR_CLASS]) {
             case '.ArrItemTextVO':
             case '.ArrItemStringVO':
             case '.ArrItemFormattedTextVO':
@@ -100,96 +101,99 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
 
     render() {
         const {
-                  fields: {templates},
-                  handleSubmit,
-                  onClose,
-                  error,
-              } = this.props;
+            fields: {templates},
+            handleSubmit,
+            onClose,
+            error,
+        } = this.props;
         const {edit, open} = this.state;
 
         return (
             <Form className="templates-form" onSubmit={handleSubmit(this.submitReduxForm)}>
                 {error && <div className="form-error">{error}</div>}
                 <Modal.Body className="template-items">
-                    {templates && templates.map((val, index) => {
-                        const header = (
-                            <div
-                                onClick={e => {
-                                    if (edit[index]) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                    }
-                                }}
-                                className="pull-left template-name"
-                            >
-                                {edit[index] ? (
-                                    <FormInput
-                                        type="text"
-                                        label={false}
-                                        {...val.name}
-                                        {...decorateFormField(val.name)}
-                                    />
-                                ) : (
-                                    val.name.value
-                                )}
-                            </div>
-                        );
-                        return (
-                            <Accordion
-                                activeKey={open[index]}
-                                onClick={() => {
-                                    open[index] = !open[index];
-                                    this.setState({open});
-                                }}
-                                accordion
-                            >
-                                <Card
-                                    eventKey={true}
-                                    header={
-                                        <div className="clearfix">
-                                            {header}
-                                            <div className="pull-right">
-                                                <NoFocusButton
-                                                    className={'btn-action'}
-                                                    onClick={e => {
-                                                        const newEdit = {};
-                                                        newEdit[index] = !edit[index];
-                                                        this.setState({edit: newEdit});
-                                                        e.stopPropagation();
-                                                    }}
-                                                >
-                                                    <Icon glyph="fa-edit"/>
-                                                </NoFocusButton>
-                                                <NoFocusButton
-                                                    className={'btn-action'}
-                                                    onClick={e => {
-                                                        this.setState({edit: {}});
-                                                        templates.removeField(index);
-                                                        e.stopPropagation();
-                                                    }}
-                                                >
-                                                    <Icon glyph="fa-trash"/>
-                                                </NoFocusButton>
-                                            </div>
-                                        </div>
-                                    }
-                                >
-                                    <div
-                                        onClick={e => {
+                    {templates &&
+                        templates.map((val, index) => {
+                            const header = (
+                                <div
+                                    onClick={e => {
+                                        if (edit[index]) {
                                             e.preventDefault();
                                             e.stopPropagation();
-                                        }}
+                                        }
+                                    }}
+                                    className="pull-left template-name"
+                                >
+                                    {edit[index] ? (
+                                        <FormInput
+                                            type="text"
+                                            label={false}
+                                            {...val.name}
+                                            {...decorateFormField(val.name)}
+                                        />
+                                    ) : (
+                                        val.name.value
+                                    )}
+                                </div>
+                            );
+                            return (
+                                <Accordion
+                                    activeKey={open[index]}
+                                    onClick={() => {
+                                        open[index] = !open[index];
+                                        this.setState({open});
+                                    }}
+                                    accordion
+                                >
+                                    <Card
+                                        eventKey={true}
+                                        header={
+                                            <div className="clearfix">
+                                                {header}
+                                                <div className="pull-right">
+                                                    <NoFocusButton
+                                                        className={'btn-action'}
+                                                        onClick={e => {
+                                                            const newEdit = {};
+                                                            newEdit[index] = !edit[index];
+                                                            this.setState({edit: newEdit});
+                                                            e.stopPropagation();
+                                                        }}
+                                                    >
+                                                        <Icon glyph="fa-edit" />
+                                                    </NoFocusButton>
+                                                    <NoFocusButton
+                                                        className={'btn-action'}
+                                                        onClick={e => {
+                                                            this.setState({edit: {}});
+                                                            templates.removeField(index);
+                                                            e.stopPropagation();
+                                                        }}
+                                                    >
+                                                        <Icon glyph="fa-trash" />
+                                                    </NoFocusButton>
+                                                </div>
+                                            </div>
+                                        }
                                     >
-                                        {this.renderItems(val.formData.initialValue)}
-                                    </div>
-                                </Card>
-                            </Accordion>
-                        );
-                    })}
+                                        <div
+                                            onClick={e => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                            }}
+                                        >
+                                            {this.renderItems(val.formData.initialValue)}
+                                        </div>
+                                    </Card>
+                                </Accordion>
+                            );
+                        })}
                     {(!templates || templates.length === 0) && <div>{i18n('arr.fund.template.empty')}</div>}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" variant="outline-secondary">{i18n('visiblePolicy.action.save')}</Button>
+                    <Button type="submit" variant="outline-secondary">
+                        {i18n('visiblePolicy.action.save')}
+                    </Button>
                     <Button variant="link" onClick={onClose}>
                         {i18n('global.action.cancel')}
                     </Button>

@@ -17,8 +17,8 @@ import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
 import './RegistryField.scss';
 import RegistryListItem from './RegistryListItem';
 import ExtImportForm from '../form/ExtImportForm';
-import {refApTypesFetchIfNeeded} from "../../actions/refTables/apTypes";
-import {JAVA_CLASS_AP_ACCESS_POINT_VO} from "../../constants";
+import {refApTypesFetchIfNeeded} from '../../actions/refTables/apTypes';
+import {JAVA_ATTR_CLASS, JAVA_CLASS_AP_ACCESS_POINT_VO} from '../../constants';
 
 const AUTOCOMPLETE_REGISTRY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
@@ -36,7 +36,7 @@ class RegistryField extends AbstractReactComponent {
         roleTypeId: null,
         partyId: null,
         versionId: null,
-        useIdAsValue: false
+        useIdAsValue: false,
     };
 
     static propTypes = {
@@ -190,7 +190,7 @@ class RegistryField extends AbstractReactComponent {
             >
                 <RegistryListItem
                     {...item}
-                    key={"reg-" + item.id}
+                    key={'reg-' + item.id}
                     eidTypes={eidTypes}
                     apTypeIdMap={apTypeIdMap}
                     className={classNames('item', {focus: highlighted, active: selected})}
@@ -206,7 +206,7 @@ class RegistryField extends AbstractReactComponent {
         // změna typu aby se objekt dal použít jako návazný
         const newobj = {
             ...obj,
-            '@class': JAVA_CLASS_AP_ACCESS_POINT_VO,
+            [JAVA_ATTR_CLASS]: JAVA_CLASS_AP_ACCESS_POINT_VO,
         };
         return newobj;
     };
@@ -222,7 +222,11 @@ class RegistryField extends AbstractReactComponent {
         let actions = [];
         if (detail) {
             actions.push(
-                <div key={"detail"} onClick={this.handleDetail.bind(this, value ? value.id : null)} className="btn btn-default detail">
+                <div
+                    key={'detail'}
+                    onClick={this.handleDetail.bind(this, value ? value.id : null)}
+                    className="btn btn-default detail"
+                >
                     <Icon glyph="fa-th-list" />
                 </div>,
             );
@@ -236,7 +240,7 @@ class RegistryField extends AbstractReactComponent {
         return (
             <Autocomplete
                 {...otherProps}
-                ref={ref => this.refAutocomplete = ref}
+                ref={ref => (this.refAutocomplete = ref)}
                 customFilter
                 className={classNames('autocomplete-record', className)}
                 footer={footerRender}
@@ -254,14 +258,19 @@ class RegistryField extends AbstractReactComponent {
     }
 }
 
-export default connect(state => {
-    const {
-        userDetail,
-        refTables: {apTypes, eidTypes},
-    } = state;
-    return {
-        apTypeIdMap: apTypes.itemsMap,
-        userDetail,
-        eidTypes: eidTypes.data,
-    };
-}, null, null, {forwardRef: true})(RegistryField);
+export default connect(
+    state => {
+        const {
+            userDetail,
+            refTables: {apTypes, eidTypes},
+        } = state;
+        return {
+            apTypeIdMap: apTypes.itemsMap,
+            userDetail,
+            eidTypes: eidTypes.data,
+        };
+    },
+    null,
+    null,
+    {forwardRef: true},
+)(RegistryField);

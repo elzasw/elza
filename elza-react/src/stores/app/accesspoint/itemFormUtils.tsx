@@ -1,7 +1,7 @@
-import { hasDescItemTypeValue } from '../../../components/arr/ArrUtils';
-import { toDuration } from '../../../components/validate';
-import { DisplayType } from '../../../constants';
-import { getMapFromList, indexById } from '../utils2';
+import {hasDescItemTypeValue} from '../../../components/arr/ArrUtils';
+import {toDuration} from '../../../components/validate';
+import {DisplayType, JAVA_ATTR_CLASS} from '../../../constants';
+import {getMapFromList, indexById} from '../utils2';
 import {
     ApItemExt,
     IFormData,
@@ -12,8 +12,8 @@ import {
     RefType,
     RefTypeExt,
 } from './itemForm';
-import { DataTypeCode } from './itemFormInterfaces';
-import {ApItemVO} from "../../../api/ApItemVO";
+import {DataTypeCode} from './itemFormInterfaces';
+import {ApItemVO} from '../../../api/ApItemVO';
 
 export enum ItemAvailability {
     REQUIRED = 'REQUIRED',
@@ -1034,54 +1034,54 @@ export function updateFormData(
         newState.infoTypes = !data.itemTypes
             ? []
             : Object.values(data.itemTypes).map(it => {
-                const itemType = refTypesMap.get(it.id)!!;
-                const itemSpecs = itemType.descItemSpecsMap;
+                  const itemType = refTypesMap.get(it.id)!!;
+                  const itemSpecs = itemType.descItemSpecsMap;
 
-                const dataItemType = ((dataItemTypeMap.get(itemType.id) || {}) as any) as ItemTypeLiteVO;
-                const dataItemSpecs = dataItemType.specs || [];
+                  const dataItemType = ((dataItemTypeMap.get(itemType.id) || {}) as any) as ItemTypeLiteVO;
+                  const dataItemSpecs = dataItemType.specs || [];
 
-                const finalItemSpecs = Array.from(itemSpecs.values()).map(spec => {
-                    const specIndex = indexById(dataItemSpecs, spec.id);
-                    if (specIndex == null) {
-                        return {
-                            id: spec.id,
-                            type: ItemAvailability.IMPOSSIBLE,
-                            rep: 0,
-                        };
-                    } else {
-                        const dataSpec = dataItemSpecs[specIndex];
-                        return {
-                            ...dataSpec,
-                            type: ItemAvailabilityNumToEnumMap[dataSpec.type],
-                        };
-                    }
-                });
+                  const finalItemSpecs = Array.from(itemSpecs.values()).map(spec => {
+                      const specIndex = indexById(dataItemSpecs, spec.id);
+                      if (specIndex == null) {
+                          return {
+                              id: spec.id,
+                              type: ItemAvailability.IMPOSSIBLE,
+                              rep: 0,
+                          };
+                      } else {
+                          const dataSpec = dataItemSpecs[specIndex];
+                          return {
+                              ...dataSpec,
+                              type: ItemAvailabilityNumToEnumMap[dataSpec.type],
+                          };
+                      }
+                  });
 
-                const finalItemType = ({
-                    ...dataItemType,
-                    type: ((dataItemType.type
-                        ? ItemAvailabilityNumToEnumMap[dataItemType.type]
-                        : ItemAvailability.IMPOSSIBLE) as any) as ItemAvailability,
-                    specs: finalItemSpecs,
-                    descItemSpecsMap: getMapFromList(finalItemSpecs),
-                } as any) as RefTypeExt;
+                  const finalItemType = ({
+                      ...dataItemType,
+                      type: ((dataItemType.type
+                          ? ItemAvailabilityNumToEnumMap[dataItemType.type]
+                          : ItemAvailability.IMPOSSIBLE) as any) as ItemAvailability,
+                      specs: finalItemSpecs,
+                      descItemSpecsMap: getMapFromList(finalItemSpecs),
+                  } as any) as RefTypeExt;
 
-                const resultItemType: RefTypeExt = {
-                    cal: 0,
-                    calSt: 0,
-                    descItemSpecsMap: {},
-                    favoriteSpecIds: [],
-                    id: itemType.id,
-                    ind: 0,
-                    rep: 0,
-                    specs: [],
-                    type: ItemAvailability.IMPOSSIBLE,
-                    width: 1,
-                    ...finalItemType,
-                };
-                newState.infoTypesMap.set(resultItemType.id, resultItemType);
-                return resultItemType;
-            });
+                  const resultItemType: RefTypeExt = {
+                      cal: 0,
+                      calSt: 0,
+                      descItemSpecsMap: {},
+                      favoriteSpecIds: [],
+                      id: itemType.id,
+                      ind: 0,
+                      rep: 0,
+                      specs: [],
+                      type: ItemAvailability.IMPOSSIBLE,
+                      width: 1,
+                      ...finalItemType,
+                  };
+                  newState.infoTypesMap.set(resultItemType.id, resultItemType);
+                  return resultItemType;
+              });
 
         // Mapa id descItemType na descItemType - existujících dat ze serveru
         //const dbItemTypesMap = getDbItemTypesMap(data)
@@ -1094,7 +1094,7 @@ export function updateFormData(
 
 export function createItem(descItemType: ItemTypeLiteVO, refType: RefType, addedByUser: boolean) {
     const result: ApItemExt<any> = {
-        '@class': getItemClass(refType.dataType),
+        [JAVA_ATTR_CLASS]: getItemClass(refType.dataType),
         typeId: refType.id,
         prevValue: null,
         hasFocus: false,

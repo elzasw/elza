@@ -1,7 +1,9 @@
+import {JAVA_ATTR_CLASS} from '../../constants';
+
 /**
  * Konstanta property pro detekci třídy.
  */
-export const CLS = '@class';
+export const CLS = JAVA_ATTR_CLASS;
 
 export const CLS_ITEM_UNIT_DATE = '.ArrItemUnitdateVO';
 export const CLS_ITEM_RECORD_REF = '.ArrItemRecordRefVO';

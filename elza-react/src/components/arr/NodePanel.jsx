@@ -362,17 +362,16 @@ class NodePanel extends AbstractReactComponent {
                 fundVersionId={versionId}
                 type="DIGITIZATION"
                 onSubmitForm={(send, data) => {
-                    WebApi.arrDigitizationRequestAddNodes(
+                    return WebApi.arrDigitizationRequestAddNodes(
                         versionId,
                         data.requestId,
                         send,
                         data.description,
                         [nodeId],
                         parseInt(data.digitizationFrontdesk),
-                    ).then(() => {
-                        this.props.dispatch(modalDialogHide());
-                    });
+                    );
                 }}
+                onSubmitSuccess={(result, dispatch) => dispatch(modalDialogHide())}
             />
         );
         this.props.dispatch(modalDialogShow(this, i18n('arr.request.digitizationRequest.form.title'), form));

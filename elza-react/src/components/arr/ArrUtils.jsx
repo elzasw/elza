@@ -5,6 +5,7 @@ import {getSetFromIdsList, indexById} from 'stores/app/utils.jsx';
 import React from 'react';
 import {dateTimeToString} from 'components/Utils.jsx';
 import {i18n} from 'components/shared';
+import {JAVA_ATTR_CLASS} from '../../constants';
 
 /**
  * Načtení stromového uspořádání - kořenové jsou item group a pod nimi item types. Do stromu se vkládají jen položky, které ještě nejsou použivté v descItemGroups.
@@ -493,7 +494,7 @@ export const DAO = 'DAO';
 export const DAO_LINK = 'DAO_LINK';
 
 export function getRequestType(digReq) {
-    switch (digReq['@class']) {
+    switch (digReq[JAVA_ATTR_CLASS]) {
         case '.ArrDigitizationRequestVO':
             return DIGITIZATION;
         case '.ArrDaoLinkRequestVO':

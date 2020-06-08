@@ -39,13 +39,13 @@ import {objectEqualsDiff} from 'components/Utils';
 import {NODE_SUB_NODE_FORM_CMP} from '../../stores/app/arr/subNodeForm';
 
 import './NodeSubNodeForm.scss';
+import {JAVA_ATTR_CLASS} from '../../constants';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 
 class NodeSubNodeForm extends AbstractReactComponent {
-
     static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
@@ -643,7 +643,10 @@ class NodeSubNodeForm extends AbstractReactComponent {
                 itemTypeId: itemTypeId,
             };
 
-            if (notEmpty(newItem.value) || (newItem['@class'] === '.ArrItemEnumVO' && notEmpty(item.descItemSpecId))) {
+            if (
+                notEmpty(newItem.value) ||
+                (newItem[JAVA_ATTR_CLASS] === '.ArrItemEnumVO' && notEmpty(item.descItemSpecId))
+            ) {
                 if (actualFormData[itemTypeId]) {
                     // pokud existuje
                     this.processExistsItemType(
@@ -809,7 +812,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
             <div className="node-item-form-container">
                 {formActions}
                 <SubNodeForm
-                    ref={ref => this.refSubNodeForm = ref}
+                    ref={ref => (this.refSubNodeForm = ref)}
                     typePrefix="desc"
                     structureTypes={structureTypes}
                     versionId={versionId}

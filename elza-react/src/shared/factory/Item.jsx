@@ -1,4 +1,5 @@
 import {CLS} from './factoryConsts';
+import {JAVA_ATTR_CLASS} from '../../constants';
 
 export class Item {
     constructor(item) {
@@ -11,7 +12,7 @@ export class Item {
 
     copyItem(withValue = true) {
         return {
-            '@class': this.item[CLS],
+            [JAVA_ATTR_CLASS]: this.item[CLS],
             descItemSpecId: this.item.descItemSpecId,
             position: this.item.position,
             undefined: this.item.undefined,

@@ -20,6 +20,7 @@ import FundTreeCopy from '../FundTreeCopy';
 import FundField from '../../admin/FundField';
 import {FUND_TREE_AREA_COPY} from '../../../actions/constants/ActionTypes';
 import {nodeFormActions} from '../../../actions/arr/subNodeForm.jsx';
+import {JAVA_ATTR_CLASS} from '../../../constants';
 
 const TEMPLATE_SCENARIOS = 'TEMPLATE_SCENARIOS';
 
@@ -274,7 +275,8 @@ class AddNodeForm extends AbstractReactComponent {
                                 items.forEach(item => {
                                     if (
                                         this.notEmpty(item.value) ||
-                                        (item['@class'] === '.ArrItemEnumVO' && this.notEmpty(item.descItemSpecId))
+                                        (item[JAVA_ATTR_CLASS] === '.ArrItemEnumVO' &&
+                                            this.notEmpty(item.descItemSpecId))
                                     ) {
                                         const newItem = {
                                             ...item,
@@ -504,7 +506,12 @@ class AddNodeForm extends AbstractReactComponent {
                             )}
                         </Col>
                         <Col xs={4} xsOffset={4}>
-                            <Button variant="outline-secondary" disabled={submitting || !valid} type="submit" onClick={this.handleFormSubmit}>
+                            <Button
+                                variant="outline-secondary"
+                                disabled={submitting || !valid}
+                                type="submit"
+                                onClick={this.handleFormSubmit}
+                            >
                                 {i18n('global.action.store')}
                             </Button>
                             <Button disabled={submitting} variant="link" onClick={onClose}>

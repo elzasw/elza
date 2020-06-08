@@ -10,7 +10,7 @@ import RegistryListItem from './RegistryListItem';
 import {refApTypesFetchIfNeeded} from '../../actions/refTables/apTypes';
 import './ApField.scss';
 import {ApSearchType} from '../../typings/globals';
-import {JAVA_CLASS_AP_ACCESS_POINT_VO, DEFAULT_LIST_SIZE} from '../../constants';
+import {JAVA_CLASS_AP_ACCESS_POINT_VO, DEFAULT_LIST_SIZE, JAVA_ATTR_CLASS} from '../../constants';
 
 const AUTOCOMPLETE_REGISTRY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
@@ -207,7 +207,7 @@ class ApField extends AbstractReactComponent {
         // změna typu aby se objekt dal použít jako návazný
         const newobj = {
             ...obj,
-            '@class': JAVA_CLASS_AP_ACCESS_POINT_VO,
+            [JAVA_ATTR_CLASS]: JAVA_CLASS_AP_ACCESS_POINT_VO,
         };
         return newobj;
     };
