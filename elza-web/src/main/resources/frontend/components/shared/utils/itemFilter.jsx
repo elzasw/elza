@@ -84,8 +84,13 @@ function _getFlatSubTree(node, depth, parentId=null) {
     node.depth = depth;
     let nodeId = _getItemId(node);
 
-    if(!nodeId && nodeId !== 0){
+    if(typeof nodeId === "undefined" || nodeId === null){
         nodeId = "noid";
+    }
+
+    // only string or number might be a key in map
+    if( (typeof nodeId !== "number") &&  (typeof nodeId !== "string") ) {
+        throw new Error("Invalid id type: '"+ typeof nodeId + "', object: '"+JSON.stringify(node)+"'");
     }
 
     _items[nodeId] = node;
