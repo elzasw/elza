@@ -3,6 +3,7 @@ import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx';
 import {DisplayType} from '../../../constants.tsx';
 import {isNormalizeDurationLength, normalizeDurationLength, toDuration} from '../../../components/validate';
 import {ItemAvailability, ItemAvailabilityNumToEnumMap} from "../accesspoint/itemFormUtils";
+import {JAVA_ATTR_CLASS} from '../../../constants';
 
 const availability = {
     REQUIRED: 'REQUIRED',
@@ -121,7 +122,7 @@ export function createDescItemFromDb(descItemType, descItem) {
         error: {hasError: false},
     };
 
-    if (descItem.hasOwnProperty("description")) {
+    if (descItem.hasOwnProperty('description')) {
         result.prevDescription = descItem.description;
     }
 
@@ -317,7 +318,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
                 if (
                     prevDescItem &&
                     prevDescItemHasSamePrevValue(prevDescItem, descItem) &&
-                        (prevDescItem.touched || (!descItem.value && !descItem.undefined))
+                    (prevDescItem.touched || (!descItem.value && !descItem.undefined))
                 ) {
                     // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
                     var item = prevDescItem;
@@ -1219,7 +1220,7 @@ export function updateFormData(state, data, refTypesMap, groups, updatedItem, di
 
 export function createDescItem(descItemType, refType, addedByUser) {
     var result = {
-        '@class': getItemClass(refType.dataType),
+        [JAVA_ATTR_CLASS]: getItemClass(refType.dataType),
         prevValue: null,
         hasFocus: false,
         touched: false,

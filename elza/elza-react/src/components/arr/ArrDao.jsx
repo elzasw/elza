@@ -39,17 +39,16 @@ class ArrDao extends AbstractReactComponent {
                 fundVersionId={fund.versionId}
                 type="DAO"
                 onSubmitForm={(send, data) => {
-                    WebApi.arrDaoRequestAddDaos(
+                    return WebApi.arrDaoRequestAddDaos(
                         fund.versionId,
                         data.requestId,
                         send,
                         data.description,
                         [dao.id],
                         data.daoType,
-                    ).then(() => {
-                        this.props.dispatch(modalDialogHide());
-                    });
+                    );
                 }}
+                onSubmitSuccess={(result, dispatch) => dispatch(modalDialogHide())}
             />
         );
         this.props.dispatch(modalDialogShow(this, i18n('arr.request.dao.form.title'), form));

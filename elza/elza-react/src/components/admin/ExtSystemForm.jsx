@@ -9,6 +9,7 @@ import AbstractReactComponent from '../AbstractReactComponent';
 import {connect} from 'react-redux';
 import {FormInputField} from 'components/shared';
 import {AP_EXT_SYSTEM_TYPE} from 'constants.tsx';
+import {JAVA_ATTR_CLASS} from '../../constants';
 
 const EXT_SYSTEM_CLASS = {
     ApExternalSystem: '.ApExternalSystemVO',
@@ -23,14 +24,14 @@ const EXT_SYSTEM_CLASS_LABEL = {
 };
 
 const FIELDS = {
-    abstractExtSystem: ['@class', 'id', 'code', 'name', 'url', 'username', 'password', 'elzaCode'],
+    abstractExtSystem: [JAVA_ATTR_CLASS, 'id', 'code', 'name', 'url', 'username', 'password', 'elzaCode'],
     [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type'],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['viewDaoUrl', 'viewFileUrl', 'viewThumbnailUrl', 'sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
 };
 
 const REQUIRED_FIELDS = {
-    abstractExtSystem: ['@class', 'code', 'name'],
+    abstractExtSystem: [JAVA_ATTR_CLASS, 'code', 'name'],
     [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type'],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
@@ -53,7 +54,7 @@ class ExtSystemForm extends AbstractReactComponent {
         }, {});
 
     static validate = (values, props) => {
-        const classJ = values['@class'];
+        const classJ = values[JAVA_ATTR_CLASS];
 
         let requiredFields = [...REQUIRED_FIELDS.abstractExtSystem];
 
@@ -78,14 +79,13 @@ class ExtSystemForm extends AbstractReactComponent {
             <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
                     <Field
-                        name="@class"
+                        name={JAVA_ATTR_CLASS}
                         type="select"
                         component={FormInputField}
                         label={i18n('admin.extSystem.class')}
-
                         disabled={isUpdate}
                     >
-                        <option key={null}/>
+                        <option key={null} />
                         {Object.values(EXT_SYSTEM_CLASS).map((i, index) => (
                             <option key={index} value={i}>
                                 {EXT_SYSTEM_CLASS_LABEL[i]}
@@ -100,10 +100,9 @@ class ExtSystemForm extends AbstractReactComponent {
                                 type="select"
                                 component={FormInputField}
                                 label={i18n('admin.extSystem.type')}
-
                                 disabled={isUpdate}
                             >
-                                <option key={null}/>
+                                <option key={null} />
                                 <option value={AP_EXT_SYSTEM_TYPE.INTERPI}>{i18n('admin.extSystem.interpi')}</option>
                             </Field>
                         </div>
@@ -134,7 +133,7 @@ class ExtSystemForm extends AbstractReactComponent {
                                 component={FormInputField}
                                 label={i18n('admin.extSystem.sendNotification')}
                             >
-                                <option key={null}/>
+                                <option key={null} />
                                 <option key="true" value={true}>
                                     {i18n('admin.extSystem.sendNotification.true')}
                                 </option>
@@ -144,27 +143,16 @@ class ExtSystemForm extends AbstractReactComponent {
                             </Field>
                         </div>
                     )}
-                    {classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && <div/>}
+                    {classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && <div />}
                     <Field
                         name="code"
                         type="text"
                         component={FormInputField}
                         label={i18n('admin.extSystem.code')}
-
                         disabled={isUpdate}
                     />
-                    <Field
-                        name="name"
-                        type="text"
-                        component={FormInputField}
-                        label={i18n('admin.extSystem.name')}
-                    />
-                    <Field
-                        name="url"
-                        type="text"
-                        component={FormInputField}
-                        label={i18n('admin.extSystem.url')}
-                    />
+                    <Field name="name" type="text" component={FormInputField} label={i18n('admin.extSystem.name')} />
+                    <Field name="url" type="text" component={FormInputField} label={i18n('admin.extSystem.url')} />
                     <Field
                         name="username"
                         type="text"
@@ -196,9 +184,9 @@ class ExtSystemForm extends AbstractReactComponent {
 
 const selector = formValueSelector('extSystemForm');
 
-const mapState = (state) => ({
+const mapState = state => ({
     id: selector(state, 'id'),
-    classJ: selector(state, '@class'),
+    classJ: selector(state, JAVA_ATTR_CLASS),
 });
 const connector = connect(mapState);
 

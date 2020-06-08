@@ -28,6 +28,7 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {FOCUS_KEYS} from '../../constants.tsx';
 import PersistentSortDialog from './PersisetntSortDialog';
 import {WebApi} from '../../actions/WebApi';
+import {JAVA_ATTR_CLASS} from '../../constants';
 
 class FundTreeMain extends AbstractReactComponent {
     constructor(props) {
@@ -238,11 +239,11 @@ class FundTreeMain extends AbstractReactComponent {
                     param.value = conditionItem.value;
                     switch (conditionItem.type) {
                         case 'TEXT': {
-                            param['@class'] = '.TextSearchParam';
+                            param[JAVA_ATTR_CLASS] = '.TextSearchParam';
                             break;
                         }
                         case 'UNITDATE': {
-                            param['@class'] = '.UnitdateSearchParam';
+                            param[JAVA_ATTR_CLASS] = '.UnitdateSearchParam';
                             param.calendarId = parseInt(conditionItem.calendarTypeId);
                             param.condition = conditionItem.condition;
                             break;

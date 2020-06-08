@@ -5,6 +5,7 @@ import {AREA_EXT_SYSTEM_DETAIL, extSystemDetailFetchIfNeeded} from 'actions/admi
 import {storeFromArea} from 'shared/utils';
 
 import './AdminExtSystemDetail.scss';
+import {JAVA_ATTR_CLASS} from '../../constants';
 
 const EXT_SYSTEM_CLASS = {
     ApExternalSystem: '.ApExternalSystemVO',
@@ -54,7 +55,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
 
         let content;
         if (extSystemDetail.fetched && extSystem) {
-            const classJ = extSystem['@class'];
+            const classJ = extSystem[JAVA_ATTR_CLASS];
             content = (
                 <div className="ext-system-detail">
                     {classJ === EXT_SYSTEM_CLASS.ApExternalSystem && (

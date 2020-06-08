@@ -67,6 +67,7 @@ import {toDuration} from '../validate';
 import {DisplayType} from '../../constants.tsx';
 import Moment from 'moment';
 import * as groups from '../../actions/refTables/groups';
+import {JAVA_ATTR_CLASS} from '../../constants';
 
 class FundDataGrid extends AbstractReactComponent {
     static propTypes = {
@@ -872,11 +873,11 @@ class FundDataGrid extends AbstractReactComponent {
                     param.value = conditionItem.value;
                     switch (conditionItem.type) {
                         case 'TEXT': {
-                            param['@class'] = '.TextSearchParam';
+                            param[JAVA_ATTR_CLASS] = '.TextSearchParam';
                             break;
                         }
                         case 'UNITDATE': {
-                            param['@class'] = '.UnitdateSearchParam';
+                            param[JAVA_ATTR_CLASS] = '.UnitdateSearchParam';
                             param.calendarId = parseInt(conditionItem.calendarTypeId);
                             param.condition = conditionItem.condition;
                             break;

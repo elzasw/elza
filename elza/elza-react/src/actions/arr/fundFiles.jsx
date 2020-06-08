@@ -2,6 +2,7 @@ import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes.js';
 import {objectById} from 'stores/app/utils.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
+import {JAVA_ATTR_CLASS} from '../../constants';
 
 export function isFundFilesAction(action) {
     switch (action.type) {
@@ -82,7 +83,7 @@ export function fundFilesCreate(fundId, data, callback = null) {
             formData.append('file', data.file[0]);
         }
         formData.append('fundId', fundId);
-        formData.append('@class', '.ArrFileVO');
+        formData.append(JAVA_ATTR_CLASS, '.ArrFileVO');
 
         return savingApiWrapper(
             dispatch,
@@ -101,7 +102,7 @@ export function fundFilesReplace(fileId, file) {
             formData.append('file', file);
         }
         formData.append('id', fileId);
-        formData.append('@class', '.ArrFileVO');
+        formData.append(JAVA_ATTR_CLASS, '.ArrFileVO');
 
         savingApiWrapper(dispatch, WebApi.updateFundFileRaw(fileId, formData));
     };
@@ -121,7 +122,7 @@ export function fundFilesUpdate(fundId, fileId, data, callback = null) {
         }
         formData.append('id', fileId);
         formData.append('fundId', fundId);
-        formData.append('@class', '.ArrFileVO');
+        formData.append(JAVA_ATTR_CLASS, '.ArrFileVO');
 
         savingApiWrapper(
             dispatch,

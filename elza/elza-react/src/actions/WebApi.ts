@@ -1,6 +1,6 @@
 // @ts-ignore
 import AjaxUtils from '../components/AjaxUtils';
-import {DEFAULT_LIST_SIZE} from '../constants';
+import {DEFAULT_LIST_SIZE, JAVA_ATTR_CLASS} from '../constants';
 import {
     CommentVO,
     CreateFund,
@@ -9,20 +9,20 @@ import {
     IssueListVO,
     IssueStateVO,
     IssueVO,
-    UpdateFund
+    UpdateFund,
 } from '../types';
-import {ApAccessPointCreateVO} from "../api/ApAccessPointCreateVO";
-import {ApAccessPointVO} from "../api/ApAccessPointVO";
-import {ApValidationErrorsVO} from "../api/ApValidationErrorsVO";
-import {ApStateHistoryVO} from "../api/ApStateHistoryVO";
-import {ApAttributesInfoVO} from "../api/ApAttributesInfoVO";
-import {ApPartFormVO} from "../api/ApPartFormVO";
-import {ApTypeVO} from "../api/ApTypeVO";
-import {RulDataTypeVO} from "../api/RulDataTypeVO";
-import {RulDescItemTypeExtVO} from "../api/RulDescItemTypeExtVO";
-import {RulPartTypeVO} from "../api/RulPartTypeVO";
-import {FilteredResultVO} from "../api/FilteredResultVO";
-import {ApSearchType} from "../typings/globals";
+import {ApAccessPointCreateVO} from '../api/ApAccessPointCreateVO';
+import {ApAccessPointVO} from '../api/ApAccessPointVO';
+import {ApValidationErrorsVO} from '../api/ApValidationErrorsVO';
+import {ApStateHistoryVO} from '../api/ApStateHistoryVO';
+import {ApAttributesInfoVO} from '../api/ApAttributesInfoVO';
+import {ApPartFormVO} from '../api/ApPartFormVO';
+import {ApTypeVO} from '../api/ApTypeVO';
+import {RulDataTypeVO} from '../api/RulDataTypeVO';
+import {RulDescItemTypeExtVO} from '../api/RulDescItemTypeExtVO';
+import {RulPartTypeVO} from '../api/RulPartTypeVO';
+import {FilteredResultVO} from '../api/FilteredResultVO';
+import {ApSearchType} from '../typings/globals';
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 
@@ -539,7 +539,7 @@ export class WebApiCls {
      * @param scopeId identifikátor rejstříku
      */
     addRestrictedScope(outputId, scopeId) {
-        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/output/' + outputId + "/restrict/" + scopeId, null, null);
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/output/' + outputId + '/restrict/' + scopeId, null, null);
     }
 
     /**
@@ -549,7 +549,11 @@ export class WebApiCls {
      * @param scopeId identifikátor rejstříku
      */
     deleteRestrictedScope(outputId, scopeId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/output/' + outputId + "/restrict/" + scopeId, null, null);
+        return AjaxUtils.ajaxDelete(
+            WebApiCls.arrangementUrl + '/output/' + outputId + '/restrict/' + scopeId,
+            null,
+            null,
+        );
     }
 
     addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems) {
@@ -694,7 +698,7 @@ export class WebApiCls {
     /// Registry
     createAccessPoint(name, complement, languageCode, description, typeId, scopeId) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/', null, {
-            '@class': 'cz.tacr.elza.controller.vo.ApAccessPointCreateVO',
+            [JAVA_ATTR_CLASS]: 'cz.tacr.elza.controller.vo.ApAccessPointCreateVO',
             name,
             description,
             complement,
@@ -707,7 +711,7 @@ export class WebApiCls {
 
     createStructuredAccessPoint(name, complement, languageCode, description, typeId, scopeId) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/structured', null, {
-            '@class': 'cz.tacr.elza.controller.vo.ApAccessPointCreateVO',
+            [JAVA_ATTR_CLASS]: 'cz.tacr.elza.controller.vo.ApAccessPointCreateVO',
             name,
             description,
             complement,
@@ -773,7 +777,7 @@ export class WebApiCls {
         excludeInvalid = true,
         state = null,
         searchTypeName?: ApSearchType,
-        searchTypeUsername?: ApSearchType
+        searchTypeUsername?: ApSearchType,
     ): Promise<FilteredResultVO<ApAccessPointVO>> {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {
             search,
@@ -974,7 +978,11 @@ export class WebApiCls {
      * @see ApController.setPreferName
      */
     setPreferPartName(accessPointId: number, partId: number): Promise<void> {
-        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId + '/prefer-name', null, null);
+        return AjaxUtils.ajaxPut(
+            WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId + '/prefer-name',
+            null,
+            null,
+        );
     }
 
     /**
@@ -1225,7 +1233,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/asyncRequests');
     }
 
-    getAsyncRequestDetail(requestType){
+    getAsyncRequestDetail(requestType) {
         return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/asyncRequests/' + requestType);
     }
 
@@ -1258,7 +1266,7 @@ export class WebApiCls {
     }
 
     updateFund2(id, data: UpdateFund) {
-        return AjaxUtils.ajaxPut(WebApiCls.fundV1 + "/" + id, null, data);
+        return AjaxUtils.ajaxPut(WebApiCls.fundV1 + '/' + id, null, data);
     }
 
     approveVersion(versionId, dateRange) {
