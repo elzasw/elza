@@ -70,6 +70,7 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.ParRelation;
@@ -287,9 +288,17 @@ public class AccessPointService {
     public void checkDeletion(final ApAccessPoint accessPoint) {
         apDataService.validationNotParty(accessPoint);
 
-        long countDataRecordRef = dataRecordRefRepository.countAllByRecord(accessPoint);
-        if (countDataRecordRef > 0) {
-            throw new BusinessException("Nalezeno použití AP v tabulce ArrDataRecordRef.", RegistryCode.EXIST_FOREIGN_DATA).set("table", "ArrDataRecordRef");
+        // arr_data_record_ref
+        List<ArrDescItem> arrRecordItems = descItemRepository.findArrItemByRecord(accessPoint);
+        if (CollectionUtils.isNotEmpty(arrRecordItems)) {
+            throw new BusinessException(
+                    "Nelze smazat/zneplatnit přístupový bod, který má hodnotu v jednotce archivního popisu.",
+                    RegistryCode.EXIST_FOREIGN_DATA)
+                            .set("accessPointId", accessPoint.getAccessPointId())
+                            .set("arrItems", arrRecordItems.stream().map(ArrItem::getItemId).collect(Collectors
+                                    .toList()))
+                            .set("fundIds", arrRecordItems.stream().map(ArrItem::getFundId).collect(Collectors
+                                    .toList()));
         }
 
         // vztah osoby par_relation_entity
