@@ -50,6 +50,7 @@ import * as issuesActions from '../../actions/arr/issues';
 import {nodeWithIssueByFundVersion} from '../../actions/arr/issues';
 import IssueForm from '../../components/form/IssueForm';
 import ConfirmForm from '../../components/shared/form/ConfirmForm';
+import ArrPageRibbon from "./ArrPageRibbon";
 
 class ArrPage extends ArrParentPage {
     static TAB_KEY = 'arr-as';
@@ -105,10 +106,7 @@ class ArrPage extends ArrParentPage {
             'handleShowHideSpecs',
             'handleTabSelect',
             'handleSelectErrorNode',
-            'handleErrorPrevious',
-            'handleErrorNext',
             'trySetFocus',
-            'handleOpenFundActionForm',
             'handleChangeFundSettingsSubmit',
             'handleSetExtendedView',
             'renderLecturingPanel',
@@ -282,7 +280,11 @@ class ArrPage extends ArrParentPage {
         };
     }
 
-    handleOpenFundActionForm(versionId, subNode) {
+    handleOpenFundActionForm = () => {
+        const activeInfo = this.getActiveInfo();
+        const versionId = activeInfo.activeFund.versionId;
+        const subNode = activeInfo.activeSubNode;
+
         this.props.dispatch(fundActionFormChange(versionId, {nodes: [subNode]}));
         this.props.dispatch(fundActionFormShow(versionId));
         this.props.dispatch(routerNavigate('/arr/actions'));
@@ -317,7 +319,7 @@ class ArrPage extends ArrParentPage {
         return {items: items, selectedTab: selectedTab};
     };
 
-    handleChangeFundSettings() {
+    handleChangeFundSettings = () => {
         const {userDetail} = this.props;
         const activeInfo = this.getActiveInfo();
 
@@ -577,244 +579,33 @@ class ArrPage extends ArrParentPage {
      * @return {Object} view
      */
     buildRibbon(readMode, closed) {
-        const {arrRegion, userDetail} = this.props;
-
+        const {arrRegion, userDetail, issueProtocol} = this.props;
         const activeInfo = this.getActiveInfo();
 
-        const altActions = [];
-
-        const itemActions = [];
-
-        const indexFund = arrRegion.activeIndex;
-        if (indexFund !== null) {
-            const activeFund = arrRegion.funds[indexFund];
-
-            altActions.push(
-                <Button key="fund-settings" onClick={this.handleChangeFundSettings.bind(this)} variant={'default'}>
-                    <Icon glyph="fa-wrench" />
-                    <span className="btnText">{i18n('ribbon.action.arr.fund.settings.ui')}</span>
-                </Button>,
-            );
-
-            altActions.push(
-                <Button key="fund-templates" onClick={this.handleChangeFundTemplateSettings} variant={'default'}>
-                    <Icon glyph="fa-wrench" />
-                    <span className="btnText">{i18n('ribbon.action.arr.fund.settings.template')}</span>
-                </Button>,
-            );
-
-            // Zobrazení historie změn
-            if (
-                userDetail.hasOne(
-                    perms.FUND_ADMIN,
-                    {
-                        type: perms.FUND_VER_WR,
-                        fundId: activeFund.id,
-                    },
-                    perms.FUND_ARR_ALL,
-                    {type: perms.FUND_ARR, fundId: activeFund.id},
-                )
-            ) {
-                altActions.push(
-                    <Button
-                        onClick={() => this.handleShowFundHistory(activeFund.versionId, readMode)}
-                        key="show-fund-history"
-                        variant={'default'}
-                    >
-                        <Icon glyph="fa-clock-o" />
-                        <div>
-                            <span className="btnText">{i18n('ribbon.action.showFundHistory')}</span>
-                        </div>
-                    </Button>,
-                );
-            }
-
-            if (
-                userDetail.hasOne(
-                    perms.FUND_ADMIN,
-                    {
-                        type: perms.FUND_VER_WR,
-                        fundId: activeFund.id,
-                    },
-                    perms.FUND_ARR_ALL,
-                    {type: perms.FUND_ARR, fundId: activeFund.id},
-                )
-            ) {
-                altActions.push(
-                    <Button
-                        onClick={() => this.handleShowSyncDaosByFund(activeFund.versionId)}
-                        key="show-sync-daos-by-fund"
-                        variant={'default'}
-                    >
-                        <Icon glyph="fa-camera" />
-                        <div>
-                            <span className="btnText">{i18n('ribbon.action.syncDaosByFund')}</span>
-                        </div>
-                    </Button>,
-                );
-            }
-
-            const nodeIndex = activeFund.nodes.activeIndex;
-            let subNodeId = null;
-            if (nodeIndex !== null) {
-                const activeNode = activeFund.nodes.nodes[nodeIndex];
-
-                if (activeNode.selectedSubNodeId !== null) {
-                    subNodeId = activeNode.selectedSubNodeId;
-                    itemActions.push(
-                        <Button
-                            key="next-error"
-                            onClick={this.handleErrorPrevious.bind(
-                                this,
-                                activeFund.versionId,
-                                activeNode.selectedSubNodeId,
-                            )}
-                            variant={'default'}
-                        >
-                            <Icon glyph="fa-arrow-left" />
-                            <span className="btnText">{i18n('ribbon.action.arr.validation.error.previous')}</span>
-                        </Button>,
-                        <Button
-                            key="previous-error"
-                            onClick={this.handleErrorNext.bind(
-                                this,
-                                activeFund.versionId,
-                                activeNode.selectedSubNodeId,
-                            )}
-                            variant={'default'}
-                        >
-                            <Icon glyph="fa-arrow-right" />
-                            <span className="btnText">{i18n('ribbon.action.arr.validation.error.next')}</span>
-                        </Button>,
-                    );
-                    if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: activeFund.id})) {
-                        itemActions.push(
-                            <Button
-                                disabled={readMode}
-                                key="prepareFundAction"
-                                onClick={this.handleOpenFundActionForm.bind(
-                                    this,
-                                    activeFund.versionId,
-                                    activeInfo.activeSubNode,
-                                )}
-                                variant={'default'}
-                            >
-                                <Icon glyph="fa-calculator" />
-                                <span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span>
-                            </Button>,
-                        );
-                    }
-                }
-            }
-
-            const {issueProtocol} = this.props;
-
-            const isProtocolLoaded =
-                !issueProtocol.isFetching && issueProtocol.data && activeFund.id === issueProtocol.data.fundId;
-
-            const haveProtocolPermissionToWrite =
-                isProtocolLoaded &&
-                (userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) ||
-                    (userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
-                        userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
-                        userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(
-                            issueProtocol.data.id,
-                        ) !== -1));
-            // const haveProtocolPermissionToRead =
-            //     haveProtocolPermissionToWrite || (isProtocolLoaded &&
-            //     userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD] &&
-            //     userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds &&
-            //     userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds.indexOf(issueProtocol.data.id) !== -1);
-
-            if (nodeIndex !== null) {
-                const activeNode = activeFund.nodes.nodes[nodeIndex];
-                if (activeNode.selectedSubNodeId !== null) {
-                    subNodeId = activeNode.selectedSubNodeId;
-                    itemActions.push(
-                        <Button key="next-issue" onClick={this.handleIssuePrevious}>
-                            <Icon glyph="fa-arrow-left" />
-                            <span className="btnText">{i18n('ribbon.action.arr.issue.previous')}</span>
-                        </Button>,
-                        <Button key="previous-issue" onClick={this.handleIssueNext}>
-                            <Icon glyph="fa-arrow-right" />
-                            <span className="btnText">{i18n('ribbon.action.arr.issue.next')}</span>
-                        </Button>,
-                    );
-                }
-            }
-
-            itemActions.push(
-                <DropdownButton
-                    variant="default"
-                    disabled={!haveProtocolPermissionToWrite}
-                    title={
-                        <span>
-                            <Icon glyph="fa-commenting" />
-                            <span className="btnText">{i18n('ribbon.action.arr.issue.add')}</span>
-                        </span>
-                    }
-                    key="add-issue"
-                    id="add-issue"
-                >
-                    <Dropdown.Item eventKey="1" onClick={this.createIssueFund}>
-                        {i18n('arr.issues.add.arr')}
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                        eventKey="2"
-                        disabled={subNodeId === null}
-                        onClick={subNodeId !== null ? this.createIssueNode : null}
-                    >
-                        {i18n('arr.issues.add.node')}
-                    </Dropdown.Item>
-                </DropdownButton>,
-            );
-        }
-        let altSection;
-
-        altActions.push(
-            <Button key="search-fa" onClick={this.handleFundsSearchForm}>
-                <Icon glyph="fa-search" />
-                <div>
-                    <span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span>
-                </div>
-            </Button>,
-        );
-
-        if (altActions.length > 0) {
-            altSection = (
-                <RibbonGroup key="alt" className="small">
-                    {altActions}
-                </RibbonGroup>
-            );
-        }
-
-        let itemSection;
-        if (itemActions.length > 0) {
-            itemSection = (
-                <RibbonGroup key="item" className="small">
-                    {itemActions}
-                </RibbonGroup>
-            );
-        }
-
-        return (
-            <Ribbon
-                arr
-                subMenu
-                fundId={activeInfo.activeFund ? activeInfo.activeFund.id : null}
-                altSection={altSection}
-                itemSection={itemSection}
-            />
-        );
+        return <ArrPageRibbon
+            activeFundId={activeInfo.activeFund ? activeInfo.activeFund.id : null}
+            activeFundVersionId={activeInfo.activeFund ? activeInfo.activeFund.versionId : null}
+            selectedSubNodeId={activeInfo.activeNode ? activeInfo.activeNode.selectedSubNodeId : null}
+            userDetail={userDetail}
+            handleChangeFundSettings={this.handleChangeFundSettings}
+            handleChangeFundTemplateSettings={this.handleChangeFundTemplateSettings}
+            handleErrorPrevious={this.handleErrorPrevious}
+            handleErrorNext={this.handleErrorNext}
+            handleOpenFundActionForm={this.handleOpenFundActionForm}
+            issueProtocol={issueProtocol}
+            arrRegionActiveIndex={arrRegion.activeIndex}
+            />;
     }
 
-    handleErrorNext(versionId, nodeId) {
-        this.props.dispatch(versionValidationErrorNext(versionId, nodeId));
-    }
+    handleErrorNext = () => {
+        const activeInfo = this.getActiveInfo();
+        this.props.dispatch(versionValidationErrorNext(activeInfo.activeFund.versionId, activeInfo.activeNode.selectedSubNodeId));
+    };
 
-    handleErrorPrevious(versionId, nodeId) {
-        this.props.dispatch(versionValidationErrorPrevious(versionId, nodeId));
-    }
+    handleErrorPrevious = () => {
+        const activeInfo = this.getActiveInfo();
+        this.props.dispatch(versionValidationErrorPrevious(activeInfo.activeFund.versionId, activeInfo.activeNode.selectedSubNodeId));
+    };
 
     handleShowHideSpecs(descItemTypeId) {
         if (this.state.developerExpandedSpecsIds[descItemTypeId]) {

@@ -97,12 +97,13 @@ class NodeSubNodeForm extends AbstractReactComponent {
         if (this.state !== nextState) {
             return true;
         } else {
+            const log = false;
             return (
-                !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, NODE_SUB_NODE_FORM_CMP) ||
-                !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled) ||
-                !objectEqualsDiff(this.props.focus, nextProps.focus) ||
-                !objectEqualsDiff(this.props.nodeSettings, nextProps.nodeSettings) ||
-                !objectEqualsDiff(this.props.readMode, nextProps.readMode)
+                !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, NODE_SUB_NODE_FORM_CMP, '', log) ||
+                !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled, {}, '', log) ||
+                !objectEqualsDiff(this.props.focus, nextProps.focus, {}, '', log) ||
+                !objectEqualsDiff(this.props.nodeSettings, nextProps.nodeSettings, {}, '', log) ||
+                !objectEqualsDiff(this.props.readMode, nextProps.readMode, {}, '', log)
             );
         }
     }
