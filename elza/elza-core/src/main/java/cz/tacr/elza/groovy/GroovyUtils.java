@@ -1,5 +1,6 @@
 package cz.tacr.elza.groovy;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
@@ -24,9 +25,9 @@ public class GroovyUtils {
 
     @Nullable
     public static GroovyAe findFirstAeBy(final Collection<GroovyAe> aes, final String typeCode, final String specCode) {
-        //TODO fantis
-//        CodeEntityProvider.getItemType(typeCode);
-//        CodeEntityProvider.getItemSpec(specCode);
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        sdp.getItemTypeByCode(typeCode);
+        sdp.getItemSpecByCode(specCode);
 
         if (CollectionUtils.isEmpty(aes)) {
             return null;
@@ -53,10 +54,10 @@ public class GroovyUtils {
                                                     final String itemType) {
         Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
         Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
-        //TODO fantis
-//        CodeEntityProvider.getItemType(containItemType);
-//        CodeEntityProvider.getItemSpec(containItemSpec);
-//        CodeEntityProvider.getItemType(itemType);
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        sdp.getItemTypeByCode(containItemType);
+        sdp.getItemSpecByCode(containItemSpec);
+        sdp.getItemTypeByCode(itemType);
 
         for (GroovyPart part : groovyAe.getParts()) {
             if (part.getPartTypeCode().equals(partTypeCode)) {
@@ -82,8 +83,7 @@ public class GroovyUtils {
         Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
         Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
         Validate.notNull(filter, "Nebyl předán filter preferované části");
-        //TODO fantis
-//        CodeEntityProvider.getItemType(itemType);
+        StaticDataProvider.getInstance().getItemTypeByCode(itemType);
 
         for (GroovyPart part : groovyAe.getParts()) {
             if (filter == GroovyPart.PreferredFilter.ALL
