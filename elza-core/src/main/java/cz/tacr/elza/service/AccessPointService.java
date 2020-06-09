@@ -744,6 +744,7 @@ public class AccessPointService {
                 apAccessPoint.setPreferredPart(newPart);
                 apAccessPointRepository.save(apAccessPoint);
             }
+            updatePartValue(newPart);
 //        }
     }
 
@@ -1618,6 +1619,7 @@ public class AccessPointService {
 
         accessPoint.setPreferredPart(apPart);
         apAccessPointRepository.save(accessPoint);
+        updatePartValue(apPart);
     }
 
     /**

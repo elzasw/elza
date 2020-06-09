@@ -1,5 +1,6 @@
 package cz.tacr.elza.groovy;
 
+import cz.tacr.elza.core.data.StaticDataProvider;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -147,8 +148,7 @@ public class GroovyAppender {
 
     private ItemPart addValidate(final String itemTypeCode, final boolean validate) {
         if (validate) {
-            //TODO fantis
-            //CodeEntityProvider.getItemType(itemTypeCode);
+            StaticDataProvider.getInstance().getItemTypeByCode(itemTypeCode);
         }
         List<GroovyItem> groovyItems = part.getItems(itemTypeCode);
         ItemPart item = new ItemPart(groovyItems);

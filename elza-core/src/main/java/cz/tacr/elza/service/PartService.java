@@ -102,8 +102,8 @@ public class PartService {
      * @param accessPoint přístupový bod
      * @param apPartFormVO data k založení
      */
-    public void createPart(final ApAccessPoint accessPoint,
-                           final ApPartFormVO apPartFormVO) {
+    public ApPart createPart(final ApAccessPoint accessPoint,
+                             final ApPartFormVO apPartFormVO) {
         ApPart parentPart = apPartFormVO.getParentPartId() == null ? null : getPart(apPartFormVO.getParentPartId());
 
         if (parentPart != null && parentPart.getParentPart() != null) {
@@ -119,6 +119,7 @@ public class PartService {
 
         ApPart newPart = createPart(partType, accessPoint, apChange, parentPart);
         createPartItems(apChange, newPart, apPartFormVO);
+        return newPart;
     }
 
     public ApPart getPart(final Integer partId) {

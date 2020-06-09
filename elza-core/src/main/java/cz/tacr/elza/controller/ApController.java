@@ -747,7 +747,8 @@ public class ApController {
     public void createPart(@PathVariable final Integer accessPointId,
                            @RequestBody final ApPartFormVO apPartFormVO) {
         ApAccessPoint apAccessPoint = accessPointRepository.findOne(accessPointId);
-        partService.createPart(apAccessPoint, apPartFormVO);
+        ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
+        accessPointService.updatePartValue(apPart);
     }
 
     /**
