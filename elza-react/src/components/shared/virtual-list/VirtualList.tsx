@@ -192,7 +192,7 @@ class VirtualList extends React.Component<Props, State> {
         );
 
         // no items to render
-        if (renderStats.itemsInView === 0) {
+        if (renderStats.itemsInView === 0 && (!props.items || props.items.length === 0)) {
             return state;
         }
 
@@ -205,7 +205,11 @@ class VirtualList extends React.Component<Props, State> {
                 state.items.push(a);
             }
         } else {
-            state.items = props.items!.slice(renderStats.firstItemIndex, renderStats.lastItemIndex! + 1);
+            if (props.items!.length < 3) {
+                state.items = props.items;
+            }else {
+                state.items = props.items!.slice(renderStats.firstItemIndex, renderStats.lastItemIndex! + 1);
+            }
         }
         state.bufferStart = renderStats.firstItemIndex! * itemHeight;
 
@@ -328,9 +332,7 @@ class VirtualList extends React.Component<Props, State> {
         return (
             <Tag
                 className="virtual-list"
-                ref={container => {
-                    this.container = container;
-                }}
+                ref={ref => this.container = ref}
                 style={{boxSizing: 'border-box', height: this.state.height, paddingTop: this.state.bufferStart}}
             >
                 {content}

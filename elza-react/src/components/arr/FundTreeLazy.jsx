@@ -47,6 +47,8 @@ class FundTreeLazy extends AbstractReactComponent {
         return {shortcuts: this.shortcutManager};
     }
 
+    treeContainerRef = null;
+
     state = {};
 
     static propTypes = {
@@ -159,7 +161,7 @@ class FundTreeLazy extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        this.setState({treeContainer: ReactDOM.findDOMNode(this.refs.treeContainer)});
+        this.setState({treeContainer: this.treeContainerRef});
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -339,7 +341,7 @@ class FundTreeLazy extends AbstractReactComponent {
                         )}
                         {actionAddons}
                     </div>
-                    <div className="fa-tree-lazy-container" ref="treeContainer">
+                    <div className="fa-tree-lazy-container" ref={ref => this.treeContainerRef = ref}>
                         <StoreHorizontalLoader store={{fetched, isFetching}} />
                         {this.state.treeContainer && (
                             <VirtualList

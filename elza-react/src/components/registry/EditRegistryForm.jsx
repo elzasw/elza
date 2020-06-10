@@ -4,7 +4,6 @@ import {AbstractReactComponent, Autocomplete, i18n} from 'components/shared';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx';
 import {getTreeItemById} from './registryUtils';
 
 /**
@@ -25,14 +24,12 @@ class EditRegistryForm extends AbstractReactComponent {
     state = {};
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        this.props.dispatch(getRegistryRecordTypesIfNeeded());
     }
 
     componentDidMount() {
         if (this.props.initData) {
             this.props.load(this.props.initData);
         }
-        this.props.dispatch(getRegistryRecordTypesIfNeeded());
     }
 
     submitReduxForm = (values, dispatch) =>

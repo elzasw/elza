@@ -41,8 +41,8 @@ const DetailHistory: React.FC<AllProps> = props => {
         const itemCount = registryDetailHistory.fetched ? registryDetailHistory.count : props.commentCount;
         return <div>
             <h3>Historie stavů ({itemCount})</h3>
-            {registryDetailHistory.fetched && registryDetailHistory.rows!.map(item => (
-                <DetailHistoryItem historyItem={item}/>))}
+            {registryDetailHistory.fetched && registryDetailHistory.rows!.map((item, index) => (
+                <DetailHistoryItem key={index} historyItem={item}/>))}
             {!registryDetailHistory.fetched && <Loading/>}
         </div>
     };

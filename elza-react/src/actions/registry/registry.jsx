@@ -2,7 +2,7 @@ import React from 'react';
 
 import {WebApi} from 'actions/index.jsx';
 import {SimpleListActions} from 'shared/list';
-import {DetailActions} from 'shared/detail';
+import {DetailActions} from '../../shared/detail';
 import {indexById, storeFromArea} from 'shared/utils';
 
 import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
@@ -86,7 +86,7 @@ export function registryDetailInvalidate() {
 }
 
 export function registryDetailClear() {
-    return registryDetailFetchIfNeeded(null);
+    return DetailActions.reset(AREA_REGISTRY_DETAIL);
 }
 
 export function registryAdd(versionId, callback, showSubmitTypes = false) {

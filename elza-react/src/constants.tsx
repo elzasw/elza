@@ -100,6 +100,8 @@ export const DETAIL_VALIDATION_RESULT = 'detailValidationResult';
 
 export const ADMIN_USER = 'admin';
 
+export const FORM_DATA_GRID_EXPORT = 'dataGridExportForm';
+
 export const JAVA_CLASS_AP_ACCESS_POINT_VO = 'cz.tacr.elza.controller.vo.ApAccessPointVO';
 export const JAVA_CLASS_ARR_DIGITIZATION_FRONTDESK_SIMPLE_VO = '.ArrDigitizationFrontdeskSimpleVO';
 export const JAVA_ATTR_CLASS = '@class';
