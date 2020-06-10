@@ -108,6 +108,7 @@ class AddUserForm extends AbstractReactComponent {
                                     detail={false}
                                     name={"accessPointId"}
                                     useIdAsValue
+                                    isCreate
                                 />
                             </Col>
                         </Row>

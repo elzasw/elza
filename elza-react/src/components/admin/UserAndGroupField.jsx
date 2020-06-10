@@ -10,9 +10,10 @@ import {renderUserOrGroupItem} from './adminRenderUtils.jsx';
  * Field pro vybrání skupiny nebo uživatele.
  */
 class UserAndGroupField extends AbstractReactComponent {
+    autocompleteRef = null;
+
     static defaultProps = {
         tags: false,
-        excludedGroupId: null,
         findUserApi: WebApi.findUser,
         findGroupApi: WebApi.findGroup,
     };
@@ -37,7 +38,7 @@ class UserAndGroupField extends AbstractReactComponent {
     }
 
     focus = () => {
-        this.refs.autocomplete.focus();
+        this.autocompleteRef.focus();
     };
 
     handleSearchChange = text => {
@@ -79,7 +80,7 @@ class UserAndGroupField extends AbstractReactComponent {
         return (
             <Autocomplete
                 tags={tags}
-                ref="autocomplete"
+                ref={ref => this.autocompleteRef = ref}
                 className="form-group"
                 customFilter
                 value={value}
