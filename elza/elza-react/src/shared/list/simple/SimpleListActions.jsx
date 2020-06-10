@@ -57,7 +57,7 @@ export function reset(area) {
 export function fetchIfNeeded(area, parent, getData, forceFetch = false) {
     return (dispatch, getState) => {
         // Spočtení data key
-        var store = storeFromArea(getState(), area);
+        let store = storeFromArea(getState(), area);
 
         // Pokud ve store není potřebné parent, dáme ho tam, aby se nám správně spočetl data key
         if (store.parent !== parent) {
