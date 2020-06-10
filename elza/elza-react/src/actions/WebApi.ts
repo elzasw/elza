@@ -878,10 +878,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/languages', null);
     }
 
-    getRecordTypesForAdd(partyTypeId = null) {
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/recordTypesForPartyType', {partyTypeId});
-    }
-
     createAccessPointName(accessPointId, data) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name', null, data);
     }

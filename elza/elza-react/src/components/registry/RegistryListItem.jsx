@@ -15,7 +15,7 @@ class RegistryListItem extends AbstractReactComponent {
         //partyType: PropTypes.object.isRequired,
         relationTypesForClass: PropTypes.object,
         eidTypes: PropTypes.object.isRequired,
-        name: PropTypes.string.isRequired,
+        name: PropTypes.string,
         relations: PropTypes.array,
         invalid: PropTypes.bool,
     };

@@ -102,13 +102,18 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         return allParts.filter(value => value.partParentId).filter(value => value.partParentId && parentIds.includes(value.partParentId));
     };
 
-    const isFetching = !props.detail.fetched || props.detail.isFetching ||
-        !props.refTables.partTypes.fetched || props.refTables.partTypes.isFetching;
+    const isFetchingPartyTypes = !props.refTables.partTypes.fetched && props.refTables.partTypes.isFetching;
 
-    if (isFetching) {
+    const isFetching = !props.detail.fetched && props.detail.isFetching;
+
+    if (isFetchingPartyTypes || isFetching) {
         return <div className={'detail-page-wrapper'}>
             <Loading/>
         </div>;
+    }
+
+    if (!isFetching && (!props.detail.id || !props.detail.data)) {
+        return <div className={'detail-page-wrapper'}></div>;
     }
 
     const allParts = props.detail.data ? props.detail.data.parts as ApPartVO[] : [];

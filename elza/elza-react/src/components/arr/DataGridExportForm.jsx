@@ -5,15 +5,16 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {reduxForm} from 'redux-form';
+import {reduxForm, Field} from 'redux-form';
 import {Form} from 'react-bootstrap';
 import AbstractReactComponent from '../AbstractReactComponent';
-import FormInput from '../shared/form/FormInput';
 import i18n from '../i18n';
 import {connect} from 'react-redux';
 import {UrlFactory} from '../../actions/WebApi';
 import {modalDialogHide} from '../../actions/global/modalDialog';
 import {downloadFile} from '../../actions/global/download';
+import FormInputField from "../shared/form/FormInputField";
+import {FORM_DATA_GRID_EXPORT} from "../../constants";
 
 const transformSubmitData = values => {
     return {
@@ -46,27 +47,21 @@ class DataGridExportForm extends AbstractReactComponent {
     };
 
     render() {
-        const {
-            fields: {exportType},
-        } = this.props;
-
         return (
             <Form>
-                <FormInput
+                <Field
+                    component={FormInputField}
                     type="radio"
                     name="exportType"
-                    {...exportType}
-                    checked={exportType.value === EXPORT_TYPE.TABLE}
                     value={EXPORT_TYPE.TABLE}
                     label={i18n('dataGrid.export.exportType.table')}
                     inline
                 />
 
-                <FormInput
+                <Field
+                    component={FormInputField}
                     type="radio"
                     name="exportType"
-                    {...exportType}
-                    checked={exportType.value === EXPORT_TYPE.DATA}
                     value={EXPORT_TYPE.DATA}
                     label={i18n('dataGrid.export.exportType.data')}
                     inline
@@ -77,8 +72,7 @@ class DataGridExportForm extends AbstractReactComponent {
 }
 
 const formComponent = reduxForm({
-    form: 'dataGridExportForm',
-    fields: ['exportType'],
+    form: FORM_DATA_GRID_EXPORT,
 })(DataGridExportForm);
 
 export default connect((state, props) => {

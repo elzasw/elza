@@ -6,7 +6,6 @@ import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {indexById} from 'stores/app/utils.jsx';
 import {decorateFormField, submitReduxFormWithProp} from 'components/form/FormUtils.jsx';
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {getTreeItemById} from './registryUtils';
 import Scope from '../shared/scope/Scope';
@@ -61,12 +60,10 @@ class AddRegistryForm extends AbstractReactComponent {
     };
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        this.props.dispatch(getRegistryRecordTypesIfNeeded());
         this.prepareState(nextProps);
     }
 
     componentDidMount() {
-        this.props.dispatch(getRegistryRecordTypesIfNeeded());
         this.prepareState(this.props);
     }
 
@@ -212,7 +209,6 @@ class AddRegistryForm extends AbstractReactComponent {
     };
 
     render() {
-        console.log('PRRRR', this.props);
         const {
             fields: {name, description, complement, languageCode, typeId, scopeId, structured},
             handleSubmit,

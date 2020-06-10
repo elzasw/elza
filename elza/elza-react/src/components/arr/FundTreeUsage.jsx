@@ -13,22 +13,8 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import {FOCUS_KEYS} from '../../constants.tsx';
 
 class FundTreeUsage extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
 
-        this.bindMethods(
-            'callFundSelectSubNode',
-            'handleNodeClick',
-            'handleSelectInNewTab',
-            'handleContextMenu',
-            'handleFulltextChange',
-            'handleFulltextSearch',
-            'handleFulltextPrevItem',
-            'handleFulltextNextItem',
-            'handleCollapse',
-            'trySetFocus',
-        );
-    }
+    treeRef = null;
 
     componentDidMount() {
         this.trySetFocus(this.props);
@@ -38,22 +24,22 @@ class FundTreeUsage extends AbstractReactComponent {
         this.trySetFocus(nextProps);
     }
 
-    trySetFocus(props) {
-        var {focus} = props;
+    trySetFocus = (props) => {
+        const {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {
                 // focus po ztrátě
-                if (this.refs.treeUsage) {
+                if (this.treeRef) {
                     // ještě nemusí existovat
                     this.setState({}, () => {
-                        this.refs.treeUsage.getWrappedInstance().focus();
+                        this.treeRef.getWrappedInstance().focus();
                         focusWasSet();
                     });
                 }
             } else if (isFocusFor(focus, FOCUS_KEYS.ARR, 1, 'treeUsage') || isFocusFor(focus, FOCUS_KEYS.ARR, 1)) {
                 this.setState({}, () => {
-                    this.refs.treeUsage.getWrappedInstance().focus();
+                    this.treeRef.getWrappedInstance().focus();
                     focusWasSet();
                 });
             }
@@ -95,7 +81,7 @@ class FundTreeUsage extends AbstractReactComponent {
     /**
      * Zabalení stromu
      */
-    handleCollapse() {
+    handleCollapse = () => {
         this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_USAGE, this.props.versionId, this.props.fund));
     }
 
@@ -106,7 +92,7 @@ class FundTreeUsage extends AbstractReactComponent {
                 {...this.props}
                 showSearch={false}
                 showCollapseAll={false}
-                ref="treeUsage"
+                ref={ref => this.treeRef = ref}
                 className={className}
                 cutLongLabels={cutLongLabels}
                 onOpenCloseNode={this.props.handleOpenCloseNode}
@@ -118,4 +104,4 @@ class FundTreeUsage extends AbstractReactComponent {
     }
 }
 
-export default connect()(FundTreeUsage);
+export default connect(null, null, null, {forwardRef: true})(FundTreeUsage);

@@ -6,7 +6,6 @@ import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {indexById} from 'stores/app/utils.jsx';
 import {decorateFormField} from 'components/form/FormUtils.jsx';
-import {getRegistryRecordTypesIfNeeded} from 'actions/registry/registryRecordTypes.jsx';
 import {getTreeItemById} from './registryUtils';
 import Scope from '../shared/scope/Scope';
 import * as StateApproval from '../enum/StateApproval';
@@ -45,11 +44,9 @@ class ApStateChangeForm extends AbstractReactComponent {
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        this.props.dispatch(getRegistryRecordTypesIfNeeded(nextProps.partyTypeId));
     }
 
     componentDidMount() {
-        this.props.dispatch(getRegistryRecordTypesIfNeeded(this.props.partyTypeId));
         if (!this.props.scopeId) {
             const {refTables: {scopesData}, versionId} = this.props;
             let index = scopesData.scopes ? indexById(scopesData.scopes, versionId, 'versionId') : false;
@@ -61,7 +58,6 @@ class ApStateChangeForm extends AbstractReactComponent {
 
     render() {
         const {
-            fields: {typeId, state, comment},
             handleSubmit,
             onClose,
             hideType,

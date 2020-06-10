@@ -39,6 +39,8 @@ class RegistryUsageForm extends React.Component {
         data: {},
     };
 
+    treeRef = null;
+
     componentDidMount() {
         const {detail, data} = this.props;
         if (detail.id) {
@@ -73,7 +75,7 @@ class RegistryUsageForm extends React.Component {
     }
 
     countOccurences = data => {
-        return data.funds.reduce((sum, fund) => sum + fund.nodes.length, 0) + data.parties.length;
+        return data.funds.reduce((sum, fund) => sum + fund.nodes.length, 0);
     };
 
     countOccurencesInAS = as => {
@@ -250,7 +252,7 @@ class RegistryUsageForm extends React.Component {
         const {selectedReplacementNode} = this.state;
         return (
             <Modal.Body className="reg-usage-form">
-                <h4>{detail && detail.record}</h4>
+                <h4>{detail && detail.data && detail.data.name}</h4>
                 <label>
                     {i18n('registry.registryUsageCount')} {this.state.usageCount}
                 </label>
@@ -259,7 +261,7 @@ class RegistryUsageForm extends React.Component {
                         handleOpenCloseNode={this.handleOpenCloseNode}
                         className="fund-tree-container-fixed"
                         cutLongLabels={true}
-                        ref="treeUsage"
+                        ref={ref => this.treeRef = ref}
                         showCountStats={true}
                         onLinkClick={this.handleLinkClick}
                         {...fundTreeUsage}
@@ -273,8 +275,7 @@ class RegistryUsageForm extends React.Component {
                                 <RegistryField
                                     value={this.state.selectedReplacementNode}
                                     onChange={this.handleChoose}
-                                    onBlur={() => {
-                                    }}
+                                    onBlur={() => {}}
                                 />}
                             </Col>
                             <Col xs={2}>
@@ -308,5 +309,5 @@ export default withRouter(
             registryList,
             userDetail: state.userDetail,
         };
-    })(RegistryUsageForm),
+    })(RegistryUsageForm)
 );
