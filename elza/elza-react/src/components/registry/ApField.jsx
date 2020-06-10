@@ -14,13 +14,6 @@ import {JAVA_CLASS_AP_ACCESS_POINT_VO, DEFAULT_LIST_SIZE, JAVA_ATTR_CLASS} from 
 
 const AUTOCOMPLETE_REGISTRY_LIST_SIZE = DEFAULT_LIST_SIZE;
 
-const SERVER_SEARCH_TYPE = {
-    DISABLED: 'DISABLED',
-    USERNAME: 'USERNAME',
-    RIGHT_LIKE: 'RIGHT_LIKE',
-    FULLTEXT: 'FULLTEXT',
-};
-
 const SEARCH_TYPE = {
     CREATE_RIGHT_LIKE: 'CREATE_RIGHT_LIKE',
     CREATE_FULLTEXT: 'CREATE_FULLTEXT',
@@ -106,21 +99,21 @@ class ApField extends AbstractReactComponent {
         switch (searchType) {
             case SEARCH_TYPE.CREATE_FULLTEXT:
             case SEARCH_TYPE.PARTY_FULLTEXT:
-                searchTypeParty = SERVER_SEARCH_TYPE.FULLTEXT;
-                searchTypeUsername = SERVER_SEARCH_TYPE.DISABLED;
+                searchTypeParty = ApSearchType.FULLTEXT;
+                searchTypeUsername = ApSearchType.DISABLED;
                 break;
             case SEARCH_TYPE.CREATE_RIGHT_LIKE:
             case SEARCH_TYPE.PARTY_RIGHT_LIKE:
-                searchTypeParty = SERVER_SEARCH_TYPE.RIGHT_LIKE;
-                searchTypeUsername = SERVER_SEARCH_TYPE.DISABLED;
+                searchTypeParty = ApSearchType.RIGHT_LIKE;
+                searchTypeUsername = ApSearchType.DISABLED;
                 break;
             case SEARCH_TYPE.USERNAME_AND_PARTY:
-                searchTypeParty = SERVER_SEARCH_TYPE.FULLTEXT;
-                searchTypeUsername = SERVER_SEARCH_TYPE.FULLTEXT;
+                searchTypeParty = ApSearchType.FULLTEXT;
+                searchTypeUsername = ApSearchType.FULLTEXT;
                 break;
             case SEARCH_TYPE.USERNAME:
-                searchTypeParty = SERVER_SEARCH_TYPE.DISABLED;
-                searchTypeUsername = SERVER_SEARCH_TYPE.FULLTEXT;
+                searchTypeParty = ApSearchType.DISABLED;
+                searchTypeUsername = ApSearchType.FULLTEXT;
                 break;
             default:
                 console.warn('Unknown search type:', searchType);
@@ -226,7 +219,7 @@ class ApField extends AbstractReactComponent {
         return (
             <div className={'position-relative ap-field'}>
                 <Dropdown
-                    className={'ap-field-search-type'}
+                    className={'ap-field-search-type bg-white'}
                     onSelect={eventKey => this.setState({searchType: eventKey})}
                 >
                     <Dropdown.Toggle variant="outline-secondary" id="dropdown-basic">
