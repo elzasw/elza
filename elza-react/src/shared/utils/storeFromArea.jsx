@@ -56,7 +56,7 @@ export default function storeFromArea(store, area, showErrors = true) {
             // Variabilita zpracování area i do fund store na základě předaných dat
             if (item.startsWith('fund[')) {
                 const versionId = item.substring('fund['.length, item.indexOf(']'));
-                const index = indexById(st.funds, versionId, 'versionId');
+                const index = indexById(st.funds, parseInt(versionId), 'versionId');
                 const subStore = st.funds[index];
                 if (subStore) {
                     st = subStore;

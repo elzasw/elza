@@ -30,7 +30,7 @@ class ArrDaoPage extends ArrParentPage {
     }
 
     state = {
-        selectedTab: 0,
+        selectedTab: '0',
         selectedUnassignedPackage: null,
         selectedPackage: null,
         selectedDaoLeft: null, // vybrané dao v levé části
@@ -101,7 +101,8 @@ class ArrDaoPage extends ArrParentPage {
         });
     };
 
-    handleTabSelect = item => {
+    handleTabSelect = (item, ...other) => {
+        console.log(item, other);
         this.setState({
             selectedTab: item.id,
             selectedDaoLeft: null,
@@ -241,33 +242,30 @@ class ArrDaoPage extends ArrParentPage {
 
         let tabs = [];
         tabs.push({
-            id: 0,
-            key: 0,
+            id: '' + 0,
             title: 'Nepřiřazené entity',
             /*desc: 'zbývá 300'*/
         });
 
         tabs.push({
-            id: 1,
-            key: 1,
+            id: '' + 1,
             title: 'Balíčky',
         });
 
         tabs.push({
-            id: 2,
-            key: 2,
+            id: '' + 2,
             title: 'Archivní strom',
         });
 
         let content;
         switch (selectedTab) {
-            case 0:
+            case '0':
                 content = this.renderUnassignedPackages(readMode);
                 break;
-            case 1:
+            case '1':
                 content = this.renderPackages(readMode);
                 break;
-            case 2:
+            case '2':
                 content = this.renderLeftTree(readMode);
                 break;
             default:
@@ -282,7 +280,7 @@ class ArrDaoPage extends ArrParentPage {
         return (
             <div className="daos-content-container">
                 <div key={1} className="left-container">
-                    <Tabs.Container ref="tabs" className="daos-tabs-container">
+                    <Tabs.Container className="daos-tabs-container">
                         <Tabs.Tabs items={tabs} activeItem={{id: selectedTab}} onSelect={this.handleTabSelect} />
                         <Tabs.Content>{content}</Tabs.Content>
                     </Tabs.Container>
