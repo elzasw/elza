@@ -2526,6 +2526,53 @@ public class ArrangementController {
         requestService.deleteRequest(request);
     }
 
+    @RequestMapping(value = "/nodes/template/create", method = RequestMethod.PUT)
+    @Transactional
+    public ArrRefTemplateVO createRefTemplate() {
+        return new ArrRefTemplateVO();
+    }
+
+    @RequestMapping(value = "/nodes/template/{templateId}", method = RequestMethod.POST)
+    @Transactional
+    public ArrRefTemplateVO updateRefTemplate(@PathVariable(value = "templateId") final Integer templateId,
+                                              @RequestBody final ArrRefTemplateEditVO refTemplateVO) {
+        return new ArrRefTemplateVO();
+    }
+
+    @RequestMapping(value = "/nodes/template/{templateId}", method = RequestMethod.DELETE)
+    @Transactional
+    public void deleteRefTemplate(@PathVariable(value = "templateId") final Integer templateId) {
+
+    }
+
+    @RequestMapping(value = "/nodes/template", method = RequestMethod.GET)
+    @Transactional
+    public List<ArrRefTemplateVO> getRefTemplates() {
+        List<ArrRefTemplateVO> refTemplateVOList = new ArrayList<>();
+        return refTemplateVOList;
+    }
+
+    @RequestMapping(value = "/nodes/template/{templateId}/maptype", method = RequestMethod.POST)
+    @Transactional
+    public void createRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,
+                                         @RequestBody final ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
+
+    }
+
+    @RequestMapping(value = "/nodes/template/{templateId}/mapType/{mapTypeId}", method = RequestMethod.POST)
+    @Transactional
+    public void updateRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,
+                                         @PathVariable (value = "mapTypeId") final Integer mapTypeId,
+                                         @RequestBody final ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
+
+    }
+
+    @RequestMapping(value = "/nodes/template/{templateId}/mapType/{mapTypeId}", method = RequestMethod.DELETE)
+    @Transactional
+    public void deleteRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,
+                                         @PathVariable (value = "mapTypeId") final Integer mapTypeId) {
+
+    }
 
     /**
      * Výstupní objekt pro chybové jednotky popisu.
