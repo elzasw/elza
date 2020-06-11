@@ -4,5 +4,10 @@ fastAction: true
 actions:
   - !StorageOrderGenerator
     storageItemType: ZP2015_STORAGE_ID
+    whenStorage:
+      - itemType: ZP2015_PACKET_TYPE
+        itemSpecs:
+          - ZP2015_PACKET_TYPE_KAR
+          - ZP2015_PACKET_TYPE_FAS
     orderItemType: ZP2015_ITEM_ORDER
     
