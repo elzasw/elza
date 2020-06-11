@@ -192,4 +192,8 @@
         <!-- Zneplatneni cache -->
         <delete tableName="arr_cached_node" />
     </changeSet>
+    <changeSet id="20200611110854" author="ppyt">
+        <!-- Zneplatneni cache -->
+        <delete tableName="arr_cached_node" />
+    </changeSet>
 </databaseChangeLog>
