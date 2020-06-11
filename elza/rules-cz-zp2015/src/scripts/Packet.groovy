@@ -59,8 +59,18 @@ void generate()
     }
     
     // Postfix
-    appendValue(valueBuilder, "ZP2015_PACKET_POSTFIX");
-    appendValue(sortValueBuilder, "ZP2015_PACKET_POSTFIX");
+    String postfix = toStringValue("ZP2015_PACKET_POSTFIX");
+    if(StringUtils.isNotBlank(postfix)) {
+        // separator
+        if(structTypeSettings!=null&&valueBuilder.length()>0) {
+          String pfs = structTypeSettings.getPropertyValue("postfixSeparator");
+          if(pfs!=null) {
+              valueBuilder.append(pfs);
+          }
+        }
+        valueBuilder.append(postfix);
+        sortValueBuilder.append(postfix);
+    }
         
     // Prepare complement
     StringBuilder complementBuilder = new StringBuilder();
