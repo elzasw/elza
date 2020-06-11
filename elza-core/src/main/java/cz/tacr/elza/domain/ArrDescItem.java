@@ -53,6 +53,8 @@ import cz.tacr.elza.search.DescItemIndexingInterceptor;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
 public class ArrDescItem extends ArrItem {
 
+    public static final String TABLE_NAME = "arr_desc_item";
+
 	// Constants for fulltext indexing
     public static final String FIELD_ITEM_ID = "itemId";
     public static final String FIELD_FUND_ID = "fundId";
