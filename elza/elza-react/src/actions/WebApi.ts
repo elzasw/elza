@@ -1501,7 +1501,15 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.fundV1, {fulltext, institutionIdentifier, max, from});
     }
 
-    findUser(fulltext, active, disabled, max = DEFAULT_LIST_SIZE, groupId = null) {
+    findUser(
+        fulltext: string | null,
+        active: boolean,
+        disabled: boolean,
+        max: number = DEFAULT_LIST_SIZE,
+        groupId: number | null = null,
+        searchTypeName?: ApSearchType,
+        searchTypeUsername?: ApSearchType,
+    ) {
         return AjaxUtils.ajaxGet(WebApiCls.userUrl + '', {
             search: fulltext,
             active,
