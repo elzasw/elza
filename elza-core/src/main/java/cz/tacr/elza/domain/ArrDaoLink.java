@@ -26,6 +26,8 @@ public class ArrDaoLink {
 
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
 
+    public static final String FIELD_NODE = "node";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
