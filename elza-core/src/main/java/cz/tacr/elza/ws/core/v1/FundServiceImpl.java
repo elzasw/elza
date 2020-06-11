@@ -2,6 +2,7 @@ package cz.tacr.elza.ws.core.v1;
 
 import java.util.UUID;
 
+import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,9 +82,11 @@ public class FundServiceImpl implements FundService {
     }
 
     private Integer getFundId(FundIdentifiers fundInfo) {
+        Validate.notNull(fundInfo);
         if (fundInfo.getId() != null) {
             return Integer.valueOf(fundInfo.getId());
         } else {
+            Validate.notNull(fundInfo.getUuid(), "Fund ID or UUID have to be specified");
             ArrNode node = arrangementService.findNodeByUuid(fundInfo.getUuid());
             return node.getFundId();
         }
@@ -91,7 +94,7 @@ public class FundServiceImpl implements FundService {
 
     @Override
     public void updateFund(Fund fundUpdate) throws UpdateFundException {
-        Integer fundId = getFundId(new FundIdentifiers());
+        Integer fundId = getFundId(getFundInfo(fundUpdate));
         ArrFund fund = arrangementService.getFund(fundId);
 
         StaticDataProvider sdp = staticDataService.getData();
@@ -101,6 +104,13 @@ public class FundServiceImpl implements FundService {
         RulRuleSet ruleSet = sdp.getRuleSetByCode(fundUpdate.getRulesetCode());
 
         arrangementService.updateFund(fund, ruleSet, null);
+    }
+
+    private FundIdentifiers getFundInfo(Fund fund) {
+        FundIdentifiers fundInfo = new FundIdentifiers();
+        fundInfo.setId(fund.getId());
+        fundInfo.setUuid(fund.getUuid());
+        return fundInfo;
     }
 
 }
