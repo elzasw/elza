@@ -104,7 +104,7 @@ class ApField extends AbstractReactComponent {
                 break;
             case SEARCH_TYPE.CREATE_RIGHT_LIKE:
             case SEARCH_TYPE.PARTY_RIGHT_LIKE:
-                searchTypeParty = ApSearchType.RIGHT_LIKE;
+                searchTypeParty = ApSearchType.RIGHT_SIDE_LIKE;
                 searchTypeUsername = ApSearchType.DISABLED;
                 break;
             case SEARCH_TYPE.USERNAME_AND_PARTY:
