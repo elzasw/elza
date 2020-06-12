@@ -37,7 +37,7 @@ export default function nodeSetting(state = initialState, action) {
                     ...state,
                     nodes: [
                         ...state.nodes,
-                        createNodeState(action.nodeId, undefined, action.descItemTypeId),
+                        createNodeState(action.nodeId, undefined, [action.descItemTypeId]),
                     ],
                 };
             }
@@ -118,7 +118,7 @@ export default function nodeSetting(state = initialState, action) {
                     ...state,
                     nodes: [
                         ...state.nodes,
-                        createNodeState(action.nodeId, action.descItemTypeId),
+                        createNodeState(action.nodeId, [action.descItemTypeId]),
                     ],
                 };
             }
