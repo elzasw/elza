@@ -23,8 +23,12 @@ const EXT_SYSTEM_CLASS_LABEL = {
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n('admin.extSystem.class.ArrDigitizationFrontdeskVO'),
 };
 
+const AP_EXT_SYSTEM_LABEL = {
+    [AP_EXT_SYSTEM_TYPE.CAM]: i18n('admin.extSystem.cam'),
+};
+
 const FIELDS = {
-    abstractExtSystem: [JAVA_ATTR_CLASS, 'id', 'code', 'name', 'url', 'username', 'password', 'elzaCode'],
+    abstractExtSystem: [JAVA_ATTR_CLASS, 'id', 'code', 'name', 'url', 'username', 'password', 'apiKeyId', 'apiKeyValue', 'elzaCode'],
     [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type'],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['viewDaoUrl', 'viewFileUrl', 'viewThumbnailUrl', 'sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
@@ -32,7 +36,7 @@ const FIELDS = {
 
 const REQUIRED_FIELDS = {
     abstractExtSystem: [JAVA_ATTR_CLASS, 'code', 'name'],
-    [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type'],
+    [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue', 'url'],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
 };
@@ -103,7 +107,11 @@ class ExtSystemForm extends AbstractReactComponent {
                                 disabled={isUpdate}
                             >
                                 <option key={null} />
-                                <option value={AP_EXT_SYSTEM_TYPE.INTERPI}>{i18n('admin.extSystem.interpi')}</option>
+                                {Object.values(AP_EXT_SYSTEM_TYPE).map((i, index) => (
+                                    <option key={index} value={i}>
+                                        {AP_EXT_SYSTEM_LABEL[i]}
+                                    </option>
+                                ))}
                             </Field>
                         </div>
                     )}
@@ -164,6 +172,18 @@ class ExtSystemForm extends AbstractReactComponent {
                         type="text"
                         component={FormInputField}
                         label={i18n('admin.extSystem.password')}
+                    />
+                    <Field
+                        name="apiKeyId"
+                        type="text"
+                        component={FormInputField}
+                        label={i18n('admin.extSystem.apiKeyId')}
+                    />
+                    <Field
+                        name="apiKeyValue"
+                        type="text"
+                        component={FormInputField}
+                        label={i18n('admin.extSystem.apiKeyValue')}
                     />
                     <Field
                         name="elzaCode"

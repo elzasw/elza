@@ -32,8 +32,6 @@ class AdminExtSystemPage extends AbstractReactComponent {
         return {shortcuts: this.shortcutManager};
     }
 
-    handleShortcuts = () => {};
-
     /**
      * ADD EXTERNAL SYSTEM
      * *********************************************
@@ -174,15 +172,13 @@ class AdminExtSystemPage extends AbstractReactComponent {
         const centerPanel = <AdminExtSystemDetail />;
 
         return (
-            <Shortcuts name="AdminExtSystemPage" handler={this.handleShortcuts}>
-                <PageLayout
-                    splitter={splitter}
-                    className="admin-ext-system-page"
-                    ribbon={this.buildRibbon()}
-                    leftPanel={leftPanel}
-                    centerPanel={centerPanel}
-                />
-            </Shortcuts>
+            <PageLayout
+                splitter={splitter}
+                className="admin-ext-system-page"
+                ribbon={this.buildRibbon()}
+                leftPanel={leftPanel}
+                centerPanel={centerPanel}
+            />
         );
     }
 }
