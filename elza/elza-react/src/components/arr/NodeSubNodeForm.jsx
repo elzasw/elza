@@ -327,7 +327,9 @@ class NodeSubNodeForm extends AbstractReactComponent {
                         </NoFocusButton>
                     </div>
                     <div className="section">
-                        <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}>
+                        <NoFocusButton
+                            onClick={this.handleDescItemTypeUnlockAll}
+                            title={i18n('subNodeForm.descItemTypeUnlockAll')}>
                             <Icon glyph="fa-unlock" />
                         </NoFocusButton>
                         <NoFocusButton

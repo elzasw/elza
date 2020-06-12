@@ -24,8 +24,7 @@
 .node-item-form-container {
     .node-form-actions-container {
         width: 100%;
-        background: $node-form-actions-bg;
-        height: 1.8em;
+        background-color: $node-form-actions-bg;
         position: relative;
 
         .node-form-actions {
@@ -53,7 +52,11 @@
                     font-size: 0.9em;
 
                     &:hover {
-                        background: $node-form-actions-hover;
+                        background-color: $node-form-actions-hover;
+                    }
+
+                    &.active {
+                        background-color: $node-form-actions-hover;
                     }
 
                     .icon {

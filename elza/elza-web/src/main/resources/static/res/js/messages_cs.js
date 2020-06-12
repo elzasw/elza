@@ -905,7 +905,7 @@ var messages = {
         "Pole již nebude uživatelsky upravováno, bude automaticky aktualizováno funcí. Opravdu chcete provést akci?",
 
     "subNodeForm.descItemTypeAdd": "Přidat prvek",
-    "subNodeForm.descItemTypeUnlockAll": "Odemknout vše",
+    "subNodeForm.descItemTypeUnlockAll": "Odemknout vše zamčené",
 
     "subNodeForm.descItem.jsonTable.action.addRow": "Přidat nový řádek",
     "subNodeForm.descItem.jsonTable.action.removeRow": "Odstranit řádek",
