@@ -41,6 +41,8 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         vo.setType(src.getType());
         vo.setUrl(src.getUrl());
         vo.setUsername(src.getUsername());
+        vo.setApiKeyId(src.getApiKeyId());
+        vo.setApiKeyValue(src.getApiKeyValue());
         return vo;
     }
 }
