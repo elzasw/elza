@@ -1,11 +1,17 @@
 import * as types from 'actions/constants/ActionTypes.js';
 
 import {indexById} from 'stores/app/utils.jsx'
-import {node} from "./node";
 
 const initialState = {
     nodes: []
 }
+
+const createNodeState = (nodeId, descItemTypeCopyIds = [], descItemTypeLockIds = [], copyAll = false) => ({
+    id: nodeId,
+    descItemTypeCopyIds: descItemTypeCopyIds,
+    descItemTypeLockIds: descItemTypeLockIds,
+    copyAll: copyAll,
+});
 
 export default function nodeSetting(state = initialState, action) {
     switch (action.type) {
@@ -31,11 +37,7 @@ export default function nodeSetting(state = initialState, action) {
                     ...state,
                     nodes: [
                         ...state.nodes,
-                        {
-                            id: action.nodeId,
-                            descItemTypeLockIds: [action.descItemTypeId],
-                            descItemTypeCopyIds: []
-                        }
+                        createNodeState(action.nodeId, undefined, action.descItemTypeId)
                     ]
                 };
             }
@@ -84,6 +86,14 @@ export default function nodeSetting(state = initialState, action) {
                         ...state.nodes.slice(nodeIndex + 1)
                     ]
                 };
+            } else {
+                return {
+                    ...state,
+                    nodes: [
+                        ...state.nodes,
+                        createNodeState(action.nodeId, undefined, undefined, true)
+                    ]
+                };
             }
             return state;
 
@@ -109,11 +119,7 @@ export default function nodeSetting(state = initialState, action) {
                     ...state,
                     nodes: [
                         ...state.nodes,
-                        {
-                            id: action.nodeId,
-                            descItemTypeLockIds: [],
-                            descItemTypeCopyIds: [action.descItemTypeId]
-                        }
+                        createNodeState(action.nodeId, action.descItemTypeId)
                     ]
                 };
             }
