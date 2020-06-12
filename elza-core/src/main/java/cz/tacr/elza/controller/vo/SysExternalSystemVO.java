@@ -20,6 +20,10 @@ public abstract class SysExternalSystemVO
 
     private String elzaCode;
 
+    private String apiKeyId;
+
+    private String apiKeyValue;
+
     public String getUrl() {
         return url;
     }
@@ -52,6 +56,22 @@ public abstract class SysExternalSystemVO
         this.elzaCode = elzaCode;
     }
 
+    public String getApiKeyId() {
+        return apiKeyId;
+    }
+
+    public void setApiKeyId(String apiKeyId) {
+        this.apiKeyId = apiKeyId;
+    }
+
+    public String getApiKeyValue() {
+        return apiKeyValue;
+    }
+
+    public void setApiKeyValue(String apiKeyValue) {
+        this.apiKeyValue = apiKeyValue;
+    }
+
     /**
      * Convert VO object to the domain object
      * 
@@ -67,5 +87,7 @@ public abstract class SysExternalSystemVO
         entity.setPassword(password);
         entity.setUrl(url);
         entity.setUsername(username);
+        entity.setApiKeyId(getApiKeyId());
+        entity.setApiKeyValue(getApiKeyValue());
     }
 }

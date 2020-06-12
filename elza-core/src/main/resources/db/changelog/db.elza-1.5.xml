@@ -351,4 +351,11 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20200518170500" author="fantis">
+        <addColumn tableName="sys_external_system">
+            <column name="api_key_id" type="nvarchar(50)"/>
+            <column name="api_key_value" type="nvarchar(250)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

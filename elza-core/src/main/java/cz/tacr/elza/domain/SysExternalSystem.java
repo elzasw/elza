@@ -52,6 +52,12 @@ public abstract class SysExternalSystem {
     @Column(length = StringLength.LENGTH_50)
     private String elzaCode;
 
+    @Column(length = StringLength.LENGTH_50)
+    private String apiKeyId;
+
+    @Column(length = StringLength.LENGTH_250)
+    private String apiKeyValue;
+
     public static final String PK = "externalSystemId";
 
     public Integer getExternalSystemId() {
@@ -108,6 +114,22 @@ public abstract class SysExternalSystem {
 
     public void setElzaCode(String elzaCode) {
         this.elzaCode = elzaCode;
+    }
+
+    public String getApiKeyId() {
+        return apiKeyId;
+    }
+
+    public void setApiKeyId(String apiKeyId) {
+        this.apiKeyId = apiKeyId;
+    }
+
+    public String getApiKeyValue() {
+        return apiKeyValue;
+    }
+
+    public void setApiKeyValue(String apiKeyValue) {
+        this.apiKeyValue = apiKeyValue;
     }
 
     @Override
