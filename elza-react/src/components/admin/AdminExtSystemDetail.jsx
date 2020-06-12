@@ -40,6 +40,16 @@ class AdminExtSystemDetail extends AbstractReactComponent {
         }
     };
 
+    renderValue = (extSystem, field) => {
+        const value = extSystem[field];
+        if (value != null) {
+            return <>
+                <h4>{i18n('admin.extSystem.' + field)}</h4>
+                <span>{value}</span>
+            </>
+        }
+    };
+
     render() {
         const {extSystemDetail} = this.props;
         const extSystem = extSystemDetail.data;
@@ -72,26 +82,9 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                             <h4>{i18n('admin.extSystem.class')}</h4>
                             <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ArrDigitalRepository]}</span>
 
-                            {extSystem.viewDaoUrl !== '' && (
-                                <div>
-                                    <h4>{i18n('admin.extSystem.viewDaoUrl')}</h4>
-                                    <span>{extSystem.viewDaoUrl}</span>
-                                </div>
-                            )}
-
-                            {extSystem.viewFileUrl && (
-                                <div>
-                                    <h4>{i18n('admin.extSystem.viewFileUrl')}</h4>
-                                    <span>{extSystem.viewFileUrl}</span>
-                                </div>
-                            )}
-
-                            {extSystem.viewThumbnailUrl && (
-                                <div>
-                                    <h4>{i18n('admin.extSystem.viewThumbnailUrl')}</h4>
-                                    <span>{extSystem.viewThumbnailUrl}</span>
-                                </div>
-                            )}
+                            {this.renderValue(extSystem, 'viewDaoUrl')}
+                            {this.renderValue(extSystem, 'viewFileUrl')}
+                            {this.renderValue(extSystem, 'viewThumbnailUrl')}
 
                             <h4>{i18n('admin.extSystem.sendNotification')}</h4>
                             <span>
@@ -108,39 +101,14 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                         </div>
                     )}
                     <div>
-                        <h4>{i18n('admin.extSystem.name')}</h4>
-                        <span>{extSystem.name}</span>
-
-                        <h4>{i18n('admin.extSystem.code')}</h4>
-                        <span>{extSystem.code}</span>
-
-                        {extSystem.url && (
-                            <div>
-                                <h4>{i18n('admin.extSystem.url')}</h4>
-                                <span>{extSystem.url}</span>
-                            </div>
-                        )}
-
-                        {extSystem.username && (
-                            <div>
-                                <h4>{i18n('admin.extSystem.username')}</h4>
-                                <span>{extSystem.username}</span>
-                            </div>
-                        )}
-
-                        {extSystem.password && (
-                            <div>
-                                <h4>{i18n('admin.extSystem.password')}</h4>
-                                <span>{extSystem.password}</span>
-                            </div>
-                        )}
-
-                        {extSystem.elzaCode && (
-                            <div>
-                                <h4>{i18n('admin.extSystem.elzaCode')}</h4>
-                                <span>{extSystem.elzaCode}</span>
-                            </div>
-                        )}
+                        {this.renderValue(extSystem, 'name')}
+                        {this.renderValue(extSystem, 'code')}
+                        {this.renderValue(extSystem, 'url')}
+                        {this.renderValue(extSystem, 'username')}
+                        {this.renderValue(extSystem, 'password')}
+                        {this.renderValue(extSystem, 'apiKeyId')}
+                        {this.renderValue(extSystem, 'apiKeyValue')}
+                        {this.renderValue(extSystem, 'elzaCode')}
                     </div>
                 </div>
             );

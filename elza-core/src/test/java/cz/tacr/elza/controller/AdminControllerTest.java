@@ -62,7 +62,7 @@ public class AdminControllerTest extends AbstractControllerTest {
         ApExternalSystemVO externalSystemVO = new ApExternalSystemVO();
         externalSystemVO.setCode("TST3");
         externalSystemVO.setName("Test 3");
-        externalSystemVO.setType(ApExternalSystemType.DEFAULT);
+        externalSystemVO.setType(ApExternalSystemType.CAM);
 
         SysExternalSystemVO externalSystemCreatedVO = createExternalSystem(externalSystemVO);
         assertNotNull(externalSystemCreatedVO.getId());

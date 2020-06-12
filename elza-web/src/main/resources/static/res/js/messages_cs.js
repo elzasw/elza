@@ -371,7 +371,7 @@ var messages = {
     "tabs.action.closeTab": "Zavřít záložku",
 
     "search.action.search": "Najít",
-    "search.action.noResult": "nenalezeny žádné záznamy",
+    "search.action.noResult": "Nenalezeny žádné záznamy",
 
     "fundTree.action.openInNewTab": "Otevřít v nové záložce",
     "fundTree.action.open": "Otevřít v aktuální záložce",
@@ -1155,6 +1155,9 @@ var messages = {
     "admin.extSystem.add.title": "Vytvoření externího systému",
     "admin.extSystem.edit.title": "Upravení externího systému",
     "admin.extSystem.delete.confirm": "Opravdu chcete externí systém odstranit?",
+    "admin.extSystem.cam": "CAM",
+    "admin.extSystem.apiKeyId": "ApiKey - ID",
+    "admin.extSystem.apiKeyValue": "ApiKey - hodnota",
     "admin.bulk.detail.queue.empty": "Ve frontě nejsou žádné požadavky",
     "admin.bulk.header.title.NODE": "Validace JP",
     "admin.bulk.header.title.BULK": "Hromadné akce",

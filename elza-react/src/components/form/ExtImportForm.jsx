@@ -48,11 +48,6 @@ class ExtImportSearch extends AbstractReactComponent {
 
         if (!values.systemId) {
             errors.systemId = i18n('global.validation.required');
-        } else {
-            const sys = objectById(extSystems, values.systemId);
-            if (sys.type !== AP_EXT_SYSTEM_TYPE.INTERPI) {
-                errors.systemId = i18n('extImport.validation.notInterpi');
-            }
         }
 
         if (values.conditions) {
@@ -162,32 +157,7 @@ class ExtImportSearch extends AbstractReactComponent {
                 </FormInput>
                 {system != null && system && (
                     <div>
-                        {system.type === AP_EXT_SYSTEM_TYPE.INTERPI ? (
-                            <div>
-                                <label>Hledané parametry</label>
-                                {conditions.length > 0 && (
-                                    <div className="flex">
-                                        <FormLabel className="flex-1">{i18n('extImport.attType')}</FormLabel>
-                                        <FormLabel className="flex-1">{i18n('extImport.value')}</FormLabel>
-                                    </div>
-                                )}
-                                {conditions.map(this.renderParam)}
-                                <Button
-                                    variant="action"
-                                    onClick={() =>
-                                        conditions.addField({
-                                            condition: CONDITION_TYPE.AND,
-                                            value: null,
-                                            attType: null,
-                                        })
-                                    }
-                                >
-                                    <Icon glyph="fa-plus" />
-                                </Button>
-                            </div>
-                        ) : (
-                            <div>{i18n('extImport.notImplemented', system.name)}</div>
-                        )}
+                        <div>{i18n('extImport.notImplemented', system.name)}</div>
                     </div>
                 )}
                 <div className="text-right">

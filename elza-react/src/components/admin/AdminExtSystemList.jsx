@@ -94,9 +94,9 @@ class AdminExtSystemList extends AbstractReactComponent {
                 );
             } else {
                 list = (
-                    <ul>
-                        <li className="noResult">{i18n('search.action.noResult')}</li>
-                    </ul>
+                    <div className="noResult">
+                        <span>{i18n('search.action.noResult')}</span>
+                    </div>
                 );
             }
 
