@@ -60,8 +60,8 @@ export default function nodeSetting(state = initialState, action) {
             }
             return state;
 
-        /*case types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL:
-            var nodeIndex = indexById(state.nodes, action.nodeId);
+        case types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL:
+            nodeIndex = indexById(state.nodes, action.nodeId);
             if (nodeIndex !== null) {
                 return {
                     ...state,
@@ -73,7 +73,7 @@ export default function nodeSetting(state = initialState, action) {
                 };
             }
             return state;
-*/
+
         case types.NODE_DESC_ITEM_TYPE_COPY_ALL:
             nodeIndex = indexById(state.nodes, action.nodeId);
             if (nodeIndex !== null) {

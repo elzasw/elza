@@ -8,6 +8,7 @@ export function isNodeSettingsAction(action) {
     switch (action.type) {
         case types.NODE_DESC_ITEM_TYPE_LOCK:
         case types.NODE_DESC_ITEM_TYPE_UNLOCK:
+        case types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL:
         case types.NODE_DESC_ITEM_TYPE_COPY_ALL:
         case types.NODE_DESC_ITEM_TYPE_COPY:
         case types.NODE_DESC_ITEM_TYPE_NOCOPY:
@@ -59,8 +60,9 @@ export function unlockAllDescItemType(nodeId) {
  */
 export function unlockDescItemType(nodeId, descItemTypeId) {
     return {
-        type: types.NODE_DESC_ITEM_TYPE_UNLOCK_ALL,
+        type: types.NODE_DESC_ITEM_TYPE_UNLOCK,
         nodeId: nodeId,
+        descItemTypeId: descItemTypeId,
     };
 }
 
