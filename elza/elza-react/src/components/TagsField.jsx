@@ -82,6 +82,7 @@ class TagsField extends AbstractReactComponent {
                             <div className="selected-data" key={index}>
                                 <span>{renderTagItem(item)}</span>
                                 <Button
+                                    variant={'action'}
                                     onClick={() => {
                                         this.handleRemove(index);
                                     }}

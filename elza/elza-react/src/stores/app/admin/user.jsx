@@ -66,8 +66,8 @@ export default function user(state = initialState, action = {}) {
                 ...state,
                 isFetching: false,
                 fetched: true,
-                users: action.data.users,
-                usersCount: action.data.usersCount,
+                users: action.data.data,
+                usersCount: action.data.count,
             };
         case types.CHANGE_USER:
             return {

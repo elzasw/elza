@@ -1118,6 +1118,8 @@ var messages = {
     "apField.searchType.USERNAME_AND_PARTY": "vyhledání dle username i dle osoby",
     "apField.searchType.PARTY_FULLTEXT": "vyhledání dle osoby - fulltext",
     "apField.searchType.PARTY_RIGHT_LIKE": "vyhledání dle osoby - pravostranné",
+    "userAndGroupField.searchType.USERNAME_AND_GROUPS": "vyhledání dle username a skupiny",
+    "userAndGroupField.searchType.GROUP": "vyhledání skupiny",
 
     "arr.fund.title.added": "AS byl vytvořen",
     "arr.fund.title.approved": "AS byl uzavřen",
