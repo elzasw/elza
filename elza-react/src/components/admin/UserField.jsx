@@ -39,7 +39,7 @@ class UserField extends AbstractReactComponent {
 
         WebApi.findUser(text, true, false, 200, this.props.excludedGroupId).then(json => {
             this.setState({
-                dataList: json.users,
+                dataList: json.data,
             });
         });
     };

@@ -9,7 +9,9 @@ import {
     IssueListVO,
     IssueStateVO,
     IssueVO,
+    RowsResponse,
     UpdateFund,
+    UsrUserVO,
 } from '../types';
 import {ApAccessPointCreateVO} from '../api/ApAccessPointCreateVO';
 import {ApAccessPointVO} from '../api/ApAccessPointVO';
@@ -1509,7 +1511,7 @@ export class WebApiCls {
         groupId: number | null = null,
         searchTypeName?: ApSearchType,
         searchTypeUsername?: ApSearchType,
-    ) {
+    ): Promise<RowsResponse<UsrUserVO>> {
         return AjaxUtils.ajaxGet(WebApiCls.userUrl + '', {
             search: fulltext,
             active,
@@ -1517,14 +1519,24 @@ export class WebApiCls {
             from: 0,
             count: max,
             excludedGroupId: groupId,
-        }).then(json => ({users: json.rows, usersCount: json.count}));
+            searchTypeName,
+            searchTypeUsername,
+        }).then(json => ({data: json.rows, count: json.count}));
     }
 
     findControlFunds(fulltext, max = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/controlFunds', {search: fulltext, from: 0, count: max});
     }
 
-    findUserWithFundCreate(fulltext, active, disabled, max = DEFAULT_LIST_SIZE, groupId = null) {
+    findUserWithFundCreate(
+        fulltext,
+        active,
+        disabled,
+        max = DEFAULT_LIST_SIZE,
+        groupId = null,
+        searchTypeName?: ApSearchType,
+        searchTypeUsername?: ApSearchType,
+    ): Promise<RowsResponse<UsrUserVO>> {
         return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/withFundCreate', {
             search: fulltext,
             active,
@@ -1532,7 +1544,9 @@ export class WebApiCls {
             from: 0,
             count: max,
             excludedGroupId: groupId,
-        }).then(json => ({users: json.rows, usersCount: json.count}));
+            searchTypeName,
+            searchTypeUsername,
+        }).then(json => ({data: json.rows, count: json.count}));
     }
 
     findUsersPermissionsByFund(fundId) {

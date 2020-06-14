@@ -1,7 +1,7 @@
-import {ApTypeVO} from "./api/ApTypeVO";
-import {RulDataTypeVO} from "./api/RulDataTypeVO";
-import {RulDescItemTypeExtVO} from "./api/RulDescItemTypeExtVO";
-import {RulPartTypeVO} from "./api/RulPartTypeVO";
+import {ApTypeVO} from './api/ApTypeVO';
+import {RulDataTypeVO} from './api/RulDataTypeVO';
+import {RulDescItemTypeExtVO} from './api/RulDescItemTypeExtVO';
+import {RulPartTypeVO} from './api/RulPartTypeVO';
 
 export interface IssueListVO {
     id: number;
@@ -70,22 +70,21 @@ export interface ApTypeTreeVO extends ApTypeVO {
     parent?: ApTypeTreeVO;
 }
 
-export type FundScope = { id: number, code: string, name: string, language: null | string };
+export type FundScope = {id: number; code: string; name: string; language: null | string};
 
 export interface IFundFormData {
-    name: string
-    internalCode: string
-    institutionIdentifier: string
-    ruleSetId: string
-    ruleSetCode: string
-    dateRange: string
-    scopes: string[]
-    fundAdmins: string[]
-    fundNumber?: number
-    unitdate?: string
-    mark?: string
+    name: string;
+    internalCode: string;
+    institutionIdentifier: string;
+    ruleSetId: string;
+    ruleSetCode: string;
+    dateRange: string;
+    scopes: string[];
+    fundAdmins: string[];
+    fundNumber?: number;
+    unitdate?: string;
+    mark?: string;
 }
-
 
 export class UsrPermissionVO {
     id: number;
@@ -186,4 +185,9 @@ export interface SimpleListStoreState<T> {
     fetched: boolean;
     currentDataKey: string;
     filter: Object;
+}
+
+export interface RowsResponse<T> {
+    data: T[];
+    count: number;
 }
