@@ -506,95 +506,100 @@
         <shortcut>jin</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_SIG_ORIG" item-type="ZP2015_OTHER_ID">
-        <name>Signatura přidělená původcem</name>
-        <description>Signatura přidělená původcem</description>
+        <name>signatura přidělená původcem</name>
+        <description>signatura přidělená původcem</description>
         <shortcut>sign. pův.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_SIG" item-type="ZP2015_OTHER_ID">
-        <name>Signatura přidělená při zpracování archiválie</name>
-        <description>Signatura přidělená při zpracování archiválie</description>
+        <name>signatura přidělená při zpracování archiválie</name>
+        <description>signatura přidělená při zpracování archiválie</description>
         <shortcut>sign.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_STORAGE_ID" item-type="ZP2015_OTHER_ID">
-        <name>Ukládací znak</name>
+        <name>ukládací znak</name>
         <description>Ukládací znak</description>
         <shortcut>ukl. znak</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_CJ" item-type="ZP2015_OTHER_ID">
-        <name>Číslo jednací</name>
-        <description>Číslo jednací</description>
+        <name>číslo jednací</name>
+        <description>číslo jednací</description>
         <shortcut>č. j.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_DOCID" item-type="ZP2015_OTHER_ID">
-        <name>Značka spisu</name>
-        <description>Značka spisu</description>
+        <name>značka spisu</name>
+        <description>značka spisu</description>
         <shortcut>zn. sp.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_FORMAL_DOCID" item-type="ZP2015_OTHER_ID">
-        <name>Číslo vložky úřední knihy</name>
-        <description>Číslo vložky úřední knihy</description>
+        <name>číslo vložky úřední knihy</name>
+        <description>číslo vložky úřední knihy</description>
         <shortcut>č. vl.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_ADDID" item-type="ZP2015_OTHER_ID">
-        <name>Přírůstkové číslo</name>
-        <description>Přírůstkové číslo</description>
+        <name>přírůstkové číslo</name>
+        <description>přírůstkové číslo</description>
         <shortcut>č. př.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_OLDID" item-type="ZP2015_OTHER_ID">
-        <name>Neplatné inventární číslo (ze zrušené pomůcky)</name>
-        <description>Neplatné inventární číslo (ze zrušené pomůcky)</description>
+        <name>neplatné inventární číslo (ze zrušené pomůcky)</name>
+        <description>neplatné inventární číslo (ze zrušené pomůcky)</description>
         <shortcut>nepl. inv. č.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_OLDSIG" item-type="ZP2015_OTHER_ID">
-        <name>Signatura přidělená při předchozím zpracování</name>
-        <description>Signatura přidělená při předchozím zpracování</description>
+        <name>signatura přidělená při předchozím zpracování</name>
+        <description>signatura přidělená při předchozím zpracování</description>
         <shortcut>nepl. sign.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_OLDSIG2" item-type="ZP2015_OTHER_ID">
-        <name>Spisový znak</name>
-        <description>Spisový znak</description>
+        <name>spisový znak</name>
+        <description>spisový znak</description>
         <shortcut>sp. znak</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_INVALID_REFNO" item-type="ZP2015_OTHER_ID">
-        <name>Neplatné referenční označení</name>
-        <description>Neplatné referenční označení</description>
+        <name>neplatné referenční označení</name>
+        <description>neplatné referenční označení</description>
         <shortcut>nepl. ref. ozn.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_PRINTID" item-type="ZP2015_OTHER_ID">
-        <name>Pořadové číslo pro tisk</name>
-        <description>Pořadové číslo pro tisk</description>
+        <name>pořadové číslo pro tisk</name>
+        <description>pořadové číslo pro tisk</description>
         <shortcut>poř. č.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_PICID" item-type="ZP2015_OTHER_ID">
-        <name>Nakladatelské číslo</name>
-        <description>Nakladatelské číslo</description>
+        <name>nakladatelské číslo</name>
+        <description>nakladatelské číslo</description>
         <shortcut>nakl. č.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_NEGID" item-type="ZP2015_OTHER_ID">
-        <name>Číslo negativu</name>
-        <description>Číslo negativu</description>
+        <name>číslo negativu</name>
+        <description>číslo negativu</description>
         <shortcut>č. neg.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_CDID" item-type="ZP2015_OTHER_ID">
-        <name>Číslo produkce CD</name>
-        <description>Číslo produkce CD</description>
+        <name>číslo produkce CD</name>
+        <description>číslo produkce CD</description>
         <shortcut>č. prod.</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_ISBN" item-type="ZP2015_OTHER_ID">
-        <name>Kód ISBN</name>
-        <description>Kód ISBN</description>
+        <name>kód ISBN</name>
+        <description>kód ISBN</description>
         <shortcut>ISBN</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_ISSN" item-type="ZP2015_OTHER_ID">
-        <name>Kód ISSN</name>
-        <description>Kód ISSN</description>
+        <name>kód ISSN</name>
+        <description>kód ISSN</description>
         <shortcut>ISSN</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_ISMN" item-type="ZP2015_OTHER_ID">
-        <name>Kód ISMN</name>
-        <description>Kód ISMN</description>
+        <name>kód ISMN</name>
+        <description>kód ISMN</description>
         <shortcut>ISMN</shortcut>
     </item-spec>
+    <item-spec code="ZP2015_OTHERID_MATRIXID" item-type="ZP2015_OTHER_ID">
+        <name>matriční číslo</name>
+        <description>matriční číslo</description>
+        <shortcut>matriční číslo</shortcut>
+    </item-spec>    
     <item-spec code="ZP2015_LANGUAGE_1" item-type="ZP2015_LANGUAGE">
         <name>blíže neurčený indoevropský jazyk</name>
         <description>indoevropské - blíže neurčené</description>
@@ -2035,6 +2040,45 @@
             <category>umělé</category>
         </categories>
     </item-spec>
+    <!-- Role entit -->
+    <item-spec code="ZP2015_ENTITY_ROLE_73" item-type="ZP2015_ENTITY_ROLE">
+        <name>státní vyznamenání / cena</name>
+        <description>státní vyznamenání / cena</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_74" item-type="ZP2015_ENTITY_ROLE">
+        <name>nositel</name>
+        <description>nositel státního vyznamenání / ceny</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>        
+    <item-spec code="ZP2015_ENTITY_ROLE_75" item-type="ZP2015_ENTITY_ROLE">
+        <name>navrhovatel</name>
+        <description>navrhovatel</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PUBLIC_ADMINISTRATION"/>
+            <item-aptype register-type="ARMY"/>
+            <item-aptype register-type="CHURCH"/>
+            <item-aptype register-type="CHARITY"/>
+            <item-aptype register-type="GUILD"/>
+            <item-aptype register-type="CLUB"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_76" item-type="ZP2015_ENTITY_ROLE">
+        <name>předávající</name>
+        <description>předávající</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>        
     <!-- zastaralé, nově většinou autor textu (ZP2015_ENTITY_ROLE_11) -->
     <item-spec code="ZP2015_ENTITY_ROLE_1" item-type="ZP2015_ENTITY_ROLE">
         <name>autor</name>
@@ -2672,6 +2716,7 @@
             <item-aptype register-type="TERM"/>
         </item-aptypes>
     </item-spec>
+    <!-- Poslední role entity: ZP2015_ENTITY_ROLE_77 -->    
     <!-- Nezjištěné hodnoty -->
     <item-spec code="ZP2015_UNKNOWN_AUTHOR" item-type="ZP2015_NOT_FOUND">
         <name>autor</name>
@@ -3137,4 +3182,15 @@
         <description>Rejstřík oddaných</description>
         <shortcut>iodd</shortcut>
     </item-spec>
+    <!-- Prvky popisu pro státní vyznamenání -->
+    <item-spec code="ZP2015_AWARD_LEVEL_CLASS" item-type="ZP2015_AWARD_LEVEL">
+        <name>třída</name>
+        <description>třída</description>
+        <shortcut>třída</shortcut>
+    </item-spec>    
+    <item-spec code="ZP2015_AWARD_LEVEL_DEGREE" item-type="ZP2015_AWARD_LEVEL">
+        <name>stupeň</name>
+        <description>stupeň</description>
+        <shortcut>stupeň</shortcut>
+    </item-spec>    
 </item-specs>
