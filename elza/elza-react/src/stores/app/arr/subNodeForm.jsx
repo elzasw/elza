@@ -7,6 +7,7 @@ import {
     createDescItemFromDb,
     mergeAfterUpdate,
     updateFormData,
+    checkFormData
 } from './subNodeFormUtils.jsx';
 import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from 'components/validate.jsx';
 import {valuesEquals} from 'components/Utils.jsx';
@@ -301,6 +302,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             loc.descItem.error = validate(loc.descItem, refType, valueServerError);
 
             state.formData = {...state.formData};
+            checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
             var descItems = [...loc.descItemType.descItems];
@@ -322,6 +324,7 @@ export default function subNodeForm(state = initialState, action = {}) {
 
             loc.descItemType.descItems = descItems;
             state.formData = {...state.formData};
+            checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
@@ -354,6 +357,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             loc.descItem.error = validate(loc.descItem, refType);
 
             state.formData = {...state.formData};
+            checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
             var refType = state.refTypesMap[loc.descItemType.id];
@@ -364,8 +368,10 @@ export default function subNodeForm(state = initialState, action = {}) {
                 loc.descItem.error = validate(loc.descItem, refType);
 
                 state.formData = {...state.formData};
+                checkFormData(state.formData);
                 return {...state};
             } else {
+                checkFormData(state.formData);
                 return state;
             }
         case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
@@ -374,6 +380,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             loc.descItemGroup.hasFocus = false;
 
             state.formData = {...state.formData};
+            checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
             loc.descItem.visited = true;
@@ -382,13 +389,16 @@ export default function subNodeForm(state = initialState, action = {}) {
             loc.descItemGroup.hasFocus = true;
 
             state.formData = {...state.formData};
+            checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CREATE:
             loc.descItem.saving = true;
             state.formData = {...state.formData};
+            checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_ADD:
             addValue(state, loc);
+            checkFormData(state.formData);
             return {...state};
         case types.CHANGE_NODES:
         case types.OUTPUT_CHANGES_DETAIL:
@@ -396,6 +406,7 @@ export default function subNodeForm(state = initialState, action = {}) {
         case types.CHANGE_OUTPUTS:
         case types.CHANGE_STRUCTURE:
         case types.FUND_INVALID:
+            checkFormData(state.formData);
             return {...state, dirty: true};
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_COPY_FROM_PREV_RESPONSE:
             state.data.parent = action.copySiblingResult.node;
@@ -410,6 +421,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 if (currDescItem && currDescItem.hasFocus) {
                     newDescItem.hasFocus = true;
                 }
+                checkFormData(state.formData);
                 return newDescItem;
             });
 
@@ -420,6 +432,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             consolidateDescItems(loc.descItemType, infoType, refType, false);
 
             state.formData = {...state.formData};
+            checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_OUTPUT_CALC_SWITCH: {
             const infoType = state.infoTypesMap[loc.descItemType.id];
@@ -441,9 +454,11 @@ export default function subNodeForm(state = initialState, action = {}) {
                 state.data.parent.version !== action.nodeVersionId
             ) {
                 // není pro nás nebo již bylo zavoláno
+                checkFormData(state.formData);
                 return state;
             }
 
+            checkFormData(state.formData);
             return {
                 ...state,
                 data: {
@@ -461,8 +476,10 @@ export default function subNodeForm(state = initialState, action = {}) {
                 state.data.parent.version != action.outputVersion
             ) {
                 console.error('Received unexpected increase output version', state, action);
+                checkFormData(state.formData);
                 return state;
             }
+            checkFormData(state.formData);
             return {
                 ...state,
                 data: {
@@ -478,6 +495,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             console.log('sub node response', state.data, action);
             let node = action.descItemResult.node || action.descItemResult.parent;
             if (state.data.parent.id !== node.id) {
+                checkFormData(state.formData);
                 return state;
             }
             const newState = cloneDeep(state);
@@ -535,7 +553,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 default:
                     break;
             }
-
+            checkFormData(newState.formData);
             return newState;
 
         case types.FUND_SUB_NODE_FORM_TEMPLATE_USE: {
@@ -629,17 +647,20 @@ export default function subNodeForm(state = initialState, action = {}) {
             });
 
             state.formData = {...state.formData};
+            checkFormData(state.formData);
             return {...state};
         }
 
         // Přidá identifikátory typů atributů, které budou s dalším načtením obsahu JP přidány (prázdné)
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPES_ADD_TEMPLATE: {
             state.addItemTypeIds = action.itemTypeIds;
+            checkFormData(state.formData);
             return {...state};
         }
 
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
             addItemType(state, action.descItemTypeId);
+            checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_DELETE:
             if (action.onlyDescItems) {
@@ -678,6 +699,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             }
 
             state.formData = {...state.formData};
+            checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
             loc.descItemType.descItems = [
@@ -692,6 +714,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             consolidateDescItems(loc.descItemType, infoType, refType, true);
 
             state.formData = {...state.formData};
+            checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_REQUEST:
             return Object.assign({}, state, {
@@ -735,7 +758,9 @@ export default function subNodeForm(state = initialState, action = {}) {
                 result.data = null;
                 result.formData = null;
             }
+            checkFormData(result.formData, "#checkFormData - 1");
             updateFormData(result, action.data, refTypesMap, action.groups, null, state.dirty);
+            checkFormData(result.formData, "#checkFormData - 2");
 
             // Pokud existují typy atributů, které chceme po načtení přidat, přidáme je
             const itemTypeIds = result.addItemTypeIds;
@@ -761,7 +786,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 });
                 result.addItemTypeIds = null;
             }
-
+            checkFormData(result.formData, "#checkFormData - final");
             return result;
         case types.FUND_SUBNODE_UPDATE: {
             const {node, parent} = action.data;
@@ -782,8 +807,9 @@ export default function subNodeForm(state = initialState, action = {}) {
                 needClean: false,
             };
 
+            checkFormData(result.formData, "#checkFormData - before mergeAfterUpdate");
             mergeAfterUpdate(result, action.data, action.refTables); // merges result with data from action
-
+            checkFormData(result.formData, "#checkFormData - after mergeAfterUpdate");
             return result;
         }
         case types.CHANGE_FUND_RECORD:

@@ -218,7 +218,7 @@ export function objectEqualsDiff(x, y, ignore = {}, path = '', log = false) {
 
         if (typeof x[p] !== 'object' && !(ignore[pathProp] || ignore[endWith(p)])) {
             if (log) {
-                console.log('diff 4', path, p, x[p], y[p]);
+                console.log('diff 4', path, p, x[p], y[p], typeof x[p], typeof y[p]);
                 res = false;
                 continue;
             } else {
