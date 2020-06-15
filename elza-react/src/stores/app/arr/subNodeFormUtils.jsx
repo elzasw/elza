@@ -874,19 +874,23 @@ class FlatFormData {
         if (data.itemTypes) {
             const refGroups = this.refTables.groups.data;
             const itemTypeMap = getMapFromList(data.itemTypes);
-            const groups = refGroups.ids.map(id => {
+            const groups = refGroups.ids.map((id,index) => {
                 const group = refGroups[id];
                 const types = group.itemTypes.map(it => {
                     const dataItemType = itemTypeMap[it.id] || {};
                     return {
                         ...it,
                         ...dataItemType,
+                        hasFocus: false,
+                        group: group.code,
                     };
                 });
                 return {
                     code: group.code,
                     name: group.name,
                     types: types,
+                    position: index + 1,
+                    hasFocus: false,
                 };
             });
             this._getGroupsMap(groups);
@@ -1001,7 +1005,10 @@ function merge(state) {
                 items = [];
                 descItemsByType[item.itemTypeId] = items;
             }
-            items.push(item);
+            items.push({
+                ...item,
+                itemType: item.itemTypeId
+            });
         });
 
     // Mapa db id descItemType na descItemType
@@ -1084,17 +1091,21 @@ function fillImpossibleTypes(data, refTypesMap) {
                         id: spec.id,
                         type: ItemAvailabilityNumToEnumMap[0],
                         rep: 0,
+                        itemType: itemType.id
                     };
                 } else {
-                    return dataItemSpecs[specIndex];
+                    return {
+                        ...dataItemSpecs[specIndex],
+                        itemType: itemType.id
+                    };
                 }
             });
 
             const finalItemType = {
                 ...dataItemType,
                 specs: finalItemSpecs,
+                descItemSpecsMap: getMapFromList(finalItemSpecs),
             };
-
             const resultItemType = {
                 id: itemType.id,
                 type: ItemAvailabilityNumToEnumMap[0],
@@ -1165,17 +1176,20 @@ export function updateFormData(state, data, refTypesMap, groups, updatedItem, di
                                       id: spec.id,
                                       type: ItemAvailability.IMPOSSIBLE,
                                       rep: 0,
+                                      itemType: it.id,
                                   };
                               } else {
                                   const dataSpec = dataItemSpecs[specIndex];
                                   return {
                                       ...dataSpec,
+                                      itemType: it.id,
                                       // type: typesNumToStrMap[dataSpec.type],
                                   };
                               }
                           });
 
                           const finalItemType = {
+                              hasFocus: false,
                               ...dataItemType,
                               type: dataItemType.type ? dataItemType.type : ItemAvailability.IMPOSSIBLE,
                               // type: dataItemType.type ? typesNumToStrMap[dataItemType.type] : ItemAvailability.IMPOSSIBLE,
@@ -1194,6 +1208,7 @@ export function updateFormData(state, data, refTypesMap, groups, updatedItem, di
                               specs: [],
                               type: ItemAvailability.IMPOSSIBLE,
                               width: 1,
+                              group: group.code,
                               ...finalItemType,
                           };
                           state.infoTypesMap[resultItemType.id] = resultItemType;
@@ -1285,5 +1300,114 @@ export function getItemClass(dataType) {
         default:
             console.error('Unsupported data type', dataType);
             return null;
+    }
+}
+
+const hasString = (str) => {
+    return str != null && typeof str === 'string' && str.length > 0;
+}
+
+const isBool = (b) => {
+    return b != null && typeof b === 'boolean';
+}
+
+const isNumber = (number) => {
+    return number != null && typeof number === 'number';
+}
+
+const notNull = (obj) => {
+    return obj != null;
+}
+
+function log(field, data, fce) {
+    const value = data[field];
+    const result = fce(value);
+    if (!result) {
+        console.warn(field + ' invalid: ' + value, data);
+    }
+}
+
+function checkDescItemSpec(spec) {
+    log('itemType', spec, isNumber);
+}
+
+function checkDescItem(item) {
+    log('itemType', item, isNumber);
+}
+
+function checkDescItemType(type) {
+    log('cal', type, isNumber);
+    log('calSt', type, isNumber);
+    log('width', type, isNumber);
+    log('ind', type, isNumber);
+    log('rep', type, isNumber);
+    log('hasFocus', type, isBool);
+    log('type', type, hasString);
+    log('group', type, hasString);
+    log('descItemSpecsMap', type, notNull);
+
+    const descItemSpecsMap = type.descItemSpecsMap;
+    if (descItemSpecsMap != null) {
+        Object.keys(descItemSpecsMap).forEach(key => {
+            checkDescItemSpec(descItemSpecsMap[key]);
+        });
+    }
+
+    const descItems = type.descItems;
+    if (descItems != null) {
+        descItems.forEach(descItem => {
+            checkDescItem(descItem);
+        });
+    }
+}
+
+function checkSpec(spec) {
+    log('id', spec, isNumber);
+    log('itemType', spec, isNumber);
+    log('rep', spec, isNumber);
+    log('type', spec, hasString);
+}
+
+function checkType(type) {
+    log('descItemSpecsMap', type, notNull);
+    log('group', type, hasString);
+    const specs = type.specs;
+    if (specs != null) {
+        specs.forEach(spec => {
+            checkSpec(spec);
+        });
+    }
+}
+
+function checkGroup(group) {
+    log('code', group, hasString);
+    log('name', group, hasString);
+    log('position', group, isNumber);
+    log('hasFocus', group, isBool);
+
+    const descItemTypes = group.descItemTypes;
+    descItemTypes.forEach(type => {
+        checkDescItemType(type);
+    });
+
+    const types = group.types;
+    types.forEach(type => {
+        checkType(type);
+    });
+}
+
+/**
+ * Kontrola struktury store - zda-li jsou vyplněná požadovaná data.
+ * - metoda je pouze pro ladící účely
+ */
+export function checkFormData(formData = {}, msg = "#checkFormData") {
+    return;
+    // POUZE PRO TESTOVACÍ ÚČELY
+    if (formData) {
+        const descItemGroups = formData.descItemGroups;
+        console.log(msg, descItemGroups);
+        descItemGroups.forEach(descItemGroup => {
+            checkGroup(descItemGroup);
+        });
     }
 }
