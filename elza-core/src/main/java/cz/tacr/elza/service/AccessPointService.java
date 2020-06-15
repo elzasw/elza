@@ -1212,12 +1212,14 @@ public class AccessPointService {
         apItemService.removeTempItems();
         List<ApState> states = apStateRepository.findTempStates();
         List<ApChange> changes = new ArrayList<>();
+        Set<ApAccessPoint> aps = new HashSet<>();
         for (ApState state : states) {
             changes.add(state.getCreateChange());
             // Delete Change u temporary nejspis nebude
             if (state.getDeleteChange() != null) {
                 changes.add(state.getDeleteChange());
             }
+            aps.add(state.getAccessPoint());
         }
         if (!states.isEmpty()) {
             apStateRepository.delete(states);
@@ -1225,6 +1227,7 @@ public class AccessPointService {
         if (!changes.isEmpty()) {
             apChangeRepository.delete(changes);
         }
+        apAccessPointRepository.delete(aps);
         apAccessPointRepository.removeTemp();
     }
 
