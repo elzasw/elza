@@ -4451,6 +4451,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems
     // Rodic je INV
     Level( $items: descItems ) 
+    not(DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $items)
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
@@ -4473,6 +4474,7 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // Rodic je KAT 
     Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_KAT")) from $items
+    not(DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $items)
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in ( 
@@ -4498,17 +4500,92 @@ end
 //-----------------
 
 rule "Možné prvky pro podtyp státní vyznamenání"
-salience -100
 no-loop
 when $activeLevel: ActiveLevel( $items: descItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $items
     $itemType: RulItemTypeExt( code in (
+    	"ZP2015_AWARD_LEVEL",
+    	"ZP2015_AWARD_GROUP",
         "ZP2015_DATE_OTHER"
-       ) )    
+       ) )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
+rule "Možné specifikace pro podtyp státní vyznamenání"
+no-loop
+when $activeLevel: ActiveLevel( $items: descItems )
+    $itemType: RulItemTypeExt( code in (
+    	"ZP2015_AWARD_LEVEL",
+        "ZP2015_OTHER_ID", 
+        "ZP2015_DATE_OTHER"
+       ) )
+    $itemSpec: RulItemSpecExt( code in ( 
+        "ZP2015_AWARD_LEVEL_CLASS",
+        "ZP2015_AWARD_LEVEL_DEGREE",
+        "ZP2015_OTHERID_MATRIXID", 
+        "ZP2015_DATE_AWARDING",
+        "ZP2015_DATE_AWARD_CER",
+        "ZP2015_DATE_WITHDRAWAL"       
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+
+rule "Možné role entit pro státní vyznamenání (vždy)"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $ownItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+    $itemSpec: RulItemSpecExt( code in (
+        // nositel státního vyznamenání / ceny
+        "ZP2015_ENTITY_ROLE_74",
+        // navrhovatel
+        "ZP2015_ENTITY_ROLE_75",
+        // předávající
+        "ZP2015_ENTITY_ROLE_76"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+
+rule "Povinné prvky pro podtyp státní vyznamenání (inventář, katalog)"
+salience -100
+no-loop
+when $activeLevel: ActiveLevel( $items: descItems )
+    DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $items
+    // Rodic je INV
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
+    $itemType: RulItemTypeExt( code in (
+    	"ZP2015_AWARD_LEVEL",
+    	"ZP2015_AWARD_GROUP",
+        "ZP2015_DATE_OTHER"
+       ) )
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+
+rule "Povinné role entit pro státní vyznamenání (inventář, katalog)"
+salience -100
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    // Rodic je INV
+    Level( $items: descItems ) 
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
+    DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $ownItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+    $itemSpec: RulItemSpecExt( code in (
+        // státní vyznamenání / cena
+        "ZP2015_ENTITY_ROLE_73",
+        // nositel státního vyznamenání / ceny
+        "ZP2015_ENTITY_ROLE_74"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.REQUIRED);
+end
 
 //----------------------------------------------
 // Numizmatické předměty
