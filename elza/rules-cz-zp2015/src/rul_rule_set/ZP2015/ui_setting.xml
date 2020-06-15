@@ -97,6 +97,8 @@
                 <type code="ZP2015_ITEM_TITLE" width="0"/>
                 <type code="ZP2015_ITEM_TITLE_REF" width="0"/>
                 <type code="ZP2015_LEGALACT_REF" width="0"/>
+                <type code="ZP2015_AWARD_LEVEL" width="2"/>
+                <type code="ZP2015_AWARD_GROUP" width="1"/>
             </group>
             <group code="06_ZP2015_CH4">
                 <name>Společné prvky popisu</name>
