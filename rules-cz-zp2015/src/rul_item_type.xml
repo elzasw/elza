@@ -327,6 +327,22 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
+    </item-type>    
+    <item-type code="ZP2015_AWARD_LEVEL" data-type="STRING">
+        <name>Úroveň státního vyznamenání/ceny</name>
+        <shortcut>Úroveň státního vyznamenání/ceny</shortcut>
+        <description>třída nebo úroveň</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="ZP2015_AWARD_GROUP" data-type="STRING">
+        <name>Skupina státního vyznamenání/ceny</name>
+        <shortcut>Skupina státního vyznamenání/ceny</shortcut>
+        <description>Skupina státního vyznamenání/ceny (civilní, vojenské)</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
     </item-type>
     <!-- Starší prvek popisu, nahrazen prvkem popisu ZP2015_ITEM_TITLE_REF -->
     <item-type code="ZP2015_ITEM_TITLE" data-type="TEXT">
