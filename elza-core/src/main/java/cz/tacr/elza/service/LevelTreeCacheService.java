@@ -1,6 +1,40 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
 import com.google.common.eventbus.Subscribe;
+
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.common.ObjectListIterator;
@@ -54,37 +88,6 @@ import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.eventnotification.events.EventVersion;
 import cz.tacr.elza.service.vo.TitleItemsByType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
-import org.apache.commons.lang3.BooleanUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 
 /**
@@ -1252,11 +1255,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         String fulltext = StringUtils.isEmpty(param.getSiblingsFilter()) ? null : param.getSiblingsFilter().trim();
         int maxCount = param.getSiblingsMaxCount() == null || param.getSiblingsMaxCount() > 1000 ? 1000 : param.getSiblingsMaxCount();
         if (siblingsFrom != null) {
-            // pokud je na vstupu soused nastaven na -1, provede se automatický dopočet indexu na konec
-            if (siblingsFrom.equals(-1)) {
-                // vybrat poslední
-                siblingsFrom = calcLastSiblingsFrom(node, maxCount);
-            } else if (siblingsFrom < 0) {
+            if (siblingsFrom < 0) {
                 throw new IllegalArgumentException("Index pro sourozence nesmí být záporný: " + siblingsFrom);
             }
             LevelTreeCacheService.Siblings siblings = getNodeSiblings(node, fundVersion, siblingsFrom, maxCount, fulltext, userDetail);
