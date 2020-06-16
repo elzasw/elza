@@ -162,28 +162,29 @@ const mapDispatchToProps = (
             modalDialogShow(
                 this,
                 PartTypeInfo.getPartEditDialogLabel(partType, false),
-                <PartEditForm
-                    partTypeId={part.typeId}
-                    apTypeId={apTypeId}
-                    parentPartId={parentPartId}
-                    aeId={aeId}
-                    partId={part.id}
-                    initialValues={{
-                        partId: part.id,
-                        parentPartId: part.partParentId,
-                        partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
-                        items: part.items, //todo: sort by type
-                    } as ApPartFormVO}
-                    onSubmit={(formData: ApPartFormVO) => {
-                        if (part.id) {
-                            formData.parentPartId = parentPartId;
-                            return WebApi.updatePart(aeId, part.id, formData).then(() => {
-                                dispatch(modalDialogHide());
-                                dispatch(DetailActions.invalidate(area, aeId))
-                            });
-                        }
-                    }}
-                />,
+                <div/>,
+                // <PartEditForm
+                //     partTypeId={part.typeId}
+                //     apTypeId={apTypeId}
+                //     parentPartId={parentPartId}
+                //     aeId={aeId}
+                //     partId={part.id}
+                //     initialValues={{
+                //         partId: part.id,
+                //         parentPartId: part.partParentId,
+                //         partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
+                //         items: part.items, //todo: sort by type
+                //     } as ApPartFormVO}
+                //     onSubmit={(formData: ApPartFormVO) => {
+                //         if (part.id) {
+                //             formData.parentPartId = parentPartId;
+                //             return WebApi.updatePart(aeId, part.id, formData).then(() => {
+                //                 dispatch(modalDialogHide());
+                //                 dispatch(DetailActions.invalidate(area, aeId))
+                //             });
+                //         }
+                //     }}
+                // />,
                 'dialog-lg',
                 dispatch(globalFundTreeInvalidate()),
             )

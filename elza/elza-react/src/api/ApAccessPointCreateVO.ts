@@ -14,7 +14,7 @@ export interface ApAccessPointCreateVO {
     /**
      * Kód jazyka jména přístupového bodu.
      */
-    languageCode: string;
+    languageCode?: string;
 
     /**
      * Identifikátor přístupového bodu

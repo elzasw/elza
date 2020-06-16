@@ -5,10 +5,8 @@ import {Accordion, Card} from 'react-bootstrap';
 import * as ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
 import {canSetFocus, focusWasSet, isFocusFor, setFocus} from '../../actions/global/focus';
-// import {registryDetailFetchIfNeeded, registryAdd} from '../../actions/registry/registry'
-import {routerNavigate} from '../../actions/router';
 import {i18n, Icon} from '../../components/shared';
-import {Button} from '../../components/ui';
+import {Button} from '../ui';
 import {FOCUS_KEYS} from '../../constants';
 import {IItemFormState} from '../../stores/app/accesspoint/itemForm';
 import {Dispatch} from '../../typings/globals';
@@ -22,7 +20,8 @@ interface ItemFormClassState {
     readonly unusedItemTypeIds: number[];
 }
 
-interface FromState {}
+interface FromState {
+}
 
 interface DispatchProps {
     dispatch: Dispatch<FromState>;
@@ -42,7 +41,7 @@ interface Props {
     focus: any;
     rulDataTypes: any;
     calendarTypes: any;
-    conformityInfo: {missings: any[]; errors: any[]};
+    conformityInfo: { missings: any[]; errors: any[] };
     customActions?: (string, any) => React.ReactNode;
 }
 
@@ -126,8 +125,8 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
                     // položka
                     this.setState({}, () => {
                         const ref = (this.refs[
-                            'descItemType' + focus.item.descItemTypeId
-                        ] as any) as ReactWrappedComponent<{}>;
+                        'descItemType' + focus.item.descItemTypeId
+                            ] as any) as ReactWrappedComponent<{}>;
                         if (ref) {
                             const descItemType = ref.getWrappedInstance();
                             descItemType.focus(focus.item);
@@ -148,7 +147,8 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
         }
     }
 
-    handleShortcuts(action) {}
+    handleShortcuts(action) {
+    }
 
     /**
      * Odebrání hodnoty atributu.
@@ -270,7 +270,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
      *
      * @param valueLocation pozice hodnoty atributu
      * @param data {Object} data z formuláře
-     * @param submitType {String} typ submitu
+     * @param submitType {string} typ submitu
      */
     handleCreatedRecord(valueLocation, data, submitType) {
         const {subNodeForm} = this.props;
@@ -442,7 +442,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
                 rulDataType={rulDataType}
                 calendarTypes={calendarTypes}
                 structureTypes={structureTypes}
-                onCreateRecord={this.handleCreateRecord.bind(this, itemTypeIndex)}
+                onCreateRecord={this.handleCreateRecord.bind(this, itemTypeIndex)} //todo: nabindovat na novy formular AddRegistryForm
                 onDetailRecord={this.handleDetailRecord.bind(this, itemTypeIndex)}
                 onDescItemAdd={this.handleDescItemAdd.bind(this, itemTypeIndex)}
                 onDescItemRemove={this.handleDescItemRemove.bind(this, itemTypeIndex)}
@@ -452,9 +452,12 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
                 onBlur={this.handleBlur.bind(this, itemTypeIndex)}
                 onFocus={this.handleFocus.bind(this, itemTypeIndex)}
                 onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, itemTypeIndex)}
-                onDescItemTypeLock={() => {}}
-                onDescItemTypeCopy={() => {}}
-                onDescItemTypeCopyFromPrev={() => {}}
+                onDescItemTypeLock={() => {
+                }}
+                onDescItemTypeCopy={() => {
+                }}
+                onDescItemTypeCopyFromPrev={() => {
+                }}
                 showNodeAddons={showNodeAddons}
                 locked={locked}
                 closed={closed}
@@ -519,7 +522,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
                                                 key={itemTypeId}
                                                 onClick={() => this.handleAddUnusedItem(itemTypeId, index)}
                                             >
-                                                <Icon glyph="fa-plus" /> {refType.name}
+                                                <Icon glyph="fa-plus"/> {refType.name}
                                             </Button>
                                         );
                                     } else {
@@ -560,7 +563,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
     }
 }
 
-export const ItemForm = connect((state: {userDetail; arrRegion}, props: Props) => {
+export const ItemForm = connect((state: { userDetail; arrRegion }, props: Props) => {
     const {userDetail, arrRegion} = state;
 
     return {

@@ -1,9 +1,15 @@
 import {BaseCodeVo} from "./BaseCodeVo";
+import {RulDataTypeCodeEnum} from "./RulDataTypeCodeEnum";
 
 /**
  * VO datového typu.
  */
 export interface RulDataTypeVO extends BaseCodeVo {
+    /**
+     * kod
+     */
+    code: RulDataTypeCodeEnum;
+
     /**
      * popis
      */

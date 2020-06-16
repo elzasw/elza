@@ -1,0 +1,104 @@
+import React, {useEffect} from 'react';
+import {
+    ConfigProps,
+    Field,
+    Form as ReduxForm,
+    FormSection,
+    formValueSelector,
+    InjectedFormProps,
+    reduxForm,
+    SubmitHandler,
+} from 'redux-form';
+import {Form, Modal} from 'react-bootstrap';
+import {connect} from "react-redux";
+import {Action} from "redux";
+import {ThunkDispatch} from "redux-thunk";
+import PartEditForm from "./../form/PartEditForm";
+import {PartType} from "../../../api/generated/model";
+import {ApPartFormVO} from "../../../api/ApPartFormVO";
+import {Button} from "../../ui";
+import i18n from "../../i18n";
+import ReduxFormFieldErrorDecorator from "../../shared/form/ReduxFormFieldErrorDecorator";
+import {Autocomplete} from "../../shared";
+import {ApTypeVO} from "../../../api/ApTypeVO";
+
+const FORM_NAME = "createAccessPointForm";
+
+const formConfig: ConfigProps<ApPartFormVO> = {
+    form: FORM_NAME,
+};
+
+type Props = {
+    refTables: {};
+    handleSubmit: SubmitHandler<FormData, any, any>;
+    apTypeId: number;
+    formData?: ApPartFormVO;
+    submitting: boolean;
+    onClose: () => void;
+} & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps> & InjectedFormProps;
+
+const CreateAccessPointModal = ({handleSubmit, onClose, refTables, apTypeId, apType, partForm, submitting, change}: Props) => {
+
+    // eslint-disable-next-line
+    useEffect(() => {
+        change("partForm", {
+            part: PartType.NAME,
+            items: []
+        });
+    }, [apTypeId]);
+
+    return <ReduxForm onSubmit={handleSubmit}>
+        <Modal.Body>
+            <Form.Label>
+                {i18n('registry.add.type')}
+            </Form.Label>
+            <Field
+                name={'apType'}
+                disabled={submitting || apTypeId}
+                component={ReduxFormFieldErrorDecorator}
+                renderComponent={Autocomplete}
+                passOnly
+                items={refTables.apTypes.items}
+                tree
+                alwaysExpanded
+                allowSelectItem={item => item.addRecord}
+                value={apTypeId ? apTypeId : (apType ? apType.id : null)}
+            />
+
+            {(apTypeId || (apType && apType.id)) && partForm && <FormSection name="partForm">
+                <PartEditForm
+                    formInfo={{
+                        formName: FORM_NAME,
+                        sectionName: "partForm"
+                    }}
+                    partType={PartType.NAME}
+                    apTypeId={apType.id}
+                    formData={partForm}
+                    submitting={submitting}
+                />
+            </FormSection>}
+        </Modal.Body>
+        <Modal.Footer>
+            <Button type="submit" variant="outline-secondary" onClick={handleSubmit} disabled={submitting}>
+                {i18n('global.action.store')}
+            </Button>
+
+            <Button variant="link" onClick={onClose} disabled={submitting}>
+                {i18n('global.action.cancel')}
+            </Button>
+        </Modal.Footer>
+    </ReduxForm>;
+};
+
+const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => ({});
+
+const selector = formValueSelector(FORM_NAME);
+const mapStateToProps = (state: any) => {
+    return {
+        refTables: state.refTables,
+        apType: selector(state, 'apType') as ApTypeVO,
+        partForm: selector(state, 'partForm')
+    }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(reduxForm<any, any>(formConfig)(CreateAccessPointModal));

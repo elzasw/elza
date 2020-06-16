@@ -12,6 +12,7 @@ const LanguageCodeField = props => {
             {...props}
             useIdAsValue={true}
             getItemId={item => (item ? item.code : null)}
+            {...props.meta}
         />
     );
 };

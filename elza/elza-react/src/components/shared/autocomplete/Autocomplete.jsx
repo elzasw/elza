@@ -599,18 +599,17 @@ export default class Autocomplete extends AbstractReactComponent {
     }
 
     buildWrapperClass() {
-        const {error, touched, className} = this.props;
+        const {error, touched} = this.props;
         const {hasFocus} = this.state;
         const hasError = touched && error;
 
-        let newClassName = classNames({
+        return classNames({
             'autocomplete-input-container': true,
             'form-control': true,
             'has-error': hasError,
+            'is-invalid': hasError,
             active: hasFocus,
         });
-
-        return newClassName;
     }
 
     // renders the additional actions next to the autocomplete input
@@ -674,7 +673,7 @@ export default class Autocomplete extends AbstractReactComponent {
                                 this.input = input;
                             }}
                             key="input"
-                            className="input"
+                            className={'input'}
                             type="text"
                             onFocus={this.handleInputFocus}
                             //onFocusout={(e)=>{console.log("### onfocus out", document.activeElement, e);}}
@@ -698,8 +697,8 @@ export default class Autocomplete extends AbstractReactComponent {
                         <span className={'glyphicon form-control-feedback glyphicon-' + bootInfo.feedbackIcon}></span>
                     )}
                     {this.props.help && <span className="help-block">{this.props.help}</span>}
+                    {!inline && hasError && <Form.Control.Feedback type={'invalid'}>{error}</Form.Control.Feedback>}
                 </div>
-                {!inline && hasError && <Form.Control.Feedback>{error}</Form.Control.Feedback>}
             </Shortcuts>
         );
     }

@@ -15,6 +15,7 @@ import {MOCK_CODE_DATA} from './mock';
 import {ApPartVO} from "../../../api/ApPartVO";
 import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
 import {ApItemVO} from "../../../api/ApItemVO";
+import {ApItemWithTypeVO} from "../../../api/ApItemWithTypeVO";
 //import {sortItems} from "../../itemutils";
 //import ValidationResultIcon from "../ValidationResultIcon";
 
@@ -66,7 +67,7 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
         showPreferredSwitch = !singlePart;
     }
 
-    const renderItems = (items: ApItemVO[]) => {
+    const renderItems = (items: ApItemWithTypeVO[]) => {
         if (items.length === 0) {
             return <Col className={"mt-1"}><i>Nejsou definovány žádné hodnoty atributů</i></Col>;
         }
@@ -80,11 +81,8 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
                 index2++;
             }
 
-            let itemInfo;
-            if (descItemTypesMap[items[index].typeId]) {
-                itemInfo = descItemTypesMap[items[index].typeId];
-            }
-            let width = itemInfo ? itemInfo.width : 2;
+            let itemInfo = items[index].type;
+            //let width = itemInfo ? itemInfo.width : 2;
 
             let sameItems = items.slice(index, index2);
             index = index2;
@@ -104,7 +102,18 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
         return result;
     };
 
-    const sortedItems = part.items ? part.items : []; //sortItems(partType, part.items, codelist);
+    const itemsWithType = ((part.items ? part.items : []) as ApItemWithTypeVO[]).map((i) => {
+        i.type = descItemTypesMap[i.typeId] ? descItemTypesMap[i.typeId] : null;
+        return i;
+    });
+
+    const sortedItems = itemsWithType.sort((a, b) => {
+        if (a.type && b.type) {
+            return a.type.viewOrder - b.type.viewOrder;
+        }
+
+        return 0;
+    });
 
     const showValidationError = () => {
         if (validationResult && validationResult.partErrors && validationResult.partErrors.length > 0) {
