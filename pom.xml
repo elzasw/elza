@@ -10,7 +10,7 @@
 
     <groupId>cz.tacr.elza</groupId>
     <artifactId>elza</artifactId>
-    <version>1.3.2-SNAPSHOT</version>
+    <version>1.3.2</version>
     <packaging>pom</packaging>
     <name>ELZA</name>
     <url>http://elza.tacr.cz</url>
@@ -639,7 +639,7 @@
     <scm>
         <connection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</connection>
         <developerConnection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>elza-1.3.2</tag>
     </scm>
     <distributionManagement>
         <repository>
