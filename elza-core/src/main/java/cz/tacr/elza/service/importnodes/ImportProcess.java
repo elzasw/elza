@@ -1,8 +1,6 @@
 package cz.tacr.elza.service.importnodes;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -51,8 +49,6 @@ import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -81,7 +77,6 @@ import cz.tacr.elza.service.importnodes.vo.DeepCallback;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
-import cz.tacr.elza.service.importnodes.vo.NodeRegister;
 import cz.tacr.elza.service.importnodes.vo.descitems.Item;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemCoordinates;
 import cz.tacr.elza.service.importnodes.vo.descitems.ItemDecimal;
@@ -363,23 +358,10 @@ public class ImportProcess {
             data = new ArrDataUnitid();
             ((ArrDataUnitid) data).setUnitId(((ItemUnitid) item).getValue());
         } else if (item instanceof ItemUnitdate) {
-            data = new ArrDataUnitdate();
-            String value = ((ItemUnitdate) item).getValue();
-            data = UnitDateConvertor.convertToUnitDate(value, (ArrDataUnitdate) data);
             ArrCalendarType calendarType = calendarTypeMap.get(((ItemUnitdate) item).getCalendarTypeCode());
-            value = ((ArrDataUnitdate) data).getValueFrom();
-            if (value != null) {
-                ((ArrDataUnitdate) data).setNormalizedFrom(CalendarConverter.toSeconds(CalendarType.valueOf(calendarType.getCode()), LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
-            } else {
-                ((ArrDataUnitdate) data).setNormalizedFrom(Long.MIN_VALUE);
-            }
-            value = ((ArrDataUnitdate) data).getValueTo();
-            if (value != null) {
-                ((ArrDataUnitdate) data).setNormalizedTo(CalendarConverter.toSeconds(CalendarType.valueOf(calendarType.getCode()), LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
-            } else {
-                ((ArrDataUnitdate) data).setNormalizedTo(Long.MAX_VALUE);
-            }
-            ((ArrDataUnitdate) data).setCalendarType(calendarType);
+            CalendarType calType = CalendarType.valueOf(calendarType.getCode());
+            String value = ((ItemUnitdate) item).getValue();
+            data = ArrDataUnitdate.valueOf(calType, value);
         } else if (item instanceof ItemJsonTable) {
             data = new ArrDataJsonTable();
             ((ArrDataJsonTable) data).setValue(((ItemJsonTable) item).getValue());

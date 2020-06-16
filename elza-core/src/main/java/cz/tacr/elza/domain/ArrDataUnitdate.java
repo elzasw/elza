@@ -1,5 +1,8 @@
 package cz.tacr.elza.domain;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,6 +18,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Objects;
 
 import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
 
@@ -223,5 +229,33 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
         Validate.notNull(normalizedTo);
         Validate.notNull(valueFromEstimated);
         Validate.notNull(valueToEstimated);
+    }
+
+    static public ArrDataUnitdate valueOf(CalendarType calendarType, String v) {
+        ArrDataUnitdate du = new ArrDataUnitdate();
+        du.setCalendarType(calendarType.getEntity());
+
+        UnitDateConvertor.convertToUnitDate(v, du);
+
+        // set normalized values
+        String valueFrom = du.getValueFrom();
+        if (valueFrom == null) {
+            du.setNormalizedFrom(Long.MIN_VALUE);
+        } else {
+            LocalDateTime fromDate = LocalDateTime.parse(valueFrom, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            du.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, fromDate));
+        }
+
+        String valueTo = du.getValueTo();
+        if (valueTo == null) {
+            du.setNormalizedTo(Long.MAX_VALUE);
+        } else {
+            LocalDateTime toDate = LocalDateTime.parse(valueTo, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            du.setNormalizedTo(CalendarConverter.toSeconds(calendarType, toDate));
+        }
+
+        du.setDataType(DataType.UNITDATE.getEntity());
+
+        return du;
     }
 }
