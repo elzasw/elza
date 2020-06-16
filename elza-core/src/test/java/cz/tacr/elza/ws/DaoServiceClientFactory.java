@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import cz.tacr.elza.ws.core.v1.CoreService;
 import cz.tacr.elza.ws.core.v1.DaoService;
 import cz.tacr.elza.ws.core.v1.FundService;
+import cz.tacr.elza.ws.core.v1.StructuredObjectService;
 
 public class DaoServiceClientFactory {
     static Logger log = LoggerFactory.getLogger(DaoServiceClientFactory.class);
@@ -19,6 +20,12 @@ public class DaoServiceClientFactory {
 
     public static FundService createFundService(String address, String username, String password) {
         return createWsdlService(FundService.class, address, CoreService.FundService, username, password);
+    }
+
+    public static StructuredObjectService createStructuredObjectService(String address, String username,
+                                                                        String password) {
+        return createWsdlService(StructuredObjectService.class, address, CoreService.StructuredObjects, username,
+                                 password);
     }
 
     public static <T> T createWsdlService(Class<T> targetCls, String address, QName serviceName,
