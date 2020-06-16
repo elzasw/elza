@@ -68,7 +68,10 @@ public abstract class AbstractTest {
     @Before
     public void setUp() throws Exception {
         // startup service have to be initialized
-        Assert.assertTrue(startupService.isRunning());
+        //Assert.assertTrue(startupService.isRunning());
+        if (!startupService.isRunning()) {
+            startupService.start();
+        }
 
     	helperTestService.loadPackage("CZ_BASE", "package-cz-base");
     	// helperTestService.loadPackage("ZP2015", "rules-cz-zp2015");
@@ -81,6 +84,7 @@ public abstract class AbstractTest {
     public void tearDown() {
         // try to stop all services which were active during this test run
         helperTestService.waitForWorkers();
+        startupService.stop();
     }
 
     public static File getResourceFile(String resourcePath) {
