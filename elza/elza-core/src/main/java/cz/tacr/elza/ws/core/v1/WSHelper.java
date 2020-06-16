@@ -1,5 +1,9 @@
 package cz.tacr.elza.ws.core.v1;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -17,6 +21,7 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.ws.types.v1.FundIdentifiers;
 import cz.tacr.elza.ws.types.v1.ItemString;
@@ -109,5 +114,19 @@ public class WSHelper {
             Validate.isTrue(spec == null, "Item type cannot have specification: {}, value: {}", type, spec);
         }
         return itemType;
+    }
+
+    /**
+     * Iterate all items and fill in position
+     * 
+     * @param result
+     */
+    public void countPositions(List<? extends ArrItem> result) {
+        final Map<RulItemType, Integer> positionMap = new HashMap<>();
+        result.stream().forEach(item -> {
+            Integer position = positionMap.compute(item.getItemType(), (k, v) -> v == null ? 1 : ++v);
+            item.setPosition(position);
+        });
+
     }
 }
