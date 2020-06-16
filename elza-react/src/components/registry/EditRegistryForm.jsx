@@ -1,10 +1,11 @@
 import React from 'react';
-import {reduxForm} from 'redux-form';
+import {Field, formValueSelector, reduxForm} from 'redux-form';
 import {AbstractReactComponent, Autocomplete, i18n} from 'components/shared';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
-import {getTreeItemById} from './registryUtils';
+import {submitForm} from 'components/form/FormUtils.jsx';
+import {connect} from "react-redux";
+import ReduxFormFieldErrorDecorator from "../shared/form/ReduxFormFieldErrorDecorator";
 
 /**
  * Formulář editace rejstříkového hesla
@@ -23,46 +24,46 @@ class EditRegistryForm extends AbstractReactComponent {
 
     state = {};
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-    }
-
     componentDidMount() {
         if (this.props.initData) {
             this.props.load(this.props.initData);
         }
     }
 
-    submitReduxForm = (values, dispatch) =>
-        submitForm(EditRegistryForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
+    submitReduxForm = (values, dispatch) => {
+        return submitForm(EditRegistryForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
+    }
 
     render() {
         const {
-            fields: {typeId},
             handleSubmit,
+            change,
+            blur,
             onClose,
-            registryRegionRecordTypes,
             submitting,
+            refTables: {apTypes},
         } = this.props;
-
-        const items = registryRegionRecordTypes.item != null ? registryRegionRecordTypes.item : [];
-
-        const value = getTreeItemById(typeId ? typeId.value : '', items);
 
         return (
             <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
-                    <Autocomplete
+                    <Field
                         label={i18n('registry.update.type')}
-                        items={items}
+                        items={apTypes.items}
                         tree
                         alwaysExpanded
                         allowSelectItem={item => item.addRecord}
-                        {...typeId}
-                        {...decorateFormField(typeId)}
-                        onChange={item => typeId.onChange(item ? item.id : null)}
-                        onBlur={item => typeId.onBlur(item ? item.id : null)}
-                        value={value}
-                        disabled={false}
+                        onChange={item => {
+                            change('typeId', item ? item.id : null);
+                        }}
+                        // onBlur={item => {
+                        //     blur('typeId', item ? item.id : null);
+                        // }}
+                        disabled={submitting}
+                        name={'typeId'}
+                        component={ReduxFormFieldErrorDecorator}
+                        renderComponent={Autocomplete}
+                        passOnly
                     />
                 </Modal.Body>
                 <Modal.Footer>
@@ -78,15 +79,16 @@ class EditRegistryForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm(
+const mapStateToProps = (state) => {
+    const selector = formValueSelector('editRegistryForm');
+    return {
+        initialValues: {}, //state.form.editRegistryForm.initialValues,
+        refTables: state.refTables,
+    };
+}
+
+export default connect(mapStateToProps)(reduxForm(
     {
         form: 'editRegistryForm',
-        fields: ['typeId'],
-    },
-    state => ({
-        initialValues: state.form.editRegistryForm.initialValues,
-        refTables: state.refTables,
-        registryRegionRecordTypes: state.registryRegionRecordTypes,
-    }),
-    {load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'editRegistryForm', data})},
-)(EditRegistryForm);
+    }
+)(EditRegistryForm));

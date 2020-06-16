@@ -698,20 +698,11 @@ export class WebApiCls {
     }
 
     /// Registry
-    createAccessPoint(name, complement, languageCode, description, typeId, scopeId) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/', null, {
-            [JAVA_ATTR_CLASS]: 'cz.tacr.elza.controller.vo.ApAccessPointCreateVO',
-            name,
-            description,
-            complement,
-            languageCode,
-            // local: false,
-            scopeId,
-            typeId,
-        });
+    createAccessPoint(accessPoint: ApAccessPointCreateVO): Promise<ApAccessPointVO> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/', null, accessPoint);
     }
 
-    createStructuredAccessPoint(name, complement, languageCode, description, typeId, scopeId) {
+    createStructuredAccessPoint(name, complement, languageCode, description, typeId, scopeId): Promise<ApAccessPointCreateVO> {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/structured', null, {
             [JAVA_ATTR_CLASS]: 'cz.tacr.elza.controller.vo.ApAccessPointCreateVO',
             name,

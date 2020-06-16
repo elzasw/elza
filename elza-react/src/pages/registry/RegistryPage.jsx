@@ -4,12 +4,10 @@ import {AbstractReactComponent, i18n, Icon, RibbonGroup, Utils} from '../../comp
 import Ribbon from '../../components/page/Ribbon';
 import ImportForm from '../../components/form/ImportForm';
 import ExtImportForm from '../../components/form/ExtImportForm';
-import RegistryDetail from '../../components/registry/RegistryDetail';
 import RegistryList from '../../components/registry/RegistryList';
 import {Button} from '../../components/ui';
 import {
     apMigrate,
-    registryAdd,
     registryDelete,
     registryDetailFetchIfNeeded,
     registryListInvalidate,
@@ -37,6 +35,11 @@ import {refPartTypesFetchIfNeeded} from "../../actions/refTables/partTypes";
 import {descItemTypesFetchIfNeeded} from "../../actions/refTables/descItemTypes";
 import {refRulDataTypesFetchIfNeeded} from "../../actions/refTables/rulDataTypes";
 import DetailHistory from "../../components/registry/Detail/DetailHistory";
+import AddRegistryForm from "../../components/registry/AddRegistryForm";
+import {savingApiWrapper} from "../../actions/global/status";
+import CreateAccessPointModal from "../../components/registry/modal/CreateAccessPointModal";
+import {ApAccessPointCreateVO} from "../../api/ApAccessPointCreateVO";
+import {ApAccessPointVO} from "../../api/ApAccessPointVO";
 
 /**
  * Stránka rejstříků.
@@ -152,14 +155,26 @@ class RegistryPage extends AbstractReactComponent {
                 filter: {versionId},
                 parents,
             },
+            dispatch,
         } = this.props;
 
-        this.props.dispatch(registryAdd(versionId === null ? -1 : versionId, this.handleCallAddRegistry, false));
-    };
-
-    handleCallAddRegistry = data => {
-        this.props.dispatch(registryDetailFetchIfNeeded(data.id));
-        this.props.dispatch(registryListInvalidate());
+        dispatch(
+            modalDialogShow(
+                this,
+                i18n('registry.addRegistry'),
+                <CreateAccessPointModal
+                    initialValues={{}}
+                    onSubmit={((formData) => {
+                        return WebApi.createAccessPoint(formData);
+                    })}
+                    onSubmitSuccess={(data) => {
+                        dispatch(modalDialogHide());
+                        this.props.dispatch(registryDetailFetchIfNeeded(data.id));
+                        this.props.dispatch(registryListInvalidate());
+                    }}
+                />,
+            ),
+        );
     };
 
     handleDeleteRegistry = () => {
@@ -189,7 +204,7 @@ class RegistryPage extends AbstractReactComponent {
     */
 
     handleRegistryImport = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('import.title.registry'), <ImportForm record />));
+        this.props.dispatch(modalDialogShow(this, i18n('import.title.registry'), <ImportForm record/>));
     };
 
     handleExtImport = () => {
@@ -210,7 +225,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleScopeManagement = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('accesspoint.scope.management.title'), <ScopeLists />));
+        this.props.dispatch(modalDialogShow(this, i18n('accesspoint.scope.management.title'), <ScopeLists/>));
     };
 
     handleShowApHistory = () => {
@@ -219,7 +234,7 @@ class RegistryPage extends AbstractReactComponent {
                 data: {id},
             },
         } = this.props;
-        const form = <ApStateHistoryForm accessPointId={id} />;
+        const form = <ApStateHistoryForm accessPointId={id}/>;
         this.props.dispatch(modalDialogShow(this, i18n('ap.history.title'), form, 'dialog-lg'));
     };
 
@@ -273,7 +288,7 @@ class RegistryPage extends AbstractReactComponent {
         if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
             altActions.push(
                 <Button key="addRegistry" onClick={this.handleAddRegistry}>
-                    <Icon glyph="fa-plus-circle" />
+                    <Icon glyph="fa-plus-circle"/>
                     <div>
                         <span className="btnText">{i18n('registry.addNewRegistry')}</span>
                     </div>
@@ -281,7 +296,7 @@ class RegistryPage extends AbstractReactComponent {
             );
             altActions.push(
                 <Button key="registryImport" onClick={this.handleRegistryImport}>
-                    <Icon glyph="fa-download" />
+                    <Icon glyph="fa-download"/>
                     <div>
                         <span className="btnText">{i18n('ribbon.action.registry.import')}</span>
                     </div>
@@ -290,7 +305,7 @@ class RegistryPage extends AbstractReactComponent {
             if (extSystems && extSystems.length > 0) {
                 altActions.push(
                     <Button key="registryExtImport" onClick={this.handleExtImport}>
-                        <Icon glyph="fa-download" />
+                        <Icon glyph="fa-download"/>
                         <div>
                             <span className="btnText">{i18n('ribbon.action.registry.importExt')}</span>
                         </div>
@@ -301,7 +316,7 @@ class RegistryPage extends AbstractReactComponent {
         if (userDetail.hasOne(perms.FUND_ADMIN, perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
             altActions.push(
                 <Button key="scopeManagement" onClick={this.handleScopeManagement}>
-                    <Icon glyph="fa-wrench" />
+                    <Icon glyph="fa-wrench"/>
                     <div>
                         <span className="btnText">{i18n('ribbon.action.registry.scope.manage')}</span>
                     </div>
@@ -323,7 +338,7 @@ class RegistryPage extends AbstractReactComponent {
                         key="registryRemove"
                         onClick={this.handleDeleteRegistry}
                     >
-                        <Icon glyph="fa-trash" />
+                        <Icon glyph="fa-trash"/>
                         <div>
                             <span className="btnText">{i18n('registry.deleteRegistry')}</span>
                         </div>
@@ -332,14 +347,14 @@ class RegistryPage extends AbstractReactComponent {
             }
 
             this.props.onShowUsage &&
-                itemActions.push(
-                    <Button key="registryShow" onClick={() => this.props.onShowUsage(registryDetail)}>
-                        <Icon glyph="fa-search" />
-                        <div>
-                            <span className="btnText">{i18n('registry.registryUsage')}</span>
-                        </div>
-                    </Button>,
-                );
+            itemActions.push(
+                <Button key="registryShow" onClick={() => this.props.onShowUsage(registryDetail)}>
+                    <Icon glyph="fa-search"/>
+                    <div>
+                        <span className="btnText">{i18n('registry.registryUsage')}</span>
+                    </div>
+                </Button>,
+            );
 
             /*
             MCV-45365
@@ -363,7 +378,7 @@ class RegistryPage extends AbstractReactComponent {
             ) {
                 itemActions.push(
                     <Button key="apMigrate" onClick={this.handleApMigrate}>
-                        <Icon glyph="fa-share" />
+                        <Icon glyph="fa-share"/>
                         <div>
                             <span className="btnText">{i18n('registry.migrateAp')}</span>
                         </div>
@@ -375,7 +390,7 @@ class RegistryPage extends AbstractReactComponent {
         if (id && data) {
             itemActions.push(
                 <Button key="show-state-history" onClick={this.handleShowApHistory}>
-                    <Icon glyph="fa-clock-o" />
+                    <Icon glyph="fa-clock-o"/>
                     <div>
                         <span className="btnText">{i18n('ap.stateHistory')}</span>
                     </div>
@@ -385,7 +400,7 @@ class RegistryPage extends AbstractReactComponent {
             // TODO: oprávnění
             itemActions.push(
                 <Button key="change-state" onClick={this.handleChangeApState}>
-                    <Icon glyph="fa-pencil" />
+                    <Icon glyph="fa-pencil"/>
                     <div>
                         <span className="btnText">{i18n('ap.changeState')}</span>
                     </div>
@@ -410,7 +425,7 @@ class RegistryPage extends AbstractReactComponent {
             );
         }
 
-        return <Ribbon primarySection={parts.primarySection} altSection={altSection} itemSection={itemSection} />;
+        return <Ribbon primarySection={parts.primarySection} altSection={altSection} itemSection={itemSection}/>;
     };
 
     render() {
@@ -424,11 +439,11 @@ class RegistryPage extends AbstractReactComponent {
             </div>
         );
 
-        const rightPanel = registryDetail.fetched ? (
-            <div className={'registry-history'}>
-                <DetailHistory apId={registryDetail.id} commentCount={registryDetail.data.comments}/>
-            </div>
-        ) : false;
+        // const rightPanel = registryDetail.fetched ? (
+        //     <div className={'registry-history'}>
+        //         <DetailHistory apId={registryDetail.id} commentCount={registryDetail.data.comments}/>
+        //     </div>
+        // ) : false;
 
         return (
             <Shortcuts
@@ -442,9 +457,9 @@ class RegistryPage extends AbstractReactComponent {
                     splitter={splitter}
                     key="registryPage"
                     ribbon={this.buildRibbon()}
-                    leftPanel={<RegistryList />}
+                    leftPanel={<RegistryList/>}
                     centerPanel={centerPanel}
-                    rightPanel={rightPanel}
+                    // rightPanel={rightPanel}
                     status={status}
                 />
             </Shortcuts>

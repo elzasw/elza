@@ -6,7 +6,6 @@ import {reducer as formReducer} from 'redux-form';
 import ap from './app/accesspoint/accessPoint.jsx';
 import arrRegion from './app/arr/arrRegion.jsx';
 import refTables from './app/refTables/refTables.jsx';
-import registryRegionRecordTypes from './app/registry/registryRegionRecordTypes.jsx';
 import toastr from '../components/shared/toastr/ToastrStore.jsx';
 import fundRegion from './app/fund/fundRegion.jsx';
 import contextMenu from './app/global/contextMenu.jsx';
@@ -27,7 +26,6 @@ import router from './app/router.jsx';
 import status from './app/status.jsx';
 import app from './app/app.jsx';
 
-import addRegistryForm from './app/registry/form/addRegistryForm.jsx';
 import editRegistryForm from './app/registry/form/editRegistryForm.jsx';
 
 import addUserForm from './app/admin/addUserForm.jsx';
@@ -58,7 +56,6 @@ const rootReducer = combineReducers({
         fundForm,
         outputEditForm: inlineForm,
         permissionsEditForm: inlineForm,
-        addRegistryForm,
         editRegistryForm,
         searchForm,
         addUserForm,

@@ -5,9 +5,6 @@ import i18n from "../i18n";
 import {dateToDateTimeString, localUTCToDateTime} from "../../shared/utils/commons";
 
 class AdminBulkHeader extends React.Component {
-    constructor(props) {
-        super(props);
-    }
 
     render() {
         const {data, name} = this.props;

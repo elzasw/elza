@@ -14,11 +14,6 @@ import {addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx
 export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 export const AREA_REGISTRY_LIST = 'registryList';
 
-let AddRegistryForm;
-import('../../components/registry/AddRegistryForm').then(a => {
-    AddRegistryForm = a.default;
-});
-
 /**
  * Načtení seznamu rejstříků dle filtru
  *
@@ -89,43 +84,32 @@ export function registryDetailClear() {
     return DetailActions.reset(AREA_REGISTRY_DETAIL);
 }
 
+//todo: pryc az se prebinduje v ItemForm
+
 export function registryAdd(versionId, callback, showSubmitTypes = false) {
-    return dispatch => {
-        const title = i18n('registry.addRegistry');
-        dispatch(
-            modalDialogShow(
-                this,
-                title,
-                <AddRegistryForm
-                    versionId={versionId}
-                    showSubmitTypes={showSubmitTypes}
-                    onSubmitForm={(data, submitType) => dispatch(registryRecordCreate(callback, data, submitType))}
-                />,
-            ),
-        );
-    };
+    alert('Prebindovat v ItemForm');
 }
 
-function registryRecordCreate(callback, data, submitType) {
-    return (dispatch, getState) => {
-        savingApiWrapper(
-            dispatch,
-            data.structured
-                ? WebApi.confirmStructuredAccessPoint(data.id).then(() => data.structuredObj)
-                : WebApi.createAccessPoint(
-                      data.name,
-                      data.complement,
-                      data.langaugeCode,
-                      data.description,
-                      data.typeId,
-                      data.scopeId,
-                  ),
-        ).then(json => {
-            dispatch(modalDialogHide());
-            callback && callback(json, submitType);
-        });
-    };
-}
+// function registryRecordCreate(callback, data, submitType) {
+//     return (dispatch, getState) => {
+//         savingApiWrapper(
+//             dispatch,
+//             data.structured
+//                 ? WebApi.confirmStructuredAccessPoint(data.id).then(() => data.structuredObj)
+//                 : WebApi.createAccessPoint(
+//                       data.name,
+//                       data.complement,
+//                       data.langaugeCode,
+//                       data.description,
+//                       data.typeId,
+//                       data.scopeId,
+//                   ),
+//         ).then(json => {
+//             dispatch(modalDialogHide());
+//             callback && callback(json, submitType);
+//         });
+//     };
+// }
 
 export function registryUpdate(id, typeId, callback = null) {
     return (dispatch, getState) => {

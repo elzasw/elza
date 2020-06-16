@@ -4,6 +4,7 @@ import {WrappedFieldProps} from 'redux-form';
 type Props = WrappedFieldProps & {
     renderComponent: React.ComponentType;
     passOnly: boolean;
+    [key: string]: any;
 };
 
 /**

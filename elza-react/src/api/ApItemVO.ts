@@ -1,8 +1,10 @@
 export interface ApItemVO {
+    "@class": string;
+
     /**
      * identifikátor
      */
-    id: number;
+    id?: number;
 
     /**
      * identifikátor hodnoty atributu

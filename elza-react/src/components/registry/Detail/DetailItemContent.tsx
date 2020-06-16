@@ -1,15 +1,18 @@
 import React, {FC} from 'react';
-import {SystemCode} from '../../../api/generated/model';
-//import {CodelistState} from '../../shared/reducers/codelist/CodelistReducer';
 import {connect} from 'react-redux';
 import "./DetailItem.scss";
 import {NavLink} from "react-router-dom";
 import DetailCoordinateItem from "./coordinate/DetailCoordinateItem";
-import {MOCK_CODE_DATA} from './mock';
 import {ApItemVO} from "../../../api/ApItemVO";
 import {ApItemCoordinatesVO} from "../../../api/ApItemCoordinatesVO";
 import {ApItemAccessPointRefVO} from "../../../api/ApItemAccessPointRefVO";
 import {ApItemUriRefVO} from "../../../api/ApItemUriRefVO";
+import {RulDataTypeCodeEnum} from "../../../api/RulDataTypeCodeEnum";
+import {RulDataTypeVO} from "../../../api/RulDataTypeVO";
+import {ApItemBitVO} from "../../../api/ApItemBitVO";
+import {formatDate} from "../../validate";
+import {ApItemStringVO} from "../../../api/ApItemStringVO";
+import {ApItemDateVO} from "../../../api/ApItemDateVO";
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
@@ -18,22 +21,33 @@ interface Props extends ReturnType<typeof mapStateToProps> {
 
 const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descItemTypes}) => {
     const itemType = descItemTypes.itemsMap[item.typeId];
-    const dataType = rulDataTypes.itemsMap[itemType.dataTypeId];
+    const dataType: RulDataTypeVO = rulDataTypes.itemsMap[itemType.dataTypeId];
 
-    let customFieldRender = false;  // pro ty, co chtějí jinak renderovat skupinu...,  pokud je true, task se nerenderuje specifikace, ale pouze valueField a v tom musí být již vše...
+    // pro ty, co chtějí jinak renderovat skupinu...,  pokud je true, task se nerenderuje specifikace, ale pouze valueField a v tom musí být již vše...
+    let customFieldRender = false;
 
     let valueField;
     let textValue;
     let displayValue;
-    switch (dataType.systemCode) {
-        case SystemCode.NULL:
+
+    switch (dataType.code) {
+        case RulDataTypeCodeEnum.INT:
+        case RulDataTypeCodeEnum.STRING:
+        case RulDataTypeCodeEnum.TEXT:
+        case RulDataTypeCodeEnum.FORMATTED_TEXT:
+        case RulDataTypeCodeEnum.DECIMAL:
+            let textItem = item as ApItemStringVO;
+            valueField = textItem.value;
             break;
-        case SystemCode.LINK:
-            let ii = item as ApItemUriRefVO;
-            valueField = <a href={ii.value} title={ii.value} target={"_blank"}
-                            rel={"noopener noreferrer"}>{ii.description || ii.value}</a>
+        case RulDataTypeCodeEnum.BIT:
+            let bitItem = item as ApItemBitVO;
+            valueField = bitItem.value ? 'Ano' : 'Ne';
             break;
-        case SystemCode.RECORDREF:
+        case RulDataTypeCodeEnum.COORDINATES:
+            customFieldRender = true;
+            valueField = <DetailCoordinateItem item={item as ApItemCoordinatesVO} globalEntity={globalEntity}/>;
+            break;
+        case RulDataTypeCodeEnum.RECORD_REF:
             customFieldRender = true;
             let recordRefItem = item as ApItemAccessPointRefVO;
 
@@ -44,22 +58,37 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
                 displayValue = recordRefItem.value;
             }
 
-            valueField =
-                <NavLink target={"_blank"} to={`/global/${recordRefItem.value}`}>{displayValue}</NavLink>;
+            valueField = <NavLink target={"_blank"} to={`/global/${recordRefItem.value}`}>{displayValue}</NavLink>;
             break;
-        case SystemCode.COORDINATES:
-            customFieldRender = true;
-            valueField = <DetailCoordinateItem item={item as ApItemCoordinatesVO} globalEntity={globalEntity}/>;
+        case RulDataTypeCodeEnum.ENUM:
+
             break;
+        case RulDataTypeCodeEnum.UNITDATE:
+        case RulDataTypeCodeEnum.DATE:
+            let dateItem = item as ApItemDateVO;
+            valueField = formatDate(dateItem.value);
+            break;
+        case RulDataTypeCodeEnum.URI_REF:
+            let ii = item as ApItemUriRefVO;
+            valueField = <a href={ii.value} title={ii.value} target={"_blank"}
+                            rel={"noopener noreferrer"}>{ii.description || ii.value}</a>
+            break;
+
+        //todo: Dodelat zobrazeni pro tyto typy
+        case RulDataTypeCodeEnum.JSON_TABLE:
+        case RulDataTypeCodeEnum.FILE_REF:
+        case RulDataTypeCodeEnum.APFRAG_REF:
+        case RulDataTypeCodeEnum.UNITID:
+        case RulDataTypeCodeEnum.STRUCTURED:
         default:
-            //todo: pridat dalsi case dle typu. Vychozi ApItemVO nema value
-            //valueField = 'value' in item && typeof item.value !== 'undefined' && item.value ? item.value : '?';
+            let defItem = item as ApItemStringVO;
+            valueField = 'value' in defItem && typeof defItem.value !== 'undefined' && defItem.value ? defItem.value : '?';
             break;
     }
 
     let valueSpecification;
     if (!customFieldRender && itemType.useSpecification) {
-        if (!!item.specId && descItemTypes.itemsMap[item.specId]) {
+        if (item.specId && descItemTypes.itemsMap[item.specId]) {
             valueSpecification = descItemTypes.itemsMap[item.specId].name;
         } else {
             valueSpecification = <i>Bez specifikace</i>
