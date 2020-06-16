@@ -88,6 +88,7 @@ public class StructuredObjectServiceImpl implements StructuredObjectService {
         for (Object srcItem : itemList) {
             result.add(prepareItem(srcItem));
         }
+        wsHelper.countPositions(result);
         return result;
     }
 
