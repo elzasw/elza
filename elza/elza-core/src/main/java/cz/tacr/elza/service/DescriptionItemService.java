@@ -1,7 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,8 +43,6 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -1574,26 +1570,10 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         if (calendarType == null) {
             throw new ObjectNotFoundException("Neexistující kalendář: " + splitText[0], BaseCode.ID_NOT_EXIST).setId(splitText[0]);
         }
-
-        ArrDataUnitdate itemUnitdate = new ArrDataUnitdate();
-        itemUnitdate.setCalendarType(calendarType);
-        UnitDateConvertor.convertToUnitDate(splitText[1], itemUnitdate);
-
         CalendarType calendar = CalendarType.valueOf(calendarType.getCode());
-        String value;
-        value = itemUnitdate.getValueFrom();
-        if (value != null) {
-            itemUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendar, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
-        } else {
-            itemUnitdate.setNormalizedFrom(Long.MIN_VALUE);
-        }
 
-        value = itemUnitdate.getValueTo();
-        if (value != null) {
-            itemUnitdate.setNormalizedTo(CalendarConverter.toSeconds(calendar, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
-        } else {
-            itemUnitdate.setNormalizedTo(Long.MAX_VALUE);
-        }
+        ArrDataUnitdate itemUnitdate = ArrDataUnitdate.valueOf(calendar, splitText[1]);
+
         return itemUnitdate;
     }
 
