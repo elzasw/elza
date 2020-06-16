@@ -2,7 +2,6 @@ package cz.tacr.elza.ws.core.v1;
 
 import java.util.UUID;
 
-import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,7 +10,6 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.InstitutionRepository;
@@ -34,6 +32,9 @@ public class FundServiceImpl implements FundService {
 
     @Autowired
     StaticDataService staticDataService;
+
+    @Autowired
+    WSHelper wsHelper;
 
     @Override
     @Transactional
@@ -77,25 +78,13 @@ public class FundServiceImpl implements FundService {
     @Override
     @Transactional
     public void deleteFund(FundIdentifiers fundInfo) throws DeleteFundException {
-        Integer fundId = getFundId(fundInfo);
+        Integer fundId = wsHelper.getFundId(fundInfo);
         arrangementService.deleteFund(fundId);
-    }
-
-    private Integer getFundId(FundIdentifiers fundInfo) {
-        Validate.notNull(fundInfo);
-        if (fundInfo.getId() != null) {
-            return Integer.valueOf(fundInfo.getId());
-        } else {
-            Validate.notNull(fundInfo.getUuid(), "Fund ID or UUID have to be specified");
-            ArrNode node = arrangementService.findNodeByUuid(fundInfo.getUuid());
-            return node.getFundId();
-        }
     }
 
     @Override
     public void updateFund(Fund fundUpdate) throws UpdateFundException {
-        Integer fundId = getFundId(getFundInfo(fundUpdate));
-        ArrFund fund = arrangementService.getFund(fundId);
+        ArrFund fund = wsHelper.getFund(getFundInfo(fundUpdate));
 
         StaticDataProvider sdp = staticDataService.getData();
         if (fundUpdate.getFundName() != null) {
