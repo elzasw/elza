@@ -54,10 +54,12 @@ public class GroovyAe {
     private List<ApType> findTreeAeTypes(final List<ApType> apTypes, final Integer id) {
         ApType parent = getById(apTypes, id);
         Set<ApType> result = new HashSet<>();
-        result.add(parent);
-        for (ApType item : apTypes) {
-            if (parent.equals(item.getParentApType())) {
-                result.addAll(findTreeAeTypes(apTypes, item.getApTypeId()));
+        if (parent != null) {
+            result.add(parent);
+            for (ApType item : apTypes) {
+                if (parent.equals(item.getParentApType())) {
+                    result.addAll(findTreeAeTypes(apTypes, item.getApTypeId()));
+                }
             }
         }
         return new ArrayList<>(result);
