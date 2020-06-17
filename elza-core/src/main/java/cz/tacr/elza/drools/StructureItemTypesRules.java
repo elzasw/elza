@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.kie.api.runtime.StatelessKieSession;
+import org.kie.api.runtime.KieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -67,8 +67,8 @@ public class StructureItemTypesRules extends Rules {
             // TODO: Consider using structureType in getDroolsFile?
             Path path = resourcePathResolver.getDroolsFile(rulStructureDefinition);
 
-            StatelessKieSession session = createNewStatelessKieSession(path);
-            session.execute(facts);
+            KieSession session = createKieSession(path);
+            executeSession(session, facts);
         }
 
         List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions = structureExtensionDefinitionRepository
@@ -82,8 +82,8 @@ public class StructureItemTypesRules extends Rules {
             // TODO: Consider using structureType in getDroolsFile?
             Path path = resourcePathResolver.getDroolsFile(rulStructureExtensionDefinition);
 
-            StatelessKieSession session = createNewStatelessKieSession(path);
-            session.execute(facts);
+            KieSession session = createKieSession(path);
+            executeSession(session, facts);
         }
 
         return rulDescItemTypeExtList;

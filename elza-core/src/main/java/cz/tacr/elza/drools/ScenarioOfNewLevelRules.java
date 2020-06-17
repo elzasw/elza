@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.kie.api.runtime.StatelessKieSession;
+import org.kie.api.runtime.KieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -46,7 +46,8 @@ public class ScenarioOfNewLevelRules extends Rules {
 
         NewLevelApproaches newLevelApproaches = new NewLevelApproaches();
 
-        List<Level> levels = scriptModelFactory.createFactsForNewLevel(level, directionLevel, version);
+        LinkedList<Object> facts = new LinkedList<>();
+        facts.addAll(scriptModelFactory.createFactsForNewLevel(level, directionLevel, version));
 
         List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
                 version.getRuleSet(), RulArrangementRule.RuleType.NEW_LEVEL);
@@ -54,18 +55,18 @@ public class ScenarioOfNewLevelRules extends Rules {
         for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
             Path path = resourcePathResolver.getDroolFile(rulArrangementRule);
 
-            StatelessKieSession session = createNewStatelessKieSession(path);
+            KieSession session = createKieSession(path);
             session.setGlobal("results", newLevelApproaches);
-            session.execute(levels);
+            executeSession(session, facts);
         }
 
         List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.NEW_LEVEL);
         for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
             Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
 
-            StatelessKieSession session = createNewStatelessKieSession(path);
+            KieSession session = createKieSession(path);
             session.setGlobal("results", newLevelApproaches);
-            session.execute(levels);
+            executeSession(session, facts);
         }
 
         List<ScenarioOfNewLevel> scenarioOfNewLevelList = new LinkedList<>();

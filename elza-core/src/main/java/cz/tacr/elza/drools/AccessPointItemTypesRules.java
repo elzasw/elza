@@ -4,10 +4,9 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApRuleRepository;
-import org.kie.api.runtime.StatelessKieSession;
+import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,8 +58,8 @@ public class AccessPointItemTypesRules extends Rules {
         }
 
         Path path = resourcePathResolver.getDroolsFile(rule);
-        StatelessKieSession session = createNewStatelessKieSession(path);
-        session.execute(facts);
+        KieSession session = createKieSession(path);
+        executeSession(session, facts);
         return rulDescItemTypeExtList;
     }
 

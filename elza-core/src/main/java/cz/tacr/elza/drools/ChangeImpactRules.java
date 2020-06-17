@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.kie.api.runtime.StatelessKieSession;
+import org.kie.api.runtime.KieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -77,12 +77,12 @@ public class ChangeImpactRules extends Rules {
         for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
             Path path = resourcePathResolver.getDroolFile(rulArrangementRule);
 
-            StatelessKieSession session = createNewStatelessKieSession(path);
+            KieSession session = createKieSession(path);
 
             // přidání globálních proměnných
             session.setGlobal("results", relatedNodeDirections);
 
-            session.execute(facts);
+            executeSession(session, facts);
         }
 
         // TODO ELZA-1558: jak?
@@ -90,7 +90,7 @@ public class ChangeImpactRules extends Rules {
         for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
             path = Paths.get(rulesExecutor.getDroolsDir(rulExtensionRule.getPackage().getCode(), rulExtensionRule.getArrangementExtension().getRuleSet().getCode()) + File.separator + rulExtensionRule.getComponent().getFilename());
 
-            StatelessKieSession session = createNewStatelessKieSession(path);
+            StatelessKieSession session = createKieSession(path);
 
             // přidání globálních proměnných
             session.setGlobal("results", relatedNodeDirections);

@@ -12,6 +12,8 @@ import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.ModelAvailable;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -98,6 +101,9 @@ public class ApController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RuleService ruleService;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -808,7 +814,7 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "{accessPointId}/validate", method = RequestMethod.GET)
     public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId) {
-        return new ApValidationErrorsVO();
+        return ruleService.executeValidation(accessPointId);
     }
 
     /**
@@ -820,31 +826,58 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/available/items", method = RequestMethod.POST)
     public ApAttributesInfoVO getAvailableItems(@RequestBody final ApAccessPointCreateVO apAccessPointCreateVO) {
-        boolean hasHlavniCast = false;
-        for (ApItemVO item : apAccessPointCreateVO.getPartForm().getItems()) {
-            if (item.getTypeId() == 11) {
-                hasHlavniCast = true;
-                break;
+        if (true) {
+            boolean hasHlavniCast = false;
+            for (ApItemVO item : apAccessPointCreateVO.getPartForm().getItems()) {
+                if (item.getTypeId() == 11) {
+                    hasHlavniCast = true;
+                    break;
+                }
+            }
+
+            final boolean hasHlavniCast2 = hasHlavniCast;
+            List<ApCreateTypeVO> list = staticDataService.getData().getItemTypes().stream()
+                    .map(x -> {
+                        ApCreateTypeVO vo = new ApCreateTypeVO();
+                        vo.setItemTypeId(x.getItemTypeId());
+                        vo.setRequiredType(RequiredType.POSSIBLE);
+                        vo.setRepeatable(false);
+
+                        if (hasHlavniCast2 && x.getItemTypeId() < 10) {
+                            vo.setRequiredType(RequiredType.REQUIRED);
+                        }
+                        return vo;
+                    })
+                    .collect(Collectors.toList());
+            ApAttributesInfoVO aeAttributesInfoVO = new ApAttributesInfoVO();
+            aeAttributesInfoVO.setAttributes(list);
+            aeAttributesInfoVO.setErrors(Collections.emptyList());
+            return aeAttributesInfoVO;
+        }
+
+        List<ApCreateTypeVO> result = new ArrayList<>();
+        ModelAvailable modelAvailable = ruleService.executeAvailable(apAccessPointCreateVO);
+        for (cz.tacr.elza.drools.model.ItemType itemType : modelAvailable.getItemTypes()) {
+            if (itemType.getRequiredType() != cz.tacr.elza.drools.model.RequiredType.IMPOSSIBLE) {
+                ApCreateTypeVO createTypeVO = new ApCreateTypeVO();
+                createTypeVO.setItemTypeId(itemType.getId());
+                createTypeVO.setRepeatable(itemType.isRepeatable());
+                createTypeVO.setRequiredType(RequiredType.fromValue(itemType.getRequiredType().name()));
+                List<Integer> specIds = itemType.getSpecs().stream()
+                        .filter(s -> s.getRequiredType() != cz.tacr.elza.drools.model.RequiredType.IMPOSSIBLE)
+                        .map(ItemSpec::getId)
+                        .collect(Collectors.toList());
+                createTypeVO.setItemSpecIds(specIds);
+                result.add(createTypeVO);
             }
         }
 
-        final boolean hasHlavniCast2 = hasHlavniCast;
-        List<ApCreateTypeVO> list = staticDataService.getData().getItemTypes().stream()
-                .map(x -> {
-                    ApCreateTypeVO vo = new ApCreateTypeVO();
-                    vo.setItemTypeId(x.getItemTypeId());
-                    vo.setRequiredType(RequiredType.POSSIBLE);
-                    vo.setRepeatable(false);
+        List<String> errors = ruleService.validateAvailableItems(modelAvailable);
 
-                    if (hasHlavniCast2 && x.getItemTypeId() < 10) {
-                        vo.setRequiredType(RequiredType.REQUIRED);
-                    }
-                    return vo;
-                })
-                .collect(Collectors.toList());
-        ApAttributesInfoVO aeAttributesInfoVO = new ApAttributesInfoVO();
-        aeAttributesInfoVO.setAttributes(list);
-        aeAttributesInfoVO.setErrors(Collections.emptyList());
-        return aeAttributesInfoVO;
+        ApAttributesInfoVO apAttributesInfoVO = new ApAttributesInfoVO();
+        apAttributesInfoVO.setAttributes(result);
+        apAttributesInfoVO.setErrors(errors);
+
+        return apAttributesInfoVO;
     }
 }

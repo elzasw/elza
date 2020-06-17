@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.kie.api.runtime.StatelessKieSession;
+import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,16 +87,16 @@ public class ValidationRules extends Rules {
 
         for (RulArrangementRule rulPackageRule : rulPackageRules) {
 			Path path = resourcePathResolver.getDroolFile(rulPackageRule);
-			StatelessKieSession session = createNewStatelessKieSession(path);
+			KieSession session = createKieSession(path);
 			session.setGlobal("results", validationResults);
-            session.execute(facts);
+            executeSession(session, facts);
 		}
 
 		List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.CONFORMITY_INFO);
 		for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
             Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
-			StatelessKieSession session = createNewStatelessKieSession(path);
-            session.execute(facts);
+			KieSession session = createKieSession(path);
+            executeSession(session, facts);
 		}
 
 		List<DataValidationResult> results = validationResults.getResults();
