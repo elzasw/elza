@@ -1,7 +1,9 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.cam._2019.QueryResult;
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
@@ -101,6 +103,9 @@ public class ApController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private SearchFilterFactory searchFilterFactory;
 
     @Autowired
     private RuleService ruleService;
@@ -879,5 +884,28 @@ public class ApController {
         apAttributesInfoVO.setErrors(errors);
 
         return apAttributesInfoVO;
+    }
+
+    @Transactional
+    @RequestMapping(value = "/external/search", method = RequestMethod.POST)
+    public ArchiveEntityResultListVO findArchiveEntitiesInExternalSystem(@RequestParam final Integer from,
+                                                                         @RequestParam final Integer max,
+                                                                         @RequestParam final String externalSystemCode,
+                                                                         @RequestBody final SearchFilterVO filter) {
+        return new ArchiveEntityResultListVO();
+    }
+
+    @Transactional
+    @RequestMapping(value = "/external/{archiveEntityId}/take", method = RequestMethod.POST)
+    public Integer takeArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
+                                     @RequestParam final Integer scopeId,
+                                     @RequestParam final String externalSystemCode) {
+        return 0;
+    }
+
+    @Transactional
+    @RequestMapping(value = "/external/{archiveEntityId}/connect/{accessPointId}", method = RequestMethod.POST)
+    public void connectArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
+                                     @PathVariable("accessPointId") final Integer accessPointId) {
     }
 }
