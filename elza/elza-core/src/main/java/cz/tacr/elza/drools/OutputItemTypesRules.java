@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.kie.api.runtime.StatelessKieSession;
+import org.kie.api.runtime.KieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -44,8 +44,8 @@ public class OutputItemTypesRules extends Rules {
         facts.add(outputType);
 
         Path path = resourcePathResolver.getDroolFile(outputType);
-        StatelessKieSession session = createNewStatelessKieSession(path);
-        session.execute(facts);
+        KieSession session = createKieSession(path);
+        executeSession(session, facts);
 
         return rulDescItemTypeExtList;
     }

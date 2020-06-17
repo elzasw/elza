@@ -5,17 +5,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import org.kie.api.KieServices;
+import org.kie.api.builder.KieBuilder;
+import org.kie.api.builder.KieFileSystem;
+import org.kie.api.builder.Message;
 import org.kie.api.io.ResourceType;
-import org.kie.api.runtime.StatelessKieSession;
-import org.kie.internal.KnowledgeBase;
-import org.kie.internal.KnowledgeBaseFactory;
-import org.kie.internal.builder.KnowledgeBuilder;
-import org.kie.internal.builder.KnowledgeBuilderFactory;
+import org.kie.api.runtime.KieContainer;
+import org.kie.api.runtime.KieSession;
 import org.kie.internal.io.ResourceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,7 +36,7 @@ public abstract class Rules {
     /**
      * uchování informace o načtených drools souborech
      */
-    private Map<Path, Map.Entry<FileTime, KnowledgeBase>> rulesByPathMap = new HashMap<>();
+    private Map<Path, Map.Entry<FileTime, KieContainer>> rulesByPathMap = new HashMap<>();
 
     @Autowired
     protected ArrangementRuleRepository arrangementRuleRepository;
@@ -58,12 +56,12 @@ public abstract class Rules {
      * 
      * @throws IOException
      */
-    protected Map.Entry<FileTime, KnowledgeBase> testChangeFile(final Path path,
-                                                                final Map.Entry<FileTime, KnowledgeBase> entry)
+    protected Map.Entry<FileTime, KieContainer> testChangeFile(final Path path,
+                                                               final Map.Entry<FileTime, KieContainer> entry)
             throws IOException {
         FileTime ft = Files.getLastModifiedTime(path);
         if (entry.getKey() == null || ft.compareTo(entry.getKey()) > 0) {
-            Map.Entry<FileTime, KnowledgeBase> entryNew = reloadRules(path);
+            Map.Entry<FileTime, KieContainer> entryNew = reloadRules(path);
             rulesByPathMap.remove(path);
             rulesByPathMap.put(path, entryNew);
             return entryNew;
@@ -77,19 +75,19 @@ public abstract class Rules {
      * 
      * @throws IOException
      */
-    private Map.Entry<FileTime, KnowledgeBase> reloadRules(final Path path) throws IOException {
-        KnowledgeBuilder kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder();
+    private Map.Entry<FileTime, KieContainer> reloadRules(final Path path) throws IOException {
+        KieServices ks = KieServices.Factory.get();
+        KieFileSystem kfs = ks.newKieFileSystem();
 
-        kbuilder.add(ResourceFactory.newInputStreamResource(new FileInputStream(path.toFile()), "UTF-8"),
-                ResourceType.DRL);
-
-        if (kbuilder.hasErrors()) {
-            throw new SystemException("Fail to parse rule: " + kbuilder.getErrors());
+        kfs.write(ResourceFactory.newInputStreamResource(new FileInputStream(path.toFile()), "UTF-8").setResourceType(ResourceType.DRL).setTargetPath(UUID.randomUUID().toString()));
+        KieBuilder kBuilder = ks.newKieBuilder(kfs);
+        kBuilder.buildAll();
+        if (kBuilder.getResults().hasMessages(Message.Level.ERROR)) {
+            throw new SystemException("Drl pravidlo není validní");
         }
-        KnowledgeBase tmpKbase = KnowledgeBaseFactory.newKnowledgeBase();
-        tmpKbase.addKnowledgePackages(kbuilder.getKnowledgePackages());
+        KieContainer kc = ks.newKieContainer(ks.getRepository().getDefaultReleaseId());
         FileTime ft = Files.getLastModifiedTime(path);
-        return new AbstractMap.SimpleEntry<>(ft, tmpKbase);
+        return new AbstractMap.SimpleEntry<>(ft, kc);
     }
 
     /**
@@ -99,9 +97,9 @@ public abstract class Rules {
      * @return nová session
      * @throws IOException
      */
-    public synchronized StatelessKieSession createNewStatelessKieSession(final Path path) throws IOException {
+    public synchronized KieSession createKieSession(final Path path) throws IOException {
 
-        Map.Entry<FileTime, KnowledgeBase> entry = rulesByPathMap.get(path);
+        Map.Entry<FileTime, KieContainer> entry = rulesByPathMap.get(path);
 
         if (entry == null) {
             entry = reloadRules(path);
@@ -110,7 +108,15 @@ public abstract class Rules {
             entry = testChangeFile(path, entry);
         }
 
-        return entry.getValue().newStatelessKieSession();
+        return entry.getValue().newKieSession();
+    }
+
+    public void executeSession(KieSession session, List<Object> facts) {
+        for (Object fact : facts) {
+            session.insert(fact);
+        }
+        session.fireAllRules();
+        session.dispose();
     }
 
     protected void sortDefinitionByPackages(final List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions) {
