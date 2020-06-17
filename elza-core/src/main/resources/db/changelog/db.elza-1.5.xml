@@ -358,4 +358,19 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20200617085100" author="slapa">
+        <!-- dočasné odebrání cizího klíče -->
+        <dropForeignKeyConstraint baseTableName="ap_external_system" constraintName="fk_sys_external_system" />
+        <!-- odpojení externích systémů typu INTERPI od změn -->
+        <sql>UPDATE ap_change SET external_system_id = null WHERE external_system_id IN (SELECT external_system_id FROM ap_external_system WHERE type = 'INTERPI')</sql>
+        <!-- smazání předků AP externích systémů -->
+        <sql>DELETE FROM sys_external_system WHERE external_system_id IN (SELECT external_system_id FROM ap_external_system WHERE type = 'INTERPI')</sql>
+        <!-- smazání samotných AP externích systémů -->
+        <sql>DELETE FROM ap_external_system WHERE type = 'INTERPI'</sql>
+        <!-- navrácení cizího klíče -->
+        <addForeignKeyConstraint baseColumnNames="external_system_id" baseTableName="ap_external_system"
+                                 constraintName="fk_sys_external_system" referencedColumnNames="external_system_id"
+                                 referencedTableName="sys_external_system"/>
+    </changeSet>
+
 </databaseChangeLog>
