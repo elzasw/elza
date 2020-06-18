@@ -16,7 +16,7 @@ public class SearchFilterVO {
 
     private String code;
 
-    private UserVO user;
+    private String user;
 
     private String creation;
 
@@ -74,11 +74,11 @@ public class SearchFilterVO {
         this.code = code;
     }
 
-    public UserVO getUser() {
+    public String getUser() {
         return user;
     }
 
-    public void setUser(UserVO user) {
+    public void setUser(String user) {
         this.user = user;
     }
 

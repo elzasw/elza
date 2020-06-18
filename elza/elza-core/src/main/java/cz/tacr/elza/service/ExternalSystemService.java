@@ -82,6 +82,16 @@ public class ExternalSystemService {
     }
 
     /**
+     * Vyhledání externího systému podle kódu.
+     *
+     * @param code kód externího systému, který hledáme
+     * @return nalezený externí systém
+     */
+    public ApExternalSystem findApExternalSystemByCode(final String code) {
+        return apExternalSystemRepository.findByCode(code);
+    }
+
+    /**
      * Vyhledání externího systému podle identifikátoru.
      *
      * @param id identifikátor externího systému

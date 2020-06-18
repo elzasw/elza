@@ -1,19 +1,285 @@
 package cz.tacr.elza.controller.factory;
 
 import cz.tacr.cam._2019.*;
+import cz.tacr.cam.client.controller.vo.*;
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class SearchFilterFactory {
 
     @Autowired
     private StaticDataService staticDataService;
+
+    public QueryParamsDef createQueryParamsDef(SearchFilterVO filter) {
+        QueryParamsDef queryParamsDef = new QueryParamsDef();
+        queryParamsDef.setTypes(createTypeList(filter.getAeTypeIds()));
+        queryParamsDef.setState(createStateList(filter.getAeStates()));
+        queryParamsDef.setCond(createQueryBaseCondDef(filter));
+        queryParamsDef.setCodes(createCodeList(filter));
+        queryParamsDef.setUser(filter.getUser());
+        return queryParamsDef;
+    }
+
+    private List<String> createCodeList(SearchFilterVO filter) {
+        List<String> codes = null;
+        String code = filter.getArea() == Area.ENTITY_CODE ? filter.getSearch() : filter.getCode();
+        if (StringUtils.isNotEmpty(code)) {
+            codes = Collections.singletonList(code);
+        }
+        return codes;
+    }
+
+    /**
+     * Získání listu jmen AeType ze setu ID
+     *
+     * @param aeTypeIds Set ID AeType
+     * @return List jmen AeType
+     */
+    private List<String> createTypeList(Collection<Integer> aeTypeIds) {
+        StaticDataProvider sdp = staticDataService.getData();
+        List<ApType> apTypeList = sdp.getApTypes();
+        List<String> types = null;
+        if (aeTypeIds != null) {
+            Set<String> typesSet = new HashSet<>();
+            for (Integer aeTypeId : aeTypeIds) {
+                List<ApType> rulAeTypes = findTreeAeTypes(apTypeList, aeTypeId);
+                for (ApType rulAeType : rulAeTypes) {
+                    typesSet.add(rulAeType.getCode());
+                }
+            }
+            types = new ArrayList<>(typesSet);
+        }
+        return types;
+    }
+
+    private List<ApType> findTreeAeTypes(final List<ApType> apTypes, final Integer id) {
+        ApType parent = getById(apTypes, id);
+        Set<ApType> result = new HashSet<>();
+        if (parent != null) {
+            result.add(parent);
+            for (ApType item : apTypes) {
+                if (parent.equals(item.getParentApType())) {
+                    result.addAll(findTreeAeTypes(apTypes, item.getApTypeId()));
+                }
+            }
+        }
+        return new ArrayList<>(result);
+    }
+
+    private ApType getById(final List<ApType> apTypes, final Integer id) {
+        for (ApType apType : apTypes) {
+            if (apType.getApTypeId().equals(id)) {
+                return apType;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Převod setu AeStateEnum na list QueryParamsDef.StateEnum
+     *
+     * @param aeStates Set AeStateEnum
+     * @return List QueryParamsDef.StateEnum
+     */
+    private List<QueryParamsDef.StateEnum> createStateList(Collection<AeState> aeStates) {
+        List<QueryParamsDef.StateEnum> stateEnumList = null;
+        if (aeStates != null) {
+            stateEnumList = new ArrayList<>();
+            for (AeState aeStateEnum : aeStates) {
+                switch (aeStateEnum) {
+                    case APS_NEW:
+                        stateEnumList.add(QueryParamsDef.StateEnum.NEW);
+                        break;
+                    case APS_APPROVED:
+                        stateEnumList.add(QueryParamsDef.StateEnum.APPROVED);
+                        break;
+                    case APS_INVALID:
+                        stateEnumList.add(QueryParamsDef.StateEnum.INVALID);
+                        break;
+                    case APS_REPLACED:
+                        stateEnumList.add(QueryParamsDef.StateEnum.REPLACED);
+                        break;
+                }
+            }
+        }
+        return stateEnumList;
+    }
+
+    /**
+     * Vytvoření podmínky z parametrů filtru
+     *
+     * @param filter GlobalSearchFilterVO
+     * @return podmínka QueryBaseCondDef
+     */
+    private QueryBaseCondDef createQueryBaseCondDef(SearchFilterVO filter) {
+        QueryBaseCondDef queryBaseCondDef = null;
+        String search = filter.getSearch();
+        Area area = filter.getArea();
+        if (area != Area.ENTITY_CODE) {
+            List<QueryBaseCondDef> andCondDefList = new ArrayList<>();
+
+            if (StringUtils.isNotEmpty(search)) {
+                List<String> keyWords = getKeyWordsFromSearch(search);
+                for (String keyWord : keyWords) {
+                    QueryBaseCondDef cond;
+                    if (filter.getOnlyMainPart() && !area.equals(Area.ALL_PARTS)) {
+                        cond = createQueryValueCondDef("NM_MAIN", null, QueryComparator.CONTAIN, keyWord);
+                    } else {
+                        cond = createQueryIndexCondDef(keyWord);
+                    }
+                    switch (area) {
+                        case PREFER_NAMES: {
+                            andCondDefList.add(createQueryPartCondDef(cond, QueryPartCondDef.PartTypeEnum.PREF_NAME));
+                            break;
+                        }
+                        case ALL_PARTS: {
+                            andCondDefList.add(cond);
+                            break;
+                        }
+                        case ALL_NAMES: {
+                            andCondDefList.add(createQueryPartCondDef(cond, QueryPartCondDef.PartTypeEnum.NAME));
+                            break;
+                        }
+                        default:
+                            throw new NotImplementedException("Neimplementovaný stav oblasti: " + area);
+                    }
+                }
+            }
+            if (CollectionUtils.isNotEmpty(filter.getExtFilters())) {
+                for (ExtensionFilterVO ext : filter.getExtFilters()) {
+                    QueryValueCondDef valueCondDef = createQueryValueCondDef(ext.getItemTypeId(), ext.getItemSpecId(), QueryComparator.CONTAIN, String.valueOf(ext.getValue()));
+                    andCondDefList.add(createQueryPartCondDef(valueCondDef, QueryPartCondDef.PartTypeEnum.fromValue(ext.getPartTypeCode())));
+                }
+            }
+            if (CollectionUtils.isNotEmpty(filter.getRelFilters())) {
+                for (RelationFilterVO rel : filter.getRelFilters()) {
+                    if (rel.getCode() != null) {
+                        andCondDefList.add(createQueryValueCondDef(rel.getRelTypeId(), rel.getRelSpecId(), QueryComparator.EQ, String.valueOf(rel.getCode())));
+                    }
+                }
+            }
+            if (StringUtils.isNotEmpty(filter.getCreation())) {
+                ArrDataUnitdate aeDataUnitdate = UnitDateConvertor.convertToUnitDate(filter.getCreation(), new ArrDataUnitdate());
+                String intervalCreation = aeDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + aeDataUnitdate.getValueTo();
+                QueryValueCondDef valueCondDef = createQueryValueCondDef("CRE_DATE", null, QueryComparator.CONTAIN, intervalCreation);
+                andCondDefList.add(createQueryPartCondDef(valueCondDef, QueryPartCondDef.PartTypeEnum.CRE));
+            }
+            if (StringUtils.isNotEmpty(filter.getExtinction())) {
+                ArrDataUnitdate aeDataUnitdate = UnitDateConvertor.convertToUnitDate(filter.getExtinction(), new ArrDataUnitdate());
+                String intervalExtinction = aeDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + aeDataUnitdate.getValueTo();
+                QueryValueCondDef valueCondDef = createQueryValueCondDef("EXT_DATE", null, QueryComparator.CONTAIN, intervalExtinction);
+                andCondDefList.add(createQueryPartCondDef(valueCondDef, QueryPartCondDef.PartTypeEnum.EXT));
+            }
+            if (andCondDefList.size() == 1) {
+                queryBaseCondDef = andCondDefList.get(0);
+            } else if (andCondDefList.size() > 1){
+                queryBaseCondDef = createQueryAndDef(andCondDefList);
+            }
+        }
+
+        return queryBaseCondDef;
+    }
+
+    private QueryAndDef createQueryAndDef(List<QueryBaseCondDef> andCondDefList) {
+        QueryAndDef queryAndDef = new QueryAndDef();
+        queryAndDef.setCondType("and");
+        queryAndDef.setConds(andCondDefList);
+        return queryAndDef;
+    }
+
+    private QueryPartCondDef createQueryPartCondDef(QueryBaseCondDef queryBaseCondDef, QueryPartCondDef.PartTypeEnum partTypeEnum) {
+        QueryPartCondDef queryPartCondDef = new QueryPartCondDef();
+        queryPartCondDef.setPartType(partTypeEnum);
+        queryPartCondDef.setCondType("part");
+        queryPartCondDef.setCond(queryBaseCondDef);
+        return queryPartCondDef;
+    }
+
+    private QueryIndexCondDef createQueryIndexCondDef(String value) {
+        QueryIndexCondDef queryIndexCondDef = new QueryIndexCondDef();
+        queryIndexCondDef.setName("DISPLAY_NAME");
+        queryIndexCondDef.setComparator(QueryComparator.CONTAIN);
+        queryIndexCondDef.setCondType("index");
+        queryIndexCondDef.setValue(value);
+        return queryIndexCondDef;
+    }
+
+    private QueryValueCondDef createQueryValueCondDef(String itemTypeCode, String itemSpecCode, QueryComparator queryComparator, String value) {
+        List<String> itemTypes = null;
+        List<String> itemSpecs = null;
+
+        if (itemTypeCode != null) {
+            itemTypes = new ArrayList<>();
+            itemTypes.add(itemTypeCode);
+        }
+
+        if (itemSpecCode != null) {
+            itemSpecs = new ArrayList<>();
+            itemSpecs.add(itemSpecCode);
+        }
+
+        return createQueryValueCondDef(itemTypes, itemSpecs, queryComparator, value);
+    }
+
+    private QueryValueCondDef createQueryValueCondDef(Integer itemTypeId, Integer itemSpecId, QueryComparator queryComparator, String value) {
+        StaticDataProvider sdp = staticDataService.getData();
+        List<String> itemTypes = null;
+        List<String> itemSpecs = null;
+
+        if (itemTypeId != null) {
+            ItemType itemType = sdp.getItemTypeById(itemTypeId);
+            itemTypes = new ArrayList<>();
+            itemTypes.add(itemType.getCode());
+        }
+
+        if (itemSpecId != null) {
+            RulItemSpec itemSpec = sdp.getItemSpecById(itemSpecId);
+            itemSpecs = new ArrayList<>();
+            itemSpecs.add(itemSpec.getCode());
+        }
+
+        return createQueryValueCondDef(itemTypes, itemSpecs, queryComparator, value);
+    }
+
+    private QueryValueCondDef createQueryValueCondDef(List<String> itemTypes, List<String> itemSpecs, QueryComparator queryComparator, String value) {
+        QueryValueCondDef queryValueCondDef = new QueryValueCondDef();
+        queryValueCondDef.setItemTypes(itemTypes);
+        queryValueCondDef.setItemSpecs(itemSpecs);
+        queryValueCondDef.setComparator(queryComparator);
+        queryValueCondDef.setValue(value);
+        queryValueCondDef.setCondType("value");
+        return queryValueCondDef;
+    }
+
+    private List<String> getKeyWordsFromSearch(String search) {
+        List<String> keyWords = new ArrayList<>();
+        Pattern pattern = Pattern.compile("[^\\s,;\"]+|\"([^\"]*)\"");
+        Matcher matcher = pattern.matcher(search);
+        while (matcher.find()) {
+            if (matcher.group(1) != null) {
+                keyWords.add(matcher.group(1));
+            } else {
+                keyWords.add(matcher.group());
+            }
+        }
+        return keyWords;
+    }
 
     public ArchiveEntityResultListVO createArchiveEntityVoListResult(QueryResult queryResult) {
         ArchiveEntityResultListVO archiveEntityVOListResult = new ArchiveEntityResultListVO();
@@ -45,7 +311,7 @@ public class SearchFilterFactory {
         ResultLookupVO resultLookupVO = new ResultLookupVO();
         resultLookupVO.setValue(resultLookup.getV());
         resultLookupVO.setHighlights(createHighlightList(resultLookup.getHp()));
-        resultLookupVO.setPartTypeCode((resultLookup.getPt().value()));
+        resultLookupVO.setPartTypeCode(resultLookup.getPt() != null ? resultLookup.getPt().value() : null);
         return resultLookupVO;
     }
 

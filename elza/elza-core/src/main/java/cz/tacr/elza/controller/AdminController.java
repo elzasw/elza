@@ -10,6 +10,7 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.AsyncTypeEnum;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
@@ -58,6 +59,9 @@ public class AdminController {
 
     @Autowired
     private AsyncRequestService asyncRequestService;
+
+    @Autowired
+    private CamConnector camConnector;
 
     @Value("${elza.logFile:}")
     private String logFilePath;
@@ -134,6 +138,7 @@ public class AdminController {
     public SysExternalSystemVO updateExternalSystem(@RequestBody final SysExternalSystemVO externalSystemVO) {
         SysExternalSystem externalSystem = externalSystemVO.createEntity();
         externalSystem = externalSystemService.update(externalSystem);
+        camConnector.invalidate(externalSystem.getCode());
         return factoryVo.createExtSystem(externalSystem);
     }
 
@@ -145,7 +150,9 @@ public class AdminController {
     @RequestMapping(value = "/externalSystems/{externalSystemId}", method = RequestMethod.DELETE)
     @Transactional
     public void deleteExternalSystemById(@PathVariable("externalSystemId") final Integer externalSystemId) {
+        SysExternalSystem externalSystem = externalSystemService.findOne(externalSystemId);
         externalSystemService.delete(externalSystemId);
+        camConnector.invalidate(externalSystem.getCode());
     }
 
     /**

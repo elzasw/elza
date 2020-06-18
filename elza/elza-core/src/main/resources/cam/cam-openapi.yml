@@ -1,0 +1,413 @@
+openapi: "3.0.2"
+info:
+  title: CAM API
+  version: "1.0"
+tags:
+  - name: Entity
+    description: Entita a její detail
+  - name: Export
+    description: Export entit
+  - name: Batch updates
+    description: Dávková aktualizace a vkládání entit
+  - name: Search
+    description: Vyhledávání entit
+  - name: Updates
+    description: Informace o změnách entit
+paths:
+  /entities/{apid}:
+    parameters:
+      - in: path
+        name: apid
+        required: true
+        description: ID přístupového bodu (uvádí se číselný identifikátor nebo UUID)
+        schema:
+          type: string
+    get:
+      operationId: getEntityById
+      tags:
+        - Entity
+      description: Vrátí aktuální podobu záznamu entity
+      responses:
+        '200':
+          description: Úspěšné nalezení záznamu entity.
+          content:
+            text/xml:
+              schema:
+                description: XML has root element <ent> from schema http://cam.tacr.cz/2019
+                type: string
+                format: binary
+  /export/snapshots:
+    post:
+      operationId: exportSnapshots
+      tags:
+        - Export
+      description: Vrátí aktuální podobu požadovaných záznamů entit
+      requestBody:
+        description: Seznam ID požadovaných entit
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        '200':
+          description: Seznam nalezených záznamů entit.
+          content:
+            text/xml:
+              schema:
+                description: XML has root element <ents> from schema http://cam.tacr.cz/2019
+                type: string
+                format: binary
+  /export/revisions:
+    post:
+      operationId: exportRevs
+      tags:
+        - Export
+      description: Vrátí revize záznamů entit
+      parameters:
+        - in: query
+          name: fromTransId
+          description: Změny po této transakci budou vráceny.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Seznam změn záznamů entit
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            text/xml:
+              schema:
+                description: XML has root element <errs> from schema http://cam.tacr.cz/2019
+                type: string
+                format: binary
+  /batches:
+    post:
+      operationId: postNewBatch
+      tags:
+        - Batch updates
+      description: Zaslání dávky se seznamem změn a nových záznamů entit
+      requestBody:
+        description: XML s dávkou dle schématu http://cam.tacr.cz/2019
+        required: true
+        content:
+          text/xml:
+            schema:
+              description: XML has root element <bu> from schema http://cam.tacr.cz/2019
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: XML s výsledkem provedených operací.
+          content:
+            text/xml:
+              schema:
+                description: XML has root element <bus> or <bue> from schema http://cam.tacr.cz/2019
+                type: string
+                format: binary
+        '409':
+          description: Dávka již existuje
+  /batches/{bid}/response:
+    parameters:
+      - in: path
+        name: bid
+        required: true
+        description: ID dávky
+        schema:
+          type: string
+    get:
+      operationId: getBatchStatus
+      tags:
+        - Batch updates
+      description: Vrátí stav zpracování dávky
+      responses:
+        '102':
+          description: Dávka byla přijata, ale doposud není dokončeno její zpracování
+        '200':
+          description: XML s výsledkem provedených operací.
+          content:
+            text/xml:
+              schema:
+                description: XML has root element <bus> or <bue> from schema http://cam.tacr.cz/2019
+                type: string
+                format: binary
+        '404':
+          description: Batch does not exists
+  /search:
+    post:
+      operationId: searchAps
+      description: Vyhledání entit.
+      tags:
+        - Search
+      parameters:
+        - in: query
+          name: page
+          description: číslo stránky
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: pageSize
+          description: Velikost stránky, počet záznamů na stránku
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        description: JSON s parametry hledání
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryParamsDef'
+      responses:
+        '200':
+          description: Seznam nalezených záznamů, vrací se stručná informace
+          content:
+            text/xml:
+              schema:
+                description: XML has root element <qr> from schema http://cam.tacr.cz/2019
+                type: string
+                format: binary
+  /updates/from/{fromTransId}:
+    parameters:
+      - in: path
+        name: fromTransId
+        required: true
+        description: ID transakce po níž budou vráceny provedené aktualizace
+        schema:
+          type: string
+    get:
+      operationId: getUpdatesFrom
+      description: Vrátí seznam aktualizovaných záznamů entit po té co daná transakce byla zapsána.
+        Pokud je aktualizací příliš mnoho, tak je nutné použít funkci /updates pro jejich načtění.
+      tags:
+        - Updates
+      responses:
+        '200':
+          description: Seznam změněných záznamů entit.
+          content:
+            text/xml:
+              schema:
+                description: XML has root element <upsf> from schema http://cam.tacr.cz/2019
+                type: string
+                format: binary
+        '404':
+          description: Transakce neexistuje
+  /updates:
+    get:
+      operationId: getUpdatesFromTo
+      description: Vrátí stránkovaný seznam aktualizovaných
+        záznamů entit mezi dvěma transakcemi.
+      tags:
+        - Updates
+      parameters:
+        - in: query
+          name: fromTransId
+          description: ID transakce po níž budou vráceny provedené aktualizace
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: toTransId
+          description: ID transakce do níž (včetně) budou vráceny provedené aktualizace
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: page
+          description: číslo stránky
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - in: query
+          name: pageSize
+          description: Velikost stránky, počet záznamů na stránku
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Seznam změněných záznamů entit.
+          content:
+            text/xml:
+              schema:
+                description: XML has root element <ups> from schema http://cam.tacr.cz/2019
+                type: string
+                format: binary
+components:
+  schemas:
+    QueryParamsDef:
+      title: Vyhledání entit
+      type: object
+      properties:
+        user:
+          type: string
+        codes:
+          type: array
+          description: Identifikátory achrivních entity (číselný kód nebo UUID)
+          items:
+            type: string
+        types:
+          type: array
+          description: Pole tříd/podtříd v nichž se vyhledává
+          items:
+            type: string
+        state:
+          type: array
+          description: Stavy záznamů v nichž je vyhledáváno
+          items:
+            type: string
+            enum:
+              - RS_NEW
+              - RS_APPROVED
+              - RS_INVALID
+              - RS_REPLACED
+        cond:
+          $ref: '#/components/schemas/QueryBaseCondDef'
+    QueryBaseCondDef:
+      title: Abstraktní podmínka
+      description: Podmínka pro hledání, použije se jedna konkrétní
+      properties:
+        condType:
+          type: string
+      required:
+        - condType
+      discriminator:
+        propertyName: condType
+        mapping:
+          and: '#/components/schemas/QueryAndDef'
+          or: '#/components/schemas/QueryOrDef'
+          not: '#/components/schemas/QueryNotDef'
+          value: '#/components/schemas/QueryValueCondDef'
+          part: '#/components/schemas/QueryPartCondDef'
+          index: '#/components/schemas/QueryIndexCondDef'
+    QueryAndDef:
+      title: Logická podmínka AND
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/QueryBaseCondDef'
+        - type: object
+          properties:
+            conds:
+              type: array
+              title: Pole dílčích podmínek
+              items:
+                $ref: '#/components/schemas/QueryBaseCondDef'
+          required:
+            - conds
+    QueryOrDef:
+      title: Logická podmínka OR
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/QueryBaseCondDef'
+        - type: object
+          properties:
+            conds:
+              type: array
+              title: Pole dílčích podmínek
+              items:
+                $ref: '#/components/schemas/QueryBaseCondDef'
+          required:
+            - conds
+    QueryNotDef:
+      title: Logická podmínka NOT
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/QueryBaseCondDef'
+        - type: object
+          properties:
+            cond:
+              $ref: '#/components/schemas/QueryBaseCondDef'
+          required:
+            - cond
+    QueryPartCondDef:
+      title: Omezení na typ části
+      description: Lze omezit na konkrétní typ části nebo požadovat, aby vše bylo z jedné části
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/QueryBaseCondDef'
+        - type: object
+          properties:
+            partType:
+              type: string
+              enum:
+                - PT_BODY
+                - PT_CRE
+                - PT_EVENT
+                - PT_EXT
+                - PT_IDENT
+                - PT_PREF_NAME
+                - PT_NAME
+                - PT_REL
+              description: Omezení na typ části, speciální omezení je PT_PREF_NAME učující, že se jedná o preferované jméno
+            onePart:
+              type: boolean
+              description: Pokud je true, tak hledané prvky popisu jsou v jedné části
+            cond:
+              $ref: '#/components/schemas/QueryBaseCondDef'
+    QueryComparator:
+      title: Operátor použitý pro porovnání
+      type: string
+      enum:
+        - CT_EQ
+        - CT_GT
+        - CT_GTE
+        - CT_LT
+        - CT_LTE
+        - CT_START_WITH
+        - CT_END_WITH
+        - CT_CONTAIN
+    QueryIndexCondDef:
+      title: Podmínka vyhledávání hodnoty indexu
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/QueryBaseCondDef'
+        - type: object
+          properties:
+            name:
+              type: string
+              description: Název indexu
+            comparator:
+              $ref: '#/components/schemas/QueryComparator'
+            value:
+              type: string
+              description: hledaná hodnota
+          required:
+            - name
+            - comparator
+    QueryValueCondDef:
+      title: Podmínka vyhledávání hodnoty prvku popisu
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/QueryBaseCondDef'
+        - type: object
+          properties:
+            itemTypes:
+              type: array
+              description: pole typů prvků popisu
+              items:
+                type: string
+            itemSpecs:
+              type: array
+              description: pole specifikací
+              items:
+                type: string
+            value:
+              type: string
+              description: hledaná hodnota
+            comparator:
+              $ref: '#/components/schemas/QueryComparator'

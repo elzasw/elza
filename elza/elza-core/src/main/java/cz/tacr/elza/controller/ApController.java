@@ -1,7 +1,9 @@
 package cz.tacr.elza.controller;
 
 import cz.tacr.cam._2019.QueryResult;
+import cz.tacr.cam.client.ApiException;
 import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.*;
@@ -109,6 +111,9 @@ public class ApController {
 
     @Autowired
     private RuleService ruleService;
+
+    @Autowired
+    private CamConnector camConnector;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -892,7 +897,18 @@ public class ApController {
                                                                          @RequestParam final Integer max,
                                                                          @RequestParam final String externalSystemCode,
                                                                          @RequestBody final SearchFilterVO filter) {
-        return new ArchiveEntityResultListVO();
+        int tempFrom = from - 1;
+        if (tempFrom > 0 && tempFrom % max != 0) {
+            throw new IllegalArgumentException("Předána neplatná hodnota indexu záznamu, index neodpovídá velikosti stránky.");
+        }
+        int fromPage = tempFrom / max;
+        QueryResult result = null;
+        try {
+            result = camConnector.search(fromPage, max, searchFilterFactory.createQueryParamsDef(filter), externalSystemCode);
+        } catch (ApiException e) {
+            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+        }
+        return searchFilterFactory.createArchiveEntityVoListResult(result);
     }
 
     @Transactional
@@ -906,6 +922,7 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/external/{archiveEntityId}/connect/{accessPointId}", method = RequestMethod.POST)
     public void connectArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
-                                     @PathVariable("accessPointId") final Integer accessPointId) {
+                                     @PathVariable("accessPointId") final Integer accessPointId,
+                                     @RequestParam final String externalSystemCode) {
     }
 }
