@@ -67,6 +67,26 @@
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>logging-interceptor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.threeten</groupId>
+            <artifactId>threetenbp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.gsonfire</groupId>
+            <artifactId>gson-fire</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -177,7 +197,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
         <!-- HSQL: cannot be used due to lack of spatial extension (geometry) -->
         <!-- H2: recursive query with parameters is not supported -->
@@ -518,6 +537,24 @@
                                 <!--  disables default interface methods for testing  -->
                                 <useTags>true</useTags>
                             </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>openapi-spring-client</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>java</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/cam/cam-openapi.yml</inputSpec>
+                            <output>${project.build.directory}/generated-sources/api/cam/rest-client</output>
+                            <apiPackage>cz.tacr.cam.client.controller</apiPackage>
+                            <modelPackage>cz.tacr.cam.client.controller.vo</modelPackage>
+                            <generateApiTests>false</generateApiTests>
+                            <!--<configOptions>
+                                <library>resttemplate</library>
+                            </configOptions>-->
                         </configuration>
                     </execution>
                 </executions>

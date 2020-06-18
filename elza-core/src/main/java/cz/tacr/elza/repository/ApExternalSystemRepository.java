@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface ApExternalSystemRepository extends JpaRepository<ApExternalSystem, Integer> {
+
+    ApExternalSystem findByCode(String code);
 }
