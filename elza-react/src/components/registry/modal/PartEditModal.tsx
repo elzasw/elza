@@ -17,19 +17,18 @@ const formConfig: ConfigProps<ApPartFormVO> = {
 type Props = {
     partType: PartType;
     initialValues?: ApPartFormVO;
-    createDialog: boolean;
     handleSubmit: SubmitHandler<FormData, any, any>;
-    aeTypeId: number;
+    apTypeId: number;
     scopeId: number;
     formData?: ApPartFormVO;
     submitting: boolean;
     parentPartId?: number;
-    aeId: number;
-    partId: number;
+    apId: number;
+    partId?: number;
     onClose: () => void;
 } & ReturnType<typeof mapStateToProps>;
 
-const PartEditModal = ({handleSubmit, onClose, refTables, createDialog, partType, aeTypeId, scopeId, formData, submitting, parentPartId, aeId, partId}: Props) => {
+const PartEditModal = ({handleSubmit, onClose, refTables, partType, apTypeId, scopeId, formData, submitting, parentPartId, apId, partId}: Props) => {
     if (!refTables) {
         return <div/>;
     }
@@ -43,12 +42,12 @@ const PartEditModal = ({handleSubmit, onClose, refTables, createDialog, partType
                         sectionName: ""
                     }}
                     partType={partType}
-                    apTypeId={aeTypeId}
+                    apTypeId={apTypeId}
                     scopeId={scopeId}
                     formData={formData}
                     submitting={submitting}
                     parentPartId={parentPartId}
-                    apId={aeId}
+                    apId={apId}
                     partId={partId}
                 />
             </FormSection>
