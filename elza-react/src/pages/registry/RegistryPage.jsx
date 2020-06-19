@@ -34,12 +34,7 @@ import {refApTypesFetchIfNeeded} from "../../actions/refTables/apTypes";
 import {refPartTypesFetchIfNeeded} from "../../actions/refTables/partTypes";
 import {descItemTypesFetchIfNeeded} from "../../actions/refTables/descItemTypes";
 import {refRulDataTypesFetchIfNeeded} from "../../actions/refTables/rulDataTypes";
-import DetailHistory from "../../components/registry/Detail/DetailHistory";
-import AddRegistryForm from "../../components/registry/AddRegistryForm";
-import {savingApiWrapper} from "../../actions/global/status";
 import CreateAccessPointModal from "../../components/registry/modal/CreateAccessPointModal";
-import {ApAccessPointCreateVO} from "../../api/ApAccessPointCreateVO";
-import {ApAccessPointVO} from "../../api/ApAccessPointVO";
 
 /**
  * Stránka rejstříků.
@@ -165,7 +160,14 @@ class RegistryPage extends AbstractReactComponent {
                 <CreateAccessPointModal
                     initialValues={{}}
                     onSubmit={((formData) => {
-                        return WebApi.createAccessPoint(formData);
+                        const submitData = {
+                            partForm: formData.partForm,
+                            accessPointId: null,
+                            languageCode: null,
+                            scopeId: formData.scopeId,
+                            typeId: formData.apType.id,
+                        }
+                        return WebApi.createAccessPoint(submitData);
                     })}
                     onSubmitSuccess={(data) => {
                         dispatch(modalDialogHide());

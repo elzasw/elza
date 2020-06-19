@@ -21,6 +21,7 @@ import i18n from "../../i18n";
 import ReduxFormFieldErrorDecorator from "../../shared/form/ReduxFormFieldErrorDecorator";
 import {Autocomplete} from "../../shared";
 import {ApTypeVO} from "../../../api/ApTypeVO";
+import Scope from "../../shared/scope/Scope";
 
 const FORM_NAME = "createAccessPointForm";
 
@@ -37,14 +38,14 @@ type Props = {
     onClose: () => void;
 } & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
-const CreateAccessPointModal = ({handleSubmit, onClose, refTables, apTypeId, apType, partForm, submitting, change}: Props) => {
+const CreateAccessPointModal = ({handleSubmit, onClose, refTables, apTypeId, apType, scopeId, partForm, submitting, change}: Props) => {
 
     // eslint-disable-next-line
     useEffect(() => {
-        change("partForm", {
-            part: PartType.NAME,
+        change('partForm', {
+            partTypeCode: PartType.NAME,
             items: []
-        });
+        } as ApPartFormVO);
     }, [apTypeId]);
 
     return <ReduxForm onSubmit={handleSubmit}>
@@ -65,7 +66,21 @@ const CreateAccessPointModal = ({handleSubmit, onClose, refTables, apTypeId, apT
                 value={apTypeId ? apTypeId : (apType ? apType.id : null)}
             />
 
-            {(apTypeId || (apType && apType.id)) && partForm && <FormSection name="partForm">
+            <Field
+                name={'scopeId'}
+                disabled={submitting}
+                label={i18n('registry.scopeClass')}
+                component={ReduxFormFieldErrorDecorator}
+                renderComponent={Scope}
+                passOnly
+                items={refTables.scopesData}
+                tree
+                alwaysExpanded
+                allowSelectItem={item => item.addRecord}
+                value={scopeId}
+            />
+
+            {(apTypeId || (apType && apType.id)) && scopeId && partForm && <FormSection name="partForm">
                 <PartEditForm
                     formInfo={{
                         formName: FORM_NAME,
@@ -73,6 +88,7 @@ const CreateAccessPointModal = ({handleSubmit, onClose, refTables, apTypeId, apT
                     }}
                     partType={PartType.NAME}
                     apTypeId={apType.id}
+                    scopeId={scopeId}
                     formData={partForm}
                     submitting={submitting}
                 />
@@ -97,7 +113,8 @@ const mapStateToProps = (state: any) => {
     return {
         refTables: state.refTables,
         apType: selector(state, 'apType') as ApTypeVO,
-        partForm: selector(state, 'partForm')
+        scopeId: selector(state, 'scopeId'),
+        partForm: selector(state, 'partForm'),
     }
 };
 

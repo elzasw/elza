@@ -9,12 +9,12 @@ export interface ApItemVO {
     /**
      * identifikátor hodnoty atributu
      */
-    objectId: number;
+    objectId?: number;
 
     /**
      * pozice
      */
-    position: number;
+    position?: number;
 
     /**
      * typ atributu
@@ -24,5 +24,5 @@ export interface ApItemVO {
     /**
      * specifikace atributu
      */
-    specId: number;
+    specId?: number;
 }

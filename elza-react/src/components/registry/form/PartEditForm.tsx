@@ -34,10 +34,12 @@ import {WebApi} from "../../../actions/WebApi";
 import ReduxFormFieldErrorDecorator from "../../shared/form/ReduxFormFieldErrorDecorator";
 import UnitdateField from "../field/UnitdateField";
 import SpecificationField from "../field/SpecificationField";
+import {useDebouncedEffect} from "../../../utils/hooks";
 
 type OwnProps = {
     partType: PartType;
     apTypeId: number;
+    scopeId: number;
     formData?: ApPartFormVO;
     submitting: boolean;
     parentPartId?: number;
@@ -365,7 +367,8 @@ const PartEditForm = ({
                           parentPartId,
                           partId,
                           apId,
-                          showImportDialog
+                          scopeId,
+                          showImportDialog,
                       }: Props) => {
 
     const [deleteMode, setDeleteMode] = useState(false);
@@ -380,14 +383,15 @@ const PartEditForm = ({
                 ...formData,
                 parentPartId,
                 items: [
-                    ...formData.items
-                        .filter(hasItemValue)
+                    ...formData.items.filter(hasItemValue),
                 ],
-                partId: partId
+                partId: partId,
             },
             accessPointId: apId,
-            scopeId: 1, //todo: cim plnit
+            scopeId: scopeId,
         };
+
+        console.log('FORM DATA', form, 'ITEMS', formData.items);
 
         lastAttributesFetch.id++;
         const fetchId = lastAttributesFetch.id;
@@ -423,13 +427,12 @@ const PartEditForm = ({
             });
     };
 
-    //todo: useDebouncedEffect
     // eslint-disable-next-line
-    useEffect(() => {
+    useDebouncedEffect(() => {
         if (formData && !deleteMode) {
             fetchAttributes(formData, partId, parentPartId);
         }
-    }, [formData]); // 5000, [formData], !attributes
+    }, 5000, [formData], !availAttributes);
 
     useEffect(() => {
         setAvailAttributes(undefined);
@@ -539,12 +542,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
             const item: ApItemVO = {
                 typeId: attribute.itemTypeId,
                 "@class": ItemInfo.getItemClass(dataType.code),
-                //@ts-ignore
-                value: "",
-                //todo: co s temahle propertama? musime je plnit?
-                specId: 1,
-                objectId: 1,
-                position: 1,
+                position: itemType.viewOrder,
             };
 
             // Implicitní hodnoty
