@@ -26,7 +26,7 @@ public class CamConnector {
 
     private static final Logger logger = LoggerFactory.getLogger(CamConnector.class);
 
-    private Map<String, CamInstance> instanceMap = new HashMap<>();
+    private final Map<String, CamInstance> instanceMap = new HashMap<>();
 
 
     public QueryResult search(final int page,
