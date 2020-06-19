@@ -18,22 +18,22 @@ import {ApItemFormattedTextVO} from "../api/ApItemFormattedTextVO";
 import {ApItemDecimalVO} from "../api/ApItemDecimalVO";
 import {ApItemUnitidVO} from "../api/ApItemUnitidVO";
 
-export const ApItemAccessPointRefClass = 'ApItemAccessPointRefVO';
-export const ApItemAPFragmentRefClass = 'ApItemAPFragmentRefVO';
-export const ApItemBitClass = 'ApItemBitVO';
-export const ApItemCoordinatesClass = 'ApItemCoordinatesVO';
-export const ApItemDateClass = 'ApItemDateVO';
-export const ApItemDecimalClass = 'ApItemDecimalVO';
-export const ApItemEnumClass = 'ApItemEnumVO';
-export const ApItemFormattedTextClass = 'ApItemFormattedTextVO';
-export const ApItemIntClass = 'ApItemIntVO';
-export const ApItemJsonTableClass = 'ApItemJsonTableVO';
-export const ApItemPartyRefClass = 'ApItemPartyRefVO';
-export const ApItemStringClass = 'ApItemStringVO';
-export const ApItemTextClass = 'ApItemTextVO';
-export const ApItemUnitdateClass = 'ApItemUnitdateVO';
-export const ApItemUnitidClass = 'ApItemUnitidVO';
-export const ApItemUriRefClass = 'ApItemUriRefVO';
+export const ApItemAccessPointRefClass = '.ApItemAccessPointRefVO';
+export const ApItemAPFragmentRefClass = '.ApItemAPFragmentRefVO';
+export const ApItemBitClass = '.ApItemBitVO';
+export const ApItemCoordinatesClass = '.ApItemCoordinatesVO';
+export const ApItemDateClass = '.ApItemDateVO';
+export const ApItemDecimalClass = '.ApItemDecimalVO';
+export const ApItemEnumClass = '.ApItemEnumVO';
+export const ApItemFormattedTextClass = '.ApItemFormattedTextVO';
+export const ApItemIntClass = '.ApItemIntVO';
+export const ApItemJsonTableClass = '.ApItemJsonTableVO';
+export const ApItemPartyRefClass = '.ApItemPartyRefVO';
+export const ApItemStringClass = '.ApItemStringVO';
+export const ApItemTextClass = '.ApItemTextVO';
+export const ApItemUnitdateClass = '.ApItemUnitdateVO';
+export const ApItemUnitidClass = '.ApItemUnitidVO';
+export const ApItemUriRefClass = '.ApItemUriRefVO';
 
 export function getItemClass(code: RulDataTypeCodeEnum): string {
     switch (code) {
