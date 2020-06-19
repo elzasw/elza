@@ -1,0 +1,90 @@
+$border-color: #dee2e6;
+$max-height: 600px;
+
+.ap-ext-search-modal {
+    .no-padding {
+        padding-top: 0;
+        padding-bottom: 0;
+        padding-right: 0;
+    }
+    .filter-section {
+        .name-section {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .form-group {
+            padding-bottom: 0.25rem;
+        }
+    }
+    .search-panel {
+        border-right: 1px solid $border-color;
+        display: flex;
+        flex-direction: column;
+
+        .search-fields {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+        max-height: $max-height;
+
+        .search-controller {
+            border-top: 1px solid $border-color;
+            padding: 0.75rem;
+            margin-left: -15px;
+            display: flex;
+            justify-content: space-around;
+        }
+    }
+    .results {
+        max-height: $max-height;
+        height: $max-height;
+
+        overflow-y: auto;
+        .result-item {
+            align-items: center;
+
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            &:not(:last-child) {
+                border-bottom: 1px solid $border-color;
+            }
+            .name {
+                display: block;
+                font-size: 18px;
+            }
+            .ident {
+                display: block;
+                font-size: 14px;
+                &:before {
+                    content: 'ID: ';
+                    font-weight: 500;
+                    padding-right: 2px;
+                }
+            }
+        }
+        .result-items {
+            min-height: $max-height;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+    }
+    .btn {
+        border: 1px solid #dee2e6;
+        height: auto;
+        line-height: normal;
+        padding: 0.5rem;
+        font-size: 14px;
+        &.btn-link {
+            border: none;
+        }
+    }
+    .was-validated .form-control:invalid, .form-control.is-invalid {
+        background-image: none;
+    }
+    .selected-data {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}

@@ -893,20 +893,19 @@ public class ApController {
 
     @Transactional
     @RequestMapping(value = "/external/search", method = RequestMethod.POST)
-    public ArchiveEntityResultListVO findArchiveEntitiesInExternalSystem(@RequestParam final Integer from,
-                                                                         @RequestParam final Integer max,
-                                                                         @RequestParam final String externalSystemCode,
+    public ArchiveEntityResultListVO findArchiveEntitiesInExternalSystem(@RequestParam(name = "from", defaultValue = "0", required = false) final Integer from,
+                                                                         @RequestParam(name = "max", defaultValue = "50", required = false) final Integer max,
+                                                                         @RequestParam(name = "externalSystemCode") final String externalSystemCode,
                                                                          @RequestBody final SearchFilterVO filter) {
-        int tempFrom = from - 1;
-        if (tempFrom > 0 && tempFrom % max != 0) {
-            throw new IllegalArgumentException("Předána neplatná hodnota indexu záznamu, index neodpovídá velikosti stránky.");
+        if (from < 0) {
+            throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
         }
-        int fromPage = tempFrom / max;
-        QueryResult result = null;
+        int fromPage = from / max;
+        QueryResult result;
         try {
-            result = camConnector.search(fromPage, max, searchFilterFactory.createQueryParamsDef(filter), externalSystemCode);
+            result = camConnector.search(fromPage + 1, max, searchFilterFactory.createQueryParamsDef(filter), externalSystemCode);
         } catch (ApiException e) {
-            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.", e);
         }
         return searchFilterFactory.createArchiveEntityVoListResult(result);
     }

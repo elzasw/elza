@@ -25,6 +25,9 @@ import {RulDescItemTypeExtVO} from '../api/RulDescItemTypeExtVO';
 import {RulPartTypeVO} from '../api/RulPartTypeVO';
 import {FilteredResultVO} from '../api/FilteredResultVO';
 import {ApSearchType} from '../typings/globals';
+import * as UrlBuilder from '../utils/UrlBuilder';
+import {ArchiveEntityResultListVO} from "../api/ArchiveEntityResultListVO";
+import {SearchFilterVO} from 'api/SearchFilterVO';
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 
@@ -787,6 +790,29 @@ export class WebApiCls {
             searchTypeName,
             searchTypeUsername,
         });
+    }
+
+    findArchiveEntitiesInExternalSystem(from: number,
+                                        max: number,
+                                        externalSystemCode: string,
+                                        filter: SearchFilterVO): Promise<ArchiveEntityResultListVO> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/external/search', {from, max, externalSystemCode}, filter);
+    }
+
+    takeArchiveEntity(archiveEntityId: number,
+                      scopeId: number,
+                      externalSystemCode: string): Promise<number> {
+        const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/{archiveEntityId}/take', {archiveEntityId});
+        return AjaxUtils.ajaxPost(url, {scopeId, externalSystemCode});
+    }
+
+    connectArchiveEntity(archiveEntityId: number,
+                         accessPointId: number): Promise<void> {
+        const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/{archiveEntityId}/connect/{accessPointId}', {
+            archiveEntityId,
+            accessPointId
+        });
+        return AjaxUtils.ajaxPost(url);
     }
 
     findRegistryUsage(recordId) {

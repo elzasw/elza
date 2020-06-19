@@ -1,0 +1,52 @@
+@import "./variables.scss";
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-button {
+    width: 0;
+    height: 0;
+}
+
+::-webkit-scrollbar-thumb {
+    background: $scrollbar-color;
+    border: 0 none #ffffff;
+    border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active {
+    background: $scrollbar-active-color;
+}
+
+::-webkit-scrollbar-track {
+    border: 0 none #ffffff;
+    border-radius: 0;
+    background: $scrollbar-bg;
+}
+
+::-webkit-scrollbar-track:hover,
+::-webkit-scrollbar-track:active {
+    background: $scrollbar-active-bg;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+// Scrollbars - visible/invisible
+.scrollbar-hover {
+    &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+    }
+    &:hover::-webkit-scrollbar-thumb,
+    &:focus-within::-webkit-scrollbar-thumb {
+        background-color: $scrollbar-color;
+    }
+    &::-webkit-scrollbar-thumb:hover,
+    &::-webkit-scrollbar-thumb:active {
+        background: $scrollbar-active-color;
+    }
+}

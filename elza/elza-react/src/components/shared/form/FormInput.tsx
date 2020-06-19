@@ -1,6 +1,7 @@
 // @ts-nocheck
 import React, {memo, PropsWithChildren, ReactElement} from 'react';
 import {Form} from 'react-bootstrap';
+import {Autocomplete} from "../index";
 
 interface IFormInputProps {
     name?: string;
@@ -100,6 +101,22 @@ const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo(
                             {children}
                         </Form.Control>
                         {!inline && hasError && <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>}
+                    </Form.Group>
+                );
+            case 'autocomplete':
+                return (
+                    <Form.Group>
+                        {label && <Form.Label>{label}</Form.Label>}
+                        <Autocomplete
+                            ref={ref}
+                            value={value}
+                            error={hasError && error}
+                            touched={touched}
+                            {...otherProps}
+                            {...inlineProps}
+                        >
+                            {children}
+                        </Autocomplete>
                     </Form.Group>
                 );
             default:

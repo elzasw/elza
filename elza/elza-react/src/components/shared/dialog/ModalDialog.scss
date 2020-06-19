@@ -3,8 +3,21 @@
     &.dialog-lg {
         @media screen and (min-width: map_get($grid-breakpoints, 'md')) {
           .modal-dialog {
+              max-width: 900px;
               width: 900px;
           }
+        }
+    }
+    &.dialog-xl {
+        .modal-dialog {
+            max-width: 900px;
+            width: 900px;
+        }
+        @media screen and (min-width: map_get($grid-breakpoints, 'xl')) {
+            .modal-dialog {
+                max-width: 1200px;
+                width: 1200px;
+            }
         }
     }
     &.dialog-fullscreen {

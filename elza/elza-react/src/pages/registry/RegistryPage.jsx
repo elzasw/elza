@@ -35,6 +35,8 @@ import {refPartTypesFetchIfNeeded} from "../../actions/refTables/partTypes";
 import {descItemTypesFetchIfNeeded} from "../../actions/refTables/descItemTypes";
 import {refRulDataTypesFetchIfNeeded} from "../../actions/refTables/rulDataTypes";
 import CreateAccessPointModal from "../../components/registry/modal/CreateAccessPointModal";
+import ApExtSearchModal from "../../components/registry/modal/ApExtSearchModal";
+import {Area} from "../../api/Area";
 
 /**
  * Stránka rejstříků.
@@ -209,19 +211,21 @@ class RegistryPage extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(this, i18n('import.title.registry'), <ImportForm record/>));
     };
 
-    handleExtImport = () => {
+    handleApExtSearch = () => {
+        const {extSystems} = this.props;
+        const initialValues = {
+            area: Area.ALLNAMES,
+            onlyMainPart: "false", // musí být jako string, autocomplete má problém s true/false hodnotou
+        };
+        if (extSystems.length === 1) {
+            initialValues.extSystem = extSystems[0].code;
+        }
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('extImport.title'),
-                <ExtImportForm
-                    isParty={false}
-                    onSubmitForm={data => {
-                        this.props.dispatch(registryDetailFetchIfNeeded(data.id));
-                        this.props.dispatch(registryListInvalidate());
-                    }}
-                />,
-                'dialog-lg',
+                i18n('ap.ext-search.title'),
+                <ApExtSearchModal initialValues={initialValues} extSystems={extSystems} />,
+                'dialog-xl',
             ),
         );
     };
@@ -304,12 +308,13 @@ class RegistryPage extends AbstractReactComponent {
                     </div>
                 </Button>,
             );
+
             if (extSystems && extSystems.length > 0) {
                 altActions.push(
-                    <Button key="registryExtImport" onClick={this.handleExtImport}>
+                    <Button key="ap-ext-search" onClick={this.handleApExtSearch}>
                         <Icon glyph="fa-download"/>
                         <div>
-                            <span className="btnText">{i18n('ribbon.action.registry.importExt')}</span>
+                            <span className="btnText">{i18n('ribbon.action.ap.ext-search')}</span>
                         </div>
                     </Button>,
                 );

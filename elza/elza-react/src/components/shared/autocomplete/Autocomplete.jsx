@@ -551,7 +551,6 @@ export default class Autocomplete extends AbstractReactComponent {
                     this.menu = menu;
                 }}
                 onMouseDown={() => {
-                    console.log('ignore next blur');
                     this.focus();
                     this._ignoreBlur = true;
                 }}
@@ -592,6 +591,7 @@ export default class Autocomplete extends AbstractReactComponent {
             'autocomplete-control-container': true,
             'form-group': true,
             'has-error': hasError,
+            'is-invalid': hasError,
             [className]: className,
         });
 

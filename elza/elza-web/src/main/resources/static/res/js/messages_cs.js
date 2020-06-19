@@ -52,6 +52,8 @@ var messages = {
     "global.action.run": "Spustit",
     "global.action.back": "Zpět",
     "global.action.next": "Dále",
+    "global.action.search": "Vyhledat",
+    "global.action.filter.clean": "Zrušit filtr",
 
     "download.allreadyDownloading": "Požadavek na stažení souboru již byl odeslán",
     "download.error.title": "Chyba stahování",
@@ -341,6 +343,7 @@ var messages = {
     "ribbon.action.logout": "Odhlásit",
     "ribbon.action.showFundHistory": "Historie změn",
     "ribbon.action.syncDaosByFund": "Synchronizovat DAO v AS",
+    "ribbon.action.ap.ext-search": "Vyhledávání v externím systému",
 
     "ribbon.action.arr.validation.error.previous": "Předchozí chyba",
     "ribbon.action.arr.validation.error.next": "Další chyba",
@@ -1003,6 +1006,30 @@ var messages = {
     "ap.error.requiredItemTypeIds": "Nevyplněné povinné prvky popisu:",
     "ap.error.emptyValue": "Prázdná hodnota archivní entity",
     "ap.error.duplicateValue": "Hodnota již existuje",
+
+    "ap.ext-search.title": "Vyhledávání v externím systému",
+    "ap.ext-search.item.take": "Převzít do ELZA",
+    "ap.ext-search.label.params": "Zvolte parametry hledání",
+    "ap.ext-search.label.no-entities": "Nebyly dohledány žádné entity",
+    "ap.ext-search.label.take-to-scope": "Převzít do oblasti",
+
+    "ap.ext-search.ext-system": "Externí systém",
+    "ap.ext-search.search": "Vyhledávání",
+    "ap.ext-search.area": "Oblast hledání",
+    "ap.ext-search.only-main-part": "Pouze hlavní část",
+    "ap.ext-search.user": "Uživatel",
+    "ap.ext-search.id": "ID",
+    "ap.ext-search.state": "Stav",
+    "ap.ext-search.type": "Třída",
+    "ap.ext-search.creation": "Datum vzniku",
+    "ap.ext-search.extinction": "Datum zániku",
+
+    "ap.ext-search.section.ext-systems": "Externí systémy",
+    "ap.ext-search.section.text": "Textové vyhledávání",
+    "ap.ext-search.section.base": "Obecný filtr",
+    "ap.ext-search.section.cre-ext": "Vznik/Zánik",
+    "ap.ext-search.section.relations": "Vztahy",
+    "ap.ext-search.section.extends": "Rozšířený filtr",
 
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",
