@@ -2,14 +2,9 @@ import React, {ReactElement, useState} from 'react';
 import {ThunkDispatch} from 'redux-thunk';
 import {Action} from 'redux';
 import {connect} from 'react-redux';
-//import ContentSpinner from "../components/Loader";
-//import PageInfoContent from "../components/PageInfoContent";
-//import * as DetailActions from "../shared/reducers/detail/DetailActions";
 import {PartType} from '../../api/generated/model';
 import * as PartTypeInfo from "../../api/old/PartTypeInfo";
 import DetailMultiSection from "./Detail/DetailMultiSection";
-//import * as ModalActions from "../shared/reducers/modal/ModalActions";
-//import PartEditModal from "../components/modal/PartEditModal";
 import Loading from '../shared/loading/Loading';
 import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
 import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
@@ -17,23 +12,20 @@ import {WebApi} from "../../actions/WebApi";
 import {DetailActions} from "../../shared/detail";
 import {DETAIL_VALIDATION_RESULT} from "../../constants";
 import storeFromArea from "../../shared/utils/storeFromArea";
-//import * as EntitiesClientApiCall from "./../api/call/EntitiesClientApiCall";
-//import {filterPartFormForSubmit} from "../partutils";
 import * as registry from '../../actions/registry/registry';
 import {ApAccessPointVO} from "../../api/ApAccessPointVO";
 import {ApValidationErrorsVO} from "../../api/ApValidationErrorsVO";
 import {ApPartVO} from "../../api/ApPartVO";
 import {DetailStoreState} from "../../types";
 import DetailHeader from "./Detail/DetailHeader";
-import PartEditForm from "./form/PartEditForm";
 import {ApPartFormVO} from "../../api/ApPartFormVO";
-import {ApAccessPointCreateVO} from "../../api/ApAccessPointCreateVO";
+import PartEditModal from "./modal/PartEditModal";
+import {sortItems} from "../../utils/ItemInfo";
 
 type OwnProps = {
     id: number; // ae id
     area: string;
     sider: ReactElement;
-//    header: ReactElement;
     editMode: boolean;
     globalCollapsed: boolean;
     validationResult?: ApValidationErrorsVO;
@@ -67,18 +59,23 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
 
     const handleEdit = (part: ApPartVO) => {
         const partType = refTables.partTypes.itemsMap[part.typeId].code;
+        const detail = props.detail.data!;
 
-        part.id && props.showPartEditModal(props.area, part, partType, props.id, apTypeId, props.refTables, part.partParentId);
+        part.id && props.showPartEditModal(props.area, part, partType, props.id, apTypeId, detail.scopeId, props.refTables, part.partParentId);
         props.invalidateValidationErrors(props.id);
     };
 
     const handleAdd = (partType) => {
-        props.showPartCreateModal(props.area, partType, props.id, apTypeId);
+        const detail = props.detail.data!;
+
+        props.showPartCreateModal(props.area, partType, props.id, apTypeId, detail.scopeId);
         props.invalidateValidationErrors(props.id);
     };
 
     const handleAddRelated = (part: ApPartVO) => {
-        part.id && props.showPartCreateModal(props.area, PartType.REL, props.id, apTypeId, part.id);
+        const detail = props.detail.data!;
+
+        part.id && props.showPartCreateModal(props.area, PartType.REL, props.id, apTypeId, detail.scopeId, part.id);
         props.invalidateValidationErrors(props.id);
     };
 
@@ -113,7 +110,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
     }
 
     if (!isFetching && (!props.detail.id || !props.detail.data)) {
-        return <div className={'detail-page-wrapper'}></div>;
+        return <div className={'detail-page-wrapper'}/>;
     }
 
     const allParts = props.detail.data ? props.detail.data.parts as ApPartVO[] : [];
@@ -157,94 +154,78 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
 const mapDispatchToProps = (
     dispatch: ThunkDispatch<{}, {}, Action<string>>
 ) => ({
-    showPartEditModal: (area: string, part: ApPartVO, partType, aeId: number, apTypeId: number, refTables, parentPartId?: number) => {
+    showPartEditModal: (area: string, part: ApPartVO, partType, apId: number, apTypeId: number, scopeId: number, refTables, parentPartId?: number) => {
         dispatch(
             modalDialogShow(
                 this,
                 PartTypeInfo.getPartEditDialogLabel(partType, false),
-                <div/>,
-                // <PartEditForm
-                //     partTypeId={part.typeId}
-                //     apTypeId={apTypeId}
-                //     parentPartId={parentPartId}
-                //     aeId={aeId}
-                //     partId={part.id}
-                //     initialValues={{
-                //         partId: part.id,
-                //         parentPartId: part.partParentId,
-                //         partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
-                //         items: part.items, //todo: sort by type
-                //     } as ApPartFormVO}
-                //     onSubmit={(formData: ApPartFormVO) => {
-                //         if (part.id) {
-                //             formData.parentPartId = parentPartId;
-                //             return WebApi.updatePart(aeId, part.id, formData).then(() => {
-                //                 dispatch(modalDialogHide());
-                //                 dispatch(DetailActions.invalidate(area, aeId))
-                //             });
-                //         }
-                //     }}
-                // />,
+                <PartEditModal
+                    partType={partType}
+                    handleSubmit={(formData: ApPartFormVO) => {
+                        if (!part.id) {
+                            return;
+                        }
+
+                        formData.parentPartId = parentPartId;
+
+                        return WebApi.updatePart(apId, part.id, formData).then(() => {
+                            dispatch(modalDialogHide());
+                            dispatch(DetailActions.invalidate(area, apId));
+                        });
+                    }}
+                    apTypeId={apTypeId}
+                    scopeId={scopeId}
+                    formData={{
+                        partId: part.id,
+                        parentPartId: part.partParentId,
+                        partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
+                        items: sortItems(partType, part.items, refTables),
+                    } as ApPartFormVO}
+                    parentPartId={part.partParentId}
+                    apId={apId}
+                    partId={part.id}
+                    onClose={() => {
+                        dispatch(modalDialogHide());
+                    }}
+                />,
                 'dialog-lg',
                 dispatch(globalFundTreeInvalidate()),
             )
         );
-
-        /*dispatch(
-          ModalActions.showForm(PartEditModal, {
-            createDialog: false,
-            partType,
-            aeTypeId,
-            parentPartId,
-            aeId,
-            partId: part.id,
-            initialValues: {
-              part: partType,
-              items: sortItems(partType, part.items, codelist)
-            },
-            onSubmit: (formData: AePartFormVO) => {
-              if (part.id) {
-                formData.parentPartId = parentPartId;
-                return EntitiesClientApiCall.formApi
-                  .updatePart(aeId, part.id, filterPartFormForSubmit(formData));
-              }
-            },
-            onSubmitSuccess: () => {
-              dispatch(ModalActions.hide());
-              dispatch(DetailActions.invalidate(area, aeId))
-            }
-          }, {
-            title: PartTypeInfo.getPartEditDialogLabel(partType, false),
-            width: "1200px"
-          })
-        )*/
     },
-    showPartCreateModal: (area: string, partType: PartType, aeId: number, aeTypeId: number, parentPartId?: number) => {
-        /*dispatch(
-          ModalActions.showForm(PartEditModal, {
-            createDialog: true,
-            partType,
-            aeTypeId,
-            parentPartId,
-            aeId,
-            initialValues: {
-              part: partType,
-              items: []
-            },
-            onSubmit: (formData: AePartFormVO) => {
-              formData.parentPartId = parentPartId;
-              return EntitiesClientApiCall.formApi
-                .createPart(aeId, filterPartFormForSubmit(formData));
-            },
-            onSubmitSuccess: () => {
-              dispatch(ModalActions.hide());
-              dispatch(DetailActions.invalidate(area, aeId))
-            }
-          }, {
-            title: PartTypeInfo.getPartEditDialogLabel(partType, true),
-            width: "1200px"
-          })
-        )*/
+    showPartCreateModal: (area: string, partType: PartType, apId: number, apTypeId: number, scopeId: number, parentPartId?: number) => {
+        //todo: Zde potrebuju partType, ale nove jedeme pres ID a ne pres kod, ktery chodi v partType: PartType
+
+        dispatch(
+            modalDialogShow(
+                this,
+                PartTypeInfo.getPartEditDialogLabel(partType, true),
+                <PartEditModal
+                    partType={partType}
+                    handleSubmit={(formData: ApPartFormVO) => {
+                        formData.parentPartId = parentPartId;
+
+                        return WebApi.createPart(apId, formData).then(() => {
+                            dispatch(modalDialogHide());
+                            dispatch(DetailActions.invalidate(area, apId));
+                        });
+                    }}
+                    apTypeId={apTypeId}
+                    scopeId={scopeId}
+                    formData={{
+                        partTypeCode: partType,  //todo: zde pouzivame ciselnik kodu partu, ne ten z refTables, snad to bude OK
+                        items: [],
+                    } as ApPartFormVO}
+                    parentPartId={parentPartId}
+                    apId={apId}
+                    onClose={() => {
+                        dispatch(modalDialogHide());
+                    }}
+                />,
+                'dialog-lg',
+                dispatch(globalFundTreeInvalidate()),
+            )
+        );
     },
     setPreferred: async (area: string, apId: number, partId: number) => {
         await WebApi.setPreferPartName(apId, partId);
@@ -261,10 +242,10 @@ const mapDispatchToProps = (
             }
         }
 
-        dispatch(DetailActions.invalidate(area, apId))
+        dispatch(DetailActions.invalidate(area, apId));
     },
-    invalidateValidationErrors: (aeId: number) => {
-        dispatch(DetailActions.invalidate(DETAIL_VALIDATION_RESULT, aeId));
+    invalidateValidationErrors: (apId: number) => {
+        dispatch(DetailActions.invalidate(DETAIL_VALIDATION_RESULT, apId));
     },
 });
 
@@ -276,7 +257,4 @@ const mapStateToProps = (state: any, props: OwnProps) => {
     }
 };
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(ApDetailPageWrapper);
+export default connect(mapStateToProps, mapDispatchToProps)(ApDetailPageWrapper);

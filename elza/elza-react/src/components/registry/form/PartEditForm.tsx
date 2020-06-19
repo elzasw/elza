@@ -278,7 +278,7 @@ const renderItems = (props: WrappedFieldArrayProps & {
 
     const items = fields.getAll();
     if (!items) {
-        return <div/>
+        return <div/>;
     }
     let index = 0;
 
@@ -390,8 +390,6 @@ const PartEditForm = ({
             accessPointId: apId,
             scopeId: scopeId,
         };
-
-        console.log('FORM DATA', form, 'ITEMS', formData.items);
 
         lastAttributesFetch.id++;
         const fetchId = lastAttributesFetch.id;
