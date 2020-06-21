@@ -1,0 +1,17 @@
+package drlglobal;
+
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+
+rule "R_BOD_002 Použití prvků popisu pro záznam (tělo entity)"
+when $it: ItemType(code in ("HISTORY","DESCRIPTION","LANG"))
+then
+    $it.setPossible();
+end
+
+rule "R_BOD_002.2 Použití prvků popisu pro záznam (tělo entity)"
+when $it: ItemType(code == "LANG")
+     $is: ItemSpec( ) from $it.specs
+then
+    $is.setPossible();
+end

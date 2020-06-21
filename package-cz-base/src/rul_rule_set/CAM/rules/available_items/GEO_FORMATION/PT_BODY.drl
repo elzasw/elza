@@ -1,0 +1,12 @@
+package drlglobal;
+
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+
+
+rule "R_BDG_002 Možné hodnoty typu geografického objektu"
+when $it: ItemType(code == "GEO_TYPE")
+     $is : ItemSpec(code in ("GT_ARCHIPELAGO","GT_CAVE","GT_CLIFF","GT_HEADLAND","GT_HILL","GT_HILLYAREA","GT_CHASM","GT_ISLAND","GT_LOWLAND","GT_MOUNTAIN","GT_MOUNTAINS","GT_NATFORMATION","GT_PASS","GT_PENINSULA","GT_PLATEAU","GT_RAVINE","GT_ROCK","GT_VALLEY","GT_VOLCANO","GT_HIGHLANDS","GT_ROCKCITY")) from $it.specs
+then
+    $is.setPossible();
+end

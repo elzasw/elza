@@ -1,0 +1,32 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ApValidationErrors;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+import cz.tacr.elza.drools.model.ModelPart;
+import cz.tacr.elza.drools.model.Index;
+import cz.tacr.elza.drools.model.GeoModel;
+import cz.tacr.elza.drools.model.DrlUtils;
+global ApValidationErrors results;
+
+
+rule "R_BOD_002 Použití prvků popisu pro záznam (tělo entity)"
+when $ae: Ap( $aeParts : parts)
+     not (Part(type == PartType.PT_BODY) from $aeParts)
+then
+    results.addError("Musí být vyplněno tělo entity třídy PERSON z důvodu povinného vyplnění stručné charakteristiky.");
+end
+
+
+rule "R_CRE_006 Povinnost prvků popisu vzniku"
+when $ae: Ap( $aeParts : parts)
+     $part: Part(type == PartType.PT_EXT) from $aeParts
+     not (Item(type in ("NOTE", "EXT_DATE")) from $part.items)
+     not (Part(parentPartId == $part.id) from $aeParts)
+then 
+    results.addError("U zániku neexistuje ani jeden z následujícího popisu: poznámka, datace, návazná entita.");
+end

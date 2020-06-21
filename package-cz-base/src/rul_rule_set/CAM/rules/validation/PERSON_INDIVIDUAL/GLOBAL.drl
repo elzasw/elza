@@ -1,0 +1,62 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ApValidationErrors;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+import cz.tacr.elza.drools.model.ModelPart;
+import cz.tacr.elza.drools.model.Index;
+import cz.tacr.elza.drools.model.GeoModel;
+import cz.tacr.elza.drools.model.DrlUtils;
+global ApValidationErrors results;
+
+
+rule "R_CRE_001 Povinost vyplnění části vzniku entity"
+when $ae: Ap( $aeParts : parts)
+     not (Part(type == PartType.PT_CRE) from $aeParts)
+     not (Part(type == PartType.PT_EXT) from $aeParts)
+
+then
+    results.addError("Není vyplněn vznik ani zánik entity. Alespoň jedna část musí být pro fyzické osoby vyplněna.");
+end
+
+
+/*
+R_CRE_004 Použití datace vzniku
+R_EXT_004 Použití datace zániku
+*/
+
+rule "R_CRE_004 Použití datace vzniku, R_EXT_004 Použití datace zániku"
+when $ae: Ap( $aeParts : parts)
+     Part(type == PartType.PT_CRE) from $aeParts
+     Part(type == PartType.PT_EXT) from $aeParts
+     $part: Part(type == PartType.PT_CRE) from $aeParts
+     not (Item(type == "CRE_DATE") from $part.items)
+     $part2: Part(type == PartType.PT_EXT) from $aeParts
+     not (Item(type == "EXT_DATE") from $part2.items)
+then
+    results.addError("Není vyplněna datace vzniku ani zániku, alespoň jedna musí být vyplněna.");
+end
+
+rule "R_CRE_004.2 Použití datace vzniku, R_EXT_004 Použití datace zániku"
+when $ae: Ap( $aeParts : parts)
+     not (Part(type == PartType.PT_CRE) from $aeParts)
+     Part(type == PartType.PT_EXT) from $aeParts
+     $part2: Part(type == PartType.PT_EXT) from $aeParts
+     not (Item(type == "EXT_DATE") from $part2.items)
+then
+    results.addError("Není vyplněna datace zániku, musí být vyplněna, pokud není vyplněn vznik a jeho datace.");
+end
+
+rule "R_CRE_004.3 Použití datace vzniku, R_EXT_004 Použití datace zániku"
+when $ae: Ap( $aeParts : parts)
+     Part(type == PartType.PT_CRE) from $aeParts
+     not (Part(type == PartType.PT_EXT) from $aeParts)
+     $part: Part(type == PartType.PT_CRE) from $aeParts
+     not (Item(type == "CRE_DATE") from $part.items)
+then
+    results.addError("Není vyplněna datace vzniku, musí být vyplněna, pokud není vyplněn zánik a jeho datace.");
+end

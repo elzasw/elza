@@ -1,0 +1,25 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+import cz.tacr.elza.drools.model.ApValidationErrors;
+
+global ApValidationErrors results;
+
+
+rule "R_BDG_002 Možné hodnoty typu geografického objektu"
+when $it: ItemType(code == "GEO_TYPE")
+     $is : ItemSpec(code in ("GT_ADMREGION","GT_AREA","GT_AUTONOMOUSPART","GT_CADASTRALTERRITORY","GT_CANTON","GT_CITYDISTRICT","GT_CONTINENT","GT_COUNTRY","GT_COUNTY","GT_COURTDISTRICT","GT_DEPARTEMENT","GT_DISTRICT","GT_LAND","GT_MILITARYAREA","GT_MUNIP","GT_MUNIPDISTR","GT_MUNIPPART","GT_OKRUH","GT_OTHERAREA","GT_PROVINCE","GT_REGION","GT_SETTLEMENT","GT_SHIRE","GT_SQUARE","GT_STREET","GT_TERRITORIALUNIT","GT_VOJVODSTVI","GT_WATERFRONT","GT_MANOR")) from $it.specs
+then
+    $is.setPossible();
+end
+
+rule "R_BDG_003 Povinné administrativní zařazení"
+when $it: ItemType(code in ("GEO_ADMIN_CLASS"))
+then
+    $it.setRequired();
+end

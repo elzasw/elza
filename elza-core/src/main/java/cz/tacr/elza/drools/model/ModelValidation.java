@@ -1,6 +1,8 @@
 package cz.tacr.elza.drools.model;
 
 
+import cz.tacr.elza.drools.model.item.AbstractItem;
+
 import java.util.List;
 
 public class ModelValidation {
@@ -13,11 +15,14 @@ public class ModelValidation {
 
     private ApValidationErrors apValidationErrors;
 
-    public ModelValidation(Ap ap, GeoModel geoModel, List<ModelPart> modelParts, ApValidationErrors apValidationErrors) {
+    private List<AbstractItem> items;
+
+    public ModelValidation(Ap ap, GeoModel geoModel, List<ModelPart> modelParts, ApValidationErrors apValidationErrors, List<AbstractItem> items) {
         this.ap = ap;
         this.geoModel = geoModel;
         this.modelParts = modelParts;
         this.apValidationErrors = apValidationErrors;
+        this.items = items;
     }
 
     public Ap getAp() {
@@ -50,5 +55,13 @@ public class ModelValidation {
 
     public void setApValidationErrors(ApValidationErrors apValidationErrors) {
         this.apValidationErrors = apValidationErrors;
+    }
+
+    public List<AbstractItem> getItems() {
+        return items;
+    }
+
+    public void setItems(List<AbstractItem> items) {
+        this.items = items;
     }
 }

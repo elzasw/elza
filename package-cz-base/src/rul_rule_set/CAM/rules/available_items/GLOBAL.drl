@@ -1,0 +1,14 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "R_CMN_001 Vždy možné prvky popisu"
+when $it: ItemType(code in ("NOTE"))
+then
+    $it.setPossible();
+end

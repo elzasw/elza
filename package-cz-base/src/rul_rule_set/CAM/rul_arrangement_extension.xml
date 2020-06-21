@@ -1,0 +1,371 @@
+<arrangement-extensions>
+  <arrangement-extension code="AVAILABLE_ITEMS">
+    <name>AVAILABLE_ITEMS GLOBAL</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PT_BODY">
+    <name>AVAILABLE_ITEMS PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PT_CRE">
+    <name>AVAILABLE_ITEMS PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PT_EVENT">
+    <name>AVAILABLE_ITEMS PT_EVENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PT_EXT">
+    <name>AVAILABLE_ITEMS PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PT_IDENT">
+    <name>AVAILABLE_ITEMS PT_IDENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PT_NAME">
+    <name>AVAILABLE_ITEMS PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PT_REL">
+    <name>AVAILABLE_ITEMS PT_REL</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK/PT_BODY">
+    <name>AVAILABLE_ITEMS ARTWORK PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK/PT_CRE">
+    <name>AVAILABLE_ITEMS ARTWORK PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK/PT_EVENT">
+    <name>AVAILABLE_ITEMS ARTWORK PT_EVENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK/PT_EXT">
+    <name>AVAILABLE_ITEMS ARTWORK PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK/PT_NAME">
+    <name>AVAILABLE_ITEMS ARTWORK PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK/PT_REL">
+    <name>AVAILABLE_ITEMS ARTWORK PT_REL</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_ARTWORK/PT_BODY">
+    <name>AVAILABLE_ITEMS ARTWORK_ARTWORK PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_ARTWORK/PT_CRE">
+    <name>AVAILABLE_ITEMS ARTWORK_ARTWORK PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_ARTWORK/PT_EXT">
+    <name>AVAILABLE_ITEMS ARTWORK_ARTWORK PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_ARTWORK/PT_NAME">
+    <name>AVAILABLE_ITEMS ARTWORK_ARTWORK PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_AWARD/PT_CRE">
+    <name>AVAILABLE_ITEMS ARTWORK_AWARD PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_AWARD/PT_EXT">
+    <name>AVAILABLE_ITEMS ARTWORK_AWARD PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_AWARD/PT_NAME">
+    <name>AVAILABLE_ITEMS ARTWORK_AWARD PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_CHARTER/PT_CRE">
+    <name>AVAILABLE_ITEMS ARTWORK_CHARTER PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_CHARTER/PT_EXT">
+    <name>AVAILABLE_ITEMS ARTWORK_CHARTER PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_CHARTER/PT_NAME">
+    <name>AVAILABLE_ITEMS ARTWORK_CHARTER PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_BODY">
+    <name>AVAILABLE_ITEMS ARTWORK_CONSTR PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_CRE">
+    <name>AVAILABLE_ITEMS ARTWORK_CONSTR PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_EXT">
+    <name>AVAILABLE_ITEMS ARTWORK_CONSTR PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_NAME">
+    <name>AVAILABLE_ITEMS ARTWORK_CONSTR PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_GAME/PT_CRE">
+    <name>AVAILABLE_ITEMS ARTWORK_GAME PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_GAME/PT_EXT">
+    <name>AVAILABLE_ITEMS ARTWORK_GAME PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_PROD/PT_CRE">
+    <name>AVAILABLE_ITEMS ARTWORK_PROD PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_PROD/PT_EXT">
+    <name>AVAILABLE_ITEMS ARTWORK_PROD PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_PROD/PT_NAME">
+    <name>AVAILABLE_ITEMS ARTWORK_PROD PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_PROJ/PT_CRE">
+    <name>AVAILABLE_ITEMS ARTWORK_PROJ PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_PROJ/PT_EXT">
+    <name>AVAILABLE_ITEMS ARTWORK_PROJ PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/ARTWORK_PROJ/PT_NAME">
+    <name>AVAILABLE_ITEMS ARTWORK_PROJ PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/DYNASTY/PT_BODY">
+    <name>AVAILABLE_ITEMS DYNASTY PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/DYNASTY/PT_CRE">
+    <name>AVAILABLE_ITEMS DYNASTY PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/DYNASTY/PT_EVENT">
+    <name>AVAILABLE_ITEMS DYNASTY PT_EVENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/DYNASTY/PT_EXT">
+    <name>AVAILABLE_ITEMS DYNASTY PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/DYNASTY/PT_IDENT">
+    <name>AVAILABLE_ITEMS DYNASTY PT_IDENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/DYNASTY/PT_NAME">
+    <name>AVAILABLE_ITEMS DYNASTY PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/DYNASTY/PT_REL">
+    <name>AVAILABLE_ITEMS DYNASTY PT_REL</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT/PT_BODY">
+    <name>AVAILABLE_ITEMS EVENT PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT/PT_CRE">
+    <name>AVAILABLE_ITEMS EVENT PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT/PT_EVENT">
+    <name>AVAILABLE_ITEMS EVENT PT_EVENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT/PT_EXT">
+    <name>AVAILABLE_ITEMS EVENT PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT/PT_IDENT">
+    <name>AVAILABLE_ITEMS EVENT PT_IDENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT/PT_NAME">
+    <name>AVAILABLE_ITEMS EVENT PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT/PT_REL">
+    <name>AVAILABLE_ITEMS EVENT PT_REL</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT_EVENT/PT_CRE">
+    <name>AVAILABLE_ITEMS EVENT_EVENT PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT_EVENT/PT_EXT">
+    <name>AVAILABLE_ITEMS EVENT_EVENT PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT_EVENT/PT_NAME">
+    <name>AVAILABLE_ITEMS EVENT_EVENT PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT_NATURE/PT_NAME">
+    <name>AVAILABLE_ITEMS EVENT_NATURE PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT_TRADITION/PT_CRE">
+    <name>AVAILABLE_ITEMS EVENT_TRADITION PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT_TRADITION/PT_EXT">
+    <name>AVAILABLE_ITEMS EVENT_TRADITION PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/EVENT_TRADITION/PT_NAME">
+    <name>AVAILABLE_ITEMS EVENT_TRADITION PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/FAMILY/PT_NAME">
+    <name>AVAILABLE_ITEMS FAMILY PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/FAMILY_BRANCH/PT_NAME">
+    <name>AVAILABLE_ITEMS FAMILY_BRANCH PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO/PT_BODY">
+    <name>AVAILABLE_ITEMS GEO PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO/PT_CRE">
+    <name>AVAILABLE_ITEMS GEO PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO/PT_EVENT">
+    <name>AVAILABLE_ITEMS GEO PT_EVENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO/PT_EXT">
+    <name>AVAILABLE_ITEMS GEO PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO/PT_IDENT">
+    <name>AVAILABLE_ITEMS GEO PT_IDENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO/PT_NAME">
+    <name>AVAILABLE_ITEMS GEO PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO/PT_REL">
+    <name>AVAILABLE_ITEMS GEO PT_REL</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_ADMIN_UNIT/PT_BODY">
+    <name>AVAILABLE_ITEMS GEO_ADMIN_UNIT PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_ADMIN_UNIT/PT_EXT">
+    <name>AVAILABLE_ITEMS GEO_ADMIN_UNIT PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_CLIMATIC_PHEN/PT_BODY">
+    <name>AVAILABLE_ITEMS GEO_CLIMATIC_PHEN PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_FORMATION/PT_BODY">
+    <name>AVAILABLE_ITEMS GEO_FORMATION PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_FORMATION/PT_EXT">
+    <name>AVAILABLE_ITEMS GEO_FORMATION PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_NATURE_RES/PT_BODY">
+    <name>AVAILABLE_ITEMS GEO_NATURE_RES PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_NATURE_RES/PT_EXT">
+    <name>AVAILABLE_ITEMS GEO_NATURE_RES PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_SEA_FORMATION/PT_BODY">
+    <name>AVAILABLE_ITEMS GEO_SEA_FORMATION PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_SEA_FORMATION/PT_EXT">
+    <name>AVAILABLE_ITEMS GEO_SEA_FORMATION PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_SHAPES/PT_BODY">
+    <name>AVAILABLE_ITEMS GEO_SHAPES PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_SHAPES/PT_EXT">
+    <name>AVAILABLE_ITEMS GEO_SHAPES PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_SPACE/PT_BODY">
+    <name>AVAILABLE_ITEMS GEO_SPACE PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_UNIT/PT_BODY">
+    <name>AVAILABLE_ITEMS GEO_UNIT PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_UNIT/PT_EXT">
+    <name>AVAILABLE_ITEMS GEO_UNIT PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_UNIT/PT_IDENT">
+    <name>AVAILABLE_ITEMS GEO_UNIT PT_IDENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_WATERS/PT_BODY">
+    <name>AVAILABLE_ITEMS GEO_WATERS PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/GEO_WATERS/PT_EXT">
+    <name>AVAILABLE_ITEMS GEO_WATERS PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/HEALTH_AND_EDU/PT_IDENT">
+    <name>AVAILABLE_ITEMS HEALTH_AND_EDU PT_IDENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PARTY_GROUP/PT_BODY">
+    <name>AVAILABLE_ITEMS PARTY_GROUP PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PARTY_GROUP/PT_CRE">
+    <name>AVAILABLE_ITEMS PARTY_GROUP PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PARTY_GROUP/PT_EVENT">
+    <name>AVAILABLE_ITEMS PARTY_GROUP PT_EVENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PARTY_GROUP/PT_EXT">
+    <name>AVAILABLE_ITEMS PARTY_GROUP PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PARTY_GROUP/PT_IDENT">
+    <name>AVAILABLE_ITEMS PARTY_GROUP PT_IDENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PARTY_GROUP/PT_NAME">
+    <name>AVAILABLE_ITEMS PARTY_GROUP PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PARTY_GROUP/PT_REL">
+    <name>AVAILABLE_ITEMS PARTY_GROUP PT_REL</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PERSON/PT_BODY">
+    <name>AVAILABLE_ITEMS PERSON PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PERSON/PT_CRE">
+    <name>AVAILABLE_ITEMS PERSON PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PERSON/PT_EVENT">
+    <name>AVAILABLE_ITEMS PERSON PT_EVENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PERSON/PT_EXT">
+    <name>AVAILABLE_ITEMS PERSON PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PERSON/PT_IDENT">
+    <name>AVAILABLE_ITEMS PERSON PT_IDENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PERSON/PT_NAME">
+    <name>AVAILABLE_ITEMS PERSON PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PERSON/PT_REL">
+    <name>AVAILABLE_ITEMS PERSON PT_REL</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PERSON_ANIMAL/PT_NAME">
+    <name>AVAILABLE_ITEMS PERSON_ANIMAL PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PERSON_BEING/PT_NAME">
+    <name>AVAILABLE_ITEMS PERSON_BEING PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PERSON_INDIVIDUAL/PT_IDENT">
+    <name>AVAILABLE_ITEMS PERSON_INDIVIDUAL PT_IDENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PERSON_INDIVIDUAL/PT_NAME">
+    <name>AVAILABLE_ITEMS PERSON_INDIVIDUAL PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/PUBLIC_ADMINISTRATION/PT_IDENT">
+    <name>AVAILABLE_ITEMS PUBLIC_ADMINISTRATION PT_IDENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/REGION/PT_BODY">
+    <name>AVAILABLE_ITEMS REGION PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/TERM/PT_BODY">
+    <name>AVAILABLE_ITEMS TERM PT_BODY</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/TERM/PT_CRE">
+    <name>AVAILABLE_ITEMS TERM PT_CRE</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/TERM/PT_EVENT">
+    <name>AVAILABLE_ITEMS TERM PT_EVENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/TERM/PT_EXT">
+    <name>AVAILABLE_ITEMS TERM PT_EXT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/TERM/PT_NAME">
+    <name>AVAILABLE_ITEMS TERM PT_NAME</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/TERM_GENERAL/PT_REL">
+    <name>AVAILABLE_ITEMS TERM_GENERAL PT_REL</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/TERM_TAXONOMY/PT_IDENT">
+    <name>AVAILABLE_ITEMS TERM_TAXONOMY PT_IDENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/TERM_TAXONOMY/PT_REL">
+    <name>AVAILABLE_ITEMS TERM_TAXONOMY PT_REL</name>
+  </arrangement-extension>
+  <arrangement-extension code="VALIDATION">
+    <name>VALIDATION</name>
+  </arrangement-extension>
+  <arrangement-extension code="VALIDATION/ARTWORK">
+    <name>VALIDATION ARTWORK</name>
+  </arrangement-extension>
+  <arrangement-extension code="VALIDATION/DYNASTY">
+    <name>VALIDATION DYNASTY</name>
+  </arrangement-extension>
+  <arrangement-extension code="VALIDATION/EVENT">
+    <name>VALIDATION EVENT</name>
+  </arrangement-extension>
+  <arrangement-extension code="VALIDATION/GEO">
+    <name>VALIDATION GEO</name>
+  </arrangement-extension>
+  <arrangement-extension code="VALIDATION/GEO_UNIT">
+    <name>VALIDATION GEO_UNIT</name>
+  </arrangement-extension>
+  <arrangement-extension code="VALIDATION/PARTY_GROUP">
+    <name>VALIDATION PARTY_GROUP</name>
+  </arrangement-extension>
+  <arrangement-extension code="VALIDATION/PERSON">
+    <name>VALIDATION PERSON</name>
+  </arrangement-extension>
+  <arrangement-extension code="VALIDATION/PERSON_INDIVIDUAL">
+    <name>VALIDATION PERSON_INDIVIDUAL</name>
+  </arrangement-extension>
+  <arrangement-extension code="VALIDATION/TERM">
+    <name>VALIDATION TERM</name>
+  </arrangement-extension>
+  <arrangement-extension code="VALIDATION/TERM_GENERAL">
+    <name>VALIDATION TERM_GENERAL</name>
+  </arrangement-extension>
+</arrangement-extensions>

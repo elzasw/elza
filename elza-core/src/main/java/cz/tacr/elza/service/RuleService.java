@@ -20,6 +20,9 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
+import cz.tacr.elza.drools.AvailableItemsRules;
+import cz.tacr.elza.drools.DrlType;
+import cz.tacr.elza.drools.ModelValidationRules;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.drools.model.*;
 import cz.tacr.elza.drools.model.item.AbstractItem;
@@ -130,6 +133,12 @@ public class RuleService {
 
     @Autowired
     private AccessPointItemService accessPointItemService;
+
+    @Autowired
+    private AvailableItemsRules availableItemsRules;
+
+    @Autowired
+    private ModelValidationRules modelValidationRules;
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
@@ -1056,7 +1065,8 @@ public class RuleService {
         // vytvoření mapy specifikací identifikátorů
         Map<String, Integer> identMap = createIdentMap(partList);
 
-        ModelValidation modelValidation = new ModelValidation(ap, geoModel, createModelParts(), new ApValidationErrors());
+        List<AbstractItem> items = createAbstractItemList(partList);
+        ModelValidation modelValidation = new ModelValidation(ap, geoModel, createModelParts(), new ApValidationErrors(), items);
         ModelValidation validationResult = executeValidation(modelValidation);
         // validace opakovatelnosti partů
         validatePartRepeatability(validationResult);
@@ -1091,6 +1101,18 @@ public class RuleService {
         return apValidationErrorsVO;
     }
 
+    private List<AbstractItem> createAbstractItemList(List<Part> partList) {
+        List<AbstractItem> items = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(partList)) {
+            for (Part part : partList) {
+                if (CollectionUtils.isNotEmpty(part.getItems())) {
+                    items.addAll(part.getItems());
+                }
+            }
+        }
+        return items;
+    }
+
     private void validateEntityRefs(Ap ae, ApValidationErrorsVO aeValidationErrorsVO) {
         if (CollectionUtils.isNotEmpty(ae.getParts())) {
             for (Part part : ae.getParts()) {
@@ -1103,7 +1125,7 @@ public class RuleService {
                             recordCodes.add(intItem.getValue());
                         }
                     }
-                    //TODO ověření stavu AP
+                    //TODO fantiš ověření stavu AP
 //                    if (CollectionUtils.isNotEmpty(recordCodes)) {
 //                        List<AeRevision> revisionList = revisionService.findActiveByRecordCodes(recordCodes);
 //                        if (CollectionUtils.isNotEmpty(revisionList)) {
@@ -1332,43 +1354,43 @@ public class RuleService {
     @Nullable
     private Integer findParentGeoId(Ap ap) {
         Integer recordId = null;
-//        for (Part part : ap.getParts()) {
-//            if (part.getType().equals(PartType.PT_BODY)) {
-//                IntItem item = (IntItem) findItem(part.getItems(), "GEO_ADMIN_CLASS");
-//                if (item != null) {
-//                    recordId = recordService.getRecordByCode(item.getValue()).getRecordId();
-//                    break;
-//                }
-//            } else if (part.getType().equals(PartType.PT_EXT)) {
-//                return null;
-//            }
-//        }
+        for (Part part : ap.getParts()) {
+            if (part.getType().equals(PartType.PT_BODY)) {
+                IntItem item = (IntItem) findItem(part.getItems(), "GEO_ADMIN_CLASS");
+                if (item != null) {
+                    recordId = item.getValue();
+                    break;
+                }
+            } else if (part.getType().equals(PartType.PT_EXT)) {
+                return null;
+            }
+        }
         return recordId;
     }
 
     @Nullable
     private Integer findParentGeoId(Integer recordId) {
-//        StaticDataProvider sdp = staticDataService.getData();
-//        RulItemType itemType = sdp.getItemTypeByCode("GEO_ADMIN_CLASS").getEntity();
-//        List<ApItem> items = itemService.findItems(recordId, itemType, PartType.PT_BODY);
-//        if (CollectionUtils.isNotEmpty(items)) {
-//            ApItem aeItem = items.get(0);
-//            ArrDataRecordRef recordRef = itemService.getRecordRef(aeItem);
-//            return recordRef.getRecord().getRecordId();
-//        }
+        StaticDataProvider sdp = staticDataService.getData();
+        RulItemType itemType = sdp.getItemTypeByCode("GEO_ADMIN_CLASS").getEntity();
+        List<ApItem> items = accessPointItemService.findItems(recordId, itemType, PartType.PT_BODY.value());
+        if (CollectionUtils.isNotEmpty(items)) {
+            ApItem aeItem = items.get(0);
+            ArrDataRecordRef recordRef = (ArrDataRecordRef) aeItem.getData();
+            return recordRef.getRecordId();
+        }
         return null;
     }
 
     @Nullable
     private String findEntityGeoType(Integer recordId) {
-//        StaticDataProvider sdp = staticDataService.getData();
-//        RulItemType rulItemType = sdp.getItemTypeByCode("GEO_TYPE").getEntity();
-//        List<ApItem> aeItemList = itemService.findItems(recordId, rulItemType, PartType.PT_BODY);
-//        if (CollectionUtils.isNotEmpty(aeItemList)) {
-//            RulItemSpec itemSpec = aeItemList.get(0).getItemSpec();
-//            itemSpec = sdp.getItemSpecById(itemSpec.getItemSpecId());
-//            return itemSpec.getCode();
-//        }
+        StaticDataProvider sdp = staticDataService.getData();
+        RulItemType rulItemType = sdp.getItemTypeByCode("GEO_TYPE").getEntity();
+        List<ApItem> aeItemList = accessPointItemService.findItems(recordId, rulItemType, PartType.PT_BODY.value());
+        if (CollectionUtils.isNotEmpty(aeItemList)) {
+            RulItemSpec itemSpec = aeItemList.get(0).getItemSpec();
+            itemSpec = sdp.getItemSpecById(itemSpec.getItemSpecId());
+            return itemSpec.getCode();
+        }
         return null;
     }
 
@@ -1405,25 +1427,25 @@ public class RuleService {
 
     @Nullable
     private String findCountryIso(Integer recordId) {
-//        StaticDataProvider sdp = staticDataService.getData();
-//        RulItemType idnType = sdp.getItemTypeByCode("IDN_TYPE").getEntity();
-//        RulItemType idnValue = sdp.getItemTypeByCode("IDN_VALUE").getEntity();
-//        List<RulItemType> itemTypes = Arrays.asList(idnType, idnValue);
-//
-//        List<ApItem> itemsList = itemService.findItems(recordId, itemTypes, PartType.PT_IDENT);
-//        List<ApItem> idnTypeItemList = itemsList.stream().filter(i -> i.getItemType().getItemTypeId().equals(idnType.getItemTypeId())).collect(Collectors.toList());
-//        List<ApItem> idnValueItemList = itemsList.stream().filter(i -> i.getItemType().getItemTypeId().equals(idnValue.getItemTypeId())).collect(Collectors.toList());
-//
-//        if (CollectionUtils.isNotEmpty(idnTypeItemList)) {
-//            ApItem idnTypeItem = idnTypeItemList.get(0);
-//            RulItemSpec itemSpec = sdp.getItemSpecById(idnTypeItem.getItemSpec().getItemSpecId());
-//            if (itemSpec.getCode().equals("ISO3166_2") || itemSpec.getCode().equals("ISO3166_3")) {
-//                if (CollectionUtils.isNotEmpty(idnValueItemList)) {
-//                    ApItem aeItem = idnValueItemList.get(0);
-//                    return aeItem.getValue();
-//                }
-//            }
-//        }
+        StaticDataProvider sdp = staticDataService.getData();
+        RulItemType idnType = sdp.getItemTypeByCode("IDN_TYPE").getEntity();
+        RulItemType idnValue = sdp.getItemTypeByCode("IDN_VALUE").getEntity();
+        List<RulItemType> itemTypes = Arrays.asList(idnType, idnValue);
+
+        List<ApItem> itemsList = accessPointItemService.findItems(recordId, itemTypes, PartType.PT_IDENT.value());
+        List<ApItem> idnTypeItemList = itemsList.stream().filter(i -> i.getItemType().getItemTypeId().equals(idnType.getItemTypeId())).collect(Collectors.toList());
+        List<ApItem> idnValueItemList = itemsList.stream().filter(i -> i.getItemType().getItemTypeId().equals(idnValue.getItemTypeId())).collect(Collectors.toList());
+
+        if (CollectionUtils.isNotEmpty(idnTypeItemList)) {
+            ApItem idnTypeItem = idnTypeItemList.get(0);
+            RulItemSpec itemSpec = sdp.getItemSpecById(idnTypeItem.getItemSpec().getItemSpecId());
+            if (itemSpec.getCode().equals("ISO3166_2") || itemSpec.getCode().equals("ISO3166_3")) {
+                if (CollectionUtils.isNotEmpty(idnValueItemList)) {
+                    ApItem aeItem = idnValueItemList.get(0);
+                    return aeItem.getData().getFulltextValue();
+                }
+            }
+        }
         return null;
     }
 
@@ -1598,83 +1620,75 @@ public class RuleService {
 
     public ModelAvailable executeAvailable(@NotNull final PartType partType,
                                            @NotNull final ModelAvailable modelAvailable) {
-//        DrlType drlType = DrlType.AVAILABLE_ITEMS;
-//
-//        Ap ae = modelAvailable.getAp();
-//        ApType aeType = CodeEntityProvider.getAeType(ae.getAeType());
-//
-//        List<Drl> executeDrls = new ArrayList<>();
-//        executeDrls.addAll(findBy(drlType, null, null));
-//        executeDrls.addAll(findBy(drlType, null, partType));
-//
-//        ApType aeTypeProcess = aeType;
-//        List<Drl> executeDrlsProcess = new ArrayList<>();
-//        while (aeTypeProcess != null) {
-//            executeDrlsProcess.addAll(findBy(drlType, aeTypeProcess, partType));
-//            executeDrlsProcess.addAll(findBy(drlType, aeTypeProcess, null));
-//            aeTypeProcess = aeTypeProcess.getParentApType();
-//
-//            if (aeTypeProcess == null) {
-//                Collections.reverse(executeDrlsProcess);
-//                executeDrls.addAll(executeDrlsProcess);
-//            }
-//        }
-//
-//        for (Drl drl : executeDrls) {
-//            KieContainer kContainer = drl.kContainer;
-//            KieSession kSession = kContainer.newKieSession();
-//            kSession.insert(modelAvailable.getAp());
-//            kSession.insert(modelAvailable.getPart());
-//            for (ItemType itemType : modelAvailable.getItemTypes()) {
-//                kSession.insert(itemType);
-//            }
-//            for (AbstractItem item : modelAvailable.getItems()) {
-//                kSession.insert(item);
-//            }
-//            kSession.fireAllRules();
-//            kSession.dispose();
-//        }
+        StaticDataProvider sdp = staticDataService.getData();
+        DrlType drlType = DrlType.AVAILABLE_ITEMS;
+
+        Ap ae = modelAvailable.getAp();
+        ApType aeType = sdp.getApTypeByCode(ae.getAeType());
+
+        List<String> executeDrls = new ArrayList<>();
+        executeDrls.add(drlType.value());
+        executeDrls.add(drlType.value() + "/" + partType.value());
+
+        ApType aeTypeProcess = aeType;
+        List<String> executeDrlsProcess = new ArrayList<>();
+        while (aeTypeProcess != null) {
+            executeDrlsProcess.add(drlType.value() + "/" + aeTypeProcess.getCode() + "/" + partType.value());
+            executeDrlsProcess.add(drlType.value() + "/" + aeTypeProcess.getCode());
+            aeTypeProcess = aeTypeProcess.getParentApType();
+
+            if (aeTypeProcess == null) {
+                Collections.reverse(executeDrlsProcess);
+                executeDrls.addAll(executeDrlsProcess);
+            }
+        }
+        List<RulArrangementExtension> rulArrangementExtensions = arrangementExtensionRepository.findByCodeIn(executeDrls);
+        List<RulExtensionRule> rules = extensionRuleRepository.findExtensionRules(rulArrangementExtensions, RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
+        try {
+            availableItemsRules.execute(rules, modelAvailable);
+        } catch (Exception e) {
+            throw new SystemException(e);
+        }
+
         return modelAvailable;
     }
 
     public ModelValidation executeValidation(@NotNull final ModelValidation modelValidation) {
-//        DrlType drlType = DrlType.VALIDATION;
-//
-//        Ap ae = modelValidation.getAp();
-//        ApType aeType = CodeEntityProvider.getAeType(ae.getAeType());
-//
-//        List<Drl> executeDrls = new ArrayList<>(findBy(drlType, null, null));
-//        for (PartType partType : PartType.values()) {
-//            executeDrls.addAll(findBy(drlType, null, partType));
-//        }
-//
-//        ApType aeTypeProcess = aeType;
-//        List<Drl> executeDrlsProcess = new ArrayList<>();
-//        while (aeTypeProcess != null) {
-//            for (PartType partType : PartType.values()) {
-//                executeDrlsProcess.addAll(findBy(drlType, aeTypeProcess, partType));
-//            }
-//            executeDrlsProcess.addAll(findBy(drlType, aeTypeProcess, null));
-//            aeTypeProcess = aeTypeProcess.getParentApType();
-//
-//            if (aeTypeProcess == null) {
-//                Collections.reverse(executeDrlsProcess);
-//                executeDrls.addAll(executeDrlsProcess);
-//            }
-//        }
-//
-//        for (Drl drl : executeDrls) {
-//            KieContainer kContainer = drl.kContainer;
-//            KieSession kSession = kContainer.newKieSession();
-//            kSession.insert(modelValidation.getAp());
-//            kSession.insert(modelValidation.getGeoModel());
-//            for (ModelPart modelPart : modelValidation.getModelParts()) {
-//                kSession.insert(modelPart);
-//            }
-//            kSession.setGlobal("results", modelValidation.getApValidationErrors());
-//            kSession.fireAllRules();
-//            kSession.dispose();
-//        }
+        StaticDataProvider sdp = staticDataService.getData();
+        DrlType drlType = DrlType.VALIDATION;
+
+        Ap ae = modelValidation.getAp();
+        ApType aeType = sdp.getApTypeByCode(ae.getAeType());
+
+        List<String> executeDrls = new ArrayList<>();
+        executeDrls.add(drlType.value());
+        for (PartType partType : PartType.values()) {
+            executeDrls.add(drlType.value() + "/" + partType.value());
+        }
+
+        ApType aeTypeProcess = aeType;
+        List<String> executeDrlsProcess = new ArrayList<>();
+        while (aeTypeProcess != null) {
+            for (PartType partType : PartType.values()) {
+                executeDrlsProcess.add(drlType.value() + "/" + aeTypeProcess.getCode() + "/" + partType.value());
+            }
+            executeDrlsProcess.add(drlType.value() + "/" + aeTypeProcess.getCode());
+            aeTypeProcess = aeTypeProcess.getParentApType();
+
+            if (aeTypeProcess == null) {
+                Collections.reverse(executeDrlsProcess);
+                executeDrls.addAll(executeDrlsProcess);
+            }
+        }
+
+        List<RulArrangementExtension> rulArrangementExtensions = arrangementExtensionRepository.findByCodeIn(executeDrls);
+        List<RulExtensionRule> rules = extensionRuleRepository.findExtensionRules(rulArrangementExtensions, RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
+        try {
+            modelValidationRules.execute(rules, modelValidation);
+        } catch (Exception e) {
+            throw new SystemException(e);
+        }
+
         return modelValidation;
     }
 }

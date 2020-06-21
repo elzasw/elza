@@ -1,0 +1,15 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "R_IDN_003 Použití typu identifikátoru dle třídy/podtřídy"
+when $it: ItemType(code == "IDN_TYPE")
+     $is : ItemSpec(code in ("ARCHNUM")) from $it.specs
+then
+    $is.setPossible();
+end

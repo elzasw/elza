@@ -1,0 +1,10 @@
+package drlglobal;
+
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+
+rule "R_BOD_002 Použití prvků popisu pro záznam (tělo entity)"
+when $it: ItemType(code in ("COORD_POINT", "COORD_BORDER", "COORD_NOTE"))
+then
+    $it.setPossible();
+end

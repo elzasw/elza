@@ -89,7 +89,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
 
         public void setRulesets(List<RulRuleSet> rulesets) {
             this.rulesets = rulesets;
-            this.firstRuleset = rulesets.get(0);
+            this.firstRuleset = rulesets.get(1);
         }
 
         public RulRuleSet getFirstRuleset() {

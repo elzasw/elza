@@ -1,0 +1,27 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ApValidationErrors;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+import cz.tacr.elza.drools.model.ModelPart;
+import cz.tacr.elza.drools.model.Index;
+import cz.tacr.elza.drools.model.GeoModel;
+import cz.tacr.elza.drools.model.DrlUtils;
+import cz.tacr.elza.drools.model.item.IntItem;
+global ApValidationErrors results;
+
+
+/*
+R_REL_002 Použití typu vztahu u odkazu na jinou entitu
+Povinnost alespoň jednoho vztahu RT_CATEGORY u třídy TERM_GENERAL
+*/
+
+rule "R_REL_002 Použití typu vztahu u odkazu na jinou entitu"
+when not IntItem(type in ("REL_ENTITY") && spec in ("RT_CATEGORY"))
+then
+    results.addError("Není vyplněn alespoň jeden jednoduchý vztah typu RT_CATEGORY.");
+end
