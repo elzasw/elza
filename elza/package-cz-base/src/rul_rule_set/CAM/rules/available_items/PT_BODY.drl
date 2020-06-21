@@ -1,0 +1,17 @@
+package drlglobal;
+
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+
+rule "R_BOD_002 Použití prvků popisu pro záznam (tělo entity)"
+when $it: ItemType(code in ("SOURCE_INFO", "NOTE_INTERNAL", "BRIEF_DESC"))
+then
+    $it.setPossible();
+end
+
+rule "R_BOD_002.2 Použití prvků popisu pro záznam (tělo entity)"
+when $it: ItemType(code in ("SOURCE_LINK"))
+then
+    $it.setPossible();
+    $it.setRepeatable(true);
+end

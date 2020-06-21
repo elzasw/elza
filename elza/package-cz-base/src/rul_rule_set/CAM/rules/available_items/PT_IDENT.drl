@@ -1,0 +1,28 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "R_IDN_001 Povinné prvky identifikátoru"
+when $it: ItemType(code in ("IDN_TYPE", "IDN_VALUE"))
+then
+    $it.setRequired();
+end
+
+rule "R_IDN_002 Volitelné prvky identifikátoru"
+when $it: ItemType(code in ("IDN_VALID_FROM", "IDN_VALID_TO", "IDN_VERIFIED"))
+then
+    $it.setPossible();
+end
+
+rule "R_IDN_003 Použití typu identifikátoru dle třídy/podtřídy"
+when $it: ItemType(code == "IDN_TYPE")
+     $is : ItemSpec(code in ("INTERPI")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end

@@ -325,4 +325,12 @@ public class AccessPointItemService {
         return itemRepository.findValidItemsByParts(parts);
     }
 
+    public List<ApItem> findItems(final Integer accessPointId, final RulItemType itemType, final String partTypeCode) {
+        return itemRepository.findItemsByAccessPointIdAndItemTypeAndPartTypeCode(accessPointId, itemType, partTypeCode);
+    }
+
+    public List<ApItem> findItems(final Integer accessPointId, final Collection<RulItemType> itemTypes, final String partTypeCode) {
+        return itemRepository.findItemsByAccessPointIdAndItemTypesAndPartTypeCode(accessPointId, itemTypes, partTypeCode);
+    }
+
 }

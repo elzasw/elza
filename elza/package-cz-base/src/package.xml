@@ -1,6 +1,6 @@
 <package>
   <code>CZ_BASE</code>
   <name>Nastavení pro ČR</name>
-  <version>25</version>
+  <version>26</version>
   <description>Výchozí nastavení implementace v ČR</description>
 </package>

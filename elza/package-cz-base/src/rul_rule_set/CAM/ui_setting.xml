@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types" xmlns:ns5="fund-issues"
+          xmlns:ns6="parts-order" xmlns:ns7="item-types">
+    <parts-order>
+        <ns6:part code="PT_NAME"/>
+        <ns6:part code="PT_CRE"/>
+        <ns6:part code="PT_EXT"/>
+        <ns6:part code="PT_BODY"/>
+        <ns6:part code="PT_EVENT"/>
+        <ns6:part code="PT_REL"/>
+        <ns6:part code="PT_IDENT"/>
+    </parts-order>
+    <item-types>
+        <ns7:item-type code="NM_MAIN">
+            <position>1</position>
+            <width>4</width>
+            <part-type>PT_NAME</part-type>
+        </ns7:item-type>
+    </item-types>
+</settings>

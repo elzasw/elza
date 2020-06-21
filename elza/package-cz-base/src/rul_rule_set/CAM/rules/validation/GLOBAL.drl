@@ -1,0 +1,136 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ApValidationErrors;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+import cz.tacr.elza.drools.model.ModelPart;
+import cz.tacr.elza.drools.model.Index;
+import cz.tacr.elza.drools.model.GeoModel;
+import cz.tacr.elza.drools.model.DrlUtils;
+global ApValidationErrors results;
+
+
+rule "R_NAM_001 Povinnost vyplnění preferovaného označení"
+when $ae: Ap( $aeParts : parts)
+     not (Part(type == PartType.PT_NAME) from $aeParts)
+then
+    results.addError("Musí být vyplněno alespoň jedno označení entity.");
+end
+
+rule "R_IDN_005 Použití kódu RÚIAN"
+when $ae: Ap($aeParts : parts)
+     $part: Part(type == PartType.PT_IDENT) from $aeParts
+     $i: Item(type == "IDN_TYPE", spec == "RUIAN") from $part.items
+     GeoModel(country not in ("SK", "SVK", "CZ", "CZE")) or (Part(type == PartType.PT_EXT) from $aeParts)
+then
+    results.addError("Kód RÚIAN v jiném označení lze použít jen u nezaniklých entit v ČR.");
+end
+
+/*
+Obecně programově jsou všechny párty kontrolovány na neopakovatelnost.
+*/
+
+
+rule "R_NAM_003 Možnost vyplnění části označení"
+when $part: ModelPart(type == PartType.PT_NAME)
+then
+     $part.setRepeatable(true);
+end
+
+rule "R_EVE_001 Možnost vyplnění části událost"
+when $part: ModelPart(type == PartType.PT_EVENT)
+then
+     $part.setRepeatable(true);
+end
+
+rule "R_REL_001 Možnost vyplnění části vztah"
+when $part: ModelPart(type == PartType.PT_REL)
+then
+     $part.setRepeatable(true);
+end
+
+rule "R_IDN_007 Možnost vyplnění ostatních identifikátorů u entity"
+when $part: ModelPart(type == PartType.PT_IDENT)
+then
+     $part.setRepeatable(true);
+end
+
+
+/*
+R_UNQ_002 Označení entity mezi sebou
+R_UNQ_004 Identifikátory entity mezi sebou
+R_UNQ_005 Samostatné jednoduché vztahy jedné entity mezi sebou
+
+Obecně všechny indexy partů jsou ve výchozím nastavení nastaveny jako neopakovatelné, tedy v případě vygenerování shdoných indexů nelze do jádra zapsat.
+Lze nastavit pro konkrétní typy pártů a typy indexů jejich opakovatelnost.
+
+Fakticky stačí nastavit opakovatelnost událostí a návazných vztahů k PT_BEGIN, PT_EXT a PT_EVENT
+*/
+
+rule "R_UNQ_Opakovatelné indexy u události"
+when $part: ModelPart(type == PartType.PT_EVENT)
+     $index: Index(indexType in ("SHORT_NAME", "DISPLAY_NAME")) from $part.indices
+then
+     $index.setRepeatable(true);
+end
+
+
+/*
+Pravidla pro porovnání datací
+*/
+rule "R_REL_002 Použití typu vztahu u odkazu na jinou entitu"
+when $ae: Ap( $aeParts : parts)
+     $partRel: (Part(type == PartType.PT_REL) from $aeParts)
+     $itemFrom: (Item(type == "REL_BEGIN") from $partRel.items)
+     $itemTo: (Item(type == "REL_END") from $partRel.items)
+     eval( DrlUtils.greaterThanOrEqualTo($itemTo.getValue(), $itemFrom.getValue()) == false )
+then
+    results.addError("Datace vztahu od je větší než datace vztahu do.");
+end
+
+rule "R_EVE_004 Použití datace události"
+when $ae: Ap( $aeParts : parts)
+     $partRel: (Part(type == PartType.PT_EVENT) from $aeParts)
+     $itemFrom: (Item(type == "EV_BEGIN") from $partRel.items)
+     $itemTo: (Item(type == "EV_END") from $partRel.items)
+     eval( DrlUtils.greaterThanOrEqualTo($itemTo.getValue(), $itemFrom.getValue()) == false )
+then
+    results.addError("Datace události od je větší než datace události do.");
+end
+
+rule "R_CRE_004 Použití datace vzniku"
+when $ae: Ap( $aeParts : parts)
+     $partCre: (Part(type == PartType.PT_CRE) from $aeParts)
+     $partExt: (Part(type == PartType.PT_EXT) from $aeParts)
+     $itemCre: (Item(type == "CRE_DATE") from $partCre.items)
+     $itemExt: (Item(type == "EXT_DATE") from $partExt.items)
+     eval( DrlUtils.greaterThanOrEqualTo($itemExt.getValue(), $itemCre.getValue()) == false )
+then
+    results.addError("Datace zániku není větší než datace vzniku.");
+end
+
+/*
+Existence prvků popisu u událostí a vzniku
+*/
+
+rule "R_CRE_006 Povinnost prvků popisu vzniku"
+when $ae: Ap( $aeParts : parts)
+     $part: Part(type == PartType.PT_CRE) from $aeParts
+     not (Item(type in ("NOTE", "CRE_DATE")) from $part.items)
+     not (Part(parentPartId == $part.id) from $aeParts)
+then 
+    results.addError("U vzniku neexistuje ani jeden z následujícího popisu: poznámka, datace, návazná entita.");
+end
+
+rule "R_EVE_005 Povinnost prvků popisu události"
+when $ae: Ap( $aeParts : parts)
+     $part: Part(type == PartType.PT_EVENT) from $aeParts
+     not (Item(type in ("NOTE", "EV_BEGIN", "EV_END")) from $part.items)
+     not (Part(parentPartId == $part.id) from $aeParts)
+then 
+    results.addError("U události neexistuje ani jeden z následujícího popisu: poznámka, datace, návazná entita.");
+end  

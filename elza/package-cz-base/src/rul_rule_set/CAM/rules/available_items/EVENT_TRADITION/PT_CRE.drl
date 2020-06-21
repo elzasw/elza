@@ -1,0 +1,17 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "R_CRE_003 Použití typu vzniku"
+when $i: Item(spec == "CRC_ORIGIN", type == "CRE_CLASS")
+     $it: ItemType(code in ("CRE_TYPE"))
+     $is : ItemSpec(code in ("CRT_ESTAB","CRT_COMMENCEMENT","CRT_PREDECESSOR","CRT_RECORDSENTRY","CRT_UNSPECIFIED")) from $it.specs
+then
+    $it.setPossible();
+    $is.setPossible();
+end

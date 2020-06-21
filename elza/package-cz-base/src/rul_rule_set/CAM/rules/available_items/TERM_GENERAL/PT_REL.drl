@@ -1,0 +1,42 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+
+rule "R_REL_002 Použití typu vztahu u odkazu na jinou entitu"
+when $part: Part(parent == null)
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_SUPTERM","RT_RELATED","RT_RELATEDTERM","RT_CATEGORY")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_CRE_005 Použití vztahů u vzniku"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_CRE) from $part.parent
+     $parentItem: Item(type == "CRE_CLASS", spec == "CRC_BEGINVALIDNESS") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_AUTHOR", "RT_DOCUMENT")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_EXT_005.2 Použití vztahů u zániku"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EXT) from $part.parent
+     $parentItem: Item(type == "EXT_CLASS", spec == "EXC_ENDVALIDNESS") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_DOCUMENT")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+

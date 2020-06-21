@@ -1,0 +1,14 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "R_EVE_002 Použití typu události"
+when $it: ItemType(code in ("EV_TYPE","EV_BEGIN","EV_END","NOTE"))
+then
+    $it.setImpossible();
+end

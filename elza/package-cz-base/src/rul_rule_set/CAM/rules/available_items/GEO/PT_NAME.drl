@@ -1,0 +1,22 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "R_NAM_002 Použití prvků popisu pro označení"
+when $it: ItemType(code in ("NM_SUP_GEN","NM_SUP_CHRO","NM_SUP_GEO"))
+then
+    $it.setPossible();
+end
+
+rule "R_NAM_002.2 Použití prvků popisu pro označení"
+when $it: ItemType(code == "NM_TYPE")
+     $is : ItemSpec(code in ("NT_OFFICIAL","NT_ACRONYM","NT_FORMER","NT_ONLYKNOWN","NT_ARTIFICIAL","NT_ALIAS","NT_SIMPLIFIED","NT_GARBLED","NT_HONOR","NT_OTHERRULES", "NT_EQUIV")) from $it.specs
+then
+    $it.setPossible();
+    $is.setPossible();
+end

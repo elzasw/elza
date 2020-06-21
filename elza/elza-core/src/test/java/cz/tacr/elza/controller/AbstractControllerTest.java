@@ -660,7 +660,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ArrFundVO createFund(final String name, final String internalCode) {
         List<RulRuleSetVO> ruleSets = getRuleSets();
-        RulRuleSetVO ruleSet = ruleSets.get(0);
+        RulRuleSetVO ruleSet = ruleSets.get(1);
         ParInstitutionVO institution = getInstitutions().get(0);
 
         CreateFundVO createFund = new CreateFundVO();

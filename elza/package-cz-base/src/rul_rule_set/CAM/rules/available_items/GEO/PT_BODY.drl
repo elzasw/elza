@@ -1,0 +1,20 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "R_BDG_001 Povinné uvedení typu geografického objektu"
+when $it: ItemType(code in ("GEO_TYPE"))
+then
+    $it.setRequired();
+end
+
+rule "R_BOD_002 Použití prvků popisu pro záznam (tělo entity)"
+when $it: ItemType(code in ("COORD_POINT", "COORD_BORDER", "COORD_NOTE","GEO_ADMIN_CLASS","HISTORY","DESCRIPTION"))
+then
+    $it.setPossible();
+end

@@ -1,0 +1,183 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "R_REL_002 Použití typu vztahu u odkazu na jinou entitu"
+when $part: Part(parent == null)
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_GRANDMOTHER","RT_BROTHER","RT_HECOUSIN","RT_RELATIONS","RT_GRANDFATHER","RT_GENUSMEMBER","RT_OTHERNAME","RT_ANCESTOR","RT_PLACE","RT_PLACEACT","RT_SCOPEFIELD","RT_PARTNER","RT_SHEPARTNER","RT_SISTER","RT_SHECOUSIN","RT_RESIDENCE","RT_UNCLE","RT_BROTHERINLAW","RT_SISTERINLAW","RT_AUNT","RT_FATHERINLAW","RT_MOTHERINLAW","RT_OBJECT","RT_ACTIVITIES","RT_NAMECHANGE")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_CRE_005 Použití vztahů u vzniku"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_CRE) from $part.parent
+     $parentItem: Item(type == "CRE_CLASS", spec == "CRC_BEGINSCOPE") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_DOCUMENT")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_CRE_005.2 Použití vztahů u vzniku"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_CRE) from $part.parent
+     $parentItem: Item(type == "CRE_CLASS", spec == "CRC_BIRTH") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_ENTITYBIRTH")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_CRE_005.3 Použití vztahů u vzniku"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_CRE) from $part.parent
+     $parentItem: Item(type == "CRE_CLASS", spec == "CRC_BIRTH") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_MOTHER", "RT_PLACE","RT_FATHER")) from $it.specs
+then
+    $is.setPossible();
+end
+
+rule "R_EXT_005 Použití vztahů u zániku"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EXT) from $part.parent
+     $parentItem: Item(type == "EXT_CLASS", spec == "EXC_ENDSCOPE") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_DOCUMENT")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_EXT_005.2 Použití vztahů u zániku"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EXT) from $part.parent
+     $parentItem: Item(type == "EXT_CLASS", spec == "EXC_DEATH") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_ENTITYDEATH")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_EXT_005.3 Použití vztahů u zániku"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EXT) from $part.parent
+     $parentItem: Item(type == "EXT_CLASS", spec == "EXC_DEATH") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_PLACE")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_EVE_003 Použití vztahů u události"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EVENT) from $part.parent
+     $parentItem: Item(type == "EV_TYPE", spec == "ET_AWARD") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_AWARD","RT_GRANTAUTH")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_EVE_003.2 Použití vztahů u události"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EVENT) from $part.parent
+     $parentItem: Item(type == "EV_TYPE", spec == "ET_AWARD") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_CEREMONY")) from $it.specs
+then
+    $is.setPossible();
+end
+
+rule "R_EVE_003.3 Použití vztahů u události"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EVENT) from $part.parent
+     $parentItem: Item(type == "EV_TYPE", spec == "ET_JOB") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_PLACE", "RT_SENIOR", "RT_ACTIVITYFIELD","RT_COLLABORATOR")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_EVE_003.4 Použití vztahů u události"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EVENT) from $part.parent
+     $parentItem: Item(type == "EV_TYPE", spec == "ET_JOB") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_EMPLOYER")) from $it.specs
+then
+    $is.setPossible();
+end
+
+rule "R_EVE_003.5 Použití vztahů u události"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EVENT) from $part.parent
+     $parentItem: Item(type == "EV_TYPE", spec == "ET_MARRIAGE") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_HUSBAND","RT_WIFE", "RT_PLACEEND", "RT_PLACESTART")) from $it.specs
+then
+    $is.setPossible();
+end
+
+rule "R_EVE_003.6 Použití vztahů u události"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EVENT) from $part.parent
+     $parentItem: Item(type == "EV_TYPE", spec == "ET_MEMBERSHIP") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_MEMBERORG")) from $it.specs
+then
+    $is.setPossible();
+end
+
+rule "R_EVE_003.7 Použití vztahů u události"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EVENT) from $part.parent
+     $parentItem: Item(type == "EV_TYPE", spec == "ET_MEMBERSHIP") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_PLACE")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_EVE_003.8 Použití vztahů u události"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EVENT) from $part.parent
+     $parentItem: Item(type == "EV_TYPE", spec == "ET_STUDY") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_PLACE", "RT_STUDYFIELD", "RT_SCHOOLMATE", "RT_TEACHER")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_EVE_003.9 Použití vztahů u události"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EVENT) from $part.parent
+     $parentItem: Item(type == "EV_TYPE", spec == "ET_STUDY") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_SCHOOL")) from $it.specs
+then
+    $is.setPossible();
+end
+
+
+
+
+
+
+

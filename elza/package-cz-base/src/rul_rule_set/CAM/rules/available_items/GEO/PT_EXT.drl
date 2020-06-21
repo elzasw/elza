@@ -1,0 +1,25 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+
+rule "R_EXT_002 Použití způsobu zániku"
+when $it: ItemType(code == "EXT_CLASS")
+     $is : ItemSpec(code in ("EXC_EXTINCTION","EXC_LASTWMENTION")) from $it.specs
+then
+    $is.setPossible();
+end
+
+rule "R_EXT_003 Použití typu zániku"
+when $i: Item(spec == "EXC_EXTINCTION", type == "EXT_CLASS")
+     $it: ItemType(code in ("EXT_TYPE"))
+     $is : ItemSpec(code in ("EXT_OTHER")) from $it.specs
+then
+    $it.setPossible();
+    $is.setPossible();
+end

@@ -31,4 +31,6 @@ public interface ArrangementExtensionRepository extends JpaRepository<RulArrange
     @Query("SELECT ae FROM arr_node_extension ne JOIN ne.arrangementExtension ae WHERE ne.node = :node AND ne.deleteChange IS NULL ORDER BY ae.name")
     List<RulArrangementExtension> findByNode(@Param("node") ArrNode node);
 
+    List<RulArrangementExtension> findByCodeIn(List<String> codes);
+
 }

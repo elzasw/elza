@@ -1,0 +1,34 @@
+package drlglobal;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "R_NAM_002 Použití prvků popisu pro označení"
+when $it: ItemType(code in ("NM_USED_FROM","NM_USED_TO"))
+then
+    $it.setPossible();
+end
+
+rule "R_NAM_002.2 Použití prvků popisu pro označení"
+when $it: ItemType(code in ("NM_LANG"))
+then
+    $it.setPossible();
+    $it.setRepeatable(true);
+end
+
+rule "R_NAM_002.3 Použití prvků popisu pro označení"
+when $it: ItemType(code in ("NM_MAIN"))
+then
+    $it.setRequired();
+end
+
+rule "R_NAM_002.4 Použití prvků popisu pro označení"
+when $it: ItemType(code == "NM_LANG")
+     $is: ItemSpec( ) from $it.specs
+then
+    $is.setPossible();
+end
