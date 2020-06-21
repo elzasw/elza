@@ -24,6 +24,8 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.cam._2019.Entity;
+import cz.tacr.cam._2019.Part;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
@@ -726,6 +728,43 @@ public class AccessPointService {
         return apState;
     }
 
+    public ApState createAccessPoint(final ApScope scope, final Entity entity) {
+        Assert.notNull(scope, "Třída musí být vyplněna");
+        StaticDataProvider sdp = staticDataService.getData();
+
+        ApType type = sdp.getApTypeByCode(entity.getEnt());
+        ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
+        ApState apState = createAccessPoint(scope, type, apChange);
+        ApAccessPoint accessPoint = apState.getAccessPoint();
+
+        List<ApPart> partList = new ArrayList<>();
+        Map<Integer, List<ApItem>> itemMap = new HashMap<>();
+
+        for (Part part : entity.getPrts().getP()) {
+            RulPartType partType = sdp.getPartTypeByCode(part.getT().value());
+            ApPart parentPart = part.getPrnt() != null ? findParentPart(part.getPrnt(), partList) : null;
+
+            ApPart apPart = partService.createPart(partType, accessPoint, apChange, parentPart);
+            List<ApItem> itemList = partService.createPartItems(apChange, apPart, part.getItms().getBiOrAiOrEi());
+
+            itemMap.put(apPart.getPartId(), itemList);
+            partList.add(apPart);
+        }
+
+        accessPoint.setPreferredPart(findPreferredPart(partList));
+
+        updatePartValues(apState, partList, itemMap);
+
+        publishAccessPointCreateEvent(accessPoint);
+
+        return apState;
+    }
+
+    private ApPart findParentPart(final String parentUuid, final List<ApPart> partList) {
+        //TODO fantis
+        return null;
+    }
+
     public void updatePart(final ApAccessPoint apAccessPoint,
                            final ApPart apPart,
                            final ApPartFormVO apPartFormVO) {
@@ -746,6 +785,49 @@ public class AccessPointService {
             }
             updatePartValue(newPart);
 //        }
+    }
+
+    private ApPart findPreferredPart(final List<ApPart> partList) {
+        for (ApPart part : partList) {
+            if (part.getPartType().getCode().equals("PT_NAME")) {
+                return part;
+            }
+        }
+        return null;
+    }
+
+    private void updatePartValues(final ApState state,
+                                  final List<ApPart> partList,
+                                  final Map<Integer, List<ApItem>> itemMap) {
+        for (ApPart part : partList) {
+            List<ApPart> childrenParts = findChildrenParts(part, partList);
+            List<ApItem> items = getItemsForParts(part, childrenParts, itemMap);
+
+            GroovyResult result = groovyService.processGroovy(state, part, childrenParts, items);
+            partService.updatePartValue(part, result);
+        }
+    }
+
+    private List<ApPart> findChildrenParts(final ApPart part, final List<ApPart> partList) {
+        List<ApPart> childrenParts = new ArrayList<>();
+        for (ApPart p : partList) {
+            if (p.getParentPart() != null && p.getParentPart().getPartId().equals(part.getPartId())) {
+                childrenParts.add(p);
+            }
+        }
+        return childrenParts;
+    }
+
+    private List<ApItem> getItemsForParts(final ApPart part,
+                                          final List<ApPart> childrenParts,
+                                          final Map<Integer, List<ApItem>> itemMap) {
+        List<ApItem> itemList = new ArrayList<>(itemMap.get(part.getPartId()));
+
+        for (ApPart p : childrenParts) {
+            itemList.addAll(itemMap.get(p.getPartId()));
+        }
+
+        return itemList;
     }
 
     public void updatePartValues(final Collection<PartWrapper> partWrappers) {

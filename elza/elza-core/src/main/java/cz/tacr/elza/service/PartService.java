@@ -179,6 +179,14 @@ public class PartService {
         return itemRepository.save(items);
     }
 
+    public List<ApItem> createPartItems(final ApChange apChange,
+                                        final ApPart apPart,
+                                        final List<Object> itemList) {
+        List<ApItem> items = apItemService.createItems(itemList, apChange, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
+                -> createPartItem(apPart, it, is, c, objectId, position));
+        return itemRepository.save(items);
+    }
+
     private ApItem createPartItem(final ApPart part, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {
         ApItem item = new ApItem();
         item.setPart(part);

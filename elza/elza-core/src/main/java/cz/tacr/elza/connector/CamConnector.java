@@ -1,5 +1,6 @@
 package cz.tacr.elza.connector;
 
+import cz.tacr.cam._2019.Entity;
 import cz.tacr.cam._2019.QueryResult;
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.client.ApiResponse;
@@ -36,6 +37,12 @@ public class CamConnector {
 
         ApiResponse<File> fileApiResponse = getSearchApiByCode(externalSystemCode).searchApsWithHttpInfo(page, pageSize, query);
         return JaxbUtils.unmarshal(QueryResult.class, fileApiResponse.getData());
+    }
+
+    public Entity getEntityById(final Integer archiveEntityId,
+                                final String externalSystemCode) throws ApiException{
+        ApiResponse<File> fileApiResponse = getEntityApiByCode(externalSystemCode).getEntityByIdWithHttpInfo(String.valueOf(archiveEntityId));
+        return JaxbUtils.unmarshal(Entity.class, fileApiResponse.getData());
     }
 
     public void invalidate(String code) {
