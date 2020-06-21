@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.cam._2019.Entity;
 import cz.tacr.cam._2019.QueryResult;
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.elza.common.FactoryUtils;
@@ -915,7 +916,15 @@ public class ApController {
     public Integer takeArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
                                      @RequestParam final Integer scopeId,
                                      @RequestParam final String externalSystemCode) {
-        return 0;
+        Entity entity;
+        try {
+            entity = camConnector.getEntityById(archiveEntityId, externalSystemCode);
+        } catch (ApiException e) {
+            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+        }
+        ApScope scope = accessPointService.getScope(scopeId);
+        ApState apState = accessPointService.createAccessPoint(scope, entity);
+        return apState.getAccessPointId();
     }
 
     @Transactional
