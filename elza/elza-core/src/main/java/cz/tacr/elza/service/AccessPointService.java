@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +71,6 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
-import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.ImportAccessPoint;
@@ -276,7 +274,7 @@ public class AccessPointService {
 
             saveWithLock(accessPoint);
 
-            List<ApExternalId> eids = externalIdRepository.findByAccessPoint(accessPoint);
+            List<ApBinding> eids = externalIdRepository.findByAccessPoint(accessPoint);
             eids.forEach(eid -> eid.setDeleteChange(change));
             externalIdRepository.save(eids);
 
@@ -1504,12 +1502,12 @@ public class AccessPointService {
                                   final ApExternalIdType externalIdType,
                                   final String externalId,
                                   final ApChange change) {
-        ApExternalId apExternalId = new ApExternalId();
-        apExternalId.setValue(externalId);
-        apExternalId.setAccessPoint(accessPoint);
-        apExternalId.setCreateChange(change);
-        apExternalId.setExternalIdType(externalIdType);
-        externalIdRepository.save(apExternalId);
+        ApBinding apBinding = new ApBinding();
+        apBinding.setValue(externalId);
+        apBinding.setAccessPoint(accessPoint);
+        apBinding.setCreateChange(change);
+        apBinding.setExternalIdType(externalIdType);
+        externalIdRepository.save(apBinding);
     }
 
     private void publishAccessPointCreateEvent(final ApAccessPoint accessPoint) {

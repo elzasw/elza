@@ -2,7 +2,7 @@ package cz.tacr.elza.dataexchange.output.parties;
 
 import cz.tacr.elza.dataexchange.output.writer.BaseApInfo;
 import cz.tacr.elza.dataexchange.output.writer.ExternalIdApInfo;
-import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApState;
 
 import java.util.Collection;
@@ -12,7 +12,7 @@ public class PartyInfo implements BaseApInfo, ExternalIdApInfo {
     // --- fields ---
 
     private ApState apState;
-    private Collection<ApExternalId> externalIds;
+    private Collection<ApBinding> externalIds;
 
     // --- getters/setters ---
 
@@ -26,12 +26,12 @@ public class PartyInfo implements BaseApInfo, ExternalIdApInfo {
     }
 
     @Override
-    public Collection<ApExternalId> getExternalIds() {
+    public Collection<ApBinding> getExternalIds() {
         return externalIds;
     }
 
     @Override
-    public void setExternalIds(Collection<ApExternalId> externalIds) {
+    public void setExternalIds(Collection<ApBinding> externalIds) {
         this.externalIds = externalIds;
     }
 

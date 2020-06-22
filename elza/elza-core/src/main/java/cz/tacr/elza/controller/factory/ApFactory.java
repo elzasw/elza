@@ -138,7 +138,7 @@ public class ApFactory {
         Map<Integer, List<ApItem>> items = itemRepository.findValidItemsByAccessPoint(ap).stream()
                 .collect(Collectors.groupingBy(i -> i.getPartId()));
         // prepare external ids
-        List<ApExternalId> eids = eidRepository.findByAccessPoint(ap);
+        List<ApBinding> eids = eidRepository.findByAccessPoint(ap);
         return createVO(apState, parts, items, eids);
     }
 
@@ -168,7 +168,7 @@ public class ApFactory {
     public ApAccessPointVO createVO(final ApState apState,
                                     final List<ApPart> parts,
                                     final Map<Integer, List<ApItem>> items,
-                                    final List<ApExternalId> eids) {
+                                    final List<ApBinding> eids) {
         ApAccessPoint ap = apState.getAccessPoint();
         ApPart preferredPart = ap.getPreferredPart();
         String desc = getDescription(parts, items);
@@ -296,7 +296,7 @@ public class ApFactory {
                 .collect(Collectors.toMap(o -> o.getAccessPointId(), Function.identity()));
         Map<Integer, List<ApPart>> apPartsMap = partRepository.findValidPartByAccessPoints(accessPoints).stream()
                 .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
-        Map<Integer, List<ApExternalId>> apEidsMap = eidRepository.findByAccessPoints(accessPoints).stream()
+        Map<Integer, List<ApBinding>> apEidsMap = eidRepository.findByAccessPoints(accessPoints).stream()
                 .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
         Map<Integer, Map<Integer, List<ApItem>>> apItemsMap = new HashMap<>();
         List<ApItem> items = itemRepository.findValidItemsByAccessPoints(accessPoints);
@@ -309,8 +309,8 @@ public class ApFactory {
             ApState apState = apStateMap.get(accessPointId);
             List<ApPart> parts = apPartsMap.getOrDefault(accessPointId, Collections.emptyList());
             Map<Integer, List<ApItem>> itemMap = apItemsMap.getOrDefault(accessPointId, Collections.emptyMap());
-            List<ApExternalId> apExternalIds = apEidsMap.getOrDefault(accessPointId, Collections.emptyList());
-            result.add(createVO(apState, parts, itemMap, apExternalIds));
+            List<ApBinding> apBindings = apEidsMap.getOrDefault(accessPointId, Collections.emptyList());
+            result.add(createVO(apState, parts, itemMap, apBindings));
         }
 
         return result;

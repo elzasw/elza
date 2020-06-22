@@ -1,7 +1,7 @@
 package cz.tacr.elza.print.ap;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApExternalIdType;
 
 public class ExternalId {
@@ -23,7 +23,7 @@ public class ExternalId {
         return type;
     }
     
-    public static ExternalId newInstance(ApExternalId eid, StaticDataProvider staticData) {
+    public static ExternalId newInstance(ApBinding eid, StaticDataProvider staticData) {
         ApExternalIdType type = null;
         if (eid.getExternalIdTypeId() != null) {
             type = staticData.getApEidTypeById(eid.getAccessPointId());

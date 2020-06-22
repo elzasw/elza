@@ -1,7 +1,6 @@
 package cz.tacr.elza.dataexchange.output.writer.xml;
 
 import cz.tacr.elza.common.XmlUtils;
-import cz.tacr.elza.dataexchange.input.reader.handlers.ContextAwareElementHandler;
 import cz.tacr.elza.dataexchange.output.aps.ApInfo;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.items.*;
@@ -135,7 +134,7 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
         marshaller.marshal(jaxbElement, sw);
     }
 
-    public static AccessPointEntry createEntry(ApState apState, Collection<ApExternalId> eids) {
+    public static AccessPointEntry createEntry(ApState apState, Collection<ApBinding> eids) {
         ApAccessPoint ap = apState.getAccessPoint();
 
         AccessPointEntry entry = new AccessPointEntry();
@@ -146,7 +145,7 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
         // prepare external id
         if (CollectionUtils.isNotEmpty(eids)) {
             List<ExternalId> elementList = entry.getEid();
-            for (ApExternalId eid : eids) {
+            for (ApBinding eid : eids) {
                 ExternalId element = new ExternalId();
                 element.setV(eid.getValue());
                 element.setT(eid.getExternalIdType().getCode());

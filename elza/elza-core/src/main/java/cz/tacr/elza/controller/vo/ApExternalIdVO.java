@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApBinding;
 
 public class ApExternalIdVO {
 
@@ -27,7 +27,7 @@ public class ApExternalIdVO {
     /**
      * Creates value object from AP external id.
      */
-    public static ApExternalIdVO newInstance(ApExternalId src) {
+    public static ApExternalIdVO newInstance(ApBinding src) {
         ApExternalIdVO vo = new ApExternalIdVO();
         vo.setTypeId(src.getExternalIdTypeId());
         vo.setValue(src.getValue());

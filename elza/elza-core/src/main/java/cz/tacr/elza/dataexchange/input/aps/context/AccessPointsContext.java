@@ -6,7 +6,6 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.ObjectIdHolder;
 import cz.tacr.elza.dataexchange.input.context.*;
 import cz.tacr.elza.dataexchange.input.parts.context.ParentPartWrapper;
-import cz.tacr.elza.dataexchange.input.parts.context.PartInfo;
 import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import cz.tacr.elza.dataexchange.input.parts.context.PrefferedPartWrapper;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
@@ -14,7 +13,6 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.ItemService;
 
 import java.util.*;
 
@@ -125,7 +123,7 @@ public class AccessPointsContext {
      * @param eids    AP external ids, can be null
      * @return Return access point import info
      */
-    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApExternalId> eids, Collection<PartWrapper> partWrappers) {
+    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApBinding> eids, Collection<PartWrapper> partWrappers) {
         AccessPointInfo info = new AccessPointInfo(apState);
         if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
             throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
@@ -151,7 +149,7 @@ public class AccessPointsContext {
         return info;
     }
 
-    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApExternalId> eids) {
+    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApBinding> eids) {
         AccessPointInfo info = new AccessPointInfo(apState);
         if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
             throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
@@ -169,7 +167,7 @@ public class AccessPointsContext {
         return info;
     }
 
-    private void addExternalId(ApExternalId entity, AccessPointInfo apInfo) {
+    private void addExternalId(ApBinding entity, AccessPointInfo apInfo) {
         eidQueue.add(new ApExternalIdWrapper(entity, apInfo));
         apInfo.onEntityQueued();
         if (eidQueue.size() >= batchSize) {

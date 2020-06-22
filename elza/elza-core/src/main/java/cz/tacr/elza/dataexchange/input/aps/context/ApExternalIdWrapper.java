@@ -5,18 +5,18 @@ import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
-import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApBinding;
 
 /**
  * Access point external id wrapper.
  */
 public class ApExternalIdWrapper implements EntityWrapper {
 
-    private final ApExternalId entity;
+    private final ApBinding entity;
 
     private final AccessPointInfo apInfo;
 
-    ApExternalIdWrapper(ApExternalId entity, AccessPointInfo apInfo) {
+    ApExternalIdWrapper(ApBinding entity, AccessPointInfo apInfo) {
         this.entity = Validate.notNull(entity);
         this.apInfo = Validate.notNull(apInfo);
     }

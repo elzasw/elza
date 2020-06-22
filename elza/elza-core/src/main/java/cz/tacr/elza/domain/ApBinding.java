@@ -13,7 +13,7 @@ import javax.persistence.ManyToOne;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 @Entity(name = "ap_external_id")
-public class ApExternalId {
+public class ApBinding {
 
     public static final String ACCESS_POINT_ID = "accessPointId";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";

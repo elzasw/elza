@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import cz.tacr.elza.repository.*;
 import org.apache.commons.lang3.Validate;
@@ -17,7 +16,7 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointWrapper;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.domain.ApChange;
-import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.domain.projection.ApExternalIdInfo;
 
@@ -103,11 +102,11 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
             if (!apw.getSaveMethod().equals(SaveMethod.CREATE)) {
                 continue; // ignore paired by UUID
             }
-            Collection<ApExternalId> eids = apw.getExternalIds();
+            Collection<ApBinding> eids = apw.getExternalIds();
             if (eids == null) {
                 continue; // no external ids
             }
-            for (ApExternalId eid : eids) {
+            for (ApBinding eid : eids) {
                 EidLookup lookup = typeIdMap.get(eid.getExternalIdTypeId());
                 if (lookup == null) {
                     lookup = new EidLookup(eid.getExternalIdType().getCode());

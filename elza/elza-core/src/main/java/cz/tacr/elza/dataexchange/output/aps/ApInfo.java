@@ -4,7 +4,7 @@ import cz.tacr.elza.dataexchange.output.writer.BaseApInfo;
 import cz.tacr.elza.dataexchange.output.writer.ExternalIdApInfo;
 import cz.tacr.elza.dataexchange.output.writer.ItemApInfo;
 import cz.tacr.elza.dataexchange.output.writer.PartApInfo;
-import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
@@ -18,7 +18,7 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartApInfo, ItemApI
 
     private final ApState apState;
 
-    private Collection<ApExternalId> externalIds;
+    private Collection<ApBinding> externalIds;
 
     private Collection<ApPart> parts;
 
@@ -34,12 +34,12 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartApInfo, ItemApI
     }
 
     @Override
-    public Collection<ApExternalId> getExternalIds() {
+    public Collection<ApBinding> getExternalIds() {
         return externalIds;
     }
 
     @Override
-    public void setExternalIds(Collection<ApExternalId> externalIds) {
+    public void setExternalIds(Collection<ApBinding> externalIds) {
         this.externalIds = externalIds;
     }
 
