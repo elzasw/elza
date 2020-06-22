@@ -65,7 +65,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                           NodeCacheService nodeCacheService,
                           InstitutionRepository institutionRepository,
                           ApStateRepository apStateRepository,
-                          ApExternalIdRepository apEidRepository,
+                          ApBindingRepository bindingRepository,
                           ApPartRepository partRepository,
                           ApItemRepository itemRepository,
                           EntityManager em,
@@ -78,7 +78,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
         pdfAttProvider = new PdfAttProvider(applicationContext);
         outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository,
-                apStateRepository, apEidRepository,
+                apStateRepository, bindingRepository,
                 pdfAttProvider, structObjRepos, structItemRepos, partRepository, itemRepository);
         pdfAttProvider.setOutput(outputModel);
     }

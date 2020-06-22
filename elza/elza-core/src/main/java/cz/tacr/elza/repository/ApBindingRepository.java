@@ -12,7 +12,7 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.projection.ApExternalIdInfo;
 
-public interface ApExternalIdRepository extends ElzaJpaRepository<ApBinding, Integer> {
+public interface ApBindingRepository extends ElzaJpaRepository<ApBinding, Integer> {
 
     @Query("SELECT eid FROM ap_external_id eid WHERE eid.accessPoint = ?1 and eid.deleteChangeId is null")
     List<ApBinding> findByAccessPoint(ApAccessPoint accessPoint);

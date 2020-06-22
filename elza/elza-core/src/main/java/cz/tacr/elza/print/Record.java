@@ -9,7 +9,7 @@ import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.print.ap.ExternalId;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.part.Part;
-import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import org.apache.commons.lang3.Validate;
@@ -32,7 +32,7 @@ public class Record {
 
     private final ApStateRepository stateRepository;
 
-    private final ApExternalIdRepository eidRepository;
+    private final ApBindingRepository bindingRepository;
 
     private final ApPartRepository partRepository;
 
@@ -52,13 +52,13 @@ public class Record {
                   RecordType type,
                   StaticDataProvider staticData,
                   ApStateRepository stateRepository,
-                  ApExternalIdRepository eidRepository,
+                  ApBindingRepository bindingRepository,
                   ApPartRepository partRepository) {
         this.ap = ap;
         this.type = type;
         this.staticData = staticData;
         this.stateRepository = stateRepository;
-        this.eidRepository = eidRepository;
+        this.bindingRepository = bindingRepository;
         this.partRepository = partRepository;
        // this.preferredPart = new Part(partRepository.getOne(ap.getPreferredPart().getPartId()), staticData);
     }
@@ -71,7 +71,7 @@ public class Record {
         this.type = src.type;
         this.staticData = src.staticData;
         this.stateRepository = src.stateRepository;
-        this.eidRepository = src.eidRepository;
+        this.bindingRepository = src.bindingRepository;
         this.partRepository = src.partRepository;
         this.eids = src.eids;
         this.preferredPart = src.preferredPart;
@@ -87,7 +87,7 @@ public class Record {
 
     public List<ExternalId> getEids() {
         if (eids == null) {
-            List<ApBinding> apEids = eidRepository.findByAccessPoint(ap);
+            List<ApBinding> apEids = bindingRepository.findByAccessPoint(ap);
             eids = new ArrayList<>(apEids.size());
             for (ApBinding apEid : apEids) {
                 ExternalId eid = ExternalId.newInstance(apEid, staticData);

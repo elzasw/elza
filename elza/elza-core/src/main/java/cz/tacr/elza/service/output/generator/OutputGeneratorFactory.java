@@ -33,7 +33,7 @@ public class OutputGeneratorFactory {
 
     private final ApStateRepository apStateRepository;
 
-    private final ApExternalIdRepository apEidRepository;
+    private final ApBindingRepository bindingRepository;
 
     private final ApPartRepository partRepository;
 
@@ -51,7 +51,7 @@ public class OutputGeneratorFactory {
             NodeCacheService nodeCacheService,
             InstitutionRepository institutionRepository,
             ApStateRepository apStateRepository,
-            ApExternalIdRepository apEidRepository,
+            ApBindingRepository bindingRepository,
             ApPartRepository partRepository,
             ApItemRepository itemRepository,
             EntityManager em,
@@ -64,7 +64,7 @@ public class OutputGeneratorFactory {
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
         this.apStateRepository = apStateRepository;
-        this.apEidRepository = apEidRepository;
+        this.bindingRepository = bindingRepository;
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.em = em;
@@ -88,14 +88,14 @@ public class OutputGeneratorFactory {
     public FreemarkerOutputGenerator createFreemarkerOutputGenerator() {
         return new FreemarkerOutputGenerator(applicationContext, staticDataService, elzaLocale, fundTreeProvider,
                 nodeCacheService,
-                institutionRepository, apStateRepository, apEidRepository, partRepository, itemRepository, em, dmsService);
+                institutionRepository, apStateRepository, bindingRepository, partRepository, itemRepository, em, dmsService);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
         return new JasperOutputGenerator(applicationContext, staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService,
                 institutionRepository, apStateRepository,
-                apEidRepository, partRepository, itemRepository, em, dmsService);
+                bindingRepository, partRepository, itemRepository, em, dmsService);
     }
 
     public DEXmlOutputGenerator createDEXmlOutputGenerator() {

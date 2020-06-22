@@ -24,7 +24,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
 
     private final ApAccessPointRepository apRepository;
 
-    private final ApExternalIdRepository apEidRepository;
+    private final ApBindingRepository bindingRepository;
 
     private final ApChangeHolder changeHolder;
 
@@ -35,7 +35,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
             ImportInitHelper initHelper) {
         super(session, persistEntityListener);
         this.apRepository = initHelper.getApRepository();
-        this.apEidRepository = initHelper.getApEidRepository();
+        this.bindingRepository = initHelper.getBindingRepository();
         this.apStateRepository = initHelper.getApStateRepository();
         this.changeHolder = changeHolder;
     }
@@ -68,7 +68,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         }
         ApChange change = changeHolder.getChange();
         if (apIds.size() > 0) {
-            apEidRepository.invalidateByAccessPointIdIn(apIds, change);
+            bindingRepository.invalidateByAccessPointIdIn(apIds, change);
         }
     }
 
@@ -117,7 +117,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         }
         // find pairs by external ids
         typeIdMap.forEach((typeId, group) -> {
-            List<ApExternalIdInfo> currentEids = apEidRepository
+            List<ApExternalIdInfo> currentEids = bindingRepository
                     .findActiveInfoByTypeIdAndValues(typeId, group.getValues());
             for (ApExternalIdInfo info : currentEids) {
                 AccessPointWrapper apw = group.getWrapper(info.getValue());

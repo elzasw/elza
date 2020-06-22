@@ -33,7 +33,7 @@ public class ApFactory {
 
     private final ApStateRepository stateRepository;
 
-    private final ApExternalIdRepository eidRepository;
+    private final ApBindingRepository bindingRepository;
 
     private final ScopeRepository scopeRepository;
 
@@ -52,7 +52,7 @@ public class ApFactory {
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
-                     final ApExternalIdRepository eidRepository,
+                     final ApBindingRepository bindingRepository,
                      final ScopeRepository scopeRepository,
                      final StaticDataService staticDataService,
                      final ApPartRepository partRepository,
@@ -62,7 +62,7 @@ public class ApFactory {
                      final ClientFactoryVO factoryVO) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
-        this.eidRepository = eidRepository;
+        this.bindingRepository = bindingRepository;
         this.scopeRepository = scopeRepository;
         this.staticDataService = staticDataService;
         this.partRepository = partRepository;
@@ -138,7 +138,7 @@ public class ApFactory {
         Map<Integer, List<ApItem>> items = itemRepository.findValidItemsByAccessPoint(ap).stream()
                 .collect(Collectors.groupingBy(i -> i.getPartId()));
         // prepare external ids
-        List<ApBinding> eids = eidRepository.findByAccessPoint(ap);
+        List<ApBinding> eids = bindingRepository.findByAccessPoint(ap);
         return createVO(apState, parts, items, eids);
     }
 
@@ -296,7 +296,7 @@ public class ApFactory {
                 .collect(Collectors.toMap(o -> o.getAccessPointId(), Function.identity()));
         Map<Integer, List<ApPart>> apPartsMap = partRepository.findValidPartByAccessPoints(accessPoints).stream()
                 .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
-        Map<Integer, List<ApBinding>> apEidsMap = eidRepository.findByAccessPoints(accessPoints).stream()
+        Map<Integer, List<ApBinding>> apEidsMap = bindingRepository.findByAccessPoints(accessPoints).stream()
                 .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
         Map<Integer, Map<Integer, List<ApItem>>> apItemsMap = new HashMap<>();
         List<ApItem> items = itemRepository.findValidItemsByAccessPoints(accessPoints);

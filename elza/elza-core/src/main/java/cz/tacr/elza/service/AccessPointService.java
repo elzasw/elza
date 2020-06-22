@@ -60,7 +60,7 @@ import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
-import cz.tacr.elza.repository.ApExternalIdRepository;
+import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -148,7 +148,7 @@ public class AccessPointService {
     private ApChangeRepository apChangeRepository;
 
     @Autowired
-    private ApExternalIdRepository externalIdRepository;
+    private ApBindingRepository bindingRepository;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -274,9 +274,9 @@ public class AccessPointService {
 
             saveWithLock(accessPoint);
 
-            List<ApBinding> eids = externalIdRepository.findByAccessPoint(accessPoint);
+            List<ApBinding> eids = bindingRepository.findByAccessPoint(accessPoint);
             eids.forEach(eid -> eid.setDeleteChange(change));
-            externalIdRepository.save(eids);
+            bindingRepository.save(eids);
 
             publishAccessPointDeleteEvent(accessPoint);
             reindexDescItem(accessPoint);
@@ -1507,7 +1507,7 @@ public class AccessPointService {
         apBinding.setAccessPoint(accessPoint);
         apBinding.setCreateChange(change);
         apBinding.setExternalIdType(externalIdType);
-        externalIdRepository.save(apBinding);
+        bindingRepository.save(apBinding);
     }
 
     private void publishAccessPointCreateEvent(final ApAccessPoint accessPoint) {

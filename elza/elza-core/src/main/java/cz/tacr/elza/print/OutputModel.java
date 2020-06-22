@@ -96,7 +96,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final ApStateRepository apStateRepository;
 
-    private final ApExternalIdRepository apEidRepository;
+    private final ApBindingRepository bindingRepository;
 
     private final ApPartRepository partRepository;
 
@@ -126,7 +126,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final NodeCacheService nodeCacheService,
                        final InstitutionRepository institutionRepository,
                        final ApStateRepository apStateRepository,
-                       final ApExternalIdRepository apEidRepository,
+                       final ApBindingRepository bindingRepository,
                        final AttPageProvider attPageProvider,
                        final StructuredObjectRepository structObjRepos,
                        final StructuredItemRepository structItemRepos,
@@ -138,7 +138,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
         this.apStateRepository = apStateRepository;
-        this.apEidRepository = apEidRepository;
+        this.bindingRepository = bindingRepository;
         this.attPageProvider = attPageProvider;
         this.structObjRepos = structObjRepos;
         this.structItemRepos = structItemRepos;
@@ -468,7 +468,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         ApState apState = apStateRepository.findLastByAccessPoint(ap);
 
         RecordType type = getAPType(apState.getApTypeId());
-        record = new Record(ap, type, staticData, apStateRepository, apEidRepository, partRepository);
+        record = new Record(ap, type, staticData, apStateRepository, bindingRepository, partRepository);
         List<ApPart> apParts = partRepository.findValidPartByAccessPoint(ap);
         List<ApItem> apItems = itemRepository.findValidItemsByAccessPoint(ap);
         List<Part> parts = new ArrayList<>(apParts.size());
