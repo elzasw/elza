@@ -1,0 +1,16 @@
+.detail-header-wrapper {
+    .ap-type {
+        background-color: #333333;
+        color: #adadad;
+        font-size: 1.2em;
+        .hierarchy-level {
+            &.main {
+                color: #ffffff;
+            }
+        }
+        .hierarchy-delimiter {
+            margin-left: 4px;
+            margin-right: 4px;
+        }
+    }
+}

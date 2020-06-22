@@ -21,6 +21,7 @@ import DetailHeader from "./Detail/DetailHeader";
 import {ApPartFormVO} from "../../api/ApPartFormVO";
 import PartEditModal from "./modal/PartEditModal";
 import {sortItems} from "../../utils/ItemInfo";
+import {RulPartTypeVO} from "../../api/RulPartTypeVO";
 
 type OwnProps = {
     id: number; // ae id
@@ -65,7 +66,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         props.invalidateValidationErrors(props.id);
     };
 
-    const handleAdd = (partType) => {
+    const handleAdd = (partType: PartType) => {
         const detail = props.detail.data!;
 
         props.showPartCreateModal(props.area, partType, props.id, apTypeId, detail.scopeId);
@@ -128,7 +129,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
             />
 
             {allParts && <div key="part-sections">
-                {props.refTables.partTypes.items.map((partType, index) =>
+                {props.refTables.partTypes.items.map((partType: RulPartTypeVO, index) =>
                     <DetailMultiSection
                         key={partType.code}
                         label={partType.name}
@@ -140,7 +141,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
                         onSetPreferred={handleSetPreferred}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
-                        onAdd={() => handleAdd(partType.id)}
+                        onAdd={() => handleAdd(partType.code as any as PartType)}
                         onDeleteParts={handleDeletePart}
                         validationResult={props.validationResult}
                         globalEntity={props.globalEntity}
@@ -175,6 +176,9 @@ const mapDispatchToProps = (
                     }}
                     apTypeId={apTypeId}
                     scopeId={scopeId}
+                    initialValues={{
+                        items: sortItems(partType, part.items, refTables),
+                    }}
                     formData={{
                         partId: part.id,
                         parentPartId: part.partParentId,
@@ -189,7 +193,9 @@ const mapDispatchToProps = (
                     }}
                 />,
                 'dialog-lg',
-                dispatch(globalFundTreeInvalidate()),
+                () => {
+                    dispatch(globalFundTreeInvalidate());
+                },
             )
         );
     },
@@ -217,6 +223,7 @@ const mapDispatchToProps = (
                         items: [],
                     } as ApPartFormVO}
                     parentPartId={parentPartId}
+                    initialValues={{}}
                     apId={apId}
                     onClose={() => {
                         dispatch(modalDialogHide());

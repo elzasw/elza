@@ -1,13 +1,12 @@
 import React, {FC} from 'react';
 import DetailPart from './DetailPart';
-//import DetailActionButton from "../DetailActionButton";
-//import {faPlus, faTrash} from "@fortawesome/free-solid-svg-icons";
 import {connect} from "react-redux";
 import DetailRelatedPart from "./DetailRelatedPart";
 import Icon from '../../shared/icon/Icon';
 import {MOCK_CODE_DATA} from './mock';
 import {ApPartVO} from "../../../api/ApPartVO";
 import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
+import './DetailMultiSelection.scss';
 
 interface Props {
     label: string;
@@ -63,9 +62,9 @@ const DetailMultiSection: FC<Props> = ({
     }
 
     return (
-        <div className="ml-3 mt-3 mr-3 border-bottom detail-multi-selection">
-            <h3 className="mb-3">
-                <span className="mr-1">{label}</span>
+        <div className="detail-multi-selection">
+            <h4 className="p-2 pl-3 mb-1">
+                <span className="mr-2">{label}</span>
                 {editMode && (!singlePart || (singlePart && parts.length === 0)) && <Icon
                     className="ml-1"
                     glyph={'fa-plus'}
@@ -76,7 +75,7 @@ const DetailMultiSection: FC<Props> = ({
                     glyph={'fa-trash'}
                     onClick={() => onDeleteParts && onDeleteParts(parts)}
                 />}
-            </h3>
+            </h4>
 
             {/* TODO sort tak, aby preferred byly prvni  */}
             {[...parts].map((part, index) => {

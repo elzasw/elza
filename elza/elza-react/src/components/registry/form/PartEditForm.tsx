@@ -6,7 +6,6 @@ import {Action} from "redux";
 import classNames from "classnames";
 import {ThunkDispatch} from "redux-thunk";
 import {PartType} from "../../../api/generated/model";
-import {CodelistData} from "../../../types";
 import {ApPartFormVO} from "../../../api/ApPartFormVO";
 import {Icon} from "../../index";
 import {Alert, Button, Col, Form, Row} from "react-bootstrap";
@@ -35,6 +34,9 @@ import ReduxFormFieldErrorDecorator from "../../shared/form/ReduxFormFieldErrorD
 import UnitdateField from "../field/UnitdateField";
 import SpecificationField from "../field/SpecificationField";
 import {useDebouncedEffect} from "../../../utils/hooks";
+import FF from "../../shared/form/FF";
+import FormInput from "../../shared/form/FormInput";
+
 
 type OwnProps = {
     partType: PartType;
@@ -93,7 +95,7 @@ const renderItem = (name: string,
                 disabled={fieldDisabled}
                 maxLength={dataType.textLengthLimitUse || undefined}
                 component={ReduxFormFieldErrorDecorator}
-                renderComponent={Form.Control}
+                renderComponent={FormInput}
             />;
             break;
         case RulDataTypeCodeEnum.STRING:
@@ -103,7 +105,7 @@ const renderItem = (name: string,
                 disabled={fieldDisabled}
                 maxLength={dataType.textLengthLimitUse || undefined}
                 component={ReduxFormFieldErrorDecorator}
-                renderComponent={Form.Control}
+                renderComponent={FormInput}
             />;
             break;
         case RulDataTypeCodeEnum.RECORD_REF:
@@ -168,8 +170,7 @@ const renderItem = (name: string,
                     label={itemType.shortcut}
                     disabled={fieldDisabled}
                     component={ReduxFormFieldErrorDecorator}
-                    renderComponent={Form.Control}
-                    type={'number'}
+                    renderComponent={FormInput}
                 />;
             break;
         case RulDataTypeCodeEnum.COORDINATES:
@@ -180,7 +181,7 @@ const renderItem = (name: string,
                         label={itemType.shortcut}
                         disabled={fieldDisabled}
                         component={ReduxFormFieldErrorDecorator}
-                        renderComponent={Form.Control}
+                        renderComponent={FormInput}
                     />
                 </Col>
                 <Col xs={1}>
@@ -202,9 +203,12 @@ const renderItem = (name: string,
                     label={itemType.shortcut}
                     disabled={fieldDisabled}
                     component={ReduxFormFieldErrorDecorator}
-                    renderComponent={Form.Check}
-                    type={'switch'}
+                    renderComponent={FormInput}
+                    type={'checkbox'}
                 />;
+            break;
+        case RulDataTypeCodeEnum.ENUM:
+            //Resime nize
             break;
         default:
             console.warn("Nepodporovaný typ", dataType.code);
@@ -276,7 +280,7 @@ const renderItems = (props: WrappedFieldArrayProps & {
 }): any => {
     const {refTables, partType, disabled, deleteMode, fields, onCustomEditItem, itemTypeAttributeMap, formData, apId, showImportDialog} = props;
 
-    const items = fields.getAll();
+    const items = fields.getAll() as ApItemVO[];
     if (!items) {
         return <div/>;
     }
@@ -290,13 +294,13 @@ const renderItems = (props: WrappedFieldArrayProps & {
 
     while (index < items.length) {
         let index2 = index + 1;
-        while (index2 < items.length && items[index].itemTypeId === items[index2].itemTypeId) {
+        while (index2 < items.length && items[index].typeId === items[index2].typeId) {
             index2++;
         }
 
         let itemInfo;
         if (refTables.partTypes.itemsMap[partType]) {
-            itemInfo = refTables.partTypes.itemsMap[partType][items[index].itemTypeId] as RulPartTypeVO;
+            itemInfo = refTables.partTypes.itemsMap[partType][items[index].typeId] as RulPartTypeVO;
         }
         let width = itemInfo ? itemInfo.width : 2;
 
@@ -324,7 +328,7 @@ const renderAddActions = ({attributes, formData, refTables, partType, fields, ha
     partType: PartType,
     handleAddItems: (
         attributes: Array<ApCreateTypeVO>,
-        codelist: CodelistData,
+        refTables: any,
         formItems: Array<ApItemVO>,
         partType: PartType,
         arrayInsert: (index: number, value: any) => void,
@@ -344,7 +348,7 @@ const renderAddActions = ({attributes, formData, refTables, partType, fields, ha
                 key={index}
                 variant={'link'}
                 title={itemType.name}
-                style={{paddingLeft: 0}}
+                style={{paddingLeft: 0, color: '#000'}}
                 onClick={() => {
                     handleAddItems([attr], refTables, formData ? formData.items : [], partType, fields.insert, true);
                 }}
@@ -371,7 +375,7 @@ const PartEditForm = ({
                           showImportDialog,
                       }: Props) => {
 
-    const [deleteMode, setDeleteMode] = useState(false);
+    const [deleteMode, setDeleteMode] = useState<boolean>(false);
     const [lastAttributesFetch, setLastAttributesFetch] = useState({id: 0});
     const [editErrors, setEditErrors] = useState<Array<string> | undefined>(undefined);
     const [availAttributes, setAvailAttributes] = useState<ApCreateTypeVO[] | undefined>();
@@ -407,6 +411,7 @@ const PartEditForm = ({
 
                     setAvailAttributes(attrs);
                     setEditErrors(attributesInfo.errors);
+                    setLastAttributesFetch({id: fetchId});
 
                     // Přidání povinných atributů, pokud ještě ve formuláři nejsou
                     const existingItemTypeIds = formData.items
@@ -492,8 +497,8 @@ const PartEditForm = ({
                     handleAddItems={handleAddItems}
                 />}
             </Col>
-            <Col>
-                <Button disabled={disabled} onClick={() => handleDeleteMode()}>
+            <Col xs={3}>
+                <Button disabled={disabled} variant={'outline-dark'} onClick={() => handleDeleteMode()}>
                     {deleteMode ? "Ukončit režim odstraňování položek formuláře" : "Odstranit položky formuláře"}
                 </Button>
             </Col>
@@ -579,7 +584,6 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
     ) => {
         const initialValues: any = {
             onlyMainPart: false,
-            //area: Area.ALLNAMES,
             itemSpecId: item.specId,
         };
 

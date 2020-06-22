@@ -37,6 +37,7 @@ import {refRulDataTypesFetchIfNeeded} from "../../actions/refTables/rulDataTypes
 import CreateAccessPointModal from "../../components/registry/modal/CreateAccessPointModal";
 import ApExtSearchModal, {TypeModal} from "../../components/registry/modal/ApExtSearchModal";
 import {Area} from "../../api/Area";
+import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
 import ApPushToExt from "../../components/registry/modal/ApPushToExt";
 
 /**
@@ -178,6 +179,10 @@ class RegistryPage extends AbstractReactComponent {
                         this.props.dispatch(registryListInvalidate());
                     }}
                 />,
+                'dialog-lg',
+                () => {
+
+                },
             ),
         );
     };

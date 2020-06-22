@@ -50,6 +50,10 @@ const CreateAccessPointModal = ({handleSubmit, onClose, refTables, apTypeId, apT
 
     return <ReduxForm onSubmit={handleSubmit}>
         <Modal.Body>
+            <span>
+                Nejprve vyberte třídu a oblast nové archivní entity. Dle typu vybrané třídy se zobrazí
+                příslušné atributy, které vyplňte. Poté můžete novou archivní entitu založit.
+            </span>
             <Form.Label>
                 {i18n('registry.add.type')}
             </Form.Label>
@@ -81,6 +85,7 @@ const CreateAccessPointModal = ({handleSubmit, onClose, refTables, apTypeId, apT
             />
 
             {(apTypeId || (apType && apType.id)) && scopeId && partForm && <FormSection name="partForm">
+                <hr/>
                 <PartEditForm
                     formInfo={{
                         formName: FORM_NAME,

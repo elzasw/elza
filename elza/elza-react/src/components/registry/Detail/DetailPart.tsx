@@ -130,7 +130,7 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
         }
     };
 
-    return <div className="detail-part mb-2">
+    return <div className="detail-part ml-4 mb-2 pt-3">
         <Row className={classNameHeader + " align-items-center"}>
             <Col>
                 <div
