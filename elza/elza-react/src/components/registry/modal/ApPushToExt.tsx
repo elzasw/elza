@@ -46,7 +46,7 @@ const ApPushToExt = ({handleSubmit, onClose, submitting, extSystems}: Props) => 
             </Row>
         </Modal.Body>
         <Modal.Footer>
-            <Button type="submit" variant="outline-secondary">{i18n('global.action.write')}</Button>
+            <Button disabled={submitting} type="submit" variant="outline-secondary">{i18n('global.action.write')}</Button>
             <Button variant="link" onClick={onClose} disabled={submitting}>
                 {i18n('global.action.close')}
             </Button>
