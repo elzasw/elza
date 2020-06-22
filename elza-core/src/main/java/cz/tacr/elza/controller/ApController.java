@@ -932,5 +932,50 @@ public class ApController {
     public void connectArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
                                      @PathVariable("accessPointId") final Integer accessPointId,
                                      @RequestParam final String externalSystemCode) {
+        Entity entity;
+        try {
+            entity = camConnector.getEntityById(archiveEntityId, externalSystemCode);
+        } catch (ApiException e) {
+            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+        }
+        accessPointService.connectAccessPoint(accessPointId, entity);
     }
+
+    @Transactional
+    @RequestMapping(value = "/external/save/{accessPointId}", method = RequestMethod.POST)
+    public void saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
+                                @RequestParam final String externalSystemCode) {
+
+    }
+
+
+    @Transactional
+    @RequestMapping(value = "/external/synchronize/{accessPointId}", method = RequestMethod.POST)
+    public void synchronizeAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
+                                       @RequestParam final String externalSystemCode) {
+
+    }
+
+    @Transactional
+    @RequestMapping(value = "/external/update/{accessPointId}", method = RequestMethod.POST)
+    public void updateArchiveEntity(@PathVariable("accessPointId") final Integer accessPointId,
+                                    @RequestParam final String externalSystemCode) {
+
+    }
+
+    @Transactional
+    @RequestMapping(value = "/external/disconnect/{accessPointId}", method = RequestMethod.POST)
+    public void disconnectAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
+                                      @RequestParam final String externalSystemCode) {
+
+    }
+
+    @Transactional
+    @RequestMapping(value = "/external/take-rel/{accessPointId}", method = RequestMethod.POST)
+    public void takeRelArchiveEntities(@PathVariable("accessPointId") final Integer accessPointId,
+                                       @RequestParam final String externalSystemCode) {
+
+    }
+
+
 }

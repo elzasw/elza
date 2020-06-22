@@ -760,6 +760,15 @@ public class AccessPointService {
         return apState;
     }
 
+    public void connectAccessPoint(final Integer accessPointId, final Entity entity) {
+        Assert.notNull(accessPointId, "Identifikátor přístupového bodu není vyplněn");
+
+        ApAccessPoint accessPoint = getAccessPoint(accessPointId);
+        ApState state = getState(accessPoint);
+        ApScope scope = state.getScope();
+
+    }
+
     private ApPart findParentPart(final String parentUuid, final List<ApPart> partList) {
         //TODO fantis
         return null;
