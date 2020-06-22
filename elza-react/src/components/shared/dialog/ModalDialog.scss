@@ -20,6 +20,12 @@
             }
         }
     }
+    &.dialog-sm {
+        .modal-dialog {
+            max-width: 350px;
+            width: 350px;
+        }
+    }
     &.dialog-fullscreen {
         padding: 0 !important;
         .modal-dialog {

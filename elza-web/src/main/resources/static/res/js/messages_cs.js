@@ -33,6 +33,7 @@ var messages = {
     "global.action.create": "Vytvořit",
     "global.action.update": "Upravit",
     "global.action.change": "Změnit",
+    "global.action.write": "Zapsat",
     "global.action.delete": "Odstranit",
     "global.action.replace": "Nahradit",
     "global.action.add": "Přidat",
@@ -1007,6 +1008,9 @@ var messages = {
     "ap.error.requiredItemTypeIds": "Nevyplněné povinné prvky popisu:",
     "ap.error.emptyValue": "Prázdná hodnota archivní entity",
     "ap.error.duplicateValue": "Hodnota již existuje",
+
+    "ap.push-to-ext.title": "Zápis entity do externího systému",
+    "ap.push-to-ext": "Zápis entity do externího systému",
 
     "ap.ext-search.title": "Vyhledávání v externím systému",
     "ap.ext-search.title-connect": "Propojení s externím systémem",
