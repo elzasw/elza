@@ -148,7 +148,7 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
             for (ApBinding eid : eids) {
                 ExternalId element = new ExternalId();
                 element.setV(eid.getValue());
-                element.setT(eid.getExternalIdType().getCode());
+                element.setT(eid.getApExternalSystem().getCode());
                 elementList.add(element);
             }
         }

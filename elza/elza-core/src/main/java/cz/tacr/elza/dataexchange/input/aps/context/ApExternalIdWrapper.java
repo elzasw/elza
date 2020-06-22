@@ -1,5 +1,6 @@
 package cz.tacr.elza.dataexchange.input.aps.context;
 
+import cz.tacr.elza.domain.ApBindingState;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -12,11 +13,11 @@ import cz.tacr.elza.domain.ApBinding;
  */
 public class ApExternalIdWrapper implements EntityWrapper {
 
-    private final ApBinding entity;
+    private final ApBindingState entity;
 
     private final AccessPointInfo apInfo;
 
-    ApExternalIdWrapper(ApBinding entity, AccessPointInfo apInfo) {
+    ApExternalIdWrapper(ApBindingState entity, AccessPointInfo apInfo) {
         this.entity = Validate.notNull(entity);
         this.apInfo = Validate.notNull(apInfo);
     }

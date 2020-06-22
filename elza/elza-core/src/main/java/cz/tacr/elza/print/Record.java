@@ -2,14 +2,12 @@ package cz.tacr.elza.print;
 
 import cz.tacr.elza.core.data.PartType;
 import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApBinding;
-import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.print.ap.ExternalId;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.part.Part;
 import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import org.apache.commons.lang3.Validate;
@@ -34,6 +32,8 @@ public class Record {
 
     private final ApBindingRepository bindingRepository;
 
+    private final ApBindingStateRepository bindingStateRepository;
+
     private final ApPartRepository partRepository;
 
     private List<ExternalId> eids;
@@ -53,13 +53,15 @@ public class Record {
                   StaticDataProvider staticData,
                   ApStateRepository stateRepository,
                   ApBindingRepository bindingRepository,
-                  ApPartRepository partRepository) {
+                  ApPartRepository partRepository,
+                  ApBindingStateRepository bindingStateRepository) {
         this.ap = ap;
         this.type = type;
         this.staticData = staticData;
         this.stateRepository = stateRepository;
         this.bindingRepository = bindingRepository;
         this.partRepository = partRepository;
+        this.bindingStateRepository = bindingStateRepository;
        // this.preferredPart = new Part(partRepository.getOne(ap.getPreferredPart().getPartId()), staticData);
     }
 
@@ -75,6 +77,7 @@ public class Record {
         this.partRepository = src.partRepository;
         this.eids = src.eids;
         this.preferredPart = src.preferredPart;
+        this.bindingStateRepository = src.bindingStateRepository;
     }
 
     public int getId() {
@@ -87,10 +90,10 @@ public class Record {
 
     public List<ExternalId> getEids() {
         if (eids == null) {
-            List<ApBinding> apEids = bindingRepository.findByAccessPoint(ap);
+            List<ApBindingState> apEids = bindingStateRepository.findByAccessPoint(ap);
             eids = new ArrayList<>(apEids.size());
-            for (ApBinding apEid : apEids) {
-                ExternalId eid = ExternalId.newInstance(apEid, staticData);
+            for (ApBindingState apEid : apEids) {
+                ExternalId eid = ExternalId.newInstance(apEid.getBinding(), staticData);
                 eids.add(eid);
             }
             // make external ids read-only

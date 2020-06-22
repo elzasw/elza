@@ -35,6 +35,8 @@ public class ApFactory {
 
     private final ApBindingRepository bindingRepository;
 
+    private final ApBindingStateRepository bindingStateRepository;
+
     private final ScopeRepository scopeRepository;
 
     private final StaticDataService staticDataService;
@@ -57,6 +59,7 @@ public class ApFactory {
                      final StaticDataService staticDataService,
                      final ApPartRepository partRepository,
                      final ApItemRepository itemRepository,
+                     final ApBindingStateRepository bindingStateRepository,
                      final RuleService ruleService,
                      final RuleFactory ruleFactory,
                      final ClientFactoryVO factoryVO) {
@@ -67,6 +70,7 @@ public class ApFactory {
         this.staticDataService = staticDataService;
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
+        this.bindingStateRepository = bindingStateRepository;
         this.ruleService = ruleService;
         this.ruleFactory = ruleFactory;
         this.factoryVO = factoryVO;
@@ -138,7 +142,7 @@ public class ApFactory {
         Map<Integer, List<ApItem>> items = itemRepository.findValidItemsByAccessPoint(ap).stream()
                 .collect(Collectors.groupingBy(i -> i.getPartId()));
         // prepare external ids
-        List<ApBinding> eids = bindingRepository.findByAccessPoint(ap);
+        List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(ap);
         return createVO(apState, parts, items, eids);
     }
 
@@ -168,7 +172,7 @@ public class ApFactory {
     public ApAccessPointVO createVO(final ApState apState,
                                     final List<ApPart> parts,
                                     final Map<Integer, List<ApItem>> items,
-                                    final List<ApBinding> eids) {
+                                    final List<ApBindingState> eids) {
         ApAccessPoint ap = apState.getAccessPoint();
         ApPart preferredPart = ap.getPreferredPart();
         String desc = getDescription(parts, items);
@@ -296,7 +300,7 @@ public class ApFactory {
                 .collect(Collectors.toMap(o -> o.getAccessPointId(), Function.identity()));
         Map<Integer, List<ApPart>> apPartsMap = partRepository.findValidPartByAccessPoints(accessPoints).stream()
                 .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
-        Map<Integer, List<ApBinding>> apEidsMap = bindingRepository.findByAccessPoints(accessPoints).stream()
+        Map<Integer, List<ApBindingState>> apEidsMap = bindingStateRepository.findByAccessPoints(accessPoints).stream()
                 .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
         Map<Integer, Map<Integer, List<ApItem>>> apItemsMap = new HashMap<>();
         List<ApItem> items = itemRepository.findValidItemsByAccessPoints(accessPoints);
@@ -309,7 +313,7 @@ public class ApFactory {
             ApState apState = apStateMap.get(accessPointId);
             List<ApPart> parts = apPartsMap.getOrDefault(accessPointId, Collections.emptyList());
             Map<Integer, List<ApItem>> itemMap = apItemsMap.getOrDefault(accessPointId, Collections.emptyMap());
-            List<ApBinding> apBindings = apEidsMap.getOrDefault(accessPointId, Collections.emptyList());
+            List<ApBindingState> apBindings = apEidsMap.getOrDefault(accessPointId, Collections.emptyList());
             result.add(createVO(apState, parts, itemMap, apBindings));
         }
 

@@ -31,6 +31,8 @@ public class StaticDataProvider {
 
     private List<SysLanguage> sysLanguages;
 
+    private List<ApExternalSystem> apExternalSystems;
+
     private Map<Integer, RulPackage> packageIdMap;
 
     private Map<Integer, ApType> apTypeIdMap;
@@ -66,6 +68,8 @@ public class StaticDataProvider {
     private Map<String, SysLanguage> sysLanguageCodeMap;
 
     private Map<Integer, ApTypeRoles> apTypeRolesIdMap;
+
+    private Map<String, ApExternalSystem> apExternalSystemCodeMap = new HashMap<>();
 
     private static StaticDataProvider self;
 
@@ -203,6 +207,16 @@ public class StaticDataProvider {
         return apTypeRolesIdMap.get(id);
     }
 
+    public List<ApExternalSystem> getApExternalSystems() {
+        return apExternalSystems;
+    }
+
+    public ApExternalSystem getApExternalSystemByCode(String code) {
+        Validate.notNull(code);
+        return apExternalSystemCodeMap.get(code);
+    }
+
+
     /* initialization methods */
 
     /**
@@ -218,6 +232,7 @@ public class StaticDataProvider {
         initApEidTypes(service.apEidTypeRepository);
         initSysLanguages(service.sysLanguageRepository);
         initPartTypes(service.partTypeRepository);
+        initApExternalSystems(service.apExternalSystemRepository);
         self = this;
     }
 
@@ -320,6 +335,18 @@ public class StaticDataProvider {
         }
 
         this.partTypes = Collections.unmodifiableList(partTypes);
+    }
+
+    private void initApExternalSystems(ApExternalSystemRepository apExternalSystemRepository) {
+        List<ApExternalSystem> apExternalSystems = apExternalSystemRepository.findAll();
+
+        if (CollectionUtils.isNotEmpty(apExternalSystems)) {
+            for (ApExternalSystem apExternalSystem : apExternalSystems) {
+                apExternalSystemCodeMap.put(apExternalSystem.getCode(), apExternalSystem);
+            }
+        }
+
+        this.apExternalSystems = Collections.unmodifiableList(apExternalSystems);
     }
 
     private void initPackages(PackageRepository packageRepository) {

@@ -80,7 +80,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         AccessPointEntry entry = ap.getApe();
         entryId = entry.getId();
         ApEntity entity = createEntity(entry);
-        List<ApBinding> eids = createExternalIds(entry.getEid());
+        List<ApBindingState> eids = createExternalIds(entry.getEid());
         if (ap.getFrgs() != null) {
             List<PartWrapper> parts = createParts(ap.getFrgs());
             apInfo = context.addAccessPoint(entity.accessPoint, entry.getId(), entity.state, eids, parts);
@@ -97,16 +97,16 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         entryId = entry.getId();
         // create AP and prepare AP info
         ApEntity entity = createEntity(entry);
-        List<ApBinding> eids = createExternalIds(entry.getEid());
+        List<ApBindingState> eids = createExternalIds(entry.getEid());
         apInfo = context.addAccessPoint(entity.accessPoint, party.getId(), entity.state, eids);
 
     }
 
-    private List<ApBinding> createExternalIds(Collection<ExternalId> eids) {
+    private List<ApBindingState> createExternalIds(Collection<ExternalId> eids) {
         if (eids.isEmpty()) {
             return null;
         }
-        List<ApBinding> entities = new ArrayList<>(eids.size());
+        List<ApBindingState> entities = new ArrayList<>(eids.size());
         for (ExternalId eid : eids) {
             if (StringUtils.isEmpty(eid.getT())) {
                 throw new DEImportException("External id type is not set, apeId=" + entryId);
@@ -114,16 +114,21 @@ public class AccessPointEntryProcessor implements ItemProcessor {
             if (StringUtils.isEmpty(eid.getV())) {
                 throw new DEImportException("External id without value, apeId=" + entryId);
             }
-            ApExternalIdType eidType = context.getEidType(eid.getT());
-            if (eidType == null) {
+            ApExternalSystem apExternalSystem = context.getApExternalSystem(eid.getT());
+            if (apExternalSystem == null) {
                 throw new DEImportException("External id type not found, apEid=" + eid.getV() + ", code=" + eid.getT());
             }
             // create external id
             ApBinding entity = new ApBinding();
-            entity.setCreateChange(context.getCreateChange());
             entity.setValue(eid.getV());
-            entity.setExternalIdType(eidType);
-            entities.add(entity);
+            entity.setScope(context.getScope());
+            entity.setApExternalSystem(apExternalSystem);
+
+            ApBindingState state = new ApBindingState();
+            state.setCreateChange(context.getCreateChange());
+            state.setBinding(entity);
+
+            entities.add(state);
         }
         return entities;
     }

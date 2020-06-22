@@ -373,4 +373,103 @@
                                  referencedTableName="sys_external_system"/>
     </changeSet>
 
+    <changeSet id="20200622141100" author="fantis">
+        <renameTable oldTableName="ap_external_id" newTableName="ap_binding"/>
+        <renameColumn tableName="ap_binding" oldColumnName="external_id" newColumnName="binding_id"/>
+        <addColumn tableName="ap_binding">
+            <column name="external_system_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_binding_external_system"
+                             referencedTableName="ap_external_system"
+                             referencedColumnNames="external_system_id"/>
+            </column>
+            <column name="scope_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_binding_scope"
+                             referencedTableName="ap_scope"
+                             referencedColumnNames="scope_id"/>
+            </column>
+        </addColumn>
+        <dropColumn tableName="ap_binding">
+            <column name="access_point_id"/>
+            <column name="external_id_type_id"/>
+            <column name="create_change_id"/>
+            <column name="delete_change_id"/>
+        </dropColumn>
+
+        <addColumn tableName="arr_data_record_ref">
+            <column name="binding_id" type="int">
+                <constraints foreignKeyName="fk_arr_data_record_ref_binding"
+                             referencedTableName="ap_binding"
+                             referencedColumnNames="binding_id"/>
+            </column>
+        </addColumn>
+
+        <dropNotNullConstraint tableName="arr_data_record_ref" columnName="record_id" columnDataType="int"/>
+
+        <createTable tableName="ap_binding_state">
+            <column name="binding_state_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_binding_state"/>
+            </column>
+            <column name="binding_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_binding_state_binding"
+                             referencedTableName="ap_binding"
+                             referencedColumnNames="binding_id"/>
+            </column>
+            <column name="access_point_id" type="int">
+                <constraints foreignKeyName="fk_ap_binding_state_access_point"
+                             referencedTableName="ap_access_point"
+                             referencedColumnNames="access_point_id"/>
+            </column>
+            <column name="ext_state" type="nvarchar(50)"/>
+            <column name="ext_revision" type="nvarchar(50)"/>
+            <column name="ext_user" type="nvarchar(50)"/>
+            <column name="ext_replaced_by" type="nvarchar(50)"/>
+            <column name="sync_change_id" type="int">
+                <constraints foreignKeyName="fk_ap_binding_state_sync_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="sync_ok" type="nvarchar(10)"/>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_binding_state_create_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints foreignKeyName="fk_ap_binding_state_delete_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="ap_binding_item">
+            <column name="binding_item_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_binding_item"/>
+            </column>
+            <column name="binding_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_binding_item_binding"
+                             referencedTableName="ap_binding"
+                             referencedColumnNames="binding_id"/>
+            </column>
+            <column name="value" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="part_id" type="int">
+                <constraints foreignKeyName="fk_ap_binding_item_part"
+                             referencedTableName="ap_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+            <column name="item_id" type="int">
+                <constraints foreignKeyName="fk_ap_binding_item_item"
+                             referencedTableName="ap_item"
+                             referencedColumnNames="item_id"/>
+            </column>
+            <column name="cam_identifier" type="boolean"/>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

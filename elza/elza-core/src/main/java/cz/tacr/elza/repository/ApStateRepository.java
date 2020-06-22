@@ -73,15 +73,15 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer> {
     @Query("UPDATE ap_state  s SET s.apType = :value WHERE s.apType = :key")
     void updateApTypeByApType(@Param("key") ApType key, @Param("value") ApType value);
 
-    @Query("select s" +
-            " from ap_state s" +
-            " join ap_external_id eid on eid.accessPoint = s.accessPoint" +
-            " where eid.value = ?1" +
-            " and eid.externalIdType = ?2" +
-            " and eid.deleteChange is null" +
-            " and s.scope = ?3" +
-            " and s.deleteChange is null")
-    ApState getActiveByExternalIdAndScope(String eidValue, ApExternalIdType eidType, ApScope apScope);
+//    @Query("select s" +
+//            " from ap_state s" +
+//            " join ap_external_id eid on eid.accessPoint = s.accessPoint" +
+//            " where eid.value = ?1" +
+//            " and eid.externalIdType = ?2" +
+//            " and eid.deleteChange is null" +
+//            " and s.scope = ?3" +
+//            " and s.deleteChange is null")
+//    ApState getActiveByExternalIdAndScope(String eidValue, ApExternalIdType eidType, ApScope apScope);
 
     /**
      * Najde hesla podle třídy rejstříku.

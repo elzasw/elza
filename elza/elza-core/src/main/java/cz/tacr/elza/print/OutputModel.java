@@ -102,6 +102,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final ApItemRepository itemRepository;
 
+    private final ApBindingStateRepository bindingStateRepository;
+
     private final StructuredObjectRepository structObjRepos;
 
     /**
@@ -131,7 +133,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final StructuredObjectRepository structObjRepos,
                        final StructuredItemRepository structItemRepos,
                        final ApPartRepository partRepository,
-                       final ApItemRepository itemRepository) {
+                       final ApItemRepository itemRepository,
+                       final ApBindingStateRepository bindingStateRepository) {
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
         this.fundTreeProvider = fundTreeProvider;
@@ -144,6 +147,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.structItemRepos = structItemRepos;
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
+        this.bindingStateRepository = bindingStateRepository;
     }
 
     public boolean isInitialized() {
@@ -468,7 +472,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         ApState apState = apStateRepository.findLastByAccessPoint(ap);
 
         RecordType type = getAPType(apState.getApTypeId());
-        record = new Record(ap, type, staticData, apStateRepository, bindingRepository, partRepository);
+        record = new Record(ap, type, staticData, apStateRepository, bindingRepository, partRepository, bindingStateRepository);
         List<ApPart> apParts = partRepository.findValidPartByAccessPoint(ap);
         List<ApItem> apItems = itemRepository.findValidItemsByAccessPoint(ap);
         List<Part> parts = new ArrayList<>(apParts.size());

@@ -72,6 +72,9 @@ public class OutputModelTest extends AbstractServiceTest {
     @Autowired
     StructuredItemRepository structItemRepos;
 
+    @Autowired
+    ApBindingStateRepository bindingStateRepository;
+
     // test output with structObjs
     @Test
     @Transactional(TxType.REQUIRES_NEW)
@@ -140,7 +143,7 @@ public class OutputModelTest extends AbstractServiceTest {
         helperTestService.waitForWorkers();
         OutputModel outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
-                bindingRepository,null, structObjRepos, structItemRepos, partRepository, itemRepository);
+                bindingRepository,null, structObjRepos, structItemRepos, partRepository, itemRepository, bindingStateRepository);
 
         ArrOutput output = new ArrOutput();
         output.setFund(fi.getFund());

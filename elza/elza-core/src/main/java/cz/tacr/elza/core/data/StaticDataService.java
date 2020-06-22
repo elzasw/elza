@@ -70,6 +70,8 @@ public class StaticDataService {
 
     final PartTypeRepository partTypeRepository;
 
+    final ApExternalSystemRepository apExternalSystemRepository;
+
     @Autowired
     public StaticDataService(final EntityManager em,
                              final RuleSetRepository ruleSetRepository,
@@ -84,7 +86,8 @@ public class StaticDataService {
                              final ApTypeRepository apTypeRepository,
                              final ApExternalIdTypeRepository apEidTypeRepository,
                              final SysLanguageRepository sysLanguageRepository,
-                             final PartTypeRepository partTypeRepository) {
+                             final PartTypeRepository partTypeRepository,
+                             final ApExternalSystemRepository apExternalSystemRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
         this.itemTypeRepository = itemTypeRepository;
@@ -99,6 +102,7 @@ public class StaticDataService {
         this.apEidTypeRepository = apEidTypeRepository;
         this.sysLanguageRepository = sysLanguageRepository;
         this.partTypeRepository = partTypeRepository;
+        this.apExternalSystemRepository = apExternalSystemRepository;
     }
 
     /**

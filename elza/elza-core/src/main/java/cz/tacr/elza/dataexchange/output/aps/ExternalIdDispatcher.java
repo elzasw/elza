@@ -3,6 +3,7 @@ package cz.tacr.elza.dataexchange.output.aps;
 import java.util.ArrayList;
 import java.util.List;
 
+import cz.tacr.elza.domain.ApExternalSystem;
 import org.apache.commons.lang.Validate;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -35,9 +36,9 @@ public class ExternalIdDispatcher extends NestedLoadDispatcher<ApBinding> {
     @Override
     public void onLoad(ApBinding result) {
         // init external id type
-        ApExternalIdType type = staticData.getApEidTypeById(result.getExternalIdTypeId());
-        Validate.notNull(type);
-        result.setExternalIdType(type);
+        ApExternalSystem apExternalSystem = staticData.getApExternalSystemByCode(result.getApExternalSystem().getCode());
+        Validate.notNull(apExternalSystem);
+        result.setApExternalSystem(apExternalSystem);
         // set result
         externalIds.add(result);
     }
