@@ -1,5 +1,5 @@
 import React from 'react';
-import {ConfigProps, Form, FormSection, getFormValues, reduxForm, SubmitHandler} from 'redux-form';
+import {ConfigProps, Form, getFormValues, reduxForm, SubmitHandler} from 'redux-form';
 import {connect} from "react-redux";
 import PartEditForm from "./../form/PartEditForm";
 import {ApPartFormVO} from "../../../api/ApPartFormVO";
@@ -35,26 +35,24 @@ const PartEditModal = ({handleSubmit, onClose, refTables, partType, apTypeId, sc
 
     return <Form onSubmit={handleSubmit}>
         <Modal.Body>
-            <FormSection name="">
-                <PartEditForm
-                    formInfo={{
-                        formName: FORM_NAME,
-                        sectionName: ""
-                    }}
-                    partType={partType}
-                    apTypeId={apTypeId}
-                    scopeId={scopeId}
-                    formData={formData}
-                    submitting={submitting}
-                    parentPartId={parentPartId}
-                    apId={apId}
-                    partId={partId}
-                />
-            </FormSection>
+            <PartEditForm
+                formInfo={{
+                    formName: FORM_NAME,
+                    sectionName: "partForm"
+                }}
+                partType={partType}
+                apTypeId={apTypeId}
+                scopeId={scopeId}
+                formData={formData}
+                submitting={submitting}
+                parentPartId={parentPartId}
+                apId={apId}
+                partId={partId}
+            />
         </Modal.Body>
         <Modal.Footer>
             <Button type="submit" variant="outline-secondary" onClick={handleSubmit} disabled={submitting}>
-                {i18n('global.action.save')}
+                {i18n('global.action.store')}
             </Button>
 
             <Button variant="link" onClick={onClose} disabled={submitting}>
@@ -66,7 +64,6 @@ const PartEditModal = ({handleSubmit, onClose, refTables, partType, apTypeId, sc
 
 const mapStateToProps = (state: any) => {
     return {
-        formData: getFormValues(FORM_NAME)(state),
         refTables: state.refTables,
     }
 };
