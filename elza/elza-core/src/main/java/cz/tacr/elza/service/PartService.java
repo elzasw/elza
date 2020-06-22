@@ -181,8 +181,11 @@ public class PartService {
 
     public List<ApItem> createPartItems(final ApChange apChange,
                                         final ApPart apPart,
-                                        final List<Object> itemList) {
-        List<ApItem> items = apItemService.createItems(itemList, apChange, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
+                                        final List<Object> itemList,
+                                        final ApBinding binding,
+                                        final ApScope scope,
+                                        final ApExternalSystem apExternalSystem) {
+        List<ApItem> items = apItemService.createItems(itemList, apChange, binding, scope, apExternalSystem, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createPartItem(apPart, it, is, c, objectId, position));
         return itemRepository.save(items);
     }
@@ -207,6 +210,14 @@ public class PartService {
     public void deletePart(ApPart apPart, ApChange apChange) {
         apPart.setDeleteChange(apChange);
         partRepository.save(apPart);
+    }
+
+    public void deleteParts(final ApAccessPoint accessPoint, final ApChange apChange) {
+        List<ApPart> partList = partRepository.findValidPartByAccessPoint(accessPoint);
+        for (ApPart part : partList) {
+            apItemService.deletePartItems(part, apChange);
+            deletePart(part, apChange);
+        }
     }
 
     /**

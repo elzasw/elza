@@ -1022,14 +1022,16 @@ public class ApController {
     public Integer takeArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
                                      @RequestParam final Integer scopeId,
                                      @RequestParam final String externalSystemCode) {
+        ApScope scope = accessPointService.getScope(scopeId);
+        accessPointService.checkUniqueBinding(scope, archiveEntityId, externalSystemCode);
+
         Entity entity;
         try {
             entity = camConnector.getEntityById(archiveEntityId, externalSystemCode);
         } catch (ApiException e) {
             throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
         }
-        ApScope scope = accessPointService.getScope(scopeId);
-        ApState apState = accessPointService.createAccessPoint(scope, entity);
+        ApState apState = accessPointService.createAccessPoint(scope, entity, externalSystemCode);
         return apState.getAccessPointId();
     }
 
@@ -1045,13 +1047,19 @@ public class ApController {
     public void connectArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
                                      @PathVariable("accessPointId") final Integer accessPointId,
                                      @RequestParam final String externalSystemCode) {
+        Assert.notNull(accessPointId, "Identifikátor přístupového bodu není vyplněn");
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApState state = accessPointService.getState(accessPoint);
+        ApScope scope = state.getScope();
+        accessPointService.checkUniqueBinding(scope, archiveEntityId, externalSystemCode);
+
         Entity entity;
         try {
             entity = camConnector.getEntityById(archiveEntityId, externalSystemCode);
         } catch (ApiException e) {
             throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
         }
-        accessPointService.connectAccessPoint(accessPointId, entity);
+        accessPointService.connectAccessPoint(state, entity, externalSystemCode);
     }
 
     /**
@@ -1069,7 +1077,7 @@ public class ApController {
 
 
     /**
-     * Synchronizace přístupového bodu z archivního systému
+     * Synchronizace přístupového bodu z externího systému
      *
      * @param accessPointId identifikátor přístupového bodu
      * @param externalSystemCode kód externího systému
@@ -1108,7 +1116,7 @@ public class ApController {
     }
 
     /**
-     * Založení přístupových bodů z návazných entit
+     * Založení přístupových bodů z návazných entit z externího systému
      *
      * @param accessPointId identifikátor přístupového bodu
      * @param externalSystemCode kód externího systému

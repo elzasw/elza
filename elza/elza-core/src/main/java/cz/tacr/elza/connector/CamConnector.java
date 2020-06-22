@@ -1,5 +1,7 @@
 package cz.tacr.elza.connector;
 
+import cz.tacr.cam._2019.BatchUpdate;
+import cz.tacr.cam._2019.BatchUpdateResult;
 import cz.tacr.cam._2019.Entity;
 import cz.tacr.cam._2019.QueryResult;
 import cz.tacr.cam.client.ApiException;
@@ -40,9 +42,21 @@ public class CamConnector {
     }
 
     public Entity getEntityById(final Integer archiveEntityId,
-                                final String externalSystemCode) throws ApiException{
+                                final String externalSystemCode) throws ApiException {
         ApiResponse<File> fileApiResponse = getEntityApiByCode(externalSystemCode).getEntityByIdWithHttpInfo(String.valueOf(archiveEntityId));
         return JaxbUtils.unmarshal(Entity.class, fileApiResponse.getData());
+    }
+
+    public BatchUpdateResult postNewBatch(final BatchUpdate batchUpdate,
+                                          final String externalSystemCode) throws ApiException {
+        ApiResponse<File> fileApiResponse = getBatchUpdatesApiByCode(externalSystemCode).postNewBatchWithHttpInfo(JaxbUtils.asFile(batchUpdate));
+        return JaxbUtils.unmarshal(BatchUpdateResult.class, fileApiResponse.getData());
+    }
+
+    public BatchUpdateResult getBatchStatus(final String bid,
+                                            final String externalSystemCode) throws ApiException {
+        ApiResponse<File> fileApiResponse = getBatchUpdatesApiByCode(externalSystemCode).getBatchStatusWithHttpInfo(bid);
+        return JaxbUtils.unmarshal(BatchUpdateResult.class, fileApiResponse.getData());
     }
 
     public void invalidate(String code) {

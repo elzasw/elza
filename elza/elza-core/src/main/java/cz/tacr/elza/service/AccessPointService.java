@@ -187,6 +187,9 @@ public class AccessPointService {
     @Autowired
     private GroovyService groovyService;
 
+    @Autowired
+    private ExternalSystemService externalSystemService;
+
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
      */
@@ -730,7 +733,7 @@ public class AccessPointService {
         return apState;
     }
 
-    public ApState createAccessPoint(final ApScope scope, final Entity entity) {
+    public ApState createAccessPoint(final ApScope scope, final Entity entity, final String externalSystemCode) {
         Assert.notNull(scope, "Třída musí být vyplněna");
         StaticDataProvider sdp = staticDataService.getData();
 
@@ -739,15 +742,56 @@ public class AccessPointService {
         ApState apState = createAccessPoint(scope, type, apChange);
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
+        createAccessPoint(scope, entity, accessPoint, apChange, sdp, externalSystemCode, apState);
+
+        publishAccessPointCreateEvent(accessPoint);
+
+        return apState;
+    }
+
+    public void connectAccessPoint(final ApState state, final Entity entity, final String externalSystemCode) {
+        StaticDataProvider sdp = staticDataService.getData();
+        ApScope scope = state.getScope();
+        ApAccessPoint accessPoint = state.getAccessPoint();
+        ApChange apChange = apDataService.createChange(ApChange.Type.AP_UPDATE);
+        ApType type = sdp.getApTypeByCode(entity.getEnt());
+
+        state.setDeleteChange(apChange);
+        stateRepository.save(state);
+        ApState stateNew = copyState(state, apChange);
+        stateNew.setApType(type);
+        stateNew.setStateApproval(StateApproval.NEW);
+        stateRepository.save(stateNew);
+
+        partService.deleteParts(accessPoint, apChange);
+
+        createAccessPoint(scope, entity, accessPoint, apChange, sdp, externalSystemCode, stateNew);
+
+        publishAccessPointUpdateEvent(accessPoint);
+    }
+
+    private void createAccessPoint(final ApScope scope,
+                                   final Entity entity,
+                                   final ApAccessPoint accessPoint,
+                                   final ApChange apChange,
+                                   final StaticDataProvider sdp,
+                                   final String externalSystemCode,
+                                   final ApState apState) {
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ApBinding binding = externalSystemService.createApBinding(scope, entity.getEid(), apExternalSystem);
+        externalSystemService.createApBindingState(binding, accessPoint, apChange,
+                entity.getEns().value(), entity.getRevi().getRid(),  entity.getRevi().getUsr(), entity.getReid());
+
         List<ApPart> partList = new ArrayList<>();
         Map<Integer, List<ApItem>> itemMap = new HashMap<>();
 
         for (Part part : entity.getPrts().getP()) {
             RulPartType partType = sdp.getPartTypeByCode(part.getT().value());
-            ApPart parentPart = part.getPrnt() != null ? findParentPart(part.getPrnt(), partList) : null;
+            ApPart parentPart = part.getPrnt() != null ? findParentPart(binding, part.getPrnt()) : null;
 
             ApPart apPart = partService.createPart(partType, accessPoint, apChange, parentPart);
-            List<ApItem> itemList = partService.createPartItems(apChange, apPart, part.getItms().getBiOrAiOrEi());
+            externalSystemService.createApBindingItem(binding, part.getPid(), apPart, null);
+            List<ApItem> itemList = partService.createPartItems(apChange, apPart, part.getItms().getBiOrAiOrEi(), binding, scope, apExternalSystem);
 
             itemMap.put(apPart.getPartId(), itemList);
             partList.add(apPart);
@@ -756,24 +800,11 @@ public class AccessPointService {
         accessPoint.setPreferredPart(findPreferredPart(partList));
 
         updatePartValues(apState, partList, itemMap);
-
-        publishAccessPointCreateEvent(accessPoint);
-
-        return apState;
     }
 
-    public void connectAccessPoint(final Integer accessPointId, final Entity entity) {
-        Assert.notNull(accessPointId, "Identifikátor přístupového bodu není vyplněn");
-
-        ApAccessPoint accessPoint = getAccessPoint(accessPointId);
-        ApState state = getState(accessPoint);
-        ApScope scope = state.getScope();
-
-    }
-
-    private ApPart findParentPart(final String parentUuid, final List<ApPart> partList) {
-        //TODO fantis
-        return null;
+    private ApPart findParentPart(final ApBinding binding, final String parentUuid) {
+        ApBindingItem apBindingItem = externalSystemService.findByBindingAndUuid(binding, parentUuid);
+        return apBindingItem.getPart();
     }
 
     public void updatePart(final ApAccessPoint apAccessPoint,
@@ -1719,6 +1750,13 @@ public class AccessPointService {
         accessPoint.setPreferredPart(apPart);
         apAccessPointRepository.save(accessPoint);
         updatePartValue(apPart);
+    }
+
+    public void checkUniqueBinding(ApScope scope, Integer archiveEntityId, String externalSystemCode) {
+        ApBinding apBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId, externalSystemCode);
+        if (apBinding != null) {
+            throw new IllegalArgumentException("Tato archivní entita již je v tomto scope.");
+        }
     }
 
     /**

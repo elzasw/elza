@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.cam._2019.*;
+import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
@@ -35,17 +36,20 @@ public class AccessPointItemService {
     private final ApItemRepository itemRepository;
     private final DataRepository dataRepository;
     private final SequenceService sequenceService;
+    private final ExternalSystemService externalSystemService;
 
     public AccessPointItemService(final EntityManager em,
                                   final StaticDataService staticDataService,
                                   final ApItemRepository itemRepository,
                                   final DataRepository dataRepository,
-                                  final SequenceService sequenceService) {
+                                  final SequenceService sequenceService,
+                                  final ExternalSystemService externalSystemService) {
         this.em = em;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
         this.dataRepository = dataRepository;
         this.sequenceService = sequenceService;
+        this.externalSystemService = externalSystemService;
     }
 
     /**
@@ -269,14 +273,19 @@ public class AccessPointItemService {
         return itemsCreated;
     }
 
-    public List<ApItem> createItems(final List<Object> createItems, final ApChange change, final CreateFunction create) {
+    public List<ApItem> createItems(final List<Object> createItems,
+                                    final ApChange change,
+                                    final ApBinding binding,
+                                    final ApScope scope,
+                                    final ApExternalSystem apExternalSystem,
+                                    final CreateFunction create) {
         List<ArrData> dataToSave = new ArrayList<>(createItems.size());
         List<ApItem> itemsCreated = new ArrayList<>();
         Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
 
         for (Object createItem : createItems) {
 
-            ApItem itemCreated = createItem(createItem, change, create, typeIdItemsMap, dataToSave);
+            ApItem itemCreated = createItem(createItem, change, create, typeIdItemsMap, dataToSave, binding, scope, apExternalSystem);
             itemsCreated.add(itemCreated);
         }
         dataRepository.save(dataToSave);
@@ -287,10 +296,14 @@ public class AccessPointItemService {
                               final ApChange change,
                               final CreateFunction create,
                               final Map<Integer, List<ApItem>> typeIdItemsMap,
-                              final List<ArrData> dataToSave) {
+                              final List<ArrData> dataToSave,
+                              final ApBinding binding,
+                              final ApScope scope,
+                              final ApExternalSystem apExternalSystem) {
         StaticDataProvider sdp = staticDataService.getData();
         RulItemType itemType;
         RulItemSpec itemSpec;
+        String uuid;
         ArrData data;
 
         if (createItem instanceof ItemBoolean) {
@@ -298,6 +311,7 @@ public class AccessPointItemService {
 
             itemType = sdp.getItemTypeByCode(itemBoolean.getT()).getEntity();
             itemSpec = itemBoolean.getS() == null ? null : sdp.getItemSpecByCode(itemBoolean.getS());
+            uuid = itemBoolean.getUuid();
 
             ArrDataBit dataBit = new ArrDataBit();
             dataBit.setValue(itemBoolean.isValue());
@@ -308,9 +322,22 @@ public class AccessPointItemService {
 
             itemType = sdp.getItemTypeByCode(itemEntityRef.getT()).getEntity();
             itemSpec = itemEntityRef.getS() == null ? null : sdp.getItemSpecByCode(itemEntityRef.getS());
+            uuid = itemEntityRef.getUuid();
 
             ArrDataRecordRef dataRecordRef = new ArrDataRecordRef();
-//            dataRecordRef.setRecord(itemEntityRef.getEr().getEid());
+            //TODO fantiš
+//            ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, itemEntityRef.getEr().getEid().intValue(), apExternalSystem.getCode());
+//            if (refBinding == null) {
+//                dataRecordRef.setBinding(externalSystemService.createApBinding(scope, itemEntityRef.getEr().getEid(), apExternalSystem));
+//            } else {
+//                dataRecordRef.setBinding(refBinding);
+//
+//                ApBindingState bindingState = externalSystemService.findByBinding(refBinding);
+//                if (bindingState != null) {
+//                    dataRecordRef.setRecord(bindingState.getAccessPoint());
+//                }
+//            }
+
             dataRecordRef.setDataType(DataType.RECORD_REF.getEntity());
             data = dataRecordRef;
         } else if (createItem instanceof ItemEnum) {
@@ -318,6 +345,7 @@ public class AccessPointItemService {
 
             itemType = sdp.getItemTypeByCode(itemEnum.getT()).getEntity();
             itemSpec = itemEnum.getS() == null ? null : sdp.getItemSpecByCode(itemEnum.getS());
+            uuid = itemEnum.getUuid();
 
             ArrDataNull dataNull = new ArrDataNull();
             dataNull.setDataType(DataType.ENUM.getEntity());
@@ -327,6 +355,7 @@ public class AccessPointItemService {
 
             itemType = sdp.getItemTypeByCode(itemInteger.getT()).getEntity();
             itemSpec = itemInteger.getS() == null ? null : sdp.getItemSpecByCode(itemInteger.getS());
+            uuid = itemInteger.getUuid();
 
             ArrDataInteger dataInteger = new ArrDataInteger();
             dataInteger.setValue(itemInteger.getValue().intValue());
@@ -337,10 +366,12 @@ public class AccessPointItemService {
 
             itemType = sdp.getItemTypeByCode(itemLink.getT()).getEntity();
             itemSpec = itemLink.getS() == null ? null : sdp.getItemSpecByCode(itemLink.getS());
+            uuid = itemLink.getUuid();
 
             ArrDataUriRef dataUriRef = new ArrDataUriRef();
             dataUriRef.setValue(itemLink.getUrl());
             dataUriRef.setDescription(itemLink.getNm());
+            dataUriRef.setSchema("");
             dataUriRef.setArrNode(null);
             dataUriRef.setDataType(DataType.URI_REF.getEntity());
             data = dataUriRef;
@@ -349,32 +380,53 @@ public class AccessPointItemService {
 
             itemType = sdp.getItemTypeByCode(itemString.getT()).getEntity();
             itemSpec = itemString.getS() == null ? null : sdp.getItemSpecByCode(itemString.getS());
+            uuid = itemString.getUuid();
 
-            ArrDataString dataString = new ArrDataString();
-            dataString.setValue(itemString.getValue());
-            dataString.setDataType(DataType.STRING.getEntity());
-            data = dataString;
+            switch(DataType.fromCode(itemType.getDataType().getCode())) {
+                case STRING:
+                    ArrDataString dataString = new ArrDataString();
+                    dataString.setValue(itemString.getValue());
+                    dataString.setDataType(DataType.STRING.getEntity());
+                    data = dataString;
+                    break;
+                case TEXT:
+                    ArrDataText dataText = new ArrDataText();
+                    dataText.setValue(itemString.getValue());
+                    dataText.setDataType(DataType.TEXT.getEntity());
+                    data = dataText;
+                    break;
+                case COORDINATES:
+                    ArrDataCoordinates dataCoordinates = new ArrDataCoordinates();
+                    dataCoordinates.setValue(GeometryConvertor.convert(itemString.getValue()));
+                    dataCoordinates.setDataType(DataType.COORDINATES.getEntity());
+                    data = dataCoordinates;
+                    break;
+                default:
+                    throw new IllegalStateException("Neznámý datový typ " + itemType.getDataType().getCode());
+            }
+
         } else if (createItem instanceof ItemUnitDate) {
             ItemUnitDate itemUnitDate = (ItemUnitDate) createItem;
 
             itemType = sdp.getItemTypeByCode(itemUnitDate.getT()).getEntity();
             itemSpec = itemUnitDate.getS() == null ? null : sdp.getItemSpecByCode(itemUnitDate.getS());
+            uuid = itemUnitDate.getUuid();
 
             CalendarType calType = CalendarType.GREGORIAN;
             ArrDataUnitdate dataUnitDate = new ArrDataUnitdate();
-            dataUnitDate.setValueFrom(itemUnitDate.getF());
+            dataUnitDate.setValueFrom(itemUnitDate.getF().trim());
             dataUnitDate.setValueFromEstimated(itemUnitDate.isFe());
             dataUnitDate.setFormat(itemUnitDate.getFmt());
-            dataUnitDate.setValueTo(itemUnitDate.getTo());
+            dataUnitDate.setValueTo(itemUnitDate.getTo().trim());
             dataUnitDate.setValueToEstimated(itemUnitDate.isToe());
             if (itemUnitDate.getF() != null) {
-                dataUnitDate.setNormalizedFrom(CalendarConverter.toSeconds(calType, LocalDateTime.parse(itemUnitDate.getF(), DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                dataUnitDate.setNormalizedFrom(CalendarConverter.toSeconds(calType, LocalDateTime.parse(itemUnitDate.getF().trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
             } else {
                 dataUnitDate.setNormalizedFrom(Long.MIN_VALUE);
             }
 
-            if (itemUnitDate.getT() != null) {
-                dataUnitDate.setNormalizedTo(CalendarConverter.toSeconds(calType, LocalDateTime.parse(itemUnitDate.getT(), DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+            if (itemUnitDate.getTo() != null) {
+                dataUnitDate.setNormalizedTo(CalendarConverter.toSeconds(calType, LocalDateTime.parse(itemUnitDate.getTo().trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
             } else {
                 dataUnitDate.setNormalizedTo(Long.MAX_VALUE);
             }
@@ -393,6 +445,9 @@ public class AccessPointItemService {
 
         ApItem itemCreated = create.apply(itemType, itemSpec, change, nextItemObjectId(), position);
         itemCreated.setData(data);
+
+        externalSystemService.createApBindingItem(binding, uuid, null, itemCreated);
+
         dataToSave.add(data);
         existsItems.add(itemCreated);
         return itemCreated;

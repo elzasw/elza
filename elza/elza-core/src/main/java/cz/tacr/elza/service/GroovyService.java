@@ -111,7 +111,7 @@ public class GroovyService {
                 String spec = itemSpec == null ? null : itemSpec.getName();
                 String specCode = itemSpec == null ? null : itemSpec.getCode();
 
-                DataType dataType = itemType.getDataType();
+                DataType dataType = DataType.fromCode(data.getDataType().getCode());
                 GroovyItem groovyItem;
                 switch (dataType) {
                     case BIT: {
@@ -146,12 +146,19 @@ public class GroovyService {
                     }
                     case RECORD_REF: {
                         ArrDataRecordRef dataTmp = (ArrDataRecordRef) data;
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.getFulltextValue(), dataTmp.getRecordId());
+                        //TODO fantiš
+                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, null, dataTmp.getRecordId());
                         break;
                     }
-                    case ENUM:
+                    case ENUM: {
                         groovyItem = new GroovyItem(itemTypeCode, spec, specCode, spec);
                         break;
+                    }
+                    case URI_REF: {
+                        ArrDataUriRef dataTmp = (ArrDataUriRef) data;
+                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.getFulltextValue());
+                        break;
+                    }
                     default:
                         throw new NotImplementedException("Neimplementovaný typ: " + dataType);
                 }
