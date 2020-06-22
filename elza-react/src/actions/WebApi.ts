@@ -28,6 +28,8 @@ import {ApSearchType} from '../typings/globals';
 import * as UrlBuilder from '../utils/UrlBuilder';
 import {ArchiveEntityResultListVO} from "../api/ArchiveEntityResultListVO";
 import {SearchFilterVO} from 'api/SearchFilterVO';
+import {SyncsFilterVO} from "../api/SyncsFilterVO";
+import {ExtSyncsQueueResultListVO} from "../api/ExtSyncsQueueResultListVO";
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 
@@ -797,6 +799,13 @@ export class WebApiCls {
                                         externalSystemCode: string,
                                         filter: SearchFilterVO): Promise<ArchiveEntityResultListVO> {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/external/search', {from, max, externalSystemCode}, filter);
+    }
+
+    findExternalSyncs(from: number,
+                      max: number,
+                      externalSystemCode: string,
+                      filter: SyncsFilterVO): Promise<ExtSyncsQueueResultListVO> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/external/syncs', {from, max, externalSystemCode}, filter);
     }
 
     takeArchiveEntity(archiveEntityId: number,

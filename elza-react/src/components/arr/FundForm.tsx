@@ -169,6 +169,7 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<{}, IFundForm>> = memo((p
                         component={ScopesField}
                         label={i18n('arr.fund.regScope')}
                         scopeList={props.scopeList}
+                        disabled={submitting}
                     />
                 )}
 

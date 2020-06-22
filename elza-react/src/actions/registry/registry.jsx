@@ -56,7 +56,7 @@ export function registryListInvalidate() {
 
 export const AREA_REGISTRY_DETAIL = 'registryDetail';
 
-export function registryDetailFetchIfNeeded(id) {
+export function registryDetailFetchIfNeeded(id, force = false) {
     return (dispatch, getState) => {
         return dispatch(
             DetailActions.fetchIfNeeded(AREA_REGISTRY_DETAIL, id, () => {
@@ -71,7 +71,7 @@ export function registryDetailFetchIfNeeded(id) {
                         dispatch(registryDetailClear());
                         throw error;
                     });
-            }),
+            }, force),
         );
     };
 }
