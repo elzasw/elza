@@ -103,7 +103,7 @@ public class HelperTestService {
     @Autowired
     private FundStructureExtensionRepository fundStructureExtensionRepository;
     @Autowired
-    private ApExternalIdRepository apEidRepository;
+    private ApBindingRepository bindingRepository;
     @Autowired
     private AsyncRequestService asyncRequestService;
     @Autowired
@@ -229,7 +229,7 @@ public class HelperTestService {
         nodeRepository.deleteAll();
         fundRepository.deleteAll();
         institutionRepository.deleteAll();
-        apEidRepository.deleteAll();
+        bindingRepository.deleteAll();
         apStateRepository.deleteAll();
         apRepository.deleteAll();
         apChangeRepository.deleteAll();

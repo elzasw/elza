@@ -11,7 +11,6 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 import cz.tacr.elza.repository.*;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,7 +55,7 @@ public class OutputModelTest extends AbstractServiceTest {
     ApStateRepository apStateRepository;
 
     @Autowired
-    ApExternalIdRepository apEidRepository;
+    ApBindingRepository bindingRepository;
 
     @Autowired
     ApPartRepository partRepository;
@@ -141,7 +140,7 @@ public class OutputModelTest extends AbstractServiceTest {
         helperTestService.waitForWorkers();
         OutputModel outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
-                apEidRepository,null, structObjRepos, structItemRepos, partRepository, itemRepository);
+                bindingRepository,null, structObjRepos, structItemRepos, partRepository, itemRepository);
 
         ArrOutput output = new ArrOutput();
         output.setFund(fi.getFund());

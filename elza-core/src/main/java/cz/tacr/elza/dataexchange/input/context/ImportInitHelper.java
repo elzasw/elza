@@ -17,7 +17,7 @@ public class ImportInitHelper {
 
     private final ApAccessPointRepository apRepository;
 
-    private final ApExternalIdRepository apEidRepository;
+    private final ApBindingRepository bindingRepository;
 
     private final ApPartRepository apPartRepository;
 
@@ -39,7 +39,7 @@ public class ImportInitHelper {
                             final ArrangementService arrangementService,
                             final LevelRepository levelRepository,
                             final ApAccessPointRepository apRepository,
-                            final ApExternalIdRepository apEidRepository,
+                            final ApBindingRepository bindingRepository,
                             final StructObjValueService structObjService,
                             final AccessPointService accessPointService,
                             final DmsService dmsService,
@@ -53,7 +53,7 @@ public class ImportInitHelper {
         this.arrangementService = arrangementService;
         this.levelRepository = levelRepository;
         this.apRepository = apRepository;
-        this.apEidRepository = apEidRepository;
+        this.bindingRepository = bindingRepository;
         this.structObjService = structObjService;
         this.accessPointService = accessPointService;
         this.dmsService = dmsService;
@@ -91,8 +91,8 @@ public class ImportInitHelper {
         return apRepository;
     }
 
-    public ApExternalIdRepository getApEidRepository() {
-        return apEidRepository;
+    public ApBindingRepository getBindingRepository() {
+        return bindingRepository;
     }
 
     public StructObjValueService getStructObjService() {

@@ -87,7 +87,7 @@ public class DEImportService {
     public DEImportService(EntityManager em,
                            ApAccessPointRepository apRepository,
                            ArrangementService arrangementService,
-                           ApExternalIdRepository apEidRepository,
+                           ApBindingRepository bindingRepository,
                            InstitutionRepository institutionRepository,
                            UserService userService,
                            StaticDataService staticDataService,
@@ -109,7 +109,7 @@ public class DEImportService {
                            AccessPointItemService apItemService,
                            ApItemRepository apItemRepository) {
         this.initHelper = new ImportInitHelper(groovyScriptService, institutionRepository, institutionTypeRepository,
-                arrangementService, levelRepository, apRepository, apEidRepository,
+                arrangementService, levelRepository, apRepository, bindingRepository,
                 structObjService, accessPointService,
                 dmsService, apStateRepository, apPartRepository, apItemRepository, apItemService);
         this.em = em;
