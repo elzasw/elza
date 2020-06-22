@@ -37,6 +37,7 @@ import {refRulDataTypesFetchIfNeeded} from "../../actions/refTables/rulDataTypes
 import CreateAccessPointModal from "../../components/registry/modal/CreateAccessPointModal";
 import ApExtSearchModal, {TypeModal} from "../../components/registry/modal/ApExtSearchModal";
 import {Area} from "../../api/Area";
+import ApPushToExt from "../../components/registry/modal/ApPushToExt";
 
 /**
  * Stránka rejstříků.
@@ -234,7 +235,7 @@ class RegistryPage extends AbstractReactComponent {
         const {extSystems,
             registryDetail: {
                 data: {id},
-            },} = this.props;
+            }, dispatch} = this.props;
         const initialValues = {
             area: Area.ALLNAMES,
             onlyMainPart: "false", // musí být jako string, autocomplete má problém s true/false hodnotou
@@ -242,14 +243,38 @@ class RegistryPage extends AbstractReactComponent {
         if (extSystems.length === 1) {
             initialValues.extSystem = extSystems[0].code;
         }
-        this.props.dispatch(
+        dispatch(
             modalDialogShow(
                 this,
                 i18n('ap.ext-search.title-connect'),
                 <ApExtSearchModal onConnected={() => {
-                    this.props.dispatch(registryDetailInvalidate());
+                    dispatch(registryDetailInvalidate());
                 }} type={TypeModal.CONNECT} accessPointId={id} initialValues={initialValues} extSystems={extSystems} />,
                 'dialog-xl',
+            ),
+        );
+    };
+
+    handlePushApToExt = () => {
+        const {extSystems,
+            registryDetail: {
+                data: {id},
+            }, dispatch} = this.props;
+        const initialValues = {};
+        if (extSystems.length === 1) {
+            initialValues.extSystem = extSystems[0].code;
+        }
+        dispatch(
+            modalDialogShow(
+                this,
+                i18n('ap.push-to-ext.title'),
+                <ApPushToExt onSubmit={(data) => {
+                    return WebApi.saveAccessPoint(id, data.extSystem);
+                }} onSubmitSuccess={() => {
+                    dispatch(modalDialogHide());
+                    dispatch(registryDetailInvalidate());
+                }} initialValues={initialValues} extSystems={extSystems} />,
+                'dialog-sm',
             ),
         );
     };
@@ -443,6 +468,15 @@ class RegistryPage extends AbstractReactComponent {
                     <Icon glyph="fa-link"/>
                     <div>
                         <span className="btnText">{i18n('ap.connect')}</span>
+                    </div>
+                </Button>,
+            );
+
+            itemActions.push(
+                <Button key="change-state" onClick={this.handlePushApToExt}>
+                    <Icon glyph="fa-upload"/>
+                    <div>
+                        <span className="btnText">{i18n('ap.push-to-ext')}</span>
                     </div>
                 </Button>,
             );

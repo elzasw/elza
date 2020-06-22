@@ -816,6 +816,14 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(url, {externalSystemCode});
     }
 
+    saveAccessPoint(accessPointId: number,
+                    externalSystemCode: string): Promise<void> {
+        const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/save/{accessPointId}', {
+            accessPointId
+        });
+        return AjaxUtils.ajaxPost(url, {externalSystemCode});
+    }
+
     findRegistryUsage(recordId) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + recordId + '/usage');
     }

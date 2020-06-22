@@ -7,14 +7,15 @@ type OwnProps = {
     submitting: boolean;
     nameFormSection?: string; // název pro FormSection
     name?: string;
+    hideName?: boolean;
     extSystems: any[];
 }
 
 type Props = {} & OwnProps;
 
-const ExtSystemFilterSection = ({submitting, nameFormSection = "", extSystems, name = 'ap.ext-search.section.ext-systems'}: Props) => {
+const ExtSystemFilterSection = ({submitting, nameFormSection = "", extSystems, name = 'ap.ext-search.section.ext-systems', hideName = false}: Props) => {
     return <FormSection name={nameFormSection} className="filter-section">
-        <span className="name-section">{i18n(name)}</span>
+        {!hideName && <span className="name-section">{i18n(name)}</span>}
         <Field name="extSystem"
                label={i18n('ap.ext-search.ext-system')}
                type="autocomplete"
