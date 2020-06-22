@@ -39,6 +39,7 @@ import ApExtSearchModal, {TypeModal} from "../../components/registry/modal/ApExt
 import {Area} from "../../api/Area";
 import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
 import ApPushToExt from "../../components/registry/modal/ApPushToExt";
+import ExtSyncsModal from "../../components/registry/modal/ExtSyncsModal";
 
 /**
  * Stránka rejstříků.
@@ -236,6 +237,25 @@ class RegistryPage extends AbstractReactComponent {
         );
     };
 
+    handleExtSyncs = () => {
+        const {extSystems, dispatch} = this.props;
+        const initialValues = {};
+        if (extSystems.length === 1) {
+            initialValues.extSystem = extSystems[0].code;
+        }
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('ap.ext-syncs.title'),
+                <ExtSyncsModal onNavigateAp={accessPointId => {
+                    dispatch(modalDialogHide());
+                    dispatch(registryDetailFetchIfNeeded(accessPointId, true));
+                }} initialValues={initialValues} extSystems={extSystems} />,
+                'dialog-xl',
+            ),
+        );
+    };
+
     handleConnectAp = () => {
         const {extSystems,
             registryDetail: {
@@ -369,6 +389,14 @@ class RegistryPage extends AbstractReactComponent {
                         <Icon glyph="fa-download"/>
                         <div>
                             <span className="btnText">{i18n('ribbon.action.ap.ext-search')}</span>
+                        </div>
+                    </Button>,
+                );
+                altActions.push(
+                    <Button key="ext-syncs" onClick={this.handleExtSyncs}>
+                        <Icon glyph="fa-gg"/>
+                        <div>
+                            <span className="btnText">{i18n('ribbon.action.ap.ext-syncs')}</span>
                         </div>
                     </Button>,
                 );

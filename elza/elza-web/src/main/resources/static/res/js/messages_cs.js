@@ -345,6 +345,7 @@ var messages = {
     "ribbon.action.showFundHistory": "Historie změn",
     "ribbon.action.syncDaosByFund": "Synchronizovat DAO v AS",
     "ribbon.action.ap.ext-search": "Vyhledávání v externím systému",
+    "ribbon.action.ap.ext-syncs": "Synchronizace s externími systémy",
 
     "ribbon.action.arr.validation.error.previous": "Předchozí chyba",
     "ribbon.action.arr.validation.error.next": "Další chyba",
@@ -1011,6 +1012,14 @@ var messages = {
 
     "ap.push-to-ext.title": "Zápis entity do externího systému",
     "ap.push-to-ext": "Zápis entity do externího systému",
+
+    "ap.ext-syncs.title": "Synchronizace s externími systémy",
+    "ap.ext-syncs.label.no-entities": "Nebyly dohledány žádné požadavky",
+    "ap.ext-syncs.label.params": "Zvolte parametry hledání",
+    "ap.ext-syncs.ext-system": "Externí systém",
+    "ap.ext-syncs.state": "Stav",
+    "ap.ext-syncs.scope": "Oblast",
+    "ap.ext-syncs.date": "Datum požadavku",
 
     "ap.ext-search.title": "Vyhledávání v externím systému",
     "ap.ext-search.title-connect": "Propojení s externím systémem",
