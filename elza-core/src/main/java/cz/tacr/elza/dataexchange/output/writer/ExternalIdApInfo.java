@@ -2,11 +2,11 @@ package cz.tacr.elza.dataexchange.output.writer;
 
 import java.util.Collection;
 
-import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApBinding;
 
 public interface ExternalIdApInfo {
 
-    Collection<ApExternalId> getExternalIds();
+    Collection<ApBinding> getExternalIds();
 
-    void setExternalIds(Collection<ApExternalId> externalIds);
+    void setExternalIds(Collection<ApBinding> externalIds);
 }

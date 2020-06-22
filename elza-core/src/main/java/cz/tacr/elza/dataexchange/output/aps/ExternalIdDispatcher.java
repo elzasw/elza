@@ -9,10 +9,10 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.loaders.NestedLoadDispatcher;
 import cz.tacr.elza.dataexchange.output.writer.ExternalIdApInfo;
-import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApExternalIdType;
 
-public class ExternalIdDispatcher extends NestedLoadDispatcher<ApExternalId> {
+public class ExternalIdDispatcher extends NestedLoadDispatcher<ApBinding> {
 
     // --- fields ---
 
@@ -20,7 +20,7 @@ public class ExternalIdDispatcher extends NestedLoadDispatcher<ApExternalId> {
 
     private final StaticDataProvider staticData;
 
-    private final List<ApExternalId> externalIds = new ArrayList<>();
+    private final List<ApBinding> externalIds = new ArrayList<>();
 
     // --- constructor ---
 
@@ -33,7 +33,7 @@ public class ExternalIdDispatcher extends NestedLoadDispatcher<ApExternalId> {
     // --- methods ---
 
     @Override
-    public void onLoad(ApExternalId result) {
+    public void onLoad(ApBinding result) {
         // init external id type
         ApExternalIdType type = staticData.getApEidTypeById(result.getExternalIdTypeId());
         Validate.notNull(type);

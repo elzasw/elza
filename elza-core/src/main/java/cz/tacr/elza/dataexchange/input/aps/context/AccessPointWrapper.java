@@ -9,7 +9,7 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.service.ArrangementService;
@@ -23,7 +23,7 @@ public class AccessPointWrapper implements EntityWrapper {
 
     private final AccessPointInfo apInfo;
 
-    private final Collection<ApExternalId> externalIds;
+    private final Collection<ApBinding> externalIds;
 
     private final ArrangementService arrangementService;
 
@@ -31,7 +31,7 @@ public class AccessPointWrapper implements EntityWrapper {
 
     AccessPointWrapper(ApAccessPoint entity,
                        AccessPointInfo apInfo,
-                       Collection<ApExternalId> externalIds,
+                       Collection<ApBinding> externalIds,
                        ArrangementService arrangementService) {
         this.entity = Validate.notNull(entity);
         this.apInfo = Validate.notNull(apInfo);
@@ -57,7 +57,7 @@ public class AccessPointWrapper implements EntityWrapper {
         return apInfo;
     }
 
-    public Collection<ApExternalId> getExternalIds() {
+    public Collection<ApBinding> getExternalIds() {
         return externalIds;
     }
 

@@ -3,7 +3,7 @@ package cz.tacr.elza.print;
 import cz.tacr.elza.core.data.PartType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.print.ap.ExternalId;
@@ -87,9 +87,9 @@ public class Record {
 
     public List<ExternalId> getEids() {
         if (eids == null) {
-            List<ApExternalId> apEids = eidRepository.findByAccessPoint(ap);
+            List<ApBinding> apEids = eidRepository.findByAccessPoint(ap);
             eids = new ArrayList<>(apEids.size());
-            for (ApExternalId apEid : apEids) {
+            for (ApBinding apEid : apEids) {
                 ExternalId eid = ExternalId.newInstance(apEid, staticData);
                 eids.add(eid);
             }

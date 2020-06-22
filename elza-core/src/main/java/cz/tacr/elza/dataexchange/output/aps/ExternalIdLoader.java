@@ -6,16 +6,16 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 
 import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
-import cz.tacr.elza.domain.ApExternalId;
+import cz.tacr.elza.domain.ApBinding;
 
-public class ExternalIdLoader extends AbstractEntityLoader<ApExternalId, ApExternalId> {
+public class ExternalIdLoader extends AbstractEntityLoader<ApBinding, ApBinding> {
 
     public ExternalIdLoader(EntityManager em, int batchSize) {
-        super(ApExternalId.class, ApExternalId.ACCESS_POINT_ID, em, batchSize);
+        super(ApBinding.class, ApBinding.ACCESS_POINT_ID, em, batchSize);
     }
 
     @Override
-    protected Predicate createQueryCondition(Path<? extends ApExternalId> root, CriteriaBuilder cb) {
-        return root.get(ApExternalId.DELETE_CHANGE_ID).isNull();
+    protected Predicate createQueryCondition(Path<? extends ApBinding> root, CriteriaBuilder cb) {
+        return root.get(ApBinding.DELETE_CHANGE_ID).isNull();
     }
 }

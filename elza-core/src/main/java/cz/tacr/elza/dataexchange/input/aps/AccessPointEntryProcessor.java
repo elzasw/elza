@@ -80,7 +80,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         AccessPointEntry entry = ap.getApe();
         entryId = entry.getId();
         ApEntity entity = createEntity(entry);
-        List<ApExternalId> eids = createExternalIds(entry.getEid());
+        List<ApBinding> eids = createExternalIds(entry.getEid());
         if (ap.getFrgs() != null) {
             List<PartWrapper> parts = createParts(ap.getFrgs());
             apInfo = context.addAccessPoint(entity.accessPoint, entry.getId(), entity.state, eids, parts);
@@ -97,16 +97,16 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         entryId = entry.getId();
         // create AP and prepare AP info
         ApEntity entity = createEntity(entry);
-        List<ApExternalId> eids = createExternalIds(entry.getEid());
+        List<ApBinding> eids = createExternalIds(entry.getEid());
         apInfo = context.addAccessPoint(entity.accessPoint, party.getId(), entity.state, eids);
 
     }
 
-    private List<ApExternalId> createExternalIds(Collection<ExternalId> eids) {
+    private List<ApBinding> createExternalIds(Collection<ExternalId> eids) {
         if (eids.isEmpty()) {
             return null;
         }
-        List<ApExternalId> entities = new ArrayList<>(eids.size());
+        List<ApBinding> entities = new ArrayList<>(eids.size());
         for (ExternalId eid : eids) {
             if (StringUtils.isEmpty(eid.getT())) {
                 throw new DEImportException("External id type is not set, apeId=" + entryId);
@@ -119,7 +119,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
                 throw new DEImportException("External id type not found, apEid=" + eid.getV() + ", code=" + eid.getT());
             }
             // create external id
-            ApExternalId entity = new ApExternalId();
+            ApBinding entity = new ApBinding();
             entity.setCreateChange(context.getCreateChange());
             entity.setValue(eid.getV());
             entity.setExternalIdType(eidType);
