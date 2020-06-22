@@ -36,6 +36,11 @@ const formConfig: ConfigProps<FormProps> = {
     validate
 };
 
+export enum TypeModal {
+    SEARCH = 'SEARCH',
+    CONNECT = 'CONNECT'
+}
+
 type Props = {
     refTables: {};
     scopes: any[];
@@ -44,6 +49,9 @@ type Props = {
     submitting: boolean;
     extSystems: any[];
     onClose: () => void;
+    onConnected: () => void;
+    type: TypeModal;
+    accessPointId?: number;
 } & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
 type Data = {
@@ -72,7 +80,7 @@ const createFilter = (values): SearchFilterVO => {
     };
 }
 
-const ApExtSearchModal = ({handleSubmit, onClose, submitting, extSystems, refTables, scopes, reset}: Props) => {
+const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSystems, refTables, scopes, reset, type, accessPointId}: Props) => {
     const [data, setData] = useState<Data>({
         isFetching: false,
         fetched: false,
@@ -83,17 +91,31 @@ const ApExtSearchModal = ({handleSubmit, onClose, submitting, extSystems, refTab
         filter: {}
     });
     const [taked, setTaked] = useState<string[]>([]);
-    const [taking, setTaking] = useState<boolean>(false);
+    const [calling, setCalling] = useState<boolean>(false);
 
     const {apTypes} = refTables;
 
     const handleItemTake = (ae: ArchiveEntityVO, scopeId: number) => {
-        setTaking(true);
+        setCalling(true);
         return WebApi.takeArchiveEntity(ae.id, scopeId, data.externalSystemCode).then(() => {
             setTaked([...taked, data.externalSystemCode + ae.id]);
         }).finally(() => {
-            setTaking(false);
+            setCalling(false);
         });
+    };
+
+    const handleItemConnect = (ae: ArchiveEntityVO) => {
+        if (accessPointId != null) {
+            setCalling(true);
+            return WebApi.connectArchiveEntity(ae.id, accessPointId, data.externalSystemCode).then(() => {
+                onConnected && onConnected();
+                onClose && onClose();
+            }).finally(() => {
+                setCalling(false);
+            });
+        } else {
+            console.error('Modal dialogu nebyl předán vstupní parametr accessPointId');
+        }
     };
 
     const fetchData = (from: number, externalSystemCode: string, filter: SearchFilterVO) => {
@@ -147,6 +169,21 @@ const ApExtSearchModal = ({handleSubmit, onClose, submitting, extSystems, refTab
         return fetchWithState(tmpData, from, data.externalSystemCode, data.filter, data.data);
     }
 
+    const renderAction = (item: ArchiveEntityVO, index: number) => {
+        switch (type) {
+            case TypeModal.CONNECT:
+                return <Button disabled={calling} onClick={() => handleItemConnect(item)} type="button" variant="outline-secondary">{i18n('global.action.choose')}</Button>
+            case TypeModal.SEARCH:
+                return <>
+                    {taked.indexOf(data.externalSystemCode + item.id) === -1 &&
+                    <DropdownButton disabled={calling} variant="default" id={"b" + index} title={i18n('ap.ext-search.label.take-to-scope')}>
+                        {scopes.map((scope, index) => <Dropdown.Item key={index}
+                                                                     onClick={() => handleItemTake(item, scope.id)}>{scope.name}</Dropdown.Item>)}
+                    </DropdownButton>}
+                </>
+        }
+    }
+
     const renderResultItem = (item: ArchiveEntityVO, index: number) => {
         return <Row key={index} className="result-item">
             <Col>
@@ -154,11 +191,7 @@ const ApExtSearchModal = ({handleSubmit, onClose, submitting, extSystems, refTab
                 <span className="ident">{item.id}</span>
             </Col>
             <Col xs="auto">
-                {taked.indexOf(data.externalSystemCode + item.id) === -1 &&
-                <DropdownButton disabled={taking} variant="default" id={"b" + index} title={i18n('ap.ext-search.label.take-to-scope')}>
-                    {scopes.map((scope, index) => <Dropdown.Item key={index}
-                                                                 onClick={() => handleItemTake(item, scope.id)}>{scope.name}</Dropdown.Item>)}
-                </DropdownButton>}
+                {renderAction(item, index)}
             </Col>
         </Row>
     };

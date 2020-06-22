@@ -35,7 +35,7 @@ import {refPartTypesFetchIfNeeded} from "../../actions/refTables/partTypes";
 import {descItemTypesFetchIfNeeded} from "../../actions/refTables/descItemTypes";
 import {refRulDataTypesFetchIfNeeded} from "../../actions/refTables/rulDataTypes";
 import CreateAccessPointModal from "../../components/registry/modal/CreateAccessPointModal";
-import ApExtSearchModal from "../../components/registry/modal/ApExtSearchModal";
+import ApExtSearchModal, {TypeModal} from "../../components/registry/modal/ApExtSearchModal";
 import {Area} from "../../api/Area";
 
 /**
@@ -224,7 +224,31 @@ class RegistryPage extends AbstractReactComponent {
             modalDialogShow(
                 this,
                 i18n('ap.ext-search.title'),
-                <ApExtSearchModal initialValues={initialValues} extSystems={extSystems} />,
+                <ApExtSearchModal type={TypeModal.SEARCH} initialValues={initialValues} extSystems={extSystems} />,
+                'dialog-xl',
+            ),
+        );
+    };
+
+    handleConnectAp = () => {
+        const {extSystems,
+            registryDetail: {
+                data: {id},
+            },} = this.props;
+        const initialValues = {
+            area: Area.ALLNAMES,
+            onlyMainPart: "false", // musí být jako string, autocomplete má problém s true/false hodnotou
+        };
+        if (extSystems.length === 1) {
+            initialValues.extSystem = extSystems[0].code;
+        }
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('ap.ext-search.title-connect'),
+                <ApExtSearchModal onConnected={() => {
+                    this.props.dispatch(registryDetailInvalidate());
+                }} type={TypeModal.CONNECT} accessPointId={id} initialValues={initialValues} extSystems={extSystems} />,
                 'dialog-xl',
             ),
         );
@@ -410,6 +434,15 @@ class RegistryPage extends AbstractReactComponent {
                     <Icon glyph="fa-pencil"/>
                     <div>
                         <span className="btnText">{i18n('ap.changeState')}</span>
+                    </div>
+                </Button>,
+            );
+
+            itemActions.push(
+                <Button key="change-state" onClick={this.handleConnectAp}>
+                    <Icon glyph="fa-link"/>
+                    <div>
+                        <span className="btnText">{i18n('ap.connect')}</span>
                     </div>
                 </Button>,
             );

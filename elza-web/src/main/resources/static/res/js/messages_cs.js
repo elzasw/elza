@@ -997,6 +997,7 @@ var messages = {
     "ap.state.title.type": "Třída archivní entity",
     "ap.state.title.state": "Stav",
     "ap.state.title.comment": "Komentář",
+    "ap.connect": "Propojení s externím systémem",
 
     "registryField.noItemsFound": "Záznamy nebyly nalezeny.",
     "registryField.visibleCount": "Zobrazeno {0} z {1} záznamů",
@@ -1008,6 +1009,7 @@ var messages = {
     "ap.error.duplicateValue": "Hodnota již existuje",
 
     "ap.ext-search.title": "Vyhledávání v externím systému",
+    "ap.ext-search.title-connect": "Propojení s externím systémem",
     "ap.ext-search.item.take": "Převzít do ELZA",
     "ap.ext-search.label.params": "Zvolte parametry hledání",
     "ap.ext-search.label.no-entities": "Nebyly dohledány žádné entity",
