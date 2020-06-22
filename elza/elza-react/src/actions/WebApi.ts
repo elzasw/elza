@@ -807,12 +807,13 @@ export class WebApiCls {
     }
 
     connectArchiveEntity(archiveEntityId: number,
-                         accessPointId: number): Promise<void> {
+                         accessPointId: number,
+                         externalSystemCode: string): Promise<void> {
         const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/{archiveEntityId}/connect/{accessPointId}', {
             archiveEntityId,
             accessPointId
         });
-        return AjaxUtils.ajaxPost(url);
+        return AjaxUtils.ajaxPost(url, {externalSystemCode});
     }
 
     findRegistryUsage(recordId) {
