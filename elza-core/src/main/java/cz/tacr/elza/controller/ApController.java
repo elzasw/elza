@@ -837,7 +837,7 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/available/items", method = RequestMethod.POST)
     public ApAttributesInfoVO getAvailableItems(@RequestBody final ApAccessPointCreateVO apAccessPointCreateVO) {
-        if (true) {
+        if (false) {
             boolean hasHlavniCast = false;
             for (ApItemVO item : apAccessPointCreateVO.getPartForm().getItems()) {
                 if (item.getTypeId() == 11) {
@@ -892,6 +892,15 @@ public class ApController {
         return apAttributesInfoVO;
     }
 
+    /**
+     * Vyhledání archivních entit v externím systému
+     *
+     * @param from od které položky vyhledávat
+     * @param max maximální počet záznamů, které najednou vrátit
+     * @param externalSystemCode kód externího systému
+     * @param filter parametry hledání
+     * @return výsledek hledání
+     */
     @Transactional
     @RequestMapping(value = "/external/search", method = RequestMethod.POST)
     public ArchiveEntityResultListVO findArchiveEntitiesInExternalSystem(@RequestParam(name = "from", defaultValue = "0", required = false) final Integer from,
@@ -911,6 +920,14 @@ public class ApController {
         return searchFilterFactory.createArchiveEntityVoListResult(result);
     }
 
+    /**
+     * Převzetí entity z externího systému
+     *
+     * @param archiveEntityId identifikátor entity v externím systému
+     * @param scopeId identifikátor třídy rejstříku
+     * @param externalSystemCode kód externího systému
+     * @return identifikátor přístupového bodu
+     */
     @Transactional
     @RequestMapping(value = "/external/{archiveEntityId}/take", method = RequestMethod.POST)
     public Integer takeArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
@@ -927,6 +944,13 @@ public class ApController {
         return apState.getAccessPointId();
     }
 
+    /**
+     * Propojení archivní entity z externího systém na existující přístupový bod
+     *
+     * @param archiveEntityId identifikátor entity v externím systému
+     * @param accessPointId identifikátor přístupového bodu
+     * @param externalSystemCode kód externího systému
+     */
     @Transactional
     @RequestMapping(value = "/external/{archiveEntityId}/connect/{accessPointId}", method = RequestMethod.POST)
     public void connectArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
@@ -941,6 +965,12 @@ public class ApController {
         accessPointService.connectAccessPoint(accessPointId, entity);
     }
 
+    /**
+     * Zápis přistupového bodu do externího systému
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param externalSystemCode kód externího systému
+     */
     @Transactional
     @RequestMapping(value = "/external/save/{accessPointId}", method = RequestMethod.POST)
     public void saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
@@ -949,6 +979,12 @@ public class ApController {
     }
 
 
+    /**
+     * Synchronizace přístupového bodu z archivního systému
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param externalSystemCode kód externího systému
+     */
     @Transactional
     @RequestMapping(value = "/external/synchronize/{accessPointId}", method = RequestMethod.POST)
     public void synchronizeAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
@@ -956,6 +992,12 @@ public class ApController {
 
     }
 
+    /**
+     * Zápis změn do externího systému
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param externalSystemCode kód externího systému
+     */
     @Transactional
     @RequestMapping(value = "/external/update/{accessPointId}", method = RequestMethod.POST)
     public void updateArchiveEntity(@PathVariable("accessPointId") final Integer accessPointId,
@@ -963,6 +1005,12 @@ public class ApController {
 
     }
 
+    /**
+     * Zrušení vazby na externí systém
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param externalSystemCode kód externího systému
+     */
     @Transactional
     @RequestMapping(value = "/external/disconnect/{accessPointId}", method = RequestMethod.POST)
     public void disconnectAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
@@ -970,6 +1018,12 @@ public class ApController {
 
     }
 
+    /**
+     * Založení přístupových bodů z návazných entit
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param externalSystemCode kód externího systému
+     */
     @Transactional
     @RequestMapping(value = "/external/take-rel/{accessPointId}", method = RequestMethod.POST)
     public void takeRelArchiveEntities(@PathVariable("accessPointId") final Integer accessPointId,
