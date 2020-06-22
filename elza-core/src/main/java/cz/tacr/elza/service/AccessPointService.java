@@ -61,6 +61,7 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -149,6 +150,9 @@ public class AccessPointService {
 
     @Autowired
     private ApBindingRepository bindingRepository;
+
+    @Autowired
+    private ApBindingStateRepository bindingStateRepository;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -274,9 +278,9 @@ public class AccessPointService {
 
             saveWithLock(accessPoint);
 
-            List<ApBinding> eids = bindingRepository.findByAccessPoint(accessPoint);
+            List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(accessPoint);
             eids.forEach(eid -> eid.setDeleteChange(change));
-            bindingRepository.save(eids);
+            bindingStateRepository.save(eids);
 
             publishAccessPointDeleteEvent(accessPoint);
             reindexDescItem(accessPoint);
@@ -1458,8 +1462,10 @@ public class AccessPointService {
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_IMPORT, externalSystem);
 
+        //TODO fantiš smazat nebo upravit
         ApExternalIdType externalIdType = staticDataService.getData().getApEidTypeByCode(externalIdTypeCode);
-        ApState apStateExists = apStateRepository.getActiveByExternalIdAndScope(externalId, externalIdType, scope);
+        ApState apStateExists = null;
+//        ApState apStateExists = apStateRepository.getActiveByExternalIdAndScope(externalId, externalIdType, scope);
 
         ApState apState;
         ApAccessPoint accessPoint;
@@ -1469,7 +1475,7 @@ public class AccessPointService {
             if (StringUtils.isNotEmpty(description)) {
                 //TODO : smazáno - vytvořit popis AP
             }
-            createExternalId(accessPoint, externalIdType, externalId, change);
+//            createExternalId(accessPoint, externalIdType, externalId, change);
             publishAccessPointCreateEvent(accessPoint);
         } else {
             apState = changeApType(apStateExists.getAccessPointId(), type.getApTypeId());
@@ -1502,11 +1508,12 @@ public class AccessPointService {
                                   final ApExternalIdType externalIdType,
                                   final String externalId,
                                   final ApChange change) {
+        //TODO fantiš upravit
         ApBinding apBinding = new ApBinding();
-        apBinding.setValue(externalId);
-        apBinding.setAccessPoint(accessPoint);
-        apBinding.setCreateChange(change);
-        apBinding.setExternalIdType(externalIdType);
+//        apBinding.setValue(externalId);
+//        apBinding.setAccessPoint(accessPoint);
+//        apBinding.setCreateChange(change);
+//        apBinding.setExternalIdType(externalIdType);
         bindingRepository.save(apBinding);
     }
 

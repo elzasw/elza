@@ -2,6 +2,7 @@ package cz.tacr.elza.dataexchange.input.aps.context;
 
 import java.util.Collection;
 
+import cz.tacr.elza.domain.ApBindingState;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -23,7 +24,7 @@ public class AccessPointWrapper implements EntityWrapper {
 
     private final AccessPointInfo apInfo;
 
-    private final Collection<ApBinding> externalIds;
+    private final Collection<ApBindingState> externalIds;
 
     private final ArrangementService arrangementService;
 
@@ -31,7 +32,7 @@ public class AccessPointWrapper implements EntityWrapper {
 
     AccessPointWrapper(ApAccessPoint entity,
                        AccessPointInfo apInfo,
-                       Collection<ApBinding> externalIds,
+                       Collection<ApBindingState> externalIds,
                        ArrangementService arrangementService) {
         this.entity = Validate.notNull(entity);
         this.apInfo = Validate.notNull(apInfo);
@@ -57,7 +58,7 @@ public class AccessPointWrapper implements EntityWrapper {
         return apInfo;
     }
 
-    public Collection<ApBinding> getExternalIds() {
+    public Collection<ApBindingState> getExternalIds() {
         return externalIds;
     }
 

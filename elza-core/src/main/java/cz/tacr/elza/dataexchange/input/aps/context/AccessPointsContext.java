@@ -99,6 +99,10 @@ public class AccessPointsContext {
         return Collections.unmodifiableCollection(entryIdApInfoMap.values());
     }
 
+    public ApExternalSystem getApExternalSystem(String code) {
+        return staticData.getApExternalSystemByCode(code);
+    }
+
     public ApExternalIdType getEidType(String code) {
         return staticData.getApEidTypeByCode(code);
     }
@@ -123,7 +127,7 @@ public class AccessPointsContext {
      * @param eids    AP external ids, can be null
      * @return Return access point import info
      */
-    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApBinding> eids, Collection<PartWrapper> partWrappers) {
+    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApBindingState> eids, Collection<PartWrapper> partWrappers) {
         AccessPointInfo info = new AccessPointInfo(apState);
         if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
             throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
@@ -149,7 +153,7 @@ public class AccessPointsContext {
         return info;
     }
 
-    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApBinding> eids) {
+    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApBindingState> eids) {
         AccessPointInfo info = new AccessPointInfo(apState);
         if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
             throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
@@ -167,7 +171,7 @@ public class AccessPointsContext {
         return info;
     }
 
-    private void addExternalId(ApBinding entity, AccessPointInfo apInfo) {
+    private void addExternalId(ApBindingState entity, AccessPointInfo apInfo) {
         eidQueue.add(new ApExternalIdWrapper(entity, apInfo));
         apInfo.onEntityQueued();
         if (eidQueue.size() >= batchSize) {

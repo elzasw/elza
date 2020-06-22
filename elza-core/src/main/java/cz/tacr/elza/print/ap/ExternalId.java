@@ -2,15 +2,15 @@ package cz.tacr.elza.print.ap;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApBinding;
-import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApExternalSystem;
 
 public class ExternalId {
 
     private final String value;
     
-    private final ApExternalIdType type;
+    private final ApExternalSystem type;
     
-    private ExternalId(String value, ApExternalIdType type) {
+    private ExternalId(String value, ApExternalSystem type) {
         this.value = value;
         this.type = type;
     }
@@ -19,14 +19,14 @@ public class ExternalId {
         return value;
     }
 
-    public ApExternalIdType getType() {
+    public ApExternalSystem getType() {
         return type;
     }
     
     public static ExternalId newInstance(ApBinding eid, StaticDataProvider staticData) {
-        ApExternalIdType type = null;
-        if (eid.getExternalIdTypeId() != null) {
-            type = staticData.getApEidTypeById(eid.getAccessPointId());
+        ApExternalSystem type = null;
+        if (eid.getApExternalSystem() != null) {
+            type = staticData.getApExternalSystemByCode(eid.getApExternalSystem().getCode());
         }
         return new ExternalId(eid.getValue(), type);
     }

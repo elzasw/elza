@@ -26,12 +26,16 @@ public class ArrDataRecordRef extends ArrData {
 
     @RestResource(exported = false)
 	@ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
-    @JoinColumn(name = "recordId", nullable = false)
+    @JoinColumn(name = "recordId")
     @JsonIgnore
     private ApAccessPoint record;
 
     @Column(name = "recordId", updatable = false, insertable = false)
     private Integer recordId;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApBinding.class)
+    @JoinColumn(name = "bindingId")
+    private ApBinding binding;
 
     private static ApFulltextProvider fulltextProvider;
 
@@ -47,6 +51,7 @@ public class ArrDataRecordRef extends ArrData {
     private void copyValue(ArrDataRecordRef src) {
         this.record = src.record;
         this.recordId = src.recordId;
+        this.binding = src.binding;
     }
 
     public ApAccessPoint getRecord() {
@@ -60,6 +65,14 @@ public class ArrDataRecordRef extends ArrData {
 
     public Integer getRecordId() {
         return recordId;
+    }
+
+    public ApBinding getBinding() {
+        return binding;
+    }
+
+    public void setBinding(ApBinding binding) {
+        this.binding = binding;
     }
 
     @Override

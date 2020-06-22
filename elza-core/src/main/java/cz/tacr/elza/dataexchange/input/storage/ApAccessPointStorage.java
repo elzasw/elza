@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.repository.*;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
@@ -26,6 +27,8 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
 
     private final ApBindingRepository bindingRepository;
 
+    private final ApBindingStateRepository bindingStateRepository;
+
     private final ApChangeHolder changeHolder;
 
     private final ApStateRepository apStateRepository;
@@ -36,6 +39,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         super(session, persistEntityListener);
         this.apRepository = initHelper.getApRepository();
         this.bindingRepository = initHelper.getBindingRepository();
+        this.bindingStateRepository = initHelper.getBindingStateRepository();
         this.apStateRepository = initHelper.getApStateRepository();
         this.changeHolder = changeHolder;
     }
@@ -68,7 +72,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         }
         ApChange change = changeHolder.getChange();
         if (apIds.size() > 0) {
-            bindingRepository.invalidateByAccessPointIdIn(apIds, change);
+            bindingStateRepository.invalidateByAccessPointIdIn(apIds, change);
         }
     }
 
@@ -102,22 +106,22 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
             if (!apw.getSaveMethod().equals(SaveMethod.CREATE)) {
                 continue; // ignore paired by UUID
             }
-            Collection<ApBinding> eids = apw.getExternalIds();
+            Collection<ApBindingState> eids = apw.getExternalIds();
             if (eids == null) {
                 continue; // no external ids
             }
-            for (ApBinding eid : eids) {
-                EidLookup lookup = typeIdMap.get(eid.getExternalIdTypeId());
+            for (ApBindingState eid : eids) {
+                EidLookup lookup = typeIdMap.get(eid.getBinding().getApExternalSystem().getExternalSystemId());
                 if (lookup == null) {
-                    lookup = new EidLookup(eid.getExternalIdType().getCode());
-                    typeIdMap.put(eid.getExternalIdTypeId(), lookup);
+                    lookup = new EidLookup(eid.getBinding().getApExternalSystem().getCode());
+                    typeIdMap.put(eid.getBinding().getApExternalSystem().getExternalSystemId(), lookup);
                 }
-                lookup.addWrapper(eid.getValue(), apw);
+                lookup.addWrapper(eid.getBinding().getValue(), apw);
             }
         }
         // find pairs by external ids
         typeIdMap.forEach((typeId, group) -> {
-            List<ApExternalIdInfo> currentEids = bindingRepository
+            List<ApExternalIdInfo> currentEids = bindingStateRepository
                     .findActiveInfoByTypeIdAndValues(typeId, group.getValues());
             for (ApExternalIdInfo info : currentEids) {
                 AccessPointWrapper apw = group.getWrapper(info.getValue());
