@@ -22,6 +22,7 @@ import cz.tacr.elza.controller.vo.ApStateHistoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
+import cz.tacr.elza.controller.vo.ArchiveEntityVO;
 import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
@@ -822,7 +823,22 @@ public class ApController {
                                                            @RequestParam(name = "itemTypeId") final Integer itemTypeId,
                                                            @RequestParam(name = "itemSpecId") final Integer itemSpecId,
                                                            @RequestBody final SearchFilterVO filter) {
-        return new ArchiveEntityResultListVO();
+        if (from < 0) {
+            throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
+        }
+        ArchiveEntityResultListVO archiveEntityResultListVO = new ArchiveEntityResultListVO();
+        List<ArchiveEntityVO> archiveEntityVOList = new ArrayList<>();
+        for (int i = 1; i <= 10; i++) {
+            ArchiveEntityVO archiveEntityVO = new ArchiveEntityVO();
+            archiveEntityVO.setId(i);
+            archiveEntityVO.setName("Test " + i);
+            archiveEntityVO.setAeTypeId(1);
+            archiveEntityVO.setDescription("Popis " + i);
+        }
+
+        archiveEntityResultListVO.setTotal(archiveEntityVOList.size());
+        archiveEntityResultListVO.setData(archiveEntityVOList);
+        return archiveEntityResultListVO;
     }
 
     /**
