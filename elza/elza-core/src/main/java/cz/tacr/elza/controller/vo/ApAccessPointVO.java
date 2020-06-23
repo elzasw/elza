@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller.vo;
 
-import cz.tacr.elza.controller.vo.ap.ApFormVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
 
 import javax.annotation.Nullable;
@@ -8,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApState;
 
 
@@ -59,7 +57,7 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     /**
      * Externí identifikátory rejstříkového hesla.
      */
-    private Collection<ApExternalIdVO> externalIds;
+    private Collection<ApBindingVO> externalIds;
 
     /**
      * Stav přístupového bodu.
@@ -170,11 +168,11 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.invalid = invalid;
     }
 
-    public Collection<ApExternalIdVO> getExternalIds() {
+    public Collection<ApBindingVO> getExternalIds() {
         return externalIds;
     }
 
-    public void setExternalIds(Collection<ApExternalIdVO> externalIds) {
+    public void setExternalIds(Collection<ApBindingVO> externalIds) {
         this.externalIds = externalIds;
     }
 
