@@ -68,6 +68,9 @@ public class SettingItemTypes extends Setting{
         @XmlElement(name = "part-type")
         private String partType;
 
+        @XmlElement(name = "geo-search-item-type")
+        private String geoSearchItemType;
+
         public String getCode() {
             return code;
         }
@@ -98,6 +101,14 @@ public class SettingItemTypes extends Setting{
 
         public void setPartType(String partType) {
             this.partType = partType;
+        }
+
+        public String getGeoSearchItemType() {
+            return geoSearchItemType;
+        }
+
+        public void setGeoSearchItemType(String geoSearchItemType) {
+            this.geoSearchItemType = geoSearchItemType;
         }
     }
 }

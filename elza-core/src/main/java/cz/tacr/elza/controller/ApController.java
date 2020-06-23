@@ -805,6 +805,27 @@ public class ApController {
     }
 
     /**
+     * Vyhledání přístupových bodů pro návazný vztah
+     *
+     * @param from od které položky vyhledávat
+     * @param max maximální počet záznamů, které najednou vrátit
+     * @param itemTypeId identifikátor typu vztahu
+     * @param itemSpecId identifikátor specifikace vztahu
+     * @param filter parametry hledání
+     * @return výsledek hledání
+     *
+     */
+    @Transactional
+    @RequestMapping(value = "/search/rel", method = RequestMethod.POST)
+    public ArchiveEntityResultListVO findAccessPointForRel(@RequestParam(name = "from", defaultValue = "0", required = false) final Integer from,
+                                                           @RequestParam(name = "max", defaultValue = "50", required = false) final Integer max,
+                                                           @RequestParam(name = "itemTypeId") final Integer itemTypeId,
+                                                           @RequestParam(name = "itemSpecId") final Integer itemSpecId,
+                                                           @RequestBody final SearchFilterVO filter) {
+        return new ArchiveEntityResultListVO();
+    }
+
+    /**
      * Založení nové části přístupového bodu.
      *
      * @param accessPointId identifikátor přístupového bodu (PK)
