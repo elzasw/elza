@@ -5,5 +5,5 @@ export interface ApItemWithTypeVO extends ApItemVO {
     /**
      * typ
      */
-    type: RulDescItemTypeExtVO;
+    type: RulDescItemTypeExtVO | null;
 }

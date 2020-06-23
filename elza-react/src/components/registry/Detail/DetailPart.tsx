@@ -8,18 +8,18 @@ import {AePartNameClass} from "../../../api/old/ApPartInfo";
 //import DetailActionButton from "../DetailActionButton";
 //import {CodelistData} from "../../shared/reducers/codelist/CodelistTypes";
 import {connect} from "react-redux";
-import * as PartTypeInfo from "../../../api/old/PartTypeInfo";
 import DetailMultipleItem from "./DetailMultipleItem";
 import Icon from '../../shared/icon/Icon';
-import {MOCK_CODE_DATA} from './mock';
 import {ApPartVO} from "../../../api/ApPartVO";
 import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
-import {ApItemVO} from "../../../api/ApItemVO";
 import {ApItemWithTypeVO} from "../../../api/ApItemWithTypeVO";
+import {RulPartTypeVO} from "../../../api/RulPartTypeVO";
+import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
+import {PartType} from "../../../api/generated/model";
 //import {sortItems} from "../../itemutils";
 //import ValidationResultIcon from "../ValidationResultIcon";
 
-interface Props {
+type Props = {
     label: string;
     part: ApPartVO;
     globalCollapsed: boolean;
@@ -32,12 +32,12 @@ interface Props {
     singlePart: boolean;
     globalEntity: boolean;
     validationResult?: ApValidationErrorsVO;
-    descItemTypesMap: object;
-}
+} & ReturnType<typeof mapStateToProps>;
 
-const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePart, onDelete, onEdit, globalCollapsed, preferred, onAddRelated, globalEntity, validationResult, descItemTypesMap}) => {
+const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePart, onDelete, onEdit, globalCollapsed, preferred, onAddRelated, globalEntity, validationResult, descItemTypesMap, partTypesMap}) => {
     const [collapsed, setCollapsed] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
+    const partType = partTypesMap[part.typeId];
 
     useEffect(() => {
         setCollapsed(globalCollapsed);
@@ -63,7 +63,7 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
     );
 
     let showPreferredSwitch = false;
-    if (part["@class"] === AePartNameClass) {
+    if (partType.code === PartType.NAME) {
         showPreferredSwitch = !singlePart;
     }
 
@@ -138,10 +138,12 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
                     onClick={() => setCollapsed(!collapsed)}
                     title={collapsed ? "Zobrazit podrobnosti" : "Skrýt podrobnosti"}
                 >
-                <span className={classNames('detail-part-label', preferred ? false : 'mr-2')}>
+                <span
+                    className={classNames('detail-part-label', preferred ? 'preferred' : 'mr-2', collapsed ? false : 'opened')}>
                     {label || <i>Popis záznamu entity</i>}
                 </span>
-                {preferred && <span className="detail-part-label-alt mr-2"> (preferované)</span>}
+                    {preferred && <span
+                        className={classNames("detail-part-label-alt mr-2", collapsed ? false : 'opened')}> (preferované)</span>}
                 </div>
                 {showPreferredSwitch && !preferred && <Icon
                     className={'mr-2'}
@@ -187,8 +189,8 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
 };
 
 const mapStateToProps = (state) => ({
-//    partTypesMap: state.refTables.partTypes.itemsMap,
-    descItemTypesMap: state.refTables.descItemTypes.itemsMap,
+    partTypesMap: state.refTables.partTypes.itemsMap as Record<number, RulPartTypeVO>,
+    descItemTypesMap: state.refTables.descItemTypes.itemsMap as Record<number, RulDescItemTypeExtVO>,
 });
 
 export default connect(

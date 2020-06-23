@@ -8,6 +8,9 @@ import ArchiveEntityName from "./ArchiveEntityName";
 import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
 import {ApAccessPointVO} from "../../../api/ApAccessPointVO";
 import './DetailHeader.scss';
+import {Icon} from "../../index";
+import {Button} from "../../ui";
+import {indexById} from "../../../shared/utils";
 
 interface Props {
     item: ApAccessPointVO;
@@ -16,12 +19,13 @@ interface Props {
     id?: number;
     validationResult?: ApValidationErrorsVO;
     apTypesMap: object;
+    scopes: any;
 }
 
 const formatDate = (a: any, ...other) => a;
 const formatDateTime = (a: any, ...other) => a;
 
-const DetailHeader: FC<Props> = ({item, id, collapsed, onToggleCollapsed, validationResult, apTypesMap}) => {
+const DetailHeader: FC<Props> = ({item, id, collapsed, onToggleCollapsed, validationResult, apTypesMap, scopes}) => {
     const apType = apTypesMap[item.typeId];
 
     const showValidationError = () => {
@@ -58,30 +62,47 @@ const DetailHeader: FC<Props> = ({item, id, collapsed, onToggleCollapsed, valida
         return elements;
     };
 
-
     return <div className={'detail-header-wrapper'}>
-        <Row className="ml-3 mt-3 mr-3 pb-3 space-between middle">
-            <Col className={'p-0'} style={{flex: 1}}>
-                <h1><ArchiveEntityName name={item.name} description={item.description}/> {showValidationError()}</h1>
-                <DetailDescriptions className="mt-1">
-                    {item.state && <DetailDescriptionsItem>
-                        <DetailState state={item.stateApproval}/>
-                    </DetailDescriptionsItem>}
-                    {id && <DetailDescriptionsItem label="ID:">
-                        {id}
-                    </DetailDescriptionsItem>}
-                    {item.lastChange && item.lastChange.user && <DetailDescriptionsItem label="Upravil:">
-                        {item.lastChange.user.displayName} <span
-                        title={'Upraveno ' + formatDateTime(item.lastChange.change, {})}>({formatDate(item.lastChange.change)})</span>
-                    </DetailDescriptionsItem>}
-                </DetailDescriptions>
+        <Row className={collapsed ? 'ml-3 mt-1 mr-3 pb-1' : 'ml-3 mt-3 mr-3 pb-3 space-between middle'}>
+            {collapsed && <Col className={'p-0'} style={{flex: 1}}>
+                <h4 className={'m-0'}>
+                    <ArchiveEntityName name={item.name} description={item.description}/> {showValidationError()}
+                </h4>
+            </Col>}
+
+            {!collapsed && <Col className={'p-0'} style={{flex: 1}}>
+                <div className={'d-inline-block mr-3 mt-3 pull-left'}>
+                    <Icon glyph={'fa-file-o'} className={'fa-4x'}/>
+                </div>
+                <div className={'d-inline-block'}>
+                    <h1 className={'m-0'}>
+                        <ArchiveEntityName name={item.name} description={item.description}/> {showValidationError()}
+                    </h1>
+                    <h4>{apType.name}</h4>
+                    <DetailDescriptions>
+                        {id && <DetailDescriptionsItem label="ID:">{id}</DetailDescriptionsItem>}
+                        {item.state && <DetailDescriptionsItem>
+                            <DetailState state={item.stateApproval}/>
+                        </DetailDescriptionsItem>}
+                        {item.scopeId && scopes[item.scopeId] && <DetailDescriptionsItem>
+                            <Icon glyph={'fa-globe'} className={'mr-1'}/>
+                            {scopes[item.scopeId].name}
+                        </DetailDescriptionsItem>}
+                        {item.lastChange && item.lastChange.user && <DetailDescriptionsItem label="Upravil:">
+                            {item.lastChange.user.displayName}
+                            <span title={'Upraveno ' + formatDateTime(item.lastChange.change, {})}>
+                                ({formatDate(item.lastChange.change)})
+                            </span>
+                        </DetailDescriptionsItem>}
+                    </DetailDescriptions>
+                </div>
+            </Col>}
+            <Col>
+                <Button onClick={onToggleCollapsed} variant={'light'} style={{position: 'absolute', right: 0, bottom: 0}}
+                        title={collapsed ? "Zobrazit podrobnosti" : "Skrýt podrobnosti"}>
+                    <Icon className={''} glyph={collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'}/>
+                </Button>
             </Col>
-            {/*<Col>*/}
-            {/*    <Button onClick={onToggleCollapsed} size="sm" className={'btn-secondary'}*/}
-            {/*            title={collapsed ? "Zobrazit podrobnosti" : "Skrýt podrobnosti"}>*/}
-            {/*        <Icon className="icon" glyph={collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'}/>*/}
-            {/*    </Button>*/}
-            {/*</Col>*/}
         </Row>
         <Row>
             <Col className={'ap-type'}>
@@ -93,9 +114,19 @@ const DetailHeader: FC<Props> = ({item, id, collapsed, onToggleCollapsed, valida
     </div>
 };
 
-const mapStateToProps = (state) => ({
-    apTypesMap: state.refTables.recordTypes.typeIdMap,
-});
+const mapStateToProps = (state) => {
+    const scopesData = state.refTables.scopesData;
+    const id = scopesData && indexById(scopesData.scopes, -1, 'versionId'); // všechny scope
+    let scopes = [];
+    if (id !== null) {
+        scopes = scopesData.scopes[id].scopes;
+    }
+
+    return {
+        apTypesMap: state.refTables.recordTypes.typeIdMap,
+        scopes: scopes,
+    }
+};
 
 export default connect(
     mapStateToProps
