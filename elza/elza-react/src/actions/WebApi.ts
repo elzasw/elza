@@ -794,6 +794,19 @@ export class WebApiCls {
         });
     }
 
+    findAccessPointForRel(from: number,
+                          max: number,
+                          itemTypeId: number,
+                          itemSpecId: number,
+                          filter: SearchFilterVO): Promise<ArchiveEntityResultListVO> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/search/rel', {
+            from,
+            max,
+            itemTypeId,
+            itemSpecId
+        }, filter);
+    }
+
     findArchiveEntitiesInExternalSystem(from: number,
                                         max: number,
                                         externalSystemCode: string,

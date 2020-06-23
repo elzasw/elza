@@ -235,7 +235,9 @@ const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSy
     </ReduxForm>;
 };
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => ({});
+const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => ({
+    dispatch
+});
 
 const mapStateToProps = (state: any) => {
     const scopesData = state.refTables.scopesData;

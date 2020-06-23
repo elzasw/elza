@@ -9,6 +9,8 @@ import i18n from "../../i18n";
 import ReduxFormFieldErrorDecorator from "../../shared/form/ReduxFormFieldErrorDecorator";
 import SpecificationField from "../field/SpecificationField";
 import {computeAllowedItemSpecIds} from "../../../utils/ItemInfo";
+import * as AreaInfo from "../form/filter/AreaInfo";
+import {ArchiveEntityRel} from "../field/ArchiveEntityRel";
 
 const FORM_NAME = "relationPartItemEditModalForm";
 
@@ -83,57 +85,62 @@ const RelationPartItemEditModalForm = ({
 
     const specialActionField = getSpecialActionField();
 
-    //todo: prepsat AE fieldy
     //const EntityField = specialActionField ? ff.ArchiveEntitRelGeoAdminClass : ff.ArchiveEntitRel;
+    // TODO: dodělat podporu pro geo admin class
+    const EntityField = ArchiveEntityRel;
 
     return <Form onSubmit={handleSubmit}>
         <Modal.Body>
             {renderSpecification && <Field
                 name="itemSpecId"
                 label="Specifikace vztahu"
-                itemTypeI={itemTypeId}
+                itemTypeId={itemTypeId}
                 itemSpecIds={useItemSpecIds}
                 component={ReduxFormFieldErrorDecorator}
                 renderComponent={SpecificationField}
             />}
             <Row /*gutter={[8, 0]}*/ className={renderSpecification ? "pt-2" : ""}>
-                <Col xs={4}>
+                <Col xs={6}>
+                    <Form.Label>
+                        Oblast hledání
+                    </Form.Label>
                     <Field
                         name={'area'}
                         component={ReduxFormFieldErrorDecorator}
                         renderComponent={Form.Control}
                         as={'select'}
                     >
-                        {/* TODO: kde vzit - v CAM to byla AreaEnumInfo */}
+                        {AreaInfo.getValues().map(area => (
+                            <option key={area} value={area}>
+                                {AreaInfo.getName(area)}
+                            </option>
+                        ))}
                     </Field>
                 </Col>
-                <Col xs={3}>
+                <Col xs={6}>
+                    <Form.Label>
+                        Pouze hlavní část
+                    </Form.Label>
                     <Field
                         name="onlyMainPart"
                         component={ReduxFormFieldErrorDecorator}
-                        rendercomponent={Form.Check}
-                        type={'switch'}
+                        renderComponent={Form.Check}
+                        type='checkbox'
                     />
                 </Col>
                 {specialActionField && <Col xs={5}>
                     {specialActionField}
                 </Col>}
                 <Col xs={12}>
-                    <Field
+                    <EntityField
                         name={'codeObj'}
                         label={'Návazná archivní entita'}
-                        useObj={true}
                         onlyMainPart={onlyMainPart}
                         area={area}
                         itemTypeId={itemTypeId}
                         itemSpecId={specialActionField ? geoSearchItemType : itemSpecId}
-                        disabled={renderSpecification && itemSpecId == null}
-                        title={!renderSpecification ? 'Návazná archivní entita' : (itemSpecId == null ? 'Pro vybrání návazné archivní entity je nutné nejdříve zvolit specifikaci' : 'Návazná archivní entita')}
-                        component={ReduxFormFieldErrorDecorator}
-                        renderComponent={'input'}
-                        // renderComponent={EntityField}
+                        disabled={renderSpecification ? itemSpecId == null : false}
                     />
-                    {/* TODO: zde (vyse) musi byt EntityField, az se prepisou AE fieldy */}
                 </Col>
             </Row>
         </Modal.Body>

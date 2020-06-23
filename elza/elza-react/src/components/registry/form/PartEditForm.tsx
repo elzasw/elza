@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {arrayInsert, Field, FieldArray, FieldArrayFieldsProps, WrappedFieldArrayProps} from 'redux-form';
+import {arrayInsert, Field, change, FieldArray, FieldArrayFieldsProps, WrappedFieldArrayProps} from 'redux-form';
 import {connect} from "react-redux";
 import "./PartEditForm.scss";
 import {Action} from "redux";
@@ -28,7 +28,7 @@ import {
 } from "../../../utils/ItemInfo";
 import {ApItemBitVO} from "../../../api/ApItemBitVO";
 import {ApItemAccessPointRefVO} from "../../../api/ApItemAccessPointRefVO";
-import {modalDialogShow} from "../../../actions/global/modalDialog";
+import {modalDialogHide, modalDialogShow} from "../../../actions/global/modalDialog";
 import {WebApi} from "../../../actions/WebApi";
 import ReduxFormFieldErrorDecorator from "../../shared/form/ReduxFormFieldErrorDecorator";
 import UnitdateField from "../field/UnitdateField";
@@ -36,6 +36,9 @@ import SpecificationField from "../field/SpecificationField";
 import {useDebouncedEffect} from "../../../utils/hooks";
 import FF from "../../shared/form/FF";
 import FormInput from "../../shared/form/FormInput";
+import {Area} from "../../../api/Area";
+import RelationPartItemEditModalForm from "../modal/RelationPartItemEditModalForm";
+import {objectById} from "../../../shared/utils";
 
 
 type OwnProps = {
@@ -114,10 +117,10 @@ const renderItem = (name: string,
             let displayValue;
             if (itemType.useSpecification) {
                 //@ts-ignore
-                displayValue = item.specId ? `${itemType.descItemSpecs[item.specId].shortcut}: ${item.value}` : item.value;
+                displayValue = item.specId ? `${objectById(itemType.descItemSpecs, item.specId).shortcut}: ${item.accessPoint && item.accessPoint.name}` : (item.accessPoint && item.accessPoint.name);
             } else {
                 //@ts-ignore
-                displayValue = item.value;
+                displayValue = item.accessPoint && item.accessPoint.name;
             }
             valueField = <Row className={'d-flex'}>
                 <Col style={{flex: 1}}>
@@ -584,14 +587,18 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
     ) => {
         const initialValues: any = {
             onlyMainPart: false,
+            area: Area.ALLNAMES,
             itemSpecId: item.specId,
         };
 
         if ((item as unknown as ApItemAccessPointRefVO).value != null) {
             initialValues.codeObj = {
                 id: (item as unknown as ApItemAccessPointRefVO).value,
-                //@ts-ignore
-                name: item.value,
+                // @ts-ignore
+                codeObj: item.accessPoint,
+                // @ts-ignore
+                name: item.accessPoint && item.accessPoint.name,
+                itemSpecId: item.specId
             }
         }
 
@@ -599,41 +606,23 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
             modalDialogShow(
                 this,
                 refTables.descItemTypes.itemsMap[item.typeId].shortcut,
-                <div/>
-                // <RelationPartItemEditModalForm
-                //     initialValues={initialValues}
-                //     itemTypeAttributeMap={itemTypeAttributeMap}
-                //     itemTypeId={item.typeId}
-                //     // onSubmit={(form: RelationPartItemClientVO) => {
-                //     //     let field = props.formInfo.sectionName ? `${props.formInfo.sectionName}.${name}` : name;
-                //     //     const fieldValue: any = {
-                //     //         ...item,
-                //     //         textValue: form.codeObj ? form.codeObj.name : "",
-                //     //         itemSpecId: form.itemSpecId,
-                //     //         value: form.codeObj ? form.codeObj.id : null
-                //     //     };
-                //     //     dispatch(change(props.formInfo.formName, field, fieldValue));
-                //     // }}
-                // />
+                <RelationPartItemEditModalForm
+                    initialValues={initialValues}
+                    itemTypeAttributeMap={itemTypeAttributeMap}
+                    itemTypeId={item.typeId}
+                    onSubmit={form => {
+                        let field = name;
+                        const fieldValue: any = {
+                            ...item,
+                            specId: form.itemSpecId ? parseInt(form.itemSpecId) : null,
+                            accessPoint: form.codeObj,
+                            value: form.codeObj ? form.codeObj.id : null
+                        };
+                        dispatch(change(props.formInfo.formName, field, fieldValue));
+                        dispatch(modalDialogHide());
+                    }}
+                />
             )
-            // ModalActions.showForm(RelationPartItemEditModalForm, {
-            //     initialValues,
-            //     itemTypeAttributeMap,
-            //     itemTypeId: item.itemTypeId,
-            //     onSubmit: (form: RelationPartItemClientVO) => {
-            //         let field = props.formInfo.sectionName ? `${props.formInfo.sectionName}.${name}` : name;
-            //         const fieldValue: any = {
-            //             ...item,
-            //             textValue: form.codeObj ? form.codeObj.name : "",
-            //             itemSpecId: form.itemSpecId,
-            //             value: form.codeObj ? form.codeObj.id : null
-            //         };
-            //         dispatch(change(props.formInfo.formName, field, fieldValue));
-            //     }
-            // }, {
-            //     title: codelist.itemTypesMap[item.itemTypeId].shortcut,
-            //     width: "800px"
-            // })
         );
     },
     showImportDialog: (field: string) => {
