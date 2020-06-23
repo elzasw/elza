@@ -25,20 +25,6 @@ export const StateApprovalCaption = (value: StateApproval): string => {
     }
 }
 
-export const StateApprovalColor = (value: StateApproval): string => {
-    switch (value) {
-        case StateApproval.APPROVED:
-        case StateApproval.NEW:
-            return "#317E9F";
-        case StateApproval.TO_APPROVE:
-        case StateApproval.TO_AMEND:
-            return "#EBA960";
-        default:
-            console.warn('Nedefinovaná barva', value);
-            return '';
-    }
-}
-
 export const StateApprovalIcon = (value: StateApproval): string => {
     switch (value) {
         case StateApproval.APPROVED:
