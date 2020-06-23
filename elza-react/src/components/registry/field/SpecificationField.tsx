@@ -12,11 +12,8 @@ interface Props {
 const SpecificationField: FC<Props> = ({refTables, itemTypeId, itemSpecIds, ...rest}) => {
     const itemType = refTables.descItemTypes.itemsMap[itemTypeId] as RulDescItemTypeExtVO;
 
-    console.log('itemtype', itemType);
-
     let itemSpecsList = itemType.descItemSpecs
         .sort((a, b) => a.name.localeCompare(b.name));
-    console.log('ENUMP', itemSpecsList);
 
     if (itemSpecIds) {
         itemSpecsList.filter(x => itemSpecIds.includes(x.id));
@@ -27,6 +24,7 @@ const SpecificationField: FC<Props> = ({refTables, itemTypeId, itemSpecIds, ...r
             as={'select'}
             {...rest}
         >
+            <option key={""}></option>
             {itemSpecsList.map((spec) => {
                 return <option key={spec.id} value={spec.id}>{spec.name}</option>
             })}

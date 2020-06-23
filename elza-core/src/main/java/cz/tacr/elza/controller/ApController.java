@@ -834,6 +834,7 @@ public class ApController {
             archiveEntityVO.setName("Test " + i);
             archiveEntityVO.setAeTypeId(1);
             archiveEntityVO.setDescription("Popis " + i);
+            archiveEntityVOList.add(archiveEntityVO);
         }
 
         archiveEntityResultListVO.setTotal(archiveEntityVOList.size());
