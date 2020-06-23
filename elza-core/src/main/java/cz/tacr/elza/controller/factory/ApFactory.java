@@ -37,6 +37,8 @@ public class ApFactory {
 
     private final ApBindingStateRepository bindingStateRepository;
 
+    private final ApBindingItemRepository bindingItemRepository;
+
     private final ScopeRepository scopeRepository;
 
     private final StaticDataService staticDataService;
@@ -60,6 +62,7 @@ public class ApFactory {
                      final ApPartRepository partRepository,
                      final ApItemRepository itemRepository,
                      final ApBindingStateRepository bindingStateRepository,
+                     final ApBindingItemRepository bindingItemRepository,
                      final RuleService ruleService,
                      final RuleFactory ruleFactory,
                      final ClientFactoryVO factoryVO) {
@@ -71,6 +74,7 @@ public class ApFactory {
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
+        this.bindingItemRepository = bindingItemRepository;
         this.ruleService = ruleService;
         this.ruleFactory = ruleFactory;
         this.factoryVO = factoryVO;
@@ -143,7 +147,23 @@ public class ApFactory {
                 .collect(Collectors.groupingBy(i -> i.getPartId()));
         // prepare external ids
         List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(ap);
-        return createVO(apState, parts, items, eids);
+        List<ApBinding> bindings = getBindingList(eids);
+        Map<Integer, List<ApBindingItem>> bindingItems = null;
+        if (CollectionUtils.isNotEmpty(bindings)) {
+            bindingItems = bindingItemRepository.findByBindings(bindings).stream()
+                    .collect(Collectors.groupingBy(i -> i.getBinding().getBindingId()));
+        }
+        return createVO(apState, parts, items, eids, bindingItems);
+    }
+
+    private List<ApBinding> getBindingList(List<ApBindingState> eids) {
+        List<ApBinding> bindings = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(eids)) {
+            for (ApBindingState bindingState : eids) {
+                bindings.add(bindingState.getBinding());
+            }
+        }
+        return bindings;
     }
 
     public List<ApStateHistoryVO> createStateHistoriesVO(final Collection<ApState> states) {
@@ -172,14 +192,16 @@ public class ApFactory {
     public ApAccessPointVO createVO(final ApState apState,
                                     final List<ApPart> parts,
                                     final Map<Integer, List<ApItem>> items,
-                                    final List<ApBindingState> eids) {
+                                    final List<ApBindingState> eids,
+                                    final Map<Integer, List<ApBindingItem>> bindingItemsMap) {
         ApAccessPoint ap = apState.getAccessPoint();
         ApPart preferredPart = ap.getPreferredPart();
         String desc = getDescription(parts, items);
         Integer comments = stateRepository.countCommentsByAccessPoint(ap);
         UserVO ownerUser = getOwnerUser(ap);
         // prepare external ids
-        List<ApExternalIdVO> eidsVO = FactoryUtils.transformList(eids, ApExternalIdVO::newInstance);
+        List<ApBindingVO> eidsVO = FactoryUtils.transformList(eids, ApBindingVO::newInstance);
+        fillBindingItems(eidsVO, bindingItemsMap);
 
         // create VO
         ApAccessPointVO vo = new ApAccessPointVO();
@@ -204,6 +226,17 @@ public class ApFactory {
         vo.setComments(comments);
         vo.setOwnerUser(ownerUser);
         return vo;
+    }
+
+    private void fillBindingItems(List<ApBindingVO> eidsVO, Map<Integer, List<ApBindingItem>> bindingItemsMap) {
+        if (CollectionUtils.isNotEmpty(eidsVO)) {
+            for (ApBindingVO apBindingVO : eidsVO) {
+                List<ApBindingItem> bindingItems = bindingItemsMap.getOrDefault(apBindingVO.getId(), new ArrayList<>());
+                if (CollectionUtils.isNotEmpty(bindingItems)) {
+                    apBindingVO.setBindingItemList(FactoryUtils.transformList(bindingItems, ApBindingItemVO::newInstance));
+                }
+            }
+        }
     }
 
     private String getDescription(List<ApPart> parts, Map<Integer, List<ApItem>> items) {
@@ -314,7 +347,13 @@ public class ApFactory {
             List<ApPart> parts = apPartsMap.getOrDefault(accessPointId, Collections.emptyList());
             Map<Integer, List<ApItem>> itemMap = apItemsMap.getOrDefault(accessPointId, Collections.emptyMap());
             List<ApBindingState> apBindings = apEidsMap.getOrDefault(accessPointId, Collections.emptyList());
-            result.add(createVO(apState, parts, itemMap, apBindings));
+            List<ApBinding> bindings = getBindingList(apBindings);
+            Map<Integer, List<ApBindingItem>> bindingItems = null;
+            if (CollectionUtils.isNotEmpty(bindings)) {
+                bindingItems = bindingItemRepository.findByBindings(bindings).stream()
+                        .collect(Collectors.groupingBy(i -> i.getBinding().getBindingId()));
+            }
+            result.add(createVO(apState, parts, itemMap, apBindings, bindingItems));
         }
 
         return result;
