@@ -1010,6 +1010,23 @@ var messages = {
     "ap.error.emptyValue": "Prázdná hodnota archivní entity",
     "ap.error.duplicateValue": "Hodnota již existuje",
 
+    "ap.binding.external-id": "Externí ID",
+    "ap.binding.user": "upravil",
+    "ap.binding.replaced": "nahrazená",
+
+    "ap.binding.action.synchronize": "Aktualizace údajů z ext. systému",
+    "ap.binding.action.update": "Zápis změn do ext. systému",
+    "ap.binding.action.disconnect": "Zrušení vazby na ext. systém",
+    "ap.binding.action.take-rel-entities": "Založení přístupových bodů z návazných",
+
+    "ap.binding.processing.synchronize": "Probíhá aktualizace údajů z ext. systému...",
+    "ap.binding.processing.update": "Probíhá zápis změn do ext. systému...",
+    "ap.binding.processing.disconnect": "Probíhá zrušení vazby na ext. systém...",
+    "ap.binding.processing.take-rel-entities": "Probíhá založení přístupových bodů z návazných...",
+
+    "ap.binding.syncState.SYNC_OK": "Aktivní synchronizace",
+    "ap.binding.syncState.NOT_SYNCED": "Nesynchronizuje se",
+
     "ap.push-to-ext.title": "Zápis entity do externího systému",
     "ap.push-to-ext": "Zápis entity do externího systému",
 

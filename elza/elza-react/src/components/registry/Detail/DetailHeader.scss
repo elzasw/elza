@@ -13,4 +13,27 @@
             margin-right: 4px;
         }
     }
+    .bindings {
+        margin-top: 0.5rem;
+        font-size: 1.2em;
+        font-weight: 500;
+        display: table;
+        .binding {
+            display: table-row;
+            .info {
+                .system, .link, .user {
+                    font-weight: 700;
+                }
+            }
+            .action {
+                display: table-cell;
+                .disabled {
+                    color: #A7A7A7;
+                }
+                .fixheight {
+                    font-size: 1.3em;
+                }
+            }
+        }
+    }
 }
