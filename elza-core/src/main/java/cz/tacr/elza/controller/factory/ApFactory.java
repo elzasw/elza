@@ -4,18 +4,20 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.connector.CamConnector;
+import cz.tacr.elza.connector.CamInstance;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.ap.item.*;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.FactoryUtils;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ap.ApFormVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
@@ -33,8 +35,6 @@ public class ApFactory {
 
     private final ApStateRepository stateRepository;
 
-    private final ApBindingRepository bindingRepository;
-
     private final ApBindingStateRepository bindingStateRepository;
 
     private final ApBindingItemRepository bindingItemRepository;
@@ -51,12 +51,11 @@ public class ApFactory {
 
     private final RuleFactory ruleFactory;
 
-    private final ClientFactoryVO factoryVO;
+    private final CamConnector camConnector;
 
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
-                     final ApBindingRepository bindingRepository,
                      final ScopeRepository scopeRepository,
                      final StaticDataService staticDataService,
                      final ApPartRepository partRepository,
@@ -65,10 +64,9 @@ public class ApFactory {
                      final ApBindingItemRepository bindingItemRepository,
                      final RuleService ruleService,
                      final RuleFactory ruleFactory,
-                     final ClientFactoryVO factoryVO) {
+                     final CamConnector camConnector) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
-        this.bindingRepository = bindingRepository;
         this.scopeRepository = scopeRepository;
         this.staticDataService = staticDataService;
         this.partRepository = partRepository;
@@ -77,7 +75,7 @@ public class ApFactory {
         this.bindingItemRepository = bindingItemRepository;
         this.ruleService = ruleService;
         this.ruleFactory = ruleFactory;
-        this.factoryVO = factoryVO;
+        this.camConnector = camConnector;
     }
 
     /**
@@ -201,6 +199,7 @@ public class ApFactory {
         UserVO ownerUser = getOwnerUser(ap);
         // prepare external ids
         List<ApBindingVO> eidsVO = FactoryUtils.transformList(eids, ApBindingVO::newInstance);
+        fillBindingUrls(eidsVO);
         fillBindingItems(eidsVO, bindingItemsMap);
 
         // create VO
@@ -226,6 +225,26 @@ public class ApFactory {
         vo.setComments(comments);
         vo.setOwnerUser(ownerUser);
         return vo;
+    }
+
+    private void fillBindingUrls(final List<ApBindingVO> bindings) {
+        if (CollectionUtils.isNotEmpty(bindings)) {
+            for (ApBindingVO binding : bindings) {
+                CamInstance camInstance = camConnector.findById(binding.getExternalSystemCode());
+                if (camInstance != null) {
+                    String value = binding.getValue();
+                    if (StringUtils.isNotEmpty(value)) {
+                        String url = camInstance.getEntityDetailUrl(Integer.parseInt(value));
+                        binding.setDetailUrl(url);
+                    }
+                    String extReplacedBy = binding.getExtReplacedBy();
+                    if (StringUtils.isNotEmpty(extReplacedBy)) {
+                        String url = camInstance.getEntityDetailUrl(Integer.parseInt(extReplacedBy));
+                        binding.setDetailUrlExtReplacedBy(url);
+                    }
+                }
+            }
+        }
     }
 
     private void fillBindingItems(List<ApBindingVO> eidsVO, Map<Integer, List<ApBindingItem>> bindingItemsMap) {

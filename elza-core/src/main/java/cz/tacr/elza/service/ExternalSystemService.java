@@ -256,7 +256,7 @@ public class ExternalSystemService {
         apBindingState.setExtState(state);
         apBindingState.setExtRevision(revisionUuid);
         apBindingState.setExtUser(user);
-        apBindingState.setExtReplacedBy(String.valueOf(replacedById));
+        apBindingState.setExtReplacedBy(replacedById == null ? null : String.valueOf(replacedById));
         apBindingState.setSyncChange(apChange);
         apBindingState.setCreateChange(apChange);
         apBindingState.setSyncOk(SyncState.SYNC_OK);

@@ -13,6 +13,8 @@ public class ApBindingVO {
     
     private String value;
 
+    private String detailUrl;
+
     private String extState;
 
     private String extRevision;
@@ -20,6 +22,8 @@ public class ApBindingVO {
     private String extUser;
 
     private String extReplacedBy;
+
+    private String detailUrlExtReplacedBy;
 
     private SyncState syncState;
 
@@ -95,6 +99,22 @@ public class ApBindingVO {
 
     public void setBindingItemList(List<ApBindingItemVO> bindingItemList) {
         this.bindingItemList = bindingItemList;
+    }
+
+    public String getDetailUrl() {
+        return detailUrl;
+    }
+
+    public void setDetailUrl(final String detailUrl) {
+        this.detailUrl = detailUrl;
+    }
+
+    public String getDetailUrlExtReplacedBy() {
+        return detailUrlExtReplacedBy;
+    }
+
+    public void setDetailUrlExtReplacedBy(final String detailUrlExtReplacedBy) {
+        this.detailUrlExtReplacedBy = detailUrlExtReplacedBy;
     }
 
     /**

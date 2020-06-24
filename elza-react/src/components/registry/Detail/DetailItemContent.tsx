@@ -13,6 +13,7 @@ import {ApItemBitVO} from "../../../api/ApItemBitVO";
 import {formatDate} from "../../validate";
 import {ApItemStringVO} from "../../../api/ApItemStringVO";
 import {ApItemDateVO} from "../../../api/ApItemDateVO";
+import {ApItemUnitdateVO} from "../../../api/ApItemUnitdateVO";
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
@@ -64,6 +65,9 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
 
             break;
         case RulDataTypeCodeEnum.UNITDATE:
+            let unitdateItem = item as ApItemUnitdateVO;
+            valueField = unitdateItem.value;
+            break;
         case RulDataTypeCodeEnum.DATE:
             let dateItem = item as ApItemDateVO;
             valueField = formatDate(dateItem.value);
