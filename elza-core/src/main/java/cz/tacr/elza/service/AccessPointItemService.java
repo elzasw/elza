@@ -15,6 +15,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.service.vo.DataRef;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Service;
@@ -276,8 +277,7 @@ public class AccessPointItemService {
     public List<ApItem> createItems(final List<Object> createItems,
                                     final ApChange change,
                                     final ApBinding binding,
-                                    final ApScope scope,
-                                    final ApExternalSystem apExternalSystem,
+                                    final List<DataRef> dataRefList,
                                     final CreateFunction create) {
         List<ArrData> dataToSave = new ArrayList<>(createItems.size());
         List<ApItem> itemsCreated = new ArrayList<>();
@@ -285,7 +285,7 @@ public class AccessPointItemService {
 
         for (Object createItem : createItems) {
 
-            ApItem itemCreated = createItem(createItem, change, create, typeIdItemsMap, dataToSave, binding, scope, apExternalSystem);
+            ApItem itemCreated = createItem(createItem, change, create, typeIdItemsMap, dataToSave, binding, dataRefList);
             itemsCreated.add(itemCreated);
         }
         dataRepository.save(dataToSave);
@@ -298,8 +298,7 @@ public class AccessPointItemService {
                               final Map<Integer, List<ApItem>> typeIdItemsMap,
                               final List<ArrData> dataToSave,
                               final ApBinding binding,
-                              final ApScope scope,
-                              final ApExternalSystem apExternalSystem) {
+                              final List<DataRef> dataRefList) {
         StaticDataProvider sdp = staticDataService.getData();
         RulItemType itemType;
         RulItemSpec itemSpec;
@@ -325,18 +324,8 @@ public class AccessPointItemService {
             uuid = itemEntityRef.getUuid();
 
             ArrDataRecordRef dataRecordRef = new ArrDataRecordRef();
-            //TODO fantiš
-//            ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, itemEntityRef.getEr().getEid().intValue(), apExternalSystem.getCode());
-//            if (refBinding == null) {
-//                dataRecordRef.setBinding(externalSystemService.createApBinding(scope, itemEntityRef.getEr().getEid(), apExternalSystem));
-//            } else {
-//                dataRecordRef.setBinding(refBinding);
-//
-//                ApBindingState bindingState = externalSystemService.findByBinding(refBinding);
-//                if (bindingState != null) {
-//                    dataRecordRef.setRecord(bindingState.getAccessPoint());
-//                }
-//            }
+            DataRef dataRef = new DataRef(uuid, itemEntityRef.getEr().getEid());
+            dataRefList.add(dataRef);
 
             dataRecordRef.setDataType(DataType.RECORD_REF.getEntity());
             data = dataRecordRef;

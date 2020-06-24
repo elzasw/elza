@@ -11,6 +11,7 @@ import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.service.vo.DataRef;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
@@ -183,9 +184,8 @@ public class PartService {
                                         final ApPart apPart,
                                         final List<Object> itemList,
                                         final ApBinding binding,
-                                        final ApScope scope,
-                                        final ApExternalSystem apExternalSystem) {
-        List<ApItem> items = apItemService.createItems(itemList, apChange, binding, scope, apExternalSystem, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
+                                        final List<DataRef> dataRefList) {
+        List<ApItem> items = apItemService.createItems(itemList, apChange, binding, dataRefList, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createPartItem(apPart, it, is, c, objectId, position));
         return itemRepository.save(items);
     }

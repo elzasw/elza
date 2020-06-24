@@ -25,4 +25,6 @@ public interface ItemTypeSpecAssignRepository extends JpaRepository<RulItemTypeS
     List<RulItemTypeSpecAssign> findByItemTypeIn(Collection<RulItemType> itemTypes);
 
     void deleteByItemSpecIn(Collection<RulItemSpec> itemSpecs);
+
+    void deleteByItemTypeIn(Collection<RulItemType> itemTypes);
 }
