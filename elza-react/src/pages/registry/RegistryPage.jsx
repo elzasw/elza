@@ -497,7 +497,7 @@ class RegistryPage extends AbstractReactComponent {
             );
 
             itemActions.push(
-                <Button key="change-state" onClick={this.handleConnectAp}>
+                <Button key="connect-ap" onClick={this.handleConnectAp}>
                     <Icon glyph="fa-link"/>
                     <div>
                         <span className="btnText">{i18n('ap.connect')}</span>
@@ -506,7 +506,7 @@ class RegistryPage extends AbstractReactComponent {
             );
 
             itemActions.push(
-                <Button key="change-state" onClick={this.handlePushApToExt}>
+                <Button key="push-ap-to-ext" onClick={this.handlePushApToExt}>
                     <Icon glyph="fa-upload"/>
                     <div>
                         <span className="btnText">{i18n('ap.push-to-ext')}</span>

@@ -794,6 +794,17 @@ export class WebApiCls {
         });
     }
 
+    /**
+     * Vyhledání přístupových bodů pro návazný vztah
+     *
+     * @param from od které položky vyhledávat
+     * @param max maximální počet záznamů, které najednou vrátit
+     * @param itemTypeId identifikátor typu vztahu
+     * @param itemSpecId identifikátor specifikace vztahu
+     * @param filter parametry hledání
+     * @return výsledek hledání
+     *
+     */
     findAccessPointForRel(from: number,
                           max: number,
                           itemTypeId: number,
@@ -807,6 +818,15 @@ export class WebApiCls {
         }, filter);
     }
 
+    /**
+     * Vyhledání archivních entit v externím systému
+     *
+     * @param from od které položky vyhledávat
+     * @param max maximální počet záznamů, které najednou vrátit
+     * @param externalSystemCode kód externího systému
+     * @param filter parametry hledání
+     * @return výsledek hledání
+     */
     findArchiveEntitiesInExternalSystem(from: number,
                                         max: number,
                                         externalSystemCode: string,
@@ -814,6 +834,15 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/external/search', {from, max, externalSystemCode}, filter);
     }
 
+    /**
+     * Vyhledání položek ve frontě na synchronizaci.
+     *
+     * @param from od které položky vyhledávat
+     * @param max maximální počet záznamů, které najednou vrátit
+     * @param externalSystemCode kód externího systému
+     * @param filter parametry hledání
+     * @return výsledek hledání
+     */
     findExternalSyncs(from: number,
                       max: number,
                       externalSystemCode: string,
@@ -821,6 +850,14 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/external/syncs', {from, max, externalSystemCode}, filter);
     }
 
+    /**
+     * Převzetí entity z externího systému
+     *
+     * @param archiveEntityId identifikátor entity v externím systému
+     * @param scopeId identifikátor třídy rejstříku
+     * @param externalSystemCode kód externího systému
+     * @return identifikátor přístupového bodu
+     */
     takeArchiveEntity(archiveEntityId: number,
                       scopeId: number,
                       externalSystemCode: string): Promise<number> {
@@ -828,6 +865,13 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(url, {scopeId, externalSystemCode});
     }
 
+    /**
+     * Propojení archivní entity z externího systém na existující přístupový bod
+     *
+     * @param archiveEntityId identifikátor entity v externím systému
+     * @param accessPointId identifikátor přístupového bodu
+     * @param externalSystemCode kód externího systému
+     */
     connectArchiveEntity(archiveEntityId: number,
                          accessPointId: number,
                          externalSystemCode: string): Promise<void> {
@@ -838,9 +882,59 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(url, {externalSystemCode});
     }
 
+    /**
+     * Zápis přistupového bodu do externího systému
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param externalSystemCode kód externího systému
+     */
     saveAccessPoint(accessPointId: number,
                     externalSystemCode: string): Promise<void> {
         const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/save/{accessPointId}', {
+            accessPointId
+        });
+        return AjaxUtils.ajaxPost(url, {externalSystemCode});
+    }
+
+    /**
+     * Synchronizace přístupového bodu z externího systému
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param externalSystemCode kód externího systému
+     */
+    synchronizeAccessPoint(accessPointId: number,
+                           externalSystemCode: string) {
+        const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/synchronize/{accessPointId}', {
+            accessPointId
+        });
+        return AjaxUtils.ajaxPost(url, {externalSystemCode});
+    }
+
+    /**
+     * Zápis změn do externího systému
+     *
+     * @param accessPointId identifikátor přístupového bodu
+     * @param externalSystemCode kód externího systému
+     */
+    updateArchiveEntity(accessPointId: number,
+                        externalSystemCode: string) {
+        const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/update/{accessPointId}', {
+            accessPointId
+        });
+        return AjaxUtils.ajaxPost(url, {externalSystemCode});
+    }
+
+    disconnectAccessPoint(accessPointId: number,
+                          externalSystemCode: string) {
+        const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/disconnect/{accessPointId}', {
+            accessPointId
+        });
+        return AjaxUtils.ajaxPost(url, {externalSystemCode});
+    }
+
+    takeRelArchiveEntities(accessPointId: number,
+                           externalSystemCode: string) {
+        const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/take-rel/{accessPointId}', {
             accessPointId
         });
         return AjaxUtils.ajaxPost(url, {externalSystemCode});

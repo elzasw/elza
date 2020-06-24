@@ -22,6 +22,7 @@ import {ApPartFormVO} from "../../api/ApPartFormVO";
 import PartEditModal from "./modal/PartEditModal";
 import {sortItems} from "../../utils/ItemInfo";
 import {RulPartTypeVO} from "../../api/RulPartTypeVO";
+import {registryDetailFetchIfNeeded} from "../../actions/registry/registry";
 
 type OwnProps = {
     id: number; // ae id
@@ -126,6 +127,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
                 onToggleCollapsed={() => {
                     setCollapsed(!collapsed)
                 }}
+                onInvalidateDetail={() => props.refreshDetail(props.detail.data!.id)}
             />
 
             {allParts && <div key="part-sections">
@@ -254,6 +256,9 @@ const mapDispatchToProps = (
     invalidateValidationErrors: (apId: number) => {
         dispatch(DetailActions.invalidate(DETAIL_VALIDATION_RESULT, apId));
     },
+    refreshDetail: (apId: number) => {
+        dispatch(registryDetailFetchIfNeeded(apId, true));
+    }
 });
 
 const mapStateToProps = (state: any, props: OwnProps) => {

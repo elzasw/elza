@@ -1,6 +1,6 @@
 import React, {FC} from 'react';
 import DetailState from './DetailState';
-import {Col, Row} from 'react-bootstrap';
+import {Col, Dropdown, DropdownButton, Row} from 'react-bootstrap';
 import DetailDescriptions from "./DetailDescriptions";
 import DetailDescriptionsItem from "./DetailDescriptionsItem";
 import {connect} from "react-redux";
@@ -10,22 +10,34 @@ import {ApAccessPointVO} from "../../../api/ApAccessPointVO";
 import './DetailHeader.scss';
 import {Icon} from "../../index";
 import {Button} from "../../ui";
-import {indexById} from "../../../shared/utils";
+import {indexById, objectById} from "../../../shared/utils";
+import i18n from "../../i18n";
+import {SyncState} from "../../../api/SyncState";
+import {ApBindingVO} from "../../../api/ApBindingVO";
+import {showAsyncWaiting} from "../../../actions/global/modalDialog";
+import {WebApi} from "../../../actions/WebApi";
 
 interface Props {
     item: ApAccessPointVO;
     onToggleCollapsed?: () => void;
+    onInvalidateDetail?: () => void;
     collapsed: boolean;
     id?: number;
     validationResult?: ApValidationErrorsVO;
     apTypesMap: object;
     scopes: any;
+    externalSystems: any[];
+    dispatch: any;
 }
 
 const formatDate = (a: any, ...other) => a;
 const formatDateTime = (a: any, ...other) => a;
 
-const DetailHeader: FC<Props> = ({item, id, collapsed, onToggleCollapsed, validationResult, apTypesMap, scopes}) => {
+const getProcessingMessage = (key: string) => {
+    return <h4 className="processing">{i18n(key)}</h4>
+}
+
+const DetailHeader: FC<Props> = ({dispatch, onInvalidateDetail, item, id, collapsed, onToggleCollapsed, validationResult, apTypesMap, scopes, externalSystems}) => {
     const apType = apTypesMap[item.typeId];
 
     const showValidationError = () => {
@@ -62,6 +74,66 @@ const DetailHeader: FC<Props> = ({item, id, collapsed, onToggleCollapsed, valida
         return elements;
     };
 
+    const handleSynchronize = (binding: ApBindingVO) => {
+        dispatch(showAsyncWaiting(null, getProcessingMessage('ap.binding.processing.synchronize'),
+            WebApi.synchronizeAccessPoint(id!, binding.externalSystemCode), () => {
+                onInvalidateDetail && onInvalidateDetail();
+            }));
+    }
+
+    const handleUpdate = (binding: ApBindingVO) => {
+        dispatch(showAsyncWaiting(null, getProcessingMessage('ap.binding.processing.update'),
+            WebApi.updateArchiveEntity(id!, binding.externalSystemCode), () => {
+                onInvalidateDetail && onInvalidateDetail();
+            }));
+    }
+
+    const handleDisconnect = (binding: ApBindingVO) => {
+        dispatch(showAsyncWaiting(null, getProcessingMessage('ap.binding.processing.disconnect'),
+            WebApi.disconnectAccessPoint(id!, binding.externalSystemCode), () => {
+                onInvalidateDetail && onInvalidateDetail();
+            }));
+    }
+
+    const handleTakeRelEntities = (binding: ApBindingVO) => {
+        dispatch(showAsyncWaiting(null, getProcessingMessage('ap.binding.processing.take-rel-entities'),
+            WebApi.takeRelArchiveEntities(id!, binding.externalSystemCode), () => {
+                onInvalidateDetail && onInvalidateDetail();
+            }));
+    }
+
+    const renderBindings = () => {
+        if (item.externalIds.length > 0 && externalSystems.length > 0) {
+            return <div className="bindings" key="bindings">
+                {item.externalIds.map(binding => {
+                    const externalSystem = objectById(externalSystems, binding.externalSystemCode, 'code');
+                    return <div className="binding" key={'binding-' + binding.id}>
+                        <div className="info">
+                            <span className="system">{externalSystem.name}</span>
+                            - {i18n('ap.binding.external-id')}: <span title={binding.extRevision} className="link"><a href={binding.detailUrl} target="_blank">{binding.value}</a></span>
+                            {binding.extReplacedBy && <>,{i18n('ap.binding.replaced')}: <span className="link"><a href={binding.detailUrlExtReplacedBy} target="_blank">{binding.detailUrlExtReplacedBy}</a></span></>}
+                            , {i18n('ap.binding.user')}: <span className="user">{binding.extUser}</span>
+                        </div>
+                        <div className="action pl-3" key={'binding-action-' + binding.id}>
+                            <Icon glyph="fa-refresh" title={i18n('ap.binding.syncState.' + binding.syncState)} className={binding.syncState == SyncState.NOT_SYNCED ? 'disabled' : ''} />
+                            <DropdownButton
+                                className="d-inline-block ml-3 fixheight"
+                                variant="action"
+                                id={"binding-action-" + binding.id}
+                                title={((<Icon glyph="fa-ellipsis-v" />) as any) as string}
+                            >
+                                <Dropdown.Item onClick={() => handleSynchronize(binding)}>{i18n('ap.binding.action.synchronize')}</Dropdown.Item>
+                                <Dropdown.Item onClick={() => handleUpdate(binding)}>{i18n('ap.binding.action.update')}</Dropdown.Item>
+                                <Dropdown.Item onClick={() => handleDisconnect(binding)}>{i18n('ap.binding.action.disconnect')}</Dropdown.Item>
+                                <Dropdown.Item onClick={() => handleTakeRelEntities(binding)}>{i18n('ap.binding.action.take-rel-entities')}</Dropdown.Item>
+                            </DropdownButton>
+                        </div>
+                    </div>
+                })}
+            </div>
+        }
+    }
+
     return <div className={'detail-header-wrapper'}>
         <Row className={collapsed ? 'ml-3 mt-1 mr-3 pb-1' : 'ml-3 mt-3 mr-3 pb-3 space-between middle'}>
             {collapsed && <Col className={'p-0'} style={{flex: 1}}>
@@ -95,6 +167,7 @@ const DetailHeader: FC<Props> = ({item, id, collapsed, onToggleCollapsed, valida
                             </span>
                         </DetailDescriptionsItem>}
                     </DetailDescriptions>
+                    {renderBindings()}
                 </div>
             </Col>}
             <Col>
@@ -123,6 +196,7 @@ const mapStateToProps = (state) => {
     }
 
     return {
+        externalSystems: state.app.apExtSystemList.rows,
         apTypesMap: state.refTables.recordTypes.typeIdMap,
         scopes: scopes,
     }
