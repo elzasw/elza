@@ -256,7 +256,7 @@ public class ItemTypeUpdater {
                        ItemSpecs itemSpecs,
                        @Nonnull final PackageContext puc) {
 
-        prepareForUpdate();
+        prepareForUpdate(puc.getPackage());
         List<ApType> typeList = apTypeRepository.findAll();
         Map<String, ApType> apTypeCache = apTypeRepository.findAll().stream()
                 .collect(toMap(apType -> apType.getCode(), apType -> apType));
@@ -792,7 +792,7 @@ public class ItemTypeUpdater {
      * <p>
      * Read items from DB
      */
-    private void prepareForUpdate() {
+    private void prepareForUpdate(final RulPackage rulPackage) {
 
         // read first free view-order id
         RulItemType itemTypeHighest = itemTypeRepository.findFirstByOrderByViewOrderDesc();
@@ -801,7 +801,8 @@ public class ItemTypeUpdater {
             maxViewOrderPos = maxValue != null ? maxValue.intValue() : 0;
         }
         logger.info("Odebírám všechny vazby specifikace na typ");
-        itemTypeSpecAssignRepository.deleteAll();
+        List<RulItemType> rulItemTypeList = itemTypeRepository.findByRulPackage(rulPackage);
+        itemTypeSpecAssignRepository.deleteByItemTypeIn(rulItemTypeList);
 
     }
 

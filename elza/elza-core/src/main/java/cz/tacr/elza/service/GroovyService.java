@@ -146,8 +146,17 @@ public class GroovyService {
                     }
                     case RECORD_REF: {
                         ArrDataRecordRef dataTmp = (ArrDataRecordRef) data;
-                        //TODO fantiš
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, null, dataTmp.getRecordId());
+                        String value;
+                        Integer intValue;
+                        if (dataTmp.getRecord() != null) {
+                            value = String.valueOf(dataTmp.getRecordId());
+                            intValue = dataTmp.getRecordId();
+                        } else {
+                            value = dataTmp.getBinding().getValue();
+                            intValue = Integer.parseInt(value);
+                        }
+
+                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, value, intValue);
                         break;
                     }
                     case ENUM: {

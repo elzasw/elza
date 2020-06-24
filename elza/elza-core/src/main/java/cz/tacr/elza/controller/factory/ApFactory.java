@@ -138,20 +138,9 @@ public class ApFactory {
      */
     public ApAccessPointVO createVO(ApState apState) {
         ApAccessPoint ap = apState.getAccessPoint();
-        // prepare parts
-        List<ApPart> parts = partRepository.findValidPartByAccessPoint(ap);
-        // prepare items
-        Map<Integer, List<ApItem>> items = itemRepository.findValidItemsByAccessPoint(ap).stream()
-                .collect(Collectors.groupingBy(i -> i.getPartId()));
         // prepare external ids
         List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(ap);
-        List<ApBinding> bindings = getBindingList(eids);
-        Map<Integer, List<ApBindingItem>> bindingItems = null;
-        if (CollectionUtils.isNotEmpty(bindings)) {
-            bindingItems = bindingItemRepository.findByBindings(bindings).stream()
-                    .collect(Collectors.groupingBy(i -> i.getBinding().getBindingId()));
-        }
-        return createVO(apState, parts, items, eids, bindingItems);
+        return createVO(apState, eids);
     }
 
     private List<ApBinding> getBindingList(List<ApBindingState> eids) {
@@ -187,20 +176,51 @@ public class ApFactory {
         return results;
     }
 
+    public ApAccessPointVO createVO(ApState state, boolean fillParts) {
+        ApAccessPointVO apVO = createVO(state);
+        if (fillParts) {
+            ApAccessPoint ap = state.getAccessPoint();
+
+            // prepare parts
+            List<ApPart> parts = partRepository.findValidPartByAccessPoint(ap);
+            // prepare items
+            Map<Integer, List<ApItem>> items = itemRepository.findValidItemsByAccessPoint(ap).stream()
+                    .collect(Collectors.groupingBy(i -> i.getPartId()));
+
+            //comments
+            Integer comments = stateRepository.countCommentsByAccessPoint(ap);
+            //description
+            String description = getDescription(parts, items);
+
+            //items for externalSystems
+            List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(ap);
+            List<ApBinding> bindings = getBindingList(eids);
+            Map<Integer, List<ApBindingItem>> bindingItemsMap = null;
+            if (CollectionUtils.isNotEmpty(bindings)) {
+                bindingItemsMap = bindingItemRepository.findByBindings(bindings).stream()
+                        .collect(Collectors.groupingBy(i -> i.getBinding().getBindingId()));
+            }
+
+            List<ApBindingVO> apBindingVOList = (List<ApBindingVO>) apVO.getExternalIds();
+            fillBindingItems(apBindingVOList, bindingItemsMap);
+
+            apVO.setParts(createVO(parts, items));
+            apVO.setComments(comments);
+            if (description != null) {
+                apVO.setDescription(description);
+            }
+        }
+        return apVO;
+    }
+
     public ApAccessPointVO createVO(final ApState apState,
-                                    final List<ApPart> parts,
-                                    final Map<Integer, List<ApItem>> items,
-                                    final List<ApBindingState> eids,
-                                    final Map<Integer, List<ApBindingItem>> bindingItemsMap) {
+                                    final List<ApBindingState> eids) {
         ApAccessPoint ap = apState.getAccessPoint();
         ApPart preferredPart = ap.getPreferredPart();
-        String desc = getDescription(parts, items);
-        Integer comments = stateRepository.countCommentsByAccessPoint(ap);
         UserVO ownerUser = getOwnerUser(ap);
         // prepare external ids
         List<ApBindingVO> eidsVO = FactoryUtils.transformList(eids, ApBindingVO::newInstance);
         fillBindingUrls(eidsVO);
-        fillBindingItems(eidsVO, bindingItemsMap);
 
         // create VO
         ApAccessPointVO vo = new ApAccessPointVO();
@@ -216,13 +236,8 @@ public class ApFactory {
 
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
         vo.setName(preferredPart != null ? preferredPart.getValue() : null);
-        if (desc != null) {
-            vo.setDescription(desc);
-        }
-        vo.setParts(createVO(parts, items));
         vo.setPreferredPart(preferredPart != null ? preferredPart.getPartId() : null);
         vo.setLastChange(createVO(apState.getCreateChange()));
-        vo.setComments(comments);
         vo.setOwnerUser(ownerUser);
         return vo;
     }
@@ -350,29 +365,17 @@ public class ApFactory {
 
         Map<Integer, ApState> apStateMap = stateRepository.findLastByAccessPoints(accessPoints).stream()
                 .collect(Collectors.toMap(o -> o.getAccessPointId(), Function.identity()));
-        Map<Integer, List<ApPart>> apPartsMap = partRepository.findValidPartByAccessPoints(accessPoints).stream()
-                .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
         Map<Integer, List<ApBindingState>> apEidsMap = bindingStateRepository.findByAccessPoints(accessPoints).stream()
                 .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
-        Map<Integer, Map<Integer, List<ApItem>>> apItemsMap = new HashMap<>();
-        List<ApItem> items = itemRepository.findValidItemsByAccessPoints(accessPoints);
-        for (ApItem item : items) {
-            apItemsMap.computeIfAbsent(item.getPart().getAccessPointId(), k -> new HashMap<>()).computeIfAbsent(item.getPartId(), l -> new ArrayList<>()).add(item);
-        }
+//        RulItemType rulItemType = sdp.getItemTypeByCode("BRIEF_DESC").getEntity();
+//        Map<Integer, List<ApItem>> descMap = itemRepository.findItemsByAccessPointsAndItemTypeAndPartTypeCode(accessPoints, rulItemType, "PT_BODY").stream()
+//                .collect(Collectors.groupingBy(o -> o.getPart().getAccessPointId()));
 
         for (ApAccessPoint accessPoint : accessPoints) {
             Integer accessPointId = accessPoint.getAccessPointId();
             ApState apState = apStateMap.get(accessPointId);
-            List<ApPart> parts = apPartsMap.getOrDefault(accessPointId, Collections.emptyList());
-            Map<Integer, List<ApItem>> itemMap = apItemsMap.getOrDefault(accessPointId, Collections.emptyMap());
             List<ApBindingState> apBindings = apEidsMap.getOrDefault(accessPointId, Collections.emptyList());
-            List<ApBinding> bindings = getBindingList(apBindings);
-            Map<Integer, List<ApBindingItem>> bindingItems = null;
-            if (CollectionUtils.isNotEmpty(bindings)) {
-                bindingItems = bindingItemRepository.findByBindings(bindings).stream()
-                        .collect(Collectors.groupingBy(i -> i.getBinding().getBindingId()));
-            }
-            result.add(createVO(apState, parts, itemMap, apBindings, bindingItems));
+            result.add(createVO(apState, apBindings));
         }
 
         return result;

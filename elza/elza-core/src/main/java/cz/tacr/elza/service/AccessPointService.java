@@ -23,13 +23,13 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.cam._2019.Entity;
-import cz.tacr.cam._2019.Part;
+import cz.tacr.cam._2019.*;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
 import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import cz.tacr.elza.groovy.GroovyResult;
+import cz.tacr.elza.service.vo.DataRef;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -785,21 +785,46 @@ public class AccessPointService {
         List<ApPart> partList = new ArrayList<>();
         Map<Integer, List<ApItem>> itemMap = new HashMap<>();
 
+        List<DataRef> dataRefList = new ArrayList<>();
+
         for (Part part : entity.getPrts().getP()) {
             RulPartType partType = sdp.getPartTypeByCode(part.getT().value());
             ApPart parentPart = part.getPrnt() != null ? findParentPart(binding, part.getPrnt()) : null;
 
             ApPart apPart = partService.createPart(partType, accessPoint, apChange, parentPart);
             externalSystemService.createApBindingItem(binding, part.getPid(), apPart, null);
-            List<ApItem> itemList = partService.createPartItems(apChange, apPart, part.getItms().getBiOrAiOrEi(), binding, scope, apExternalSystem);
+            List<ApItem> itemList = partService.createPartItems(apChange, apPart, part.getItms().getBiOrAiOrEi(), binding, dataRefList);
 
             itemMap.put(apPart.getPartId(), itemList);
             partList.add(apPart);
         }
+        createBindingForRel(dataRefList, binding, scope, apExternalSystem);
 
         accessPoint.setPreferredPart(findPreferredPart(partList));
 
         updatePartValues(apState, partList, itemMap);
+    }
+
+    private void createBindingForRel(final List<DataRef> dataRefList, final ApBinding binding, final ApScope scope, final ApExternalSystem apExternalSystem) {
+        //TODO fantiš optimalizovat
+        for (DataRef dataRef : dataRefList) {
+            ApBindingItem apBindingItem = externalSystemService.findByBindingAndUuid(binding, dataRef.getUuid());
+            if (apBindingItem.getItem() != null) {
+                ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) apBindingItem.getItem().getData();
+                ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, dataRef.getValue().intValue(), apExternalSystem.getCode());
+                if (refBinding == null) {
+                    dataRecordRef.setBinding(externalSystemService.createApBinding(scope, dataRef.getValue(), apExternalSystem));
+                } else {
+                    dataRecordRef.setBinding(refBinding);
+
+                    ApBindingState bindingState = externalSystemService.findByBinding(refBinding);
+                    if (bindingState != null) {
+                        dataRecordRef.setRecord(bindingState.getAccessPoint());
+                    }
+                }
+                dataRecordRefRepository.save(dataRecordRef);
+            }
+        }
     }
 
     private ApPart findParentPart(final ApBinding binding, final String parentUuid) {

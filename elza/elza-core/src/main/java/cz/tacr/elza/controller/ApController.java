@@ -272,7 +272,7 @@ public class ApController {
         SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
 
         ApState apState = accessPointService.createAccessPoint(scope, type, language, accessPoint.getPartForm());
-        return apFactory.createVO(apState);
+        return apFactory.createVO(apState, true);
     }
 
     /**
@@ -292,7 +292,7 @@ public class ApController {
         SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
 
         ApState apState = accessPointService.createStructuredAccessPoint(scope, type, language);
-        return apFactory.createVO(apState);
+        return apFactory.createVO(apState, true);
     }
 
     /**
@@ -517,7 +517,7 @@ public class ApController {
                 .or(UsrPermission.Permission.AP_SCOPE_RD, apState.getScopeId());
         userService.authorizeRequest(authRequest);
 
-        ApAccessPointVO vo = apFactory.createVO(apState);
+        ApAccessPointVO vo = apFactory.createVO(apState, true);
         return vo;
     }
 
@@ -538,7 +538,7 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState oldState = accessPointService.getState(accessPoint);
         ApState newState = accessPointService.changeApType(accessPointId, editVo.getTypeId());
-        return apFactory.createVO(newState);
+        return apFactory.createVO(newState, true);
     }
 
     /**
