@@ -6,6 +6,7 @@ import cz.tacr.elza.exception.codes.PackageCode;
 import org.springframework.core.io.InputStreamSource;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLEventReader;
@@ -51,8 +52,8 @@ public abstract class JaxbUtils {
     }
 
 
-    public static <T> File asFile(final T body) {
-        Class<?> aClass = body.getClass();
+    public static <T> File asFile(final JAXBElement<T> body) {
+        Class<?> aClass = body.getDeclaredType();
         try {
             File temp = File.createTempFile("cam-", ".api.xml");
             JAXBContext jaxbContext = JAXBContext.newInstance(aClass);

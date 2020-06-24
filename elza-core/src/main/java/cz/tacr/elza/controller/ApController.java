@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.cam._2019.BatchUpdate;
+import cz.tacr.cam._2019.BatchUpdateResult;
 import cz.tacr.cam._2019.Entity;
 import cz.tacr.cam._2019.QueryResult;
 import cz.tacr.cam.client.ApiException;
@@ -1110,7 +1112,13 @@ public class ApController {
     @RequestMapping(value = "/external/save/{accessPointId}", method = RequestMethod.POST)
     public void saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                 @RequestParam final String externalSystemCode) {
-
+        BatchUpdate batchUpdate = accessPointService.createBatchUpdate(accessPointId, externalSystemCode);
+        try {
+            BatchUpdateResult batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
+            accessPointService.updateBinding(batchUpdateResult, accessPointId, externalSystemCode);
+        } catch (ApiException e) {
+            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+        }
     }
 
 
@@ -1150,7 +1158,7 @@ public class ApController {
     @RequestMapping(value = "/external/disconnect/{accessPointId}", method = RequestMethod.POST)
     public void disconnectAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                       @RequestParam final String externalSystemCode) {
-
+        accessPointService.disconnectAccessPoint(accessPointId, externalSystemCode);
     }
 
     /**

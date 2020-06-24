@@ -238,7 +238,7 @@ public class ExternalSystemService {
                                      final ApExternalSystem apExternalSystem) {
         ApBinding apBinding = new ApBinding();
         apBinding.setScope(scope);
-        apBinding.setValue(String.valueOf(eid));
+        apBinding.setValue(eid == null ? null : String.valueOf(eid));
         apBinding.setApExternalSystem(apExternalSystem);
         return bindingRepository.save(apBinding);
     }

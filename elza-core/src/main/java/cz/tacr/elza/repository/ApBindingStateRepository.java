@@ -1,9 +1,6 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApBinding;
-import cz.tacr.elza.domain.ApBindingState;
-import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.projection.ApExternalIdInfo;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -22,6 +19,10 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
 
     @Query("SELECT bis FROM ap_binding_state bis WHERE bis.binding = :binding AND bis.deleteChangeId IS NULL")
     List<ApBindingState> findByBinding(@Param("binding")ApBinding binding);
+
+    @Query("SELECT bis FROM ap_binding_state bis JOIN bis.binding bin WHERE bis.accessPoint = :accessPoint AND bis.deleteChangeId IS NULL AND bin.apExternalSystem = :apExternalSystem")
+    ApBindingState findByAccessPointAndExternalSystem(@Param("accessPoint") ApAccessPoint accessPoint,
+                                                          @Param("apExternalSystem") ApExternalSystem apExternalSystem);
 
     @Modifying
     @Query("UPDATE ap_binding_state bis SET bis.deleteChange=?2 WHERE bis.accessPointId IN ?1 AND bis.deleteChangeId IS NULL")
