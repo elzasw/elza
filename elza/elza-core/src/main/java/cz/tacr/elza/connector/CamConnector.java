@@ -1,9 +1,6 @@
 package cz.tacr.elza.connector;
 
-import cz.tacr.cam._2019.BatchUpdate;
-import cz.tacr.cam._2019.BatchUpdateResult;
-import cz.tacr.cam._2019.Entity;
-import cz.tacr.cam._2019.QueryResult;
+import cz.tacr.cam._2019.*;
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.client.ApiResponse;
 import cz.tacr.cam.client.controller.*;
@@ -49,8 +46,8 @@ public class CamConnector {
 
     public BatchUpdateResult postNewBatch(final BatchUpdate batchUpdate,
                                           final String externalSystemCode) throws ApiException {
-        ApiResponse<File> fileApiResponse = getBatchUpdatesApiByCode(externalSystemCode).postNewBatchWithHttpInfo(JaxbUtils.asFile(batchUpdate));
-        return JaxbUtils.unmarshal(BatchUpdateResult.class, fileApiResponse.getData());
+        ApiResponse<File> fileApiResponse = getBatchUpdatesApiByCode(externalSystemCode).postNewBatchWithHttpInfo(JaxbUtils.asFile(new ObjectFactory().createBu(batchUpdate)));
+        return JaxbUtils.unmarshal(BatchUpdateSaved.class, fileApiResponse.getData());
     }
 
     public BatchUpdateResult getBatchStatus(final String bid,

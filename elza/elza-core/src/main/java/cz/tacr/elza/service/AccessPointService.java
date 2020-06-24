@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,13 +25,17 @@ import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
 import cz.tacr.cam._2019.*;
+import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
 import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import cz.tacr.elza.groovy.GroovyResult;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.vo.DataRef;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -60,6 +65,7 @@ import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
+import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApStateRepository;
@@ -153,6 +159,9 @@ public class AccessPointService {
 
     @Autowired
     private ApBindingStateRepository bindingStateRepository;
+
+    @Autowired
+    private ApBindingItemRepository bindingItemRepository;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -961,6 +970,215 @@ public class AccessPointService {
         GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items);
 
         partService.updatePartValue(apPart, result);
+    }
+
+    public void updateBinding(BatchUpdateResult batchUpdateResult, Integer accessPointId, String externalSystemCode) {
+        ApAccessPoint accessPoint = getAccessPoint(accessPointId);
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
+        ApBinding binding = bindingState.getBinding();
+
+        if (batchUpdateResult instanceof BatchUpdateSaved) {
+            BatchUpdateSaved batchUpdateSaved = (BatchUpdateSaved) batchUpdateResult;
+            BatchEntityRecordRev batchEntityRecordRev = batchUpdateSaved.getRev().get(0);
+
+            bindingState.setExtRevision(batchEntityRecordRev.getRev());
+            binding.setValue(String.valueOf(batchEntityRecordRev.getEid()));
+
+            bindingStateRepository.save(bindingState);
+            bindingRepository.save(binding);
+        } else {
+            bindingItemRepository.deleteByBinding(binding);
+            bindingStateRepository.delete(bindingState);
+            bindingRepository.delete(binding);
+        }
+    }
+
+    public BatchUpdate createBatchUpdate(final Integer accessPointId, final String externalSystemCode) {
+        ApAccessPoint accessPoint = getAccessPoint(accessPointId);
+        ApState state = getState(accessPoint);
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
+        UserDetail userDetail = userService.getLoggedUserDetail();
+
+        List<ApPart> partList = partService.findPartsByAccessPoint(state.getAccessPoint());
+        Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
+                .collect(Collectors.groupingBy(i -> i.getPartId()));
+
+        ApBinding binding = externalSystemService.createApBinding(state.getScope(), null, apExternalSystem);
+        ApBindingState bindingState = externalSystemService.createApBindingState(binding, accessPoint, change,
+                EntityRecordState.ERS_NEW.value(), null, userDetail.getUsername(), null);
+
+        BatchUpdate batchUpdate = new BatchUpdate();
+        batchUpdate.setInf(createBatchInfo(userDetail));
+        batchUpdate.getChange().add(createCreateEntity(state, partList, itemMap, binding));
+        return batchUpdate;
+    }
+
+    private BatchInfo createBatchInfo(UserDetail userDetail) {
+        BatchInfo batchInfo = new BatchInfo();
+        batchInfo.setUsr(userDetail.getUsername());
+        batchInfo.setBid(UUID.randomUUID().toString());
+        return batchInfo;
+    }
+
+    private CreateEntity createCreateEntity(ApState state, List<ApPart> partList, Map<Integer, List<ApItem>> itemMap, ApBinding binding) {
+        CreateEntity createEntity = new CreateEntity();
+        createEntity.setLid("LID" + state.getAccessPointId());
+        createEntity.setEt(state.getApType().getCode());
+        createEntity.setEuid(state.getAccessPoint().getUuid());
+        createEntity.setPrts(createParts(state.getAccessPoint(), partList, itemMap, binding));
+        return createEntity;
+    }
+
+    private Parts createParts(ApAccessPoint accessPoint, List<ApPart> partList, Map<Integer, List<ApItem>> itemMap, ApBinding binding) {
+        List<ApBindingItem> bindingItems = new ArrayList<>();
+        Parts parts = new Parts();
+
+        ApPart preferPart = accessPoint.getPreferredPart();
+        if (preferPart != null) {
+            parts.getP().add(createPart(preferPart, itemMap, binding, bindingItems));
+            if (CollectionUtils.isNotEmpty(partList)) {
+                for (ApPart part : partList) {
+                    if (!part.getPartId().equals(preferPart.getPartId())) {
+                        parts.getP().add(createPart(part, itemMap, binding, bindingItems));
+                    }
+                }
+            }
+        }
+        return parts;
+    }
+
+    private Part createPart(ApPart apPart, Map<Integer, List<ApItem>> itemMap, ApBinding binding, List<ApBindingItem> bindingItems) {
+        String uuid = UUID.randomUUID().toString();
+        ApBindingItem bindingItem = externalSystemService.createApBindingItem(binding, uuid, apPart, null);
+        bindingItems.add(bindingItem);
+
+        ApBindingItem parentBindingItem = apPart.getParentPart() != null ? findParentBindingItem(bindingItems, apPart.getParentPart().getPartId()) : null;
+
+
+        Part part = new Part();
+        part.setT(PartType.fromValue(apPart.getPartType().getCode()));
+        part.setPid(uuid);
+        part.setPrnt(parentBindingItem != null ? parentBindingItem.getValue() : null);
+        part.setItms(createItems(apPart, itemMap, binding));
+        return part;
+    }
+
+    private ApBindingItem findParentBindingItem(List<ApBindingItem> bindingItems, Integer partId) {
+        if (CollectionUtils.isNotEmpty(bindingItems)) {
+            for (ApBindingItem bindingItem : bindingItems) {
+                if (bindingItem.getPart() != null && bindingItem.getPart().getPartId().equals(partId)) {
+                    return bindingItem;
+                }
+            }
+        }
+        return null;
+    }
+
+    private Items createItems(ApPart apPart, Map<Integer, List<ApItem>> itemMap, ApBinding binding) {
+        List<ApItem> itemList = itemMap.getOrDefault(apPart.getPartId(), new ArrayList<>());
+
+        Items items = new Items();
+        if (CollectionUtils.isNotEmpty(itemList)) {
+            for (ApItem item : itemList) {
+                items.getBiOrAiOrEi().add(createItem(item, binding));
+            }
+        }
+        return items;
+    }
+
+    private Object createItem(ApItem item, ApBinding binding) {
+        String itemTypeCode = item.getItemType().getCode();
+        String itemSpecCode = item.getItemSpec() != null ? item.getItemSpec().getCode() : null;
+        String uuid = UUID.randomUUID().toString();
+        externalSystemService.createApBindingItem(binding, uuid, null, item);
+
+        DataType dataType = DataType.fromCode(item.getItemType().getDataType().getCode());
+        switch (dataType) {
+            case BIT:
+                ArrDataBit dataBit = (ArrDataBit) item.getData();
+                ItemBoolean itemBoolean = new ItemBoolean();
+                itemBoolean.setValue(dataBit.isValue());
+                itemBoolean.setT(itemTypeCode);
+                itemBoolean.setS(itemSpecCode);
+                itemBoolean.setUuid(uuid);
+                return itemBoolean;
+            case URI_REF:
+                ArrDataUriRef dataUriRef = (ArrDataUriRef) item.getData();
+                ItemLink itemLink = new ItemLink();
+                itemLink.setUrl(dataUriRef.getValue());
+                itemLink.setNm(dataUriRef.getDescription());
+                itemLink.setT(itemTypeCode);
+                itemLink.setS(itemSpecCode);
+                itemLink.setUuid(uuid);
+                return itemLink;
+            case TEXT:
+                ArrDataText dataText = (ArrDataText) item.getData();
+                ItemString itemText = new ItemString();
+                itemText.setValue(dataText.getValue());
+                itemText.setT(itemTypeCode);
+                itemText.setS(itemSpecCode);
+                itemText.setUuid(uuid);
+                return itemText;
+            case STRING:
+                ArrDataString dataString = (ArrDataString) item.getData();
+                ItemString itemString = new ItemString();
+                itemString.setValue(dataString.getValue());
+                itemString.setT(itemTypeCode);
+                itemString.setS(itemSpecCode);
+                itemString.setUuid(uuid);
+                return itemString;
+            case INT:
+                ArrDataInteger dataInteger = (ArrDataInteger) item.getData();
+                ItemInteger itemInteger = new ItemInteger();
+                itemInteger.setValue(BigInteger.valueOf(dataInteger.getValueInt()));
+                itemInteger.setT(itemTypeCode);
+                itemInteger.setS(itemSpecCode);
+                itemInteger.setUuid(uuid);
+                return itemInteger;
+            case UNITDATE:
+                ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) item.getData();
+                ItemUnitDate itemUnitDate = new ItemUnitDate();
+                itemUnitDate.setF(dataUnitdate.getValueFrom());
+                itemUnitDate.setFe(dataUnitdate.getValueFromEstimated());
+                itemUnitDate.setFmt(dataUnitdate.getFormat());
+                itemUnitDate.setTo(dataUnitdate.getValueTo());
+                itemUnitDate.setToe(dataUnitdate.getValueToEstimated());
+                itemUnitDate.setT(itemTypeCode);
+                itemUnitDate.setS(itemSpecCode);
+                itemUnitDate.setUuid(uuid);
+                return itemUnitDate;
+            case ENUM:
+                ItemEnum itemEnum = new ItemEnum();
+                itemEnum.setT(itemTypeCode);
+                itemEnum.setS(itemSpecCode);
+                itemEnum.setUuid(uuid);
+                return itemEnum;
+            case RECORD_REF:
+                ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) item.getData();
+                if (dataRecordRef.getBinding() != null) {
+                    throw new SystemException("Do externího systému nelze poslat entitu, která odkazuje na entitu mimo externí systém.");
+                }
+                EntityRecordRef entityRecordRef = new EntityRecordRef();
+                entityRecordRef.setEid(Long.parseLong(dataRecordRef.getBinding().getValue()));
+
+                ItemEntityRef itemEntityRef = new ItemEntityRef();
+                itemEntityRef.setEr(entityRecordRef);
+                itemEntityRef.setT(itemTypeCode);
+                itemEntityRef.setS(itemSpecCode);
+                itemEntityRef.setUuid(uuid);
+                return itemEntityRef;
+            case COORDINATES:
+                ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) item.getData();
+                ItemString itemCoordinates = new ItemString();
+                itemCoordinates.setValue(GeometryConvertor.convert(dataCoordinates.getValue()));
+                itemCoordinates.setT(itemTypeCode);
+                itemCoordinates.setS(itemSpecCode);
+                itemCoordinates.setUuid(uuid);
+                return itemCoordinates;
+        }
+        return null;
     }
 
     /**
@@ -1782,6 +2000,17 @@ public class AccessPointService {
         if (apBinding != null) {
             throw new IllegalArgumentException("Tato archivní entita již je v tomto scope.");
         }
+    }
+
+    public void disconnectAccessPoint(Integer accessPointId, String externalSystemCode) {
+        ApAccessPoint accessPoint = getAccessPoint(accessPointId);
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+
+        ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
+        ApBinding binding = bindingState.getBinding();
+        bindingItemRepository.deleteByBinding(binding);
+        bindingStateRepository.delete(bindingState);
+        bindingRepository.delete(binding);
     }
 
     /**
