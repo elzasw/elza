@@ -133,16 +133,6 @@ public class ApFactory {
         return createVO(apState);
     }
 
-    /**
-     * Creates value object from AP. Party Id is not set.
-     */
-    public ApAccessPointVO createVO(ApState apState) {
-        ApAccessPoint ap = apState.getAccessPoint();
-        // prepare external ids
-        List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(ap);
-        return createVO(apState, eids);
-    }
-
     private List<ApBinding> getBindingList(List<ApBindingState> eids) {
         List<ApBinding> bindings = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(eids)) {
@@ -192,7 +182,7 @@ public class ApFactory {
             //description
             String description = getDescription(parts, items);
 
-            //items for externalSystems
+            //prepare external ids
             List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(ap);
             List<ApBinding> bindings = getBindingList(eids);
             Map<Integer, List<ApBindingItem>> bindingItemsMap = null;
@@ -201,8 +191,10 @@ public class ApFactory {
                         .collect(Collectors.groupingBy(i -> i.getBinding().getBindingId()));
             }
 
-            List<ApBindingVO> apBindingVOList = (List<ApBindingVO>) apVO.getExternalIds();
-            fillBindingItems(apBindingVOList, bindingItemsMap);
+            List<ApBindingVO> eidsVO = FactoryUtils.transformList(eids, ApBindingVO::newInstance);
+            apVO.setExternalIds(eidsVO);
+            fillBindingUrls(eidsVO);
+            fillBindingItems(eidsVO, bindingItemsMap);
 
             apVO.setParts(createVO(parts, items));
             apVO.setComments(comments);
@@ -213,14 +205,10 @@ public class ApFactory {
         return apVO;
     }
 
-    public ApAccessPointVO createVO(final ApState apState,
-                                    final List<ApBindingState> eids) {
+    public ApAccessPointVO createVO(final ApState apState) {
         ApAccessPoint ap = apState.getAccessPoint();
         ApPart preferredPart = ap.getPreferredPart();
         UserVO ownerUser = getOwnerUser(ap);
-        // prepare external ids
-        List<ApBindingVO> eidsVO = FactoryUtils.transformList(eids, ApBindingVO::newInstance);
-        fillBindingUrls(eidsVO);
 
         // create VO
         ApAccessPointVO vo = new ApAccessPointVO();
@@ -231,7 +219,7 @@ public class ApFactory {
         vo.setComment(apState.getComment());
         vo.setStateApproval(apState.getStateApproval());
         vo.setUuid(ap.getUuid());
-        vo.setExternalIds(eidsVO);
+        vo.setExternalIds(Collections.emptyList());
         vo.setErrorDescription(ap.getErrorDescription());
 
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
@@ -365,8 +353,8 @@ public class ApFactory {
 
         Map<Integer, ApState> apStateMap = stateRepository.findLastByAccessPoints(accessPoints).stream()
                 .collect(Collectors.toMap(o -> o.getAccessPointId(), Function.identity()));
-        Map<Integer, List<ApBindingState>> apEidsMap = bindingStateRepository.findByAccessPoints(accessPoints).stream()
-                .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
+//        Map<Integer, List<ApBindingState>> apEidsMap = bindingStateRepository.findByAccessPoints(accessPoints).stream()
+//                .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
 //        RulItemType rulItemType = sdp.getItemTypeByCode("BRIEF_DESC").getEntity();
 //        Map<Integer, List<ApItem>> descMap = itemRepository.findItemsByAccessPointsAndItemTypeAndPartTypeCode(accessPoints, rulItemType, "PT_BODY").stream()
 //                .collect(Collectors.groupingBy(o -> o.getPart().getAccessPointId()));
@@ -374,8 +362,7 @@ public class ApFactory {
         for (ApAccessPoint accessPoint : accessPoints) {
             Integer accessPointId = accessPoint.getAccessPointId();
             ApState apState = apStateMap.get(accessPointId);
-            List<ApBindingState> apBindings = apEidsMap.getOrDefault(accessPointId, Collections.emptyList());
-            result.add(createVO(apState, apBindings));
+            result.add(createVO(apState));
         }
 
         return result;
