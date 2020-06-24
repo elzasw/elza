@@ -1,5 +1,5 @@
 import {ApStateVO} from "./ApStateVO";
-import {ApExternalIdVO} from "./ApExternalIdVO";
+import {ApBindingVO} from "./ApBindingVO";
 import {ApPartVO} from "./ApPartVO";
 import {StateApproval} from "./StateApproval";
 import {UserVO} from "./UserVO";
@@ -51,7 +51,7 @@ export interface ApAccessPointVO {
     /**
      * Externí identifikátory rejstříkového hesla.
      */
-    externalIds: ApExternalIdVO[];
+    externalIds: ApBindingVO[];
 
     /**
      * Kód pravidla pro AP.

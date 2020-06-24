@@ -84,6 +84,20 @@ public class CamConnector {
         }
     }
 
+    public CamInstance findById(String code) {
+        CamInstance camInstance = instanceMap.get(code);
+        if (camInstance != null) {
+            return camInstance;
+        }
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(code);
+        if (apExternalSystem.getType() == ApExternalSystemType.CAM) {
+            camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue());
+            instanceMap.put(apExternalSystem.getCode(), camInstance);
+            return camInstance;
+        }
+        return null;
+    }
+
     private SearchApi getSearchApiByCode(String code) {
         return getByCode(code).getSearchApi();
     }
