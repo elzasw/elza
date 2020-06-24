@@ -25,7 +25,7 @@ const DetailCoordinateItem: React.FC<Props> = props => {
     <Button variant="link" onClick={() => props.showCoordinateDetail(props.item)}>{getLabel(props.item.value)}</Button>
     <Button className={classNames("side-container-button", "mb-1")} title={"Exportovat"} size="sm"
             onClick={() => props.showExportDialog(props.item, props.globalEntity)}>
-      <Icon fixedWidth className="icon"/>
+      <Icon glyph="fa-download" fixedWidth className="icon"/>
     </Button>
   </>
 };
