@@ -72,8 +72,7 @@ public class CamConnector {
             if (apExternalSystem.getType() == ApExternalSystemType.CAM) {
                 CamInstance camInstance = instanceMap.get(apExternalSystem.getCode());
                 if (camInstance == null) {
-                    camInstance = new CamInstance();
-                    camInstance.init(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue());
+                    camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue());
                     instanceMap.put(apExternalSystem.getCode(), camInstance);
                 }
                 return camInstance;
