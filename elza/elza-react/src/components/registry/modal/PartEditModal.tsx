@@ -1,5 +1,13 @@
-import React from 'react';
-import {ConfigProps, Form, reduxForm, SubmitHandler} from 'redux-form';
+import React, {useEffect} from 'react';
+import {
+    ConfigProps,
+    Form,
+    FormSection,
+    formValueSelector,
+    InjectedFormProps,
+    reduxForm,
+    SubmitHandler
+} from 'redux-form';
 import {connect} from "react-redux";
 import PartEditForm from "./../form/PartEditForm";
 import {ApPartFormVO} from "../../../api/ApPartFormVO";
@@ -21,34 +29,42 @@ type Props = {
     apTypeId: number;
     scopeId: number;
     formData?: ApPartFormVO;
+    partForm?: ApPartFormVO;
     submitting: boolean;
     parentPartId?: number;
     apId: number;
     partId?: number;
     onClose: () => void;
-} & ReturnType<typeof mapStateToProps>;
+} & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
-const PartEditModal = ({handleSubmit, onClose, refTables, partType, apTypeId, scopeId, formData, submitting, parentPartId, apId, partId}: Props) => {
+const PartEditModal = ({handleSubmit, onClose, refTables, partType, apTypeId, scopeId, formData, partForm, submitting, change, parentPartId, apId, partId}: Props) => {
     if (!refTables) {
         return <div/>;
     }
 
+    // eslint-disable-next-line
+    useEffect(() => {
+        change('partForm', partForm ? partForm : formData);
+    }, [apTypeId]);
+
     return <Form onSubmit={handleSubmit}>
         <Modal.Body>
-            <PartEditForm
-                formInfo={{
-                    formName: FORM_NAME,
-                    sectionName: "partForm"
-                }}
-                partType={partType}
-                apTypeId={apTypeId}
-                scopeId={scopeId}
-                formData={formData}
-                submitting={submitting}
-                parentPartId={parentPartId}
-                apId={apId}
-                partId={partId}
-            />
+            <FormSection name="partForm">
+                <PartEditForm
+                    formInfo={{
+                        formName: FORM_NAME,
+                        sectionName: "partForm"
+                    }}
+                    partType={partType}
+                    apTypeId={apTypeId}
+                    scopeId={scopeId}
+                    formData={partForm}
+                    submitting={submitting}
+                    parentPartId={parentPartId}
+                    apId={apId}
+                    partId={partId}
+                />
+            </FormSection>
         </Modal.Body>
         <Modal.Footer>
             <Button type="submit" variant="outline-secondary" onClick={handleSubmit} disabled={submitting}>
@@ -62,9 +78,11 @@ const PartEditModal = ({handleSubmit, onClose, refTables, partType, apTypeId, sc
     </Form>;
 };
 
+const selector = formValueSelector(FORM_NAME);
 const mapStateToProps = (state: any) => {
     return {
         refTables: state.refTables,
+        partForm: selector(state, 'partForm'),
     }
 };
 
