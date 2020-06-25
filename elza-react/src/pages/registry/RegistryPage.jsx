@@ -273,7 +273,7 @@ class RegistryPage extends AbstractReactComponent {
                 this,
                 i18n('ap.ext-search.title-connect'),
                 <ApExtSearchModal onConnected={() => {
-                    dispatch(registryDetailInvalidate());
+                    dispatch(registryDetailFetchIfNeeded(id, true));
                 }} type={TypeModal.CONNECT} accessPointId={id} initialValues={initialValues} extSystems={extSystems} />,
                 'dialog-xl',
             ),
@@ -297,7 +297,7 @@ class RegistryPage extends AbstractReactComponent {
                     return WebApi.saveAccessPoint(id, data.extSystem);
                 }} onSubmitSuccess={() => {
                     dispatch(modalDialogHide());
-                    dispatch(registryDetailInvalidate());
+                    dispatch(registryDetailFetchIfNeeded(id, true));
                 }} initialValues={initialValues} extSystems={extSystems} />,
                 'dialog-sm',
             ),
