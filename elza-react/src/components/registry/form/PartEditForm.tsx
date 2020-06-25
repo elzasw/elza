@@ -166,6 +166,7 @@ const renderItem = (name: string,
                 </Col>
             </Row>;
             break;
+        case RulDataTypeCodeEnum.DECIMAL:
         case RulDataTypeCodeEnum.INT:
             valueField =
                 <Field

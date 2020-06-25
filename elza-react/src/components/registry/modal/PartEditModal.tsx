@@ -1,5 +1,5 @@
 import React from 'react';
-import {ConfigProps, Form, getFormValues, reduxForm, SubmitHandler} from 'redux-form';
+import {ConfigProps, Form, reduxForm, SubmitHandler} from 'redux-form';
 import {connect} from "react-redux";
 import PartEditForm from "./../form/PartEditForm";
 import {ApPartFormVO} from "../../../api/ApPartFormVO";

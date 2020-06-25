@@ -14,6 +14,9 @@ import {formatDate} from "../../validate";
 import {ApItemStringVO} from "../../../api/ApItemStringVO";
 import {ApItemDateVO} from "../../../api/ApItemDateVO";
 import {ApItemUnitdateVO} from "../../../api/ApItemUnitdateVO";
+import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
+import {getMapFromList} from "../../../shared/utils";
+import {RulDescItemSpecExtVO} from "../../../api/RulDescItemSpecExtVO";
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
@@ -40,14 +43,17 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
             let textItem = item as ApItemStringVO;
             valueField = textItem.value;
             break;
+
         case RulDataTypeCodeEnum.BIT:
             let bitItem = item as ApItemBitVO;
             valueField = bitItem.value ? 'Ano' : 'Ne';
             break;
+
         case RulDataTypeCodeEnum.COORDINATES:
             customFieldRender = true;
             valueField = <DetailCoordinateItem item={item as ApItemCoordinatesVO} globalEntity={globalEntity}/>;
             break;
+
         case RulDataTypeCodeEnum.RECORD_REF:
             customFieldRender = true;
             let recordRefItem = item as ApItemAccessPointRefVO;
@@ -61,17 +67,21 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
 
             valueField = <NavLink target={"_blank"} to={`/global/${recordRefItem.value}`}>{displayValue}</NavLink>;
             break;
-        case RulDataTypeCodeEnum.ENUM:
 
+        case RulDataTypeCodeEnum.ENUM:
+            //Resime az nize
             break;
+
         case RulDataTypeCodeEnum.UNITDATE:
             let unitdateItem = item as ApItemUnitdateVO;
             valueField = unitdateItem.value;
             break;
+
         case RulDataTypeCodeEnum.DATE:
             let dateItem = item as ApItemDateVO;
             valueField = formatDate(dateItem.value);
             break;
+
         case RulDataTypeCodeEnum.URI_REF:
             let ii = item as ApItemUriRefVO;
             valueField = <a href={ii.value} title={ii.value} target={"_blank"}
@@ -91,11 +101,13 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
     }
 
     let valueSpecification;
-    if (!customFieldRender && itemType.useSpecification) {
-        if (item.specId && descItemTypes.itemsMap[item.specId]) {
-            valueSpecification = descItemTypes.itemsMap[item.specId].name;
-        } else {
-            valueSpecification = <i>Bez specifikace</i>
+    if (!customFieldRender && itemType.useSpecification ) {
+        valueSpecification = <i>Bez specifikace</i>
+        if (item.specId) {
+            const itemSpec = getMapFromList(itemType.descItemSpecs) as Record<number, RulDescItemSpecExtVO>;
+            if (itemSpec[item.specId]) {
+                valueSpecification = itemSpec[item.specId].name;
+            }
         }
     }
 
@@ -108,8 +120,7 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
 
 const mapStateToProps = (state) => ({
     rulDataTypes: state.refTables.rulDataTypes,
-    descItemTypes: state.refTables.descItemTypes,
-
+    descItemTypes: state.refTables.descItemTypes as { itemsMap: Record<number, RulDescItemTypeExtVO>, items: RulDescItemTypeExtVO[] },
 });
 
 export default connect(mapStateToProps)(DetailItemContent);
