@@ -35,7 +35,7 @@ class Scope extends AbstractReactComponent {
         if (index !== null) {
             const data = scopes[index].scopes;
             if (data && data.length === 1) {
-                this.props.onChange(data[0].id);
+                this.props.onChange && this.props.onChange(data[0].id);
             }
         }
     }
