@@ -2,7 +2,8 @@ import React, {FC} from 'react';
 import moment from "moment";
 import {Datace} from "../../shared/datace/datace-types";
 import parse from "../../shared/datace/datace";
-import {Form, Tooltip} from "react-bootstrap";
+import {OverlayTrigger, Tooltip} from "react-bootstrap";
+import {FormInput} from "../../index";
 
 type Props = {
     name: string;
@@ -58,16 +59,22 @@ export function validate(v?: string) {
 }
 
 const UnitdateField: FC<Props> = ({name, ...rest}) => {
-    return <Tooltip placement="right" id={`${name}-tooltip`}>
-        <div><b>Formát datace</b><br/>Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br/>Rok:
-            1968<br/>Měsíc.rok: 8.1968<br/>Datum: 21.8.1698<br/>Datum a čas: 21.8.1968
-            8:23 <i>nebo</i> 21.8.1968 8:23:31<br/><b>Intervaly</b><br/>Jednotlivá hodnota: 1968<br/>Interval:
-            21.8.1968 0:00-27.6.1989<br/><b>Odhad</b><br/>Definuje se uzavřením hodnoty do kulatých nebo
-            hranatých závorek: [16.8.1977]<br/>Při použití znaku "/" pro oddělení intervalu jsou od i do
-            chápány jako odhad.<br/><b>Záporná datace</b><br/>Definuje se prefixem: <b>bc</b><br/>Např: bc
-            200 <i>nebo</i> bc 5000-1.st.<br/></div>
-        <Form.Control {...rest}/>
-    </Tooltip>
+    return <OverlayTrigger
+        placement={'right'}
+        overlay={
+            <Tooltip id={`${name}-tooltip`}>
+                <b>Formát datace</b><br/>Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br/>Rok:
+                1968<br/>Měsíc.rok: 8.1968<br/>Datum: 21.8.1698<br/>Datum a čas: 21.8.1968
+                8:23 <i>nebo</i> 21.8.1968 8:23:31<br/><b>Intervaly</b><br/>Jednotlivá hodnota: 1968<br/>Interval:
+                21.8.1968 0:00-27.6.1989<br/><b>Odhad</b><br/>Definuje se uzavřením hodnoty do kulatých nebo
+                hranatých závorek: [16.8.1977]<br/>Při použití znaku "/" pro oddělení intervalu jsou od i do
+                chápány jako odhad.<br/><b>Záporná datace</b><br/>Definuje se prefixem: <b>bc</b><br/>Např: bc
+                200 <i>nebo</i> bc 5000-1.st.<br/>
+            </Tooltip>
+        }
+    >
+        <FormInput {...rest}/>
+    </OverlayTrigger>;
 };
 
 export default UnitdateField;

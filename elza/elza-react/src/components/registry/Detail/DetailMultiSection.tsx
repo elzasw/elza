@@ -66,12 +66,12 @@ const DetailMultiSection: FC<Props> = ({
             <h4 className="p-2 pl-3 mb-1">
                 <span className="mr-2">{label}</span>
                 {editMode && (!singlePart || (singlePart && parts.length === 0)) && <Icon
-                    className="ml-1"
+                    className="ml-1 cursor-pointer"
                     glyph={'fa-plus'}
                     onClick={() => onAdd && onAdd()}
                 />}
                 {editMode && !singlePart && deletableWholePart && parts.length > 0 && <Icon
-                    className="ml-1"
+                    className="ml-1 cursor-pointer"
                     glyph={'fa-trash'}
                     onClick={() => onDeleteParts && onDeleteParts(parts)}
                 />}

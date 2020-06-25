@@ -82,7 +82,7 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
             }
 
             let itemInfo = items[index].type;
-            //let width = itemInfo ? itemInfo.width : 2;
+            let width = itemInfo && itemInfo.width ? itemInfo.width : 2;
 
             let sameItems = items.slice(index, index2);
             index = index2;
@@ -94,7 +94,7 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
                 rows.push(<DetailItem key={index} item={sameItems[0]} globalEntity={globalEntity}/>);
             }
 
-            result.push(<Col key={index}>{/* span={width <= 0 ? 24 : width * 2} */}
+            result.push(<Col key={index} xs={width <= 0 ? 12 : width}>
                 {rows}
             </Col>);
         }
@@ -146,25 +146,25 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
                         className={classNames("detail-part-label-alt mr-2", collapsed ? false : 'opened')}> (preferované)</span>}
                 </div>
                 {showPreferredSwitch && !preferred && <Icon
-                    className={'mr-2'}
+                    className={'mr-2 cursor-pointer'}
                     glyph={'fa-star'}
                     onClick={() => onSetPreferred && onSetPreferred(part)}
                     style={{visibility: preferred ? "hidden" : "inherit"}}
                 />}
 
                 <Icon
-                    className={'mr-2'}
+                    className={'mr-2 cursor-pointer'}
                     glyph={'fa-pencil'}
                     onClick={() => onEdit && onEdit(part)}
                 />
 
                 {!preferred && <Icon
-                    className={'mr-2'}
+                    className={'mr-2 cursor-pointer'}
                     glyph={'fa-trash'}
                     onClick={() => onDelete && onDelete(part)}
                 />}
                 {onAddRelated && <Icon
-                    className={'mr-2'}
+                    className={'mr-2 cursor-pointer'}
                     glyph={'fa-plus'}
                     onClick={() => onAddRelated(part)}
                 />}
@@ -178,12 +178,6 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
             <Row>
                 {renderItems(sortedItems)}
             </Row>
-
-            {/*<EditModal
-        part={part}
-        visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
-      />*/}
         </div>}
     </div>
 };

@@ -25,8 +25,7 @@ import {RulPartTypeVO} from "../../api/RulPartTypeVO";
 import {registryDetailFetchIfNeeded} from "../../actions/registry/registry";
 
 type OwnProps = {
-    id: number; // ae id
-    area: string;
+    id: number; // ap id
     sider: ReactElement;
     editMode: boolean;
     globalCollapsed: boolean;
@@ -47,14 +46,14 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
 
     const handleSetPreferred = (part: ApPartVO) => {
         if (part.id) {
-            props.setPreferred(props.area, props.id, part.id);
+            props.setPreferred(props.id, part.id);
             props.invalidateValidationErrors(props.id);
         }
     };
 
     const handleDelete = (part: ApPartVO) => {
         if (part.id) {
-            props.deletePart(props.area, props.id, part.id);
+            props.deletePart(props.id, part.id);
         }
         props.invalidateValidationErrors(props.id);
     };
@@ -63,26 +62,26 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         const partType = refTables.partTypes.itemsMap[part.typeId].code;
         const detail = props.detail.data!;
 
-        part.id && props.showPartEditModal(props.area, part, partType, props.id, apTypeId, detail.scopeId, props.refTables, part.partParentId);
+        part.id && props.showPartEditModal(part, partType, props.id, apTypeId, detail.scopeId, props.refTables, part.partParentId);
         props.invalidateValidationErrors(props.id);
     };
 
     const handleAdd = (partType: PartType) => {
         const detail = props.detail.data!;
 
-        props.showPartCreateModal(props.area, partType, props.id, apTypeId, detail.scopeId);
+        props.showPartCreateModal(partType, props.id, apTypeId, detail.scopeId);
         props.invalidateValidationErrors(props.id);
     };
 
     const handleAddRelated = (part: ApPartVO) => {
         const detail = props.detail.data!;
 
-        part.id && props.showPartCreateModal(props.area, PartType.REL, props.id, apTypeId, detail.scopeId, part.id);
+        part.id && props.showPartCreateModal(PartType.REL, props.id, apTypeId, detail.scopeId, part.id);
         props.invalidateValidationErrors(props.id);
     };
 
     const handleDeletePart = (parts: Array<ApPartVO>) => {
-        props.deleteParts(props.area, props.id, parts);
+        props.deleteParts(props.id, parts);
         props.invalidateValidationErrors(props.id);
     };
 
@@ -157,23 +156,36 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
 const mapDispatchToProps = (
     dispatch: ThunkDispatch<{}, {}, Action<string>>
 ) => ({
-    showPartEditModal: (area: string, part: ApPartVO, partType, apId: number, apTypeId: number, scopeId: number, refTables, parentPartId?: number) => {
+    showPartEditModal: (part: ApPartVO, partType, apId: number, apTypeId: number, scopeId: number, refTables, parentPartId?: number) => {
         dispatch(
             modalDialogShow(
                 this,
                 PartTypeInfo.getPartEditDialogLabel(partType, false),
                 <PartEditModal
                     partType={partType}
-                    handleSubmit={(formData: ApPartFormVO) => {
+                    onSubmit={(formData: ApPartFormVO) => {
                         if (!part.id) {
                             return;
                         }
 
-                        formData.parentPartId = parentPartId;
+                        const submitItems = formData.items.map(x => {
+                            // @ts-ignore
+                            delete x['type'];
+                            return x;
+                        });
 
-                        return WebApi.updatePart(apId, part.id, formData).then(() => {
+                        const submitData = {
+                            items: submitItems,
+                            parentPartId: parentPartId,
+                            partId: part.id,
+                            partTypeCode: partType,
+                        } as ApPartFormVO;
+
+                        console.log('SUBMIT EDIT', apId, part.id, submitData);
+
+                        return WebApi.updatePart(apId, part.id, submitData).then(() => {
                             dispatch(modalDialogHide());
-                            dispatch(DetailActions.invalidate(area, apId));
+                            dispatch(registryDetailFetchIfNeeded(apId, true));
                         });
                     }}
                     apTypeId={apTypeId}
@@ -194,34 +206,41 @@ const mapDispatchToProps = (
                         dispatch(modalDialogHide());
                     }}
                 />,
-                'dialog-lg',
-                () => {
-                    dispatch(globalFundTreeInvalidate());
-                },
+                'dialog-lg'
             )
         );
     },
-    showPartCreateModal: (area: string, partType: PartType, apId: number, apTypeId: number, scopeId: number, parentPartId?: number) => {
-        //todo: Zde potrebuju partType, ale nove jedeme pres ID a ne pres kod, ktery chodi v partType: PartType
-
+    showPartCreateModal: (partType: PartType, apId: number, apTypeId: number, scopeId: number, parentPartId?: number) => {
         dispatch(
             modalDialogShow(
                 this,
                 PartTypeInfo.getPartEditDialogLabel(partType, true),
                 <PartEditModal
                     partType={partType}
-                    handleSubmit={(formData: ApPartFormVO) => {
-                        formData.parentPartId = parentPartId;
+                    onSubmit={(formData: ApPartFormVO) => {
+                        const submitItems = formData.items.map(x => {
+                            // @ts-ignore
+                            delete x['type'];
+                            return x;
+                        });
 
-                        return WebApi.createPart(apId, formData).then(() => {
+                        const submitData = {
+                            items: submitItems,
+                            parentPartId: parentPartId,
+                            partTypeCode: partType,
+                        } as ApPartFormVO;
+
+                        console.log('SUBMIT ADD', apId, submitData);
+
+                        return WebApi.createPart(apId, submitData).then(() => {
                             dispatch(modalDialogHide());
-                            dispatch(DetailActions.invalidate(area, apId));
+                            dispatch(registryDetailFetchIfNeeded(apId, true));
                         });
                     }}
                     apTypeId={apTypeId}
                     scopeId={scopeId}
                     formData={{
-                        partTypeCode: partType,  //todo: zde pouzivame ciselnik kodu partu, ne ten z refTables, snad to bude OK
+                        partTypeCode: partType,
                         items: [],
                     } as ApPartFormVO}
                     parentPartId={parentPartId}
@@ -236,22 +255,22 @@ const mapDispatchToProps = (
             )
         );
     },
-    setPreferred: async (area: string, apId: number, partId: number) => {
+    setPreferred: async (apId: number, partId: number) => {
         await WebApi.setPreferPartName(apId, partId);
-        dispatch(DetailActions.invalidate(area, apId))
+        dispatch(registryDetailFetchIfNeeded(apId, true));
     },
-    deletePart: async (area: string, apId: number, partId: number) => {
+    deletePart: async (apId: number, partId: number) => {
         await WebApi.deletePart(apId, partId);
-        dispatch(DetailActions.invalidate(area, apId))
+        dispatch(registryDetailFetchIfNeeded(apId, true));
     },
-    deleteParts: async (area: string, apId: number, parts: ApPartVO[]) => {
+    deleteParts: async (apId: number, parts: ApPartVO[]) => {
         for (let part of parts) {
             if (part.id) {
                 await WebApi.deletePart(apId, part.id);
             }
         }
 
-        dispatch(DetailActions.invalidate(area, apId));
+        dispatch(registryDetailFetchIfNeeded(apId, true));
     },
     invalidateValidationErrors: (apId: number) => {
         dispatch(DetailActions.invalidate(DETAIL_VALIDATION_RESULT, apId));
