@@ -91,8 +91,10 @@ class ApStateChangeForm extends AbstractReactComponent {
                             />
                         )}
                         <Field
-                            component={Autocomplete}
+                            component={FormInputField}
+                            type="autocomplete"
                             disabled={submitting}
+                            useIdAsValue
                             label={i18n('ap.state.title.state')}
                             items={this.getStateWithAll()}
                             name={"state"}
