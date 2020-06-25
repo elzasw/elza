@@ -874,7 +874,7 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="IDN_TYPE" data-type="ENUM">
-        <name>Zdroj identifikátoru</name>
+        <name>Zdroj externího identifikátoru</name>
         <shortcut>Zdroj identifikátoru</shortcut>
         <description>Zdroj identifikátoru</description>
         <is-value-unique>false</is-value-unique>
@@ -882,7 +882,7 @@
         <use-specification>true</use-specification>
     </item-type>
     <item-type code="IDN_VALID_FROM" data-type="UNITDATE">
-        <name>Platnost identifikátoru od</name>
+        <name>Platnost externího identifikátoru od</name>
         <shortcut>Platnost identifikátoru od</shortcut>
         <description>Platnost identifikátoru od</description>
         <is-value-unique>false</is-value-unique>
@@ -890,7 +890,7 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="IDN_VALID_TO" data-type="UNITDATE">
-        <name>Platnost identifikátoru do</name>
+        <name>Platnost externího identifikátoru do</name>
         <shortcut>Platnost identifikátoru do</shortcut>
         <description>Platnost identifikátoru do</description>
         <is-value-unique>false</is-value-unique>
@@ -898,7 +898,7 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="IDN_VALUE" data-type="STRING">
-        <name>Hodnota identifikátoru</name>
+        <name>Hodnota externího identifikátoru</name>
         <shortcut>Hodnota identifikátoru</shortcut>
         <description>Hodnota identifikátoru</description>
         <is-value-unique>false</is-value-unique>
@@ -907,7 +907,7 @@
         <string-length-limit>50</string-length-limit>
     </item-type>
     <item-type code="IDN_VERIFIED" data-type="BIT">
-        <name>Hodnota ověřena</name>
+        <name>Hodnota externího identifikátoru ověřena</name>
         <shortcut>Hodnota ověřena</shortcut>
         <description>Hodnota ověřena</description>
         <is-value-unique>false</is-value-unique>
@@ -1044,8 +1044,8 @@
         <use-specification>true</use-specification>
     </item-type>
     <item-type code="EV_TYPE" data-type="ENUM">
-        <name>Typ události od</name>
-        <shortcut>Typ události od</shortcut>
+        <name>Typ události</name>
+        <shortcut>Typ události</shortcut>
         <description>Typ události od</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
@@ -1092,7 +1092,7 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="CRE_CLASS" data-type="ENUM">
-        <name>Způsob</name>
+        <name>Způsob vzniku</name>
         <shortcut>Způsob</shortcut>
         <description>Způsob</description>
         <is-value-unique>false</is-value-unique>
@@ -1108,7 +1108,7 @@
         <use-specification>true</use-specification>
     </item-type>
     <item-type code="CRE_DATE" data-type="UNITDATE">
-        <name>Datace</name>
+        <name>Datace vzniku</name>
         <shortcut>Datace</shortcut>
         <description>Datace</description>
         <is-value-unique>false</is-value-unique>
@@ -1116,7 +1116,7 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="EXT_CLASS" data-type="ENUM">
-        <name>Způsob</name>
+        <name>Způsob zániku</name>
         <shortcut>Způsob</shortcut>
         <description>Způsob</description>
         <is-value-unique>false</is-value-unique>
@@ -1132,7 +1132,7 @@
         <use-specification>true</use-specification>
     </item-type>
     <item-type code="EXT_DATE" data-type="UNITDATE">
-        <name>Datace</name>
+        <name>Datace zániku</name>
         <shortcut>Datace</shortcut>
         <description>Datace</description>
         <is-value-unique>false</is-value-unique>
