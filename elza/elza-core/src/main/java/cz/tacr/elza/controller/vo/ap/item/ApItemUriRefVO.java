@@ -60,4 +60,8 @@ public class ApItemUriRefVO extends ApItemVO {
        data.setDataType(DataType.URI_REF.getEntity());
        return data;
     }
+
+    public String getValue() {
+        return value;
+    }
 }
