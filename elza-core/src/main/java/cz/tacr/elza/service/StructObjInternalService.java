@@ -30,7 +30,7 @@ public class StructObjInternalService {
 
     private final StructuredItemRepository structureItemRepository;
     private final StructuredObjectRepository structObjRepository;
-    private final ArrangementService arrangementService;
+    private final ArrangementInternalService arrangementInternalService;
     private final DataRepository dataRepository;
     private final StructObjValueService structObjService;
     private final ChangeRepository changeRepository;
@@ -39,14 +39,14 @@ public class StructObjInternalService {
     @Autowired
     public StructObjInternalService(final StructuredItemRepository structureItemRepository,
                                     final StructuredObjectRepository structureDataRepository,
-                                    final ArrangementService arrangementService,
+                                    final ArrangementInternalService arrangementInternalService,
                                     final DataRepository dataRepository,
                                     final StructObjValueService structureDataService,
                                     final ChangeRepository changeRepository,
                                     final EventNotificationService notificationService) {
         this.structureItemRepository = structureItemRepository;
         this.structObjRepository = structureDataRepository;
-        this.arrangementService = arrangementService;
+        this.arrangementInternalService = arrangementInternalService;
         this.dataRepository = dataRepository;
         this.structObjService = structureDataService;
         this.changeRepository = changeRepository;
@@ -85,7 +85,7 @@ public class StructObjInternalService {
                         .set("id", structObj.getStructuredObjectId());
             }
 
-            ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA);
+            ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA);
             structObj.setDeleteChange(change);
 
             structObjRepository.save(structObj);

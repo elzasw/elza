@@ -5,8 +5,10 @@ import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.security.UserDetail;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -15,6 +17,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Internal arrangement service.
@@ -22,8 +25,12 @@ import java.util.*;
 @Service
 public class ArrangementInternalService {
 
+    private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
+
     @Autowired
     private ChangeRepository changeRepository;
+    @Autowired
+    private ItemRepository itemRepository;
     @Autowired
     private UserService userService;
     @Autowired
@@ -117,4 +124,33 @@ public class ArrangementInternalService {
         return result;
     }
 
+    public Integer getNextDescItemObjectId() {
+        return LAST_DESC_ITEM_OBJECT_ID.updateAndGet(id -> {
+            if (id < 0) {
+                id = itemRepository.findMaxItemObjectId();
+            }
+            return id + 1;
+        });
+    }
+
+    /**
+     * Migrace typu objektu změny.
+     *
+     * @param change  migrovaná změna
+     * @param newType nový typ změny
+     * @return upravený objekt změny
+     */
+    public ArrChange migrateChangeType(final ArrChange change, final ArrChange.Type newType) {
+        Validate.notNull(change);
+        Validate.notNull(newType);
+        Validate.notNull(change.getChangeId());
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        change.setChangeDate(OffsetDateTime.now());
+        if (userDetail != null && userDetail.getId() != null) {
+            UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
+            change.setUser(user);
+        }
+        change.setType(newType);
+        return changeRepository.save(change);
+    }
 }
