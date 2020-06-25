@@ -1092,6 +1092,7 @@ public class ApController {
         ApState state = accessPointService.getState(accessPoint);
         ApScope scope = state.getScope();
         accessPointService.checkUniqueBinding(scope, archiveEntityId, externalSystemCode);
+        accessPointService.checkUniqueExtSystem(accessPoint, externalSystemCode);
 
         Entity entity;
         try {

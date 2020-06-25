@@ -291,4 +291,8 @@ public class ExternalSystemService {
     public ApBindingItem findByBindingAndUuid(ApBinding binding, String uuid) {
         return bindingItemRepository.findByBindingAndUuid(binding, uuid);
     }
+
+    public ApBindingState findByAccessPointAndExternalSystem(final ApAccessPoint accessPoint, final ApExternalSystem externalSystem) {
+        return bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
+    }
 }

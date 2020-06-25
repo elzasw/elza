@@ -113,4 +113,9 @@ public enum RegistryCode implements ErrorCode {
      * Nelze zrušit provázání tříd, protože existuje vztah mezi osobami těchto tříd.
      */
     CANT_DELETE_SCOPE_RELATION_EXISTS,
+
+    /**
+     * Archivní entita má jíž existující propojení s externím systémem.
+     */
+    EXT_SYSTEM_CONNECTED,
 }

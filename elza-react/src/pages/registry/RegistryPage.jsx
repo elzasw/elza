@@ -40,6 +40,7 @@ import {Area} from "../../api/Area";
 import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
 import ApPushToExt from "../../components/registry/modal/ApPushToExt";
 import ExtSyncsModal from "../../components/registry/modal/ExtSyncsModal";
+import {objectById} from "../../shared/utils";
 
 /**
  * Stránka rejstříků.
@@ -259,14 +260,21 @@ class RegistryPage extends AbstractReactComponent {
     handleConnectAp = () => {
         const {extSystems,
             registryDetail: {
-                data: {id},
+                data,
             }, dispatch} = this.props;
+        const id = data.id;
         const initialValues = {
             area: Area.ALLNAMES,
             onlyMainPart: "false", // musí být jako string, autocomplete má problém s true/false hodnotou
         };
-        if (extSystems.length === 1) {
-            initialValues.extSystem = extSystems[0].code;
+
+        const filteredExtSystems = extSystems.filter(extSystem => {
+            const found = objectById(data.externalIds, extSystem.code, 'externalSystemCode');
+            return found === null;
+        });
+
+        if (filteredExtSystems.length === 1) {
+            initialValues.extSystem = filteredExtSystems[0].code;
         }
         dispatch(
             modalDialogShow(
@@ -274,7 +282,7 @@ class RegistryPage extends AbstractReactComponent {
                 i18n('ap.ext-search.title-connect'),
                 <ApExtSearchModal onConnected={() => {
                     dispatch(registryDetailFetchIfNeeded(id, true));
-                }} type={TypeModal.CONNECT} accessPointId={id} initialValues={initialValues} extSystems={extSystems} />,
+                }} type={TypeModal.CONNECT} accessPointId={id} initialValues={initialValues} extSystems={filteredExtSystems} />,
                 'dialog-xl',
             ),
         );

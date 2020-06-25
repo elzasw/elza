@@ -194,6 +194,7 @@ var messages = {
     "exception.reg.SCOPES_NOT_CONNECTED": "Nelze zrušit návaznou oblast - vazba mezi oblastmi neexistuje",
     "exception.reg.NOT_UNIQUE_FULL_NAME": "Celé jméno není unikátní v rámci třídy",
     "exception.reg.CANT_MIGRATE_AP": "Nelze migrovat archivní entitu",
+    "exception.reg.EXT_SYSTEM_CONNECTED": "Archivní entita má jíž existující propojení s externím systémem",
 
     "exception.sobj.NO_VALID_ITEMS":
         "Bez vyplnění alespoň některých prvků popisu nelze položku přidat. Vyplňte příslušné prvky popisu.",
