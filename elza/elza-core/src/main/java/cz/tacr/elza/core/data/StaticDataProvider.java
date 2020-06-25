@@ -227,6 +227,15 @@ public class StaticDataProvider {
         return type.getEntity();
     }
 
+    public RulItemType getItemType(Integer id) {
+        ItemType type = getItemTypeById(id);
+        if (type == null) {
+            throw new ObjectNotFoundException("Nebyl dohledán typ atributu podle id: " + id, BaseCode.ID_NOT_EXIST)
+                    .setId(id);
+        }
+        return type.getEntity();
+    }
+
     public RulItemSpec getItemSpec(String code) {
         RulItemSpec spec = getItemSpecByCode(code);
         if (spec == null) {

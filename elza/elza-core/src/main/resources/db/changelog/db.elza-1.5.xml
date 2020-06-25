@@ -472,4 +472,82 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="20200625155400" author="fantis">
+        <createTable tableName="arr_ref_template">
+            <column name="ref_template_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_ref_template"/>
+            </column>
+            <column name="fund_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_ref_template_fund"
+                             referencedTableName="arr_fund"
+                             referencedColumnNames="fund_id"/>
+            </column>
+            <column name="name" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="item_node_ref_id" type="int">
+                <constraints foreignKeyName="fk_arr_ref_template_item_node_ref"
+                             referencedTableName="rul_item_type"
+                             referencedColumnNames="item_type_id"/>
+            </column>
+        </createTable>
+        <createTable tableName="arr_ref_template_map_type">
+            <column name="ref_template_map_type_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_ref_template_map_type"/>
+            </column>
+            <column name="ref_template_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_ref_template_map_type_ref_template"
+                             referencedTableName="arr_ref_template"
+                             referencedColumnNames="ref_template_id"/>
+            </column>
+            <column name="from_item_type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_ref_template_from_item_type"
+                             referencedTableName="rul_item_type"
+                             referencedColumnNames="item_type_id"/>
+            </column>
+            <column name="to_item_type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_ref_template_to_item_type"
+                             referencedTableName="rul_item_type"
+                             referencedColumnNames="item_type_id"/>
+            </column>
+            <column name="from_parent_level" type="boolean"/>
+            <column name="map_all_spec" type="boolean"/>
+        </createTable>
+        <createTable tableName="arr_ref_template_map_spec">
+            <column name="ref_template_map_spec_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_ref_template_map_spec"/>
+            </column>
+            <column name="ref_template_map_type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_ref_template_map_spec_ref_template_map_type"
+                             referencedTableName="arr_ref_template_map_type"
+                             referencedColumnNames="ref_template_map_type_id"/>
+            </column>
+            <column name="from_item_spec_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_ref_template_map_spec_from_item_spec"
+                             referencedTableName="rul_item_spec"
+                             referencedColumnNames="item_spec_id"/>
+            </column>
+            <column name="to_item_spec_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_ref_template_map_spec_to_item_spec"
+                             referencedTableName="rul_item_spec"
+                             referencedColumnNames="item_spec_id"/>
+            </column>
+        </createTable>
+
+        <addColumn tableName="arr_data_uri_ref">
+            <column name="ref_template_id" type="int">
+                <constraints foreignKeyName="arr_data_uri_ref_ref_template"
+                             referencedTableName="arr_ref_template"
+                             referencedColumnNames="ref_template_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

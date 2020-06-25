@@ -2526,37 +2526,36 @@ public class ArrangementController {
         requestService.deleteRequest(request);
     }
 
-    @RequestMapping(value = "/nodes/template/create", method = RequestMethod.PUT)
+    @RequestMapping(value = "/nodes/{fundId}/template/create", method = RequestMethod.PUT)
     @Transactional
-    public ArrRefTemplateVO createRefTemplate() {
-        return new ArrRefTemplateVO();
+    public ArrRefTemplateVO createRefTemplate(@PathVariable final Integer fundId) {
+        return arrangementService.createRefTemplate(fundId);
     }
 
     @RequestMapping(value = "/nodes/template/{templateId}", method = RequestMethod.POST)
     @Transactional
     public ArrRefTemplateVO updateRefTemplate(@PathVariable(value = "templateId") final Integer templateId,
                                               @RequestBody final ArrRefTemplateEditVO refTemplateVO) {
-        return new ArrRefTemplateVO();
+        return arrangementService.updateRefTemplate(templateId, refTemplateVO);
     }
 
     @RequestMapping(value = "/nodes/template/{templateId}", method = RequestMethod.DELETE)
     @Transactional
     public void deleteRefTemplate(@PathVariable(value = "templateId") final Integer templateId) {
-
+        arrangementService.deleteRefTemplate(templateId);
     }
 
-    @RequestMapping(value = "/nodes/template", method = RequestMethod.GET)
+    @RequestMapping(value = "/nodes/{fundId}/template", method = RequestMethod.GET)
     @Transactional
-    public List<ArrRefTemplateVO> getRefTemplates() {
-        List<ArrRefTemplateVO> refTemplateVOList = new ArrayList<>();
-        return refTemplateVOList;
+    public List<ArrRefTemplateVO> getRefTemplates(@PathVariable final Integer fundId) {
+        return arrangementService.getRefTemplates(fundId);
     }
 
     @RequestMapping(value = "/nodes/template/{templateId}/maptype", method = RequestMethod.POST)
     @Transactional
     public void createRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,
                                          @RequestBody final ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
-
+        arrangementService.createRefTemplateMapType(templateId, refTemplateMapTypeFormVO);
     }
 
     @RequestMapping(value = "/nodes/template/{templateId}/mapType/{mapTypeId}", method = RequestMethod.POST)
@@ -2564,14 +2563,14 @@ public class ArrangementController {
     public void updateRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,
                                          @PathVariable (value = "mapTypeId") final Integer mapTypeId,
                                          @RequestBody final ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
-
+        arrangementService.updateRefTemplateMapType(templateId, mapTypeId, refTemplateMapTypeFormVO);
     }
 
     @RequestMapping(value = "/nodes/template/{templateId}/mapType/{mapTypeId}", method = RequestMethod.DELETE)
     @Transactional
     public void deleteRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,
                                          @PathVariable (value = "mapTypeId") final Integer mapTypeId) {
-
+        arrangementService.deleteRefTemplateMapType(templateId, mapTypeId);
     }
 
     /**
