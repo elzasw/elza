@@ -5,6 +5,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -216,6 +218,23 @@ public class StaticDataProvider {
         return apExternalSystemCodeMap.get(code);
     }
 
+    public RulItemType getItemType(String code) {
+        ItemType type = getItemTypeByCode(code);
+        if (type == null) {
+            throw new ObjectNotFoundException("Nebyl dohledán typ atributu podle kódu: " + code, BaseCode.ID_NOT_EXIST)
+                    .setId(code);
+        }
+        return type.getEntity();
+    }
+
+    public RulItemSpec getItemSpec(String code) {
+        RulItemSpec spec = getItemSpecByCode(code);
+        if (spec == null) {
+            throw new ObjectNotFoundException("Nebyla dohledána specifikace atributu podle kódu: " + code, BaseCode.ID_NOT_EXIST)
+                    .setId(code);
+        }
+        return spec;
+    }
 
     /* initialization methods */
 
