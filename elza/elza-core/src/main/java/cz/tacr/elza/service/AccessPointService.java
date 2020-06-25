@@ -31,6 +31,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
 import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.vo.DataRef;
@@ -2011,6 +2012,15 @@ public class AccessPointService {
         bindingItemRepository.deleteByBinding(binding);
         bindingStateRepository.delete(bindingState);
         bindingRepository.delete(binding);
+    }
+
+    public void checkUniqueExtSystem(final ApAccessPoint accessPoint, final String externalSystemCode) {
+        ApExternalSystem externalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
+        if (bindingState != null) {
+            throw new BusinessException("Tato archivní entita má jíž existující propojení s externím systémem", RegistryCode.EXT_SYSTEM_CONNECTED)
+                    .level(Level.WARNING);
+        }
     }
 
     /**
