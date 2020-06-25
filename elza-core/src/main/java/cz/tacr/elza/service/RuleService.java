@@ -1017,6 +1017,8 @@ public class RuleService {
                 ai = new Item(item.getId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), dataType.getCode(), ((ApItemUnitdateVO) item).getValue());
             } else if (item instanceof ApItemCoordinatesVO) {
                 ai = new Item(item.getId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), dataType.getCode(), ((ApItemCoordinatesVO) item).getValue());
+            } else if (item instanceof ApItemUriRefVO) {
+                ai = new Item(item.getId(), itemType.getCode(), itemSpec == null ? null : itemSpec.getCode(), dataType.getCode(), ((ApItemUriRefVO) item).getValue());
             } else {
                 throw new NotImplementedException("Neimplementovaná konverze");
             }
@@ -1610,6 +1612,10 @@ public class RuleService {
             case UNITDATE:
                 ArrDataUnitdate aeDataUnitdate = (ArrDataUnitdate) item.getData();
                 abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), UnitDateConvertor.convertToString(aeDataUnitdate));
+                break;
+            case URI_REF:
+                ArrDataUriRef arrDataUriRef = (ArrDataUriRef) item.getData();
+                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), arrDataUriRef.getValue());
                 break;
             default:
                 throw new SystemException("Invalid data type (RulItemType.DataType) " + dataType.getCode() , INVALID_STATE);

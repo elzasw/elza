@@ -42,6 +42,7 @@ import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
@@ -1071,7 +1072,7 @@ public class ApController {
         } catch (ApiException e) {
             throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
         }
-        ApState apState = accessPointService.createAccessPoint(scope, entity, externalSystemCode);
+        ApState apState = accessPointService.createAccessPoint(scope, entity, externalSystemCode, null);
         return apState.getAccessPointId();
     }
 
@@ -1133,7 +1134,18 @@ public class ApController {
     @RequestMapping(value = "/external/synchronize/{accessPointId}", method = RequestMethod.POST)
     public void synchronizeAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                        @RequestParam final String externalSystemCode) {
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApState state = accessPointService.getState(accessPoint);
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
 
+        Entity entity;
+        try {
+            entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()), externalSystemCode);
+        } catch (ApiException e) {
+            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+        }
+        accessPointService.synchronizeAccessPoint(state, entity, bindingState);
     }
 
     /**
@@ -1172,7 +1184,22 @@ public class ApController {
     @RequestMapping(value = "/external/take-rel/{accessPointId}", method = RequestMethod.POST)
     public void takeRelArchiveEntities(@PathVariable("accessPointId") final Integer accessPointId,
                                        @RequestParam final String externalSystemCode) {
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApState state = accessPointService.getState(accessPoint);
 
+        List<Integer> archiveEntities = accessPointService.findRelArchiveEntities(accessPoint);
+        List<Entity> entities = new ArrayList<>();
+
+        try {
+            if (CollectionUtils.isNotEmpty(archiveEntities)) {
+                for (Integer archiveEntityId : archiveEntities) {
+                    entities.add(camConnector.getEntityById(archiveEntityId, externalSystemCode));
+                }
+            }
+        } catch (ApiException e) {
+            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+        }
+        accessPointService.createAccessPoints(state.getScope(), entities, externalSystemCode);
     }
 
 

@@ -15,5 +15,8 @@ public interface ApBindingItemRepository extends ElzaJpaRepository<ApBindingItem
     @Query("SELECT bi FROM ap_binding_item bi WHERE bi.binding IN :bindings")
     List<ApBindingItem> findByBindings(@Param("bindings") List<ApBinding> bindingList);
 
+    @Query("SELECT bi FROM ap_binding_item bi WHERE bi.binding = :binding")
+    List<ApBindingItem> findByBinding(@Param("binding") ApBinding binding);
+
     void deleteByBinding(ApBinding binding);
 }

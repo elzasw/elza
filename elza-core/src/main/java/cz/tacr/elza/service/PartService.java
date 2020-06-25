@@ -276,6 +276,10 @@ public class PartService {
         return partRepository.findPartsByParentPartAndDeleteChangeIsNull(part);
     }
 
+    public List<ApPart> findNewerPartsByAccessPoint(ApAccessPoint accessPoint, Integer changeId) {
+        return partRepository.findNewerValidPartsByAccessPoint(accessPoint, changeId);
+    }
+
     public void updatePartValue(ApPart apPart, GroovyResult result) {
         Map<String, String> indexMap = result.getIndexes();
 

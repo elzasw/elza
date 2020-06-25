@@ -28,4 +28,7 @@ public interface ApPartRepository extends JpaRepository<ApPart, Integer> {
     @Query("SELECT part FROM ApPart part WHERE part.accessPoint.accessPointId IN (:accessPointIds)")
     List<ApPart> findPartsByAccessPointIdIn(@Param(value= "accessPointIds") Collection<Integer> accessPointIds);
 
+    @Query("SELECT part FROM ApPart part WHERE part.accessPoint = :accessPoint AND part.deleteChange IS NULL AND part.createChange.changeId > :changeId")
+    List<ApPart> findNewerValidPartsByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint, @Param("changeId") Integer changeId);
+
 }

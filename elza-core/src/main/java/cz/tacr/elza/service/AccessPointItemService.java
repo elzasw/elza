@@ -16,10 +16,12 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.service.vo.DataRef;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -446,6 +448,24 @@ public class AccessPointItemService {
         dataToSave.add(data);
         existsItems.add(itemCreated);
         return itemCreated;
+    }
+
+    @Nullable
+    private ApBindingItem findBindingItemByUuid(final List<ApBindingItem> bindingItemList, final String pid) {
+        if (CollectionUtils.isNotEmpty(bindingItemList)) {
+            for (ApBindingItem bindingItem : bindingItemList) {
+                if (bindingItem.getValue().equals(pid)) {
+                    return bindingItem;
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<Object> findNewOrChangedItems(List<Object> items, List<ApBindingItem> bindingItems) {
+        List<Object> changedItems = new ArrayList<>();
+
+        return changedItems;
     }
 
     private List<ApItem> shiftItems(final List<ApItem> items, final int diff, final ApChange change) {

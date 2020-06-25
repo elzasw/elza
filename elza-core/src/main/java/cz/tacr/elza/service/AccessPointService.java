@@ -743,7 +743,20 @@ public class AccessPointService {
         return apState;
     }
 
-    public ApState createAccessPoint(final ApScope scope, final Entity entity, final String externalSystemCode) {
+    public List<ApState> createAccessPoints(final ApScope scope, final List<Entity> entities, final String externalSystemCode) {
+        List<ApState> states = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(entities)) {
+            for (Entity entity : entities) {
+                ApBinding binding = bindingRepository.findByScopeAndValueAndApExternalSystem(scope, String.valueOf(entity.getEid()), externalSystemCode);
+                states.add(createAccessPoint(scope, entity, externalSystemCode, binding));
+            }
+        }
+
+        return states;
+    }
+
+    public ApState createAccessPoint(final ApScope scope, final Entity entity, final String externalSystemCode, final ApBinding binding) {
         Assert.notNull(scope, "Třída musí být vyplněna");
         StaticDataProvider sdp = staticDataService.getData();
 
@@ -752,7 +765,7 @@ public class AccessPointService {
         ApState apState = createAccessPoint(scope, type, apChange);
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
-        createAccessPoint(scope, entity, accessPoint, apChange, sdp, externalSystemCode, apState);
+        createAccessPoint(scope, entity, accessPoint, apChange, sdp, externalSystemCode, apState, binding);
 
         publishAccessPointCreateEvent(accessPoint);
 
@@ -775,7 +788,7 @@ public class AccessPointService {
 
         partService.deleteParts(accessPoint, apChange);
 
-        createAccessPoint(scope, entity, accessPoint, apChange, sdp, externalSystemCode, stateNew);
+        createAccessPoint(scope, entity, accessPoint, apChange, sdp, externalSystemCode, stateNew, null);
 
         publishAccessPointUpdateEvent(accessPoint);
     }
@@ -786,9 +799,13 @@ public class AccessPointService {
                                    final ApChange apChange,
                                    final StaticDataProvider sdp,
                                    final String externalSystemCode,
-                                   final ApState apState) {
+                                   final ApState apState,
+                                   final ApBinding apBinding) {
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        ApBinding binding = externalSystemService.createApBinding(scope, entity.getEid(), apExternalSystem);
+        ApBinding binding = apBinding;
+        if (binding == null) {
+            binding = externalSystemService.createApBinding(scope, entity.getEid(), apExternalSystem);
+        }
         externalSystemService.createApBindingState(binding, accessPoint, apChange,
                 entity.getEns().value(), entity.getRevi().getRid(),  entity.getRevi().getUsr(), entity.getReid());
 
@@ -1083,17 +1100,20 @@ public class AccessPointService {
         Items items = new Items();
         if (CollectionUtils.isNotEmpty(itemList)) {
             for (ApItem item : itemList) {
-                items.getBiOrAiOrEi().add(createItem(item, binding));
+                String uuid = UUID.randomUUID().toString();
+                Object i = createItem(item, binding, uuid);
+                if (i != null) {
+                    externalSystemService.createApBindingItem(binding, uuid, null, item);
+                    items.getBiOrAiOrEi().add(i);
+                }
             }
         }
         return items;
     }
 
-    private Object createItem(ApItem item, ApBinding binding) {
+    private Object createItem(ApItem item, ApBinding binding, String uuid) {
         String itemTypeCode = item.getItemType().getCode();
         String itemSpecCode = item.getItemSpec() != null ? item.getItemSpec().getCode() : null;
-        String uuid = UUID.randomUUID().toString();
-        externalSystemService.createApBindingItem(binding, uuid, null, item);
 
         DataType dataType = DataType.fromCode(item.getItemType().getDataType().getCode());
         switch (dataType) {
@@ -1158,8 +1178,8 @@ public class AccessPointService {
                 return itemEnum;
             case RECORD_REF:
                 ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) item.getData();
-                if (dataRecordRef.getBinding() != null) {
-                    throw new SystemException("Do externího systému nelze poslat entitu, která odkazuje na entitu mimo externí systém.");
+                if (dataRecordRef.getBinding() == null || !dataRecordRef.getBinding().getApExternalSystem().getExternalSystemId().equals(binding.getApExternalSystem().getExternalSystemId())) {
+                    return null;
                 }
                 EntityRecordRef entityRecordRef = new EntityRecordRef();
                 entityRecordRef.setEid(Long.parseLong(dataRecordRef.getBinding().getValue()));
@@ -1180,6 +1200,88 @@ public class AccessPointService {
                 return itemCoordinates;
         }
         return null;
+    }
+
+    public void synchronizeAccessPoint(ApState state, Entity entity, ApBindingState bindingState) {
+        if (checkLocalChanges(state, bindingState)) {
+            bindingState.setSyncOk(SyncState.NOT_SYNCED);
+            bindingStateRepository.save(bindingState);
+        } else {
+            StaticDataProvider sdp = staticDataService.getData();
+            ApBinding binding = bindingState.getBinding();
+            ApAccessPoint accessPoint = state.getAccessPoint();
+            ApChange apChange = apDataService.createChange(ApChange.Type.AP_UPDATE);
+            List<ApBindingItem> bindingItemList = bindingItemRepository.findByBinding(binding);
+
+            externalSystemService.createNewApBindingState(bindingState, apChange, entity.getEns().value(),
+                    entity.getRevi().getRid(),  entity.getRevi().getUsr(), entity.getReid());
+
+            List<ApPart> partList = new ArrayList<>();
+            Map<Integer, List<ApItem>> itemMap = new HashMap<>();
+
+            List<DataRef> dataRefList = new ArrayList<>();
+
+            for (Part part : entity.getPrts().getP()) {
+                ApBindingItem bindingItem = findBindingItemByUuid(bindingItemList, part.getPid());
+                if (bindingItem != null) {
+                    List<Object> newItems = apItemService.findNewOrChangedItems(part.getItms().getBiOrAiOrEi(), bindingItemList);
+
+                    if (CollectionUtils.isNotEmpty(newItems)) {
+                        //nové nebo změněné itemy z externího systému
+                        ApPart apPart = partService.createPart(bindingItem.getPart(), apChange);
+                        bindingItem.setPart(apPart);
+                        bindingItemRepository.save(bindingItem);
+                        partService.createPartItems(apChange, apPart, newItems, binding, dataRefList);
+
+                        itemMap.put(apPart.getPartId(), itemRepository.findValidItemsByPart(apPart));
+                        partList.add(apPart);
+                    }
+                } else {
+                    //nový part v externím systému
+                    RulPartType partType = sdp.getPartTypeByCode(part.getT().value());
+                    ApBindingItem parentBindingItem = part.getPrnt() != null ? findBindingItemByUuid(bindingItemList, part.getPrnt()) : null;
+
+                    ApPart apPart = partService.createPart(partType, accessPoint, apChange, parentBindingItem.getPart());
+                    externalSystemService.createApBindingItem(binding, part.getPid(), apPart, null);
+                    List<ApItem> itemList = partService.createPartItems(apChange, apPart, part.getItms().getBiOrAiOrEi(), binding, dataRefList);
+
+                    itemMap.put(apPart.getPartId(), itemList);
+                    partList.add(apPart);
+                }
+            }
+            createBindingForRel(dataRefList, binding, state.getScope(), binding.getApExternalSystem());
+
+            //TODO check if prefer changed
+//            accessPoint.setPreferredPart(findPreferredPart(partList));
+
+            updatePartValues(state, partList, itemMap);
+        }
+    }
+
+
+    @Nullable
+    private ApBindingItem findBindingItemByUuid(final List<ApBindingItem> bindingItemList, final String pid) {
+        if (CollectionUtils.isNotEmpty(bindingItemList)) {
+            for (ApBindingItem bindingItem : bindingItemList) {
+                if (bindingItem.getValue().equals(pid)) {
+                    return bindingItem;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean checkLocalChanges(final ApState state, final ApBindingState bindingState) {
+        List<ApPart> partList = partService.findNewerPartsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
+        if (CollectionUtils.isNotEmpty(partList)) {
+            return true;
+        }
+        List<ApItem> itemList = itemRepository.findNewerValidItemsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
+        if (CollectionUtils.isNotEmpty(itemList)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -2012,6 +2114,21 @@ public class AccessPointService {
         bindingItemRepository.deleteByBinding(binding);
         bindingStateRepository.delete(bindingState);
         bindingRepository.delete(binding);
+    }
+
+    public List<Integer> findRelArchiveEntities(ApAccessPoint accessPoint) {
+        List<Integer> archiveEntityIds = new ArrayList<>();
+        List<ApItem> itemList = itemRepository.findValidItemsByAccessPoint(accessPoint);
+
+        for (ApItem item : itemList) {
+            if (item.getData() instanceof ArrDataRecordRef) {
+                ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) item.getData();
+                if (dataRecordRef.getRecord() == null) {
+                    archiveEntityIds.add(Integer.parseInt(dataRecordRef.getBinding().getValue()));
+                }
+            }
+        }
+        return archiveEntityIds;
     }
 
     public void checkUniqueExtSystem(final ApAccessPoint accessPoint, final String externalSystemCode) {
