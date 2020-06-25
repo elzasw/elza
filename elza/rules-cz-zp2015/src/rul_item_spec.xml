@@ -3637,9 +3637,9 @@
         <item-type-assign code="GEO_TYPE"/>
     </item-spec>
     <item-spec code="GT_TERRITORIALUNIT">
-        <name>blíže neurčená část státu</name>
-        <description>blíže neurčená část státu</description>
-        <shortcut>blíže neurčená část státu</shortcut>
+        <name>jiná část státu</name>
+        <description>jiná část státu</description>
+        <shortcut>jiná část státu</shortcut>
         <item-type-assign code="GEO_TYPE"/>
     </item-spec>
     <item-spec code="GT_MUNIPPART">
@@ -3679,9 +3679,9 @@
         <item-type-assign code="GEO_TYPE"/>
     </item-spec>
     <item-spec code="GT_PROTNATPART">
-        <name>chráněná část přírody </name>
-        <description>chráněná část přírody </description>
-        <shortcut>chráněná část přírody </shortcut>
+        <name>chráněná část přírody</name>
+        <description>chráněná část přírody</description>
+        <shortcut>chráněná část přírody</shortcut>
         <item-type-assign code="GEO_TYPE"/>
     </item-spec>
     <item-spec code="GT_CAVE">
@@ -3712,12 +3712,6 @@
         <name>jiné administrativně vymezené části přírody</name>
         <description>jiné administrativně vymezené části přírody</description>
         <shortcut>jiné administrativně vymezené části přírody</shortcut>
-        <item-type-assign code="GEO_TYPE"/>
-    </item-spec>
-    <item-spec code="GT_OTHERDISTRICTS">
-        <name>jiné vymezené obvody a správní celky</name>
-        <description>jiné vymezené obvody a správní celky</description>
-        <shortcut>jiné vymezené obvody a správní celky</shortcut>
         <item-type-assign code="GEO_TYPE"/>
     </item-spec>
     <item-spec code="GT_OTHERAREA">
@@ -3858,12 +3852,6 @@
         <shortcut>oáza</shortcut>
         <item-type-assign code="GEO_TYPE"/>
     </item-spec>
-    <item-spec code="GT_OBCINA">
-        <name>občina</name>
-        <description>občina</description>
-        <shortcut>občina</shortcut>
-        <item-type-assign code="GEO_TYPE"/>
-    </item-spec>
     <item-spec code="GT_MUNIP">
         <name>obec</name>
         <description>obec</description>
@@ -3871,21 +3859,15 @@
         <item-type-assign code="GEO_TYPE"/>
     </item-spec>
     <item-spec code="GT_MUNIPDISTR">
-        <name>obec s charakterem okresu</name>
-        <description>obec s charakterem okresu</description>
-        <shortcut>obec s charakterem okresu</shortcut>
+        <name>obec se širší působností</name>
+        <description>obec se širší působností</description>
+        <shortcut>obec se širší působností</shortcut>
         <item-type-assign code="GEO_TYPE"/>
     </item-spec>
     <item-spec code="GT_AREA">
         <name>oblast</name>
         <description>oblast</description>
         <shortcut>oblast</shortcut>
-        <item-type-assign code="GEO_TYPE"/>
-    </item-spec>
-    <item-spec code="GT_OBSTINA">
-        <name>obština</name>
-        <description>obština</description>
-        <shortcut>obština</shortcut>
         <item-type-assign code="GEO_TYPE"/>
     </item-spec>
     <item-spec code="GT_OCEAN">
@@ -4182,6 +4164,12 @@
         <shortcut>župa</shortcut>
         <item-type-assign code="GEO_TYPE"/>
     </item-spec>
+    <item-spec code="ARCHNUM">
+        <name>číslo archivu</name>
+        <description>číslo archivu</description>
+        <shortcut>číslo archivu</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
     <item-spec code="VAT">
         <name>DIČ</name>
         <shortcut>DIČ</shortcut>
@@ -4224,10 +4212,22 @@
         <description>Kódy lokalit z databáze CZ Retro</description>
         <item-type-assign code="IDN_TYPE"/>
     </item-spec>
+    <item-spec code="TAXONOMY">
+        <name>Kód archivní taxonomické kategorie</name>
+        <description>Kód archivní taxonomické kategorie</description>
+        <shortcut>Kód archivní taxonomické kategorie</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
     <item-spec code="NUTSLAU">
         <name>NUTS/LAU</name>
-        <shortcut>NUTS/LAU</shortcut>
         <description>Kód lokality, https://ec.europa.eu/eurostat/web/nuts/local-administrative-units</description>
+        <shortcut>NUTS/LAU</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ORCID_ID">
+        <name>ORCID</name>
+        <description>Mezinárodní, jednoznačný a trvalý identifikátor autora v akademickém a vědeckém prostředí (viz https://orcid.org)</description>
+        <shortcut>ORCID</shortcut>
         <item-type-assign code="IDN_TYPE"/>
     </item-spec>
     <item-spec code="PEVA">
@@ -5675,12 +5675,6 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
     </item-spec>
-    <item-spec code="NT_ANTONYMUM">
-        <name>antonymum</name>
-        <description>antonymum</description>
-        <shortcut>antonymum</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
     <item-spec code="NT_AUTHORCIPHER">
         <name>autorská šifra</name>
         <description>autorská šifra</description>
@@ -5715,6 +5709,12 @@
         <name>homonymum</name>
         <description>homonymum</description>
         <shortcut>homonymum</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_INCIPIT">
+        <name>incipit</name>
+        <description>incipit</description>
+        <shortcut>incipit</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
     <item-spec code="NT_INVERTED">
@@ -5874,9 +5874,9 @@
         <item-type-assign code="REL_ENTITY"/>
     </item-spec>
     <item-spec code="RT_AUTHOROFCHANGE">
-        <name>autor/tvůrce změny</name>
-        <description>autor/tvůrce změny</description>
-        <shortcut>autor/tvůrce změny</shortcut>
+        <name>autor změny / tvůrce změny</name>
+        <description>autor změny / tvůrce změny</description>
+        <shortcut>autor změny / tvůrce změny</shortcut>
         <item-type-assign code="REL_ENTITY"/>
     </item-spec>
     <item-spec code="RT_GRANDMOTHER">
@@ -6255,6 +6255,12 @@
         <name>švagrová</name>
         <description>švagrová</description>
         <shortcut>švagrová</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_CATEGORY">
+        <name>taxonomická kategorie</name>
+        <description>taxonomická kategorie</description>
+        <shortcut>taxonomická kategorie</shortcut>
         <item-type-assign code="REL_ENTITY"/>
     </item-spec>
     <item-spec code="RT_THEME">
