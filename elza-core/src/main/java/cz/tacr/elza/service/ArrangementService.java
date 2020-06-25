@@ -11,6 +11,7 @@ import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
@@ -106,6 +107,12 @@ public class ArrangementService {
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
+    private ArrRefTemplateRepository refTemplateRepository;
+    @Autowired
+    private ArrRefTemplateMapTypeRepository refTemplateMapTypeRepository;
+    @Autowired
+    private ArrRefTemplateMapSpecRepository refTemplateMapSpecRepository;
+    @Autowired
     private NodeConformityRepository nodeConformityInfoRepository;
     @Autowired
     private NodeConformityMissingRepository nodeConformityMissingRepository;
@@ -138,6 +145,9 @@ public class ArrangementService {
 
     @Autowired
     private ApplicationContext appCtx;
+
+    @Autowired
+    private StaticDataService staticDataService;
 
     public static final String UNDEFINED = "Nezjištěno";
 
@@ -1513,6 +1523,169 @@ public class ArrangementService {
             fundsResult.setTotalCount(fundToNodeList.size());
         }
         return fundsResult;
+    }
+
+    public ArrRefTemplateVO createRefTemplate(Integer fundId) {
+        ArrFund fund = getFund(fundId);
+        ArrRefTemplate refTemplate = createRefTemplate(fund);
+
+        ArrRefTemplateVO arrRefTemplateVO = new ArrRefTemplateVO();
+        arrRefTemplateVO.setId(refTemplate.getRefTemplateId());
+        arrRefTemplateVO.setName(refTemplate.getName());
+        return arrRefTemplateVO;
+    }
+
+    private ArrRefTemplate createRefTemplate(ArrFund fund) {
+        ArrRefTemplate arrRefTemplate = new ArrRefTemplate();
+        arrRefTemplate.setFund(fund);
+        arrRefTemplate.setName("Šablona");
+        return refTemplateRepository.save(arrRefTemplate);
+    }
+
+    public void deleteRefTemplate(Integer templateId) {
+        ArrRefTemplate refTemplate = refTemplateRepository.findOne(templateId);
+        List<ArrRefTemplateMapType> refTemplateMapTypes = refTemplateMapTypeRepository.findByRefTemplate(refTemplate);
+        refTemplateMapSpecRepository.deleteByRefTemplateMapTypes(refTemplateMapTypes);
+        refTemplateMapTypeRepository.delete(refTemplateMapTypes);
+        refTemplateRepository.delete(refTemplate);
+    }
+
+    public ArrRefTemplateVO updateRefTemplate(Integer templateId, ArrRefTemplateEditVO refTemplateEditVO) {
+        ArrRefTemplate rt = refTemplateRepository.findOne(templateId);
+        ArrRefTemplate refTemplate = updateRefTemplate(rt, refTemplateEditVO);
+        List<ArrRefTemplateMapType> refTemplateMapTypes = refTemplateMapTypeRepository.findByRefTemplate(refTemplate);
+        List<ArrRefTemplateMapSpec> refTemplateMapSpecs = refTemplateMapSpecRepository.findByRefTemplate(refTemplate);
+
+        return createRefTemplateVO(refTemplate, refTemplateMapTypes, refTemplateMapSpecs);
+    }
+
+    public ArrRefTemplate updateRefTemplate(ArrRefTemplate refTemplate, ArrRefTemplateEditVO refTemplateEditVo) {
+        StaticDataProvider sdp = staticDataService.getData();
+        refTemplate.setName(refTemplateEditVo.getName());
+        refTemplate.setItemNodeRef(sdp.getItemType(refTemplateEditVo.getItemTypeId()));
+        return refTemplateRepository.save(refTemplate);
+    }
+
+    private ArrRefTemplateVO createRefTemplateVO(ArrRefTemplate refTemplate,
+                                                 List<ArrRefTemplateMapType> refTemplateMapTypes,
+                                                 List<ArrRefTemplateMapSpec> refTemplateMapSpecs) {
+        ArrRefTemplateVO arrRefTemplateVO = new ArrRefTemplateVO();
+        arrRefTemplateVO.setId(refTemplate.getRefTemplateId());
+        arrRefTemplateVO.setName(refTemplate.getName());
+        arrRefTemplateVO.setItemTypeId(refTemplate.getItemNodeRef().getItemTypeId());
+        arrRefTemplateVO.setRefTemplateMapTypeVOList(createRefTemplateMapTypeVOList(refTemplateMapTypes, refTemplateMapSpecs));
+        return arrRefTemplateVO;
+    }
+
+    private List<ArrRefTemplateMapTypeVO> createRefTemplateMapTypeVOList(List<ArrRefTemplateMapType> refTemplateMapTypes,
+                                                                         List<ArrRefTemplateMapSpec> refTemplateMapSpecs) {
+        List<ArrRefTemplateMapTypeVO> refTemplateMapTypeVOList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(refTemplateMapTypes)) {
+            for (ArrRefTemplateMapType refTemplateMapType : refTemplateMapTypes) {
+                refTemplateMapTypeVOList.add(createRefTemplateMapTypeVO(refTemplateMapType, refTemplateMapSpecs));
+            }
+        }
+        return refTemplateMapTypeVOList;
+    }
+
+    private ArrRefTemplateMapTypeVO createRefTemplateMapTypeVO(ArrRefTemplateMapType refTemplateMapType, List<ArrRefTemplateMapSpec> refTemplateMapSpecs) {
+        ArrRefTemplateMapTypeVO refTemplateMapTypeVO = new ArrRefTemplateMapTypeVO();
+        refTemplateMapTypeVO.setId(refTemplateMapType.getRefTemplateMapTypeId());
+        refTemplateMapTypeVO.setFromItemTypeId(refTemplateMapType.getFormItemType().getItemTypeId());
+        refTemplateMapTypeVO.setToItemTypeId(refTemplateMapType.getToItemType().getItemTypeId());
+        refTemplateMapTypeVO.setFromParentLevel(refTemplateMapType.getFromParentLevel());
+        refTemplateMapTypeVO.setMapAllSpec(refTemplateMapType.getMapAllSpec());
+        refTemplateMapTypeVO.setRefTemplateMapSpecVOList(createRefTemplateMapSpecVOList(refTemplateMapType, refTemplateMapSpecs));
+
+        return refTemplateMapTypeVO;
+    }
+
+    private List<ArrRefTemplateMapSpecVO> createRefTemplateMapSpecVOList(ArrRefTemplateMapType refTemplateMapType, List<ArrRefTemplateMapSpec> refTemplateMapSpecs) {
+        List<ArrRefTemplateMapSpecVO> refTemplateMapSpecVOList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(refTemplateMapSpecs)) {
+            for (ArrRefTemplateMapSpec refTemplateMapSpec : refTemplateMapSpecs) {
+                if (refTemplateMapSpec.getRefTemplateMapType().getRefTemplateMapTypeId().equals(refTemplateMapType.getRefTemplateMapTypeId())) {
+                    refTemplateMapSpecVOList.add(createRefTemplateMapSpecVO(refTemplateMapSpec));
+                }
+            }
+        }
+        return refTemplateMapSpecVOList;
+    }
+
+    private ArrRefTemplateMapSpecVO createRefTemplateMapSpecVO(ArrRefTemplateMapSpec refTemplateMapSpec) {
+        ArrRefTemplateMapSpecVO refTemplateMapSpecVO = new ArrRefTemplateMapSpecVO();
+        refTemplateMapSpecVO.setId(refTemplateMapSpec.getRefTemplateMapSpecId());
+        refTemplateMapSpecVO.setFormItemSpecId(refTemplateMapSpec.getFromItemSpec().getItemSpecId());
+        refTemplateMapSpecVO.setToItemSpecId(refTemplateMapSpec.getToItemSpec().getItemSpecId());
+        return refTemplateMapSpecVO;
+    }
+
+    public List<ArrRefTemplateVO> getRefTemplates(Integer fundId) {
+        ArrFund fund = getFund(fundId);
+        List<ArrRefTemplate> refTemplateList = refTemplateRepository.findByFund(fund);
+        Map<Integer, List<ArrRefTemplateMapType>> refTemplateMapTypeMap = refTemplateMapTypeRepository.findByRefTemplates(refTemplateList).stream()
+                .collect(Collectors.groupingBy(r -> r.getRefTemplate().getRefTemplateId()));
+        Map<Integer, List<ArrRefTemplateMapSpec>> refTemplateMapSpecMap = refTemplateMapSpecRepository.findByRefTemplates(refTemplateList).stream()
+                .collect(Collectors.groupingBy(r -> r.getRefTemplateMapType().getRefTemplate().getRefTemplateId()));
+        List<ArrRefTemplateVO> refTemplateVOList = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(refTemplateList)) {
+            for (ArrRefTemplate refTemplate : refTemplateList) {
+                List<ArrRefTemplateMapType> refTemplateMapTypes = refTemplateMapTypeMap.getOrDefault(refTemplate.getRefTemplateId(), new ArrayList<>());
+                List<ArrRefTemplateMapSpec> refTemplateMapSpecs = refTemplateMapSpecMap.getOrDefault(refTemplate.getRefTemplateId(), new ArrayList<>());
+                refTemplateVOList.add(createRefTemplateVO(refTemplate, refTemplateMapTypes, refTemplateMapSpecs));
+            }
+        }
+        return refTemplateVOList;
+    }
+
+    public void createRefTemplateMapType(Integer templateId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
+        StaticDataProvider sdp = staticDataService.getData();
+        ArrRefTemplate refTemplate = refTemplateRepository.findOne(templateId);
+
+        ArrRefTemplateMapType refTemplateMapType = new ArrRefTemplateMapType();
+        refTemplateMapType.setRefTemplate(refTemplate);
+        refTemplateMapType.setFormItemType(sdp.getItemType(refTemplateMapTypeFormVO.getFromItemTypeId()));
+        refTemplateMapType.setToItemType(sdp.getItemType(refTemplateMapTypeFormVO.getToItemTypeId()));
+        refTemplateMapType.setFromParentLevel(refTemplateMapTypeFormVO.getFromParentLevel());
+        refTemplateMapType.setMapAllSpec(refTemplateMapTypeFormVO.getMapAllSpec());
+        refTemplateMapTypeRepository.save(refTemplateMapType);
+
+        createRefTemplateMapSpecs(refTemplateMapType, refTemplateMapTypeFormVO.getRefTemplateMapSpecVOList(), sdp);
+    }
+
+    private void createRefTemplateMapSpecs(ArrRefTemplateMapType refTemplateMapType, List<ArrRefTemplateMapSpecVO> refTemplateMapSpecVOList, StaticDataProvider sdp) {
+        if (CollectionUtils.isNotEmpty(refTemplateMapSpecVOList)) {
+            List<ArrRefTemplateMapSpec> refTemplateMapSpecs = new ArrayList<>();
+            for (ArrRefTemplateMapSpecVO refTemplateMapSpecVO : refTemplateMapSpecVOList) {
+
+                ArrRefTemplateMapSpec refTemplateMapSpec = new ArrRefTemplateMapSpec();
+                refTemplateMapSpec.setRefTemplateMapType(refTemplateMapType);
+                refTemplateMapSpec.setFromItemSpec(sdp.getItemSpecById(refTemplateMapSpecVO.getFormItemSpecId()));
+                refTemplateMapSpec.setToItemSpec(sdp.getItemSpecById(refTemplateMapSpecVO.getToItemSpecId()));
+                refTemplateMapSpecs.add(refTemplateMapSpec);
+            }
+            refTemplateMapSpecRepository.save(refTemplateMapSpecs);
+        }
+    }
+
+    public void updateRefTemplateMapType(Integer templateId, Integer mapTypeId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
+        StaticDataProvider sdp = staticDataService.getData();
+        ArrRefTemplateMapType refTemplateMapType = refTemplateMapTypeRepository.findOne(mapTypeId);
+        refTemplateMapSpecRepository.deleteByRefTemplateMapType(refTemplateMapType);
+
+        refTemplateMapType.setFormItemType(sdp.getItemType(refTemplateMapTypeFormVO.getFromItemTypeId()));
+        refTemplateMapType.setToItemType(sdp.getItemType(refTemplateMapTypeFormVO.getToItemTypeId()));
+        refTemplateMapType.setFromParentLevel(refTemplateMapTypeFormVO.getFromParentLevel());
+        refTemplateMapType.setMapAllSpec(refTemplateMapTypeFormVO.getMapAllSpec());
+
+        createRefTemplateMapSpecs(refTemplateMapType, refTemplateMapTypeFormVO.getRefTemplateMapSpecVOList(), sdp);
+    }
+
+    public void deleteRefTemplateMapType(Integer templateId, Integer mapTypeId) {
+        ArrRefTemplateMapType refTemplateMapType = refTemplateMapTypeRepository.findOne(mapTypeId);
+        refTemplateMapSpecRepository.deleteByRefTemplateMapType(refTemplateMapType);
+        refTemplateMapTypeRepository.delete(refTemplateMapType);
     }
 
     public static class Holder<T> {

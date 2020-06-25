@@ -33,6 +33,10 @@ public class ArrDataUriRef extends ArrData {
     @JoinColumn(name="nodeId")
     private ArrNode arrNode;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrRefTemplate.class)
+    @JoinColumn(name = "refTemplateId")
+    private ArrRefTemplate refTemplate;
+
     @Transient
     private boolean deletingProcess = false;
 
@@ -98,6 +102,14 @@ public class ArrDataUriRef extends ArrData {
     public void setArrNode(ArrNode arrNode) {
         this.arrNode = arrNode;
         this.nodeId = arrNode == null ? null : arrNode.getNodeId();
+    }
+
+    public ArrRefTemplate getRefTemplate() {
+        return refTemplate;
+    }
+
+    public void setRefTemplate(ArrRefTemplate refTemplate) {
+        this.refTemplate = refTemplate;
     }
 
     @Override
