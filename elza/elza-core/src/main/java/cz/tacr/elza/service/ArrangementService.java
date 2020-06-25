@@ -72,8 +72,6 @@ import java.util.stream.Collectors;
 @Configuration
 public class ArrangementService {
 
-    private static final AtomicInteger LAST_DESC_ITEM_OBJECT_ID = new AtomicInteger(-1);
-
     private static final Pattern UUID_PATTERN = Pattern.compile("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}");
 
     @Autowired
@@ -117,10 +115,6 @@ public class ArrangementService {
     private DescItemRepository descItemRepository;
     @Autowired
     private AccessPointService accessPointService;
-
-    @Autowired
-    private DescriptionItemServiceInternal arrangementInternal;
-
     @Autowired
     private ArrangementInternalService arrangementInternalService;
 
@@ -514,28 +508,6 @@ public class ArrangementService {
     }
 
     /**
-     * Migrace typu objektu změny.
-     *
-     * @param change  migrovaná změna
-     * @param newType nový typ změny
-     * @return upravený objekt změny
-     */
-    public ArrChange migrateChangeType(final ArrChange change, final ArrChange.Type newType) {
-        Validate.notNull(change);
-        Validate.notNull(newType);
-        Validate.notNull(change.getChangeId());
-        UserDetail userDetail = userService.getLoggedUserDetail();
-        change.setChangeDate(OffsetDateTime.now());
-        if (userDetail != null && userDetail.getId() != null) {
-            UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
-            change.setUser(user);
-        }
-        change.setType(newType);
-        return changeRepository.save(change);
-    }
-
-
-    /**
      * Dodatečné nastavení primární vazby u změny.
      *
      * @param change        změna u které primární uzel nastavujeme
@@ -713,12 +685,7 @@ public class ArrangementService {
      * @return Identifikátor objektu
      */
     public Integer getNextDescItemObjectId() {
-        return LAST_DESC_ITEM_OBJECT_ID.updateAndGet(id -> {
-            if (id < 0) {
-                id = itemRepository.findMaxItemObjectId();
-            }
-            return id + 1;
-        });
+        return arrangementInternalService.getNextDescItemObjectId();
     }
 
     /**

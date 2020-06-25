@@ -58,7 +58,6 @@ public class StructObjService {
     private final StructuredTypeExtensionRepository structureExtensionRepository;
     private final StructuredObjectRepository structObjRepository;
     private final StructuredTypeRepository structureTypeRepository;
-    private final ArrangementService arrangementService;
     private final ArrangementInternalService arrangementInternalService;
     private final DataRepository dataRepository;
     private final FundStructureExtensionRepository fundStructureExtensionRepository;
@@ -75,8 +74,8 @@ public class StructObjService {
                             final StructuredTypeExtensionRepository structureExtensionRepository,
                             final StructuredObjectRepository structureDataRepository,
                             final StructuredTypeRepository structureTypeRepository,
-                            final ArrangementService arrangementService,
-                            final ArrangementInternalService arrangementInternalService, final DataRepository dataRepository,
+                            final ArrangementInternalService arrangementInternalService,
+                            final DataRepository dataRepository,
                             final FundStructureExtensionRepository fundStructureExtensionRepository,
                             final StructObjValueService structureDataService,
                             final ItemTypeRepository itemTypeRepository,
@@ -89,7 +88,6 @@ public class StructObjService {
         this.structureExtensionRepository = structureExtensionRepository;
         this.structObjRepository = structureDataRepository;
         this.structureTypeRepository = structureTypeRepository;
-        this.arrangementService = arrangementService;
         this.arrangementInternalService = arrangementInternalService;
         this.dataRepository = dataRepository;
         this.fundStructureExtensionRepository = fundStructureExtensionRepository;
@@ -188,7 +186,7 @@ public class StructObjService {
     public ArrStructuredObject createStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
                                                final RulStructuredType structureType,
                                                final ArrStructuredObject.State state) {
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA);
         return createStructObj(fund, change, structureType, state, null);
     }
 
@@ -291,7 +289,7 @@ public class StructObjService {
     }
 
     protected ArrChange getChangeForStructObject(final ArrStructuredObject structObj, final ArrChange.Type type) {
-        return arrangementService.createChange(type);
+        return arrangementInternalService.createChange(type);
     }
 
     protected Integer getPosition(final Integer positionWant, final RulItemType type, final ArrStructuredObject structObj, final ArrChange change, final int nextPosition) {
@@ -333,7 +331,7 @@ public class StructObjService {
         createStructureItem.setCreateChange(change);
         createStructureItem.setPosition(position);
         createStructureItem.setStructuredObject(structObj);
-        createStructureItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+        createStructureItem.setDescItemObjectId(arrangementInternalService.getNextDescItemObjectId());
         createStructureItem.setItemType(structureItem.getItemType());
         createStructureItem.setItemSpec(structureItem.getItemSpec());
 
@@ -804,7 +802,7 @@ public class StructObjService {
         }
 
         if (fundStructureExtensionsCreate.size() > 0 || fundStructureExtensionsDelete.size() > 0) {
-            final ArrChange change = arrangementService.createChange(ArrChange.Type.SET_FUND_STRUCTURE_EXT);
+            final ArrChange change = arrangementInternalService.createChange(ArrChange.Type.SET_FUND_STRUCTURE_EXT);
             fundStructureExtensionsCreate.forEach(fse -> fse.setCreateChange(change));
             fundStructureExtensionsDelete.forEach(fse -> fse.setDeleteChange(change));
             fundStructureExtensionRepository.save(fundStructureExtensionsCreate);
@@ -898,7 +896,7 @@ public class StructObjService {
         structuredItem.setData(savedData);
         structuredItem.setPosition(position);
         structuredItem.setStructuredObject(structObj);
-        structuredItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+        structuredItem.setDescItemObjectId(arrangementInternalService.getNextDescItemObjectId());
         structureItemRepository.save(structuredItem);
     }
 
@@ -979,7 +977,7 @@ public class StructObjService {
 
         validateStructureItems(itemTypes, structureItems);
 
-        ArrChange change = arrangementService.migrateChangeType(structureData.getCreateChange(), ArrChange.Type.ADD_STRUCTURE_DATA_BATCH);
+        ArrChange change = arrangementInternalService.migrateChangeType(structureData.getCreateChange(), ArrChange.Type.ADD_STRUCTURE_DATA_BATCH);
         List<ArrStructuredObject> structureDataList = createStructObjList(fundVersion.getFund(),
                 structureData.getStructuredType(), ArrStructuredObject.State.OK, change, count - 1);
 
@@ -1004,7 +1002,7 @@ public class StructObjService {
                     copyStructureItem.setCreateChange(change);
                     copyStructureItem.setPosition(structureItem.getPosition());
                     copyStructureItem.setStructuredObject(newStructureData);
-                    copyStructureItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+                    copyStructureItem.setDescItemObjectId(arrangementInternalService.getNextDescItemObjectId());
                     copyStructureItem.setItemType(structureItem.getItemType());
                     copyStructureItem.setItemSpec(structureItem.getItemSpec());
                     newStructureItems.add(copyStructureItem);
@@ -1114,7 +1112,7 @@ public class StructObjService {
         validateStructureItems(autoincrementItemTypes, sourceStructureItems);
 
         Map<ArrStructuredObject, List<ArrStructuredItem>> structureDataStructureItems = findStructureItems(structureDataList);
-        ArrChange change = arrangementService.createChange(ArrChange.Type.UPDATE_STRUCT_DATA_BATCH);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.UPDATE_STRUCT_DATA_BATCH);
 
         Set<Integer> allDeleteItemTypeIds = new HashSet<>(deleteItemTypeIds);
         allDeleteItemTypeIds.addAll(sourceStructureItems.stream().map(ArrStructuredItem::getItemTypeId).collect(Collectors.toList()));
@@ -1156,7 +1154,7 @@ public class StructObjService {
                 copyStructureItem.setCreateChange(change);
                 copyStructureItem.setPosition(position);
                 copyStructureItem.setStructuredObject(structureData);
-                copyStructureItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+                copyStructureItem.setDescItemObjectId(arrangementInternalService.getNextDescItemObjectId());
                 copyStructureItem.setItemType(structureItem.getItemType());
                 copyStructureItem.setItemSpec(structureItem.getItemSpec());
                 newStructureItems.add(copyStructureItem);
