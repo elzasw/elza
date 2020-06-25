@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {arrayInsert, Field, change, FieldArray, FieldArrayFieldsProps, WrappedFieldArrayProps} from 'redux-form';
+import {arrayInsert, change, Field, FieldArray, FieldArrayFieldsProps, WrappedFieldArrayProps} from 'redux-form';
 import {connect} from "react-redux";
 import "./PartEditForm.scss";
 import {Action} from "redux";
@@ -34,7 +34,6 @@ import ReduxFormFieldErrorDecorator from "../../shared/form/ReduxFormFieldErrorD
 import UnitdateField from "../field/UnitdateField";
 import SpecificationField from "../field/SpecificationField";
 import {useDebouncedEffect} from "../../../utils/hooks";
-import FF from "../../shared/form/FF";
 import FormInput from "../../shared/form/FormInput";
 import {Area} from "../../../api/Area";
 import RelationPartItemEditModalForm from "../modal/RelationPartItemEditModalForm";
@@ -179,7 +178,7 @@ const renderItem = (name: string,
             break;
         case RulDataTypeCodeEnum.COORDINATES:
             valueField = <Row>
-                <Col xs={23}>
+                <Col xs={11}>
                     <Field
                         name={`${name}.value`}
                         label={itemType.shortcut}
@@ -237,8 +236,9 @@ const renderItem = (name: string,
     let deleteAction;
     if (deleteMode) {
         deleteAction = <Button
-            className="item-delete-action absolute-right"
+            className={'item-delete-action'}
             onClick={() => onDeleteItem(index)}
+            variant={'light'}
         >
             <Icon glyph={'fa-trash'}/>
         </Button>;
@@ -255,17 +255,11 @@ const renderItem = (name: string,
     >
         {valueSpecification && <Col xs={valueSpecification && valueField ? 6 : 12} className={"spcification-wrapper"}>
             {valueSpecification}
-            {!valueField && deleteMode && <div className="deleted-mode-item-gradient">
-                <div>&nbsp;</div>
-            </div>}
             {!valueField && deleteAction}
         </Col>}
         {valueField &&
         <Col xs={valueSpecification && valueField ? 6 : 12} className={valueSpecification ? "pl-1" : ""}>
             {valueField}
-            {deleteMode && <div className="deleted-mode-item-gradient">
-                <div>&nbsp;</div>
-            </div>}
             {deleteMode && deleteAction}
         </Col>}
     </Row>
@@ -503,7 +497,7 @@ const PartEditForm = ({
             </Col>
             <Col xs={3}>
                 <Button disabled={disabled} variant={'outline-dark'} onClick={() => handleDeleteMode()}>
-                    {deleteMode ? "Ukončit režim odstraňování položek formuláře" : "Odstranit položky formuláře"}
+                    {deleteMode ? 'Ukončit režim odstraňování' : 'Odstranit položky formuláře'}
                 </Button>
             </Col>
         </Row>
