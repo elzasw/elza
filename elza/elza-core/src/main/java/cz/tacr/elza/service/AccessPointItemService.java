@@ -308,8 +308,8 @@ public class AccessPointItemService {
         if (createItem instanceof ItemBoolean) {
             ItemBoolean itemBoolean = (ItemBoolean) createItem;
 
-            itemType = sdp.getItemTypeByCode(itemBoolean.getT()).getEntity();
-            itemSpec = itemBoolean.getS() == null ? null : sdp.getItemSpecByCode(itemBoolean.getS());
+            itemType = sdp.getItemType(itemBoolean.getT());
+            itemSpec = itemBoolean.getS() == null ? null : sdp.getItemSpec(itemBoolean.getS());
             uuid = itemBoolean.getUuid();
 
             ArrDataBit dataBit = new ArrDataBit();
@@ -319,8 +319,8 @@ public class AccessPointItemService {
         } else if (createItem instanceof ItemEntityRef) {
             ItemEntityRef itemEntityRef = (ItemEntityRef) createItem;
 
-            itemType = sdp.getItemTypeByCode(itemEntityRef.getT()).getEntity();
-            itemSpec = itemEntityRef.getS() == null ? null : sdp.getItemSpecByCode(itemEntityRef.getS());
+            itemType = sdp.getItemType(itemEntityRef.getT());
+            itemSpec = itemEntityRef.getS() == null ? null : sdp.getItemSpec(itemEntityRef.getS());
             uuid = itemEntityRef.getUuid();
 
             ArrDataRecordRef dataRecordRef = new ArrDataRecordRef();
@@ -332,8 +332,8 @@ public class AccessPointItemService {
         } else if (createItem instanceof ItemEnum) {
             ItemEnum itemEnum = (ItemEnum) createItem;
 
-            itemType = sdp.getItemTypeByCode(itemEnum.getT()).getEntity();
-            itemSpec = itemEnum.getS() == null ? null : sdp.getItemSpecByCode(itemEnum.getS());
+            itemType = sdp.getItemType(itemEnum.getT());
+            itemSpec = itemEnum.getS() == null ? null : sdp.getItemSpec(itemEnum.getS());
             uuid = itemEnum.getUuid();
 
             ArrDataNull dataNull = new ArrDataNull();
@@ -342,8 +342,8 @@ public class AccessPointItemService {
         } else if (createItem instanceof ItemInteger) {
             ItemInteger itemInteger = (ItemInteger) createItem;
 
-            itemType = sdp.getItemTypeByCode(itemInteger.getT()).getEntity();
-            itemSpec = itemInteger.getS() == null ? null : sdp.getItemSpecByCode(itemInteger.getS());
+            itemType = sdp.getItemType(itemInteger.getT());
+            itemSpec = itemInteger.getS() == null ? null : sdp.getItemSpec(itemInteger.getS());
             uuid = itemInteger.getUuid();
 
             ArrDataInteger dataInteger = new ArrDataInteger();
@@ -353,8 +353,8 @@ public class AccessPointItemService {
         } else if (createItem instanceof ItemLink) {
             ItemLink itemLink = (ItemLink) createItem;
 
-            itemType = sdp.getItemTypeByCode(itemLink.getT()).getEntity();
-            itemSpec = itemLink.getS() == null ? null : sdp.getItemSpecByCode(itemLink.getS());
+            itemType = sdp.getItemType(itemLink.getT());
+            itemSpec = itemLink.getS() == null ? null : sdp.getItemSpec(itemLink.getS());
             uuid = itemLink.getUuid();
 
             ArrDataUriRef dataUriRef = new ArrDataUriRef();
@@ -367,11 +367,17 @@ public class AccessPointItemService {
         } else if (createItem instanceof ItemString) {
             ItemString itemString = (ItemString) createItem;
 
-            itemType = sdp.getItemTypeByCode(itemString.getT()).getEntity();
-            itemSpec = itemString.getS() == null ? null : sdp.getItemSpecByCode(itemString.getS());
+            itemType = sdp.getItemType(itemString.getT());
+            itemSpec = itemString.getS() == null ? null : sdp.getItemSpec(itemString.getS());
             uuid = itemString.getUuid();
 
-            switch(DataType.fromCode(itemType.getDataType().getCode())) {
+            RulDataType dataType = itemType.getDataType();
+            String code = dataType.getCode();
+            DataType dt = DataType.fromCode(code);
+            if (dt == null) {
+                throw new IllegalStateException("Neznámý datový typ " + code);
+            }
+            switch(dt) {
                 case STRING:
                     ArrDataString dataString = new ArrDataString();
                     dataString.setValue(itemString.getValue());
@@ -391,14 +397,14 @@ public class AccessPointItemService {
                     data = dataCoordinates;
                     break;
                 default:
-                    throw new IllegalStateException("Neznámý datový typ " + itemType.getDataType().getCode());
+                    throw new IllegalStateException("Neznámý datový typ " + code);
             }
 
         } else if (createItem instanceof ItemUnitDate) {
             ItemUnitDate itemUnitDate = (ItemUnitDate) createItem;
 
-            itemType = sdp.getItemTypeByCode(itemUnitDate.getT()).getEntity();
-            itemSpec = itemUnitDate.getS() == null ? null : sdp.getItemSpecByCode(itemUnitDate.getS());
+            itemType = sdp.getItemType(itemUnitDate.getT());
+            itemSpec = itemUnitDate.getS() == null ? null : sdp.getItemSpec(itemUnitDate.getS());
             uuid = itemUnitDate.getUuid();
 
             CalendarType calType = CalendarType.GREGORIAN;
