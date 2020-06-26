@@ -291,12 +291,19 @@ class RegistryPage extends AbstractReactComponent {
     handlePushApToExt = () => {
         const {extSystems,
             registryDetail: {
-                data: {id},
+                data,
             }, dispatch} = this.props;
+        const id = data.id;
         const initialValues = {};
         if (extSystems.length === 1) {
             initialValues.extSystem = extSystems[0].code;
         }
+
+        const filteredExtSystems = extSystems.filter(extSystem => {
+            const found = objectById(data.externalIds, extSystem.code, 'externalSystemCode');
+            return found === null;
+        });
+
         dispatch(
             modalDialogShow(
                 this,
@@ -306,7 +313,7 @@ class RegistryPage extends AbstractReactComponent {
                 }} onSubmitSuccess={() => {
                     dispatch(modalDialogHide());
                     dispatch(registryDetailFetchIfNeeded(id, true));
-                }} initialValues={initialValues} extSystems={extSystems} />,
+                }} initialValues={initialValues} extSystems={filteredExtSystems} />,
                 'dialog-sm',
             ),
         );
