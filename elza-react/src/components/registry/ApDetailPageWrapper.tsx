@@ -219,7 +219,8 @@ const mapDispatchToProps = (
                 PartTypeInfo.getPartEditDialogLabel(partType, true),
                 <PartEditModal
                     partType={partType}
-                    onSubmit={(formData: ApPartFormVO) => {
+                    onSubmit={data => {
+                        const formData: ApPartFormVO = data.partForm;
                         const submitItems = formData.items.map(x => {
                             // @ts-ignore
                             delete x['type'];
