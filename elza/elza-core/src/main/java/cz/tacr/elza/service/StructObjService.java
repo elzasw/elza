@@ -598,13 +598,11 @@ public class StructObjService {
      *
      * @param partTypeCode kód typu části
      * @return entita
+     * @deprecated use {@link StructObjInternalService#getPartTypeByCode(java.lang.String)}
      */
+    @Deprecated
     public RulPartType getPartTypeByCode(final String partTypeCode) {
-        RulPartType partType = partTypeRepository.findByCode(partTypeCode);
-        if (partType == null) {
-            throw new ObjectNotFoundException("Typ části neexistuje: " + partTypeCode, BaseCode.ID_NOT_EXIST).setId(partTypeCode);
-        }
-        return partType;
+        return structObjInternalService.getPartTypeByCode(partTypeCode);
     }
 
     /**

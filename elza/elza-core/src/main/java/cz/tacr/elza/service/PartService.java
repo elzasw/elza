@@ -31,7 +31,7 @@ public class PartService {
     private final AccessPointGeneratorService apGeneratorService;
     private final AccessPointItemService apItemService;
     private final AccessPointDataService apDataService;
-    private final StructObjService structObjService;
+    private final StructObjInternalService structObjInternalService;
 
     @Autowired
     public PartService(final ApPartRepository partRepository,
@@ -40,14 +40,14 @@ public class PartService {
                        final AccessPointGeneratorService apGeneratorService,
                        final AccessPointItemService apItemService,
                        final AccessPointDataService apDataService,
-                       final StructObjService structObjService) {
+                       final StructObjInternalService structObjInternalService) {
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.changeRepository = changeRepository;
         this.apGeneratorService = apGeneratorService;
         this.apItemService = apItemService;
         this.apDataService = apDataService;
-        this.structObjService = structObjService;
+        this.structObjInternalService = structObjInternalService;
     }
 
     public ApPart createPart(final RulPartType partType) {
@@ -115,7 +115,7 @@ public class PartService {
             throw new IllegalArgumentException("Část musí mít alespoň jeden prvek popisu");
         }
 
-        RulPartType partType = structObjService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
+        RulPartType partType = structObjInternalService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
 
         ApPart newPart = createPart(partType, accessPoint, apChange, parentPart);
