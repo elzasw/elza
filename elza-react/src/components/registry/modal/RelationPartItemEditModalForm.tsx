@@ -92,7 +92,7 @@ const RelationPartItemEditModalForm = ({
     return <Form onSubmit={handleSubmit}>
         <Modal.Body>
             {renderSpecification && <Field
-                name="itemSpecId"
+                name="specId"
                 label="Specifikace vztahu"
                 itemTypeId={itemTypeId}
                 itemSpecIds={useItemSpecIds}

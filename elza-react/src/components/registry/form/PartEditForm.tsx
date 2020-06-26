@@ -223,7 +223,7 @@ const renderItem = (name: string,
         const useItemSpecIds = computeAllowedItemSpecIds(itemTypeAttributeMap, itemType, item.specId);
 
         valueSpecification = <Field
-            name={`${name}.itemSpecId`}
+            name={`${name}.specId`}
             label={valueField ? "Specifikace" : itemType.shortcut}
             itemTypeId={itemType.id}
             itemSpecIds={useItemSpecIds}
@@ -583,7 +583,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
         const initialValues: any = {
             onlyMainPart: false,
             area: Area.ALLNAMES,
-            itemSpecId: item.specId,
+            specId: item.specId,
         };
 
         if ((item as unknown as ApItemAccessPointRefVO).value != null) {
@@ -593,7 +593,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
                 codeObj: item.accessPoint,
                 // @ts-ignore
                 name: item.accessPoint && item.accessPoint.name,
-                itemSpecId: item.specId
+                specId: item.specId
             }
         }
 
@@ -609,7 +609,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
                         let field = name;
                         const fieldValue: any = {
                             ...item,
-                            specId: form.itemSpecId ? parseInt(form.itemSpecId) : null,
+                            specId: form.specId ? parseInt(form.specId) : null,
                             accessPoint: form.codeObj,
                             value: form.codeObj ? form.codeObj.id : null
                         };
