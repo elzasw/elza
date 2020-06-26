@@ -61,7 +61,7 @@ public class ApItemUnitdateVO extends ApItemVO {
         ArrDataUnitdate data = new ArrDataUnitdate();
 
         // prepare calendar type
-        CalendarType calType = CalendarType.fromId(calendarTypeId);
+        CalendarType calType = calendarTypeId == null ? CalendarType.GREGORIAN : CalendarType.fromId(calendarTypeId);
         Validate.notNull(calType);
         data.setCalendarType(calType.getEntity());
 
@@ -82,7 +82,7 @@ public class ApItemUnitdateVO extends ApItemVO {
         String valueTo = data.getValueTo();
         Long normalizedTo;
         if (valueTo != null) {
-            LocalDateTime locDateTime = LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            LocalDateTime locDateTime = LocalDateTime.parse(valueTo, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             normalizedTo = CalendarConverter.toSeconds(calType, locDateTime);
         } else {
             normalizedTo = Long.MAX_VALUE;
