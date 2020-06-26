@@ -35,6 +35,7 @@ class OutputInlineForm extends AbstractReactComponent {
     static propTypes = {
         create: PropTypes.bool,
         onSave: PropTypes.func.isRequired,
+        disabled: PropTypes.bool.isRequired,
     };
 
     UNSAFE_componentWillReceiveProps(nextProps) {

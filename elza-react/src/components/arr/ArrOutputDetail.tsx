@@ -14,8 +14,8 @@ import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx';
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
-import OutputInlineForm from 'components/arr/OutputInlineForm.jsx';
-import {PropTypes} from 'prop-types';
+import OutputInlineForm from 'components/arr/OutputInlineForm';
+import PropTypes from 'prop-types';
 import './ArrOutputDetail.scss';
 import {Shortcuts} from 'react-shortcuts';
 import OutputSubNodeForm from './OutputSubNodeForm';
@@ -24,6 +24,14 @@ import FundNodesSelectForm from './FundNodesSelectForm';
 import defaultKeymap from './ArrOutputDetailKeymap.jsx';
 import FundOutputFiles from './FundOutputFiles';
 import ToggleContent from '../shared/toggle-content/ToggleContent';
+import {ApScopeVO, ArrOutputVO} from "../../typings/Outputs";
+import {AppFetchingStore} from "../../typings/globals";
+import ScopeField from "../admin/ScopeField";
+import * as scopeActions from "../../actions/scopes/scopes";
+import storeFromArea from "../../shared/utils/storeFromArea";
+import {WebApi} from "actions/index";
+import {ThunkDispatch} from "redux-thunk";
+import {ScopeList} from "./ScopeList";
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -34,12 +42,36 @@ const OutputState = {
     ERROR: 'ERROR', /// Pomocný stav websocketu
 };
 
+type ComponentProps = {
+    versionId: number;
+    fund: any;
+    calendarTypes: any;
+    descItemTypes: any;
+    templates: any;
+    rulDataTypes: any;
+    closed: boolean;
+    readMode: boolean;
+    fundOutputDetail: ArrOutputVO & AppFetchingStore & {subNodeForm: any, lockDate: any};
+    scopeList: any;
+};
+
+type ConnectedProps = {
+    outputTypes: any;
+    focus: any;
+    userDetail: any;
+};
+
+type Props = ComponentProps & ConnectedProps & {dispatch: ThunkDispatch<any, any, any>};
+
 /**
  * Formulář detailu a editace verze výstupu.
  */
 class ArrOutputDetail extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+    props: Props;
+
+    shortcutManager: any;
 
     UNSAFE_componentWillMount() {
         addShortcutManager(this, defaultKeymap);
@@ -67,7 +99,7 @@ class ArrOutputDetail extends AbstractReactComponent {
         fundOutputDetail.id !== null &&
             this.props.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
         this.props.dispatch(outputTypesFetchIfNeeded());
-
+        this.props.dispatch(scopeActions.scopesListFetchIfNeeded());
         this.requestData(this.props.versionId, this.props.fundOutputDetail);
 
         this.trySetFocus(this.props);
@@ -78,6 +110,7 @@ class ArrOutputDetail extends AbstractReactComponent {
         fundOutputDetail.id !== null &&
             this.props.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
         this.props.dispatch(outputTypesFetchIfNeeded());
+        nextProps.dispatch(scopeActions.scopesListFetchIfNeeded());
 
         this.requestData(nextProps.versionId, nextProps.fundOutputDetail);
 
@@ -92,7 +125,7 @@ class ArrOutputDetail extends AbstractReactComponent {
     requestData(versionId, fundOutputDetail) {
         this.props.dispatch(descItemTypesFetchIfNeeded());
         if (fundOutputDetail.fetched && !fundOutputDetail.isFetching) {
-            this.props.dispatch(outputFormActions.fundSubNodeFormFetchIfNeeded(versionId, null));
+            this.props.dispatch(outputFormActions.fundSubNodeFormFetchIfNeeded(versionId, null, undefined, undefined, undefined));
         }
         this.props.dispatch(refRulDataTypesFetchIfNeeded());
         this.props.dispatch(calendarTypesFetchIfNeeded());
@@ -114,7 +147,7 @@ class ArrOutputDetail extends AbstractReactComponent {
         console.log('#handleShortcuts', '[' + action + ']', this);
     };
 
-    handleSaveOutput = data => {
+    handleSaveOutput = (data: ApScopeVO) => {
         const {fund, fundOutputDetail} = this.props;
         return this.props.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data));
     };
@@ -127,6 +160,22 @@ class ArrOutputDetail extends AbstractReactComponent {
         }
     };
 
+    handleRemoveScope = (scope: ApScopeVO) => {
+        const {fundOutputDetail} = this.props;
+
+        if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
+            WebApi.deleteRestrictedScope(fundOutputDetail.id, scope.id);
+        }
+    };
+
+
+    handleAddScope = (scope: ApScopeVO) => {
+        const {fundOutputDetail} = this.props;
+
+        WebApi.addRestrictedScope(fundOutputDetail.id, scope.id);
+        // Zbytek zařídí websocket
+    };
+
     handleAddNodes = () => {
         const {fund, fundOutputDetail} = this.props;
 
@@ -135,6 +184,7 @@ class ArrOutputDetail extends AbstractReactComponent {
                 this,
                 i18n('arr.fund.nodes.title.select'),
                 <FundNodesSelectForm
+                    // @ts-ignore
                     onSubmitForm={(ids, nodes) => {
                         this.props.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids));
                     }}
@@ -178,6 +228,7 @@ class ArrOutputDetail extends AbstractReactComponent {
             rulDataTypes,
             closed,
             readMode,
+            scopeList
         } = this.props;
 
         if (fundOutputDetail.id === null) {
@@ -215,6 +266,14 @@ class ArrOutputDetail extends AbstractReactComponent {
             />
         );
 
+        let readonly = closed || readMode || !this.isEditable();
+
+        const existingScopes = (fundOutputDetail.scopes || []).map(i => i.id);
+        const connectableScopes = scopeList.rows && scopeList.rows.filter(s => existingScopes.indexOf(s.id) === -1);
+
+        // @ts-ignore
+        const outForm = <OutputInlineForm  disabled={readonly} initialValues={fundOutputDetail} onSave={this.handleSaveOutput}/>;
+
         return (
             <Shortcuts
                 name="ArrOutputDetail"
@@ -223,11 +282,7 @@ class ArrOutputDetail extends AbstractReactComponent {
                 handler={this.handleShortcuts}
             >
                 <div className="output-definition-commons">
-                    <OutputInlineForm
-                        disabled={closed || readMode || !this.isEditable()}
-                        initialValues={fundOutputDetail}
-                        onSave={this.handleSaveOutput}
-                    />
+                    {outForm}
                     {fundOutputDetail.error && (
                         <div>
                             <FormInput
@@ -248,6 +303,15 @@ class ArrOutputDetail extends AbstractReactComponent {
                         readOnly={closed || readMode || !this.isEditable()}
                     />
                 </div>
+                <div>
+                    <label className="control-label">{i18n("arr.output.title.scopes")}</label>
+                    {!readonly && <ScopeField scopes={connectableScopes} onChange={this.handleAddScope} value={null} />}
+                    <ScopeList
+                        scopes={fundOutputDetail.scopes || []}
+                        onRemove={this.handleRemoveScope}
+                        readOnly={readonly}
+                    />
+                </div>
                 <hr className="small" />
                 {this.renderOutputFiles()}
                 <h4 className={'desc-items-title'}>{i18n('developer.title.descItems')}</h4>
@@ -265,6 +329,7 @@ function mapStateToProps(state) {
         outputTypes: state.refTables.outputTypes.items,
         focus,
         userDetail,
+        scopeList: storeFromArea(state, scopeActions.AREA_SCOPE_LIST),
     };
 }
 
