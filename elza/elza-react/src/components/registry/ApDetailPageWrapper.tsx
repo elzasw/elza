@@ -163,11 +163,11 @@ const mapDispatchToProps = (
                 PartTypeInfo.getPartEditDialogLabel(partType, false),
                 <PartEditModal
                     partType={partType}
-                    onSubmit={(formData: ApPartFormVO) => {
+                    onSubmit={(data) => {
                         if (!part.id) {
                             return;
                         }
-
+                        const formData: ApPartFormVO = data.partForm;
                         const submitItems = formData.items.map(x => {
                             // @ts-ignore
                             delete x['type'];
@@ -191,7 +191,9 @@ const mapDispatchToProps = (
                     apTypeId={apTypeId}
                     scopeId={scopeId}
                     initialValues={{
-                        items: sortItems(partType, part.items, refTables),
+                        partForm: {
+                            items: sortItems(partType, part.items, refTables),
+                        }
                     }}
                     formData={{
                         partId: part.id,
