@@ -5,16 +5,18 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import cz.tacr.cam.schema.cam.CodeXml;
+import cz.tacr.cam.schema.cam.IntegerXml;
+import cz.tacr.cam.schema.cam.ItemEnumXml;
+import cz.tacr.cam.schema.cam.ItemIntegerXml;
+import cz.tacr.cam.schema.cam.ItemStringXml;
+import cz.tacr.cam.schema.cam.ItemsXml;
+import cz.tacr.cam.schema.cam.ObjectFactory;
+import cz.tacr.cam.schema.cam.PartXml;
+import cz.tacr.cam.schema.cam.StringXml;
 import org.apache.commons.lang3.Validate;
 import org.drools.core.util.StringUtils;
 
-import cz.tacr.cam._2019.ItemEnum;
-import cz.tacr.cam._2019.ItemInteger;
-import cz.tacr.cam._2019.ItemString;
-import cz.tacr.cam._2019.ItemUnitDate;
-import cz.tacr.cam._2019.Items;
-import cz.tacr.cam._2019.ObjectFactory;
-import cz.tacr.cam._2019.Part;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.SystemException;
 
@@ -28,30 +30,32 @@ public class CamUtils {
         return objectFactory;
     }
 
-    private static void addItemToPart(Part part, Object item) {
+    private static void addItemToPart(PartXml part, Object item) {
         Validate.notNull(item);
 
-        Items itm = part.getItms();
+        ItemsXml itm = part.getItms();
         Validate.notNull(itm);
-        List<Object> items = itm.getBiOrAiOrEi();
+        List<Object> items = itm.getItems();
 
         items.add(item);
     }
 
-    public static void addItemEnum(Part part, CamItemType itemType, String specType) {
+    public static void addItemEnum(PartXml part, CamItemType itemType, String specType) {
 
         Validate.isTrue(itemType.getDataType() == CamDataType.ENUM);
         // check if specification is valid
         Validate.isTrue(itemType.isValidSpec(specType), "Invalid specification: %s", specType);
 
-        ItemEnum itemEnum = objectFactory.createItemEnum();
-        itemEnum.setT(itemType.name());
-        itemEnum.setS(specType);
+        CodeXml codeSpec = specType != null ? new CodeXml(specType) : null;
+
+        ItemEnumXml itemEnum = objectFactory.createItemEnumXml();
+        itemEnum.setT(new CodeXml(itemType.name()));
+        itemEnum.setS(codeSpec);
 
         addItemToPart(part, itemEnum);
     }
 
-    public static void addItemNumber(Part part, CamItemType itemType, Long value) {
+    public static void addItemNumber(PartXml part, CamItemType itemType, Long value) {
         Validate.isTrue(itemType.getDataType() == CamDataType.NUMBER);
         // ignore empty value
         if (value == null) {
@@ -59,9 +63,9 @@ public class CamUtils {
         }
         Validate.isTrue(!itemType.isUseSpecification());
 
-        ItemInteger itemInt = new ItemInteger();
-        itemInt.setT(itemType.name());
-        itemInt.setValue(BigInteger.valueOf(value));
+        ItemIntegerXml itemInt = new ItemIntegerXml();
+        itemInt.setT(new CodeXml(itemType.name()));
+        itemInt.setValue(new IntegerXml(value));
 
         addItemToPart(part, itemInt);
     }
@@ -137,7 +141,7 @@ public class CamUtils {
         throw new IllegalStateException("Incorrect date format: " + partValue);
     }
 
-    public static void addItemString(Part part, CamItemType itemType, String value) {
+    public static void addItemString(PartXml part, CamItemType itemType, String value) {
         Validate.isTrue(!itemType.isUseSpecification());
         // Empty values are ignored
         if (StringUtils.isEmpty(value)) {
@@ -157,9 +161,9 @@ public class CamUtils {
             throw new SystemException("Unexpected type for string value: " + itemType.getDataType());
         }
 
-        ItemString itemString = objectFactory.createItemString();
-        itemString.setT(itemType.name());
-        itemString.setValue(value);
+        ItemStringXml itemString = objectFactory.createItemStringXml();
+        itemString.setT(new CodeXml(itemType.name()));
+        itemString.setValue(new StringXml(value));
 
         addItemToPart(part, itemString);
     }

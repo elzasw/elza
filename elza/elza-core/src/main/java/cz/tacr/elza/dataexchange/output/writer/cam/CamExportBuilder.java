@@ -18,18 +18,22 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import cz.tacr.cam.schema.cam.CodeXml;
+import cz.tacr.cam.schema.cam.DateTimeXml;
+import cz.tacr.cam.schema.cam.EntitiesXml;
+import cz.tacr.cam.schema.cam.EntityIdXml;
+import cz.tacr.cam.schema.cam.EntityRecordStateXml;
+import cz.tacr.cam.schema.cam.EntityXml;
+import cz.tacr.cam.schema.cam.LongStringXml;
+import cz.tacr.cam.schema.cam.ObjectFactory;
+import cz.tacr.cam.schema.cam.RevInfoXml;
+import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.xml.sax.SAXException;
 
-import cz.tacr.cam._2019.Entities;
-import cz.tacr.cam._2019.Entity;
-import cz.tacr.cam._2019.EntityRecordState;
-import cz.tacr.cam._2019.ObjectFactory;
-import cz.tacr.cam._2019.Part;
-import cz.tacr.cam._2019.PartType;
-import cz.tacr.cam._2019.RevInfo;
+
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.dataexchange.output.aps.ApInfo;
 import cz.tacr.elza.dataexchange.output.parties.PartyInfo;
@@ -58,9 +62,9 @@ public class CamExportBuilder implements ExportBuilder {
         }
     }
 
-    private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(Entities.class);
+    private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(EntitiesXml.class);
 
-    private Entities entities;
+    private EntitiesXml entities;
 
     private ApStream apStream;
     //private PartiesStream partiesStream;
@@ -113,7 +117,7 @@ public class CamExportBuilder implements ExportBuilder {
     };*/
 
     private final void initBuilder() {
-        this.entities = objectcFactory.createEntities();
+        this.entities = objectcFactory.createEntitiesXml();
         Validate.isTrue(apStream == null);
         this.apStream = null;
        /* Validate.isTrue(partiesStream == null);
@@ -364,12 +368,12 @@ public class CamExportBuilder implements ExportBuilder {
     }
 
     public void addAccessPoint(ApInfo apInfo) {
-        Entity ent = createEntity(apInfo.getApState());
+        EntityXml ent = createEntity(apInfo.getApState());
        /* Collection<ApName> names = apInfo.getNames();
         for (ApName name : names) {
             addAPName(ent, name);
         }*/
-        this.entities.getEnt().add(ent);
+        this.entities.getList().add(ent);
     }
 
    /* private void addAPName(Entity ent, ApName apName) {
@@ -384,46 +388,46 @@ public class CamExportBuilder implements ExportBuilder {
         ent.getPrts().getP().add(part);
     }*/
 
-    private Entity createEntity(ApState apState) {
-        Entity ent = new Entity();
-        ent.setEid(apState.getAccessPointId());
-        ent.setEuid(apState.getAccessPoint().getUuid());
+    private EntityXml createEntity(ApState apState) {
+        EntityXml ent = new EntityXml();
+        ent.setEid(new EntityIdXml(apState.getAccessPointId()));
+        ent.setEuid(new UuidXml(apState.getAccessPoint().getUuid()));
         // entity class
-        ent.setEnt(apState.getApType().getCode());
+        ent.setEnt(new CodeXml(apState.getApType().getCode()));
 
         // set state
-        EntityRecordState ens;
+        EntityRecordStateXml ens;
         switch (apState.getStateApproval()) {
         case NEW:
         case TO_AMEND:
         case TO_APPROVE:
-            ens = EntityRecordState.ERS_NEW;
+            ens = EntityRecordStateXml.ERS_NEW;
         case APPROVED:
-            ens = EntityRecordState.ERS_APPROVED;
+            ens = EntityRecordStateXml.ERS_APPROVED;
             break;
         default:
             throw new SystemException("Missing mapping of internal state to CAM state");
         }
         ent.setEns(ens);
 
-        RevInfo revInfo = createRevInfo(apState);
+        RevInfoXml revInfo = createRevInfo(apState);
         ent.setRevi(revInfo);
 
         // Prepare empty parts
-        ent.setPrts(objectcFactory.createParts());
+        ent.setPrts(objectcFactory.createPartsXml());
 
         return ent;
     }
 
-    private RevInfo createRevInfo(ApState apState) {
-        RevInfo revInfo = objectcFactory.createRevInfo();
+    private RevInfoXml createRevInfo(ApState apState) {
+        RevInfoXml revInfo = objectcFactory.createRevInfoXml();
 
         // Set revision id to UUID of accesspoint
         // TODO: User proper UUID of revision (when will be available)
-        revInfo.setRid(UUID.randomUUID().toString());
+        revInfo.setRid(new UuidXml(UUID.randomUUID().toString()));
 
         ApChange createChange = apState.getCreateChange();
-        revInfo.setModt(XmlUtils.convertDate(createChange.getChangeDate().toLocalDateTime()));
+        revInfo.setModt(new DateTimeXml(createChange.getChangeDate().toLocalDateTime()));
 
         // User info
         String usr = "system";
@@ -432,7 +436,7 @@ public class CamExportBuilder implements ExportBuilder {
             // TODO: Improve user info
             usr = user.getUsername();
         }
-        revInfo.setUsr(usr);
+        revInfo.setUsr(new LongStringXml(usr));
         return revInfo;
     }
 
@@ -465,7 +469,7 @@ public class CamExportBuilder implements ExportBuilder {
 
     @Override
     public void build(OutputStream os) throws XMLStreamException {
-        JAXBElement<Entities> jaxbEnts = objectcFactory.createEnts(this.entities);
+        JAXBElement<EntitiesXml> jaxbEnts = objectcFactory.createEnts(this.entities);
 
         try {
             Marshaller marshaller = jaxbContext.createMarshaller();

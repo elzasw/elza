@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--suppress XmlUnusedNamespaceDeclaration -->
+<jaxb:bindings
+        xmlns:annox="http://annox.dev.java.net"
+        xmlns:inheritance="http://jaxb2-commons.dev.java.net/basic/inheritance"
+        xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+        xmlns:s1="http://cam.tacr.cz/2019"
+        xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        jaxb:extensionBindingPrefixes="xjc annox inheritance"
+        version="2.1">
+
+    <jaxb:globalBindings
+            choiceContentProperty="true"
+            fixedAttributeAsConstantProperty="true"
+            generateElementClass="false"
+            generateElementProperty="false"
+            generateIsSetMethod="false"
+            mapSimpleTypeDef="true"
+            typesafeEnumMemberName="generateName">
+        <xjc:javaType name="java.time.LocalDate" xmlType="xsd:date"
+                      adapter="cz.tacr.elza.schema.support.LocalDateAdapter"/>
+        <xjc:javaType name="java.time.LocalDateTime" xmlType="xsd:dateTime"
+                      adapter="cz.tacr.elza.schema.support.LocalDateTimeAdapter"/>
+        <xjc:javaType name="java.time.LocalTime" xmlType="xsd:time"
+                      adapter="cz.tacr.elza.schema.support.LocalTimeAdapter"/>
+        <!-- integer se defaultne mapuje na BigInteger, coz je uplne k nicemu -->
+        <xjc:javaType name="java.lang.Long" xmlType="xsd:integer"
+                      adapter="cz.tacr.elza.schema.support.LongAdapter"/>
+        <!--<xjc:simple/>-->
+    </jaxb:globalBindings>
+
+    <jaxb:bindings schemaLocation="cam-2019.xsd" node="//xs:schema">
+
+        <jaxb:schemaBindings>
+            <jaxb:package name="cz.tacr.cam.schema.cam"/>
+            <jaxb:nameXmlTransform>
+                <jaxb:elementName suffix="Element"/>
+                <!-- uptavit nazvy typu, aby se negenerovaly tridy String, Boolean, Integer -->
+                <jaxb:typeName suffix="Xml"/>
+            </jaxb:nameXmlTransform>
+        </jaxb:schemaBindings>
+
+        <!-- upravit generovane (kompozitni) nazvy pro choice a group -->
+        <jaxb:bindings node="//xs:complexType[@name='ItemEntityRef']//xs:choice">
+            <jaxb:property name="ref"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='SetRecordState']//xs:choice">
+            <jaxb:property name="ref"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='Items']//xs:choice">
+            <jaxb:property name="items"/>
+        </jaxb:bindings>
+
+        <jaxb:bindings node="//xs:complexType[@name='BatchUpdate']//xs:group[@ref='s1:Change']">
+            <jaxb:property name="changes"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='EntityRecordRevision']//xs:group[@ref='s1:RevChanges']">
+            <jaxb:property name="changes"/>
+        </jaxb:bindings>
+
+        <!-- UUID -->
+        <jaxb:bindings node="//xs:simpleType[@name='UUID']">
+            <jaxb:class name="UuidXml"/>
+        </jaxb:bindings>
+
+        <!--
+            * pridat interface kvuli generovani OpenAPI
+            * pridat anotaci XmlRootElement, aby byla mozna serializace do XML v REST controllerech
+            * nektere metody vraci BatchUpdateSaved nebo BatchUpdateError - tyto typy musi mit spolecny interface
+        -->
+        <jaxb:bindings node="//xs:complexType[@name='BatchUpdate']">
+            <annox:annotate target="class">@javax.xml.bind.annotation.XmlRootElement(namespace = "http://cam.tacr.cz/2019", name = "bu")</annox:annotate>
+            <annox:annotate target="class">@io.swagger.v3.oas.annotations.media.Schema(implementation = cz.tacr.cam.schema.cam.BatchUpdateXml.class, type = "string", format = "binary")</annox:annotate>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='BatchUpdateError']">
+            <annox:annotate target="class">@javax.xml.bind.annotation.XmlRootElement(namespace = "http://cam.tacr.cz/2019", name = "bue")</annox:annotate>
+            <annox:annotate target="class">@io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary")</annox:annotate>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='BatchUpdateSaved']">
+            <annox:annotate target="class">@javax.xml.bind.annotation.XmlRootElement(namespace = "http://cam.tacr.cz/2019", name = "bus")</annox:annotate>
+            <annox:annotate target="class">@io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary")</annox:annotate>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='Entities']">
+            <annox:annotate target="class">@javax.xml.bind.annotation.XmlRootElement(namespace = "http://cam.tacr.cz/2019", name = "ents")</annox:annotate>
+            <annox:annotate target="class">@io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary")</annox:annotate>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='Entity']">
+            <annox:annotate target="class">@javax.xml.bind.annotation.XmlRootElement(namespace = "http://cam.tacr.cz/2019", name = "ent")</annox:annotate>
+            <annox:annotate target="class">@io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary")</annox:annotate>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='EntityRecordRevisions']">
+            <annox:annotate target="class">@javax.xml.bind.annotation.XmlRootElement(namespace = "http://cam.tacr.cz/2019", name = "errs")</annox:annotate>
+            <annox:annotate target="class">@io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary")</annox:annotate>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='QueryResult']">
+            <annox:annotate target="class">@javax.xml.bind.annotation.XmlRootElement(namespace = "http://cam.tacr.cz/2019", name = "qr")</annox:annotate>
+            <annox:annotate target="class">@io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary")</annox:annotate>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='Updates']">
+            <annox:annotate target="class">@javax.xml.bind.annotation.XmlRootElement(namespace = "http://cam.tacr.cz/2019", name = "ups")</annox:annotate>
+            <annox:annotate target="class">@io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary")</annox:annotate>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='UpdatesFrom']">
+            <annox:annotate target="class">@javax.xml.bind.annotation.XmlRootElement(namespace = "http://cam.tacr.cz/2019", name = "upsf")</annox:annotate>
+            <annox:annotate target="class">@io.swagger.v3.oas.annotations.media.Schema(type = "string", format = "binary")</annox:annotate>
+        </jaxb:bindings>
+
+        <!--
+            dalsi drobne upravy nazvu vygenerovanych seznamu:
+                * v jednoduchych wrapper tridach pouzijeme 'list'
+                * jinde nejaky vhodny nazev
+        -->
+        <jaxb:bindings node="//xs:complexType[@name='BatchUpdateError']//xs:element[@name='em']">
+            <jaxb:property name="messages"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='BatchUpdateSaved']//xs:element[@name='rev']">
+            <jaxb:property name="revisions"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='Entities']//xs:element[@name='ent']">
+            <jaxb:property name="list"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='EntityRecordRevisions']//xs:element[@name='rev']">
+            <jaxb:property name="list"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='EntityTypes']//xs:element[@name='entityType']">
+            <jaxb:property name="list"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='FoundEntites']//xs:element[@name='fei']">
+            <jaxb:property name="list"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='ItemRefs']//xs:element[@name='ir']">
+            <jaxb:property name="list"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='Parts']//xs:element[@name='p']">
+            <jaxb:property name="list"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='ResultLookup']//xs:element[@name='hp']">
+            <jaxb:property name="hightlights"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='Updates']//xs:element[@name='ri']">
+            <jaxb:property name="revisions"/>
+        </jaxb:bindings>
+
+    </jaxb:bindings>
+</jaxb:bindings>

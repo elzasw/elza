@@ -1,10 +1,10 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.cam._2019.BatchUpdate;
-import cz.tacr.cam._2019.BatchUpdateResult;
-import cz.tacr.cam._2019.Entity;
-import cz.tacr.cam._2019.QueryResult;
 import cz.tacr.cam.client.ApiException;
+import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
+import cz.tacr.cam.schema.cam.BatchUpdateXml;
+import cz.tacr.cam.schema.cam.EntityXml;
+import cz.tacr.cam.schema.cam.QueryResultXml;
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.controller.factory.ApFactory;
@@ -1003,7 +1003,7 @@ public class ApController {
             throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
         }
         int fromPage = from / max;
-        QueryResult result;
+        QueryResultXml result;
         try {
             result = camConnector.search(fromPage + 1, max, searchFilterFactory.createQueryParamsDef(filter), externalSystemCode);
         } catch (ApiException e) {
@@ -1066,7 +1066,7 @@ public class ApController {
         ApScope scope = accessPointService.getScope(scopeId);
         accessPointService.checkUniqueBinding(scope, archiveEntityId, externalSystemCode);
 
-        Entity entity;
+        EntityXml entity;
         try {
             entity = camConnector.getEntityById(archiveEntityId, externalSystemCode);
         } catch (ApiException e) {
@@ -1095,7 +1095,7 @@ public class ApController {
         accessPointService.checkUniqueBinding(scope, archiveEntityId, externalSystemCode);
         accessPointService.checkUniqueExtSystem(accessPoint, externalSystemCode);
 
-        Entity entity;
+        EntityXml entity;
         try {
             entity = camConnector.getEntityById(archiveEntityId, externalSystemCode);
         } catch (ApiException e) {
@@ -1114,9 +1114,9 @@ public class ApController {
     @RequestMapping(value = "/external/save/{accessPointId}", method = RequestMethod.POST)
     public void saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                 @RequestParam final String externalSystemCode) {
-        BatchUpdate batchUpdate = accessPointService.createBatchUpdate(accessPointId, externalSystemCode);
+        BatchUpdateXml batchUpdate = accessPointService.createBatchUpdate(accessPointId, externalSystemCode);
         try {
-            BatchUpdateResult batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
+            BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
             accessPointService.updateBinding(batchUpdateResult, accessPointId, externalSystemCode);
         } catch (ApiException e) {
             throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
@@ -1139,7 +1139,7 @@ public class ApController {
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
 
-        Entity entity;
+        EntityXml entity;
         try {
             entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()), externalSystemCode);
         } catch (ApiException e) {
@@ -1188,7 +1188,7 @@ public class ApController {
         ApState state = accessPointService.getState(accessPoint);
 
         List<Integer> archiveEntities = accessPointService.findRelArchiveEntities(accessPoint);
-        List<Entity> entities = new ArrayList<>();
+        List<EntityXml> entities = new ArrayList<>();
 
         try {
             if (CollectionUtils.isNotEmpty(archiveEntities)) {
