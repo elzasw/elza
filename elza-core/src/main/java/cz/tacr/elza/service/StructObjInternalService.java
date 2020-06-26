@@ -4,12 +4,15 @@ import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.PartTypeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -35,6 +38,7 @@ public class StructObjInternalService {
     private final StructObjValueService structObjService;
     private final ChangeRepository changeRepository;
     private final EventNotificationService notificationService;
+    private final PartTypeRepository partTypeRepository;
 
     @Autowired
     public StructObjInternalService(final StructuredItemRepository structureItemRepository,
@@ -43,7 +47,8 @@ public class StructObjInternalService {
                                     final DataRepository dataRepository,
                                     final StructObjValueService structureDataService,
                                     final ChangeRepository changeRepository,
-                                    final EventNotificationService notificationService) {
+                                    final EventNotificationService notificationService,
+                                    final PartTypeRepository partTypeRepository) {
         this.structureItemRepository = structureItemRepository;
         this.structObjRepository = structureDataRepository;
         this.arrangementInternalService = arrangementInternalService;
@@ -51,6 +56,7 @@ public class StructObjInternalService {
         this.structObjService = structureDataService;
         this.changeRepository = changeRepository;
         this.notificationService = notificationService;
+        this.partTypeRepository = partTypeRepository;
     }
 
     /**
@@ -112,4 +118,11 @@ public class StructObjInternalService {
         }
     }
 
+    public RulPartType getPartTypeByCode(final String partTypeCode) {
+        RulPartType partType = partTypeRepository.findByCode(partTypeCode);
+        if (partType == null) {
+            throw new ObjectNotFoundException("Typ části neexistuje: " + partTypeCode, BaseCode.ID_NOT_EXIST).setId(partTypeCode);
+        }
+        return partType;
+    }
 }
