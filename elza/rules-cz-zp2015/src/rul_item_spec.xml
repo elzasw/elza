@@ -540,11 +540,6 @@
         <description>přírůstkové číslo</description>
         <shortcut>č. př.</shortcut>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_OLDID" item-type="ZP2015_OTHER_ID">
-        <name>neplatné inventární číslo (ze zrušené pomůcky)</name>
-        <description>neplatné inventární číslo (ze zrušené pomůcky)</description>
-        <shortcut>nepl. inv. č.</shortcut>
-    </item-spec>
     <item-spec code="ZP2015_OTHERID_OLDSIG" item-type="ZP2015_OTHER_ID">
         <name>signatura přidělená při předchozím zpracování</name>
         <description>signatura přidělená při předchozím zpracování</description>
@@ -554,6 +549,16 @@
         <name>spisový znak</name>
         <description>spisový znak</description>
         <shortcut>sp. znak</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_OTHERID_OLDID" item-type="ZP2015_OTHER_ID">
+        <name>neplatné inventární číslo</name>
+        <description>neplatné inventární číslo</description>
+        <shortcut>nepl. inv. č.</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_OTHERID_INVALID_UNITID" item-type="ZP2015_OTHER_ID">
+        <name>neplatné ukládací číslo</name>
+        <description>neplatné ukládací číslo</description>
+        <shortcut>neplatné ukládací číslo</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_INVALID_REFNO" item-type="ZP2015_OTHER_ID">
         <name>neplatné referenční označení</name>
@@ -599,7 +604,7 @@
         <name>matriční číslo</name>
         <description>matriční číslo</description>
         <shortcut>matriční číslo</shortcut>
-    </item-spec>    
+    </item-spec>
     <item-spec code="ZP2015_LANGUAGE_1" item-type="ZP2015_LANGUAGE">
         <name>blíže neurčený indoevropský jazyk</name>
         <description>indoevropské - blíže neurčené</description>
