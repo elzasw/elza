@@ -18,6 +18,9 @@ import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
 import {PartType} from "../../../api/generated/model";
 import {PartValidationErrorsVO} from "../../../api/PartValidationErrorsVO";
 import ValidationResultIcon from 'components/ValidationResultIcon';
+import {Bindings} from "../../../types";
+import i18n from "../../i18n";
+import {SyncState} from "../../../api/SyncState";
 //import {sortItems} from "../../itemutils";
 //import ValidationResultIcon from "../ValidationResultIcon";
 
@@ -34,9 +37,10 @@ type Props = {
     singlePart: boolean;
     globalEntity: boolean;
     partValidationError?: PartValidationErrorsVO;
+    bindings: Bindings;
 } & ReturnType<typeof mapStateToProps>;
 
-const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePart, onDelete, onEdit, globalCollapsed, preferred, onAddRelated, globalEntity, partValidationError, descItemTypesMap, partTypesMap}) => {
+const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePart, onDelete, onEdit, globalCollapsed, preferred, onAddRelated, globalEntity, partValidationError, descItemTypesMap, partTypesMap, bindings}) => {
     const [collapsed, setCollapsed] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const partType = partTypesMap[part.typeId];
@@ -91,9 +95,9 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
 
             let rows: any = [];
             if (sameItems.length > 1) {
-                rows.push(<DetailMultipleItem key={index} items={sameItems} globalEntity={globalEntity}/>);
+                rows.push(<DetailMultipleItem key={index} items={sameItems} globalEntity={globalEntity} bindings={bindings}/>);
             } else {
-                rows.push(<DetailItem key={index} item={sameItems[0]} globalEntity={globalEntity}/>);
+                rows.push(<DetailItem key={index} item={sameItems[0]} globalEntity={globalEntity} bindings={bindings}/>);
             }
 
             result.push(<Col key={index} xs={width <= 0 ? 12 : width}>
@@ -123,6 +127,8 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
         }
     };
 
+    const partBinding = bindings.partsMap[part.id];
+
     return <div className="detail-part ml-4 mb-2 pt-3">
         <Row className={classNameHeader + " align-items-center"}>
             <Col>
@@ -138,6 +144,9 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
                     {preferred && <span
                         className={classNames("detail-part-label-alt mr-2", collapsed ? false : 'opened')}> (preferované)</span>}
                 </div>
+
+                {partBinding != null && <Icon glyph="fa-refresh" title={i18n('ap.binding.syncState.' + (partBinding ? 'SYNC_OK' : 'NOT_SYNCED'))} className={partBinding ? 'mr-2 ' : 'mr-2 disabled'} />}
+
                 {showPreferredSwitch && !preferred && <Icon
                     className={'mr-2 cursor-pointer'}
                     glyph={'fa-star'}

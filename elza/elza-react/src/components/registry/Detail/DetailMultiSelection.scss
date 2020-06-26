@@ -6,4 +6,10 @@
     .cursor-pointer {
         cursor: pointer;
     }
+
+    .icon {
+        &.disabled {
+            color: #A7A7A7;
+        }
+    }
 }

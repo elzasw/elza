@@ -35,6 +35,39 @@ type OwnProps = {
 
 type Props = OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps>;
 
+function createBindings(accessPoint: ApAccessPointVO | undefined) {
+    let bindings: any = {
+        itemsMap: {},
+        partsMap: {},
+    }
+
+    bindings.addItem = (id, sync) => {
+        const state = bindings.itemsMap[id] || true;
+        bindings.itemsMap[id] = state && sync;
+    };
+
+    bindings.addPart = (id, sync) => {
+        const state = bindings.partsMap[id] || true;
+        bindings.partsMap[id] = state && sync;
+    }
+
+    if (accessPoint) {
+        const externalIds = accessPoint.externalIds;
+        if (externalIds) {
+            externalIds.forEach(externalId => {
+                externalId.bindingItemList.forEach(item => {
+                    if (item.itemId) {
+                        bindings.addItem(item.itemId, item.sync);
+                    } else if (item.partId) {
+                        bindings.addPart(item.partId, item.sync);
+                    }
+                });
+            });
+        }
+    }
+    return bindings;
+}
+
 /**
  * Detail globální archivní entity.
  */
@@ -118,7 +151,11 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         return <div className={'detail-page-wrapper'}/>;
     }
 
-    const allParts = props.detail.data ? props.detail.data.parts as ApPartVO[] : [];
+    const accessPoint = props.detail.data;
+
+    const bindings = createBindings(accessPoint);
+
+    const allParts = accessPoint ? accessPoint.parts as ApPartVO[] : [];
     const typedParts = groupBy(allParts, 'typeId');
 
     const validationResult = props.apValidation.data;
@@ -149,6 +186,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
                         onSetPreferred={handleSetPreferred}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
+                        bindings={bindings}
                         onAdd={() => handleAdd(partType.code as any as PartType)}
                         onDeleteParts={handleDeletePart}
                         partValidationErrors={validationResult && validationResult.partErrors}

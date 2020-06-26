@@ -17,15 +17,21 @@ import {ApItemUnitdateVO} from "../../../api/ApItemUnitdateVO";
 import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
 import {getMapFromList} from "../../../shared/utils";
 import {RulDescItemSpecExtVO} from "../../../api/RulDescItemSpecExtVO";
+import {Bindings} from "../../../types";
+import Icon from "../../shared/icon/Icon";
+import i18n from "../../i18n";
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
     globalEntity: boolean;
+    bindings?: Bindings;
 }
 
-const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descItemTypes}) => {
+const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descItemTypes, bindings}) => {
     const itemType = descItemTypes.itemsMap[item.typeId];
     const dataType: RulDataTypeVO = rulDataTypes.itemsMap[itemType.dataTypeId];
+
+    const itemBinding = bindings && bindings.itemsMap[item.id!];
 
     // pro ty, co chtějí jinak renderovat skupinu...,  pokud je true, task se nerenderuje specifikace, ale pouze valueField a v tom musí být již vše...
     let customFieldRender = false;
@@ -114,6 +120,7 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
     return (
         <div className="detail-item-content-value">
             {valueSpecification}{valueSpecification && valueField && ": "}{valueField}
+            {itemBinding != null && <Icon glyph="fa-refresh" title={i18n('ap.binding.syncState.' + (itemBinding ? 'SYNC_OK' : 'NOT_SYNCED'))} className={itemBinding ? 'ml-2 ' : 'ml-2 disabled'} />}
         </div>
     );
 };
