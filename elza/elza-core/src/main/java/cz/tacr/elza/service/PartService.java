@@ -11,6 +11,7 @@ import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.PartTypeRepository;
 import cz.tacr.elza.service.vo.DataRef;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -26,28 +27,28 @@ import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 public class PartService {
 
     private final ApPartRepository partRepository;
+    private final PartTypeRepository partTypeRepository;
     private final ApItemRepository itemRepository;
     private final ApChangeRepository changeRepository;
     private final AccessPointGeneratorService apGeneratorService;
     private final AccessPointItemService apItemService;
     private final AccessPointDataService apDataService;
-    private final StructObjInternalService structObjInternalService;
 
     @Autowired
     public PartService(final ApPartRepository partRepository,
+                       final PartTypeRepository partTypeRepository,
                        final ApItemRepository itemRepository,
                        final ApChangeRepository changeRepository,
                        final AccessPointGeneratorService apGeneratorService,
                        final AccessPointItemService apItemService,
-                       final AccessPointDataService apDataService,
-                       final StructObjInternalService structObjInternalService) {
+                       final AccessPointDataService apDataService) {
         this.partRepository = partRepository;
+        this.partTypeRepository = partTypeRepository;
         this.itemRepository = itemRepository;
         this.changeRepository = changeRepository;
         this.apGeneratorService = apGeneratorService;
         this.apItemService = apItemService;
         this.apDataService = apDataService;
-        this.structObjInternalService = structObjInternalService;
     }
 
     public ApPart createPart(final RulPartType partType) {
@@ -115,12 +116,20 @@ public class PartService {
             throw new IllegalArgumentException("Část musí mít alespoň jeden prvek popisu");
         }
 
-        RulPartType partType = structObjInternalService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
+        RulPartType partType = getPartTypeByCode(apPartFormVO.getPartTypeCode());
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
 
         ApPart newPart = createPart(partType, accessPoint, apChange, parentPart);
         createPartItems(apChange, newPart, apPartFormVO);
         return newPart;
+    }
+
+    private RulPartType getPartTypeByCode(final String partTypeCode) {
+        RulPartType partType = partTypeRepository.findByCode(partTypeCode);
+        if (partType == null) {
+            throw new ObjectNotFoundException("Typ části neexistuje: " + partTypeCode, BaseCode.ID_NOT_EXIST).setId(partTypeCode);
+        }
+        return partType;
     }
 
     public ApPart getPart(final Integer partId) {
