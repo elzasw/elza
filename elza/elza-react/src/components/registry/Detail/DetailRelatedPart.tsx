@@ -15,6 +15,8 @@ import {MOCK_CODE_DATA} from './mock';
 import {ApPartVO} from "../../../api/ApPartVO";
 import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
 import {ApItemVO} from "../../../api/ApItemVO";
+import {PartValidationErrorsVO} from "../../../api/PartValidationErrorsVO";
+import ValidationResultIcon from "../../ValidationResultIcon";
 //import {sortItems} from "../../itemutils";
 //import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 //import ValidationResultIcon from "../ValidationResultIcon";
@@ -28,10 +30,10 @@ interface Props {
   editMode?: boolean;
   codelist: any;
   globalEntity: boolean;
-  validationResult?: ApValidationErrorsVO;
+  partValidationError?: PartValidationErrorsVO;
 }
 
-const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDelete, onEdit, globalCollapsed, codelist, validationResult}) => {
+const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDelete, onEdit, globalCollapsed, codelist, partValidationError}) => {
   const [collapsed, setCollapsed] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const partType = PartTypeInfo.getPartType(part["@class"]);
@@ -98,16 +100,8 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
   const sortedItems =  part.items // sortItems(partType, part.items, codelist);
 
   const showValidationError = () => {
-    if (editMode && validationResult && validationResult.partErrors && validationResult.partErrors.length > 0) {
-      const index = validationResult.partErrors.findIndex(value => value.id === part.id);
-      if (index >= 0) {
-        const errors = validationResult.partErrors[index].errors;
-        if (errors && errors.length > 0) {
-          return <Col>
-            ValidationResultIcon {validationResult.partErrors[index].errors}
-          </Col>;
-        }
-      }
+    if (editMode && partValidationError && partValidationError.errors && partValidationError.errors.length > 0) {
+      return <ValidationResultIcon message={partValidationError.errors} />
     }
   };
 

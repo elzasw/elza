@@ -16,6 +16,7 @@ import {SyncState} from "../../../api/SyncState";
 import {ApBindingVO} from "../../../api/ApBindingVO";
 import {showAsyncWaiting} from "../../../actions/global/modalDialog";
 import {WebApi} from "../../../actions/WebApi";
+import ValidationResultIcon from "../../ValidationResultIcon";
 
 interface Props {
     item: ApAccessPointVO;
@@ -23,7 +24,7 @@ interface Props {
     onInvalidateDetail?: () => void;
     collapsed: boolean;
     id?: number;
-    validationResult?: ApValidationErrorsVO;
+    validationErrors?: string[];
     apTypesMap: object;
     scopes: any;
     externalSystems: any[];
@@ -37,14 +38,12 @@ const getProcessingMessage = (key: string) => {
     return <h4 className="processing">{i18n(key)}</h4>
 }
 
-const DetailHeader: FC<Props> = ({dispatch, onInvalidateDetail, item, id, collapsed, onToggleCollapsed, validationResult, apTypesMap, scopes, externalSystems}) => {
+const DetailHeader: FC<Props> = ({dispatch, onInvalidateDetail, item, id, collapsed, onToggleCollapsed, validationErrors, apTypesMap, scopes, externalSystems}) => {
     const apType = apTypesMap[item.typeId];
 
     const showValidationError = () => {
-        if (validationResult && validationResult.errors && validationResult.errors.length > 0) {
-            return <Col>
-                ValidationResultIcon message={validationResult.errors}
-            </Col>;
+        if (validationErrors && validationErrors.length > 0) {
+            return <ValidationResultIcon message={validationErrors} />;
         }
     };
 

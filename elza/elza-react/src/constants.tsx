@@ -96,7 +96,7 @@ export const PART_EDIT_FORM_ATTRIBUTES = 'partEditFormAttributes';
 
 export const REGISTRY_DETAIL_HISTORY = 'registryDetailHistory';
 
-export const DETAIL_VALIDATION_RESULT = 'detailValidationResult';
+export const AP_VALIDATION = 'apValidation';
 
 export const ADMIN_USER = 'admin';
 

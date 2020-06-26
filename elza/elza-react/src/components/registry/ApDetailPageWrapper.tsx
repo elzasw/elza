@@ -1,4 +1,4 @@
-import React, {ReactElement, useState} from 'react';
+import React, {ReactElement, useEffect, useState} from 'react';
 import {ThunkDispatch} from 'redux-thunk';
 import {Action} from 'redux';
 import {connect} from 'react-redux';
@@ -10,7 +10,7 @@ import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
 import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
 import {WebApi} from "../../actions/WebApi";
 import {DetailActions} from "../../shared/detail";
-import {DETAIL_VALIDATION_RESULT} from "../../constants";
+import {AP_VALIDATION} from "../../constants";
 import storeFromArea from "../../shared/utils/storeFromArea";
 import * as registry from '../../actions/registry/registry';
 import {ApAccessPointVO} from "../../api/ApAccessPointVO";
@@ -29,7 +29,7 @@ type OwnProps = {
     sider: ReactElement;
     editMode: boolean;
     globalCollapsed: boolean;
-    validationResult?: ApValidationErrorsVO;
+    apValidation: DetailStoreState<ApValidationErrorsVO>;
     globalEntity: boolean;
 }
 
@@ -44,10 +44,14 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
 
+    useEffect(() => {
+        props.refreshValidation(props.id);
+    }, [props.id])
+
     const handleSetPreferred = (part: ApPartVO) => {
         if (part.id) {
             props.setPreferred(props.id, part.id);
-            props.invalidateValidationErrors(props.id);
+            props.refreshValidation(props.id);
         }
     };
 
@@ -55,7 +59,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         if (part.id) {
             props.deletePart(props.id, part.id);
         }
-        props.invalidateValidationErrors(props.id);
+        props.refreshValidation(props.id);
     };
 
     const handleEdit = (part: ApPartVO) => {
@@ -63,26 +67,26 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         const detail = props.detail.data!;
 
         part.id && props.showPartEditModal(part, partType, props.id, apTypeId, detail.scopeId, props.refTables, part.partParentId);
-        props.invalidateValidationErrors(props.id);
+        props.refreshValidation(props.id);
     };
 
     const handleAdd = (partType: PartType) => {
         const detail = props.detail.data!;
 
         props.showPartCreateModal(partType, props.id, apTypeId, detail.scopeId);
-        props.invalidateValidationErrors(props.id);
+        props.refreshValidation(props.id);
     };
 
     const handleAddRelated = (part: ApPartVO) => {
         const detail = props.detail.data!;
 
         part.id && props.showPartCreateModal(PartType.REL, props.id, apTypeId, detail.scopeId, part.id);
-        props.invalidateValidationErrors(props.id);
+        props.refreshValidation(props.id);
     };
 
     const handleDeletePart = (parts: Array<ApPartVO>) => {
         props.deleteParts(props.id, parts);
-        props.invalidateValidationErrors(props.id);
+        props.refreshValidation(props.id);
     };
 
     const groupBy = (data, key) => data.reduce((rv, x) => {
@@ -117,6 +121,8 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
     const allParts = props.detail.data ? props.detail.data.parts as ApPartVO[] : [];
     const typedParts = groupBy(allParts, 'typeId');
 
+    const validationResult = props.apValidation.data;
+
     return <div className={'detail-page-wrapper'}>
         <div key="1" className="layout-scroll">
             <DetailHeader
@@ -126,6 +132,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
                 onToggleCollapsed={() => {
                     setCollapsed(!collapsed)
                 }}
+                validationErrors={validationResult && validationResult.errors}
                 onInvalidateDetail={() => props.refreshDetail(props.detail.data!.id)}
             />
 
@@ -144,7 +151,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
                         onDelete={handleDelete}
                         onAdd={() => handleAdd(partType.code as any as PartType)}
                         onDeleteParts={handleDeletePart}
-                        validationResult={props.validationResult}
+                        partValidationErrors={validationResult && validationResult.partErrors}
                         globalEntity={props.globalEntity}
                     />
                 )}
@@ -275,8 +282,10 @@ const mapDispatchToProps = (
 
         dispatch(registryDetailFetchIfNeeded(apId, true));
     },
-    invalidateValidationErrors: (apId: number) => {
-        dispatch(DetailActions.invalidate(DETAIL_VALIDATION_RESULT, apId));
+    refreshValidation: (apId: number) => {
+        dispatch(DetailActions.fetchIfNeeded(AP_VALIDATION, apId, (id) => {
+            return WebApi.validateAccessPoint(id)
+        }, true));
     },
     refreshDetail: (apId: number) => {
         dispatch(registryDetailFetchIfNeeded(apId, true));
@@ -286,6 +295,7 @@ const mapDispatchToProps = (
 const mapStateToProps = (state: any, props: OwnProps) => {
     return {
         detail: storeFromArea(state, registry.AREA_REGISTRY_DETAIL) as DetailStoreState<ApAccessPointVO>,
+        apValidation: storeFromArea(state, AP_VALIDATION) as DetailStoreState<ApValidationErrorsVO>,
         refTables: state.refTables,
         editMode: true,
     }
