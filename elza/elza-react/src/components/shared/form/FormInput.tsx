@@ -16,6 +16,7 @@ interface IFormInputProps {
     touched?: boolean;
     placeholder?: boolean;
     staticInput?: boolean;
+    disabled?: boolean;
 }
 
 const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo(

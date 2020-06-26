@@ -54,7 +54,7 @@ class AddRemoveList extends AbstractReactComponent {
                       return (
                           <div className="item-container" key={'item-' + index}>
                               {renderItem({item, index})}
-                              {!readOnly && (
+                              {!readOnly && onAdd && (
                                   <div className="item-actions-container">
                                       <NoFocusButton
                                           className="remove"
