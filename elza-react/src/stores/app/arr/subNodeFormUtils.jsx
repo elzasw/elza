@@ -126,6 +126,7 @@ export function createDescItemFromDb(descItemType, descItem) {
         result.prevDescription = descItem.description;
     }
 
+    prepareNextFormKey(descItemType)
     initFormKey(descItemType, result);
 
     return result;
@@ -147,6 +148,11 @@ function addUid(descItem, index) {
 
 var _formKeys = {};
 
+export function prepareNextFormKey(descItemType) {
+    _formKeys[descItemType.id] = _formKeys[descItemType.id] + 1
+}
+
+
 function initFormKey(descItemType, descItem) {
     if (descItem.formKey) {
         return;
@@ -156,7 +162,9 @@ function initFormKey(descItemType, descItem) {
         _formKeys[descItemType.id] = 1;
     }
     descItem.formKey = 'fk_' + _formKeys[descItemType.id];
-    _formKeys[descItemType.id] = _formKeys[descItemType.id] + 1;
+    // descItem.formKey = 'fk_' + descItemType.id;
+    // console.log(1666666666666666666)
+    // _formKeys[descItemType.id] = _formKeys[descItemType.id] + 1;
 }
 
 // 1. Doplní povinné a doporučené specifikace s prázdnou hodnotou, pokud je potřeba
@@ -334,6 +342,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
                     if (prevDescItem) {
                         item.formKey = prevDescItem.formKey;
                     } else {
+                        prepareNextFormKey(resultDescItemType)
                         initFormKey(resultDescItemType, item);
                     }
                     resultDescItemType.descItems.push(item);
@@ -495,10 +504,30 @@ export function mergeAfterUpdate(state, data, refTables) {
 
     flatLocalForm.update(flatForm);
 
+    console.log(8888, Object.values(flatLocalForm.types))
+    console.log(9999999999999, flatForm)
+
     // Update info about descItemTypes
-    state.infoTypesMap = flatLocalForm.types;
+    // XXXXXXXX
+    state.infoTypesMap = {};
+    Object.keys(flatLocalForm.types).forEach(key => {
+        const {descItems, ...type} = flatLocalForm.types[key];
+        state.infoTypesMap[key] = type;
+    })
+    // state.infoTypesMap = flatLocalForm.types;
+
+    console.log(8888, Object.values(flatLocalForm.types))
+
     // Update form with new data
     state.formData = restoreFormDataStructure(flatLocalForm, state.refTypesMap);
+
+    // Odebrání pomocných dat - sice prasárna, ale jinak by se to muselo celé přepsat - commit 85921c4ed7d187d41759fa938370dcaac3da5aa1
+    Object.values(flatLocalForm.types).forEach(type => {
+        type.descItems && type.descItems.forEach(descItem => {
+            delete descItem.itemType
+        });
+    });
+    console.log(8888, Object.values(flatLocalForm.types))
 
     return state;
 }
@@ -881,6 +910,7 @@ class FlatFormData {
                     return {
                         ...it,
                         ...dataItemType,
+                        // xxxxxx: it,
                         hasFocus: false,
                         group: group.code,
                     };
@@ -959,7 +989,9 @@ class FlatFormData {
         for (let d = 0; d < items.length; d++) {
             let item = {
                 ...items[d],
+                // AAAAAAAAAAAAAAAAAAAAAAAAA
                 itemType: type.id,
+                // aaaaaaaa: 11111111
             };
             let itemId = null;
 
@@ -1007,7 +1039,8 @@ function merge(state) {
             }
             items.push({
                 ...item,
-                itemType: item.itemTypeId
+                // zzzzzzzzzzzzzzzzzzzzzzzz
+                // itemType: item.itemTypeId
             });
         });
 

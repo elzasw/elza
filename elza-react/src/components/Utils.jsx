@@ -117,7 +117,7 @@ export function stateEquals(x, y, logDifferences) {
         // if they have the same strict value or identity then they are equal
 
         if (typeof x[p] !== 'object' && typeof x[p] !== 'boolean') {
-            if (logDifferences) console.log("typeof x[p] !== 'object' && typeof x[p] !== 'boolean'", x, p)
+            if (logDifferences) console.log("typeof x[p] !== 'object' && typeof x[p] !== 'boolean'", x, p, typeof x[p])
             return false;
         }
 
@@ -229,7 +229,7 @@ export function objectEqualsDiff(x, y, ignore = {}, path = '', log = false) {
 
         if (!ignore[pathProp] && !ignore[endWith(p)] && !objectEqualsDiff(x[p], y[p], ignore, pathProp, log)) {
             if (log) {
-                //console.log("diff 5", path, p, x[p], y[p]);
+                console.log("diff 5", path, p, x[p], y[p]);
                 res = false;
                 continue;
             } else {
@@ -243,7 +243,7 @@ export function objectEqualsDiff(x, y, ignore = {}, path = '', log = false) {
         let pathProp = path + '.' + p;
         if (!(ignore[pathProp] || ignore[endWith(p)]) && y.hasOwnProperty(p) && !x.hasOwnProperty(p)) {
             if (log) {
-                //console.log("diff 6", path, p);
+                console.log("diff 6", path, p, x, y);
                 res = false;
                 continue;
             } else {

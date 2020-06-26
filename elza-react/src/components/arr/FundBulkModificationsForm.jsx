@@ -109,7 +109,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                         break;
 
                     case 'RECORD_REF':
-                        console.log(222222222, values);
+                        // console.log(222222222, values);
 
                         break;
                     default:

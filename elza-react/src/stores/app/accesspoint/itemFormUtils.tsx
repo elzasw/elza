@@ -145,6 +145,7 @@ function initFormKey(descItemType, descItem) {
         _formKeys[descItemType.id] = 1;
     }
     descItem.formKey = 'fk_' + _formKeys[descItemType.id];
+    // console.log(17777777777777777)
     _formKeys[descItemType.id] = _formKeys[descItemType.id] + 1;
 }
 

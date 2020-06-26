@@ -10,7 +10,7 @@ import {
     Utils,
 } from '../../../components/shared';
 import {connect} from 'react-redux';
-import {valuesEquals} from '../../Utils';
+import {objectEqualsDiff, propsEquals, valuesEquals} from '../../Utils';
 import {nodeFormActions} from '../../../actions/arr/subNodeForm.jsx';
 import {hasDescItemTypeValue} from '../../../components/arr/ArrUtils.jsx';
 import {indexById} from '../../../stores/app/utils.jsx';
@@ -77,7 +77,7 @@ class DescItemType extends AbstractReactComponent {
         onDescItemNotIdentified: PropTypes.func.isRequired,
         closed: PropTypes.bool.isRequired,
         copy: PropTypes.bool.isRequired,
-        conformityInfo: PropTypes.object.isRequired,
+        conformityInfoMissings: PropTypes.array,
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
         userDetail: PropTypes.object.isRequired,
@@ -140,16 +140,35 @@ class DescItemType extends AbstractReactComponent {
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        this.setState({
-            descItemType: {...nextProps.descItemType},
-        });
+        // this.setState({
+        //     descItemType: {...nextProps.descItemType},
+        // });
+        const log = false;
+        log && console.log(1111111111, nextProps.refType.name)
+        if (!objectEqualsDiff(this.props.descItemType, nextProps.descItemType, undefined, '', log)) {
+            // propsEquals(this.props.descItemType, nextProps.descItemType, undefined, true);
+
+            this.setState({
+                descItemType: {...nextProps.descItemType},
+            });
+        }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        return true;
-        // const eqProps = ['descItemType', 'rulDataType', 'calendarTypes', 'locked', 'copy', 'readMode'];
-        // return !propsEquals(this.props, nextProps, eqProps);
+        // return true;
+        if (this.state !== nextState) {
+            console.log("[DescItemType]#[state]##############", nextProps.refType.name);
+            return true;
+        }
+        console.log("[DescItemType]###############", nextProps.refType.name);
+        // return !propsEquals(this.props, nextProps, undefined, true);
+        return !objectEqualsDiff(this.props, nextProps, undefined, '', true)
     }
+    // shouldComponentUpdate(nextProps, nextState) {
+    //     return true;
+    //     // const eqProps = ['descItemType', 'rulDataType', 'calendarTypes', 'locked', 'copy', 'readMode'];
+    //     // return !propsEquals(this.props, nextProps, eqProps);
+    // }
 
     handleDescItemTypeShortcuts(action) {
         console.log('#handleDescItemTypeShortcuts', '[' + action + ']', this);
@@ -935,7 +954,7 @@ class DescItemType extends AbstractReactComponent {
             locked,
             infoType,
             refType,
-            conformityInfo,
+            conformityInfoMissings,
             closed,
             readMode,
             notIdentified,
@@ -993,7 +1012,7 @@ class DescItemType extends AbstractReactComponent {
         }
 
         // Zprávy o chybějících položkách
-        const missings = conformityInfo.missings[descItemType.id];
+        const missings = conformityInfoMissings;
         if (missings && missings.length > 0) {
             const messages = missings.map(missing => missing.description);
             const tooltip = <div>{messages}</div>;
@@ -1185,6 +1204,8 @@ class DescItemType extends AbstractReactComponent {
             arrPerm,
         } = this.props;
         const {descItemType} = this.state;
+
+        console.log("[DescItemType] RENDER", this.props.refType.name)
 
         const label = this.renderLabel();
         const showDeleteDescItemType = this.getShowDeleteDescItemType();

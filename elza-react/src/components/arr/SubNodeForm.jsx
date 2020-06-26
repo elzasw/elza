@@ -25,6 +25,7 @@ import {SUB_NODE_FORM_CMP} from '../../stores/app/arr/subNodeForm';
 
 import classNames from 'classnames';
 import {Button} from '../ui';
+import FormDescItemGroup from "./FormDescItemGroup";
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -39,7 +40,6 @@ class SubNodeForm extends AbstractReactComponent {
 
         this.bindMethods(
             'renderDescItemGroup',
-            'renderDescItemType',
             'handleChange',
             'handleChangePosition',
             'handleChangeSpec',
@@ -60,6 +60,13 @@ class SubNodeForm extends AbstractReactComponent {
             'initFocus',
             'getFlatDescItemTypes',
             'handleJsonTableDownload',
+            'handleDetailParty',
+            'handleDetailRecord',
+            'handleCreateFile',
+            'handleFundFiles',
+            'handleCoordinatesUpload',
+            'handleJsonTableUpload',
+            'handleCoordinatesDownload'
         );
     }
 
@@ -106,7 +113,7 @@ class SubNodeForm extends AbstractReactComponent {
         this.trySetFocus(this.props);
 
         const {subNodeForm} = this.props;
-        const unusedItemTypeIds = subNodeForm.unusedItemTypeIds;
+        const unusedItemTypeIds = subNodeForm.unusedItemTypeIds || [];
         this.setState({
             unusedItemTypeIds: unusedItemTypeIds,
             unusedItemTypeInitIds: unusedItemTypeIds,
@@ -169,6 +176,10 @@ class SubNodeForm extends AbstractReactComponent {
 
     handleShortcuts(action) {}
 
+    descItemRef = (key, ref) => {
+        this.refObjects[key] = ref
+    }
+
     /**
      * Renderování skupiny atributů.
      * @param descItemGroup {Object} skupina
@@ -177,32 +188,66 @@ class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemGroup(descItemGroup, descItemGroupIndex, nodeSetting) {
-        const {singleDescItemTypeEdit, singleDescItemTypeId} = this.props;
+        const {userDetail, readMode, versionId, arrRegion, descItemCopyFromPrevEnabled, fundId, arrPerm, typePrefix, subNodeForm, singleDescItemTypeEdit,
+            singleDescItemTypeId, showNodeAddons, conformityInfo, calendarTypes, structureTypes, descItemFactory, customActions} = this.props;
 
-        const descItemTypes = [];
-        descItemGroup.descItemTypes.forEach((descItemType, descItemTypeIndex) => {
-            const render =
-                !singleDescItemTypeEdit || (singleDescItemTypeEdit && singleDescItemTypeId === descItemType.id);
-
-            if (render) {
-                const i = this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting);
-                descItemTypes.push(i);
+        const fund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+        let strictMode = false;
+        if (fund) {
+            strictMode = fund.activeVersion.strictMode;
+            let userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
+            if (userStrictMode && userStrictMode.value !== null) {
+                strictMode = userStrictMode.value === 'true';
             }
-        });
-        const cls = classNames({
-            'desc-item-group': true,
-            active: descItemGroup.hasFocus,
-        });
-
-        if (singleDescItemTypeEdit && descItemTypes.length === 0) {
-            return null;
         }
 
-        return (
-            <div key={'type-' + descItemGroup.code + '-' + descItemGroupIndex} className={cls}>
-                <div className="desc-item-types">{descItemTypes}</div>
-            </div>
-        );
+        return <FormDescItemGroup
+            descItemGroup={descItemGroup}
+            descItemGroupIndex={descItemGroupIndex}
+            nodeSetting={nodeSetting}
+            singleDescItemTypeEdit={singleDescItemTypeEdit}
+            singleDescItemTypeId={singleDescItemTypeId}
+
+            subNodeForm={subNodeForm}
+            typePrefix={typePrefix}
+            arrPerm={arrPerm || (subNodeForm.data && subNodeForm.data.arrPerm)}
+            fundId={fundId}
+            strictMode={strictMode}
+            showNodeAddons={showNodeAddons}
+            descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
+            conformityInfo={conformityInfo}
+            versionId={versionId}
+            readMode={readMode}
+            calendarTypes={calendarTypes}
+            structureTypes={structureTypes}
+            descItemFactory={descItemFactory}
+            customActions={customActions}
+            descItemRef={this.descItemRef}
+
+            onCreateParty={this.handleCreateParty}
+            onDetailParty={this.handleDetailParty}
+            onCreateRecord={this.handleCreateRecord}
+            onDetailRecord={this.handleDetailRecord}
+            onCreateFile={this.handleCreateFile}
+            onFundFiles={this.handleFundFiles}
+            onDescItemAdd={this.handleDescItemAdd}
+            onCoordinatesUpload={this.handleCoordinatesUpload}
+            onJsonTableUpload={this.handleJsonTableUpload}
+            onDescItemRemove={this.handleDescItemRemove}
+            onCoordinatesDownload={this.handleCoordinatesDownload}
+            onJsonTableDownload={this.handleJsonTableDownload}
+            onChange={this.handleChange}
+            onChangePosition={this.handleChangePosition}
+            onChangeSpec={this.handleChangeSpec}
+            onBlur={this.handleBlur}
+            onFocus={this.handleFocus}
+            onDescItemTypeRemove={this.handleDescItemTypeRemove}
+            onSwitchCalculating={this.handleSwitchCalculating}
+            onDescItemTypeLock={this.handleDescItemTypeLock}
+            onDescItemTypeCopy={this.handleDescItemTypeCopy}
+            onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev}
+            onDescItemNotIdentified={this.handleDescItemNotIdentified}
+        />
     }
 
     /**
@@ -739,7 +784,7 @@ class SubNodeForm extends AbstractReactComponent {
      * @param newDescItemIndex {Integer} nová pozice - nový index atributu
      */
     handleChangePosition(descItemGroupIndex, descItemTypeIndex, descItemIndex, newDescItemIndex) {
-        console.log(222222, descItemGroupIndex, descItemTypeIndex, descItemIndex, newDescItemIndex);
+        // console.log(222222, descItemGroupIndex, descItemTypeIndex, descItemIndex, newDescItemIndex);
         const valueLocation = {
             descItemGroupIndex,
             descItemTypeIndex,
@@ -830,136 +875,6 @@ class SubNodeForm extends AbstractReactComponent {
      */
     handleDescItemTypeCopy(descItemTypeId, copy) {
         this.props.onDescItemTypeCopy(descItemTypeId, copy);
-    }
-
-    /**
-     * Renderování atributu.
-     * @param descItemType {Object} atribut
-     * @param descItemTypeIndex {Integer} index atributu v seznamu
-     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
-     * @param nodeSetting {object}
-     * @return {Object} view
-     */
-    renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) {
-        const {
-            fundId,
-            subNodeForm,
-            descItemCopyFromPrevEnabled,
-            singleDescItemTypeEdit,
-            structureTypes,
-            calendarTypes,
-            closed,
-            showNodeAddons,
-            conformityInfo,
-            versionId,
-            readMode,
-            userDetail,
-            arrRegion,
-            typePrefix,
-            arrPerm,
-        } = this.props;
-
-        const refType = subNodeForm.refTypesMap[descItemType.id];
-        const infoType = subNodeForm.infoTypesMap[descItemType.id];
-        const rulDataType = refType.dataType;
-
-        let locked = this.isDescItemLocked(nodeSetting, descItemType.id);
-
-        if (infoType.cal === 1) {
-            locked = locked || !infoType.calSt;
-        }
-
-        let copy = false;
-
-        // existují nějaké nastavení pro konkrétní node
-        if (nodeSetting) {
-            // existuje nastavení o JP - kopírování
-            if (nodeSetting && nodeSetting.descItemTypeCopyIds) {
-                const index = nodeSetting.descItemTypeCopyIds.indexOf(descItemType.id);
-
-                // existuje type mezi kopírovanými
-                if (index >= 0) {
-                    copy = true;
-                }
-            }
-        }
-
-        const fund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
-        let strictMode = false;
-        if (fund) {
-            strictMode = fund.activeVersion.strictMode;
-            let userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
-            if (userStrictMode && userStrictMode.value !== null) {
-                strictMode = userStrictMode.value === 'true';
-            }
-        }
-
-        let notIdentified = false;
-
-        descItemType.descItems.forEach(descItem => {
-            if (!descItemType.rep && descItem.undefined) {
-                notIdentified = true;
-            }
-        });
-
-        return (
-            <DescItemType
-                key={descItemType.id}
-                typePrefix={typePrefix}
-                ref={ref => (this.refObjects['descItemType' + descItemType.id] = ref)}
-                descItemType={descItemType}
-                singleDescItemTypeEdit={singleDescItemTypeEdit}
-                refType={refType}
-                infoType={infoType}
-                rulDataType={rulDataType}
-                calendarTypes={calendarTypes}
-                structureTypes={structureTypes}
-                onCreateParty={this.handleCreateParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onDetailParty={this.handleDetailParty.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onCreateRecord={this.handleCreateRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onDetailRecord={this.handleDetailRecord.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onCreateFile={this.handleCreateFile.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onFundFiles={this.handleFundFiles.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onDescItemAdd={this.handleDescItemAdd.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onCoordinatesUpload={this.handleCoordinatesUpload.bind(this, descItemType.id)}
-                onJsonTableUpload={this.handleJsonTableUpload.bind(this, descItemType.id)}
-                onDescItemRemove={this.handleDescItemRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onCoordinatesDownload={this.handleCoordinatesDownload.bind(this)}
-                onJsonTableDownload={this.handleJsonTableDownload.bind(this)}
-                onChange={this.handleChange.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onChangePosition={this.handleChangePosition.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onChangeSpec={this.handleChangeSpec.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onBlur={this.handleBlur.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onFocus={this.handleFocus.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onDescItemTypeRemove={this.handleDescItemTypeRemove.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onSwitchCalculating={this.handleSwitchCalculating.bind(this, descItemGroupIndex, descItemTypeIndex)}
-                onDescItemTypeLock={this.handleDescItemTypeLock.bind(this, descItemType.id)}
-                onDescItemTypeCopy={this.handleDescItemTypeCopy.bind(this, descItemType.id)}
-                onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev.bind(
-                    this,
-                    descItemGroupIndex,
-                    descItemTypeIndex,
-                    descItemType.id,
-                )}
-                showNodeAddons={showNodeAddons}
-                locked={singleDescItemTypeEdit ? false : locked}
-                closed={closed}
-                copy={copy}
-                conformityInfo={conformityInfo}
-                descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
-                versionId={versionId}
-                fundId={fundId}
-                readMode={readMode}
-                arrPerm={arrPerm || (subNodeForm.data && subNodeForm.data.arrPerm)}
-                strictMode={strictMode}
-                notIdentified={notIdentified}
-                onDescItemNotIdentified={(descItemIndex, descItem) =>
-                    this.handleDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem)
-                }
-                customActions={this.props.customActions && this.props.customActions(rulDataType.code, infoType)}
-                descItemFactory={this.props.descItemFactory}
-            />
-        );
     }
 
     handleDescItemNotIdentified = (descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem) => {

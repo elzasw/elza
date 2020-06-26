@@ -14,6 +14,7 @@ import {valuesEquals} from 'components/Utils.jsx';
 import {DisplayType} from '../../../constants.tsx';
 import {buildIgnoreMap, endWith, startWith} from '../../../components/Utils';
 import {cloneDeep} from 'lodash-es';
+import {prepareNextFormKey} from "./subNodeFormUtils";
 
 const FORM_KEY = 'formKey'; // klíč verze formuláře
 const UID = '_uid'; // virtuální identifikátor hodnoty atributu (jedná se buď o objectId a nebo virtuální klíč v případě, že ještě hodnota atributu nebyla uložena na serveru)
@@ -28,23 +29,51 @@ export const NODE_SUB_NODE_FORM_CMP = buildIgnoreMap(
     endWith(UID),
 );
 
+function setLoc(state, valueLocation, loc, descItemType = true, descItem = true) {
+    const formData = state.formData;
+    if (!formData) {
+        console.warn('formData do not exist');
+    }
+
+    state.formData.descItemGroups = [
+        ...state.formData.descItemGroups
+    ]
+    state.formData.descItemGroups[valueLocation.descItemGroupIndex] = loc.descItemGroup;
+
+    if (descItemType) {
+        loc.descItemGroup.descItemTypes = [
+            ...loc.descItemGroup.descItemTypes
+        ]
+        loc.descItemGroup.descItemTypes[valueLocation.descItemTypeIndex] = loc.descItemType;
+
+        if (descItem) {
+            if (typeof valueLocation.descItemIndex !== 'undefined') {
+                loc.descItemType.descItems = [
+                    ...loc.descItemType.descItems
+                ]
+                loc.descItemType.descItems[valueLocation.descItemIndex] = loc.descItem;
+            }
+        }
+    }
+}
+
 function getLoc(state, valueLocation) {
     const formData = state.formData;
     if (!formData) {
         console.warn('formData do not exist');
         return null;
     }
-    var descItemGroup = state.formData.descItemGroups[valueLocation.descItemGroupIndex];
-    var descItemType = descItemGroup.descItemTypes[valueLocation.descItemTypeIndex];
-    var descItem;
+    const descItemGroup = state.formData.descItemGroups[valueLocation.descItemGroupIndex];
+    const descItemType = descItemGroup.descItemTypes[valueLocation.descItemTypeIndex];
+    let descItem;
     if (typeof valueLocation.descItemIndex !== 'undefined') {
         descItem = descItemType.descItems[valueLocation.descItemIndex];
     }
 
     return {
-        descItemGroup,
-        descItemType,
-        descItem,
+        descItemGroup: {...descItemGroup},
+        descItemType: {...descItemType},
+        descItem: descItem ? {...descItem} : descItem,
     };
 }
 
@@ -265,6 +294,7 @@ function addItemType(state, itemTypeId) {
 }
 
 function addValue(state, loc) {
+    prepareNextFormKey(loc.descItemType)
     let refType = state.refTypesMap[loc.descItemType.id];
 
     let descItem = createDescItem(loc.descItemType, refType, true);
@@ -301,6 +331,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             }
             loc.descItem.error = validate(loc.descItem, refType, valueServerError);
 
+            setLoc(state, action.valueLocation, loc);
             state.formData = {...state.formData};
             checkFormData(state.formData);
             return {...state};
@@ -323,6 +354,8 @@ export default function subNodeForm(state = initialState, action = {}) {
             descItems.splice(action.index, 0, descItems.splice(action.valueLocation.descItemIndex, 1)[0]);
 
             loc.descItemType.descItems = descItems;
+
+            setLoc(state, action.valueLocation, loc);
             state.formData = {...state.formData};
             checkFormData(state.formData);
             return {...state};
@@ -332,12 +365,17 @@ export default function subNodeForm(state = initialState, action = {}) {
             var refType = state.refTypesMap[loc.descItemType.id];
             const convertedValue = convertValue(action.value, loc.descItem, refType.dataType.code);
             // touched if new value is not equal with previous value, or something else changed during conversion
-            const touched = convertedValue.touched || !valuesEquals(loc.descItem.value, loc.descItem.prevValue);
+            const touched = convertedValue.touched || !valuesEquals(convertedValue.value, loc.descItem.prevValue);
             loc.descItem = {
                 ...loc.descItem,
                 ...convertedValue,
                 touched,
             };
+
+            // Object.keys(test).forEach(key => {
+            //     loc.descItem[key] = test[key];
+            // })
+
             // Unitdate server validation
             if (refType.dataType.code === 'UNITDATE') {
                 if (loc.descItem.validateTimer) {
@@ -356,6 +394,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             }
             loc.descItem.error = validate(loc.descItem, refType);
 
+            setLoc(state, action.valueLocation, loc);
             state.formData = {...state.formData};
             checkFormData(state.formData);
             return {...state};
@@ -367,6 +406,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 loc.descItem.touched = true;
                 loc.descItem.error = validate(loc.descItem, refType);
 
+                setLoc(state, action.valueLocation, loc);
                 state.formData = {...state.formData};
                 checkFormData(state.formData);
                 return {...state};
@@ -379,6 +419,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             loc.descItemType.hasFocus = false;
             loc.descItemGroup.hasFocus = false;
 
+            setLoc(state, action.valueLocation, loc);
             state.formData = {...state.formData};
             checkFormData(state.formData);
             return {...state};
@@ -388,16 +429,21 @@ export default function subNodeForm(state = initialState, action = {}) {
             loc.descItemType.hasFocus = true;
             loc.descItemGroup.hasFocus = true;
 
+            setLoc(state, action.valueLocation, loc);
             state.formData = {...state.formData};
             checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CREATE:
             loc.descItem.saving = true;
+
+            setLoc(state, action.valueLocation, loc);
             state.formData = {...state.formData};
             checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_ADD:
             addValue(state, loc);
+
+            setLoc(state, action.valueLocation, loc, true, false);
             checkFormData(state.formData);
             return {...state};
         case types.CHANGE_NODES:
@@ -431,6 +477,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             // Upravení a opravení seznamu hodnot, případně přidání prázdných
             consolidateDescItems(loc.descItemType, infoType, refType, false);
 
+            setLoc(state, action.valueLocation, loc);
             state.formData = {...state.formData};
             checkFormData(state.formData);
             return {...state};
@@ -698,6 +745,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 }
             }
 
+            setLoc(state, action.valueLocation, loc, false, false);
             state.formData = {...state.formData};
             checkFormData(state.formData);
             return {...state};
@@ -713,6 +761,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             // Upravení a opravení seznamu hodnot, případně přidání prázdných
             consolidateDescItems(loc.descItemType, infoType, refType, true);
 
+            setLoc(state, action.valueLocation, loc, true, false);
             state.formData = {...state.formData};
             checkFormData(state.formData);
             return {...state};
