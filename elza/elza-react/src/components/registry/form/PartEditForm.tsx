@@ -476,7 +476,7 @@ const PartEditForm = ({
     return <div>
         {editErrors && editErrors.length > 0 &&
         <Row key="validationAlert" className="mb-3">
-            <Alert variant={"warning"}>
+            <Alert className="w-100" variant={"warning"}>
                 <h3>Chyby validace formuláře.</h3>
                 {renderValidationErrors(editErrors)}
             </Alert>
