@@ -2079,7 +2079,9 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>        
-    <!-- zastaralé, nově většinou autor textu (ZP2015_ENTITY_ROLE_11) -->
+    <!-- zastaralé, nově většinou autor textu (ZP2015_ENTITY_ROLE_11),
+          používá se nyní již jen u technických výkresů, asi by mohlo být 
+          přejmenováno na "autor výkresu" -->
     <item-spec code="ZP2015_ENTITY_ROLE_1" item-type="ZP2015_ENTITY_ROLE">
         <name>autor</name>
         <description>zastaralé, nově většinou autor textu</description>
