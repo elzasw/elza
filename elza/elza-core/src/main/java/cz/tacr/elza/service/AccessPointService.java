@@ -2193,6 +2193,7 @@ public class AccessPointService {
                     .set("scopeId", oldApScope.getScopeId());
         }
 
+        boolean validateUnique = false;
         ApScope newApScope;
         if (newScopeId != null && !newScopeId.equals(oldApScope.getScopeId())) {
             newApScope = getScope(newScopeId);
@@ -2201,6 +2202,8 @@ public class AccessPointService {
                         .set("accessPointId", accessPoint.getAccessPointId())
                         .set("scopeId", newApScope.getScopeId());
             }
+
+            validateUnique = true;
             update = true;
         } else {
             newApScope = null;
@@ -2253,9 +2256,14 @@ public class AccessPointService {
         }
         apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
 
+        if (validateUnique) {
+            // validate name - has to be unique in new scope
+            ApName apName = getPreferredAccessPointName(accessPoint);
+            apDataService.validationNameUnique(newApScope, apName.getFullName());
+        }
+
         publishAccessPointUpdateEvent(accessPoint);
         reindexDescItem(accessPoint);
-
         return newApState;
     }
 
