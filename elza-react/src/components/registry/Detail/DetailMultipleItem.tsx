@@ -5,13 +5,15 @@ import DetailItemContent from "./DetailItemContent";
 import "./DetailItem.scss";
 import {MOCK_CODE_DATA} from './mock';
 import {ApItemVO} from "../../../api/ApItemVO";
+import {Bindings} from "../../../types";
 
 interface Props extends ReturnType<typeof mapStateToProps> {
+    bindings?: Bindings;
     items: ApItemVO[];
     globalEntity: boolean;
 }
 
-const DetailMultipleItem: FC<Props> = ({items, globalEntity, codelist}) => {
+const DetailMultipleItem: FC<Props> = ({items, globalEntity, codelist, bindings}) => {
     let firstItem = items[0];
     const itemType = codelist.itemTypesMap[firstItem.typeId];
 
@@ -23,7 +25,7 @@ const DetailMultipleItem: FC<Props> = ({items, globalEntity, codelist}) => {
             <div className="detail-item-content">
                 {items.map((item, index) => (
                         <div key={index} className="detail-item-partvalue">
-                            <DetailItemContent item={item} globalEntity={globalEntity}/>
+                            <DetailItemContent item={item} bindings={bindings} globalEntity={globalEntity}/>
                         </div>
                     )
                 )}

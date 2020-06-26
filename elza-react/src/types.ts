@@ -191,3 +191,8 @@ export interface RowsResponse<T> {
     data: T[];
     count: number;
 }
+
+export interface Bindings {
+    itemsMap: {[key: number]: boolean},
+    partsMap: {[key: number]: boolean},
+}

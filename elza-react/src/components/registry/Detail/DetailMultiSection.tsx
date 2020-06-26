@@ -9,6 +9,7 @@ import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
 import './DetailMultiSelection.scss';
 import {PartValidationErrorsVO} from "../../../api/PartValidationErrorsVO";
 import {objectById} from "../../../shared/utils";
+import {Bindings} from "../../../types";
 
 interface Props {
     label: string;
@@ -26,6 +27,7 @@ interface Props {
     globalEntity: boolean;
     deletableWholePart?: boolean;
     singlePart?: boolean;
+    bindings: Bindings;
     partValidationErrors?: PartValidationErrorsVO[];
 }
 
@@ -45,7 +47,8 @@ const DetailMultiSection: FC<Props> = ({
                                            globalCollapsed,
                                            onDeleteParts,
                                            deletableWholePart,
-                                           partValidationErrors
+                                           partValidationErrors,
+                                           bindings
                                        }) => {
     if (!editMode && parts.length === 0) {
         return null;
@@ -98,6 +101,7 @@ const DetailMultiSection: FC<Props> = ({
                         }}
                         partValidationError={part.id && objectById(partValidationErrors, part.id)}
                         globalEntity={globalEntity}
+                        bindings={bindings}
                     />
                     {part.id && relatedPartsMap[part.id] && relatedPartsMap[part.id].map((part, index) => {
                         return <DetailRelatedPart
@@ -110,6 +114,7 @@ const DetailMultiSection: FC<Props> = ({
                             onEdit={onEdit}
                             partValidationError={part.id && objectById(partValidationErrors, part.id)}
                             globalEntity={globalEntity}
+                            bindings={bindings}
                         />
                     })}
                 </div>

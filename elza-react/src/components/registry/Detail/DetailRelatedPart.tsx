@@ -17,6 +17,7 @@ import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
 import {ApItemVO} from "../../../api/ApItemVO";
 import {PartValidationErrorsVO} from "../../../api/PartValidationErrorsVO";
 import ValidationResultIcon from "../../ValidationResultIcon";
+import {Bindings} from "../../../types";
 //import {sortItems} from "../../itemutils";
 //import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 //import ValidationResultIcon from "../ValidationResultIcon";
@@ -31,9 +32,10 @@ interface Props {
   codelist: any;
   globalEntity: boolean;
   partValidationError?: PartValidationErrorsVO;
+  bindings: Bindings;
 }
 
-const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDelete, onEdit, globalCollapsed, codelist, partValidationError}) => {
+const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDelete, onEdit, globalCollapsed, codelist, partValidationError, bindings}) => {
   const [collapsed, setCollapsed] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const partType = PartTypeInfo.getPartType(part["@class"]);
