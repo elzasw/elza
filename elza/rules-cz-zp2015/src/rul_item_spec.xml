@@ -2953,13 +2953,21 @@
         <name>byte</name>
         <description>byte</description>
         <shortcut>b</shortcut>
-        <view-order>1</view-order>
     </item-spec>
     <item-spec code="ZP2015_AMOUNT_PIECES" item-type="ZP2015_AMOUNT">
         <name>kusy</name>
         <description>kusy</description>
         <shortcut>kusy</shortcut>
-        <view-order>1</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_AMOUNT_SHEETS" item-type="ZP2015_AMOUNT">
+        <name>listy</name>
+        <description>listy</description>
+        <shortcut>ll</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_AMOUNT_PAGES" item-type="ZP2015_AMOUNT">
+        <name>strany</name>
+        <description>strany</description>
+        <shortcut>str</shortcut>
     </item-spec>
 
     <!-- Počet EJ -->
