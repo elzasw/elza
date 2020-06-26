@@ -363,7 +363,7 @@ class ItemFormClass extends React.Component<DispatchProps & Props, ItemFormClass
      * @param newDescItemIndex {number} nová pozice - nový index atributu
      */
     handleChangePosition(itemTypeIndex, itemIndex, newDescItemIndex) {
-        console.log(222222, itemTypeIndex, itemIndex, newDescItemIndex);
+        // console.log(222222, itemTypeIndex, itemIndex, newDescItemIndex);
         const valueLocation = {
             itemTypeIndex,
             itemIndex,
