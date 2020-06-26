@@ -43,17 +43,15 @@ public abstract class JaxbUtils {
         try (InputStream in = new FileInputStream(file)) {
             JAXBContext jaxbContext = JAXBContext.newInstance(classObject);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            XMLInputFactory factory = XMLInputFactory.newInstance();
-            XMLEventReader source = factory.createXMLEventReader(in);
-            return unmarshaller.unmarshal(source, classObject).getValue();
+            return (T) unmarshaller.unmarshal(in);
         } catch (Exception e) {
             throw new SystemException("Nepodařilo se načíst objekt " + classObject.getSimpleName() + " ze streamu", e, PackageCode.PARSE_ERROR).set("class", classObject.toString());
         }
     }
 
 
-    public static <T> File asFile(final JAXBElement<T> body) {
-        Class<?> aClass = body.getDeclaredType();
+    public static <T> File asFile(final T body) {
+        Class<?> aClass = body.getClass();
         try {
             File temp = File.createTempFile("cam-", ".api.xml");
             JAXBContext jaxbContext = JAXBContext.newInstance(aClass);

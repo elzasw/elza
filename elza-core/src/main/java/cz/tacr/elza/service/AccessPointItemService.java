@@ -1,6 +1,14 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.cam._2019.*;
+import cz.tacr.cam.schema.cam.CodeXml;
+import cz.tacr.cam.schema.cam.EntityRecordRefXml;
+import cz.tacr.cam.schema.cam.ItemBooleanXml;
+import cz.tacr.cam.schema.cam.ItemEntityRefXml;
+import cz.tacr.cam.schema.cam.ItemEnumXml;
+import cz.tacr.cam.schema.cam.ItemIntegerXml;
+import cz.tacr.cam.schema.cam.ItemLinkXml;
+import cz.tacr.cam.schema.cam.ItemStringXml;
+import cz.tacr.cam.schema.cam.ItemUnitDateXml;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
@@ -307,71 +315,72 @@ public class AccessPointItemService {
         String uuid;
         ArrData data;
 
-        if (createItem instanceof ItemBoolean) {
-            ItemBoolean itemBoolean = (ItemBoolean) createItem;
+        if (createItem instanceof ItemBooleanXml) {
+            ItemBooleanXml itemBoolean = (ItemBooleanXml) createItem;
 
-            itemType = sdp.getItemType(itemBoolean.getT());
-            itemSpec = itemBoolean.getS() == null ? null : sdp.getItemSpec(itemBoolean.getS());
-            uuid = itemBoolean.getUuid();
+            itemType = sdp.getItemType(itemBoolean.getT().getValue());
+            itemSpec = itemBoolean.getS() == null ? null : sdp.getItemSpec(itemBoolean.getS().getValue());
+            uuid = itemBoolean.getUuid().getValue();
 
             ArrDataBit dataBit = new ArrDataBit();
-            dataBit.setValue(itemBoolean.isValue());
+            dataBit.setValue(itemBoolean.getValue().isValue());
             dataBit.setDataType(DataType.BIT.getEntity());
             data = dataBit;
-        } else if (createItem instanceof ItemEntityRef) {
-            ItemEntityRef itemEntityRef = (ItemEntityRef) createItem;
+        } else if (createItem instanceof ItemEntityRefXml) {
+            ItemEntityRefXml itemEntityRef = (ItemEntityRefXml) createItem;
 
-            itemType = sdp.getItemType(itemEntityRef.getT());
-            itemSpec = itemEntityRef.getS() == null ? null : sdp.getItemSpec(itemEntityRef.getS());
-            uuid = itemEntityRef.getUuid();
+            itemType = sdp.getItemType(itemEntityRef.getT().getValue());
+            itemSpec = itemEntityRef.getS() == null ? null : sdp.getItemSpec(itemEntityRef.getS().getValue());
+            uuid = itemEntityRef.getUuid().getValue();
 
             ArrDataRecordRef dataRecordRef = new ArrDataRecordRef();
-            DataRef dataRef = new DataRef(uuid, itemEntityRef.getEr().getEid());
+            EntityRecordRefXml entityRecordRef = (EntityRecordRefXml) itemEntityRef.getRef();
+            DataRef dataRef = new DataRef(uuid, entityRecordRef.getEid().getValue());
             dataRefList.add(dataRef);
 
             dataRecordRef.setDataType(DataType.RECORD_REF.getEntity());
             data = dataRecordRef;
-        } else if (createItem instanceof ItemEnum) {
-            ItemEnum itemEnum = (ItemEnum) createItem;
+        } else if (createItem instanceof ItemEnumXml) {
+            ItemEnumXml itemEnum = (ItemEnumXml) createItem;
 
-            itemType = sdp.getItemType(itemEnum.getT());
-            itemSpec = itemEnum.getS() == null ? null : sdp.getItemSpec(itemEnum.getS());
-            uuid = itemEnum.getUuid();
+            itemType = sdp.getItemType(itemEnum.getT().getValue());
+            itemSpec = itemEnum.getS() == null ? null : sdp.getItemSpec(itemEnum.getS().getValue());
+            uuid = itemEnum.getUuid().getValue();
 
             ArrDataNull dataNull = new ArrDataNull();
             dataNull.setDataType(DataType.ENUM.getEntity());
             data = dataNull;
-        } else if (createItem instanceof ItemInteger) {
-            ItemInteger itemInteger = (ItemInteger) createItem;
+        } else if (createItem instanceof ItemIntegerXml) {
+            ItemIntegerXml itemInteger = (ItemIntegerXml) createItem;
 
-            itemType = sdp.getItemType(itemInteger.getT());
-            itemSpec = itemInteger.getS() == null ? null : sdp.getItemSpec(itemInteger.getS());
-            uuid = itemInteger.getUuid();
+            itemType = sdp.getItemType(itemInteger.getT().getValue());
+            itemSpec = itemInteger.getS() == null ? null : sdp.getItemSpec(itemInteger.getS().getValue());
+            uuid = itemInteger.getUuid().getValue();
 
             ArrDataInteger dataInteger = new ArrDataInteger();
-            dataInteger.setValue(itemInteger.getValue().intValue());
+            dataInteger.setValue(itemInteger.getValue().getValue().intValue());
             dataInteger.setDataType(DataType.INT.getEntity());
             data = dataInteger;
-        } else if (createItem instanceof ItemLink) {
-            ItemLink itemLink = (ItemLink) createItem;
+        } else if (createItem instanceof ItemLinkXml) {
+            ItemLinkXml itemLink = (ItemLinkXml) createItem;
 
-            itemType = sdp.getItemType(itemLink.getT());
-            itemSpec = itemLink.getS() == null ? null : sdp.getItemSpec(itemLink.getS());
-            uuid = itemLink.getUuid();
+            itemType = sdp.getItemType(itemLink.getT().getValue());
+            itemSpec = itemLink.getS() == null ? null : sdp.getItemSpec(itemLink.getS().getValue());
+            uuid = itemLink.getUuid().getValue();
 
             ArrDataUriRef dataUriRef = new ArrDataUriRef();
-            dataUriRef.setValue(itemLink.getUrl());
-            dataUriRef.setDescription(itemLink.getNm());
+            dataUriRef.setValue(itemLink.getUrl().getValue());
+            dataUriRef.setDescription(itemLink.getNm().getValue());
             dataUriRef.setSchema("");
             dataUriRef.setArrNode(null);
             dataUriRef.setDataType(DataType.URI_REF.getEntity());
             data = dataUriRef;
-        } else if (createItem instanceof ItemString) {
-            ItemString itemString = (ItemString) createItem;
+        } else if (createItem instanceof ItemStringXml) {
+            ItemStringXml itemString = (ItemStringXml) createItem;
 
-            itemType = sdp.getItemType(itemString.getT());
-            itemSpec = itemString.getS() == null ? null : sdp.getItemSpec(itemString.getS());
-            uuid = itemString.getUuid();
+            itemType = sdp.getItemType(itemString.getT().getValue());
+            itemSpec = itemString.getS() == null ? null : sdp.getItemSpec(itemString.getS().getValue());
+            uuid = itemString.getUuid().getValue();
 
             RulDataType dataType = itemType.getDataType();
             String code = dataType.getCode();
@@ -382,19 +391,19 @@ public class AccessPointItemService {
             switch(dt) {
                 case STRING:
                     ArrDataString dataString = new ArrDataString();
-                    dataString.setValue(itemString.getValue());
+                    dataString.setValue(itemString.getValue().getValue());
                     dataString.setDataType(DataType.STRING.getEntity());
                     data = dataString;
                     break;
                 case TEXT:
                     ArrDataText dataText = new ArrDataText();
-                    dataText.setValue(itemString.getValue());
+                    dataText.setValue(itemString.getValue().getValue());
                     dataText.setDataType(DataType.TEXT.getEntity());
                     data = dataText;
                     break;
                 case COORDINATES:
                     ArrDataCoordinates dataCoordinates = new ArrDataCoordinates();
-                    dataCoordinates.setValue(GeometryConvertor.convert(itemString.getValue()));
+                    dataCoordinates.setValue(GeometryConvertor.convert(itemString.getValue().getValue()));
                     dataCoordinates.setDataType(DataType.COORDINATES.getEntity());
                     data = dataCoordinates;
                     break;
@@ -402,12 +411,12 @@ public class AccessPointItemService {
                     throw new IllegalStateException("Neznámý datový typ " + code);
             }
 
-        } else if (createItem instanceof ItemUnitDate) {
-            ItemUnitDate itemUnitDate = (ItemUnitDate) createItem;
+        } else if (createItem instanceof ItemUnitDateXml) {
+            ItemUnitDateXml itemUnitDate = (ItemUnitDateXml) createItem;
 
-            itemType = sdp.getItemType(itemUnitDate.getT());
-            itemSpec = itemUnitDate.getS() == null ? null : sdp.getItemSpec(itemUnitDate.getS());
-            uuid = itemUnitDate.getUuid();
+            itemType = sdp.getItemType(itemUnitDate.getT().getValue());
+            itemSpec = itemUnitDate.getS() == null ? null : sdp.getItemSpec(itemUnitDate.getS().getValue());
+            uuid = itemUnitDate.getUuid().getValue();
 
             CalendarType calType = CalendarType.GREGORIAN;
             ArrDataUnitdate dataUnitDate = new ArrDataUnitdate();

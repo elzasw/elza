@@ -1,14 +1,16 @@
 package cz.tacr.elza.connector;
 
-import cz.tacr.cam._2019.*;
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.client.ApiResponse;
 import cz.tacr.cam.client.controller.*;
 import cz.tacr.cam.client.controller.vo.QueryParamsDef;
+import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
+import cz.tacr.cam.schema.cam.BatchUpdateXml;
+import cz.tacr.cam.schema.cam.EntityXml;
+import cz.tacr.cam.schema.cam.QueryResultXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.service.ExternalSystemService;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,31 +31,31 @@ public class CamConnector {
     private final Map<String, CamInstance> instanceMap = new HashMap<>();
 
 
-    public QueryResult search(final int page,
-                              final int pageSize,
-                              final QueryParamsDef query,
-                              final String externalSystemCode) throws ApiException {
+    public QueryResultXml search(final int page,
+                                 final int pageSize,
+                                 final QueryParamsDef query,
+                                 final String externalSystemCode) throws ApiException {
 
         ApiResponse<File> fileApiResponse = getSearchApiByCode(externalSystemCode).searchApsWithHttpInfo(page, pageSize, query);
-        return JaxbUtils.unmarshal(QueryResult.class, fileApiResponse.getData());
+        return JaxbUtils.unmarshal(QueryResultXml.class, fileApiResponse.getData());
     }
 
-    public Entity getEntityById(final Integer archiveEntityId,
-                                final String externalSystemCode) throws ApiException {
+    public EntityXml getEntityById(final Integer archiveEntityId,
+                                   final String externalSystemCode) throws ApiException {
         ApiResponse<File> fileApiResponse = getEntityApiByCode(externalSystemCode).getEntityByIdWithHttpInfo(String.valueOf(archiveEntityId));
-        return JaxbUtils.unmarshal(Entity.class, fileApiResponse.getData());
+        return JaxbUtils.unmarshal(EntityXml.class, fileApiResponse.getData());
     }
 
-    public BatchUpdateResult postNewBatch(final BatchUpdate batchUpdate,
-                                          final String externalSystemCode) throws ApiException {
-        ApiResponse<File> fileApiResponse = getBatchUpdatesApiByCode(externalSystemCode).postNewBatchWithHttpInfo(JaxbUtils.asFile(new ObjectFactory().createBu(batchUpdate)));
-        return JaxbUtils.unmarshal(BatchUpdateSaved.class, fileApiResponse.getData());
+    public BatchUpdateResultXml postNewBatch(final BatchUpdateXml batchUpdate,
+                                             final String externalSystemCode) throws ApiException {
+        ApiResponse<File> fileApiResponse = getBatchUpdatesApiByCode(externalSystemCode).postNewBatchWithHttpInfo(JaxbUtils.asFile(batchUpdate));
+        return JaxbUtils.unmarshal(BatchUpdateResultXml.class, fileApiResponse.getData());
     }
 
-    public BatchUpdateResult getBatchStatus(final String bid,
+    public BatchUpdateResultXml getBatchStatus(final String bid,
                                             final String externalSystemCode) throws ApiException {
         ApiResponse<File> fileApiResponse = getBatchUpdatesApiByCode(externalSystemCode).getBatchStatusWithHttpInfo(bid);
-        return JaxbUtils.unmarshal(BatchUpdateResult.class, fileApiResponse.getData());
+        return JaxbUtils.unmarshal(BatchUpdateResultXml.class, fileApiResponse.getData());
     }
 
     public void invalidate(String code) {

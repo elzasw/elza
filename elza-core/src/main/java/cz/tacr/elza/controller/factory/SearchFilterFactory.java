@@ -1,7 +1,10 @@
 package cz.tacr.elza.controller.factory;
 
-import cz.tacr.cam._2019.*;
 import cz.tacr.cam.client.controller.vo.*;
+import cz.tacr.cam.schema.cam.FoundEntityInfoXml;
+import cz.tacr.cam.schema.cam.HightlightPosXml;
+import cz.tacr.cam.schema.cam.QueryResultXml;
+import cz.tacr.cam.schema.cam.ResultLookupXml;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -281,52 +284,52 @@ public class SearchFilterFactory {
         return keyWords;
     }
 
-    public ArchiveEntityResultListVO createArchiveEntityVoListResult(QueryResult queryResult) {
+    public ArchiveEntityResultListVO createArchiveEntityVoListResult(QueryResultXml queryResult) {
         ArchiveEntityResultListVO archiveEntityVOListResult = new ArchiveEntityResultListVO();
-        archiveEntityVOListResult.setTotal(queryResult.getRi().getCnt().intValue());
-        archiveEntityVOListResult.setData(createArchiveEntityVoList(queryResult.getList().getFei()));
+        archiveEntityVOListResult.setTotal(queryResult.getRi().getCnt().getValue().intValue());
+        archiveEntityVOListResult.setData(createArchiveEntityVoList(queryResult.getList().getList()));
         return archiveEntityVOListResult;
     }
 
-    private List<ArchiveEntityVO> createArchiveEntityVoList(List<FoundEntityInfo> foundEntityInfoList) {
+    private List<ArchiveEntityVO> createArchiveEntityVoList(List<FoundEntityInfoXml> foundEntityInfoList) {
         List<ArchiveEntityVO> archiveEntityVOList = new ArrayList<>();
-        for (FoundEntityInfo foundEntityInfo : foundEntityInfoList) {
+        for (FoundEntityInfoXml foundEntityInfo : foundEntityInfoList) {
             archiveEntityVOList.add(createArchiveEntityVO(foundEntityInfo));
         }
         return archiveEntityVOList;
     }
 
-    private ArchiveEntityVO createArchiveEntityVO(FoundEntityInfo foundEntityInfo) {
+    private ArchiveEntityVO createArchiveEntityVO(FoundEntityInfoXml foundEntityInfo) {
         StaticDataProvider sdp = staticDataService.getData();
         ArchiveEntityVO archiveEntityVO = new ArchiveEntityVO();
-        archiveEntityVO.setName(foundEntityInfo.getName());
-        archiveEntityVO.setDescription(foundEntityInfo.getDsc());
-        archiveEntityVO.setAeTypeId(sdp.getApTypeByCode(foundEntityInfo.getEt()).getApTypeId());
+        archiveEntityVO.setName(foundEntityInfo.getName().getValue());
+        archiveEntityVO.setDescription(foundEntityInfo.getDsc() == null ? null: foundEntityInfo.getDsc().getValue());
+        archiveEntityVO.setAeTypeId(sdp.getApTypeByCode(foundEntityInfo.getEt().getValue()).getApTypeId());
         archiveEntityVO.setResultLookups(createResultLookupVO(foundEntityInfo.getRl()));
-        archiveEntityVO.setId(foundEntityInfo.getEid().intValue());
+        archiveEntityVO.setId((int) foundEntityInfo.getEid().getValue());
         return archiveEntityVO;
     }
 
-    private ResultLookupVO createResultLookupVO(ResultLookup resultLookup) {
+    private ResultLookupVO createResultLookupVO(ResultLookupXml resultLookup) {
         ResultLookupVO resultLookupVO = new ResultLookupVO();
-        resultLookupVO.setValue(resultLookup.getV());
-        resultLookupVO.setHighlights(createHighlightList(resultLookup.getHp()));
+        resultLookupVO.setValue(resultLookup.getV().getValue());
+        resultLookupVO.setHighlights(createHighlightList(resultLookup.getHightlights()));
         resultLookupVO.setPartTypeCode(resultLookup.getPt() != null ? resultLookup.getPt().value() : null);
         return resultLookupVO;
     }
 
-    private List<HighlightVO> createHighlightList(List<HightlightPos> highlightPosList) {
+    private List<HighlightVO> createHighlightList(List<HightlightPosXml> highlightPosList) {
         List<HighlightVO> highlightList = new ArrayList<>();
-        for (HightlightPos highlightPos : highlightPosList) {
+        for (HightlightPosXml highlightPos : highlightPosList) {
             highlightList.add(createHighlight(highlightPos));
         }
         return highlightList;
     }
 
-    private HighlightVO createHighlight(HightlightPos highlightPos) {
+    private HighlightVO createHighlight(HightlightPosXml highlightPos) {
         HighlightVO highlight = new HighlightVO();
-        highlight.setFrom(highlightPos.getSpos().longValue());
-        highlight.setTo(highlightPos.getEpos().longValue());
+        highlight.setFrom(highlightPos.getSpos());
+        highlight.setTo(highlightPos.getEpos());
         return highlight;
     }
 

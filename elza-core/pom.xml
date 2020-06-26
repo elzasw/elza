@@ -353,6 +353,10 @@
             <artifactId>swagger-annotations</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>jackson-databind-nullable</artifactId>
         </dependency>
@@ -474,13 +478,19 @@
                         <configuration>
                             <extension>true</extension>
                             <args>
+                                <arg>-Xannotate</arg>
                                 <arg>-Xinheritance</arg>
+                                <arg>-Xvalue-constructor</arg>
                             </args>
                             <generateDirectory>${project.build.directory}/generated-sources/cam</generateDirectory>
                             <schemaDirectory>${project.basedir}/src/main/resources/cam</schemaDirectory>
                             <schemaIncludes>
                                 <include>cam-2019.xsd</include>
                             </schemaIncludes>
+                            <bindingDirectory>${project.basedir}/src/main/resources/cam</bindingDirectory>
+                            <bindingIncludes>
+                                <include>cam-2019.xjb</include>
+                            </bindingIncludes>
 <!--                            <bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>-->
 <!--                            <bindingIncludes>
                                 <include>elza-schema-v2-bindinds.xml</include>
@@ -505,6 +515,26 @@
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-impl</artifactId>
                         <version>2.3.2</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.swagger.core.v3</groupId>
+                        <artifactId>swagger-annotations</artifactId>
+                        <version>2.0.8</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jvnet.jaxb2_commons</groupId>
+                        <artifactId>jaxb2-basics</artifactId>
+                        <version>1.11.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jvnet.jaxb2_commons</groupId>
+                        <artifactId>jaxb2-basics-annotate</artifactId>
+                        <version>1.1.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jvnet.jaxb2_commons</groupId>
+                        <artifactId>jaxb2-value-constructor</artifactId>
+                        <version>3.0</version>
                     </dependency>
                 </dependencies>
             </plugin>
