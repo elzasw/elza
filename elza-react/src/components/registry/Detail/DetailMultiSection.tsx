@@ -7,6 +7,8 @@ import {MOCK_CODE_DATA} from './mock';
 import {ApPartVO} from "../../../api/ApPartVO";
 import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
 import './DetailMultiSelection.scss';
+import {PartValidationErrorsVO} from "../../../api/PartValidationErrorsVO";
+import {objectById} from "../../../shared/utils";
 
 interface Props {
     label: string;
@@ -24,7 +26,7 @@ interface Props {
     globalEntity: boolean;
     deletableWholePart?: boolean;
     singlePart?: boolean;
-    validationResult?: ApValidationErrorsVO;
+    partValidationErrors?: PartValidationErrorsVO[];
 }
 
 const DetailMultiSection: FC<Props> = ({
@@ -43,7 +45,7 @@ const DetailMultiSection: FC<Props> = ({
                                            globalCollapsed,
                                            onDeleteParts,
                                            deletableWholePart,
-                                           validationResult
+                                           partValidationErrors
                                        }) => {
     if (!editMode && parts.length === 0) {
         return null;
@@ -94,7 +96,7 @@ const DetailMultiSection: FC<Props> = ({
                         onSetPreferred={onSetPreferred ? onSetPreferred : () => {
                             console.error("Není definován set preferred callback")
                         }}
-                        validationResult={validationResult}
+                        partValidationError={part.id && objectById(partValidationErrors, part.id)}
                         globalEntity={globalEntity}
                     />
                     {part.id && relatedPartsMap[part.id] && relatedPartsMap[part.id].map((part, index) => {
@@ -106,7 +108,7 @@ const DetailMultiSection: FC<Props> = ({
                             globalCollapsed={globalCollapsed}
                             onDelete={onDelete}
                             onEdit={onEdit}
-                            validationResult={validationResult}
+                            partValidationError={part.id && objectById(partValidationErrors, part.id)}
                             globalEntity={globalEntity}
                         />
                     })}

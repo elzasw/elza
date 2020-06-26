@@ -1064,6 +1064,8 @@ var messages = {
     "ap.ext-search.section.relations": "Vztahy",
     "ap.ext-search.section.extends": "Rozšířený filtr",
 
+    "ap.validation.title": "Výsledek validace archivní entity",
+
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",
     "party.detail.ui.unknownRelation": "Neznámý typ relace",

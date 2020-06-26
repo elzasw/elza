@@ -1,5 +1,8 @@
 package cz.tacr.elza.drools.model;
 
+import java.util.Collections;
+import java.util.List;
+
 public class ModelPart {
 
     private PartType type;
@@ -13,6 +16,11 @@ public class ModelPart {
 
     public PartType getType() {
         return type;
+    }
+
+    // kvůli kompatibilitě s CAM - jednodušší kopírování pravidel (v ELZA se nepoužívá)
+    public List<Index> getIndices() {
+        return Collections.emptyList();
     }
 
     public void setType(PartType type) {

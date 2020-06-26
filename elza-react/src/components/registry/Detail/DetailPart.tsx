@@ -16,6 +16,8 @@ import {ApItemWithTypeVO} from "../../../api/ApItemWithTypeVO";
 import {RulPartTypeVO} from "../../../api/RulPartTypeVO";
 import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
 import {PartType} from "../../../api/generated/model";
+import {PartValidationErrorsVO} from "../../../api/PartValidationErrorsVO";
+import ValidationResultIcon from 'components/ValidationResultIcon';
 //import {sortItems} from "../../itemutils";
 //import ValidationResultIcon from "../ValidationResultIcon";
 
@@ -31,10 +33,10 @@ type Props = {
     editMode?: boolean;
     singlePart: boolean;
     globalEntity: boolean;
-    validationResult?: ApValidationErrorsVO;
+    partValidationError?: PartValidationErrorsVO;
 } & ReturnType<typeof mapStateToProps>;
 
-const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePart, onDelete, onEdit, globalCollapsed, preferred, onAddRelated, globalEntity, validationResult, descItemTypesMap, partTypesMap}) => {
+const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePart, onDelete, onEdit, globalCollapsed, preferred, onAddRelated, globalEntity, partValidationError, descItemTypesMap, partTypesMap}) => {
     const [collapsed, setCollapsed] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const partType = partTypesMap[part.typeId];
@@ -116,17 +118,8 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
     });
 
     const showValidationError = () => {
-        if (validationResult && validationResult.partErrors && validationResult.partErrors.length > 0) {
-            const index = validationResult.partErrors.findIndex(value => value.id === part.id);
-            if (index >= 0) {
-                const errors = validationResult.partErrors[index].errors;
-                if (errors && errors.length > 0) {
-                    return <Col>
-                        ValidationResultIcon
-                        {validationResult.partErrors[index].errors}
-                    </Col>;
-                }
-            }
+        if (partValidationError && partValidationError.errors && partValidationError.errors.length > 0) {
+            return <ValidationResultIcon message={partValidationError.errors} />
         }
     };
 
@@ -168,8 +161,6 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
                     glyph={'fa-plus'}
                     onClick={() => onAddRelated(part)}
                 />}
-            </Col>
-            <Col style={{flex: 1}} className="ml-2">
                 {showValidationError()}
             </Col>
         </Row>
