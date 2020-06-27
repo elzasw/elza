@@ -1123,7 +1123,7 @@ public class ApController {
         BatchUpdateXml batchUpdate = accessPointService.createCreateEntityBatchUpdate(accessPointId, externalSystemCode);
         try {
             BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
-            accessPointService.updateBinding(batchUpdateResult, accessPointId, externalSystemCode);
+            accessPointService.updateBindingAfterSave(batchUpdateResult, accessPointId, externalSystemCode);
         } catch (ApiException e) {
             throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
         }
@@ -1164,10 +1164,20 @@ public class ApController {
     @RequestMapping(value = "/external/update/{accessPointId}", method = RequestMethod.POST)
     public void updateArchiveEntity(@PathVariable("accessPointId") final Integer accessPointId,
                                     @RequestParam final String externalSystemCode) {
-        BatchUpdateXml batchUpdate = accessPointService.createUpdateEntityBatchUpdate(accessPointId, externalSystemCode);
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
+
+        EntityXml entity;
+        try {
+            entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()), externalSystemCode);
+        } catch (ApiException e) {
+            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+        }
+        BatchUpdateXml batchUpdate = accessPointService.createUpdateEntityBatchUpdate(accessPoint, bindingState, entity);
         try {
             BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
-            accessPointService.updateBinding(batchUpdateResult, accessPointId, externalSystemCode);
+            accessPointService.updateBindingAfterUpdate(batchUpdateResult, accessPoint, apExternalSystem);
         } catch (ApiException e) {
             throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
         }

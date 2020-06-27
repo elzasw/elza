@@ -286,6 +286,24 @@ public class ExternalSystemService {
         return bindingStateRepository.save(apBindingState);
     }
 
+    public ApBindingState createNewApBindingState(ApBindingState oldbindingState, ApChange apChange, String revisionUuid) {
+        ApBindingState apBindingState = new ApBindingState();
+        apBindingState.setBinding(oldbindingState.getBinding());
+        apBindingState.setAccessPoint(oldbindingState.getAccessPoint());
+        apBindingState.setExtState(oldbindingState.getExtState());
+        apBindingState.setExtRevision(revisionUuid);
+        apBindingState.setExtUser(oldbindingState.getExtUser());
+        apBindingState.setExtReplacedBy(oldbindingState.getExtReplacedBy());
+        apBindingState.setSyncChange(apChange);
+        apBindingState.setCreateChange(apChange);
+        apBindingState.setSyncOk(SyncState.SYNC_OK);
+
+        oldbindingState.setDeleteChange(apChange);
+        bindingStateRepository.save(oldbindingState);
+
+        return bindingStateRepository.save(apBindingState);
+    }
+
     public ApBindingItem createApBindingItem(final ApBinding binding,
                                              final String uuid,
                                              final ApPart part,
