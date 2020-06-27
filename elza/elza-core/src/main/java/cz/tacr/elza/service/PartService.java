@@ -221,6 +221,19 @@ public class PartService {
         partRepository.save(apPart);
     }
 
+    /**
+     * Odstraní části
+     *
+     * @param partList seznam částí
+     * @param apChange změna
+     */
+    public void deleteParts(List<ApPart> partList, ApChange apChange) {
+        for (ApPart part : partList) {
+            part.setDeleteChange(apChange);
+        }
+        partRepository.save(partList);
+    }
+
     public void deleteParts(final ApAccessPoint accessPoint, final ApChange apChange) {
         List<ApPart> partList = partRepository.findValidPartByAccessPoint(accessPoint);
         for (ApPart part : partList) {
