@@ -14,7 +14,6 @@ import {connect} from "react-redux";
 import {Action} from "redux";
 import {ThunkDispatch} from "redux-thunk";
 import PartEditForm from "./../form/PartEditForm";
-import {PartType} from "../../../api/generated/model";
 import {ApPartFormVO} from "../../../api/ApPartFormVO";
 import {Button} from "../../ui";
 import i18n from "../../i18n";
@@ -22,6 +21,7 @@ import ReduxFormFieldErrorDecorator from "../../shared/form/ReduxFormFieldErrorD
 import {Autocomplete} from "../../shared";
 import {ApTypeVO} from "../../../api/ApTypeVO";
 import Scope from "../../shared/scope/Scope";
+import {objectById} from "../../../shared/utils";
 
 const FORM_NAME = "createAccessPointForm";
 
@@ -43,7 +43,7 @@ const CreateAccessPointModal = ({handleSubmit, onClose, refTables, apTypeId, apT
     // eslint-disable-next-line
     useEffect(() => {
         change('partForm', {
-            partTypeCode: PartType.NAME,
+            partTypeCode: objectById(refTables.partTypes.items, 'PT_NAME', 'code').code,
             items: []
         } as ApPartFormVO);
     }, [apTypeId]);
@@ -91,7 +91,7 @@ const CreateAccessPointModal = ({handleSubmit, onClose, refTables, apTypeId, apT
                         formName: FORM_NAME,
                         sectionName: "partForm"
                     }}
-                    partType={PartType.NAME}
+                    partTypeId={objectById(refTables.partTypes.items, 'PT_NAME', 'code').id}
                     apTypeId={apType.id}
                     scopeId={scopeId}
                     formData={partForm}

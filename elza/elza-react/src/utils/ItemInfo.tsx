@@ -1,6 +1,5 @@
 import {RulDataTypeCodeEnum} from "../api/RulDataTypeCodeEnum";
 import {ApItemVO} from "../api/ApItemVO";
-import {PartType} from "../api/generated/model";
 import {ApCreateTypeVO} from "../api/ApCreateTypeVO";
 import {RulDescItemTypeExtVO} from "../api/RulDescItemTypeExtVO";
 import {ApItemBitVO} from "../api/ApItemBitVO";
@@ -17,6 +16,10 @@ import {ApItemDateVO} from "../api/ApItemDateVO";
 import {ApItemFormattedTextVO} from "../api/ApItemFormattedTextVO";
 import {ApItemDecimalVO} from "../api/ApItemDecimalVO";
 import {ApItemUnitidVO} from "../api/ApItemUnitidVO";
+import {ApViewSettings, ItemType} from "../api/ApViewSettings";
+import {ApPartVO} from "../api/ApPartVO";
+import {RulPartTypeVO} from "../api/RulPartTypeVO";
+import {DetailStoreState} from "../types";
 
 export const ApItemAccessPointRefClass = '.ApItemAccessPointRefVO';
 export const ApItemAPFragmentRefClass = '.ApItemAPFragmentRefVO';
@@ -77,100 +80,131 @@ export function getItemClass(code: RulDataTypeCodeEnum): string {
     }
 }
 
-export function compareItems(a: ApItemVO, b: ApItemVO, partType: PartType, refTables: any): number {
-    let itemTypeInfoMap = refTables.partTypes.itemsMap[partType] || {};
-    let aInfo = itemTypeInfoMap[a.typeId];
-    let bInfo = itemTypeInfoMap[b.typeId];
+export function compareItems(a: ApItemVO,
+                             b: ApItemVO,
+                             partTypeId: number,
+                             refTables: any,
+                             descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+                             apViewSettings: DetailStoreState<ApViewSettings>): number {
+    const part: RulPartTypeVO | undefined = refTables.partTypes.itemsMap[partTypeId];
 
-    if (aInfo && bInfo) {
-        if (aInfo.position && bInfo.position) {
-            return aInfo.position - bInfo.position;
-        } else if (aInfo.position && !bInfo.position) {
-            return -1;
-        } else if (!aInfo.position && bInfo.position) {
-            return 1;
-        } else {
-            return 0;
-        }
-    } else if (aInfo && !bInfo) {
-        return -1;
-    } else if (!aInfo && bInfo) {
-        return 1;
-    } else {
-        let aItemType = refTables.descItemTypes.itemsMap[a.typeId];
-        let bItemType = refTables.descItemTypes.itemsMap[b.typeId];
+    const aInfo = descItemTypesMap[a.typeId];
+    const bInfo = descItemTypesMap[b.typeId];
 
-        let n = aItemType.name.localeCompare(bItemType.name);
-        if (n === 0) {
-            if (a.id && b.id) {
-                return (a.id || 0) - (b.id || 0);
-            } else if (a.id && !b.id) {
+    if (aInfo && bInfo && part) {
+        let itemTypes = apViewSettings.data!.itemTypes;
+        let aIt = findViewItemType(itemTypes, part, aInfo.code);
+        let bIt = findViewItemType(itemTypes, part, bInfo.code);
+        if (aIt && bIt) {
+            if (aIt.position && bIt.position) {
+                return aIt.position - bIt.position;
+            } else if (aIt.position && !bIt.position) {
                 return -1;
-            } else if (!a.id && b.id) {
+            } else if (!aIt.position && bIt.position) {
                 return 1;
             } else {
-                return aItemType.code.localeCompare(bItemType.code);
+                return 0;
             }
-        } else {
-            return n;
-        }
-    }
-}
-
-export function compareCreateTypes(a: ApCreateTypeVO, b: ApCreateTypeVO, partType: PartType, refTables: any): number {
-    let itemTypeInfoMap = refTables.partTypes.itemsMap[partType] || {};
-    let aInfo = itemTypeInfoMap[a.itemTypeId];
-    let bInfo = itemTypeInfoMap[b.itemTypeId];
-
-    if (aInfo && bInfo) {
-        if (aInfo.position && bInfo.position) {
-            return aInfo.position - bInfo.position;
-        } else if (aInfo.position && !bInfo.position) {
+        } else if(aIt) {
             return -1;
-        } else if (!aInfo.position && bInfo.position) {
-            return 1;
         } else {
-            return 0;
+            return 1;
         }
     } else if (aInfo && !bInfo) {
         return -1;
     } else if (!aInfo && bInfo) {
         return 1;
     } else {
-        let aItemType = refTables.descItemTypes.itemsMap[a.itemTypeId];
-        let bItemType = refTables.descItemTypes.itemsMap[b.itemTypeId];
-
-        let n = aItemType.name.localeCompare(bItemType.name);
-        if (n === 0) {
-            return aItemType.code.localeCompare(bItemType.code);
-        } else {
-            return n;
-        }
+        return 0;
     }
 }
 
-export function sortItems(partType: PartType, items: ApItemVO[], refTables: any): ApItemVO[] {
+export function compareCreateTypes(a: ApCreateTypeVO,
+                                   b: ApCreateTypeVO,
+                                   partTypeId: number,
+                                   refTables: any,
+                                   descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+                                   apViewSettings: DetailStoreState<ApViewSettings>): number {
+    const part: RulPartTypeVO | undefined = refTables.partTypes.itemsMap[partTypeId];
+
+    const aInfo = descItemTypesMap[a.itemTypeId];
+    const bInfo = descItemTypesMap[b.itemTypeId];
+
+    if (aInfo && bInfo && part) {
+        let itemTypes = apViewSettings.data!.itemTypes;
+        let aIt = findViewItemType(itemTypes, part, aInfo.code);
+        let bIt = findViewItemType(itemTypes, part, bInfo.code);
+        if (aIt && bIt) {
+            if (aIt.position && bIt.position) {
+                return aIt.position - bIt.position;
+            } else if (aIt.position && !bIt.position) {
+                return -1;
+            } else if (!aIt.position && bIt.position) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else if(aIt) {
+            return -1;
+        } else {
+            return 1;
+        }
+    } else if (aInfo && !bInfo) {
+        return -1;
+    } else if (!aInfo && bInfo) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+
+export function sortItems(partTypeId: number,
+                          items: ApItemVO[],
+                          refTables: any,
+                          descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+                          apViewSettings: DetailStoreState<ApViewSettings>): ApItemVO[] {
     return [...items].sort((a, b) => {
-        return compareItems(a, b, partType, refTables);
+        return compareItems(a, b, partTypeId, refTables, descItemTypesMap, apViewSettings);
     });
 }
 
-export function sortOwnItems(partType: PartType, items: ApItemVO[], refTables: any): ApItemVO[] {
+export function sortOwnItems(partTypeId: number, items: ApItemVO[], refTables: any,
+                             descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+                             apViewSettings: DetailStoreState<ApViewSettings>): ApItemVO[] {
     return items.sort((a, b) => {
-        return compareItems(a, b, partType, refTables);
+        return compareItems(a, b, partTypeId, refTables, descItemTypesMap, apViewSettings);
     });
 }
 
-export function findItemPlacePosition(item: ApItemVO, items: ApItemVO[], partType: PartType, refTables: any): number {
+export function findItemPlacePosition(item: ApItemVO, items: ApItemVO[], partTypeId: number, refTables: any,
+                                      descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+                                      apViewSettings: DetailStoreState<ApViewSettings>): number {
     for (let index = items.length - 1; index >= 0; index--) {
         let i = items[index];
-        let n = compareItems(item, i, partType, refTables);
+        let n = compareItems(item, i, partTypeId, refTables, descItemTypesMap, apViewSettings);
         if (n >= 0) {
             return index + 1;
         }
     }
 
     return 0;
+}
+
+export function findViewItemType(itemTypeSettings: ItemType[], part: RulPartTypeVO, itemTypeCode: string): ItemType | null {
+    for (let i = 0; i < itemTypeSettings.length; i++) {
+        const itemType = itemTypeSettings[i];
+        if (itemType.partType === part.code && itemType.code === itemTypeCode) {
+            return itemType;
+        }
+    }
+    for (let i = 0; i < itemTypeSettings.length; i++) {
+        const itemType = itemTypeSettings[i];
+        if (itemType.partType == null && itemType.code === itemTypeCode) {
+            return itemType;
+        }
+    }
+    return null;
 }
 
 export function computeAllowedItemSpecIds(

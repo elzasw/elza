@@ -2,6 +2,23 @@
 $same-items-spacing: 2px;
 $multivalue-item-spacing: 0;
 
+.ap-validation-alert {
+    background: rgba(234, 153, 153, 0.4);
+    border: 1px solid #EA9999;
+    padding: 0.4rem;
+    h3 {
+        font-size: 15px;
+        font-weight: 500;
+    }
+    ul {
+        padding-left: 1.25rem;
+        li {
+            font-size: 15px;
+        }
+        margin-bottom: 0;
+    }
+}
+
 .part-edit-form {
     .item-wrapper {
         padding-bottom: 8px;

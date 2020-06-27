@@ -151,7 +151,7 @@ public class UISettings {
          * Vazba na pravidla.
          */
         RULE,
-        
+
         /**
          * Vazba na strukturovaný typ
          */
@@ -241,12 +241,12 @@ public class UISettings {
         /**
          * Nastavení pořadí částí v detailu přístupového bodu.
          */
-        PARTS_ORDER(true, EntityType.RULE),
+        PARTS_ORDER,
 
         /**
          * Nastavení atributů dle části v detailu přístupového bodu.
          */
-        ITEM_TYPES(true, EntityType.RULE);
+        ITEM_TYPES;
 
         /**
          * If settings can be global or has to be defined on some entity.
