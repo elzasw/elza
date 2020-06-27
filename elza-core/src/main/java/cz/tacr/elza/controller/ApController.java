@@ -1114,7 +1114,7 @@ public class ApController {
     @RequestMapping(value = "/external/save/{accessPointId}", method = RequestMethod.POST)
     public void saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                 @RequestParam final String externalSystemCode) {
-        BatchUpdateXml batchUpdate = accessPointService.createBatchUpdate(accessPointId, externalSystemCode);
+        BatchUpdateXml batchUpdate = accessPointService.createCreateEntityBatchUpdate(accessPointId, externalSystemCode);
         try {
             BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
             accessPointService.updateBinding(batchUpdateResult, accessPointId, externalSystemCode);
@@ -1158,7 +1158,13 @@ public class ApController {
     @RequestMapping(value = "/external/update/{accessPointId}", method = RequestMethod.POST)
     public void updateArchiveEntity(@PathVariable("accessPointId") final Integer accessPointId,
                                     @RequestParam final String externalSystemCode) {
-
+        BatchUpdateXml batchUpdate = accessPointService.createUpdateEntityBatchUpdate(accessPointId, externalSystemCode);
+        try {
+            BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
+            accessPointService.updateBinding(batchUpdateResult, accessPointId, externalSystemCode);
+        } catch (ApiException e) {
+            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+        }
     }
 
     /**

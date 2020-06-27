@@ -161,6 +161,20 @@ public class AccessPointItemService {
         itemRepository.save(items);
     }
 
+    /**
+     * Odstraní všechny atributy částí.
+     *
+     * @param partList seznam částí
+     * @param change změna
+     */
+    public void deletePartsItems(List<ApPart> partList, ApChange change) {
+        List<ApItem> items = itemRepository.findValidItemsByParts(partList);
+        for (ApItem item : items) {
+            item.setDeleteChange(change);
+        }
+        itemRepository.save(items);
+    }
+
     private void updateItems(final List<ApItemVO> updateItems,
                              final Map<Integer, List<ApItem>> typeIdItemsMap,
                              final List<ApItem> itemsDb,
@@ -300,6 +314,21 @@ public class AccessPointItemService {
         }
         dataRepository.save(dataToSave);
         return itemsCreated;
+    }
+
+    public ApItem createItem(final ApItem oldItem,
+                             final ApChange change,
+                             final ApPart apPart) {
+        ApItem newItem = new ApItem();
+        newItem.setCreateChange(change);
+        newItem.setData(oldItem.getData());
+        newItem.setItemSpec(oldItem.getItemSpec());
+        newItem.setItemType(oldItem.getItemType());
+        newItem.setObjectId(oldItem.getObjectId());
+        newItem.setPosition(oldItem.getPosition());
+        newItem.setPart(apPart);
+
+        return newItem;
     }
 
     private ApItem createItem(final Object createItem,
@@ -471,10 +500,176 @@ public class AccessPointItemService {
         return null;
     }
 
-    public List<Object> findNewOrChangedItems(List<Object> items, List<ApBindingItem> bindingItems) {
+    public List<Object> findNewOrChangedItems(List<Object> items, List<ApBindingItem> bindingItems, List<ApBindingItem> notChangeItems) {
         List<Object> changedItems = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(items)) {
+            for (Object item : items) {
+                if (item instanceof ItemBooleanXml) {
+                    ItemBooleanXml itemBoolean = (ItemBooleanXml) item;
+                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemBoolean.getUuid().getValue());
 
+                    if (bindingItem == null) {
+                        changedItems.add(itemBoolean);
+                    } else {
+                        ApItem ib = bindingItem.getItem();
+                        ArrDataBit dataBit = (ArrDataBit) ib.getData();
+                        if (!(ib.getItemType().getCode().equals(itemBoolean.getT().getValue()) &&
+                                compareItemSpec(ib.getItemSpec(), itemBoolean.getS()) &&
+                                dataBit.isValue().equals(itemBoolean.getValue().isValue()))) {
+                            changedItems.add(itemBoolean);
+                        } else {
+                            notChangeItems.add(bindingItem);
+                            bindingItems.remove(bindingItem);
+                        }
+                    }
+                } else if (item instanceof ItemEntityRefXml) {
+                    ItemEntityRefXml itemEntityRef = (ItemEntityRefXml) item;
+                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemEntityRef.getUuid().getValue());
+
+                    if (bindingItem == null) {
+                        changedItems.add(itemEntityRef);
+                    } else {
+                        ApItem ier = bindingItem.getItem();
+                        ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) ier.getData();
+                        EntityRecordRefXml entityRecordRef = (EntityRecordRefXml) itemEntityRef.getRef();
+                        if (!(ier.getItemType().getCode().equals(itemEntityRef.getT().getValue()) &&
+                                compareItemSpec(ier.getItemSpec(), itemEntityRef.getS()) &&
+                                dataRecordRef.getBinding().getValue().equals(String.valueOf(entityRecordRef.getEid().getValue())))) {
+
+                            changedItems.add(itemEntityRef);
+                        } else {
+                            notChangeItems.add(bindingItem);
+                            bindingItems.remove(bindingItem);
+                        }
+                    }
+                } else if (item instanceof ItemEnumXml) {
+                    ItemEnumXml itemEnum = (ItemEnumXml) item;
+                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemEnum.getUuid().getValue());
+
+                    if (bindingItem == null) {
+                        changedItems.add(itemEnum);
+                    } else {
+                        ApItem ie = bindingItem.getItem();
+                        if (!(ie.getItemType().getCode().equals(itemEnum.getT().getValue()) &&
+                                compareItemSpec(ie.getItemSpec(), itemEnum.getS()))) {
+
+                            changedItems.add(itemEnum);
+                        } else {
+                            notChangeItems.add(bindingItem);
+                            bindingItems.remove(bindingItem);
+                        }
+                    }
+                } else if (item instanceof ItemIntegerXml) {
+                    ItemIntegerXml itemInteger = (ItemIntegerXml) item;
+                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemInteger.getUuid().getValue());
+
+                    if (bindingItem == null) {
+                        changedItems.add(itemInteger);
+                    } else {
+                        ApItem ii = bindingItem.getItem();
+                        ArrDataInteger dataInteger = (ArrDataInteger) ii.getData();
+                        if (!(ii.getItemType().getCode().equals(itemInteger.getT().getValue()) &&
+                                compareItemSpec(ii.getItemSpec(), itemInteger.getS()) &&
+                                dataInteger.getValue().equals(itemInteger.getValue().getValue().intValue()))) {
+
+                            changedItems.add(itemInteger);
+                        } else {
+                            notChangeItems.add(bindingItem);
+                            bindingItems.remove(bindingItem);
+                        }
+                    }
+                } else if (item instanceof ItemLinkXml) {
+                    ItemLinkXml itemLink = (ItemLinkXml) item;
+                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemLink.getUuid().getValue());
+
+                    if (bindingItem == null) {
+                        changedItems.add(itemLink);
+                    } else {
+                        ApItem il = bindingItem.getItem();
+                        ArrDataUriRef dataUriRef = (ArrDataUriRef) il.getData();
+                        if (!(il.getItemType().getCode().equals(itemLink.getT().getValue()) &&
+                                compareItemSpec(il.getItemSpec(), itemLink.getS()) &&
+                                dataUriRef.getValue().equals(itemLink.getUrl().getValue()) &&
+                                dataUriRef.getDescription().equals(itemLink.getNm().getValue()))) {
+
+                            changedItems.add(itemLink);
+                        } else {
+                            notChangeItems.add(bindingItem);
+                            bindingItems.remove(bindingItem);
+                        }
+                    }
+                } else if (item instanceof ItemStringXml) {
+                    ItemStringXml itemString = (ItemStringXml) item;
+                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemString.getUuid().getValue());
+
+                    if (bindingItem == null) {
+                        changedItems.add(itemString);
+                    } else {
+                        ApItem is = bindingItem.getItem();
+                        String value;
+                        switch(DataType.fromCode(is.getItemType().getDataType().getCode())) {
+                            case STRING:
+                                ArrDataString dataString = (ArrDataString) is.getData();
+                                value = dataString.getValue();
+                                break;
+                            case TEXT:
+                                ArrDataText dataText = (ArrDataText) is.getData();
+                                value = dataText.getValue();
+                                break;
+                            case COORDINATES:
+                                ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) is.getData();
+                                value = GeometryConvertor.convert(dataCoordinates.getValue());
+                                break;
+                            default:
+                                throw new IllegalStateException("Neznámý datový typ " + is.getItemType().getDataType().getCode());
+                        }
+                        if (!(is.getItemType().getCode().equals(itemString.getT().getValue()) &&
+                                compareItemSpec(is.getItemSpec(), itemString.getS()) &&
+                                value.equals(itemString.getValue().getValue()))) {
+
+                            changedItems.add(itemString);
+                        } else {
+                            notChangeItems.add(bindingItem);
+                            bindingItems.remove(bindingItem);
+                        }
+                    }
+                } else if (item instanceof ItemUnitDateXml) {
+                    ItemUnitDateXml itemUnitDate = (ItemUnitDateXml) item;
+                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemUnitDate.getUuid().getValue());
+
+                    if (bindingItem == null) {
+                        changedItems.add(itemUnitDate);
+                    } else {
+                        ApItem iud = bindingItem.getItem();
+                        ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) iud.getData();
+                        if (!(iud.getItemType().getCode().equals(itemUnitDate.getT().getValue()) &&
+                                compareItemSpec(iud.getItemSpec(), itemUnitDate.getS()) &&
+                                dataUnitdate.getValueFrom().equals(itemUnitDate.getF().trim()) &&
+                                dataUnitdate.getValueFromEstimated().equals(itemUnitDate.isFe()) &&
+                                dataUnitdate.getFormat().equals(itemUnitDate.getFmt()) &&
+                                dataUnitdate.getValueTo().equals(itemUnitDate.getTo().trim()) &&
+                                dataUnitdate.getValueToEstimated().equals(itemUnitDate.isToe()))) {
+
+                            changedItems.add(itemUnitDate);
+                        } else {
+                            notChangeItems.add(bindingItem);
+                            bindingItems.remove(bindingItem);
+                        }
+                    }
+                } else {
+                    throw new IllegalArgumentException("Invalid item type");
+                }
+            }
+        }
         return changedItems;
+    }
+
+    private boolean compareItemSpec(RulItemSpec itemSpec, CodeXml itemSpecCode) {
+        if (itemSpec == null) {
+            return itemSpecCode == null;
+        } else {
+            return itemSpec.getCode().equals(itemSpecCode.getValue());
+        }
     }
 
     private List<ApItem> shiftItems(final List<ApItem> items, final int diff, final ApChange change) {
