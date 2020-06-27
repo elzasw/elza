@@ -1776,6 +1776,13 @@ public class AccessPointService {
     }
 
     /**
+     * Získání typů.
+     */
+    public List<ApType> findTypes() {
+        return apTypeRepository.findAll();
+    }
+
+    /**
      * Získání jazyku podle kódu.
      *
      * @param languageCode kód jazyku

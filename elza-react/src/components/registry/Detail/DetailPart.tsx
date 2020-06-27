@@ -1,28 +1,22 @@
 import React, {FC, useEffect, useState} from 'react';
 import {Col, Row} from 'react-bootstrap';
 import DetailItem from './DetailItem';
-//import EditModal from '../EditModal';
 import classNames from "classnames";
 import "./DetailPart.scss";
-import {AePartNameClass} from "../../../api/old/ApPartInfo";
-//import DetailActionButton from "../DetailActionButton";
-//import {CodelistData} from "../../shared/reducers/codelist/CodelistTypes";
 import {connect} from "react-redux";
 import DetailMultipleItem from "./DetailMultipleItem";
 import Icon from '../../shared/icon/Icon';
 import {ApPartVO} from "../../../api/ApPartVO";
-import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
-import {ApItemWithTypeVO} from "../../../api/ApItemWithTypeVO";
 import {RulPartTypeVO} from "../../../api/RulPartTypeVO";
 import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
-import {PartType} from "../../../api/generated/model";
 import {PartValidationErrorsVO} from "../../../api/PartValidationErrorsVO";
 import ValidationResultIcon from 'components/ValidationResultIcon';
 import {Bindings} from "../../../types";
 import i18n from "../../i18n";
-import {SyncState} from "../../../api/SyncState";
-//import {sortItems} from "../../itemutils";
-//import ValidationResultIcon from "../ValidationResultIcon";
+import {ItemType} from "../../../api/ApViewSettings";
+import {objectById} from "../../../shared/utils";
+import {ApItemVO} from "../../../api/ApItemVO";
+import {findViewItemType} from "../../../utils/ItemInfo";
 
 type Props = {
     label: string;
@@ -38,9 +32,10 @@ type Props = {
     globalEntity: boolean;
     partValidationError?: PartValidationErrorsVO;
     bindings: Bindings;
+    itemTypeSettings: ItemType[];
 } & ReturnType<typeof mapStateToProps>;
 
-const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePart, onDelete, onEdit, globalCollapsed, preferred, onAddRelated, globalEntity, partValidationError, descItemTypesMap, partTypesMap, bindings}) => {
+const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePart, onDelete, onEdit, globalCollapsed, preferred, onAddRelated, globalEntity, partValidationError, descItemTypesMap, partTypesMap, bindings, itemTypeSettings}) => {
     const [collapsed, setCollapsed] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const partType = partTypesMap[part.typeId];
@@ -69,11 +64,11 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
     );
 
     let showPreferredSwitch = false;
-    if (partType.code === PartType.NAME) {
+    if (partType.code === 'PT_NAME') {
         showPreferredSwitch = !singlePart;
     }
 
-    const renderItems = (items: ApItemWithTypeVO[]) => {
+    const renderItems = (items: ApItemVO[]) => {
         if (items.length === 0) {
             return <Col className={"mt-1"}><i>Nejsou definovány žádné hodnoty atributů</i></Col>;
         }
@@ -87,8 +82,14 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
                 index2++;
             }
 
-            let itemInfo = items[index].type;
-            let width = itemInfo && itemInfo.width ? itemInfo.width : 2;
+            const itemTypeExt: RulDescItemTypeExtVO = descItemTypesMap[items[index].typeId];
+            let width = 2; // default
+            if (itemTypeExt) {
+                const itemType: ItemType | null = findViewItemType(itemTypeSettings, partType, itemTypeExt.code);
+                if (itemType && itemType.width) {
+                    width = itemType.width;
+                }
+            }
 
             let sameItems = items.slice(index, index2);
             index = index2;
@@ -108,17 +109,20 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
         return result;
     };
 
-    const itemsWithType = ((part.items ? part.items : []) as ApItemWithTypeVO[]).map((i) => {
-        i.type = descItemTypesMap[i.typeId] ? descItemTypesMap[i.typeId] : null;
-        return i;
-    });
-
-    const sortedItems = itemsWithType.sort((a, b) => {
-        if (a.type && b.type) {
-            return a.type.viewOrder - b.type.viewOrder;
+    const sortedItems = part.items.sort((a, b) => {
+        const aItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[a.typeId].code, 'code');
+        const bItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[b.typeId].code, 'code');
+        if (aItemType == null && bItemType == null) {
+            return 0;
+        } else if (aItemType == null) {
+            return -1;
+        } else if (bItemType == null) {
+            return 1;
+        } else {
+            const aPos = aItemType.position || 9999;
+            const bPos = bItemType.position || 9999;
+            return aPos - bPos;
         }
-
-        return 0;
     });
 
     const showValidationError = () => {

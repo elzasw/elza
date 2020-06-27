@@ -10,6 +10,7 @@ import './DetailMultiSelection.scss';
 import {PartValidationErrorsVO} from "../../../api/PartValidationErrorsVO";
 import {objectById} from "../../../shared/utils";
 import {Bindings} from "../../../types";
+import {ItemType} from "../../../api/ApViewSettings";
 
 interface Props {
     label: string;
@@ -29,6 +30,7 @@ interface Props {
     singlePart?: boolean;
     bindings: Bindings;
     partValidationErrors?: PartValidationErrorsVO[];
+    itemTypeSettings: ItemType[];
 }
 
 const DetailMultiSection: FC<Props> = ({
@@ -48,7 +50,8 @@ const DetailMultiSection: FC<Props> = ({
                                            onDeleteParts,
                                            deletableWholePart,
                                            partValidationErrors,
-                                           bindings
+                                           bindings,
+                                           itemTypeSettings
                                        }) => {
     if (!editMode && parts.length === 0) {
         return null;
@@ -82,8 +85,7 @@ const DetailMultiSection: FC<Props> = ({
                 />}
             </h4>
 
-            {/* TODO sort tak, aby preferred byly prvni  */}
-            {[...parts].map((part, index) => {
+            {parts.map((part, index) => {
                 return <div key={index}>
                     <DetailPart
                         key={index}
@@ -102,6 +104,7 @@ const DetailMultiSection: FC<Props> = ({
                         partValidationError={part.id && objectById(partValidationErrors, part.id)}
                         globalEntity={globalEntity}
                         bindings={bindings}
+                        itemTypeSettings={itemTypeSettings}
                     />
                     {part.id && relatedPartsMap[part.id] && relatedPartsMap[part.id].map((part, index) => {
                         return <DetailRelatedPart
@@ -115,6 +118,7 @@ const DetailMultiSection: FC<Props> = ({
                             partValidationError={part.id && objectById(partValidationErrors, part.id)}
                             globalEntity={globalEntity}
                             bindings={bindings}
+                            itemTypeSettings={itemTypeSettings}
                         />
                     })}
                 </div>

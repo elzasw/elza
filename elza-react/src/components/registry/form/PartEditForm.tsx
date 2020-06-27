@@ -5,7 +5,6 @@ import "./PartEditForm.scss";
 import {Action} from "redux";
 import classNames from "classnames";
 import {ThunkDispatch} from "redux-thunk";
-import {PartType} from "../../../api/generated/model";
 import {ApPartFormVO} from "../../../api/ApPartFormVO";
 import {Icon} from "../../index";
 import {Alert, Button, Col, Form, Row} from "react-bootstrap";
@@ -38,10 +37,14 @@ import FormInput from "../../shared/form/FormInput";
 import {Area} from "../../../api/Area";
 import RelationPartItemEditModalForm from "../modal/RelationPartItemEditModalForm";
 import {objectById} from "../../../shared/utils";
+import {ApViewSettings, ItemType} from "../../../api/ApViewSettings";
+import storeFromArea from "../../../shared/utils/storeFromArea";
+import {AP_VIEW_SETTINGS} from "../../../constants";
+import {DetailStoreState} from "../../../types";
 
 
 type OwnProps = {
-    partType: PartType;
+    partTypeId: number;
     apTypeId: number;
     scopeId: number;
     formData?: ApPartFormVO;
@@ -136,7 +139,7 @@ const renderItem = (name: string,
                         disabled={disabled}
                         onClick={() => onCustomEditItem(name, systemCode, item)}
                     >
-                        <Icon glyph={'fa-pen'}/>
+                        <Icon glyph='fa-edit'/>
                     </Button>
                 </Col>
             </Row>;
@@ -268,15 +271,17 @@ const renderItem = (name: string,
 const renderItems = (props: WrappedFieldArrayProps & {
     disabled: boolean,
     refTables: any,
-    partType: PartType,
+    partTypeId: number,
     deleteMode: boolean,
     itemTypeAttributeMap: Record<number, ApCreateTypeVO>,
     onCustomEditItem: (name: string, systemCode: RulDataTypeCodeEnum, item: ApItemVO) => void,
     showImportDialog: (field: string) => void,
     formData?: ApPartFormVO,
     apId?: number,
+    itemTypeSettings: ItemType[];
+    descItemTypesMap: any;
 }): any => {
-    const {refTables, partType, disabled, deleteMode, fields, onCustomEditItem, itemTypeAttributeMap, formData, apId, showImportDialog} = props;
+    const {refTables, partTypeId, disabled, deleteMode, fields, onCustomEditItem, itemTypeAttributeMap, formData, apId, showImportDialog, itemTypeSettings, descItemTypesMap} = props;
 
     const items = fields.getAll() as ApItemVO[];
     if (!items) {
@@ -296,11 +301,14 @@ const renderItems = (props: WrappedFieldArrayProps & {
             index2++;
         }
 
-        let itemInfo;
-        if (refTables.partTypes.itemsMap[partType]) {
-            itemInfo = refTables.partTypes.itemsMap[partType][items[index].typeId] as RulPartTypeVO;
+        const itemTypeExt: RulDescItemTypeExtVO = descItemTypesMap[items[index].typeId];
+        let width = 2; // default
+        if (itemTypeExt) {
+            const itemType: ItemType = objectById(itemTypeSettings, itemTypeExt.code, 'code');
+            if (itemType && itemType.width) {
+                width = itemType.width;
+            }
         }
-        let width = itemInfo ? itemInfo.width : 2;
 
         let sameItems = items.slice(index, index2);
         // eslint-disable-next-line
@@ -319,18 +327,22 @@ const renderItems = (props: WrappedFieldArrayProps & {
     return result;
 };
 
-const renderAddActions = ({attributes, formData, refTables, partType, fields, handleAddItems}: WrappedFieldArrayProps & {
+const renderAddActions = ({attributes, formData, refTables, partTypeId, fields, handleAddItems, descItemTypesMap, apViewSettings}: WrappedFieldArrayProps & {
     attributes: Array<ApCreateTypeVO>,
     formData?: ApPartFormVO,
     refTables: any,
-    partType: PartType,
+    partTypeId: number,
+    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+    apViewSettings: DetailStoreState<ApViewSettings>,
     handleAddItems: (
         attributes: Array<ApCreateTypeVO>,
         refTables: any,
         formItems: Array<ApItemVO>,
-        partType: PartType,
+        partTypeId: number,
         arrayInsert: (index: number, value: any) => void,
-        userAction: boolean
+        userAction: boolean,
+        descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+        apViewSettings: DetailStoreState<ApViewSettings>,
     ) => void
 }): any => {
     const existingItemTypeIds: Record<number, boolean> = {};
@@ -348,7 +360,7 @@ const renderAddActions = ({attributes, formData, refTables, partType, fields, ha
                 title={itemType.name}
                 style={{paddingLeft: 0, color: '#000'}}
                 onClick={() => {
-                    handleAddItems([attr], refTables, formData ? formData.items : [], partType, fields.insert, true);
+                    handleAddItems([attr], refTables, formData ? formData.items : [], partTypeId, fields.insert, true, descItemTypesMap, apViewSettings);
                 }}
             >
                 <Icon className="mr-1" glyph={'fa-plus'}/>
@@ -359,7 +371,7 @@ const renderAddActions = ({attributes, formData, refTables, partType, fields, ha
 
 const PartEditForm = ({
                           refTables,
-                          partType,
+                          partTypeId,
                           apTypeId,
                           formData,
                           submitting,
@@ -371,6 +383,8 @@ const PartEditForm = ({
                           apId,
                           scopeId,
                           showImportDialog,
+                          apViewSettings,
+                          descItemTypesMap
                       }: Props) => {
 
     const [deleteMode, setDeleteMode] = useState<boolean>(false);
@@ -404,7 +418,7 @@ const PartEditForm = ({
                     // Seřazení dat
                     let attrs = attributesInfo.attributes;
                     attrs.sort((a, b) => {
-                        return compareCreateTypes(a, b, partType, refTables);
+                        return compareCreateTypes(a, b, partTypeId, refTables, descItemTypesMap, apViewSettings);
                     });
 
                     setAvailAttributes(attrs);
@@ -423,7 +437,7 @@ const PartEditForm = ({
                             }
                         });
 
-                    handleAddItems(addAtttrs, refTables, formData.items || [], partType, customArrayInsert(), false);
+                    handleAddItems(addAtttrs, refTables, formData.items || [], partTypeId, customArrayInsert(), false, descItemTypesMap, apViewSettings);
                 }
             });
     };
@@ -465,7 +479,7 @@ const PartEditForm = ({
 
     const renderValidationErrors = (errors: Array<string>) => {
         return <>
-            <ul className="m-0">{errors.map((value) => <li>{value}</li>)}</ul>
+            <ul>{errors.map((value) => <li>{value}</li>)}</ul>
         </>
     };
 
@@ -476,10 +490,12 @@ const PartEditForm = ({
     return <div>
         {editErrors && editErrors.length > 0 &&
         <Row key="validationAlert" className="mb-3">
-            <Alert className="w-100" variant={"warning"}>
-                <h3>Chyby validace formuláře.</h3>
-                {renderValidationErrors(editErrors)}
-            </Alert>
+            <Col className="w-100">
+                <div className="ap-validation-alert">
+                    <h3>Chyby validace formuláře.</h3>
+                    {renderValidationErrors(editErrors)}
+                </div>
+            </Col>
         </Row>
         }
         <Row key="actions" className="mb-3 d-flex justify-content-between">
@@ -488,14 +504,16 @@ const PartEditForm = ({
                     key="action-items"
                     name="items"
                     component={renderAddActions}
-                    partType={partType}
+                    partTypeId={partTypeId}
                     attributes={availAttributes}
                     formData={formData}
                     refTables={refTables}
                     handleAddItems={handleAddItems}
+                    descItemTypesMap={descItemTypesMap}
+                    apViewSettings={apViewSettings}
                 />}
             </Col>
-            <Col xs={3}>
+            <Col xs="auto">
                 <Button disabled={disabled} variant={'outline-dark'} onClick={() => handleDeleteMode()}>
                     {deleteMode ? 'Ukončit režim odstraňování' : 'Odstranit položky formuláře'}
                 </Button>
@@ -510,12 +528,14 @@ const PartEditForm = ({
                 component={renderItems}
                 itemTypeAttributeMap={itemTypeAttributeMap}
                 refTables={refTables}
-                partType={partType}
+                partTypeId={partTypeId}
                 deleteMode={deleteMode}
                 onCustomEditItem={(name: string, systemCode: RulDataTypeCodeEnum, item: ApItemVO) => onCustomEditItem(name, systemCode, item, refTables, itemTypeAttributeMap)}
                 formData={formData}
                 apId={apId}
                 showImportDialog={showImportDialog}
+                itemTypeSettings={apViewSettings.data!.itemTypes}
+                descItemTypesMap={descItemTypesMap}
             />
         </Row>
     </div>
@@ -532,9 +552,11 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
         attributes: Array<ApCreateTypeVO>,
         refTables: any,
         formItems: ApItemVO[],
-        partType: PartType,
+        partTypeId: number,
         arrayInsert: (index: number, value: any) => void,
-        userAction: boolean
+        userAction: boolean,
+        descItemTypesMap,
+        apViewSettings,
     ) => {
         const newItems = attributes.map(attribute => {
             const itemType = refTables.descItemTypes.itemsMap[attribute.itemTypeId] as RulDescItemTypeExtVO;
@@ -543,7 +565,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
             const item: ApItemVO = {
                 typeId: attribute.itemTypeId,
                 "@class": ItemInfo.getItemClass(dataType.code),
-                position: itemType.viewOrder,
+                position: 1, // TODO: dořešit pozici
             };
 
             // Implicitní hodnoty
@@ -565,11 +587,11 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
         });
 
         // Vložení do formuláře - od konce
-        sortOwnItems(partType, newItems, refTables);
+        sortOwnItems(partTypeId, newItems, refTables, descItemTypesMap, apViewSettings);
         newItems
             .reverse()
             .forEach(item => {
-                let index = findItemPlacePosition(item, formItems, partType, refTables);
+                let index = findItemPlacePosition(item, formItems, partTypeId, refTables, descItemTypesMap, apViewSettings);
                 arrayInsert(index, item);
             });
     },
@@ -604,7 +626,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
                 <RelationPartItemEditModalForm
                     initialValues={initialValues}
                     itemTypeAttributeMap={itemTypeAttributeMap}
-                    itemTypeId={item.typeId}
+                    typeId={item.typeId}
                     onSubmit={form => {
                         let field = name;
                         const fieldValue: any = {
@@ -649,6 +671,8 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
 
 const mapStateToProps = (state: any) => {
     return {
+        descItemTypesMap: state.refTables.descItemTypes.itemsMap as Record<number, RulDescItemTypeExtVO>,
+        apViewSettings: storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>,
         refTables: state.refTables,
     }
 };

@@ -19,6 +19,7 @@ const initialState = {
     partyDetail: DetailReducer(),
     registryDetail: registryDetail(),
     apValidation: DetailReducer(),
+    apViewSettings: DetailReducer(),
     registryDetailHistory: SimpleListReducer(),
     preparedRequestList: SimpleListReducer(), // seznam neodeslaných požadavků - sdíleno pro celou aplikaci
     requestInQueueList: SimpleListReducer(), // seznam požadavků ve frontě

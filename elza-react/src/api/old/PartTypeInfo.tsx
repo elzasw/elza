@@ -9,6 +9,7 @@ import {
   AePartRelationClass
 } from "./ApPartInfo";
 
+// TODO: na zahození, je třeba rozmyslet kde brát popisky
 export function getPartEditDialogLabel(value: PartType, createDialog: boolean) {
   switch (value) {
     case PartType.BODY:
@@ -28,27 +29,5 @@ export function getPartEditDialogLabel(value: PartType, createDialog: boolean) {
     default:
       console.warn("Nepřeložená hodnota", value);
       return "?";
-  }
-}
-
-export function getPartType(partClass: string | undefined) : PartType {
-  switch (partClass) {
-    case AePartNameClass:
-      return PartType.NAME;
-    case AePartBodyClass:
-      return PartType.BODY;
-    case AePartCreationClass:
-      return PartType.CRE;
-    case AePartEventClass:
-      return PartType.EVENT;
-    case AePartExtinctionClass:
-      return PartType.EXT;
-    case AePartIdentifierClass:
-      return PartType.IDENT;
-    case AePartRelationClass:
-      return PartType.REL;
-    default:
-      console.error("Chybí konverze z partclass na part type", partClass);
-      return PartType.NAME;
   }
 }

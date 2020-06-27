@@ -33,7 +33,7 @@ const formConfig: ConfigProps<RelationFilterClientVO, ModalFormProps> = {
 
 type Props = {
     refTables?: any;
-    itemTypeId: number;
+    typeId: number;
     itemTypeAttributeMap: Record<number, ApCreateTypeVO>;
     onClose: () => void;
 } & ReturnType<typeof mapStateToProps> & InjectedFormProps;
@@ -45,8 +45,8 @@ const RelationPartItemEditModalForm = ({
                                            onlyMainPart,
                                            itemTypeAttributeMap,
                                            area,
-                                           itemSpecId,
-                                           itemTypeId,
+                                           specId,
+                                           typeId,
                                            geoSearchItemType,
                                            submitting,
                                        }: Props) => {
@@ -54,10 +54,10 @@ const RelationPartItemEditModalForm = ({
         return <div/>;
     }
 
-    let itemType = refTables.descItemTypes.itemsMap[itemTypeId] as RulDescItemTypeExtVO;
-    const renderSpecification = itemTypeId && itemType && itemType.useSpecification;
+    let itemType = refTables.descItemTypes.itemsMap[typeId] as RulDescItemTypeExtVO;
+    const renderSpecification = typeId && itemType && itemType.useSpecification;
 
-    const useItemSpecIds = computeAllowedItemSpecIds(itemTypeAttributeMap, itemType, itemSpecId);
+    const useItemSpecIds = computeAllowedItemSpecIds(itemTypeAttributeMap, itemType, specId);
 
     const getSpecialActionField = () => {
         //todo: Zatim nepodporujeme
@@ -94,7 +94,7 @@ const RelationPartItemEditModalForm = ({
             {renderSpecification && <Field
                 name="specId"
                 label="Specifikace vztahu"
-                itemTypeId={itemTypeId}
+                itemTypeId={typeId}
                 itemSpecIds={useItemSpecIds}
                 component={ReduxFormFieldErrorDecorator}
                 renderComponent={SpecificationField}
@@ -137,9 +137,9 @@ const RelationPartItemEditModalForm = ({
                         label={'Návazná archivní entita'}
                         onlyMainPart={onlyMainPart}
                         area={area}
-                        itemTypeId={itemTypeId}
-                        itemSpecId={specialActionField ? geoSearchItemType : itemSpecId}
-                        disabled={renderSpecification ? itemSpecId == null : false}
+                        itemTypeId={typeId}
+                        itemSpecId={specialActionField ? geoSearchItemType : specId}
+                        disabled={renderSpecification ? specId == null : false}
                     />
                 </Col>
             </Row>
@@ -160,7 +160,7 @@ const selector = formValueSelector(FORM_NAME);
 const mapStateToProps = (state: any) => {
     return {
         refTables: state.refTables,
-        itemSpecId: selector(state, "itemSpecId"),
+        specId: selector(state, "specId"),
         onlyMainPart: selector(state, "onlyMainPart"),
         area: selector(state, "area"),
         geoSearchItemType: selector(state, "geoSearchItemType"),

@@ -7,8 +7,11 @@ import java.util.stream.Collectors;
 import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.connector.CamInstance;
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.ap.ApViewSettings;
 import cz.tacr.elza.controller.vo.ap.item.*;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.packageimport.xml.SettingItemTypes;
+import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
 import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -595,4 +598,14 @@ public class ApFactory {
         return new ApEidTypeVO(type.getExternalIdTypeId(), type.getCode(), type.getName());
     }
 
+    public ApViewSettings createApTypeViewSettings(final List<UISettings> itemTypesSettings, final List<UISettings> partsOrderSettings) {
+        ApViewSettings result = new ApViewSettings();
+        result.setItemTypes(itemTypesSettings.size() > 0
+                ? SettingItemTypes.newInstance(itemTypesSettings.get(0)).getItemTypes()
+                : Collections.emptyList());
+        result.setPartsOrder(partsOrderSettings.size() > 0
+                ? SettingPartsOrder.newInstance(partsOrderSettings.get(0)).getParts()
+                : Collections.emptyList());
+        return result;
+    }
 }

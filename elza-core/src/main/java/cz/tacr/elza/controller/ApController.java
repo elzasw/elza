@@ -34,6 +34,7 @@ import cz.tacr.elza.controller.vo.RequiredType;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
+import cz.tacr.elza.controller.vo.ap.ApViewSettings;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
@@ -55,6 +56,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.drools.model.ItemSpec;
 import cz.tacr.elza.drools.model.ModelAvailable;
@@ -77,6 +79,7 @@ import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -170,6 +173,9 @@ public class ApController {
 
     @Autowired
     private CamConnector camConnector;
+
+    @Autowired
+    private SettingsService settingsService;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -1208,5 +1214,14 @@ public class ApController {
         accessPointService.createAccessPoints(state.getScope(), entities, externalSystemCode);
     }
 
+    @Transactional
+    @RequestMapping(value = "/ap-types/view-settings", method = RequestMethod.GET)
+    public ApViewSettings getApTypeViewSettings() {
+        UISettings.SettingsType itemTypes = UISettings.SettingsType.ITEM_TYPES;
+        UISettings.SettingsType partsOrder = UISettings.SettingsType.PARTS_ORDER;
+        List<UISettings> itemTypesSettings = settingsService.getGlobalSettings(itemTypes.toString(), itemTypes.getEntityType());
+        List<UISettings> partsOrderSettings = settingsService.getGlobalSettings(partsOrder.toString(), partsOrder.getEntityType());
+        return apFactory.createApTypeViewSettings(itemTypesSettings, partsOrderSettings);
+    }
 
 }

@@ -1,44 +1,39 @@
 import React, {FC, useEffect, useState} from 'react';
 import {Col, Row} from 'react-bootstrap';
 import DetailItem from './DetailItem';
-//import EditModal from '../EditModal';
 import classNames from "classnames";
 import "./DetailRelatedPart.scss";
-//import {faArrowRight, faEdit, faTrash} from "@fortawesome/free-solid-svg-icons";
-//import DetailActionButton from "../DetailActionButton";
-//import {CodelistData} from "../../shared/reducers/codelist/CodelistTypes";
 import {connect} from "react-redux";
-import * as PartTypeInfo from "../../../api/old/PartTypeInfo";
 import DetailMultipleItem from "./DetailMultipleItem";
 import Icon from '../../shared/icon/Icon';
-import {MOCK_CODE_DATA} from './mock';
 import {ApPartVO} from "../../../api/ApPartVO";
-import {ApValidationErrorsVO} from "../../../api/ApValidationErrorsVO";
 import {ApItemVO} from "../../../api/ApItemVO";
 import {PartValidationErrorsVO} from "../../../api/PartValidationErrorsVO";
 import ValidationResultIcon from "../../ValidationResultIcon";
 import {Bindings} from "../../../types";
-//import {sortItems} from "../../itemutils";
-//import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-//import ValidationResultIcon from "../ValidationResultIcon";
+import {ItemType} from "../../../api/ApViewSettings";
+import {objectById} from "../../../shared/utils";
+import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
+import {findViewItemType} from "../../../utils/ItemInfo";
+import {RulPartTypeVO} from "../../../api/RulPartTypeVO";
 
-interface Props {
+type Props = {
   label: string;
   part: ApPartVO;
   globalCollapsed: boolean;
   onDelete?: (part: ApPartVO) => void;
   onEdit?: (part: ApPartVO) => void;
   editMode?: boolean;
-  codelist: any;
   globalEntity: boolean;
   partValidationError?: PartValidationErrorsVO;
   bindings: Bindings;
-}
+  itemTypeSettings: ItemType[];
+} & ReturnType<typeof mapStateToProps>;
 
-const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDelete, onEdit, globalCollapsed, codelist, partValidationError, bindings}) => {
+const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDelete, onEdit, globalCollapsed, partValidationError, bindings, descItemTypesMap, itemTypeSettings, partTypesMap}) => {
   const [collapsed, setCollapsed] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-  const partType = PartTypeInfo.getPartType(part["@class"]);
+  const partType = partTypesMap[part.typeId];
 
   useEffect(() => {
     setCollapsed(globalCollapsed);
@@ -75,11 +70,14 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
         index2++;
       }
 
-      let itemInfo;
-      if (codelist.partItemTypeInfoMap[partType]) {
-        itemInfo = codelist.partItemTypeInfoMap[partType][items[index].typeId];
+      const itemTypeExt: RulDescItemTypeExtVO = descItemTypesMap[items[index].typeId];
+      let width = 2; // default
+      if (itemTypeExt) {
+        const itemType: ItemType | null = findViewItemType(itemTypeSettings, partType, itemTypeExt.code);
+        if (itemType && itemType.width) {
+          width = itemType.width;
+        }
       }
-      let width = itemInfo ? itemInfo.width : 2;
 
       let sameItems = items.slice(index, index2);
       index = index2;
@@ -99,7 +97,22 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
     return result;
   };
 
-  const sortedItems =  part.items // sortItems(partType, part.items, codelist);
+  const sortedItems = part.items.sort((a, b) => {
+
+    const aItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[a.typeId].code, 'code');
+    const bItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[b.typeId].code, 'code');
+    if (aItemType == null && bItemType == null) {
+      return 0;
+    } else if (aItemType == null) {
+      return -1;
+    } else if (bItemType == null) {
+      return 1;
+    } else {
+      const aPos = aItemType.position || 9999;
+      const bPos = bItemType.position || 9999;
+      return aPos - bPos;
+    }
+  });
 
   const showValidationError = () => {
     if (editMode && partValidationError && partValidationError.errors && partValidationError.errors.length > 0) {
@@ -152,8 +165,9 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
   </div>
 };
 
-const mapStateToProps = ({codelist}: any) => ({
-    codelist: MOCK_CODE_DATA
+const mapStateToProps = (state) => ({
+    partTypesMap: state.refTables.partTypes.itemsMap as Record<number, RulPartTypeVO>,
+    descItemTypesMap: state.refTables.descItemTypes.itemsMap as Record<number, RulDescItemTypeExtVO>,
 });
 
 export default connect(

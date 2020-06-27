@@ -11,7 +11,6 @@ import {
 import {connect} from "react-redux";
 import PartEditForm from "./../form/PartEditForm";
 import {ApPartFormVO} from "../../../api/ApPartFormVO";
-import {PartType} from "../../../api/generated/model";
 import {Modal} from 'react-bootstrap';
 import {Button} from "../../ui";
 import i18n from "../../i18n";
@@ -23,7 +22,7 @@ const formConfig: ConfigProps<ApPartFormVO> = {
 };
 
 type Props = {
-    partType: PartType;
+    partTypeId: number;
     initialValues?: ApPartFormVO;
     handleSubmit: SubmitHandler<FormData, any, any>;
     apTypeId: number;
@@ -37,7 +36,7 @@ type Props = {
     onClose: () => void;
 } & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
-const PartEditModal = ({handleSubmit, onClose, refTables, partType, apTypeId, scopeId, formData, partForm, submitting, change, parentPartId, apId, partId}: Props) => {
+const PartEditModal = ({handleSubmit, onClose, refTables, partTypeId, apTypeId, scopeId, formData, partForm, submitting, change, parentPartId, apId, partId}: Props) => {
     if (!refTables) {
         return <div/>;
     }
@@ -55,7 +54,7 @@ const PartEditModal = ({handleSubmit, onClose, refTables, partType, apTypeId, sc
                         formName: FORM_NAME,
                         sectionName: "partForm"
                     }}
-                    partType={partType}
+                    partTypeId={partTypeId}
                     apTypeId={apTypeId}
                     scopeId={scopeId}
                     formData={partForm}

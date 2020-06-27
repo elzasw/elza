@@ -10,7 +10,7 @@ import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
 import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
 import {WebApi} from "../../actions/WebApi";
 import {DetailActions} from "../../shared/detail";
-import {AP_VALIDATION} from "../../constants";
+import {AP_VALIDATION, AP_VIEW_SETTINGS} from "../../constants";
 import storeFromArea from "../../shared/utils/storeFromArea";
 import * as registry from '../../actions/registry/registry';
 import {ApAccessPointVO} from "../../api/ApAccessPointVO";
@@ -23,6 +23,9 @@ import PartEditModal from "./modal/PartEditModal";
 import {sortItems} from "../../utils/ItemInfo";
 import {RulPartTypeVO} from "../../api/RulPartTypeVO";
 import {registryDetailFetchIfNeeded} from "../../actions/registry/registry";
+import {ApViewSettings} from "../../api/ApViewSettings";
+import {indexById} from "../../shared/utils";
+import {RulDescItemTypeExtVO} from "../../api/RulDescItemTypeExtVO";
 
 type OwnProps = {
     id: number; // ap id
@@ -30,6 +33,7 @@ type OwnProps = {
     editMode: boolean;
     globalCollapsed: boolean;
     apValidation: DetailStoreState<ApValidationErrorsVO>;
+    apViewSettings: DetailStoreState<ApViewSettings>;
     globalEntity: boolean;
 }
 
@@ -68,6 +72,33 @@ function createBindings(accessPoint: ApAccessPointVO | undefined) {
     return bindings;
 }
 
+function sortPart(items: RulPartTypeVO[], data: ApViewSettings | undefined) {
+    const parts = [...items];
+    if (data && data.partsOrder) {
+        parts.sort((a, b) => {
+            const aIndex = indexById(data.partsOrder, a.code, 'code') || 0;
+            const bIndex = indexById(data.partsOrder, b.code, 'code') || 0;
+            return aIndex - bIndex;
+        });
+    }
+    return parts;
+}
+
+function sortPrefer(parts: ApPartVO[], preferredPart?: number) {
+    if (preferredPart != null) {
+        parts.sort((a, b) => {
+            if (a.id == preferredPart) {
+                return -1;
+            } else if (b.id == preferredPart) {
+                return 1;
+            } else {
+                return 0;
+            }
+        })
+    }
+    return parts;
+}
+
 /**
  * Detail globální archivní entity.
  */
@@ -78,6 +109,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
 
     useEffect(() => {
+        props.fetchViewSettings();
         props.refreshValidation(props.id);
     }, [props.id])
 
@@ -99,21 +131,14 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         const partType = refTables.partTypes.itemsMap[part.typeId].code;
         const detail = props.detail.data!;
 
-        part.id && props.showPartEditModal(part, partType, props.id, apTypeId, detail.scopeId, props.refTables, part.partParentId);
+        part.id && props.showPartEditModal(part, partType, props.id, apTypeId, detail.scopeId, props.refTables, props.descItemTypesMap, props.apViewSettings, part.partParentId);
         props.refreshValidation(props.id);
     };
 
-    const handleAdd = (partType: PartType) => {
+    const handleAdd = (partType: RulPartTypeVO) => {
         const detail = props.detail.data!;
 
         props.showPartCreateModal(partType, props.id, apTypeId, detail.scopeId);
-        props.refreshValidation(props.id);
-    };
-
-    const handleAddRelated = (part: ApPartVO) => {
-        const detail = props.detail.data!;
-
-        part.id && props.showPartCreateModal(PartType.REL, props.id, apTypeId, detail.scopeId, part.id);
         props.refreshValidation(props.id);
     };
 
@@ -141,7 +166,9 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
 
     const isFetching = !props.detail.fetched && props.detail.isFetching;
 
-    if (isFetchingPartyTypes || isFetching) {
+    const isFetchingViewSettings = props.apViewSettings.isFetching;
+
+    if (isFetchingPartyTypes || isFetching || isFetchingViewSettings) {
         return <div className={'detail-page-wrapper'}>
             <Loading/>
         </div>;
@@ -156,9 +183,11 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
     const bindings = createBindings(accessPoint);
 
     const allParts = accessPoint ? accessPoint.parts as ApPartVO[] : [];
-    const typedParts = groupBy(allParts, 'typeId');
+    const typedParts = groupBy(sortPrefer(allParts, accessPoint?.preferredPart), 'typeId');
 
     const validationResult = props.apValidation.data;
+
+    const sortedParts = sortPart(props.refTables.partTypes.items, props.apViewSettings.data);
 
     return <div className={'detail-page-wrapper'}>
         <div key="1" className="layout-scroll">
@@ -174,7 +203,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
             />
 
             {allParts && <div key="part-sections">
-                {props.refTables.partTypes.items.map((partType: RulPartTypeVO, index) =>
+                {sortedParts.map((partType: RulPartTypeVO, index) =>
                     <DetailMultiSection
                         key={partType.code}
                         label={partType.name}
@@ -187,9 +216,10 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
                         onEdit={handleEdit}
                         onDelete={handleDelete}
                         bindings={bindings}
-                        onAdd={() => handleAdd(partType.code as any as PartType)}
+                        onAdd={() => handleAdd(partType)}
                         onDeleteParts={handleDeletePart}
                         partValidationErrors={validationResult && validationResult.partErrors}
+                        itemTypeSettings={props.apViewSettings.data!.itemTypes}
                         globalEntity={props.globalEntity}
                     />
                 )}
@@ -201,26 +231,22 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
 const mapDispatchToProps = (
     dispatch: ThunkDispatch<{}, {}, Action<string>>
 ) => ({
-    showPartEditModal: (part: ApPartVO, partType, apId: number, apTypeId: number, scopeId: number, refTables, parentPartId?: number) => {
+    showPartEditModal: (part: ApPartVO, partType, apId: number, apTypeId: number, scopeId: number, refTables, descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+                        apViewSettings: DetailStoreState<ApViewSettings>, parentPartId?: number) => {
         dispatch(
             modalDialogShow(
                 this,
                 PartTypeInfo.getPartEditDialogLabel(partType, false),
                 <PartEditModal
-                    partType={partType}
+                    partTypeId={partType}
                     onSubmit={(data) => {
                         if (!part.id) {
                             return;
                         }
                         const formData: ApPartFormVO = data.partForm;
-                        const submitItems = formData.items.map(x => {
-                            // @ts-ignore
-                            delete x['type'];
-                            return x;
-                        });
 
                         const submitData = {
-                            items: submitItems,
+                            items: formData.items,
                             parentPartId: parentPartId,
                             partId: part.id,
                             partTypeCode: partType,
@@ -237,14 +263,14 @@ const mapDispatchToProps = (
                     scopeId={scopeId}
                     initialValues={{
                         partForm: {
-                            items: sortItems(partType, part.items, refTables),
+                            items: sortItems(partType, part.items, refTables, descItemTypesMap, apViewSettings),
                         }
                     }}
                     formData={{
                         partId: part.id,
                         parentPartId: part.partParentId,
                         partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
-                        items: sortItems(partType, part.items, refTables),
+                        items: sortItems(partType, part.items, refTables, descItemTypesMap, apViewSettings),
                     } as ApPartFormVO}
                     parentPartId={part.partParentId}
                     apId={apId}
@@ -257,25 +283,21 @@ const mapDispatchToProps = (
             )
         );
     },
-    showPartCreateModal: (partType: PartType, apId: number, apTypeId: number, scopeId: number, parentPartId?: number) => {
+    showPartCreateModal: (partType: RulPartTypeVO, apId: number, apTypeId: number, scopeId: number, parentPartId?: number) => {
         dispatch(
             modalDialogShow(
                 this,
-                PartTypeInfo.getPartEditDialogLabel(partType, true),
+                // TODO: není rozmyšleno, kde brát skloňované popisky!
+                PartTypeInfo.getPartEditDialogLabel(partType.code as PartType, true),
                 <PartEditModal
-                    partType={partType}
+                    partTypeId={partType.id}
                     onSubmit={data => {
                         const formData: ApPartFormVO = data.partForm;
-                        const submitItems = formData.items.map(x => {
-                            // @ts-ignore
-                            delete x['type'];
-                            return x;
-                        });
 
                         const submitData = {
-                            items: submitItems,
+                            items: formData.items,
                             parentPartId: parentPartId,
-                            partTypeCode: partType,
+                            partTypeCode: partType.code,
                         } as ApPartFormVO;
 
                         console.log('SUBMIT ADD', apId, submitData);
@@ -288,7 +310,7 @@ const mapDispatchToProps = (
                     apTypeId={apTypeId}
                     scopeId={scopeId}
                     formData={{
-                        partTypeCode: partType,
+                        partTypeCode: partType.code,
                         items: [],
                     } as ApPartFormVO}
                     parentPartId={parentPartId}
@@ -327,13 +349,20 @@ const mapDispatchToProps = (
     },
     refreshDetail: (apId: number) => {
         dispatch(registryDetailFetchIfNeeded(apId, true));
-    }
+    },
+    fetchViewSettings: () => {
+        dispatch(DetailActions.fetchIfNeeded(AP_VIEW_SETTINGS, '', () => {
+            return WebApi.getApTypeViewSettings();
+        }));
+    },
 });
 
 const mapStateToProps = (state: any, props: OwnProps) => {
     return {
         detail: storeFromArea(state, registry.AREA_REGISTRY_DETAIL) as DetailStoreState<ApAccessPointVO>,
         apValidation: storeFromArea(state, AP_VALIDATION) as DetailStoreState<ApValidationErrorsVO>,
+        apViewSettings: storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>,
+        descItemTypesMap: state.refTables.descItemTypes.itemsMap,
         refTables: state.refTables,
         editMode: true,
     }

@@ -30,7 +30,7 @@ public class SettingItemTypes extends Setting{
 
     public SettingItemTypes() {
         super(UISettings.SettingsType.ITEM_TYPES.toString(),
-                UISettings.EntityType.RULE);
+                null);
     }
 
     @Override

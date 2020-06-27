@@ -30,6 +30,7 @@ import {ArchiveEntityResultListVO} from "../api/ArchiveEntityResultListVO";
 import {SearchFilterVO} from 'api/SearchFilterVO';
 import {SyncsFilterVO} from "../api/SyncsFilterVO";
 import {ExtSyncsQueueResultListVO} from "../api/ExtSyncsQueueResultListVO";
+import {ApViewSettings} from "../api/ApViewSettings";
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 
@@ -938,6 +939,10 @@ export class WebApiCls {
             accessPointId
         });
         return AjaxUtils.ajaxPost(url, {externalSystemCode});
+    }
+
+    getApTypeViewSettings() : Promise<ApViewSettings> {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/ap-types/view-settings');
     }
 
     findRegistryUsage(recordId) {
