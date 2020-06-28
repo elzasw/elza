@@ -3,7 +3,10 @@ package cz.tacr.elza.repository;
 import java.util.List;
 
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -27,4 +30,7 @@ public interface DataRecordRefRepository extends JpaRepository<ArrDataRecordRef,
      * @return počet odkazujících dat
      */
     long countAllByRecord(ApAccessPoint record);
+
+    @Query("SELECT drr FROM arr_data_record_ref drr LEFT JOIN drr.binding WHERE drr.binding IN :bindings")
+    List<ArrDataRecordRef> findByBindingIn(@Param("bindings") List<ApBinding> bindings);
 }

@@ -781,13 +781,49 @@ public class AccessPointService {
         List<ApState> states = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(entities)) {
+            List<String> values = getEids(entities);
+            List<ApBinding> bindingList = bindingRepository.findByScopeAndValuesAndApExternalSystem(scope, values, externalSystemCode);
+            List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByBindingIn(bindingList);
             for (EntityXml entity : entities) {
-                ApBinding binding = bindingRepository.findByScopeAndValueAndApExternalSystem(scope, String.valueOf(entity.getEid()), externalSystemCode);
-                states.add(createAccessPoint(scope, entity, externalSystemCode, binding));
+                ApBinding binding = findBindingByValue(bindingList, String.valueOf(entity.getEid().getValue()));
+                ApState state = createAccessPoint(scope, entity, externalSystemCode, binding);
+                states.add(state);
+                setAccessPointInDataRecordRefs(state.getAccessPoint(), dataRecordRefList, binding);
             }
+            dataRecordRefRepository.save(dataRecordRefList);
         }
 
         return states;
+    }
+
+    private void setAccessPointInDataRecordRefs(ApAccessPoint accessPoint, List<ArrDataRecordRef> dataRecordRefList, ApBinding binding) {
+        if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
+            for (ArrDataRecordRef dataRecordRef : dataRecordRefList) {
+                if (dataRecordRef.getBinding().getBindingId().equals(binding.getBindingId())) {
+                    dataRecordRef.setRecord(accessPoint);
+                }
+            }
+        }
+    }
+
+    @Nullable
+    private ApBinding findBindingByValue(List<ApBinding> bindingList, String value) {
+        if (CollectionUtils.isNotEmpty(bindingList)) {
+            for (ApBinding binding : bindingList) {
+                if (binding.getValue().equals(value)) {
+                    return binding;
+                }
+            }
+        }
+        return null;
+    }
+
+    private List<String> getEids(List<EntityXml> entities) {
+        List<String> values = new ArrayList<>();
+        for (EntityXml entityXml : entities) {
+            values.add(String.valueOf(entityXml.getEid().getValue()));
+        }
+        return values;
     }
 
     public ApState createAccessPoint(final ApScope scope, final EntityXml entity, final String externalSystemCode, final ApBinding binding) {

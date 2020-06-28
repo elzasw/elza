@@ -36,12 +36,12 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
     @Query("SELECT i FROM ApItem i LEFT JOIN FETCH i.data d  JOIN FETCH i.part p JOIN FETCH i.itemType it WHERE i.deleteChange IS NULL AND p.accessPoint = :accessPoint")
     List<ApItem> findValidItemsByAccessPointMultiFetch(@Param("accessPoint") ApAccessPoint accessPoint);
 
-    @Query("SELECT i FROM ApItem i JOIN i.part p JOIN p.partType pt WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND p.deleteChange IS NULL AND pt.code = :partTypeCode AND p.accessPointId = :accessPointId")
+    @Query("SELECT i FROM ApItem i JOIN i.part p JOIN p.partType pt LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND p.deleteChange IS NULL AND pt.code = :partTypeCode AND p.accessPointId = :accessPointId")
     List<ApItem> findItemsByAccessPointIdAndItemTypeAndPartTypeCode(@Param("accessPointId") Integer accessPointId,
                                                                     @Param("itemType") RulItemType itemType,
                                                                     @Param("partTypeCode") String partTypeCode);
 
-    @Query("SELECT i FROM ApItem i JOIN i.part p JOIN p.partType pt WHERE i.deleteChange IS NULL AND i.itemType IN :itemTypes AND p.deleteChange IS NULL AND pt.code = :partTypeCode AND p.accessPointId = :accessPointId")
+    @Query("SELECT i FROM ApItem i JOIN i.part p JOIN p.partType pt LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType IN :itemTypes AND p.deleteChange IS NULL AND pt.code = :partTypeCode AND p.accessPointId = :accessPointId")
     List<ApItem> findItemsByAccessPointIdAndItemTypesAndPartTypeCode(@Param("accessPointId") Integer accessPointId,
                                                                      @Param("itemTypes") Collection<RulItemType> itemTypes,
                                                                      @Param("partTypeCode") String partTypeCode);
