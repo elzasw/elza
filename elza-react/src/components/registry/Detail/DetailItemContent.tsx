@@ -58,7 +58,7 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
 
         case RulDataTypeCodeEnum.BIT:
             let bitItem = item as ApItemBitVO;
-            valueField = bitItem.value ? 'Ano' : 'Ne';
+            valueField = bitItem.value ? i18n('global.title.yes') : i18n('global.title.no');
             break;
 
         case RulDataTypeCodeEnum.COORDINATES:
@@ -82,7 +82,7 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
                 const spec = specId ? objectById(specs, specId) : null;
                 displayValue = spec ? `${spec.name}: ${textValue}` : textValue;
             } else {
-                displayValue = recordRefItem.value;
+                displayValue = textValue;
             }
 
             if (recordRefItem.value) {
