@@ -9,6 +9,7 @@ import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -69,6 +70,21 @@ public class SearchFilterFactory {
             types = new ArrayList<>(typesSet);
         }
         return types;
+    }
+
+    public void completeApTypesTreeInFilter(final SearchFilterVO filter) {
+        StaticDataProvider sdp = staticDataService.getData();
+        List<ApType> apTypeList = sdp.getApTypes();
+        if (filter.getAeTypeIds() != null) {
+            Set<Integer> typesSet = new HashSet<>();
+            for (Integer aeTypeId : filter.getAeTypeIds()) {
+                List<ApType> apTypes = findTreeAeTypes(apTypeList, aeTypeId);
+                for (ApType apType : apTypes) {
+                    typesSet.add(apType.getApTypeId());
+                }
+            }
+            filter.setAeTypeIds(new ArrayList<>(typesSet));
+        }
     }
 
     private List<ApType> findTreeAeTypes(final List<ApType> apTypes, final Integer id) {
@@ -331,6 +347,31 @@ public class SearchFilterFactory {
         highlight.setFrom(highlightPos.getSpos());
         highlight.setTo(highlightPos.getEpos());
         return highlight;
+    }
+
+    public ArchiveEntityResultListVO createArchiveEntityResultListVO(List<ApState> apStateList, Integer totalElements) {
+        ArchiveEntityResultListVO archiveEntityVOListResult = new ArchiveEntityResultListVO();
+        archiveEntityVOListResult.setTotal(totalElements);
+        archiveEntityVOListResult.setData(createArchiveEntityVOList(apStateList));
+        return archiveEntityVOListResult;
+    }
+
+    private List<ArchiveEntityVO> createArchiveEntityVOList(List<ApState> apStateList) {
+        List<ArchiveEntityVO> archiveEntityVOList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(apStateList)) {
+            for (ApState apState : apStateList) {
+                archiveEntityVOList.add(createArchiveEntityVO(apState));
+            }
+        }
+        return archiveEntityVOList;
+    }
+
+    private ArchiveEntityVO createArchiveEntityVO(ApState apState) {
+        ArchiveEntityVO archiveEntityVO = new ArchiveEntityVO();
+        archiveEntityVO.setId(apState.getAccessPointId());
+        archiveEntityVO.setName(apState.getAccessPoint().getPreferredPart().getValue());
+        archiveEntityVO.setAeTypeId(apState.getApTypeId());
+        return archiveEntityVO;
     }
 
 }

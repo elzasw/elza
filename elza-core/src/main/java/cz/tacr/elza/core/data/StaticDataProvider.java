@@ -245,6 +245,15 @@ public class StaticDataProvider {
         return spec;
     }
 
+    public RulItemSpec getItemSpec(Integer id) {
+        RulItemSpec spec = getItemSpecById(id);
+        if (spec == null) {
+            throw new ObjectNotFoundException("Nebyla dohledána specifikace atributu podle id: " + id, BaseCode.ID_NOT_EXIST)
+                    .setId(id);
+        }
+        return spec;
+    }
+
     /* initialization methods */
 
     /**

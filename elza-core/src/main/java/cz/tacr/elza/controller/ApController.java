@@ -835,20 +835,9 @@ public class ApController {
         if (from < 0) {
             throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
         }
-        ArchiveEntityResultListVO archiveEntityResultListVO = new ArchiveEntityResultListVO();
-        List<ArchiveEntityVO> archiveEntityVOList = new ArrayList<>();
-        for (int i = 1; i <= 10; i++) {
-            ArchiveEntityVO archiveEntityVO = new ArchiveEntityVO();
-            archiveEntityVO.setId(i);
-            archiveEntityVO.setName("Test " + i);
-            archiveEntityVO.setAeTypeId(1);
-            archiveEntityVO.setDescription("Popis " + i);
-            archiveEntityVOList.add(archiveEntityVO);
-        }
-
-        archiveEntityResultListVO.setTotal(archiveEntityVOList.size());
-        archiveEntityResultListVO.setData(archiveEntityVOList);
-        return archiveEntityResultListVO;
+        List<Integer> apTypes = accessPointService.findApTypeIdsByItemTypeAndItemSpec(itemTypeId, itemSpecId);
+        filter.setAeTypeIds(apTypes);
+        return accessPointService.findAccessPoints(from, max, filter);
     }
 
     /**

@@ -864,6 +864,9 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
     </item-type>
     <item-type code="NOTE" data-type="TEXT">
         <name>Poznámka</name>

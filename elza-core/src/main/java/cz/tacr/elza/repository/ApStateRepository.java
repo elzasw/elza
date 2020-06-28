@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,7 +16,7 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 
 @Repository
-public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer> {
+public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, JpaSpecificationExecutor<ApState> {
 
     /*
     @Query("SELECT s FROM ap_state s WHERE s.accessPoint = :accessPoint AND s.deleteChangeId IS NULL")

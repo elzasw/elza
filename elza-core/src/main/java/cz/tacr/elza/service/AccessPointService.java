@@ -59,7 +59,10 @@ import cz.tacr.cam.schema.cam.UpdateEntityXml;
 import cz.tacr.cam.schema.cam.UpdateItemsXml;
 import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.common.GeometryConvertor;
+import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
+import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
+import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
@@ -67,6 +70,7 @@ import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.groovy.GroovyResult;
+import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.vo.DataRef;
 import org.apache.commons.collections4.CollectionUtils;
@@ -233,6 +237,12 @@ public class AccessPointService {
 
     @Autowired
     private ExternalSystemService externalSystemService;
+
+    @Autowired
+    private ItemAptypeRepository itemAptypeRepository;
+
+    @Autowired
+    private SearchFilterFactory searchFilterFactory;
 
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
@@ -2500,6 +2510,37 @@ public class AccessPointService {
             throw new BusinessException("Tato archivní entita má jíž existující propojení s externím systémem", RegistryCode.EXT_SYSTEM_CONNECTED)
                     .level(Level.WARNING);
         }
+    }
+
+    public List<Integer> findApTypeIdsByItemTypeAndItemSpec(Integer itemTypeId, @Nullable Integer itemSpecId) {
+        StaticDataProvider sdp = staticDataService.getData();
+        RulItemType itemType = sdp.getItemType(itemTypeId);
+        RulItemSpec itemSpec = itemSpecId != null ? sdp.getItemSpec(itemSpecId) : null;
+        List<RulItemAptype> rulItemAptypeList = itemAptypeRepository.findAll();
+        List<Integer> aeTypeIds = new ArrayList<>();
+
+        for (RulItemAptype rulItemAptype : rulItemAptypeList) {
+            if ((rulItemAptype.getItemType() == null || rulItemAptype.getItemType().getCode().equals(itemType.getCode()))
+                    && (rulItemAptype.getItemSpec() == null || (itemSpec != null && rulItemAptype.getItemSpec().getCode().equals(itemSpec.getCode())))) {
+                aeTypeIds.add(rulItemAptype.getApType().getApTypeId());
+            }
+        }
+
+        return aeTypeIds;
+    }
+
+    public ArchiveEntityResultListVO findAccessPoints(Integer from, Integer max, SearchFilterVO filter) {
+        searchFilterFactory.completeApTypesTreeInFilter(filter);
+        Set<Integer> scopeList = new HashSet<>();
+        scopeList.add(1);
+        List<ApState> stateList = apAccessPointRepository.findApAccessPointByTextAndType(filter.getSearch(), filter.getAeTypeIds(), from, max, scopeList, null , null, null);
+
+
+//        ApStateSpecification stateSpecification = new ApStateSpecification(filter);
+//        PageRequest pageRequest = new PageRequest(from, max);
+//        Page<ApState> pageResult = stateRepository.findAll(stateSpecification, pageRequest);
+
+        return searchFilterFactory.createArchiveEntityResultListVO(stateList, stateList.size());
     }
 
     /**
