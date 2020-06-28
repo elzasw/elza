@@ -125,7 +125,7 @@ const renderItem = (name: string,
                 displayValue = item.accessPoint && item.accessPoint.name;
             }
             valueField = <Row className={'d-flex'}>
-                <Col style={{flex: 1}}>
+                <Col>
                     <Form.Label>
                         {itemType.shortcut}
                     </Form.Label>
@@ -134,9 +134,10 @@ const renderItem = (name: string,
                         disabled={true}
                     />
                 </Col>
-                <Col>
+                <Col xs='auto' className="action-buttons">
                     <Button
                         disabled={disabled}
+                        variant={"action" as any}
                         onClick={() => onCustomEditItem(name, systemCode, item)}
                     >
                         <Icon glyph='fa-edit'/>
@@ -181,23 +182,24 @@ const renderItem = (name: string,
             break;
         case RulDataTypeCodeEnum.COORDINATES:
             valueField = <Row>
-                <Col xs={11}>
+                <Col>
                     <Field
                         name={`${name}.value`}
                         label={itemType.shortcut}
                         disabled={fieldDisabled}
                         component={ReduxFormFieldErrorDecorator}
                         renderComponent={FormInput}
+                        as={'textarea'}
                     />
                 </Col>
-                <Col xs={1}>
+                <Col xs='auto' className="action-buttons">
                     {/*TODO: az bude na serveru */}
-                    <Button className={classNames("side-container-button", "m-1")} title={"Importovat"}
+                    <Button variant={"action" as any} className={classNames("side-container-button", "m-1")} title={"Importovat"}
                             onClick={() => {
                                 alert('Neni implementovano');
                                 //showImportDialog(`${name}.value`);
                             }}>
-                        <Icon glyph={'fa-file-import'}/>
+                        <Icon glyph={'fa-download'}/>
                     </Button>
                 </Col>
             </Row>;
@@ -241,7 +243,7 @@ const renderItem = (name: string,
         deleteAction = <Button
             className={'item-delete-action'}
             onClick={() => onDeleteItem(index)}
-            variant={'light'}
+            variant={"action" as any}
         >
             <Icon glyph={'fa-trash'}/>
         </Button>;

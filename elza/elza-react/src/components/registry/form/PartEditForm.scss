@@ -20,6 +20,10 @@ $multivalue-item-spacing: 0;
 }
 
 .part-edit-form {
+    .action-buttons {
+        align-self: flex-end;
+        padding-left: 0;
+    }
     .item-wrapper {
         padding-bottom: 8px;
         margin-bottom: (6px - $same-items-spacing);
