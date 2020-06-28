@@ -3,8 +3,6 @@ package cz.tacr.elza.controller.vo.ap.item;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.BaseCode;
 
 import javax.persistence.EntityManager;
 
@@ -20,13 +18,24 @@ public class ApItemAccessPointRefVO extends ApItemVO {
 
     private Integer value;
 
+    private String externalUrl;
+
+    private String externalName;
+
     public ApItemAccessPointRefVO() {
     }
 
-    public ApItemAccessPointRefVO(final ApItem item) {
+    public ApItemAccessPointRefVO(final ApItem item, final GetExternalUrl getExternalUrl) {
         super(item);
         ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
-        value = data == null ? null : data.getRecordId();
+        if (data != null) {
+            ApBinding binding = data.getBinding();
+            if (binding != null) {
+                setExternalName(binding.getValue());
+                setExternalUrl(getExternalUrl.getUrl(binding.getApExternalSystem(), binding.getValue()));
+            }
+        }
+        value = data == null ? null : data.getRecordId();;
     }
 
     public ApAccessPointVO getAccessPoint() {
@@ -45,6 +54,22 @@ public class ApItemAccessPointRefVO extends ApItemVO {
         this.value = value;
     }
 
+    public String getExternalUrl() {
+        return externalUrl;
+    }
+
+    public void setExternalUrl(final String externalUrl) {
+        this.externalUrl = externalUrl;
+    }
+
+    public String getExternalName() {
+        return externalName;
+    }
+
+    public void setExternalName(final String externalName) {
+        this.externalName = externalName;
+    }
+
     // Entity can be created only from ID and not from embedded object
     @Override
     public ArrData createDataEntity(EntityManager em) {
@@ -59,5 +84,10 @@ public class ApItemAccessPointRefVO extends ApItemVO {
 
         data.setDataType(DataType.RECORD_REF.getEntity());
         return data;
+    }
+
+    @FunctionalInterface
+    public interface GetExternalUrl {
+        String getUrl(ApExternalSystem externalSystem, String value);
     }
 }
