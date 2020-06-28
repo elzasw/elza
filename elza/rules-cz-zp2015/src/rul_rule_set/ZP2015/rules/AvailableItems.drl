@@ -2843,8 +2843,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $itemSpec: RulItemSpecExt( code in (
         // objednatelé/příjemci 
         "ZP2015_ENTITY_ROLE_19",
-        // autoři textu
-        "ZP2015_ENTITY_ROLE_11",
+        // autor
+        "ZP2015_ENTITY_ROLE_1",
         // schvalovatelé
         "ZP2015_ENTITY_ROLE_25",
         // stavitelé
@@ -2876,8 +2876,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in ( 
-        // autoři textu
-        "ZP2015_ENTITY_ROLE_11", 
+        // autor
+        "ZP2015_ENTITY_ROLE_1", 
         // objednatelé/příjemci 
         "ZP2015_ENTITY_ROLE_19",
         // typová označení a názvy výrobků a typových staveb
@@ -2900,8 +2900,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in ( 
-        // autoři textu
-        "ZP2015_ENTITY_ROLE_11", 
+        // autor
+        "ZP2015_ENTITY_ROLE_1",
         // objednatelé/příjemci 
         "ZP2015_ENTITY_ROLE_19",
         // typová označení a názvy výrobků a typových staveb
@@ -2924,8 +2924,8 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     // nastaveni prvku  
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
-        // autoři textu
-        "ZP2015_ENTITY_ROLE_11", 
+        // autor
+        "ZP2015_ENTITY_ROLE_1",
         // objednatelé/příjemci 
         "ZP2015_ENTITY_ROLE_19",
         // schvalovatelé

@@ -1,4 +1,4 @@
-<item-specs>ově 
+<item-specs>
     <item-spec code="ZP2015_ARRANGEMENT_MAN" item-type="ZP2015_ARRANGEMENT_TYPE">
         <name>Manipulační seznam</name>
         <description>Manipulační seznam</description>
@@ -540,11 +540,6 @@
         <description>přírůstkové číslo</description>
         <shortcut>č. př.</shortcut>
     </item-spec>
-    <item-spec code="ZP2015_OTHERID_OLDID" item-type="ZP2015_OTHER_ID">
-        <name>neplatné inventární číslo (ze zrušené pomůcky)</name>
-        <description>neplatné inventární číslo (ze zrušené pomůcky)</description>
-        <shortcut>nepl. inv. č.</shortcut>
-    </item-spec>
     <item-spec code="ZP2015_OTHERID_OLDSIG" item-type="ZP2015_OTHER_ID">
         <name>signatura přidělená při předchozím zpracování</name>
         <description>signatura přidělená při předchozím zpracování</description>
@@ -554,6 +549,16 @@
         <name>spisový znak</name>
         <description>spisový znak</description>
         <shortcut>sp. znak</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_OTHERID_OLDID" item-type="ZP2015_OTHER_ID">
+        <name>neplatné inventární číslo</name>
+        <description>neplatné inventární číslo</description>
+        <shortcut>nepl. inv. č.</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_OTHERID_INVALID_UNITID" item-type="ZP2015_OTHER_ID">
+        <name>neplatné ukládací číslo</name>
+        <description>neplatné ukládací číslo</description>
+        <shortcut>neplatné ukládací číslo</shortcut>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_INVALID_REFNO" item-type="ZP2015_OTHER_ID">
         <name>neplatné referenční označení</name>
@@ -599,7 +604,7 @@
         <name>matriční číslo</name>
         <description>matriční číslo</description>
         <shortcut>matriční číslo</shortcut>
-    </item-spec>    
+    </item-spec>
     <item-spec code="ZP2015_LANGUAGE_1" item-type="ZP2015_LANGUAGE">
         <name>blíže neurčený indoevropský jazyk</name>
         <description>indoevropské - blíže neurčené</description>
@@ -2079,7 +2084,9 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>        
-    <!-- zastaralé, nově většinou autor textu (ZP2015_ENTITY_ROLE_11) -->
+    <!-- zastaralé, nově většinou autor textu (ZP2015_ENTITY_ROLE_11),
+          používá se nyní již jen u technických výkresů, asi by mohlo být 
+          přejmenováno na "autor výkresu" -->
     <item-spec code="ZP2015_ENTITY_ROLE_1" item-type="ZP2015_ENTITY_ROLE">
         <name>autor</name>
         <description>zastaralé, nově většinou autor textu</description>
@@ -2946,13 +2953,21 @@
         <name>byte</name>
         <description>byte</description>
         <shortcut>b</shortcut>
-        <view-order>1</view-order>
     </item-spec>
     <item-spec code="ZP2015_AMOUNT_PIECES" item-type="ZP2015_AMOUNT">
         <name>kusy</name>
         <description>kusy</description>
         <shortcut>kusy</shortcut>
-        <view-order>1</view-order>
+    </item-spec>
+    <item-spec code="ZP2015_AMOUNT_SHEETS" item-type="ZP2015_AMOUNT">
+        <name>listy</name>
+        <description>listy</description>
+        <shortcut>ll</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_AMOUNT_PAGES" item-type="ZP2015_AMOUNT">
+        <name>strany</name>
+        <description>strany</description>
+        <shortcut>str</shortcut>
     </item-spec>
 
     <!-- Počet EJ -->
