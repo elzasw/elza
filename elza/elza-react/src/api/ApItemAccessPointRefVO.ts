@@ -4,4 +4,6 @@ import {ApItemVO} from "./ApItemVO";
 export interface ApItemAccessPointRefVO extends ApItemVO {
     accessPoint: ApAccessPointVO;
     value: number;
+    externalName?: string;
+    externalUrl?: string;
 }

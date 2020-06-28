@@ -503,7 +503,10 @@ public class ApFactory {
                 item = new ApItemCoordinatesVO(apItem);
                 break;
             case RECORD_REF:
-                item = new ApItemAccessPointRefVO(apItem);
+                item = new ApItemAccessPointRefVO(apItem, ((externalSystem, value) -> {
+                    CamInstance camInstance = camConnector.getByCode(externalSystem.getCode());
+                    return camInstance.getEntityDetailUrl(Integer.parseInt(value));
+                }));
                 break;
             case DECIMAL:
                 item = new ApItemDecimalVO(apItem);

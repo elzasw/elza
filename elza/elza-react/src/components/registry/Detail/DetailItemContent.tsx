@@ -15,19 +15,25 @@ import {ApItemStringVO} from "../../../api/ApItemStringVO";
 import {ApItemDateVO} from "../../../api/ApItemDateVO";
 import {ApItemUnitdateVO} from "../../../api/ApItemUnitdateVO";
 import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
-import {getMapFromList} from "../../../shared/utils";
+import {getMapFromList, objectById} from "../../../shared/utils";
 import {RulDescItemSpecExtVO} from "../../../api/RulDescItemSpecExtVO";
 import {Bindings} from "../../../types";
 import Icon from "../../shared/icon/Icon";
 import i18n from "../../i18n";
+import {ThunkDispatch} from "redux-thunk";
+import {Action} from "redux";
+import {registryDetailFetchIfNeeded} from "../../../actions/registry/registry";
+import {Button} from "../../ui";
 
-interface Props extends ReturnType<typeof mapStateToProps> {
+interface OwnProps extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
     globalEntity: boolean;
     bindings?: Bindings;
 }
 
-const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descItemTypes, bindings}) => {
+type Props = OwnProps & ReturnType<typeof mapDispatchToProps>;
+
+const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descItemTypes, bindings, selectAp}) => {
     const itemType = descItemTypes.itemsMap[item.typeId];
     const dataType: RulDataTypeVO = rulDataTypes.itemsMap[itemType.dataTypeId];
 
@@ -64,14 +70,31 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
             customFieldRender = true;
             let recordRefItem = item as ApItemAccessPointRefVO;
 
-            textValue = typeof recordRefItem.value !== 'undefined' && recordRefItem.value ? recordRefItem.value : '?';
+            textValue = '?';
+            if (recordRefItem.value && recordRefItem.accessPoint) {
+                textValue = recordRefItem.accessPoint.name;
+            } else if (recordRefItem.externalName) {
+                textValue = i18n('ap.form.ref.value', recordRefItem.externalName);
+            }
             if (itemType.useSpecification) {
-                displayValue = recordRefItem.specId ? `${descItemTypes.itemsMap[recordRefItem.specId].name}: ${textValue}` : textValue;
+                const specs = descItemTypes.itemsMap[recordRefItem.typeId].descItemSpecs;
+                const specId = recordRefItem.specId;
+                const spec = specId ? objectById(specs, specId) : null;
+                displayValue = spec ? `${spec.name}: ${textValue}` : textValue;
             } else {
                 displayValue = recordRefItem.value;
             }
 
-            valueField = <NavLink target={"_blank"} to={`/global/${recordRefItem.value}`}>{displayValue}</NavLink>;
+            if (recordRefItem.value) {
+                valueField = <Button variant="link" onClick={() => {
+                    selectAp(recordRefItem.value);
+                } }>{displayValue}</Button>;
+            } else if (recordRefItem.externalUrl) {
+                valueField = <a target="_blank" href={recordRefItem.externalUrl}>{displayValue}</a>;
+            } else {
+                valueField = <span>{displayValue}</span>;
+            }
+
             break;
 
         case RulDataTypeCodeEnum.ENUM:
@@ -125,9 +148,17 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
     );
 };
 
+const mapDispatchToProps = (
+    dispatch: ThunkDispatch<{}, {}, Action<string>>
+) => ({
+    selectAp: (apId: number) => {
+        dispatch(registryDetailFetchIfNeeded(apId, true));
+    },
+});
+
 const mapStateToProps = (state) => ({
     rulDataTypes: state.refTables.rulDataTypes,
     descItemTypes: state.refTables.descItemTypes as { itemsMap: Record<number, RulDescItemTypeExtVO>, items: RulDescItemTypeExtVO[] },
 });
 
-export default connect(mapStateToProps)(DetailItemContent);
+export default connect(mapStateToProps, mapDispatchToProps)(DetailItemContent);

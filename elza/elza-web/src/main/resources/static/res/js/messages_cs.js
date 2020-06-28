@@ -1066,6 +1066,8 @@ var messages = {
 
     "ap.validation.title": "Výsledek validace archivní entity",
 
+    "ap.form.ref.value": "Externí entita [{0}]",
+
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",
     "party.detail.ui.unknownRelation": "Neznámý typ relace",
