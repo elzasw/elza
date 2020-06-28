@@ -769,7 +769,7 @@ public class AccessPointService {
         ApPart apPart = partService.createPart(partType, accessPoint, apChange, null);
         accessPoint.setPreferredPart(apPart);
 
-        partService.createPartItems(apChange, apPart, apPartFormVO);
+        partService.createPartItems(apChange, apPart, apPartFormVO, null);
         updatePartValue(apPart);
 
         publishAccessPointCreateEvent(accessPoint);
@@ -899,6 +899,8 @@ public class AccessPointService {
                            final ApPartFormVO apPartFormVO) {
 //        if (areItemsChanged(apPart, apPartFormVO)) {
             ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
+            List<ApItem> itemList = itemRepository.findValidItemsByPart(apPart);
+            List<ApBindingItem> bindingItemList = bindingItemRepository.findByItems(itemList);
 
             apItemService.deletePartItems(apPart, change);
             partService.deletePart(apPart, change);
@@ -906,7 +908,7 @@ public class AccessPointService {
             ApPart newPart = partService.createPart(apPart, change);
             changeBindingItemParts(apPart, newPart);
 
-            partService.createPartItems(change, newPart, apPartFormVO);
+            partService.createPartItems(change, newPart, apPartFormVO, bindingItemList);
 
             partService.changeParentPart(apPart, newPart);
 
@@ -1262,7 +1264,7 @@ public class AccessPointService {
         BatchEntityRecordRevXml batchEntityRecordRevXml = new BatchEntityRecordRevXml();
         batchEntityRecordRevXml.setEid(new EntityIdXml(Long.parseLong(bindingState.getBinding().getValue())));
         batchEntityRecordRevXml.setRev(new UuidXml(bindingState.getExtRevision()));
-        batchEntityRecordRevXml.setLid("LID" + accessPoint.getAccessPointId());
+        batchEntityRecordRevXml.setLid("LID" + UUID.randomUUID().toString());
         return batchEntityRecordRevXml;
     }
 

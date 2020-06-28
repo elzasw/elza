@@ -21,6 +21,7 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.service.vo.DataRef;
@@ -48,19 +49,22 @@ public class AccessPointItemService {
     private final DataRepository dataRepository;
     private final SequenceService sequenceService;
     private final ExternalSystemService externalSystemService;
+    private final ApBindingItemRepository bindingItemRepository;
 
     public AccessPointItemService(final EntityManager em,
                                   final StaticDataService staticDataService,
                                   final ApItemRepository itemRepository,
                                   final DataRepository dataRepository,
                                   final SequenceService sequenceService,
-                                  final ExternalSystemService externalSystemService) {
+                                  final ExternalSystemService externalSystemService,
+                                  final ApBindingItemRepository bindingItemRepository) {
         this.em = em;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
         this.dataRepository = dataRepository;
         this.sequenceService = sequenceService;
         this.externalSystemService = externalSystemService;
+        this.bindingItemRepository = bindingItemRepository;
     }
 
     /**
@@ -122,7 +126,7 @@ public class AccessPointItemService {
 
         // TODO: optimalizace při úpravě se stejným change id (bez odverzování) - pro deleteItems a updateItems
         deleteItems(deleteItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
-        List<ApItem> itemsCreated = createItems(createItems, typeIdItemsMap, itemsDb, change, create);
+        List<ApItem> itemsCreated = createItems(createItems, typeIdItemsMap, itemsDb, change, null, create);
         updateItems(updateItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
 
         itemRepository.save(itemsDb);
@@ -260,7 +264,12 @@ public class AccessPointItemService {
         return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
     }
 
-    public List<ApItem> createItems(final List<ApItemVO> createItems, final Map<Integer, List<ApItem>> typeIdItemsMap, final List<ApItem> itemsDb, final ApChange change, final CreateFunction create) {
+    public List<ApItem> createItems(final List<ApItemVO> createItems,
+                                    final Map<Integer, List<ApItem>> typeIdItemsMap,
+                                    final List<ApItem> itemsDb,
+                                    final ApChange change,
+                                    final List<ApBindingItem> bindingItemList,
+                                    final CreateFunction create) {
         StaticDataProvider sdp = staticDataService.getData();
         List<ArrData> dataToSave = new ArrayList<>(createItems.size());
         List<ApItem> itemsCreated = new ArrayList<>();
@@ -293,9 +302,27 @@ public class AccessPointItemService {
 
             itemsDb.add(itemCreated);
             existsItems.add(itemCreated);
+
+            changeBindingItemsItems(createItem, itemCreated, bindingItemList);
         }
         dataRepository.save(dataToSave);
         return itemsCreated;
+    }
+
+    private void changeBindingItemsItems(ApItemVO createItem, ApItem itemCreated, List<ApBindingItem> bindingItemList) {
+        if (CollectionUtils.isNotEmpty(bindingItemList)) {
+            List<ApBindingItem> currentItemBindings = new ArrayList<>();
+            for (ApBindingItem bindingItem : bindingItemList) {
+                if (bindingItem.getItem() != null && createItem.getId() != null &&
+                        bindingItem.getItem().getItemId() != null && bindingItem.getItem().getItemId().equals(createItem.getId())) {
+                    bindingItem.setItem(itemCreated);
+                    currentItemBindings.add(bindingItem);
+                }
+            }
+            if (CollectionUtils.isNotEmpty(currentItemBindings)) {
+                bindingItemRepository.save(currentItemBindings);
+            }
+        }
     }
 
     public List<ApItem> createItems(final List<Object> createItems,
