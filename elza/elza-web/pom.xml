@@ -4,7 +4,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>1.3.3-SNAPSHOT</version>
+        <version>1.3.3</version>
     </parent>
     <artifactId>elza-web</artifactId>
     <name>ELZA Web</name>
