@@ -1622,14 +1622,14 @@ public class ArrangementService {
 
     public List<ArrRefTemplateVO> getRefTemplates(Integer fundId) {
         ArrFund fund = getFund(fundId);
-        List<ArrRefTemplate> refTemplateList = refTemplateRepository.findByFund(fund);
-        Map<Integer, List<ArrRefTemplateMapType>> refTemplateMapTypeMap = refTemplateMapTypeRepository.findByRefTemplates(refTemplateList).stream()
-                .collect(Collectors.groupingBy(r -> r.getRefTemplate().getRefTemplateId()));
-        Map<Integer, List<ArrRefTemplateMapSpec>> refTemplateMapSpecMap = refTemplateMapSpecRepository.findByRefTemplates(refTemplateList).stream()
-                .collect(Collectors.groupingBy(r -> r.getRefTemplateMapType().getRefTemplate().getRefTemplateId()));
         List<ArrRefTemplateVO> refTemplateVOList = new ArrayList<>();
-
+        List<ArrRefTemplate> refTemplateList = refTemplateRepository.findByFund(fund);
         if (CollectionUtils.isNotEmpty(refTemplateList)) {
+            Map<Integer, List<ArrRefTemplateMapType>> refTemplateMapTypeMap = refTemplateMapTypeRepository.findByRefTemplates(refTemplateList).stream()
+                    .collect(Collectors.groupingBy(r -> r.getRefTemplate().getRefTemplateId()));
+            Map<Integer, List<ArrRefTemplateMapSpec>> refTemplateMapSpecMap = refTemplateMapSpecRepository.findByRefTemplates(refTemplateList).stream()
+                    .collect(Collectors.groupingBy(r -> r.getRefTemplateMapType().getRefTemplate().getRefTemplateId()));
+
             for (ArrRefTemplate refTemplate : refTemplateList) {
                 List<ArrRefTemplateMapType> refTemplateMapTypes = refTemplateMapTypeMap.getOrDefault(refTemplate.getRefTemplateId(), new ArrayList<>());
                 List<ArrRefTemplateMapSpec> refTemplateMapSpecs = refTemplateMapSpecMap.getOrDefault(refTemplate.getRefTemplateId(), new ArrayList<>());
