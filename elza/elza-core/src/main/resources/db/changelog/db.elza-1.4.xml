@@ -81,7 +81,7 @@
     </changeSet>
 
     <changeSet id="20200305111600" author="fantis">
-        <createTable tableName="arr_output_restricted_scope">
+        <createTable tableName="arr_output_restriction_scope">
             <column name="restriction_id" type="int">
                 <constraints primaryKey="true" primaryKeyName="PK_output_restriction_scope"/>
             </column>
