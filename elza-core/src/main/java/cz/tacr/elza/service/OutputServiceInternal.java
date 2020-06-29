@@ -489,11 +489,12 @@ public class OutputServiceInternal {
 
     public List<ApScopeVO> getRestrictedScopes(ArrOutput output) {
         StaticDataProvider sdp = staticDataService.getData();
-        List<ApScope> scopeList = outputRestrictionScopeRepository.findByOutput(output);
+        List<ArrOutputRestrictionScope> restrictionScopeList = outputRestrictionScopeRepository.findByOutput(output.getOutputId());
+
         List<ApScopeVO> scopeVOList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(scopeList)) {
-            for (ApScope scope : scopeList) {
-                scopeVOList.add(ApScopeVO.newInstance(scope, sdp));
+        if (CollectionUtils.isNotEmpty(restrictionScopeList)) {
+            for (ArrOutputRestrictionScope restrictionScope : restrictionScopeList) {
+                scopeVOList.add(ApScopeVO.newInstance(restrictionScope.getScope(), sdp));
             }
         }
 
