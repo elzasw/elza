@@ -665,6 +665,7 @@ public class ConfigMapperConfiguration {
                 .register();
         mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class)
                 .exclude("nodes")
+                .exclude("scopes")
                 .byDefault()
                 .field("outputId", "id")
                 .customize(new CustomMapper<ArrOutput, ArrOutputVO>() {
