@@ -1580,7 +1580,7 @@ public class ArrangementService {
         ArrRefTemplateVO arrRefTemplateVO = new ArrRefTemplateVO();
         arrRefTemplateVO.setId(refTemplate.getRefTemplateId());
         arrRefTemplateVO.setName(refTemplate.getName());
-        arrRefTemplateVO.setItemTypeId(refTemplate.getItemNodeRef().getItemTypeId());
+        arrRefTemplateVO.setItemTypeId(refTemplate.getItemNodeRef() != null ? refTemplate.getItemNodeRef().getItemTypeId() : null);
         arrRefTemplateVO.setRefTemplateMapTypeVOList(createRefTemplateMapTypeVOList(refTemplateMapTypes, refTemplateMapSpecs));
         return arrRefTemplateVO;
     }
@@ -1599,8 +1599,8 @@ public class ArrangementService {
     private ArrRefTemplateMapTypeVO createRefTemplateMapTypeVO(ArrRefTemplateMapType refTemplateMapType, List<ArrRefTemplateMapSpec> refTemplateMapSpecs) {
         ArrRefTemplateMapTypeVO refTemplateMapTypeVO = new ArrRefTemplateMapTypeVO();
         refTemplateMapTypeVO.setId(refTemplateMapType.getRefTemplateMapTypeId());
-        refTemplateMapTypeVO.setFromItemTypeId(refTemplateMapType.getFormItemType().getItemTypeId());
-        refTemplateMapTypeVO.setToItemTypeId(refTemplateMapType.getToItemType().getItemTypeId());
+        refTemplateMapTypeVO.setFromItemTypeId(refTemplateMapType.getFormItemType() != null ? refTemplateMapType.getFormItemType().getItemTypeId() : null);
+        refTemplateMapTypeVO.setToItemTypeId(refTemplateMapType.getToItemType() != null ? refTemplateMapType.getToItemType().getItemTypeId() : null);
         refTemplateMapTypeVO.setFromParentLevel(refTemplateMapType.getFromParentLevel());
         refTemplateMapTypeVO.setMapAllSpec(refTemplateMapType.getMapAllSpec());
         refTemplateMapTypeVO.setRefTemplateMapSpecVOList(createRefTemplateMapSpecVOList(refTemplateMapType, refTemplateMapSpecs));
@@ -1623,8 +1623,8 @@ public class ArrangementService {
     private ArrRefTemplateMapSpecVO createRefTemplateMapSpecVO(ArrRefTemplateMapSpec refTemplateMapSpec) {
         ArrRefTemplateMapSpecVO refTemplateMapSpecVO = new ArrRefTemplateMapSpecVO();
         refTemplateMapSpecVO.setId(refTemplateMapSpec.getRefTemplateMapSpecId());
-        refTemplateMapSpecVO.setFormItemSpecId(refTemplateMapSpec.getFromItemSpec().getItemSpecId());
-        refTemplateMapSpecVO.setToItemSpecId(refTemplateMapSpec.getToItemSpec().getItemSpecId());
+        refTemplateMapSpecVO.setFormItemSpecId(refTemplateMapSpec.getFromItemSpec() != null ? refTemplateMapSpec.getFromItemSpec().getItemSpecId() : null);
+        refTemplateMapSpecVO.setToItemSpecId(refTemplateMapSpec.getToItemSpec() != null ? refTemplateMapSpec.getToItemSpec().getItemSpecId() : null);
         return refTemplateMapSpecVO;
     }
 
