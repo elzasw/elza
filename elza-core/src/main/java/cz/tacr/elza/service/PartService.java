@@ -120,7 +120,7 @@ public class PartService {
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
 
         ApPart newPart = createPart(partType, accessPoint, apChange, parentPart);
-        createPartItems(apChange, newPart, apPartFormVO, null);
+        createPartItems(apChange, newPart, apPartFormVO, null, null);
         return newPart;
     }
 
@@ -182,10 +182,11 @@ public class PartService {
     public List<ApItem> createPartItems(final ApChange apChange,
                                         final ApPart apPart,
                                         final ApPartFormVO apPartFormVO,
-                                        final List<ApBindingItem> bindingItemList) {
+                                        final List<ApBindingItem> bindingItemList,
+                                        final List<DataRef> dataRefList) {
         List<ApItem> itemsDb = new ArrayList<>();
         Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
-        List<ApItem> items = apItemService.createItems(apPartFormVO.getItems(), typeIdItemsMap, itemsDb, apChange, bindingItemList, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
+        List<ApItem> items = apItemService.createItems(apPartFormVO.getItems(), typeIdItemsMap, itemsDb, apChange, bindingItemList, dataRefList, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createPartItem(apPart, it, is, c, objectId, position));
         return itemRepository.save(items);
     }
