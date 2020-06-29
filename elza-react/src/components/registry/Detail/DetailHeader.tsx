@@ -110,7 +110,8 @@ const DetailHeader: FC<Props> = ({dispatch, onInvalidateDetail, item, id, collap
                         <div className="info">
                             <span className="system">{externalSystem.name}</span>
                             - {i18n('ap.binding.external-id')}: <span title={binding.extRevision} className="link"><a href={binding.detailUrl} target="_blank">{binding.value}</a></span>
-                            {binding.extReplacedBy && <>,{i18n('ap.binding.replaced')}: <span className="link"><a href={binding.detailUrlExtReplacedBy} target="_blank">{binding.detailUrlExtReplacedBy}</a></span></>}
+                            , {i18n('ap.binding.extState.' + binding.extState)}
+                            {binding.extReplacedBy && <span className="link"> (<a href={binding.detailUrlExtReplacedBy} target="_blank">{binding.detailUrlExtReplacedBy}</a>)</span>}
                             , {i18n('ap.binding.user')}: <span className="user">{binding.extUser}</span>
                         </div>
                         <div className="action pl-3" key={'binding-action-' + binding.id}>
