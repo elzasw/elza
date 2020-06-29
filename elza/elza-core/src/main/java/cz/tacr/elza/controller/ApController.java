@@ -821,6 +821,7 @@ public class ApController {
      * @param max maximální počet záznamů, které najednou vrátit
      * @param itemTypeId identifikátor typu vztahu
      * @param itemSpecId identifikátor specifikace vztahu
+     * @param scopeId identifikátor oblasti
      * @param filter parametry hledání
      * @return výsledek hledání
      *
@@ -831,13 +832,14 @@ public class ApController {
                                                            @RequestParam(name = "max", defaultValue = "50", required = false) final Integer max,
                                                            @RequestParam(name = "itemTypeId") final Integer itemTypeId,
                                                            @RequestParam(name = "itemSpecId", required = false) final Integer itemSpecId,
+                                                           @RequestParam(name = "scopeId", required = false) final Integer scopeId,
                                                            @RequestBody final SearchFilterVO filter) {
         if (from < 0) {
             throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
         }
         List<Integer> apTypes = accessPointService.findApTypeIdsByItemTypeAndItemSpec(itemTypeId, itemSpecId);
         filter.setAeTypeIds(apTypes);
-        return accessPointService.findAccessPoints(from, max, filter);
+        return accessPointService.findAccessPoints(from, max, scopeId, filter);
     }
 
     /**
