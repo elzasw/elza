@@ -98,6 +98,9 @@
                              referencedColumnNames="scope_id"/>
             </column>
         </createTable>
+        <addColumn tableName="arr_output">
+            <column name="anonymized_ap" type="int"/>
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>
