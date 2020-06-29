@@ -41,6 +41,7 @@ type Props = {
     refTables?: any;
     typeId: number;
     partTypeId: number;
+    scopeId: number;
     itemTypeAttributeMap: Record<number, ApCreateTypeVO>;
     onClose: () => void;
 } & ReturnType<typeof mapStateToProps> & InjectedFormProps;
@@ -54,6 +55,7 @@ const RelationPartItemEditModalForm = ({
                                            area,
                                            specId,
                                            typeId,
+                                           scopeId,
                                            partTypeId,
                                            geoSearchItemType,
                                            submitting,
@@ -98,10 +100,6 @@ const RelationPartItemEditModalForm = ({
 
     const specialActionField = getSpecialActionField();
 
-    //const EntityField = specialActionField ? ff.ArchiveEntitRelGeoAdminClass : ff.ArchiveEntitRel;
-    // TODO: dodělat podporu pro geo admin class
-    const EntityField = ArchiveEntityRel;
-
     return <Form onSubmit={handleSubmit}>
         <Modal.Body>
             {renderSpecification && <Field
@@ -145,11 +143,12 @@ const RelationPartItemEditModalForm = ({
                     {specialActionField}
                 </Col>}
                 <Col xs={12}>
-                    <EntityField
+                    <ArchiveEntityRel
                         name={'codeObj'}
                         label={'Návazná archivní entita'}
                         onlyMainPart={onlyMainPart}
                         area={area}
+                        scopeId={scopeId}
                         itemTypeId={typeId}
                         modifyFilterData={data => {
                             if (renderSpecification) {

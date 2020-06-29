@@ -802,6 +802,7 @@ export class WebApiCls {
      * @param max maximální počet záznamů, které najednou vrátit
      * @param itemTypeId identifikátor typu vztahu
      * @param itemSpecId identifikátor specifikace vztahu
+     * @param scopeId oblast hledání
      * @param filter parametry hledání
      * @return výsledek hledání
      *
@@ -810,12 +811,14 @@ export class WebApiCls {
                           max: number,
                           itemTypeId: number,
                           itemSpecId: number,
-                          filter: SearchFilterVO): Promise<ArchiveEntityResultListVO> {
+                          filter: SearchFilterVO,
+                          scopeId?: number): Promise<ArchiveEntityResultListVO> {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/search/rel', {
             from,
             max,
             itemTypeId,
-            itemSpecId
+            itemSpecId,
+            scopeId
         }, filter);
     }
 
