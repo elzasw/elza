@@ -779,7 +779,7 @@ public class AccessPointService {
         ApPart apPart = partService.createPart(partType, accessPoint, apChange, null);
         accessPoint.setPreferredPart(apPart);
 
-        partService.createPartItems(apChange, apPart, apPartFormVO, null);
+        partService.createPartItems(apChange, apPart, apPartFormVO, null, null);
         updatePartValue(apPart);
 
         publishAccessPointCreateEvent(accessPoint);
@@ -939,6 +939,31 @@ public class AccessPointService {
         }
     }
 
+    private void createBindingForRel(final List<DataRef> dataRefList, final List<ApBindingItem> bindingItemList) {
+        //TODO fantiš optimalizovat
+        for (DataRef dataRef : dataRefList) {
+            ApBindingItem apBindingItem = findBindingItemByUuid(bindingItemList, dataRef.getUuid());
+            if (apBindingItem != null && apBindingItem.getItem() != null) {
+                ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) apBindingItem.getItem().getData();
+                ApBinding currentEntity = apBindingItem.getBinding();
+                ApScope scope = currentEntity.getScope();
+                ApExternalSystem apExternalSystem = currentEntity.getApExternalSystem();
+                ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, dataRef.getValue().intValue(), apExternalSystem.getCode());
+                if (refBinding == null) {
+                    dataRecordRef.setBinding(externalSystemService.createApBinding(scope, dataRef.getValue(), apExternalSystem));
+                } else {
+                    dataRecordRef.setBinding(refBinding);
+
+                    ApBindingState bindingState = externalSystemService.findByBinding(refBinding);
+                    if (bindingState != null) {
+                        dataRecordRef.setRecord(bindingState.getAccessPoint());
+                    }
+                }
+                dataRecordRefRepository.save(dataRecordRef);
+            }
+        }
+    }
+
     private ApPart findParentPart(final ApBinding binding, final String parentUuid) {
         ApBindingItem apBindingItem = externalSystemService.findByBindingAndUuid(binding, parentUuid);
         return apBindingItem.getPart();
@@ -958,7 +983,10 @@ public class AccessPointService {
             ApPart newPart = partService.createPart(apPart, change);
             changeBindingItemParts(apPart, newPart);
 
-            partService.createPartItems(change, newPart, apPartFormVO, bindingItemList);
+            List<DataRef> dataRefList = new ArrayList<>();
+
+            partService.createPartItems(change, newPart, apPartFormVO, bindingItemList, dataRefList);
+            createBindingForRel(dataRefList, bindingItemList);
 
             partService.changeParentPart(apPart, newPart);
 

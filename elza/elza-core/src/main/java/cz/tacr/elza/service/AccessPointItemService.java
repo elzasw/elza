@@ -131,7 +131,7 @@ public class AccessPointItemService {
 
         // TODO: optimalizace při úpravě se stejným change id (bez odverzování) - pro deleteItems a updateItems
         deleteItems(deleteItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
-        List<ApItem> itemsCreated = createItems(createItems, typeIdItemsMap, itemsDb, change, null, create);
+        List<ApItem> itemsCreated = createItems(createItems, typeIdItemsMap, itemsDb, change, null, null, create);
         updateItems(updateItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
 
         itemRepository.save(itemsDb);
@@ -274,6 +274,7 @@ public class AccessPointItemService {
                                     final List<ApItem> itemsDb,
                                     final ApChange change,
                                     final List<ApBindingItem> bindingItemList,
+                                    final List<DataRef> dataRefList,
                                     final CreateFunction create) {
         StaticDataProvider sdp = staticDataService.getData();
         List<ArrData> dataToSave = new ArrayList<>(createItems.size());
@@ -300,6 +301,8 @@ public class AccessPointItemService {
             }
 
             ArrData data = createItem.createDataEntity(em);
+            setBindingArrDataRecordRef(data, createItem, bindingItemList, dataRefList);
+
             ApItem itemCreated = create.apply(itemType, itemSpec, change, nextItemObjectId(), position);
             dataToSave.add(data);
             itemCreated.setData(data);
@@ -312,6 +315,22 @@ public class AccessPointItemService {
         }
         dataRepository.save(dataToSave);
         return itemsCreated;
+    }
+
+    private void setBindingArrDataRecordRef(ArrData data, ApItemVO createItem, List<ApBindingItem> bindingItemList, List<DataRef> dataRefList) {
+        if (data instanceof ArrDataRecordRef && createItem instanceof ApItemAccessPointRefVO
+                && CollectionUtils.isNotEmpty(bindingItemList) && dataRefList != null) {
+            ApItemAccessPointRefVO apItemAccessPointRefVO = (ApItemAccessPointRefVO) createItem;
+
+            for (ApBindingItem bindingItem : bindingItemList) {
+                if (bindingItem.getItem() != null && createItem.getId() != null && apItemAccessPointRefVO.getExternalName() != null &&
+                        bindingItem.getItem().getItemId() != null && bindingItem.getItem().getItemId().equals(createItem.getId())) {
+                    dataRefList.add(new DataRef(bindingItem.getValue(), Long.parseLong(apItemAccessPointRefVO.getExternalName())));
+                    break;
+                }
+            }
+
+        }
     }
 
     private void changeBindingItemsItems(ApItemVO createItem, ApItem itemCreated, List<ApBindingItem> bindingItemList) {
