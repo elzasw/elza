@@ -8,9 +8,15 @@ import {Button} from "../../ui";
 import i18n from "../../i18n";
 import ReduxFormFieldErrorDecorator from "../../shared/form/ReduxFormFieldErrorDecorator";
 import SpecificationField from "../field/SpecificationField";
-import {computeAllowedItemSpecIds} from "../../../utils/ItemInfo";
+import {computeAllowedItemSpecIds, findViewItemType} from "../../../utils/ItemInfo";
 import * as AreaInfo from "../form/filter/AreaInfo";
 import {ArchiveEntityRel} from "../field/ArchiveEntityRel";
+import storeFromArea from "../../../shared/utils/storeFromArea";
+import {AP_VIEW_SETTINGS} from "../../../constants";
+import {DetailStoreState} from "../../../types";
+import {ApViewSettings} from "../../../api/ApViewSettings";
+import {objectById} from "../../../shared/utils";
+import {RulPartTypeVO} from "../../../api/RulPartTypeVO";
 
 const FORM_NAME = "relationPartItemEditModalForm";
 
@@ -34,6 +40,7 @@ const formConfig: ConfigProps<RelationFilterClientVO, ModalFormProps> = {
 type Props = {
     refTables?: any;
     typeId: number;
+    partTypeId: number;
     itemTypeAttributeMap: Record<number, ApCreateTypeVO>;
     onClose: () => void;
 } & ReturnType<typeof mapStateToProps> & InjectedFormProps;
@@ -47,8 +54,11 @@ const RelationPartItemEditModalForm = ({
                                            area,
                                            specId,
                                            typeId,
+                                           partTypeId,
                                            geoSearchItemType,
                                            submitting,
+                                           apViewSettings,
+                                           geoSpecId
                                        }: Props) => {
     if (!refTables) {
         return <div/>;
@@ -59,27 +69,30 @@ const RelationPartItemEditModalForm = ({
 
     const useItemSpecIds = computeAllowedItemSpecIds(itemTypeAttributeMap, itemType, specId);
 
+    const part: RulPartTypeVO | undefined = refTables.partTypes.itemsMap[partTypeId];
+
+    let geoType;
+
     const getSpecialActionField = () => {
-        //todo: Zatim nepodporujeme
-
-        // if (itemType.itemTypeInfo) {
-        //     const geoSearch = itemType.itemTypeInfo.find(info => info.geoSearchItemType !== null);
-        //     if (geoSearch) {
-        //         const geoSearchItemTypeCode = geoSearch.geoSearchItemType;
-        //         const geoSearchItemType = itemTypes.find(itemType => itemType.code === geoSearchItemTypeCode);
-        //         if (geoSearchItemType) {
-        //             return <ff.Specification
-        //                 name={`geoSearchItemType`}
-        //                 label={geoSearchItemType.name}
-        //                 fieldProps={{
-        //                     itemTypeId: geoSearchItemType.id,
-        //                     itemSpecIds: geoSearchItemType.itemSpecIds,
-        //                 }}
-        //             />
-        //         }
-        //     }
-        // }
-
+        if (apViewSettings.data && itemType && part) {
+            const itemTypeSettings = findViewItemType(apViewSettings.data.itemTypes, part, itemType.code);
+            if (itemTypeSettings && itemTypeSettings.geoSearchItemType) {
+                const getItemType = objectById(refTables.descItemTypes.items, itemTypeSettings.geoSearchItemType, 'code') as RulDescItemTypeExtVO;
+                const geoUseItemSpecIds = computeAllowedItemSpecIds(itemTypeAttributeMap, getItemType);
+                if (getItemType) {
+                    geoType = getItemType;
+                    return <Field
+                        name="geoSpecId"
+                        label={getItemType.name}
+                        itemTypeId={getItemType.id}
+                        itemSpecIds={geoUseItemSpecIds}
+                        disabled={submitting}
+                        component={ReduxFormFieldErrorDecorator}
+                        renderComponent={SpecificationField}
+                    />;
+                }
+            }
+        }
         return null;
     };
 
@@ -138,6 +151,21 @@ const RelationPartItemEditModalForm = ({
                         onlyMainPart={onlyMainPart}
                         area={area}
                         itemTypeId={typeId}
+                        modifyFilterData={data => {
+                            if (renderSpecification) {
+                                data.relFilters = [{
+                                    relTypeId: typeId,
+                                    relSpecId: specId
+                                }]
+                            } else {
+                                data.extFilters = [{
+                                    itemTypeId: geoType && geoType.id,
+                                    itemSpecId: geoSpecId,
+                                    partTypeCode: part?.code
+                                }]
+                            }
+                            return data;
+                        }}
                         itemSpecId={specialActionField ? geoSearchItemType : specId}
                         disabled={renderSpecification ? specId == null : false}
                     />
@@ -163,7 +191,9 @@ const mapStateToProps = (state: any) => {
         specId: selector(state, "specId"),
         onlyMainPart: selector(state, "onlyMainPart"),
         area: selector(state, "area"),
+        geoSpecId: selector(state, "geoSpecId"),
         geoSearchItemType: selector(state, "geoSearchItemType"),
+        apViewSettings: storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>,
     }
 };
 

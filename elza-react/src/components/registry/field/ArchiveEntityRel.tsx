@@ -17,18 +17,25 @@ type Props = {
     disabled: boolean;
     name: string;
     label: string;
+    modifyFilterData?: (data: any) => any;
 } & OwnProps;
 
-export const ArchiveEntityRel = ({onlyMainPart, area, itemTypeId, itemSpecId, disabled, name, label}: Props) => {
+export const ArchiveEntityRel = ({onlyMainPart, area, itemTypeId, itemSpecId, disabled, name, label, modifyFilterData}: Props) => {
 
     const [items, setItems] = useState<ArchiveEntityVO[]>([]);
 
     const fetchData = debounce(fulltext => {
-        return WebApi.findAccessPointForRel(0, 50, itemTypeId, itemSpecId, {
+
+        let filter = {
             area: area,
             onlyMainPart: onlyMainPart,
             search: fulltext
-        }).then(result => {
+        };
+        if (modifyFilterData) {
+            filter = modifyFilterData(filter);
+        }
+
+        return WebApi.findAccessPointForRel(0, 50, itemTypeId, itemSpecId, filter).then(result => {
             setItems(result.data);
         })
     }, 1000);

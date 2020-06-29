@@ -24,7 +24,7 @@ import {sortItems} from "../../utils/ItemInfo";
 import {RulPartTypeVO} from "../../api/RulPartTypeVO";
 import {registryDetailFetchIfNeeded} from "../../actions/registry/registry";
 import {ApViewSettings} from "../../api/ApViewSettings";
-import {indexById} from "../../shared/utils";
+import {indexById, objectById} from "../../shared/utils";
 import {RulDescItemTypeExtVO} from "../../api/RulDescItemTypeExtVO";
 
 type OwnProps = {
@@ -238,7 +238,7 @@ const mapDispatchToProps = (
                 this,
                 PartTypeInfo.getPartEditDialogLabel(partType, false),
                 <PartEditModal
-                    partTypeId={partType}
+                    partTypeId={objectById(refTables.partTypes.items, partType, 'code').id}
                     onSubmit={(data) => {
                         if (!part.id) {
                             return;
