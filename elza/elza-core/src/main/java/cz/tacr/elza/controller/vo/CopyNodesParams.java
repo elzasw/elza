@@ -27,6 +27,8 @@ public class CopyNodesParams extends CopyNodesValidate {
 
     private ConflictResolve structuredsConflictResolve;
 
+    private Integer templateId;
+
     public ArrNodeVO getTargetStaticNode() {
         return targetStaticNode;
     }
@@ -65,5 +67,13 @@ public class CopyNodesParams extends CopyNodesValidate {
 
     public void setSelectedDirection(final FundLevelService.AddLevelDirection selectedDirection) {
         this.selectedDirection = selectedDirection;
+    }
+
+    public Integer getTemplateId() {
+        return templateId;
+    }
+
+    public void setTemplateId(Integer templateId) {
+        this.templateId = templateId;
     }
 }

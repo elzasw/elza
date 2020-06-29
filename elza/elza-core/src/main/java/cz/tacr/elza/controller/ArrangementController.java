@@ -2599,6 +2599,14 @@ public class ArrangementController {
         arrangementService.deleteRefTemplateMapType(templateId, mapTypeId);
     }
 
+    @RequestMapping(value = "/nodes/{nodeId}/{nodeVersion}/sync/{templateId}")
+    public void synchronizeNodes(@PathVariable (value = "nodeId") final Integer nodeId,
+                                 @PathVariable (value = "nodeVersion") final Integer nodeVersion,
+                                 @PathVariable (value = "templateId") final Integer templateId,
+                                 @RequestParam (value = "childrenNodes") final Boolean childrenNodes) {
+        arrangementService.synchronizeNodes(nodeId, nodeVersion, templateId, childrenNodes);
+    }
+
     /**
      * Výstupní objekt pro chybové jednotky popisu.
      */

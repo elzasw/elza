@@ -1544,14 +1544,22 @@ public class ArrangementService {
 
     public void deleteRefTemplate(Integer templateId) {
         ArrRefTemplate refTemplate = refTemplateRepository.findOne(templateId);
+        if (refTemplate == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena šablona s ID=" + templateId, ArrangementCode.TEMPLATE_NOT_FOUND).setId(templateId);
+        }
         List<ArrRefTemplateMapType> refTemplateMapTypes = refTemplateMapTypeRepository.findByRefTemplate(refTemplate);
-        refTemplateMapSpecRepository.deleteByRefTemplateMapTypes(refTemplateMapTypes);
-        refTemplateMapTypeRepository.delete(refTemplateMapTypes);
+        if (CollectionUtils.isNotEmpty(refTemplateMapTypes)) {
+            refTemplateMapSpecRepository.deleteByRefTemplateMapTypes(refTemplateMapTypes);
+            refTemplateMapTypeRepository.delete(refTemplateMapTypes);
+        }
         refTemplateRepository.delete(refTemplate);
     }
 
     public ArrRefTemplateVO updateRefTemplate(Integer templateId, ArrRefTemplateEditVO refTemplateEditVO) {
         ArrRefTemplate rt = refTemplateRepository.findOne(templateId);
+        if (rt == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena šablona s ID=" + templateId, ArrangementCode.TEMPLATE_NOT_FOUND).setId(templateId);
+        }
         ArrRefTemplate refTemplate = updateRefTemplate(rt, refTemplateEditVO);
         List<ArrRefTemplateMapType> refTemplateMapTypes = refTemplateMapTypeRepository.findByRefTemplate(refTemplate);
         List<ArrRefTemplateMapSpec> refTemplateMapSpecs = refTemplateMapSpecRepository.findByRefTemplate(refTemplate);
@@ -1642,6 +1650,9 @@ public class ArrangementService {
     public void createRefTemplateMapType(Integer templateId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
         StaticDataProvider sdp = staticDataService.getData();
         ArrRefTemplate refTemplate = refTemplateRepository.findOne(templateId);
+        if (refTemplate == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena šablona s ID=" + templateId, ArrangementCode.TEMPLATE_NOT_FOUND).setId(templateId);
+        }
 
         ArrRefTemplateMapType refTemplateMapType = new ArrRefTemplateMapType();
         refTemplateMapType.setRefTemplate(refTemplate);
@@ -1672,6 +1683,9 @@ public class ArrangementService {
     public void updateRefTemplateMapType(Integer templateId, Integer mapTypeId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
         StaticDataProvider sdp = staticDataService.getData();
         ArrRefTemplateMapType refTemplateMapType = refTemplateMapTypeRepository.findOne(mapTypeId);
+        if (refTemplateMapType == null) {
+            throw new ObjectNotFoundException("Nebylo nalezeno mapování pro šablonu s ID=" + mapTypeId, ArrangementCode.TEMPLATE_NOT_FOUND).setId(mapTypeId);
+        }
         refTemplateMapSpecRepository.deleteByRefTemplateMapType(refTemplateMapType);
 
         refTemplateMapType.setFormItemType(sdp.getItemType(refTemplateMapTypeFormVO.getFromItemTypeId()));
@@ -1684,8 +1698,15 @@ public class ArrangementService {
 
     public void deleteRefTemplateMapType(Integer templateId, Integer mapTypeId) {
         ArrRefTemplateMapType refTemplateMapType = refTemplateMapTypeRepository.findOne(mapTypeId);
+        if (refTemplateMapType == null) {
+            throw new ObjectNotFoundException("Nebylo nalezeno mapování pro šablonu s ID=" + mapTypeId, ArrangementCode.TEMPLATE_NOT_FOUND).setId(mapTypeId);
+        }
         refTemplateMapSpecRepository.deleteByRefTemplateMapType(refTemplateMapType);
         refTemplateMapTypeRepository.delete(refTemplateMapType);
+    }
+
+    public void synchronizeNodes(Integer nodeId, Integer nodeVersion, Integer templateId, Boolean childrenNodes) {
+
     }
 
     public static class Holder<T> {
