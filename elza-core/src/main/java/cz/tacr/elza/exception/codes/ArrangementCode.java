@@ -182,4 +182,9 @@ public enum ArrangementCode implements ErrorCode {
      * Nelze smazat položku, protože existují navázané entity.
      */
     STRUCTURE_DATA_DELETE_ERROR,
+
+    /**
+     * Šablona neexistuje.
+     */
+    TEMPLATE_NOT_FOUND,
 }
