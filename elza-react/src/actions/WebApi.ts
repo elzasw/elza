@@ -2,6 +2,9 @@
 import AjaxUtils from '../components/AjaxUtils';
 import {DEFAULT_LIST_SIZE, JAVA_ATTR_CLASS} from '../constants';
 import {
+    ArrRefTemplateEditVO,
+    ArrRefTemplateMapTypeVO,
+    ArrRefTemplateVO,
     CommentVO,
     CreateFund,
     CreateFundVO,
@@ -26,11 +29,11 @@ import {RulPartTypeVO} from '../api/RulPartTypeVO';
 import {FilteredResultVO} from '../api/FilteredResultVO';
 import {ApSearchType} from '../typings/globals';
 import * as UrlBuilder from '../utils/UrlBuilder';
-import {ArchiveEntityResultListVO} from "../api/ArchiveEntityResultListVO";
+import {ArchiveEntityResultListVO} from '../api/ArchiveEntityResultListVO';
 import {SearchFilterVO} from 'api/SearchFilterVO';
-import {SyncsFilterVO} from "../api/SyncsFilterVO";
-import {ExtSyncsQueueResultListVO} from "../api/ExtSyncsQueueResultListVO";
-import {ApViewSettings} from "../api/ApViewSettings";
+import {SyncsFilterVO} from '../api/SyncsFilterVO';
+import {ExtSyncsQueueResultListVO} from '../api/ExtSyncsQueueResultListVO';
+import {ApViewSettings} from '../api/ApViewSettings';
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 
@@ -608,6 +611,7 @@ export class WebApiCls {
         selectedDirection,
         filesConflictResolve = null,
         structuresConflictResolve = null,
+        templateId = null,
     ) {
         const data = {
             targetFundVersionId,
@@ -619,6 +623,7 @@ export class WebApiCls {
             selectedDirection,
             filesConflictResolve,
             structuresConflictResolve,
+            templateId,
         };
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/levels/copy', null, data);
     }
@@ -708,7 +713,14 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/', null, accessPoint);
     }
 
-    createStructuredAccessPoint(name, complement, languageCode, description, typeId, scopeId): Promise<ApAccessPointCreateVO> {
+    createStructuredAccessPoint(
+        name,
+        complement,
+        languageCode,
+        description,
+        typeId,
+        scopeId,
+    ): Promise<ApAccessPointCreateVO> {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/structured', null, {
             [JAVA_ATTR_CLASS]: 'cz.tacr.elza.controller.vo.ApAccessPointCreateVO',
             name,
@@ -807,19 +819,25 @@ export class WebApiCls {
      * @return výsledek hledání
      *
      */
-    findAccessPointForRel(from: number,
-                          max: number,
-                          itemTypeId: number,
-                          itemSpecId: number,
-                          filter: SearchFilterVO,
-                          scopeId?: number): Promise<ArchiveEntityResultListVO> {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/search/rel', {
-            from,
-            max,
-            itemTypeId,
-            itemSpecId,
-            scopeId
-        }, filter);
+    findAccessPointForRel(
+        from: number,
+        max: number,
+        itemTypeId: number,
+        itemSpecId: number,
+        filter: SearchFilterVO,
+        scopeId?: number,
+    ): Promise<ArchiveEntityResultListVO> {
+        return AjaxUtils.ajaxPost(
+            WebApiCls.registryUrl + '/search/rel',
+            {
+                from,
+                max,
+                itemTypeId,
+                itemSpecId,
+                scopeId,
+            },
+            filter,
+        );
     }
 
     /**
@@ -831,10 +849,12 @@ export class WebApiCls {
      * @param filter parametry hledání
      * @return výsledek hledání
      */
-    findArchiveEntitiesInExternalSystem(from: number,
-                                        max: number,
-                                        externalSystemCode: string,
-                                        filter: SearchFilterVO): Promise<ArchiveEntityResultListVO> {
+    findArchiveEntitiesInExternalSystem(
+        from: number,
+        max: number,
+        externalSystemCode: string,
+        filter: SearchFilterVO,
+    ): Promise<ArchiveEntityResultListVO> {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/external/search', {from, max, externalSystemCode}, filter);
     }
 
@@ -847,10 +867,12 @@ export class WebApiCls {
      * @param filter parametry hledání
      * @return výsledek hledání
      */
-    findExternalSyncs(from: number,
-                      max: number,
-                      externalSystemCode: string,
-                      filter: SyncsFilterVO): Promise<ExtSyncsQueueResultListVO> {
+    findExternalSyncs(
+        from: number,
+        max: number,
+        externalSystemCode: string,
+        filter: SyncsFilterVO,
+    ): Promise<ExtSyncsQueueResultListVO> {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/external/syncs', {from, max, externalSystemCode}, filter);
     }
 
@@ -862,10 +884,10 @@ export class WebApiCls {
      * @param externalSystemCode kód externího systému
      * @return identifikátor přístupového bodu
      */
-    takeArchiveEntity(archiveEntityId: number,
-                      scopeId: number,
-                      externalSystemCode: string): Promise<number> {
-        const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/{archiveEntityId}/take', {archiveEntityId});
+    takeArchiveEntity(archiveEntityId: number, scopeId: number, externalSystemCode: string): Promise<number> {
+        const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/{archiveEntityId}/take', {
+            archiveEntityId,
+        });
         return AjaxUtils.ajaxPost(url, {scopeId, externalSystemCode});
     }
 
@@ -876,13 +898,14 @@ export class WebApiCls {
      * @param accessPointId identifikátor přístupového bodu
      * @param externalSystemCode kód externího systému
      */
-    connectArchiveEntity(archiveEntityId: number,
-                         accessPointId: number,
-                         externalSystemCode: string): Promise<void> {
-        const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/{archiveEntityId}/connect/{accessPointId}', {
-            archiveEntityId,
-            accessPointId
-        });
+    connectArchiveEntity(archiveEntityId: number, accessPointId: number, externalSystemCode: string): Promise<void> {
+        const url = UrlBuilder.bindParams(
+            WebApiCls.registryUrl + '/external/{archiveEntityId}/connect/{accessPointId}',
+            {
+                archiveEntityId,
+                accessPointId,
+            },
+        );
         return AjaxUtils.ajaxPost(url, {externalSystemCode});
     }
 
@@ -892,10 +915,9 @@ export class WebApiCls {
      * @param accessPointId identifikátor přístupového bodu
      * @param externalSystemCode kód externího systému
      */
-    saveAccessPoint(accessPointId: number,
-                    externalSystemCode: string): Promise<void> {
+    saveAccessPoint(accessPointId: number, externalSystemCode: string): Promise<void> {
         const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/save/{accessPointId}', {
-            accessPointId
+            accessPointId,
         });
         return AjaxUtils.ajaxPost(url, {externalSystemCode});
     }
@@ -906,10 +928,9 @@ export class WebApiCls {
      * @param accessPointId identifikátor přístupového bodu
      * @param externalSystemCode kód externího systému
      */
-    synchronizeAccessPoint(accessPointId: number,
-                           externalSystemCode: string) {
+    synchronizeAccessPoint(accessPointId: number, externalSystemCode: string) {
         const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/synchronize/{accessPointId}', {
-            accessPointId
+            accessPointId,
         });
         return AjaxUtils.ajaxPost(url, {externalSystemCode});
     }
@@ -920,31 +941,28 @@ export class WebApiCls {
      * @param accessPointId identifikátor přístupového bodu
      * @param externalSystemCode kód externího systému
      */
-    updateArchiveEntity(accessPointId: number,
-                        externalSystemCode: string) {
+    updateArchiveEntity(accessPointId: number, externalSystemCode: string) {
         const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/update/{accessPointId}', {
-            accessPointId
+            accessPointId,
         });
         return AjaxUtils.ajaxPost(url, {externalSystemCode});
     }
 
-    disconnectAccessPoint(accessPointId: number,
-                          externalSystemCode: string) {
+    disconnectAccessPoint(accessPointId: number, externalSystemCode: string) {
         const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/disconnect/{accessPointId}', {
-            accessPointId
+            accessPointId,
         });
         return AjaxUtils.ajaxPost(url, {externalSystemCode});
     }
 
-    takeRelArchiveEntities(accessPointId: number,
-                           externalSystemCode: string) {
+    takeRelArchiveEntities(accessPointId: number, externalSystemCode: string) {
         const url = UrlBuilder.bindParams(WebApiCls.registryUrl + '/external/take-rel/{accessPointId}', {
-            accessPointId
+            accessPointId,
         });
         return AjaxUtils.ajaxPost(url, {externalSystemCode});
     }
 
-    getApTypeViewSettings() : Promise<ApViewSettings> {
+    getApTypeViewSettings(): Promise<ApViewSettings> {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/ap-types/view-settings');
     }
 
@@ -1491,6 +1509,54 @@ export class WebApiCls {
 
     deleteDaoLink(versionId, daoLinkId) {
         return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/daolinks/' + versionId + '/' + daoLinkId, null, null);
+    }
+
+    createRefTemplate(fundId: number): Promise<ArrRefTemplateVO> {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/nodes/' + fundId + '/template/create');
+    }
+
+    updateRefTemplate(templateId: number, refTemplateVO: ArrRefTemplateEditVO): Promise<ArrRefTemplateVO> {
+        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/nodes/template/' + templateId, null, refTemplateVO);
+    }
+
+    deleteRefTemplate(templateId: number): Promise<void> {
+        return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/nodes/template/' + templateId);
+    }
+
+    getRefTemplates(fundId: number): Promise<ArrRefTemplateVO[]> {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodes/' + fundId + '/template');
+    }
+
+    createRefTemplateMapType(templateId: number, refTemplateMapTypeFormVO: ArrRefTemplateMapTypeVO): Promise<void> {
+        return AjaxUtils.ajaxPost(
+            WebApiCls.arrangementUrl + '/nodes/template/' + templateId + '/maptype',
+            null,
+            refTemplateMapTypeFormVO,
+        );
+    }
+    updateRefTemplateMapType(
+        templateId: number,
+        mapTypeId: number,
+        refTemplateMapTypeFormVO: ArrRefTemplateMapTypeVO,
+    ): Promise<void> {
+        return AjaxUtils.ajaxPost(
+            WebApiCls.arrangementUrl + '/nodes/template/' + templateId + '/mapType/' + mapTypeId,
+            null,
+            refTemplateMapTypeFormVO,
+        );
+    }
+
+    deleteRefTemplateMapType(templateId: number, mapTypeId: number): Promise<void> {
+        return AjaxUtils.ajaxDelete(
+            WebApiCls.arrangementUrl + '/nodes/template/' + templateId + '/mapType/' + mapTypeId,
+        );
+    }
+
+    synchronizeNodes(nodeId: number, nodeVersion: number, templateId: number, childrenNodes: boolean): Promise<void> {
+        return AjaxUtils.ajaxGet(
+            WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + nodeVersion + '/sync/' + templateId,
+            {childrenNodes},
+        );
     }
 
     importPackage(data) {

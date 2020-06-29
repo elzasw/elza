@@ -18,7 +18,7 @@ import {FundFiles, FundSettingsForm, FundTreeMain, NodeTabs, Ribbon} from '../..
 import {Dropdown, DropdownButton} from 'react-bootstrap';
 import {Button} from '../../components/ui';
 import {WebApi} from 'actions/index.jsx';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog.jsx';
 import {fundExtendedView} from 'actions/arr/fundExtended.jsx';
 import {versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation.jsx';
 import {developerNodeScenariosRequest} from 'actions/global/developer.jsx';
@@ -50,7 +50,9 @@ import * as issuesActions from '../../actions/arr/issues';
 import {nodeWithIssueByFundVersion} from '../../actions/arr/issues';
 import IssueForm from '../../components/form/IssueForm';
 import ConfirmForm from '../../components/shared/form/ConfirmForm';
-import ArrPageRibbon from "./ArrPageRibbon";
+import ArrPageRibbon from './ArrPageRibbon';
+import ArrRefTemplates from '../../components/arr/ArrRefTemplates';
+import {MODAL_DIALOG_SIZE} from '../../constants';
 
 class ArrPage extends ArrParentPage {
     static TAB_KEY = 'arr-as';
@@ -288,7 +290,7 @@ class ArrPage extends ArrParentPage {
         this.props.dispatch(fundActionFormChange(versionId, {nodes: [subNode]}));
         this.props.dispatch(fundActionFormShow(versionId));
         this.props.dispatch(routerNavigate('/arr/actions'));
-    }
+    };
 
     /**
      *   getTabs
@@ -379,7 +381,7 @@ class ArrPage extends ArrParentPage {
 
         const form = <FundSettingsForm initialValues={init} onSubmitForm={this.handleChangeFundSettingsSubmit} />;
         this.props.dispatch(modalDialogShow(this, i18n('arr.fund.settings.title'), form));
-    }
+    };
 
     handleChangeFundTemplateSettings = () => {
         const {userDetail} = this.props;
@@ -449,6 +451,17 @@ class ArrPage extends ArrParentPage {
         });
     }
 
+    handleChangeSyncTemplateSettings = fundId => {
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.refTemplates.title'),
+                <ArrRefTemplates fundId={fundId} />,
+                MODAL_DIALOG_SIZE.XL,
+            ),
+        );
+    };
+
     /**
      * Zobrazení formuláře historie.
      * @param versionId verze AS
@@ -459,28 +472,6 @@ class ArrPage extends ArrParentPage {
             <ArrHistoryForm versionId={versionId} locked={locked} onDeleteChanges={this.handleDeleteChanges} />
         );
         this.props.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, 'dialog-lg'));
-    };
-
-    /**
-     * Zobrazení formuláře pro synchronizaci DAOS pro celé AS.
-     *
-     * @param versionId verze AS
-     */
-    handleShowSyncDaosByFund = versionId => {
-        const confirmForm = (
-            <ConfirmForm
-                confirmMessage={i18n('arr.daos.fund.sync.confirm-message')}
-                submittingMessage={i18n('arr.daos.fund.sync.submitting-message')}
-                submitTitle={i18n('global.action.run')}
-                onSubmit={() => {
-                    return WebApi.syncDaosByFund(versionId);
-                }}
-                onSubmitSuccess={() => {
-                    this.props.dispatch(modalDialogHide());
-                }}
-            />
-        );
-        this.props.dispatch(modalDialogShow(this, i18n('arr.daos.fund.sync.title'), confirmForm));
     };
 
     handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
@@ -582,29 +573,36 @@ class ArrPage extends ArrParentPage {
         const {arrRegion, userDetail, issueProtocol} = this.props;
         const activeInfo = this.getActiveInfo();
 
-        return <ArrPageRibbon
-            activeFundId={activeInfo.activeFund ? activeInfo.activeFund.id : null}
-            activeFundVersionId={activeInfo.activeFund ? activeInfo.activeFund.versionId : null}
-            selectedSubNodeId={activeInfo.activeNode ? activeInfo.activeNode.selectedSubNodeId : null}
-            userDetail={userDetail}
-            handleChangeFundSettings={this.handleChangeFundSettings}
-            handleChangeFundTemplateSettings={this.handleChangeFundTemplateSettings}
-            handleErrorPrevious={this.handleErrorPrevious}
-            handleErrorNext={this.handleErrorNext}
-            handleOpenFundActionForm={this.handleOpenFundActionForm}
-            issueProtocol={issueProtocol}
-            arrRegionActiveIndex={arrRegion.activeIndex}
-            />;
+        return (
+            <ArrPageRibbon
+                activeFundId={activeInfo.activeFund ? activeInfo.activeFund.id : null}
+                activeFundVersionId={activeInfo.activeFund ? activeInfo.activeFund.versionId : null}
+                selectedSubNodeId={activeInfo.activeNode ? activeInfo.activeNode.selectedSubNodeId : null}
+                userDetail={userDetail}
+                handleChangeFundSettings={this.handleChangeFundSettings}
+                handleChangeFundTemplateSettings={this.handleChangeFundTemplateSettings}
+                handleChangeSyncTemplateSettings={this.handleChangeSyncTemplateSettings}
+                handleErrorPrevious={this.handleErrorPrevious}
+                handleErrorNext={this.handleErrorNext}
+                handleOpenFundActionForm={this.handleOpenFundActionForm}
+                issueProtocol={issueProtocol}
+                arrRegionActiveIndex={arrRegion.activeIndex}
+            />
+        );
     }
 
     handleErrorNext = () => {
         const activeInfo = this.getActiveInfo();
-        this.props.dispatch(versionValidationErrorNext(activeInfo.activeFund.versionId, activeInfo.activeNode.selectedSubNodeId));
+        this.props.dispatch(
+            versionValidationErrorNext(activeInfo.activeFund.versionId, activeInfo.activeNode.selectedSubNodeId),
+        );
     };
 
     handleErrorPrevious = () => {
         const activeInfo = this.getActiveInfo();
-        this.props.dispatch(versionValidationErrorPrevious(activeInfo.activeFund.versionId, activeInfo.activeNode.selectedSubNodeId));
+        this.props.dispatch(
+            versionValidationErrorPrevious(activeInfo.activeFund.versionId, activeInfo.activeNode.selectedSubNodeId),
+        );
     };
 
     handleShowHideSpecs(descItemTypeId) {
@@ -634,7 +632,7 @@ class ArrPage extends ArrParentPage {
         return (
             <div className="errors-listbox-container">
                 <LazyListBox
-                    ref={(ref) => this.refFundErrors = ref}
+                    ref={ref => (this.refFundErrors = ref)}
                     getItems={(fromIndex, toIndex) => {
                         return WebApi.getValidationItems(activeFund.versionId, fromIndex, toIndex);
                     }}
@@ -988,7 +986,7 @@ class ArrPage extends ArrParentPage {
                         <ArrStructurePanel
                             {...i}
                             key={tabKey}
-                            ref={(ref) => this.refObjects[tabKey] = ref}
+                            ref={ref => (this.refObjects[tabKey] = ref)}
                             readMode={readMode}
                             fundId={activeFund.id}
                             fundVersionId={activeFund.versionId}
@@ -1101,7 +1099,7 @@ class ArrPage extends ArrParentPage {
     renderFundFiles(activeFund, readMode) {
         return (
             <FundFiles
-                ref={ref => this.refObjects['fundFiles'] = ref}
+                ref={ref => (this.refObjects['fundFiles'] = ref)}
                 versionId={activeFund.versionId}
                 fundId={activeFund.id}
                 fundFiles={activeFund.fundFiles}
@@ -1197,7 +1195,7 @@ class ArrPage extends ArrParentPage {
                     cutLongLabels={true}
                     versionId={activeFund.versionId}
                     {...activeFund.fundTree}
-                    ref={ref => this.refTree = ref}
+                    ref={ref => (this.refTree = ref)}
                     focus={focus}
                     actionAddons={
                         <Button

@@ -1,5 +1,5 @@
 import React, {memo, PropsWithChildren} from 'react';
-import { Field, WrappedFieldProps } from 'redux-form';
+import {BaseFieldProps, Field, WrappedFieldProps} from 'redux-form';
 import {decorateFormField} from '../../form/FormUtils';
 import FormInput from './FormInput';
 
@@ -14,11 +14,12 @@ const Base: React.FC<IFFProps & WrappedFieldProps> = memo(props => {
     if (!ComponentClass) {
         ComponentClass = FormInput;
     }
-    return <ComponentClass {...rest} {...input} {...meta} {...decorator !== false ? decorateFormField(props) : {}}/>;
+    return <ComponentClass {...rest} {...input} {...meta} {...(decorator !== false ? decorateFormField(props) : {})} />;
 });
 
-const FF: React.FC<IFFProps & PropsWithChildren<Field>> = props => {
-    return <Field component={Base} {...props}/>;
+const FF: React.FC<IFFProps &
+    Partial<Omit<BaseFieldProps<{[key: string]: any}>, 'component'>> & {[key: string]: any}> = props => {
+    return <Field component={Base} {...props} />;
 };
 
 export default FF;

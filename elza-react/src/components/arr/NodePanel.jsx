@@ -39,6 +39,7 @@ import NodeSettingsForm, {VIEW_POLICY_STATE} from './NodeSettingsForm';
 import {FOCUS_KEYS} from '../../constants.tsx';
 import ConfirmForm from '../shared/form/ConfirmForm';
 import getMapFromList from 'shared/utils/getMapFromList';
+import SyncNodes from './SyncNodes';
 // Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
 const PARENT_CHILD_MAX_LENGTH = 250;
 
@@ -398,6 +399,19 @@ class NodePanel extends AbstractReactComponent {
             />
         );
         this.props.dispatch(modalDialogShow(this, i18n('arr.daos.node.sync.title'), confirmForm));
+    };
+
+    handleRefSync = () => {
+        const {node, fundId} = this.props;
+        const nodeId = node.selectedSubNodeId;
+
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.syncNodes.title'),
+                <SyncNodes nodeId={nodeId} nodeVersion={node.version} fundId={fundId} />,
+            ),
+        );
     };
 
     handleVisiblePolicy() {
@@ -1115,6 +1129,7 @@ class NodePanel extends AbstractReactComponent {
                     onVisiblePolicy={this.handleVisiblePolicy}
                     onDigitizationRequest={this.handleDigitizationRequest}
                     onDigitizationSync={this.handleDigitizationSync}
+                    onRefSync={this.handleRefSync}
                     readMode={readMode}
                     arrPerm={arrPerm}
                 />

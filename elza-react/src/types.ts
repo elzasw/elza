@@ -193,6 +193,30 @@ export interface RowsResponse<T> {
 }
 
 export interface Bindings {
-    itemsMap: {[key: number]: boolean},
-    partsMap: {[key: number]: boolean},
+    itemsMap: {[key: number]: boolean};
+    partsMap: {[key: number]: boolean};
+}
+
+export interface ArrRefTemplateVO {
+    id: number;
+    name: string;
+    itemTypeId: number;
+    refTemplateMapTypeVOList: ArrRefTemplateMapTypeVO[];
+}
+export interface ArrRefTemplateEditVO {
+    name: string;
+    itemTypeId: number;
+}
+export interface ArrRefTemplateMapTypeVO {
+    id: number;
+    fromItemTypeId: number;
+    toItemTypeId: number;
+    fromParentLevel: boolean;
+    mapAllSpec: boolean;
+    refTemplateMapSpecVOList: ArrRefTemplateMapSpecVO[];
+}
+export interface ArrRefTemplateMapSpecVO {
+    id: number;
+    fromItemSpecId: number;
+    toItemSpecId: number;
 }
