@@ -95,7 +95,7 @@
                 <constraints nullable="false"
                              foreignKeyName="fk_restricted_socpe"
                              referencedTableName="ap_scope"
-                             referencedColumnNames="scope_id"
+                             referencedColumnNames="scope_id"/>
             </column>
         </createTable>
     </changeSet>
