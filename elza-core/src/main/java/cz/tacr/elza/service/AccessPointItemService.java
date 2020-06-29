@@ -10,6 +10,7 @@ import cz.tacr.cam.schema.cam.ItemLinkXml;
 import cz.tacr.cam.schema.cam.ItemStringXml;
 import cz.tacr.cam.schema.cam.ItemUnitDateXml;
 import cz.tacr.elza.common.GeometryConvertor;
+import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
@@ -22,6 +23,7 @@ import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
+import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.service.vo.DataRef;
@@ -50,6 +52,7 @@ public class AccessPointItemService {
     private final SequenceService sequenceService;
     private final ExternalSystemService externalSystemService;
     private final ApBindingItemRepository bindingItemRepository;
+    private final ApBindingRepository bindingRepository;
 
     public AccessPointItemService(final EntityManager em,
                                   final StaticDataService staticDataService,
@@ -57,7 +60,8 @@ public class AccessPointItemService {
                                   final DataRepository dataRepository,
                                   final SequenceService sequenceService,
                                   final ExternalSystemService externalSystemService,
-                                  final ApBindingItemRepository bindingItemRepository) {
+                                  final ApBindingItemRepository bindingItemRepository,
+                                  final ApBindingRepository bindingRepository) {
         this.em = em;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
@@ -65,6 +69,7 @@ public class AccessPointItemService {
         this.sequenceService = sequenceService;
         this.externalSystemService = externalSystemService;
         this.bindingItemRepository = bindingItemRepository;
+        this.bindingRepository = bindingRepository;
     }
 
     /**
@@ -427,7 +432,7 @@ public class AccessPointItemService {
             ArrDataUriRef dataUriRef = new ArrDataUriRef();
             dataUriRef.setValue(itemLink.getUrl().getValue());
             dataUriRef.setDescription(itemLink.getNm().getValue());
-            dataUriRef.setSchema("");
+            dataUriRef.setSchema("http");
             dataUriRef.setArrNode(null);
             dataUriRef.setDataType(DataType.URI_REF.getEntity());
             data = dataUriRef;
