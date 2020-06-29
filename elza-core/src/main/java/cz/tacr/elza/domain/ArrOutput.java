@@ -87,6 +87,9 @@ public class ArrOutput extends AbstractVersionableEntity {
     @JoinColumn(name = FIELD_DELETE_CHANGE_ID)
     private ArrChange deleteChange;
 
+    @Column(name = "anonymized_ap", nullable = true)
+    private Integer anonymizedAp;
+
     /**
      * @return  identifikátor entity
      */
@@ -280,6 +283,14 @@ public class ArrOutput extends AbstractVersionableEntity {
      */
     public void setDeleteChange(ArrChange deleteChange) {
         this.deleteChange = deleteChange;
+    }
+
+    public Integer getAnonymizedAp() {
+        return anonymizedAp;
+    }
+
+    public void setAnonymizedAp(Integer anonymizedAp) {
+        this.anonymizedAp = anonymizedAp;
     }
 
     /**

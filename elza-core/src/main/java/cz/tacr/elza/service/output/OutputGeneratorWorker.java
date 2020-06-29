@@ -141,6 +141,7 @@ public class OutputGeneratorWorker implements Runnable {
         List<Integer> nodeIds = outputNodes.stream().map(no -> no.getNodeId()).collect(Collectors.toList());
 
         List<ArrOutputItem> outputItems = outputServiceInternal.getOutputItems(output, fundVersion.getLockChange());
+        //omezení
 
         Path templateDir = resourcePathResolver.getTemplateDir(output.getTemplate()).toAbsolutePath();
 

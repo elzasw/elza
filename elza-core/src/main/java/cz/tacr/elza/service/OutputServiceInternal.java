@@ -8,7 +8,10 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,6 +87,8 @@ public class OutputServiceInternal {
 
     private final RevertingChangesService revertingChangesService;
 
+    private OutputRestrictionScopeRepository outputRestrictionScopeRepository;
+
     private final StructObjService structObjService;
 
     @Autowired
@@ -109,6 +114,7 @@ public class OutputServiceInternal {
                                  ActionRepository actionRepository,
                                  BulkActionRunRepository bulkActionRunRepository,
                                  RevertingChangesService revertingChangesService,
+                                 OutputRestrictionScopeRepository outputRestrictionScopeRepository,
                                  StructObjService structObjService) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
@@ -128,6 +134,7 @@ public class OutputServiceInternal {
         this.actionRepository = actionRepository;
         this.bulkActionRunRepository = bulkActionRunRepository;
         this.revertingChangesService = revertingChangesService;
+        this.outputRestrictionScopeRepository = outputRestrictionScopeRepository;
         this.structObjService = structObjService;
     }
 
@@ -477,5 +484,19 @@ public class OutputServiceInternal {
         }
 
         return OutputRequestStatus.OK;
+    }
+
+    public List<ApScopeVO> getRestrictedScopes(ArrOutput output) {
+        StaticDataProvider sdp = staticDataService.getData();
+        List<ArrOutputRestrictionScope> restrictionScopeList = outputRestrictionScopeRepository.findByOutput(output.getOutputId());
+
+        List<ApScopeVO> scopeVOList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(restrictionScopeList)) {
+            for (ArrOutputRestrictionScope restrictionScope : restrictionScopeList) {
+                scopeVOList.add(ApScopeVO.newInstance(restrictionScope.getScope(), sdp));
+            }
+        }
+
+        return scopeVOList;
     }
 }

@@ -13,6 +13,12 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrOutputRestrictionScope;
+import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,6 +145,12 @@ public class OutputService {
 
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    private OutputRestrictionScopeRepository outputRestrictionScopeRepository;
+
+    @Autowired
+    private ScopeRepository scopeRepository;
 
     public ArrOutput getOutput(int outputId) {
         return outputServiceInternal.getOutput(outputId);
@@ -425,6 +437,7 @@ public class OutputService {
      * @param name název výstupu
      * @param internalCode kód výstupu
      * @param templateId id šablony
+     * @param anonymizedApId id anonymizovaného přístupového bodu
      * @return upravený výstup
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
@@ -433,7 +446,8 @@ public class OutputService {
                                        final ArrOutput output,
                                        final String name,
                                        final String internalCode,
-                                       final Integer templateId) {
+                                       final Integer templateId,
+                                       final Integer anonymizedApId) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(output, "Výstup musí být vyplněn");
         Assert.notNull(name, "Název musí být vyplněn");
@@ -458,6 +472,7 @@ public class OutputService {
         } else {
             output.setTemplate(null);
         }
+        output.setAnonymizedAp(anonymizedApId);
 
         outputRepository.save(output);
 
@@ -1430,4 +1445,19 @@ public class OutputService {
         output.setOutputSettings(s);
         outputRepository.save(output);
     }
+
+    public void addRestrictedScope(Integer outputId, Integer scopeId) {
+        ArrOutput output = outputRepository.findByOutputId(outputId);
+        ApScope scope = scopeRepository.findOne(scopeId);
+
+        ArrOutputRestrictionScope restrictionScope = new ArrOutputRestrictionScope();
+        restrictionScope.setOutput(output);
+        restrictionScope.setScope(scope);
+        outputRestrictionScopeRepository.save(restrictionScope);
+    }
+
+    public void deleteRestrictedScope(Integer outputId, Integer scopeId) {
+        outputRestrictionScopeRepository.deleteByOutputAndScope(outputId, scopeId);
+    }
+
 }
