@@ -45,4 +45,7 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
     List<ApItem> findItemsByAccessPointIdAndItemTypesAndPartTypeCode(@Param("accessPointId") Integer accessPointId,
                                                                      @Param("itemTypes") Collection<RulItemType> itemTypes,
                                                                      @Param("partTypeCode") String partTypeCode);
+
+    @Query("SELECT part FROM ApItem i JOIN i.part part JOIN i.data data WHERE data IN :dataRecordRefList AND i.deleteChange IS NULL")
+    List<ApPart> findPartsByDataRecordRefList(@Param("dataRecordRefList") List<ArrDataRecordRef> dataRecordRefList);
 }

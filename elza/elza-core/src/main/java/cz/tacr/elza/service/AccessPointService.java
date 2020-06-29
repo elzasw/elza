@@ -801,6 +801,12 @@ public class AccessPointService {
                 setAccessPointInDataRecordRefs(state.getAccessPoint(), dataRecordRefList, binding);
             }
             dataRecordRefRepository.save(dataRecordRefList);
+            List<ApPart> partList = itemRepository.findPartsByDataRecordRefList(dataRecordRefList);
+            if (CollectionUtils.isNotEmpty(partList)) {
+                for (ApPart part : partList) {
+                    updatePartValue(part);
+                }
+            }
         }
 
         return states;
@@ -1493,7 +1499,7 @@ public class AccessPointService {
 
     public void synchronizeAccessPoint(ApState state, EntityXml entity, ApBindingState bindingState, boolean syncQueue) {
         //TODO fantiš other external systems
-        if (checkLocalChanges(state, bindingState) && syncQueue) {
+        if (syncQueue && checkLocalChanges(state, bindingState)) {
             bindingState.setSyncOk(SyncState.NOT_SYNCED);
             bindingStateRepository.save(bindingState);
         } else {
@@ -1651,6 +1657,7 @@ public class AccessPointService {
     }
 
     private boolean checkLocalChanges(final ApState state, final ApBindingState bindingState) {
+        //TODO fantiš možná není nutné koukat na party
         List<ApPart> partList = partService.findNewerPartsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
         if (CollectionUtils.isNotEmpty(partList)) {
             return CollectionUtils.isNotEmpty(bindingItemRepository.findByParts(partList));
@@ -2546,7 +2553,11 @@ public class AccessPointService {
     public ArchiveEntityResultListVO findAccessPoints(Integer from, Integer max, Integer scopeId, SearchFilterVO filter) {
         searchFilterFactory.completeApTypesTreeInFilter(filter);
         Set<Integer> scopeList = new HashSet<>();
-        scopeList.add(1);
+        if (scopeId != null) {
+            scopeList.add(scopeId);
+        } else {
+            scopeList.add(1);
+        }
         List<ApState> stateList = apAccessPointRepository.findApAccessPointByTextAndType(filter.getSearch(), filter.getAeTypeIds(), from, max, scopeList, null , null, null);
 
 
