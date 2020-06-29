@@ -2237,7 +2237,33 @@ public class ArrangementController {
         Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId());
+        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId(), param.getAnonymizedApId());
+    }
+
+    /**
+     * Přidání omezujícího rejstříku k výstupu
+     *
+     * @param outputId identifikátor výstupu
+     * @param scopeId identifikátor rejstříku
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{outputId}/restrict/{scopeId}", method = RequestMethod.PUT)
+    public void addRestrictedScope(@PathVariable(value = "outputId") final Integer outputId,
+                                   @PathVariable(value = "scopeId") final Integer scopeId) {
+        outputService.addRestrictedScope(outputId, scopeId);
+    }
+
+    /**
+     * Odebrání omezujícího rejstříku z výstupu
+     *
+     * @param outputId identifikátor výstupu
+     * @param scopeId identifikátor rejstříku
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{outputId}/restrict/{scopeId}", method = RequestMethod.DELETE)
+    public void deleteRestrictedScope(@PathVariable(value = "outputId") final Integer outputId,
+                                      @PathVariable(value = "scopeId") final Integer scopeId) {
+        outputService.deleteRestrictedScope(outputId, scopeId);
     }
 
     /**
@@ -3412,6 +3438,8 @@ public class ArrangementController {
          */
         private Integer templateId;
 
+        private Integer anonymizedApId;
+
         public String getName() {
             return name;
         }
@@ -3442,6 +3470,14 @@ public class ArrangementController {
 
         public void setTemplateId(final Integer templateId) {
             this.templateId = templateId;
+        }
+
+        public Integer getAnonymizedApId() {
+            return anonymizedApId;
+        }
+
+        public void setAnonymizedApId(Integer anonymizedApId) {
+            this.anonymizedApId = anonymizedApId;
         }
     }
 
