@@ -149,7 +149,7 @@ public class GroovyService {
                         String value;
                         Integer intValue;
                         if (dataTmp.getRecord() != null) {
-                            value = String.valueOf(dataTmp.getRecordId());
+                            value = dataTmp.getRecord().getPreferredPart().getValue();
                             intValue = dataTmp.getRecordId();
                         } else {
                             value = dataTmp.getBinding().getValue();
