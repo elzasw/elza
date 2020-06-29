@@ -830,7 +830,7 @@ public class ApController {
     public ArchiveEntityResultListVO findAccessPointForRel(@RequestParam(name = "from", defaultValue = "0", required = false) final Integer from,
                                                            @RequestParam(name = "max", defaultValue = "50", required = false) final Integer max,
                                                            @RequestParam(name = "itemTypeId") final Integer itemTypeId,
-                                                           @RequestParam(name = "itemSpecId") final Integer itemSpecId,
+                                                           @RequestParam(name = "itemSpecId", required = false) final Integer itemSpecId,
                                                            @RequestBody final SearchFilterVO filter) {
         if (from < 0) {
             throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);

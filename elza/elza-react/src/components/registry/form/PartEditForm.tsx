@@ -532,7 +532,7 @@ const PartEditForm = ({
                 refTables={refTables}
                 partTypeId={partTypeId}
                 deleteMode={deleteMode}
-                onCustomEditItem={(name: string, systemCode: RulDataTypeCodeEnum, item: ApItemVO) => onCustomEditItem(name, systemCode, item, refTables, itemTypeAttributeMap)}
+                onCustomEditItem={(name: string, systemCode: RulDataTypeCodeEnum, item: ApItemVO) => onCustomEditItem(name, systemCode, item, refTables, partTypeId, itemTypeAttributeMap)}
                 formData={formData}
                 apId={apId}
                 showImportDialog={showImportDialog}
@@ -602,6 +602,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
         systemCode: RulDataTypeCodeEnum,
         item: ApItemVO,
         refTables: any,
+        partTypeId: number,
         itemTypeAttributeMap: Record<number, ApCreateTypeVO>,
     ) => {
         const initialValues: any = {
@@ -629,12 +630,17 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
                     initialValues={initialValues}
                     itemTypeAttributeMap={itemTypeAttributeMap}
                     typeId={item.typeId}
+                    partTypeId={partTypeId}
                     onSubmit={form => {
-                        let field = name;
+                        let field = "partForm." + name;
                         const fieldValue: any = {
                             ...item,
                             specId: form.specId ? parseInt(form.specId) : null,
-                            accessPoint: form.codeObj,
+                            accessPoint: {
+                                '@class': '.ApAccessPointVO',
+                                id: form.codeObj.id,
+                                name: form.codeObj.name,
+                            },
                             value: form.codeObj ? form.codeObj.id : null
                         };
                         dispatch(change(props.formInfo.formName, field, fieldValue));
