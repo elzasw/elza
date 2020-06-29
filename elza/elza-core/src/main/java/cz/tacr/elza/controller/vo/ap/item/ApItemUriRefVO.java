@@ -42,7 +42,7 @@ public class ApItemUriRefVO extends ApItemVO {
     @Override
     public ArrData createDataEntity(EntityManager em) {
        ArrDataUriRef data = new ArrDataUriRef();
-       data.setSchema(schema);
+       data.setSchema("http");
        data.setValue(value);
        data.setDescription(description);
 

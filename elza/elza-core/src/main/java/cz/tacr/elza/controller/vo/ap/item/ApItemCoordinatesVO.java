@@ -44,6 +44,6 @@ public class ApItemCoordinatesVO extends ApItemVO {
         Geometry geo = GeometryConvertor.convert(value);
         data.setValue(geo);
         data.setDataType(DataType.COORDINATES.getEntity());
-        return null;
+        return data;
     }
 }
