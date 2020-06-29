@@ -80,4 +80,24 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="20200305111600" author="fantis">
+        <createTable tableName="arr_output_restricted_scope">
+            <column name="restriction_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="PK_output_restriction_scope"/>
+            </column>
+            <column name="output_id" type = "int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_restricted_output"
+                             referencedTableName="arr_output"
+                             referencedColumnNames="output_id"/>
+            </column>
+            <column name="scope_id" type = "int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_restricted_socpe"
+                             referencedTableName="ap_scope"
+                             referencedColumnNames="scope_id"
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
