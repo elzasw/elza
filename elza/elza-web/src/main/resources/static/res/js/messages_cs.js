@@ -1028,6 +1028,11 @@ var messages = {
     "ap.binding.syncState.SYNC_OK": "Aktivní synchronizace",
     "ap.binding.syncState.NOT_SYNCED": "Nesynchronizuje se",
 
+    "ap.binding.extState.ERS_APPROVED": "schválená",
+    "ap.binding.extState.ERS_INVALID": "neplatná",
+    "ap.binding.extState.ERS_NEW": "nová",
+    "ap.binding.extState.ERS_REPLACED": "nahrazená",
+
     "ap.push-to-ext.title": "Zápis entity do externího systému",
     "ap.push-to-ext": "Zápis entity do externího systému",
 
