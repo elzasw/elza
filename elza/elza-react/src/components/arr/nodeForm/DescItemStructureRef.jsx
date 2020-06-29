@@ -26,7 +26,6 @@ class DescItemStructureRef extends AbstractReactComponent {
 
     static propTypes = {
         versionId: PropTypes.number.isRequired,
-        fundVersionId: PropTypes.number.isRequired,
         structureTypeCode: PropTypes.string.isRequired,
     };
 

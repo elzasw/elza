@@ -114,7 +114,10 @@ export function fetchDaoUnassignedPackageListIfNeeded(versionId) {
         'fund[' + versionId + ']' + AREA_DAO_UNASSIGNED_PACKAGE_LIST_SUFFIX,
         versionId,
         (parent, filter) => {
-            return WebApi.findDaoPackages(versionId, filter.fulltext, true).then(json => ({rows: json, count: 0}));
+            return WebApi.findDaoPackages(versionId, filter.fulltext, true).then(json => ({
+                rows: json,
+                count: json.length,
+            }));
         },
     );
 }

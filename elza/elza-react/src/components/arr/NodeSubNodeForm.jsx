@@ -100,7 +100,13 @@ class NodeSubNodeForm extends AbstractReactComponent {
             const log = false;
             return (
                 !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, NODE_SUB_NODE_FORM_CMP, '', log) ||
-                !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled, {}, '', log) ||
+                !objectEqualsDiff(
+                    this.props.descItemCopyFromPrevEnabled,
+                    nextProps.descItemCopyFromPrevEnabled,
+                    {},
+                    '',
+                    log,
+                ) ||
                 !objectEqualsDiff(this.props.focus, nextProps.focus, {}, '', log) ||
                 !objectEqualsDiff(this.props.nodeSettings, nextProps.nodeSettings, {}, '', log) ||
                 !objectEqualsDiff(this.props.readMode, nextProps.readMode, {}, '', log)
@@ -329,7 +335,8 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     <div className="section">
                         <NoFocusButton
                             onClick={this.handleDescItemTypeUnlockAll}
-                            title={i18n('subNodeForm.descItemTypeUnlockAll')}>
+                            title={i18n('subNodeForm.descItemTypeUnlockAll')}
+                        >
                             <Icon glyph="fa-unlock" />
                         </NoFocusButton>
                         <NoFocusButton
@@ -364,6 +371,12 @@ class NodeSubNodeForm extends AbstractReactComponent {
                                 {i18n('subNodeForm.digitizationSync')}
                             </NoFocusButton>
                         )}
+                    </div>
+                    <div className="section">
+                        <NoFocusButton onClick={this.props.onRefSync}>
+                            <Icon glyph="fa-refresh" />
+                            {i18n('subNodeForm.refSync')}
+                        </NoFocusButton>
                     </div>
                     {isProtocolLoaded && (
                         <div className="section">

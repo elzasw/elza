@@ -32,7 +32,7 @@ class SubNodeDao extends AbstractReactComponent {
 
         if (dao.url) {
             daoResults.push(
-                <div className="link">
+                <div className="link" key={'link'}>
                     <a target="_blank" rel="noopener noreferrer" href={dao.url}>
                         {dao.label} - {dao.fileCount} {i18n(filesLabel)}
                     </a>
@@ -40,7 +40,7 @@ class SubNodeDao extends AbstractReactComponent {
             );
         } else {
             daoResults.push(
-                <div className="link">
+                <div className="link" key={'link'}>
                     {dao.label} - {dao.fileCount} {i18n(filesLabel)}
                 </div>,
             );
@@ -49,6 +49,7 @@ class SubNodeDao extends AbstractReactComponent {
         let actions = [];
         actions.push(
             <Button
+                key={'show'}
                 onClick={() => {
                     this.handleShowDetailOne(dao);
                 }}
@@ -57,9 +58,17 @@ class SubNodeDao extends AbstractReactComponent {
                 <Icon glyph="fa-eye" />
             </Button>,
         );
-        daoResults.push(<div className="actions">{actions}</div>);
+        daoResults.push(
+            <div className="actions" key={'actions'}>
+                {actions}
+            </div>,
+        );
 
-        return <div className="links">{daoResults}</div>;
+        return (
+            <div className="links" key={'dao-item-' + index}>
+                {daoResults}
+            </div>
+        );
     };
 
     renderForm = () => {

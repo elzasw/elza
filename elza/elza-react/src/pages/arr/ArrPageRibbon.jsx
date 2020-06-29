@@ -1,10 +1,14 @@
-import React from "react";
+import React from 'react';
+import {connect} from 'react-redux';
 import {AbstractReactComponent, i18n, Icon, RibbonGroup} from 'components/shared';
-import {Button} from "../../components/ui";
-import * as perms from "../../actions/user/Permission";
-import {Dropdown, DropdownButton} from "react-bootstrap";
-import {Ribbon} from "../../components";
-import {propsEquals} from "../../components/Utils";
+import {Button} from '../../components/ui';
+import * as perms from '../../actions/user/Permission';
+import {Dropdown, DropdownButton} from 'react-bootstrap';
+import {Ribbon} from '../../components';
+import {propsEquals} from '../../components/Utils';
+import ConfirmForm from '../../components/shared/form/ConfirmForm';
+import {WebApi} from '../../actions/WebApi';
+import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
 
 class ArrPageRibbon extends AbstractReactComponent {
     shouldComponentUpdate(nextProps, nextState) {
@@ -13,6 +17,28 @@ class ArrPageRibbon extends AbstractReactComponent {
         }
         return !propsEquals(this.props, nextProps, null, true);
     }
+
+    /**
+     * Zobrazení formuláře pro synchronizaci DAOS pro celé AS.
+     *
+     * @param versionId verze AS
+     */
+    handleShowSyncDaosByFund = versionId => {
+        const confirmForm = (
+            <ConfirmForm
+                confirmMessage={i18n('arr.daos.fund.sync.confirm-message')}
+                submittingMessage={i18n('arr.daos.fund.sync.submitting-message')}
+                submitTitle={i18n('global.action.run')}
+                onSubmit={() => {
+                    return WebApi.syncDaosByFund(versionId);
+                }}
+                onSubmitSuccess={() => {
+                    this.props.dispatch(modalDialogHide());
+                }}
+            />
+        );
+        this.props.dispatch(modalDialogShow(this, i18n('arr.daos.fund.sync.title'), confirmForm));
+    };
 
     render() {
         const {
@@ -24,10 +50,11 @@ class ArrPageRibbon extends AbstractReactComponent {
             userDetail,
             handleChangeFundSettings,
             handleChangeFundTemplateSettings,
+            handleChangeSyncTemplateSettings,
             handleErrorPrevious,
             handleErrorNext,
             handleOpenFundActionForm,
-            issueProtocol
+            issueProtocol,
         } = this.props;
 
         const altActions = [];
@@ -47,6 +74,17 @@ class ArrPageRibbon extends AbstractReactComponent {
                 <Button key="fund-templates" onClick={handleChangeFundTemplateSettings} variant={'default'}>
                     <Icon glyph="fa-wrench" />
                     <span className="btnText">{i18n('ribbon.action.arr.fund.settings.template')}</span>
+                </Button>,
+            );
+
+            altActions.push(
+                <Button
+                    key="sync-templates"
+                    onClick={handleChangeSyncTemplateSettings.bind(this, activeFundId)}
+                    variant={'default'}
+                >
+                    <Icon glyph="fa-wrench" />
+                    <span className="btnText">{i18n('ribbon.action.arr.fund.settings.refTemplate')}</span>
                 </Button>,
             );
 
@@ -105,19 +143,11 @@ class ArrPageRibbon extends AbstractReactComponent {
             if (selectedSubNodeId !== null) {
                 subNodeId = selectedSubNodeId;
                 itemActions.push(
-                    <Button
-                        key="next-error"
-                        onClick={handleErrorPrevious}
-                        variant={'default'}
-                    >
+                    <Button key="next-error" onClick={handleErrorPrevious} variant={'default'}>
                         <Icon glyph="fa-arrow-left" />
                         <span className="btnText">{i18n('ribbon.action.arr.validation.error.previous')}</span>
                     </Button>,
-                    <Button
-                        key="previous-error"
-                        onClick={handleErrorNext}
-                        variant={'default'}
-                    >
+                    <Button key="previous-error" onClick={handleErrorNext} variant={'default'}>
                         <Icon glyph="fa-arrow-right" />
                         <span className="btnText">{i18n('ribbon.action.arr.validation.error.next')}</span>
                     </Button>,
@@ -222,17 +252,9 @@ class ArrPageRibbon extends AbstractReactComponent {
             );
         }
 
-        return (
-            <Ribbon
-                arr
-                subMenu
-                fundId={activeFundId}
-                altSection={altSection}
-                itemSection={itemSection}
-            />
-        );
+        return <Ribbon arr subMenu fundId={activeFundId} altSection={altSection} itemSection={itemSection} />;
     }
 }
 
-export default ArrPageRibbon;
-// export default connect(mapStateToProps, null, null, {forwardRef: true})(ArrPageRibbon);
+// export default ArrPageRibbon;
+export default connect(null, null, null, {forwardRef: true})(ArrPageRibbon);

@@ -14,7 +14,11 @@ export default function processAreaStores(state, action) {
     // Variabilita zpracování area i do fund store na základě předaných dat
     if (areaItems[0].startsWith('fund[')) {
         const versionId = areaItems[0].substring('fund['.length, areaItems[0].indexOf(']'));
-        const index = indexById(state.funds, versionId, 'versionId');
+        let realVersionId = versionId;
+        if (typeof realVersionId !== 'number') {
+            realVersionId = parseInt(realVersionId);
+        }
+        const index = indexById(state.funds, realVersionId, 'versionId');
         if (index !== null) {
             const newAction = {
                 ...action,

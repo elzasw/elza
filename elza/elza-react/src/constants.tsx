@@ -106,3 +106,10 @@ export const FORM_DATA_GRID_EXPORT = 'dataGridExportForm';
 export const JAVA_CLASS_AP_ACCESS_POINT_VO = 'cz.tacr.elza.controller.vo.ApAccessPointVO';
 export const JAVA_CLASS_ARR_DIGITIZATION_FRONTDESK_SIMPLE_VO = '.ArrDigitizationFrontdeskSimpleVO';
 export const JAVA_ATTR_CLASS = '@class';
+
+export enum MODAL_DIALOG_SIZE {
+    FULLSCREEN = 'dialog-fullscreen',
+    LG = 'dialog-lg',
+    XL = 'dialog-xl',
+    SM = 'dialog-sm',
+}

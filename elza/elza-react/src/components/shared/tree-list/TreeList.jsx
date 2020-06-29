@@ -61,6 +61,7 @@ class TreeList extends React.Component {
 
     // default group configuration object
     static defaultGroup = {
+        id: '_all',
         name: 'all',
         hideTitle: true,
     };
@@ -132,7 +133,8 @@ class TreeList extends React.Component {
     buildId = (id, groupName) => {
         const {renderIdDelimiter} = this.props;
         if (!id && id !== 0) {
-            console.warn('Id not specified');
+            // Ignoring warning on 'all' beacuse its root group - No id
+            groupName !== 'all' && console.warn('Id not specified');
             return null;
         }
         return [id, groupName].join(renderIdDelimiter);
@@ -259,7 +261,7 @@ class TreeList extends React.Component {
         const {includeId, items} = this.props;
         this.checkIfTree(items);
 
-        const renderedId = this.getHighPriorityRenderedId(includeId, true);
+        const renderedId = this.getHighPriorityRenderedId(includeId || '_def_', true);
         this.expandParents(renderedId);
 
         addShortcutManager(this, defaultKeymap);

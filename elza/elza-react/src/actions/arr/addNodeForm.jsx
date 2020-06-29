@@ -157,6 +157,7 @@ function handleCopySubmit(data, filesConflictResolve = null, structuresConflictR
             data.sourceNodes,
             data.ignoreRootNodes,
             data.selectedDirection,
+            data.templateId,
             filesConflictResolve,
             structuresConflictResolve,
         )
