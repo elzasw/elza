@@ -1142,7 +1142,7 @@ public class ApController {
         } catch (ApiException e) {
             throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
         }
-        accessPointService.synchronizeAccessPoint(state, entity, bindingState);
+        accessPointService.synchronizeAccessPoint(state, entity, bindingState, false);
     }
 
     /**
