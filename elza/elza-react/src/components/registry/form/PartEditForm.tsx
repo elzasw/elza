@@ -630,6 +630,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
                     initialValues={initialValues}
                     itemTypeAttributeMap={itemTypeAttributeMap}
                     typeId={item.typeId}
+                    scopeId={props.scopeId}
                     partTypeId={partTypeId}
                     onSubmit={form => {
                         let field = "partForm." + name;
