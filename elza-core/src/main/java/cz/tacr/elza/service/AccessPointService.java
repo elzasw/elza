@@ -866,8 +866,6 @@ public class AccessPointService {
         stateNew.setStateApproval(StateApproval.NEW);
         stateRepository.save(stateNew);
 
-        partService.deleteParts(accessPoint, apChange);
-
         createAccessPoint(scope, entity, accessPoint, apChange, sdp, externalSystemCode, stateNew, null);
 
         publishAccessPointUpdateEvent(accessPoint);
@@ -1493,9 +1491,9 @@ public class AccessPointService {
         return null;
     }
 
-    public void synchronizeAccessPoint(ApState state, EntityXml entity, ApBindingState bindingState) {
+    public void synchronizeAccessPoint(ApState state, EntityXml entity, ApBindingState bindingState, boolean syncQueue) {
         //TODO fantiš other external systems
-        if (checkLocalChanges(state, bindingState)) {
+        if (checkLocalChanges(state, bindingState) && syncQueue) {
             bindingState.setSyncOk(SyncState.NOT_SYNCED);
             bindingStateRepository.save(bindingState);
         } else {
@@ -1536,6 +1534,7 @@ public class AccessPointService {
                         bindingItemRepository.save(bindingItem);
 
                         changePartInItems(apPart, notChangeItems, apChange);
+                        changePartInItems(apPart, apChange, oldPart);
 
                         partService.createPartItems(apChange, apPart, newItems, binding, dataRefList);
 
@@ -1606,6 +1605,21 @@ public class AccessPointService {
                 bindingItem.setItem(newItem);
             }
             bindingItemRepository.save(notChangeItems);
+            itemRepository.save(itemList);
+        }
+    }
+
+    private void changePartInItems(ApPart apPart, ApChange apChange, ApPart oldPart) {
+        List<ApItem> notConnectedItems = itemRepository.findValidItemsByPart(oldPart);
+        if (CollectionUtils.isNotEmpty(notConnectedItems)) {
+            List<ApItem> itemList = new ArrayList<>();
+            for (ApItem item : notConnectedItems) {
+                item.setDeleteChange(apChange);
+                itemList.add(item);
+
+                ApItem newItem = apItemService.createItem(item, apChange, apPart);
+                itemList.add(newItem);
+            }
             itemRepository.save(itemList);
         }
     }
