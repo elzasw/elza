@@ -2529,7 +2529,7 @@ public class AccessPointService {
         return aeTypeIds;
     }
 
-    public ArchiveEntityResultListVO findAccessPoints(Integer from, Integer max, SearchFilterVO filter) {
+    public ArchiveEntityResultListVO findAccessPoints(Integer from, Integer max, Integer scopeId, SearchFilterVO filter) {
         searchFilterFactory.completeApTypesTreeInFilter(filter);
         Set<Integer> scopeList = new HashSet<>();
         scopeList.add(1);
