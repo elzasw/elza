@@ -15,6 +15,6 @@ public interface OutputRestrictionScopeRepository extends ElzaJpaRepository<ArrO
     @Query("DELETE FROM arr_output_restriction_scope res WHERE res.output.outputId = :outputId AND res.scope.scopeId = :scopeId")
     void deleteByOutputAndScope(@Param("outputId") Integer outputId, @Param("scopeId") Integer scopeId);
 
-    @Query("SELECT scope FROM arr_output_restriction_scope res JOIN res.scope WHERE res.output = :output")
-    List<ApScope> findByOutput(@Param("output") ArrOutput output);
+    @Query("SELECT res FROM arr_output_restriction_scope res JOIN res.scope WHERE res.output.outputId = :outputId")
+    List<ArrOutputRestrictionScope> findByOutput(@Param("outputId") Integer outputId);
 }
