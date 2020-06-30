@@ -19,6 +19,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
 import cz.tacr.elza.controller.vo.nodes.*;
 import cz.tacr.elza.other.HelperTestService;
 import org.apache.commons.collections.CollectionUtils;
@@ -1228,6 +1232,45 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         copyNodesParams.setSelectedDirection(FundLevelService.AddLevelDirection.CHILD);
 
         copyLevels(copyNodesParams);
+    }
+
+    @Test
+    public void refTemplatesTest() {
+        ArrFundVO fund = createdFund();
+        ArrRefTemplateVO refTemplateVO = createRefTemplate(fund.getId());
+
+        ArrRefTemplateEditVO refTemplateEditVO = new ArrRefTemplateEditVO();
+        refTemplateEditVO.setName("Nová šablona");
+        refTemplateEditVO.setItemTypeId(141);
+
+        refTemplateVO = updateRefTemplate(refTemplateVO.getId(), refTemplateEditVO);
+        assertEquals(refTemplateVO.getName(), "Nová šablona");
+
+        ArrRefTemplateMapTypeVO refTemplateMapTypeVO = new ArrRefTemplateMapTypeVO();
+        refTemplateMapTypeVO.setFromItemTypeId(3);
+        refTemplateMapTypeVO.setToItemTypeId(2);
+        refTemplateMapTypeVO.setMapAllSpec(true);
+        refTemplateMapTypeVO.setFromParentLevel(true);
+
+        createRefTemplateMapType(refTemplateVO.getId(), refTemplateMapTypeVO);
+
+        List<ArrRefTemplateMapSpecVO> refTemplateMapSpecVOList = new ArrayList<>();
+        ArrRefTemplateMapSpecVO refTemplateMapSpecVO = new ArrRefTemplateMapSpecVO();
+        refTemplateMapSpecVO.setFormItemSpecId(12);
+        refTemplateMapSpecVO.setToItemSpecId(9);
+        refTemplateMapSpecVOList.add(refTemplateMapSpecVO);
+
+        List<ArrRefTemplateVO> refTemplateVOList = getRefTemplate(fund.getId());
+        ArrRefTemplateVO temp = refTemplateVOList.get(0);
+        ArrRefTemplateMapTypeVO mapType = temp.getRefTemplateMapTypeVOList().get(0);
+        mapType.setRefTemplateMapSpecVOList(refTemplateMapSpecVOList);
+
+        updateRefTemplateMapType(temp.getId(), mapType.getId(), mapType);
+        deleteRefTemplateMapType(temp.getId(), mapType.getId());
+
+
+        deleteRefTemplate(refTemplateVO.getId());
+
     }
 
 }
