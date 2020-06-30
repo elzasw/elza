@@ -4,7 +4,6 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -74,7 +73,6 @@ import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.vo.DataRef;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -2532,6 +2530,7 @@ public class AccessPointService {
 
         ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
         ApBinding binding = bindingState.getBinding();
+        dataRecordRefRepository.disconnectBinding(binding);
         bindingItemRepository.deleteByBinding(binding);
         bindingStateRepository.delete(bindingState);
         bindingRepository.delete(binding);
