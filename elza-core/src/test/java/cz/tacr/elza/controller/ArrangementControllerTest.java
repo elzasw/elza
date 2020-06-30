@@ -24,6 +24,7 @@ import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
 import cz.tacr.elza.controller.vo.nodes.*;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.other.HelperTestService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
@@ -1239,25 +1240,33 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrFundVO fund = createdFund();
         ArrRefTemplateVO refTemplateVO = createRefTemplate(fund.getId());
 
+        RulItemType itemType = itemTypeRepository.findOneByCode("SOURCE_LINK");
+
         ArrRefTemplateEditVO refTemplateEditVO = new ArrRefTemplateEditVO();
         refTemplateEditVO.setName("Nová šablona");
-        refTemplateEditVO.setItemTypeId(141);
+        refTemplateEditVO.setItemTypeId(itemType.getItemTypeId());
 
         refTemplateVO = updateRefTemplate(refTemplateVO.getId(), refTemplateEditVO);
         assertEquals(refTemplateVO.getName(), "Nová šablona");
 
+        RulItemType fromItemType = itemTypeRepository.findOneByCode("SRD_FOLDER_TYPE");
+        RulItemType toItemType = itemTypeRepository.findOneByCode("SRD_LEVEL_TYPE");
+
         ArrRefTemplateMapTypeVO refTemplateMapTypeVO = new ArrRefTemplateMapTypeVO();
-        refTemplateMapTypeVO.setFromItemTypeId(3);
-        refTemplateMapTypeVO.setToItemTypeId(2);
+        refTemplateMapTypeVO.setFromItemTypeId(fromItemType.getItemTypeId());
+        refTemplateMapTypeVO.setToItemTypeId(toItemType.getItemTypeId());
         refTemplateMapTypeVO.setMapAllSpec(true);
         refTemplateMapTypeVO.setFromParentLevel(true);
 
         createRefTemplateMapType(refTemplateVO.getId(), refTemplateMapTypeVO);
 
+        RulItemSpec fromItemSpec = itemSpecRepository.findOneByCode("SRD_FOLDER_UNITS");
+        RulItemSpec toItemSpec = itemSpecRepository.findOneByCode("SRD_LEVEL_ITEM");
+
         List<ArrRefTemplateMapSpecVO> refTemplateMapSpecVOList = new ArrayList<>();
         ArrRefTemplateMapSpecVO refTemplateMapSpecVO = new ArrRefTemplateMapSpecVO();
-        refTemplateMapSpecVO.setFormItemSpecId(12);
-        refTemplateMapSpecVO.setToItemSpecId(9);
+        refTemplateMapSpecVO.setFormItemSpecId(fromItemSpec.getItemSpecId());
+        refTemplateMapSpecVO.setToItemSpecId(toItemSpec.getItemSpecId());
         refTemplateMapSpecVOList.add(refTemplateMapSpecVO);
 
         List<ArrRefTemplateVO> refTemplateVOList = getRefTemplate(fund.getId());
