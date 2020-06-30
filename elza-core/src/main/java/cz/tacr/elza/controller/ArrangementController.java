@@ -2552,12 +2552,25 @@ public class ArrangementController {
         requestService.deleteRequest(request);
     }
 
+    /**
+     * Založení šablony pro JP
+     *
+     * @param fundId identifikátor AS
+     * @return šablona pro JP
+     */
     @RequestMapping(value = "/nodes/{fundId}/template/create", method = RequestMethod.PUT)
     @Transactional
     public ArrRefTemplateVO createRefTemplate(@PathVariable final Integer fundId) {
         return arrangementService.createRefTemplate(fundId);
     }
 
+    /**
+     * Úprava šablony pro JP
+     *
+     * @param templateId identifikátor šablony
+     * @param refTemplateVO formulář editace
+     * @return šablona JP
+     */
     @RequestMapping(value = "/nodes/template/{templateId}", method = RequestMethod.POST)
     @Transactional
     public ArrRefTemplateVO updateRefTemplate(@PathVariable(value = "templateId") final Integer templateId,
@@ -2565,18 +2578,35 @@ public class ArrangementController {
         return arrangementService.updateRefTemplate(templateId, refTemplateVO);
     }
 
+    /**
+     * Smazání šablony pro JP
+     *
+     * @param templateId identifikátor šablony
+     */
     @RequestMapping(value = "/nodes/template/{templateId}", method = RequestMethod.DELETE)
     @Transactional
     public void deleteRefTemplate(@PathVariable(value = "templateId") final Integer templateId) {
         arrangementService.deleteRefTemplate(templateId);
     }
 
+    /**
+     * Získání seznamu šablon pro AS
+     *
+     * @param fundId identifikátor AS
+     * @return seznam šablon
+     */
     @RequestMapping(value = "/nodes/{fundId}/template", method = RequestMethod.GET)
     @Transactional
     public List<ArrRefTemplateVO> getRefTemplates(@PathVariable final Integer fundId) {
         return arrangementService.getRefTemplates(fundId);
     }
 
+    /**
+     * Založení nového mapování pro šablonu
+     *
+     * @param templateId identifikátor šablony
+     * @param refTemplateMapTypeFormVO formulář mapování
+     */
     @RequestMapping(value = "/nodes/template/{templateId}/maptype", method = RequestMethod.POST)
     @Transactional
     public void createRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,
@@ -2584,6 +2614,13 @@ public class ArrangementController {
         arrangementService.createRefTemplateMapType(templateId, refTemplateMapTypeFormVO);
     }
 
+    /**
+     * Editace mapování šablony
+     *
+     * @param templateId identifikátor šablony
+     * @param mapTypeId identifikátor mapování
+     * @param refTemplateMapTypeFormVO formulář mapování
+     */
     @RequestMapping(value = "/nodes/template/{templateId}/mapType/{mapTypeId}", method = RequestMethod.POST)
     @Transactional
     public void updateRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,
@@ -2592,6 +2629,12 @@ public class ArrangementController {
         arrangementService.updateRefTemplateMapType(templateId, mapTypeId, refTemplateMapTypeFormVO);
     }
 
+    /**
+     * Smazání mapování šablony
+     *
+     * @param templateId identifikátor šablony
+     * @param mapTypeId identifikátor mapování
+     */
     @RequestMapping(value = "/nodes/template/{templateId}/mapType/{mapTypeId}", method = RequestMethod.DELETE)
     @Transactional
     public void deleteRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,

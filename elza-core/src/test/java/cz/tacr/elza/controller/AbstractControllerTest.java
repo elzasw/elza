@@ -394,6 +394,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FUND_V1 = FUND_CONTROLLER_URL + "/fund/{id}";
     protected static final String FUNDS_V1 = FUND_CONTROLLER_URL + "/fund";
 
+    //ŠABLONY PRO JP
+    protected static final String CREATE_NODE_TEMPLATE = NODES + "/{fundId}/template/create";
+    protected static final String UPDATE_NODE_TEMPLATE = NODES + "/template/{templateId}";
+    protected static final String DELETE_NODE_TEMPLATE = NODES + "/template/{templateId}";
+    protected static final String GET_NODE_TEMPLATES = NODES + "/{fundId}/template";
+    protected static final String CREATE_NODE_TEMPLATE_MAP_TYPE = NODES + "/template/{templateId}/maptype";
+    protected static final String UPDATE_NODE_TEMPLATE_MAP_TYPE = NODES + "/template/{templateId}/mapType/{mapTypeId}";
+    protected static final String DELETE_NODE_TEMPLATE_MAP_TYPE = NODES + "/template/{templateId}/mapType/{mapTypeId}";
+
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.000ZZZZZ");
 
     @Value("${local.server.port}")
@@ -3659,5 +3668,90 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParameter("commentId", commentId)
                 .body(commentVO), UPDATE_COMMENT)
                 .getBody().as(WfCommentVO.class);
+    }
+
+    /**
+     * Založení šablony pro JP
+     *
+     * @param fundId identifikátor AS
+     * @return šablona pro JP
+     */
+    protected ArrRefTemplateVO createRefTemplate(Integer fundId) {
+        return put(spec -> spec
+                .pathParameter("fundId", fundId), CREATE_NODE_TEMPLATE)
+                .getBody().as(ArrRefTemplateVO.class);
+    }
+
+    /**
+     * Úprava šablony pro JP
+     *
+     * @param templateId identifikátor šablony
+     * @param refTemplateEditVO formulář editace
+     * @return šablona JP
+     */
+    protected ArrRefTemplateVO updateRefTemplate(Integer templateId, ArrRefTemplateEditVO refTemplateEditVO) {
+        return post(spec -> spec
+                .pathParameter("templateId", templateId)
+                .body(refTemplateEditVO), UPDATE_NODE_TEMPLATE)
+                .getBody().as(ArrRefTemplateVO.class);
+    }
+
+    /**
+     * Smazání šablony pro JP
+     *
+     * @param templateId identifikátor šablony
+     */
+    protected void deleteRefTemplate(Integer templateId) {
+        delete(spec -> spec.pathParameter("templateId", templateId), DELETE_NODE_TEMPLATE);
+    }
+
+    /**
+     * Získání seznamu šablon pro AS
+     *
+     * @param fundId identifikátor AS
+     * @return seznam šablon
+     */
+    protected List<ArrRefTemplateVO> getRefTemplate(Integer fundId) {
+        return Arrays.asList(get(spec -> spec
+                .pathParameter("fundId", fundId), GET_NODE_TEMPLATES)
+                .getBody().as(ArrRefTemplateVO[].class));
+    }
+
+    /**
+     * Založení nového mapování pro šablonu
+     *
+     * @param templateId identifikátor šablony
+     * @param refTemplateMapTypeFormVO formulář mapování
+     */
+    protected void createRefTemplateMapType(Integer templateId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
+        post(spec -> spec
+                .pathParameter("templateId", templateId)
+                .body(refTemplateMapTypeFormVO), CREATE_NODE_TEMPLATE_MAP_TYPE);
+    }
+
+    /**
+     * Editace mapování šablony
+     *
+     * @param templateId identifikátor šablony
+     * @param mapTypeId identifikátor mapování
+     * @param refTemplateMapTypeFormVO formulář mapování
+     */
+    protected void updateRefTemplateMapType(Integer templateId, Integer mapTypeId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
+        post(spec -> spec
+                .pathParameter("templateId", templateId)
+                .pathParameter("mapTypeId", mapTypeId)
+                .body(refTemplateMapTypeFormVO), UPDATE_NODE_TEMPLATE_MAP_TYPE);
+    }
+
+    /**
+     * Smazání mapování šablony
+     *
+     * @param templateId identifikátor šablony
+     * @param mapTypeId identifikátor mapování
+     */
+    protected void deleteRefTemplateMapType(Integer templateId, Integer mapTypeId) {
+        delete(spec -> spec.
+                pathParameter("templateId", templateId).
+                pathParameter("mapTypeId", mapTypeId), DELETE_NODE_TEMPLATE_MAP_TYPE);
     }
 }
