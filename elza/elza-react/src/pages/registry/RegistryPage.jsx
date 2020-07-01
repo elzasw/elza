@@ -520,14 +520,16 @@ class RegistryPage extends AbstractReactComponent {
                 </Button>,
             );
 
-            itemActions.push(
-                <Button key="push-ap-to-ext" onClick={this.handlePushApToExt}>
-                    <Icon glyph="fa-upload"/>
-                    <div>
-                        <span className="btnText">{i18n('ap.push-to-ext')}</span>
-                    </div>
-                </Button>,
-            );
+            if (userDetail.hasOne(perms.AP_EXTERNAL_WR)) {
+                itemActions.push(
+                    <Button key="push-ap-to-ext" onClick={this.handlePushApToExt}>
+                        <Icon glyph="fa-upload"/>
+                        <div>
+                            <span className="btnText">{i18n('ap.push-to-ext')}</span>
+                        </div>
+                    </Button>,
+                );
+            }
         }
 
         let altSection;

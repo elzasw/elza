@@ -26,6 +26,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
         perms.ADMIN,
         perms.FUND_ADMIN,
         perms.FUND_ISSUE_ADMIN_ALL,
+        perms.AP_EXTERNAL_WR,
         perms.FUND_CREATE,
         perms.USR_PERM,
     ];
@@ -70,6 +71,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
                     case perms.FUND_ADMIN:
                     case perms.FUND_CREATE:
                     case perms.FUND_ISSUE_ADMIN_ALL:
+                    case perms.AP_EXTERNAL_WR:
                         permission[p.permission] = this.buildPermission(permission[p.permission], p);
                         break;
                     default:

@@ -17,8 +17,9 @@ import {ApBindingVO} from "../../../api/ApBindingVO";
 import {showAsyncWaiting} from "../../../actions/global/modalDialog";
 import {WebApi} from "../../../actions/WebApi";
 import ValidationResultIcon from "../../ValidationResultIcon";
+import * as perms from "../../../actions/user/Permission";
 
-interface Props {
+interface Props extends ReturnType<typeof mapStateToProps> {
     item: ApAccessPointVO;
     onToggleCollapsed?: () => void;
     onInvalidateDetail?: () => void;
@@ -38,7 +39,7 @@ const getProcessingMessage = (key: string) => {
     return <h4 className="processing">{i18n(key)}</h4>
 }
 
-const DetailHeader: FC<Props> = ({dispatch, onInvalidateDetail, item, id, collapsed, onToggleCollapsed, validationErrors, apTypesMap, scopes, externalSystems}) => {
+const DetailHeader: FC<Props> = ({dispatch, onInvalidateDetail, item, id, collapsed, onToggleCollapsed, validationErrors, apTypesMap, scopes, externalSystems, userDetail}) => {
     const apType = apTypesMap[item.typeId];
 
     const showValidationError = () => {
@@ -103,6 +104,7 @@ const DetailHeader: FC<Props> = ({dispatch, onInvalidateDetail, item, id, collap
 
     const renderBindings = () => {
         if (item.externalIds.length > 0 && externalSystems.length > 0) {
+            const apExternalWr = userDetail.hasOne(perms.AP_EXTERNAL_WR);
             return <div className="bindings" key="bindings">
                 {item.externalIds.map(binding => {
                     const externalSystem = objectById(externalSystems, binding.externalSystemCode, 'code');
@@ -122,10 +124,10 @@ const DetailHeader: FC<Props> = ({dispatch, onInvalidateDetail, item, id, collap
                                 id={"binding-action-" + binding.id}
                                 title={((<Icon glyph="fa-ellipsis-v" />) as any) as string}
                             >
-                                <Dropdown.Item onClick={() => handleSynchronize(binding)}>{i18n('ap.binding.action.synchronize')}</Dropdown.Item>
-                                <Dropdown.Item onClick={() => handleUpdate(binding)}>{i18n('ap.binding.action.update')}</Dropdown.Item>
-                                <Dropdown.Item onClick={() => handleDisconnect(binding)}>{i18n('ap.binding.action.disconnect')}</Dropdown.Item>
-                                <Dropdown.Item onClick={() => handleTakeRelEntities(binding)}>{i18n('ap.binding.action.take-rel-entities')}</Dropdown.Item>
+                                <Dropdown.Item key="synchronize" onClick={() => handleSynchronize(binding)}>{i18n('ap.binding.action.synchronize')}</Dropdown.Item>
+                                {apExternalWr && <Dropdown.Item key="update" onClick={() => handleUpdate(binding)}>{i18n('ap.binding.action.update')}</Dropdown.Item>}
+                                <Dropdown.Item key="disconnect" onClick={() => handleDisconnect(binding)}>{i18n('ap.binding.action.disconnect')}</Dropdown.Item>
+                                <Dropdown.Item key="take-rel-entities" onClick={() => handleTakeRelEntities(binding)}>{i18n('ap.binding.action.take-rel-entities')}</Dropdown.Item>
                             </DropdownButton>
                         </div>
                     </div>
@@ -199,6 +201,7 @@ const mapStateToProps = (state) => {
         externalSystems: state.app.apExtSystemList.rows,
         apTypesMap: state.refTables.recordTypes.typeIdMap,
         scopes: scopes,
+        userDetail: state.userDetail
     }
 };
 

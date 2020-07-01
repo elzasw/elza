@@ -76,7 +76,7 @@ class ExtMapperForm extends AbstractReactComponent {
         if (partyTypes === false) {
             return <HorizontalLoader />;
         }
-        const hasPermission = userDetail.hasOne(perms.INTERPI_MAPPING_WR);
+        const hasPermission = false; // todo: celé na smazání?
 
         if (
             !hasPermission &&

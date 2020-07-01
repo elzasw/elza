@@ -9,7 +9,9 @@ import cz.tacr.cam.schema.cam.BatchUpdateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.QueryResultXml;
 import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.service.ExternalSystemService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +48,7 @@ public class CamConnector {
         return JaxbUtils.unmarshal(EntityXml.class, fileApiResponse.getData());
     }
 
+    @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
     public BatchUpdateResultXml postNewBatch(final BatchUpdateXml batchUpdate,
                                              final String externalSystemCode) throws ApiException {
         ApiResponse<File> fileApiResponse = getBatchUpdatesApiByCode(externalSystemCode).postNewBatchWithHttpInfo(JaxbUtils.asFile(batchUpdate));
