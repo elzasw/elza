@@ -14,6 +14,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -24,6 +25,8 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.ws.types.v1.FundIdentifiers;
+import cz.tacr.elza.ws.types.v1.ItemEnum;
+import cz.tacr.elza.ws.types.v1.ItemLong;
 import cz.tacr.elza.ws.types.v1.ItemString;
 
 @Component
@@ -54,10 +57,65 @@ public class WSHelper {
     public void convertItem(ArrItem trgItem, Object srcItem) {
         if (srcItem instanceof ItemString) {
             convertItemString(trgItem, (ItemString) srcItem);
-        } else {
-            Validate.isTrue(false, "Cannot convert srcItem to trgItem: {}", srcItem);
+        } else if (srcItem instanceof ItemLong) {
+            convertItemLong(trgItem, (ItemLong) srcItem);
+        } else if (srcItem instanceof ItemEnum) {
+            convertItemEnum(trgItem, (ItemEnum) srcItem);
+        }
+        else {
+            Validate.isTrue(false, "Cannot convert srcItem to trgItem: %s", srcItem);
         }
         
+    }
+
+    private void convertItemEnum(ArrItem trgItem, ItemEnum srcItem) {
+        ItemType itemType = prepareItem(trgItem, srcItem.getType(), srcItem.getSpec());
+        ArrData data = null;
+        switch (itemType.getDataType()) {
+        case ENUM:
+            ArrDataNull dn = new ArrDataNull();
+            data = dn;
+            break;
+        default:
+            Validate.isTrue(false, "Cannot convert enum to data type: %s, item type: %s", itemType.getDataType(),
+                            srcItem.getType());
+        }
+        data.setDataType(itemType.getDataType().getEntity());
+        trgItem.setData(data);
+
+    }
+
+    /**
+     * Convert long item to ArrItem
+     * 
+     * @param trgItem
+     * @param srcItem
+     */
+    private void convertItemLong(ArrItem trgItem, ItemLong srcItem) {
+        ItemType itemType = prepareItem(trgItem, srcItem.getType(), srcItem.getSpec());
+        ArrData data = null;
+        switch (itemType.getDataType()) {
+        case STRING:
+            ArrDataString ds = new ArrDataString();
+            ds.setValue(Long.toString(srcItem.getValue()));
+            data = ds;
+            break;
+        case TEXT:
+            ArrDataText dt = new ArrDataText();
+            dt.setValue(Long.toString(srcItem.getValue()));
+            data = dt;
+            break;
+        case INT:
+            ArrDataInteger di = new ArrDataInteger();
+            di.setValue((int) srcItem.getValue());
+            data = di;
+            break;
+        default:
+            Validate.isTrue(false, "Cannot convert long to data type: %s, item type: %s", itemType.getDataType(),
+                            srcItem.getType());
+        }
+        data.setDataType(itemType.getDataType().getEntity());
+        trgItem.setData(data);
     }
 
     /**
@@ -90,7 +148,7 @@ public class WSHelper {
             data = du;
             break;
         default:
-            Validate.isTrue(false, "Cannot convert string to data type: {}, item type: {}", itemType.getDataType(),
+            Validate.isTrue(false, "Cannot convert string to data type: %s, item type: %s", itemType.getDataType(),
                             srcItem.getType());
         }
         data.setDataType(itemType.getDataType().getEntity());
@@ -105,13 +163,13 @@ public class WSHelper {
         trgItem.setItemType(itemType.getEntity());
 
         if (itemType.hasSpecifications()) {
-            Validate.notNull(spec, "Missing specification for item type: {}", type);
+            Validate.notNull(spec, "Missing specification for item type: %s", type);
             RulItemSpec itemSpec = itemType.getItemSpecByCode(spec);
-            Validate.notNull(itemSpec, "Cannot find specification for item type: {}, spec code: {}", type, spec);
+            Validate.notNull(itemSpec, "Cannot find specification for item type: %s, spec code: %s", type, spec);
 
             trgItem.setItemSpec(itemSpec);
         } else {
-            Validate.isTrue(spec == null, "Item type cannot have specification: {}, value: {}", type, spec);
+            Validate.isTrue(spec == null, "Item type cannot have specification: %s, value: %s", type, spec);
         }
         return itemType;
     }
