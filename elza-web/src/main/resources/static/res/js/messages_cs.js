@@ -1316,7 +1316,7 @@ var messages = {
     "admin.perms.tabs.advanced.perm.FUND_ISSUE_ADMIN_ALL": "Správa protokolů všech AS",
     "admin.perms.tabs.advanced.perm.FUND_CREATE": "Zakládání nových AS",
     "admin.perms.tabs.advanced.perm.USR_PERM": "Správa oprávnění a uživatelů",
-    "admin.perms.tabs.advanced.perm.EXTERNAL_MAPPING_WR": "Mapování externích systémů",
+    "admin.perms.tabs.advanced.perm.AP_EXTERNAL_WR": "Zápis do externích systémů",
     "admin.perms.tabs.advanced.controller.entities.title": "Spravovaní uživatelé a skupiny",
     "admin.perms.fund.tabs.users": "Uživatelé",
     "admin.perms.fund.tabs.users.add.title": "Přidat uživatele",

@@ -497,6 +497,8 @@ public class UsrPermission {
             }
         },
 
+        AP_EXTERNAL_WR,
+
         /**
          * tvorba výstupů vybraného AS (AP, ad-hoc tisky)
          * - možnost vytvářet, měnit OUTPUT u přiřazeného AS
