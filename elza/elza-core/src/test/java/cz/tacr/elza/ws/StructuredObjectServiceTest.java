@@ -13,6 +13,8 @@ import cz.tacr.elza.ws.core.v1.FundService;
 import cz.tacr.elza.ws.core.v1.StructuredObjectService;
 import cz.tacr.elza.ws.types.v1.Fund;
 import cz.tacr.elza.ws.types.v1.FundIdentifiers;
+import cz.tacr.elza.ws.types.v1.ItemEnum;
+import cz.tacr.elza.ws.types.v1.ItemLong;
 import cz.tacr.elza.ws.types.v1.ItemString;
 import cz.tacr.elza.ws.types.v1.Items;
 import cz.tacr.elza.ws.types.v1.StructuredObject;
@@ -52,6 +54,14 @@ public class StructuredObjectServiceTest extends AbstractControllerTest {
         si2.setType("SRD_UNIT_DATE");
         si2.setValue("2015");
         soItems.getStrOrLongOrEnm().add(si2);
+        ItemLong si3 = new ItemLong();
+        si3.setType("SRD_UNIT_COUNT");
+        si3.setValue(5);
+        soItems.getStrOrLongOrEnm().add(si3);
+        ItemEnum si4 = new ItemEnum();
+        si4.setType("SRD_UNIT_TYPE");
+        si4.setSpec("SRD_UNIT_TYPE_LIO");
+        soItems.getStrOrLongOrEnm().add(si3);
         createStructuredObject.setItems(soItems);
         StructuredObjectIdentifiers sois = structObjServiceClient.createStructuredObject(createStructuredObject);
 
