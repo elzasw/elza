@@ -1044,6 +1044,7 @@ public class PackageService {
         item.setRulPackage(rulPackage);
         item.setCode(partType.getCode());
         item.setName(partType.getName());
+        item.setParentPart(partType.getParentPart());
     }
 
     /**

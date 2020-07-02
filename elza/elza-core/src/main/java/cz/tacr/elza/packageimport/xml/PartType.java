@@ -21,6 +21,9 @@ public class PartType {
     @XmlElement(name = "name", required = true)
     private String name;
 
+    @XmlElement(name = "parent_part")
+    private Boolean parentPart = false;
+
     public String getCode() {
         return code;
     }
@@ -35,5 +38,13 @@ public class PartType {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public Boolean getParentPart() {
+        return parentPart;
+    }
+
+    public void setParentPart(Boolean parentPart) {
+        this.parentPart = parentPart;
     }
 }
