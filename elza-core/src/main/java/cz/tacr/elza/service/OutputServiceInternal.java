@@ -162,6 +162,10 @@ public class OutputServiceInternal {
         taskExecutor.start();
     }
 
+    public void stop() {
+        taskExecutor.stop();
+    }
+
     /**
      * Searches output.
      *
