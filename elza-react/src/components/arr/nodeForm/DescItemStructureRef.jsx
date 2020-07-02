@@ -33,13 +33,13 @@ class DescItemStructureRef extends AbstractReactComponent {
         super(props);
         if (props.anonymous && !props.structureNodeForm) {
             if (props.descItem.value) {
-                props.dispatch(structureNodeFormSelectId(props.descItem.value));
+                props.dispatch(structureNodeFormSelectId(props.versionId, props.descItem.value));
                 props.dispatch(structureNodeFormFetchIfNeeded(props.versionId, props.descItem.value));
             } else {
                 const {structureTypeCode, versionId} = props;
                 WebApi.createStructureData(versionId, structureTypeCode, this.findValue()).then(structureData => {
-                    props.changeStrucutreId(structureData.id);
-                    props.dispatch(structureNodeFormSelectId(structureData.id));
+                    //props.changeStrucutreId(structureData.id);
+                    props.dispatch(structureNodeFormSelectId(props.versionId, structureData.id));
                 });
             }
         }
@@ -74,8 +74,8 @@ class DescItemStructureRef extends AbstractReactComponent {
     }
 
     componentWillUnmount() {
-        const {anonymous} = this.props;
-        if (anonymous) {
+        const {anonymous, structureNodeForm} = this.props;
+        if (anonymous && structureNodeForm) {
             const {
                 versionId,
                 structureNodeForm: {id, state, subNodeForm},
@@ -196,7 +196,7 @@ class DescItemStructureRef extends AbstractReactComponent {
         const {structureTypeName} = this.props;
         return (
             <div className="create-structure">
-                <Button onClick={this.addNewStructure}>
+                <Button onClick={this.addNewStructure} variant={'outline-secondary'}>
                     <Icon glyph="fa-plus" />
                     {i18n('arr.structure.add', structureTypeName)}
                 </Button>
@@ -289,9 +289,11 @@ class DescItemStructureRef extends AbstractReactComponent {
 export default connect(
     (state, props) => {
         const {structures} = state;
-        const key = props.descItem.id;
+        const key = props.descItem.value;
+
         return {
-            structureNodeForm: key && structures.stores.hasOwnProperty(key) ? structures.stores[key] : null,
+            structureNodeForm:
+                key && structures.stores.hasOwnProperty(String(key)) ? structures.stores[String(key)] : null,
         };
     },
     null,

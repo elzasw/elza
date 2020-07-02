@@ -10,8 +10,9 @@ import TextareaAutosize from 'react-autosize-textarea';
 import './DescItemText.scss';
 
 class DescItemText extends AbstractReactComponent {
+    textarea = null;
     focus = () => {
-        this.textarea.focus();
+        this.textarea && this.textarea.focus();
     };
 
     render() {

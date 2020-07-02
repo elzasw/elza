@@ -38,7 +38,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
 
     UNSAFE_componentWillMount() {
         const {fundVersionId, id} = this.props;
-        this.props.dispatch(structureNodeFormSelectId(id));
+        this.props.dispatch(structureNodeFormSelectId(fundVersionId, id));
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
@@ -536,7 +536,9 @@ function mapStateToProps(state, props) {
     }
 
     return {
-        subNodeForm: structures.stores.hasOwnProperty(props.selectedSubNodeId) ? structures.stores[props.selectedSubNodeId].subNodeForm : null,
+        subNodeForm: structures.stores.hasOwnProperty(props.selectedSubNodeId)
+            ? structures.stores[props.selectedSubNodeId].subNodeForm
+            : null,
         userDetail,
         fund,
         focus,

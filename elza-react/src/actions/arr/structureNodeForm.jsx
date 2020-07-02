@@ -1,6 +1,6 @@
 import * as types from 'actions/constants/ActionTypes.js';
 import {WebApi} from 'actions/index.jsx';
-import {indexById} from 'stores/app/utils.jsx';
+import objectById from '../../shared/utils/objectById';
 
 export function isStructureNodeForm(action) {
     switch (action.type) {
@@ -31,29 +31,25 @@ function structureNodeFormRequest(versionId, id) {
     };
 }
 
-function structureNodeFormReceive(versionId, data) {
+function structureNodeFormReceive(versionId, data, id) {
     return {
         type: types.STRUCTURE_NODE_FORM_RECEIVE,
         versionId,
         data,
+        id,
     };
 }
 export function structureNodeFormSetData(id, data) {
     return {
         type: types.STRUCTURE_NODE_FORM_SET_DATA,
         id,
-        data
-    }
+        data,
+    };
 }
 
-function _getArea(getState, versionId) {
+function _getArea(getState, id) {
     const state = getState();
-    const index = indexById(state.arrRegion.funds, versionId, 'versionId');
-    if (index !== null) {
-        const fund = state.arrRegion.funds[index];
-        return fund.structureNodeForm;
-    }
-    return null;
+    return state.structures.stores.hasOwnProperty(id) ? state.structures.stores[id] : null;
 }
 
 /**
@@ -61,7 +57,7 @@ function _getArea(getState, versionId) {
  */
 export function structureNodeFormFetchIfNeeded(versionId, id) {
     return (dispatch, getState) => {
-        const storeArea = _getArea(getState, versionId);
+        const storeArea = _getArea(getState, id);
 
         if (storeArea === null) {
             return;
@@ -70,13 +66,13 @@ export function structureNodeFormFetchIfNeeded(versionId, id) {
         if (storeArea.currentDataKey !== id) {
             dispatch(structureNodeFormRequest(versionId, id));
             WebApi.getStructureData(versionId, id).then(json => {
-                const newStoreArea = _getArea(getState, versionId);
+                const newStoreArea = _getArea(getState, id);
                 if (newStoreArea === null) {
                     return;
                 }
 
                 if (json.id === id) {
-                    dispatch(structureNodeFormReceive(versionId, json));
+                    dispatch(structureNodeFormReceive(versionId, json, id));
                 }
             });
         }
