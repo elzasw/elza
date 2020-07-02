@@ -69,7 +69,7 @@ public class WSHelper {
     }
 
     private void convertItemEnum(ArrItem trgItem, ItemEnum srcItem) {
-        ItemType itemType = prepareItem(trgItem, srcItem.getType(), srcItem.getSpec());
+        ItemType itemType = prepareItem(trgItem, srcItem.getType(), srcItem.getSpec(), srcItem.isReadOnly());
         ArrData data = null;
         switch (itemType.getDataType()) {
         case ENUM:
@@ -92,7 +92,7 @@ public class WSHelper {
      * @param srcItem
      */
     private void convertItemLong(ArrItem trgItem, ItemLong srcItem) {
-        ItemType itemType = prepareItem(trgItem, srcItem.getType(), srcItem.getSpec());
+        ItemType itemType = prepareItem(trgItem, srcItem.getType(), srcItem.getSpec(), srcItem.isReadOnly());
         ArrData data = null;
         switch (itemType.getDataType()) {
         case STRING:
@@ -125,7 +125,7 @@ public class WSHelper {
      * @param srcItem
      */
     private void convertItemString(ArrItem trgItem, ItemString srcItem) {
-        ItemType itemType = prepareItem(trgItem, srcItem.getType(), srcItem.getSpec());
+        ItemType itemType = prepareItem(trgItem, srcItem.getType(), srcItem.getSpec(), srcItem.isReadOnly());
         ArrData data = null;
         switch (itemType.getDataType()) {
         case STRING:
@@ -155,12 +155,13 @@ public class WSHelper {
         trgItem.setData(data);
     }
 
-    private ItemType prepareItem(ArrItem trgItem, String type, String spec) {
+    private ItemType prepareItem(ArrItem trgItem, String type, String spec, Boolean readOnly) {
         StaticDataProvider sdp = staticDataService.getData();
         ItemType itemType = sdp.getItemTypeByCode(type);
         Validate.notNull(itemType, "Item type not found: {}", type);
 
         trgItem.setItemType(itemType.getEntity());
+        trgItem.setReadOnly(readOnly);
 
         if (itemType.hasSpecifications()) {
             Validate.notNull(spec, "Missing specification for item type: %s", type);

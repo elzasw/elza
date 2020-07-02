@@ -154,6 +154,7 @@ import cz.tacr.elza.service.RequestService;
 import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.importnodes.ImportFromFund;
 import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
@@ -463,13 +464,15 @@ public class ArrangementController {
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDao dao = daoRepository.getOneCheckExist(daoId);
         final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
-
+        
         ArrDaoLink daoLink;
         // specializace dle typu DAO
         switch (dao.getDaoType()) {
         case LEVEL:
+            DesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
             ArrLevel level = fundLevelService.addNewLevel(fundVersion, node, node,
-                                                          AddLevelDirection.CHILD, null, null);
+                                                          AddLevelDirection.CHILD, null, null,
+                                                          descItemProvider);
             daoLink = daoService.createOrFindDaoLink(fundVersion, dao, level.getNode());
             break;
         case ATTACHMENT:
@@ -1687,7 +1690,7 @@ public class ArrangementController {
 
         ArrLevel newLevel = moveLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
                 addLevelParam.getDirection(), addLevelParam.getScenarioName(),
-                descItemCopyTypes);
+                                                         descItemCopyTypes, null);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
             UpdateDescItemsParam params = new UpdateDescItemsParam(
