@@ -1527,9 +1527,12 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodes/' + fundId + '/template');
     }
 
-    createRefTemplateMapType(templateId: number, refTemplateMapTypeFormVO: ArrRefTemplateMapTypeVO): Promise<void> {
+    createRefTemplateMapType(
+        templateId: number,
+        refTemplateMapTypeFormVO: ArrRefTemplateMapTypeVO,
+    ): Promise<ArrRefTemplateMapTypeVO> {
         return AjaxUtils.ajaxPost(
-            WebApiCls.arrangementUrl + '/nodes/template/' + templateId + '/maptype',
+            WebApiCls.arrangementUrl + '/nodes/template/' + templateId + '/mapType',
             null,
             refTemplateMapTypeFormVO,
         );
@@ -1538,7 +1541,7 @@ export class WebApiCls {
         templateId: number,
         mapTypeId: number,
         refTemplateMapTypeFormVO: ArrRefTemplateMapTypeVO,
-    ): Promise<void> {
+    ): Promise<ArrRefTemplateMapTypeVO> {
         return AjaxUtils.ajaxPost(
             WebApiCls.arrangementUrl + '/nodes/template/' + templateId + '/mapType/' + mapTypeId,
             null,

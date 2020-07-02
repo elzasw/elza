@@ -309,7 +309,7 @@ function mapDispatchToProps(dispatch: ThunkDispatch<any, any, any>, props: OwnPr
             dispatch(
                 modalDialogShow(
                     this,
-                    i18n('arr.refTemplates.mapping.update.title'),
+                    i18n('arr.refTemplates.mapping.create.title'),
                     <ArrRefMappingTypeForm
                         create
                         onSubmit={data => {
