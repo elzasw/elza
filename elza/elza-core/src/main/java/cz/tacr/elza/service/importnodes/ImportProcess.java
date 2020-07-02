@@ -560,15 +560,11 @@ public class ImportProcess {
      */
     private ArrStructuredObject copyStructObjFromSource(ArrStructuredObject sourceObj) {
         // prepare new obj
-        ArrStructuredObject so = new ArrStructuredObject();
-        so.setAssignable(Boolean.TRUE);
-        so.setState(sourceObj.getState());
-        so.setCreateChange(this.change);
-        so.setErrorDescription(sourceObj.getErrorDescription());
-        so.setStructuredType(sourceObj.getStructuredType());
-        so.setValue(sourceObj.getValue());
-        so.setComplement(sourceObj.getComplement());
-        so.setFund(targetFundVersion.getFund());
+        ArrStructuredObject so = new ArrStructuredObject.Builder(change, targetFundVersion.getFund(),
+                sourceObj.getStructuredType())
+                        .setState(sourceObj.getState())
+                        .build();
+
         so = structureDataRepository.save(so);
 
         Validate.notNull(so.getStructuredObjectId());

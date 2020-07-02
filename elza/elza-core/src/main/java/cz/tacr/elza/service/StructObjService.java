@@ -156,13 +156,12 @@ public class StructObjService {
                                                final ArrChange change,
                                                final RulStructuredType structureType,
                                                final ArrStructuredObject.State state,
+                                               final String uuid,
                                                List<ArrStructuredItem> items) {
-        ArrStructuredObject structureData = new ArrStructuredObject();
-        structureData.setAssignable(true);
-        structureData.setCreateChange(change);
-        structureData.setFund(fund);
-        structureData.setStructuredType(structureType);
-        structureData.setState(state);
+        ArrStructuredObject structureData = new ArrStructuredObject.Builder(change, fund, structureType)
+                .setState(state)
+                .setUuid(uuid)
+                .build();
 
         ArrStructuredObject structObj = structObjRepository.save(structureData);
 
@@ -209,7 +208,7 @@ public class StructObjService {
                                                final RulStructuredType structureType,
                                                final ArrStructuredObject.State state) {
         ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA);
-        return createStructObj(fund, change, structureType, state, null);
+        return createStructObj(fund, change, structureType, state, null, null);
     }
 
     /**
@@ -229,12 +228,11 @@ public class StructObjService {
                                                               int count) {
         List<ArrStructuredObject> result = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
-            ArrStructuredObject structureData = new ArrStructuredObject();
-            structureData.setAssignable(true);
-            structureData.setCreateChange(change);
-            structureData.setFund(fund);
-            structureData.setStructuredType(structureType);
-            structureData.setState(state);
+
+            ArrStructuredObject structureData = new ArrStructuredObject.Builder(change, fund, structureType)
+                    .setState(state)
+                    .build();
+
             result.add(structureData);
         }
         return structObjRepository.save(result);
@@ -625,6 +623,15 @@ public class StructObjService {
         ArrStructuredObject structureData = structObjRepository.findOneFetch(structureDataId);
         if (structureData == null) {
             throw new ObjectNotFoundException("Strukturovaná data neexistují: " + structureDataId, BaseCode.ID_NOT_EXIST).setId(structureDataId);
+        }
+        return structureData;
+    }
+
+    public ArrStructuredObject getExistingStructObjByUUID(String uuid) {
+        ArrStructuredObject structureData = structObjRepository.findActiveByUuidOneFetch(uuid);
+        if (structureData == null) {
+            throw new ObjectNotFoundException("Strukturovaná data neexistují: " + uuid, BaseCode.ID_NOT_EXIST).setId(
+                                                                                                                     uuid);
         }
         return structureData;
     }
@@ -1289,6 +1296,17 @@ public class StructObjService {
             changeIdStructuredObjectMap.computeIfAbsent(changeId, k -> new HashMap<>()).put(structuredObject.getStructuredObjectId(), structuredObject);
         }
         return changeIdStructuredObjectMap;
+    }
+
+    public ArrStructuredObject getExistingStructObj(String value) {
+        if (value.length() == 36) {
+            return getExistingStructObjByUUID(value);
+        } else {
+            int id = Integer.parseInt(value);
+            ArrStructuredObject so = getStructObjById(id);
+            Validate.isTrue(so.getDeleteChangeId() == null, "Structured object is deleted, id: %i", id);
+            return so;
+        }
     }
 
 }
