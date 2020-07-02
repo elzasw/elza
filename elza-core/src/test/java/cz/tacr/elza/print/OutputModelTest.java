@@ -113,11 +113,11 @@ public class OutputModelTest extends AbstractServiceTest {
 
         // Create levels
         ArrLevel level1 = fundLevelService.addNewLevel(fi.getFundVersion(), fi.getRootNode(), fi.getRootNode(),
-                                                       AddLevelDirection.CHILD, "Série", null);
+                                                       AddLevelDirection.CHILD, "Série", null, null);
         assertNotNull(level1);
 
         ArrLevel level2 = fundLevelService.addNewLevel(fi.getFundVersion(), level1.getNode(), level1.getNode(),
-                                                       AddLevelDirection.CHILD, "Série", null);
+                                                       AddLevelDirection.CHILD, "Série", null, null);
         assertNotNull(level2);
 
         // Output type SRD_INVENTORY

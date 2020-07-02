@@ -12,6 +12,7 @@ import com.jayway.restassured.RestAssured;
 
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.ArrangementController;
+import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
 import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
@@ -21,6 +22,8 @@ import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.ws.core.v1.DaoService;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoImport;
@@ -38,6 +41,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     static final String FUND_NAME = "TestFund";
     static final String FUND_CODE = "TestFundCode";
     static final String PACKAGE_ID1 = "PackageId1";
+    static final String TEXT_VALUE_XY = "value xy";
 
     private ObjectFactory objFactory = new ObjectFactory();
 
@@ -95,6 +99,19 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         ArrDaoLinkVO linkVo = createDaoLink(fundVersion.getId(), daoVo.getId(), rootNode.getId());
         assertNotNull(linkVo);
         assertNotNull(linkVo.getId());
+        Integer newNodeId = linkVo.getTreeNodeClient().getId();
+        assertNotNull(linkVo);
+
+        // check form data - if extracted from dao
+        DescFormDataNewVO formData = getNodeFormData(newNodeId, fundVersion.getId());
+        assertNotNull(formData);
+        List<ArrItemVO> descItems = formData.getDescItems();
+        assertTrue(descItems.size() == 1);
+        ArrItemVO descItem = descItems.get(0);
+        assertTrue(descItem.getReadOnly());
+        assertTrue(descItem instanceof ArrItemTextVO);
+        ArrItemTextVO descItemTextVO = (ArrItemTextVO) descItem;
+        assertTrue(descItemTextVO.getValue().equals(TEXT_VALUE_XY));
 
         // ověření napojeni - neexistence volnych dao
         List<ArrDaoVO> daosConnected = findDaos(fundVersion.getId());
@@ -126,7 +143,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         cz.tacr.elza.ws.types.v1.Items items = objFactory.createItems();
         cz.tacr.elza.ws.types.v1.ItemString its = objFactory.createItemString();
         its.setType("SRD_TITLE");
-        its.setValue("value xy");
+        its.setValue(TEXT_VALUE_XY);
         its.setReadOnly(true);
         items.getStrOrLongOrEnm().add(its);
 
