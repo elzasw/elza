@@ -18,8 +18,8 @@ import {fundNodeInfoReceive} from './nodeInfo.jsx';
 import NodeRequestController from 'websocketController.jsx';
 import {fundSubNodeInfoReceive} from './subNodeInfo';
 import {fromDuration} from '../../components/validate';
-import {ItemAvailabilityNumToEnumMap} from "../../stores/app/accesspoint/itemFormUtils";
-import {getMapFromList} from "../../shared/utils";
+import {ItemAvailabilityNumToEnumMap} from '../../stores/app/accesspoint/itemFormUtils';
+import {getMapFromList} from '../../shared/utils';
 
 // Konfigurace velikosti cache dat pro formulář
 const CACHE_SIZE = 20;
@@ -234,7 +234,6 @@ export class ItemFormActions {
             this._getItemFormData(getState, dispatch, versionId, nodeId, routingKey, showChildren, showParents).then(
                 json => {
                     const state = getState();
-                    console.log(state, versionId, routingKey);
                     const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
                     if (subNodeForm && subNodeForm.fetchingId == nodeId) {
                         // Nastavení správných typů u itemTypes - ze serveru chodí čísla místo enumů
@@ -275,13 +274,14 @@ export class ItemFormActions {
      */
     updateItemTypesTypes(json) {
         // Nastavení správných typů u itemTypes - ze serveru chodí čísla místo enumů
-        json.itemTypes.forEach(itemType => {
-            itemType.type = ItemAvailabilityNumToEnumMap[itemType.type];
-            itemType.specs.forEach(itemSpec => {
-                itemSpec.type = ItemAvailabilityNumToEnumMap[itemSpec.type];
+        json.itemTypes &&
+            json.itemTypes.forEach(itemType => {
+                itemType.type = ItemAvailabilityNumToEnumMap[itemType.type];
+                itemType.specs.forEach(itemSpec => {
+                    itemSpec.type = ItemAvailabilityNumToEnumMap[itemSpec.type];
+                });
+                itemType.descItemSpecsMap = getMapFromList(itemType.specs);
             });
-            itemType.descItemSpecsMap = getMapFromList(itemType.specs);
-        });
     }
 
     /**
@@ -1454,7 +1454,7 @@ class StructureFormActions extends ItemFormActions {
 
     // @Override
     _getItemFormStore(state, versionId, routingKey) {
-        const subStore = state.structures.stores[routingKey];
+        const subStore = state.structures.stores[String(routingKey)];
         if (!!subStore) {
             return subStore.subNodeForm;
         } else {
@@ -1464,7 +1464,7 @@ class StructureFormActions extends ItemFormActions {
 
     // @Override
     _getParentObjStore(state, versionId, routingKey) {
-        const subStore = state.structures.stores[routingKey];
+        const subStore = state.structures.stores[String(routingKey)];
         if (!!subStore) {
             return subStore;
         } else {

@@ -67,11 +67,7 @@ class StructureSubNodeForm extends AbstractReactComponent {
                     descItemTypes={descItemTypes}
                     onSubmitForm={data =>
                         this.props.dispatch(
-                            structureFormActions.fundSubNodeFormDescItemTypeAdd(
-                                versionId,
-                                id,
-                                data.descItemTypeId.id,
-                            ),
+                            structureFormActions.fundSubNodeFormDescItemTypeAdd(versionId, id, data.descItemTypeId.id),
                         )
                     }
                 />,
@@ -110,7 +106,7 @@ class StructureSubNodeForm extends AbstractReactComponent {
             descItemTypes,
             subNodeForm,
             readMode,
-            id
+            id,
         } = this.props;
 
         if (!subNodeForm || !subNodeForm.fetched) {
@@ -160,15 +156,17 @@ class StructureSubNodeForm extends AbstractReactComponent {
 function mapStateToProps(state, props) {
     const {arrRegion, focus, refTables, userDetail, structures} = state;
     let fund = null;
-    let structureTypes = objectById(refTables.structureTypes.data, null, 'versionId');;
+    let structureTypes = objectById(refTables.structureTypes.data, null, 'versionId');
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
     }
 
+    const key = props.id ? String(props.id) : null;
+
     return {
         userDetail,
         fund,
-        subNodeForm: structures.stores.hasOwnProperty(props.id) ? structures.stores[props.id].subNodeForm : null,
+        subNodeForm: key && structures.stores.hasOwnProperty(key) ? structures.stores[key].subNodeForm : null,
         focus,
         structureTypes,
         rulDataTypes: refTables.rulDataTypes,
