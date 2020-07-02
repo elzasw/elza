@@ -1258,7 +1258,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         refTemplateMapTypeVO.setMapAllSpec(true);
         refTemplateMapTypeVO.setFromParentLevel(true);
 
-        createRefTemplateMapType(refTemplateVO.getId(), refTemplateMapTypeVO);
+        ArrRefTemplateMapTypeVO mapTypeVO1 = createRefTemplateMapType(refTemplateVO.getId(), refTemplateMapTypeVO);
 
         RulItemSpec fromItemSpec = itemSpecRepository.findOneByCode("SRD_FOLDER_UNITS");
         RulItemSpec toItemSpec = itemSpecRepository.findOneByCode("SRD_LEVEL_ITEM");
@@ -1274,7 +1274,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrRefTemplateMapTypeVO mapType = temp.getRefTemplateMapTypeVOList().get(0);
         mapType.setRefTemplateMapSpecVOList(refTemplateMapSpecVOList);
 
-        updateRefTemplateMapType(temp.getId(), mapType.getId(), mapType);
+        ArrRefTemplateMapTypeVO mapTypeVO2 = updateRefTemplateMapType(temp.getId(), mapType.getId(), mapType);
         deleteRefTemplateMapType(temp.getId(), mapType.getId());
 
 

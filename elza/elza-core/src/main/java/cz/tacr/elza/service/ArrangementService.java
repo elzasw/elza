@@ -1647,7 +1647,7 @@ public class ArrangementService {
         return refTemplateVOList;
     }
 
-    public void createRefTemplateMapType(Integer templateId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
+    public ArrRefTemplateMapTypeVO createRefTemplateMapType(Integer templateId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
         StaticDataProvider sdp = staticDataService.getData();
         ArrRefTemplate refTemplate = refTemplateRepository.findOne(templateId);
         if (refTemplate == null) {
@@ -1662,12 +1662,13 @@ public class ArrangementService {
         refTemplateMapType.setMapAllSpec(refTemplateMapTypeFormVO.getMapAllSpec());
         refTemplateMapTypeRepository.save(refTemplateMapType);
 
-        createRefTemplateMapSpecs(refTemplateMapType, refTemplateMapTypeFormVO.getRefTemplateMapSpecVOList(), sdp);
+        List<ArrRefTemplateMapSpec> refTemplateMapSpecs = createRefTemplateMapSpecs(refTemplateMapType, refTemplateMapTypeFormVO.getRefTemplateMapSpecVOList(), sdp);
+        return createRefTemplateMapTypeVO(refTemplateMapType, refTemplateMapSpecs);
     }
 
-    private void createRefTemplateMapSpecs(ArrRefTemplateMapType refTemplateMapType, List<ArrRefTemplateMapSpecVO> refTemplateMapSpecVOList, StaticDataProvider sdp) {
+    private List<ArrRefTemplateMapSpec> createRefTemplateMapSpecs(ArrRefTemplateMapType refTemplateMapType, List<ArrRefTemplateMapSpecVO> refTemplateMapSpecVOList, StaticDataProvider sdp) {
+        List<ArrRefTemplateMapSpec> refTemplateMapSpecs = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(refTemplateMapSpecVOList)) {
-            List<ArrRefTemplateMapSpec> refTemplateMapSpecs = new ArrayList<>();
             for (ArrRefTemplateMapSpecVO refTemplateMapSpecVO : refTemplateMapSpecVOList) {
 
                 ArrRefTemplateMapSpec refTemplateMapSpec = new ArrRefTemplateMapSpec();
@@ -1678,9 +1679,10 @@ public class ArrangementService {
             }
             refTemplateMapSpecRepository.save(refTemplateMapSpecs);
         }
+        return refTemplateMapSpecs;
     }
 
-    public void updateRefTemplateMapType(Integer templateId, Integer mapTypeId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
+    public ArrRefTemplateMapTypeVO updateRefTemplateMapType(Integer templateId, Integer mapTypeId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
         StaticDataProvider sdp = staticDataService.getData();
         ArrRefTemplateMapType refTemplateMapType = refTemplateMapTypeRepository.findOne(mapTypeId);
         if (refTemplateMapType == null) {
@@ -1693,7 +1695,8 @@ public class ArrangementService {
         refTemplateMapType.setFromParentLevel(refTemplateMapTypeFormVO.getFromParentLevel());
         refTemplateMapType.setMapAllSpec(refTemplateMapTypeFormVO.getMapAllSpec());
 
-        createRefTemplateMapSpecs(refTemplateMapType, refTemplateMapTypeFormVO.getRefTemplateMapSpecVOList(), sdp);
+        List<ArrRefTemplateMapSpec> refTemplateMapSpecs = createRefTemplateMapSpecs(refTemplateMapType, refTemplateMapTypeFormVO.getRefTemplateMapSpecVOList(), sdp);
+        return createRefTemplateMapTypeVO(refTemplateMapType, refTemplateMapSpecs);
     }
 
     public void deleteRefTemplateMapType(Integer templateId, Integer mapTypeId) {

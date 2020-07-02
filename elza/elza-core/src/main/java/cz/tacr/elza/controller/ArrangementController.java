@@ -2607,11 +2607,11 @@ public class ArrangementController {
      * @param templateId identifikátor šablony
      * @param refTemplateMapTypeFormVO formulář mapování
      */
-    @RequestMapping(value = "/nodes/template/{templateId}/maptype", method = RequestMethod.POST)
+    @RequestMapping(value = "/nodes/template/{templateId}/map-type", method = RequestMethod.POST)
     @Transactional
-    public void createRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,
+    public ArrRefTemplateMapTypeVO createRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,
                                          @RequestBody final ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
-        arrangementService.createRefTemplateMapType(templateId, refTemplateMapTypeFormVO);
+        return arrangementService.createRefTemplateMapType(templateId, refTemplateMapTypeFormVO);
     }
 
     /**
@@ -2621,12 +2621,12 @@ public class ArrangementController {
      * @param mapTypeId identifikátor mapování
      * @param refTemplateMapTypeFormVO formulář mapování
      */
-    @RequestMapping(value = "/nodes/template/{templateId}/mapType/{mapTypeId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/nodes/template/{templateId}/map-type/{mapTypeId}", method = RequestMethod.POST)
     @Transactional
-    public void updateRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,
+    public ArrRefTemplateMapTypeVO updateRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,
                                          @PathVariable (value = "mapTypeId") final Integer mapTypeId,
                                          @RequestBody final ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
-        arrangementService.updateRefTemplateMapType(templateId, mapTypeId, refTemplateMapTypeFormVO);
+        return arrangementService.updateRefTemplateMapType(templateId, mapTypeId, refTemplateMapTypeFormVO);
     }
 
     /**
@@ -2635,7 +2635,7 @@ public class ArrangementController {
      * @param templateId identifikátor šablony
      * @param mapTypeId identifikátor mapování
      */
-    @RequestMapping(value = "/nodes/template/{templateId}/mapType/{mapTypeId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/nodes/template/{templateId}/map-type/{mapTypeId}", method = RequestMethod.DELETE)
     @Transactional
     public void deleteRefTemplateMapType(@PathVariable (value = "templateId") final Integer templateId,
                                          @PathVariable (value = "mapTypeId") final Integer mapTypeId) {
@@ -2643,6 +2643,7 @@ public class ArrangementController {
     }
 
     @RequestMapping(value = "/nodes/{nodeId}/{nodeVersion}/sync/{templateId}")
+    @Transactional
     public void synchronizeNodes(@PathVariable (value = "nodeId") final Integer nodeId,
                                  @PathVariable (value = "nodeVersion") final Integer nodeVersion,
                                  @PathVariable (value = "templateId") final Integer templateId,
