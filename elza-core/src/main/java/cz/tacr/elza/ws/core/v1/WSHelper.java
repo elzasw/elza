@@ -16,14 +16,17 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.ws.types.v1.FundIdentifiers;
 import cz.tacr.elza.ws.types.v1.ItemEnum;
 import cz.tacr.elza.ws.types.v1.ItemLong;
@@ -36,6 +39,9 @@ public class WSHelper {
 
     @Autowired
     StaticDataService staticDataService;
+
+    @Autowired
+    StructObjService structObjService;
 
     public Integer getFundId(FundIdentifiers fundInfo) {
         Validate.notNull(fundInfo);
@@ -147,6 +153,19 @@ public class WSHelper {
             ArrDataUnitdate du = ArrDataUnitdate.valueOf(CalendarType.GREGORIAN, srcItem.getValue());
             data = du;
             break;
+        case STRUCTURED:
+            ArrStructuredObject structuredObject = structObjService.getExistingStructObj(srcItem.getValue());
+            // Validate type of structured object
+            Validate.isTrue(structuredObject.getStructuredTypeId() == itemType.getEntity().getStructuredTypeId(),
+                            "Structured object (%i) has unexpected type, exptected: %i, real type: %i",
+                            structuredObject.getStructuredObjectId(),
+                            itemType.getEntity().getStructuredTypeId(),
+                            structuredObject.getStructuredTypeId());
+
+            ArrDataStructureRef dsr = new ArrDataStructureRef();
+            dsr.setStructuredObject(structuredObject);
+            data = dsr;
+
         default:
             Validate.isTrue(false, "Cannot convert string to data type: %s, item type: %s", itemType.getDataType(),
                             srcItem.getType());
