@@ -399,9 +399,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String UPDATE_NODE_TEMPLATE = NODES + "/template/{templateId}";
     protected static final String DELETE_NODE_TEMPLATE = NODES + "/template/{templateId}";
     protected static final String GET_NODE_TEMPLATES = NODES + "/{fundId}/template";
-    protected static final String CREATE_NODE_TEMPLATE_MAP_TYPE = NODES + "/template/{templateId}/maptype";
-    protected static final String UPDATE_NODE_TEMPLATE_MAP_TYPE = NODES + "/template/{templateId}/mapType/{mapTypeId}";
-    protected static final String DELETE_NODE_TEMPLATE_MAP_TYPE = NODES + "/template/{templateId}/mapType/{mapTypeId}";
+    protected static final String CREATE_NODE_TEMPLATE_MAP_TYPE = NODES + "/template/{templateId}/map-type";
+    protected static final String UPDATE_NODE_TEMPLATE_MAP_TYPE = NODES + "/template/{templateId}/map-type/{mapTypeId}";
+    protected static final String DELETE_NODE_TEMPLATE_MAP_TYPE = NODES + "/template/{templateId}/map-type/{mapTypeId}";
 
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.000ZZZZZ");
 
@@ -3723,10 +3723,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param templateId identifikátor šablony
      * @param refTemplateMapTypeFormVO formulář mapování
      */
-    protected void createRefTemplateMapType(Integer templateId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
-        post(spec -> spec
+    protected ArrRefTemplateMapTypeVO createRefTemplateMapType(Integer templateId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
+        return post(spec -> spec
                 .pathParameter("templateId", templateId)
-                .body(refTemplateMapTypeFormVO), CREATE_NODE_TEMPLATE_MAP_TYPE);
+                .body(refTemplateMapTypeFormVO), CREATE_NODE_TEMPLATE_MAP_TYPE)
+                .getBody().as(ArrRefTemplateMapTypeVO.class);
     }
 
     /**
@@ -3736,11 +3737,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param mapTypeId identifikátor mapování
      * @param refTemplateMapTypeFormVO formulář mapování
      */
-    protected void updateRefTemplateMapType(Integer templateId, Integer mapTypeId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
-        post(spec -> spec
+    protected ArrRefTemplateMapTypeVO updateRefTemplateMapType(Integer templateId, Integer mapTypeId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
+        return post(spec -> spec
                 .pathParameter("templateId", templateId)
                 .pathParameter("mapTypeId", mapTypeId)
-                .body(refTemplateMapTypeFormVO), UPDATE_NODE_TEMPLATE_MAP_TYPE);
+                .body(refTemplateMapTypeFormVO), UPDATE_NODE_TEMPLATE_MAP_TYPE)
+                .getBody().as(ArrRefTemplateMapTypeVO.class);
     }
 
     /**
