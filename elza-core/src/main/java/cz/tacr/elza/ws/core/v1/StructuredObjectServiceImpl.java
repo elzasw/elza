@@ -3,6 +3,7 @@ package cz.tacr.elza.ws.core.v1;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -45,10 +46,42 @@ public class StructuredObjectServiceImpl implements StructuredObjectService {
     @Transactional
     public void deleteStructuredObject(StructuredObjectIdentifiers deleteStructuredObj)
             throws DeleteStructuredObjectFailed {
-        Integer stuctObjId = Integer.valueOf(deleteStructuredObj.getId());
-        ArrStructuredObject structObj = structObjService.getStructObjById(stuctObjId);
-        Validate.notNull(structObj, "Structured object not found: {}", deleteStructuredObj.getId());
-        structObjService.deleteStructObj(structObj);
+
+        try {
+            ArrStructuredObject structObj;
+            if (deleteStructuredObj.getId() != null) {
+                Integer stuctObjId = Integer.valueOf(deleteStructuredObj.getId());
+                structObj = structObjService.getStructObjById(stuctObjId);
+
+                Validate.notNull(structObj, "Structured object not found, id: %i", deleteStructuredObj.getId());
+            }
+            else {
+                // lookup with uuid
+                Validate.isTrue(deleteStructuredObj.getUuid()!=null, "Structured object identifier is missing (id nor uuid provided).");
+
+                structObj = structObjService.getExistingStructObjByUUID(deleteStructuredObj.getUuid());
+            }
+            structObjService.deleteStructObj(structObj);
+        } catch (Exception e)
+        {
+            throw prepareDeleteException("Failed to delete structured object.", deleteStructuredObj);
+        }
+    }
+
+    DeleteStructuredObjectFailed prepareDeleteException(String msg, StructuredObjectIdentifiers deleteStructuredObj) {
+        ErrorDescription ed = new ErrorDescription();
+        ed.setUserMessage(msg);
+        
+        List<String> ids = new ArrayList<>(2);
+        if (StringUtils.isNotEmpty(deleteStructuredObj.getId())) {
+            ids.add("id: " + deleteStructuredObj.getId());
+        }
+        if (StringUtils.isNotEmpty(deleteStructuredObj.getUuid())) {
+            ids.add("uuid: " + deleteStructuredObj.getUuid());
+        }
+        ed.setDetail(String.join(", ", ids));
+
+        return new DeleteStructuredObjectFailed(msg, ed);
     }
 
     @Override
@@ -68,13 +101,16 @@ public class StructuredObjectServiceImpl implements StructuredObjectService {
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA);
         List<ArrStructuredItem> items = prepareItems(createStructuredObject.getItems());
-        ArrStructuredObject structObj = structObjService.createStructObj(fund, change, structObjType
-                .getStructuredType(),
-                                                                         State.OK, items);
+        ArrStructuredObject structObj = structObjService.createStructObj(fund, change,
+                                                                         structObjType.getStructuredType(),
+                                                                         State.OK,
+                                                                         createStructuredObject.getUuid(),
+                                                                         items);
 
         StructuredObjectIdentifiers sois = new StructuredObjectIdentifiers();
         Validate.notNull(structObj.getStructuredObjectId());
         sois.setId(structObj.getStructuredObjectId().toString());
+        sois.setUuid(structObj.getUuid());
         return sois;
     }
 

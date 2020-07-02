@@ -129,6 +129,7 @@ public class StartupService implements SmartLifecycle {
         logger.info("Elza stopping ...");
         indexWorkProcessor.stopIndexing();
         structureDataService.stopGenerator();
+        outputServiceInternal.stop();
         // TODO: stop async processes
         running = false;
     }

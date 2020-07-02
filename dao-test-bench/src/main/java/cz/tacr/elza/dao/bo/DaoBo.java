@@ -10,7 +10,6 @@ import cz.tacr.elza.ws.types.v1.DaoLink;
 import cz.tacr.elza.ws.types.v1.FileGroup;
 import cz.tacr.elza.ws.types.v1.ItemString;
 import cz.tacr.elza.ws.types.v1.Items;
-import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.util.Collection;

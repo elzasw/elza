@@ -365,6 +365,7 @@ public class ItemGeneratorAction extends Action {
             ArrStructuredObject structObj = structObjService.createStructObj(fund, change,
                                                                              structType.getStructuredType(),
                                                                              State.OK,
+                                                                             null,
                                                                              items);
 
             // Connect struct obj to the level
