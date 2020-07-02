@@ -37,6 +37,9 @@ public class RulPartType {
     @Column(length = StringLength.LENGTH_250, nullable = false)
     private String name;
 
+    @Column(name = "parent_part")
+    private Boolean parentPart;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
@@ -63,6 +66,14 @@ public class RulPartType {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public Boolean getParentPart() {
+        return parentPart;
+    }
+
+    public void setParentPart(Boolean parentPart) {
+        this.parentPart = parentPart;
     }
 
     public RulPackage getRulPackage() {

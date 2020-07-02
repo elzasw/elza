@@ -1,23 +1,30 @@
 <part-types>
     <part-type code="PT_NAME">
         <name>Označení</name>
+        <parent_part>false</parent_part>
     </part-type>
     <part-type code="PT_CRE">
         <name>Vznik</name>
+        <parent_part>true</parent_part>
     </part-type>
     <part-type code="PT_EXT">
         <name>Zánik</name>
+        <parent_part>true</parent_part>
     </part-type>
     <part-type code="PT_EVENT">
         <name>Událost</name>
+        <parent_part>true</parent_part>
     </part-type>
     <part-type code="PT_REL">
         <name>Vztah</name>
+        <parent_part>false</parent_part>
     </part-type>
     <part-type code="PT_IDENT">
         <name>Identifikátor</name>
+        <parent_part>false</parent_part>
     </part-type>
     <part-type code="PT_BODY">
         <name>Tělo</name>
+        <parent_part>false</parent_part>
     </part-type>
 </part-types>
