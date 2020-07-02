@@ -3,6 +3,8 @@ package cz.tacr.elza.ws;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
@@ -43,6 +45,27 @@ public class StructuredObjectServiceTest extends AbstractControllerTest {
                                                                                                                "admin",
                                                                                                                "admin");
 
+        // create using id
+        StructuredObject createStructuredObject = createPacket(fundIdents);
+        StructuredObjectIdentifiers sois = structObjServiceClient.createStructuredObject(createStructuredObject);
+        assertNotNull(sois);
+        assertTrue(StringUtils.isNotBlank(sois.getId()));
+
+        // create using id
+        StructuredObject createStructuredObject2 = createPacket(fundIdents);
+        createStructuredObject2.setUuid(UUID.randomUUID().toString());
+        StructuredObjectIdentifiers sois2 = structObjServiceClient.createStructuredObject(createStructuredObject2);
+        assertNotNull(sois2);
+        assertTrue(StringUtils.isNotBlank(sois2.getId()));
+
+        StructuredObjectIdentifiers sois2Del = new StructuredObjectIdentifiers();
+        sois2Del.setUuid(createStructuredObject2.getUuid());
+        structObjServiceClient.deleteStructuredObject(sois2Del);
+
+        structObjServiceClient.deleteStructuredObject(sois);
+    }
+
+    private StructuredObject createPacket(FundIdentifiers fundIdents) {
         StructuredObject createStructuredObject = new StructuredObject();
         createStructuredObject.setType("SRD_PACKET");
         createStructuredObject.setFund(fundIdents);
@@ -63,11 +86,6 @@ public class StructuredObjectServiceTest extends AbstractControllerTest {
         si4.setSpec("SRD_UNIT_TYPE_LIO");
         soItems.getStrOrLongOrEnm().add(si3);
         createStructuredObject.setItems(soItems);
-        StructuredObjectIdentifiers sois = structObjServiceClient.createStructuredObject(createStructuredObject);
-
-        assertNotNull(sois);
-        assertTrue(StringUtils.isNotBlank(sois.getId()));
-
-        structObjServiceClient.deleteStructuredObject(sois);
+        return createStructuredObject;
     }
 }

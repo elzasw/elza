@@ -196,4 +196,24 @@
         <!-- Zneplatneni cache -->
         <delete tableName="arr_cached_node" />
     </changeSet>
+
+    <changeSet id="20200702125023" author="ppyt">
+        <addColumn tableName="arr_structured_object">
+            <column name="uuid" type="char(36)" />
+        </addColumn>
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20200702125023" />
+        <addNotNullConstraint tableName="arr_structured_object" columnName="uuid" columnDataType="char(36)"/>
+    </changeSet>
+    <changeSet id="20200702125024" author="ppyt">
+        <createIndex indexName="arr_structured_object_uuid_unique_idx" tableName="arr_structured_object" unique="true">
+            <column name="uuid" type="char(36)"/>
+            <column name="fund_id" type="int"/>
+            <column name="structured_type_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="arr_structured_object_uuid_idx" tableName="arr_structured_object" unique="false">
+            <column name="uuid" type="char(36)"/>
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
