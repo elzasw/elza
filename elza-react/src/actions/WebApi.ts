@@ -1532,7 +1532,7 @@ export class WebApiCls {
         refTemplateMapTypeFormVO: ArrRefTemplateMapTypeVO,
     ): Promise<ArrRefTemplateMapTypeVO> {
         return AjaxUtils.ajaxPost(
-            WebApiCls.arrangementUrl + '/nodes/template/' + templateId + '/mapType',
+            WebApiCls.arrangementUrl + '/nodes/template/' + templateId + '/map-type',
             null,
             refTemplateMapTypeFormVO,
         );
@@ -1543,7 +1543,7 @@ export class WebApiCls {
         refTemplateMapTypeFormVO: ArrRefTemplateMapTypeVO,
     ): Promise<ArrRefTemplateMapTypeVO> {
         return AjaxUtils.ajaxPost(
-            WebApiCls.arrangementUrl + '/nodes/template/' + templateId + '/mapType/' + mapTypeId,
+            WebApiCls.arrangementUrl + '/nodes/template/' + templateId + '/map-type/' + mapTypeId,
             null,
             refTemplateMapTypeFormVO,
         );
@@ -1551,7 +1551,7 @@ export class WebApiCls {
 
     deleteRefTemplateMapType(templateId: number, mapTypeId: number): Promise<void> {
         return AjaxUtils.ajaxDelete(
-            WebApiCls.arrangementUrl + '/nodes/template/' + templateId + '/mapType/' + mapTypeId,
+            WebApiCls.arrangementUrl + '/nodes/template/' + templateId + '/map-type/' + mapTypeId,
         );
     }
 
