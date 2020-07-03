@@ -14,6 +14,8 @@ public class ArrItemUriRefVO extends ArrItemVO {
 
     private String description;
 
+    private Integer refTemplateId;
+
     public ArrItemUriRefVO() {
 
     }
@@ -38,6 +40,14 @@ public class ArrItemUriRefVO extends ArrItemVO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Integer getRefTemplateId() {
+        return refTemplateId;
+    }
+
+    public void setRefTemplateId(Integer refTemplateId) {
+        this.refTemplateId = refTemplateId;
     }
 
     @Override

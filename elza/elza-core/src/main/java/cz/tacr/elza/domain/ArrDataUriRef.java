@@ -64,6 +64,7 @@ public class ArrDataUriRef extends ArrData {
         this.description = src.description;
         this.arrNode = src.arrNode;
         this.nodeId = src.nodeId;
+        this.refTemplate = src.refTemplate;
     }
 
     public String getSchema() {
