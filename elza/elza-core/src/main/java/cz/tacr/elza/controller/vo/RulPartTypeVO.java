@@ -2,13 +2,13 @@ package cz.tacr.elza.controller.vo;
 
 public class RulPartTypeVO extends BaseCodeVo {
 
-    private Boolean parentPart;
+    private Integer childPartId;
 
-    public Boolean getParentPart() {
-        return parentPart;
+    public Integer getChildPartId() {
+        return childPartId;
     }
 
-    public void setParentPart(Boolean parentPart) {
-        this.parentPart = parentPart;
+    public void setChildPartId(Integer childPartId) {
+        this.childPartId = childPartId;
     }
 }

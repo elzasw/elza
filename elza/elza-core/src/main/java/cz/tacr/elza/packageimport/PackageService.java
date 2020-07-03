@@ -1029,6 +1029,7 @@ public class PackageService {
                 convertRulPartType(packageContext.getPackage(), partType, item);
                 newPartTypes.add(item);
             }
+            processPartTypesChildPart(partTypes.getPartTypes(), newPartTypes);
         }
 
         newPartTypes = partTypeRepository.save(newPartTypes);
@@ -1038,13 +1039,44 @@ public class PackageService {
         partTypeRepository.delete(rulRuleDelete);
     }
 
+    private void processPartTypesChildPart(List<PartType> partTypes, List<RulPartType> newPartTypes) {
+        if (CollectionUtils.isNotEmpty(partTypes) && CollectionUtils.isNotEmpty(newPartTypes)) {
+            for (PartType partType : partTypes) {
+                if (StringUtils.isNotEmpty(partType.getChildPart())) {
+                    RulPartType rulPartType = findRulPartTypeByCode(newPartTypes, partType.getCode());
+                    if (rulPartType == null) {
+                        throw new IllegalStateException("Nenalezen typ části s kódem: " + partType.getCode());
+                    }
+
+                    RulPartType childPartType = findRulPartTypeByCode(newPartTypes, partType.getChildPart());
+                    if (childPartType == null) {
+                        throw new IllegalStateException("Nenalezen typ podřízené části s kódem: " + partType.getChildPart());
+                    }
+
+                    rulPartType.setChildPart(childPartType);
+                }
+            }
+        }
+    }
+
+    @Nullable
+    private RulPartType findRulPartTypeByCode(final List<RulPartType> rulPartTypes, final String code) {
+        if (CollectionUtils.isNotEmpty(rulPartTypes)) {
+            for (RulPartType rulPartType : rulPartTypes) {
+                if (rulPartType.getCode().equals(code)) {
+                    return rulPartType;
+                }
+            }
+        }
+        return null;
+    }
+
     private void convertRulPartType(final RulPackage rulPackage,
                                     final PartType partType,
                                     final RulPartType item) {
         item.setRulPackage(rulPackage);
         item.setCode(partType.getCode());
         item.setName(partType.getName());
-        item.setParentPart(partType.getParentPart());
     }
 
     /**
