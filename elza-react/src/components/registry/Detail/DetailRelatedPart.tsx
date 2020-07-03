@@ -16,6 +16,7 @@ import {objectById} from "../../../shared/utils";
 import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
 import {findViewItemType} from "../../../utils/ItemInfo";
 import {RulPartTypeVO} from "../../../api/RulPartTypeVO";
+import i18n from "../../i18n";
 
 type Props = {
   label: string;
@@ -56,14 +57,14 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
     }
   );
 
-  const renderItems = (items: Array<ApItemVO>) => {
+  const renderItems = (items: ApItemVO[]) => {
     if (items.length === 0) {
       return <Col className={"mt-1"}><i>Nejsou definovány žádné hodnoty atributů</i></Col>;
     }
 
     let result: any = [];
 
-    let index=0;
+    let index = 0;
     while (index < items.length) {
       let index2 = index + 1;
       while (index2 < items.length && items[index].typeId === items[index2].typeId) {
@@ -84,12 +85,12 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
 
       let rows: any = [];
       if (sameItems.length > 1) {
-        rows.push(<DetailMultipleItem key={index} items={sameItems} globalEntity={globalEntity}/>);
+        rows.push(<DetailMultipleItem key={index} items={sameItems} globalEntity={globalEntity} bindings={bindings}/>);
       } else {
-        rows.push(<DetailItem key={index} item={sameItems[0]} globalEntity={globalEntity}/>);
+        rows.push(<DetailItem key={index} item={sameItems[0]} globalEntity={globalEntity} bindings={bindings}/>);
       }
 
-      result.push(<Col key={index}>{/* span={width <= 0 ? 24 : width * 2} */}
+      result.push(<Col key={index} xs={width <= 0 ? 12 : width}>
         {rows}
       </Col>);
     }
@@ -120,47 +121,40 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
     }
   };
 
-  return <div className="detail-related-part">
+  const partBinding = bindings.partsMap[part.id];
+
+  return <div className="detail-related-part ml-4 mb-2 pt-3">
     <Row className={classNameHeader + " align-items-center"}>
       <Col>
-        <Icon glyph='fa-arrow-right' fixedWidth className="detail-related-part-icon"/>
-      </Col>
-      <Col className="detail-part-label" onClick={() => setCollapsed(!collapsed)}
-           title={collapsed ? "Zobrazit podrobnosti" : "Skrýt podrobnosti"}>
-        {label || <i>Popis záznamu entity</i>}
-      </Col>
-      {editMode && <Col style={{flex: 1}} className="ml-2">
-          <Row>{/* gutter={8} */}
-              <Col>
-                  <Icon
-                    glyph={'fa-pencil'}
-                    onClick={() => onEdit && onEdit(part)}
-                  />
-              </Col>
-            <Col>
-              <Icon
-                glyph={'fa-trash'}
-                onClick={() => onDelete && onDelete(part)}
-              />
-            </Col>
-            {showValidationError()}
-          </Row>
-      </Col>}
-      {!editMode && <Col style={{flex: 1}} className="ml-2">
+        <div
+            className={'detail-part-label d-inline-block'}
+            onClick={() => setCollapsed(!collapsed)}
+            title={collapsed ? "Zobrazit podrobnosti" : "Skrýt podrobnosti"}
+        >
+                <span className={classNames('detail-part-label', 'mr-2', collapsed ? false : 'opened')}>
+                    <Icon className="mr-2"
+                        glyph={'fa-arrow-right'}
+                    />
+                    {label || <i>Popis záznamu entity</i>}
+                </span>
+        </div>
+
+        {partBinding != null && <Icon glyph="fa-refresh" title={i18n('ap.binding.syncState.' + (partBinding ? 'SYNC_OK' : 'NOT_SYNCED'))} className={partBinding ? 'mr-2 ' : 'mr-2 disabled'} />}
+
+        <Icon
+            className={'mr-2 cursor-pointer'}
+            glyph={'fa-pencil'}
+            onClick={() => onEdit && onEdit(part)}
+        />
+
         {showValidationError()}
-      </Col>}
+      </Col>
     </Row>
 
     {!collapsed && <div className={classNameContent}>
         <Row>
           {renderItems(sortedItems)}
         </Row>
-
-        {/*<EditModal
-            part={part}
-            visible={modalVisible}
-            onCancel={() => setModalVisible(false)}
-        />*/}
     </div>}
   </div>
 };

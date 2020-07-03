@@ -135,10 +135,10 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         props.refreshValidation(props.id);
     };
 
-    const handleAdd = (partType: RulPartTypeVO) => {
+    const handleAdd = (partType: RulPartTypeVO, parentPartId?: number) => {
         const detail = props.detail.data!;
 
-        props.showPartCreateModal(partType, props.id, apTypeId, detail.scopeId);
+        props.showPartCreateModal(partType, props.id, apTypeId, detail.scopeId, parentPartId);
         props.refreshValidation(props.id);
     };
 
@@ -203,25 +203,37 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
             />
 
             {allParts && <div key="part-sections">
-                {sortedParts.map((partType: RulPartTypeVO, index) =>
-                    <DetailMultiSection
-                        key={partType.code}
-                        label={partType.name}
-                        editMode={props.editMode}
-                        parts={typedParts[partType.id] ? typedParts[partType.id] : []}
-                        relatedParts={getRelatedPartSections(typedParts[partType.id] ? typedParts[partType.id] : [], partType.id)}
-                        preferred={props.detail.data ? props.detail.data.preferredPart : undefined}
-                        globalCollapsed={props.globalCollapsed}
-                        onSetPreferred={handleSetPreferred}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        bindings={bindings}
-                        onAdd={() => handleAdd(partType)}
-                        onDeleteParts={handleDeletePart}
-                        partValidationErrors={validationResult && validationResult.partErrors}
-                        itemTypeSettings={props.apViewSettings.data!.itemTypes}
-                        globalEntity={props.globalEntity}
-                    />
+                {sortedParts.map((partType: RulPartTypeVO, index) => {
+
+                    const onAddRelated = partType.childPartId ? (parentPartId) => {
+                        const childPartType = objectById(props.refTables.partTypes.items, partType.childPartId);
+                        if (childPartType !== null) {
+                            handleAdd(childPartType, parentPartId);
+                        } else {
+                            console.error("childPartType " + partType.childPartId + " not found");
+                        }
+                    } : undefined;
+
+                    return <DetailMultiSection
+                            key={partType.code}
+                            label={partType.name}
+                            editMode={props.editMode}
+                            parts={typedParts[partType.id] ? typedParts[partType.id] : []}
+                            relatedParts={getRelatedPartSections(typedParts[partType.id] ? typedParts[partType.id] : [], partType.id)}
+                            preferred={props.detail.data ? props.detail.data.preferredPart : undefined}
+                            globalCollapsed={props.globalCollapsed}
+                            onSetPreferred={handleSetPreferred}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                            bindings={bindings}
+                            onAdd={() => handleAdd(partType)}
+                            onDeleteParts={handleDeletePart}
+                            onAddRelated={onAddRelated}
+                            partValidationErrors={validationResult && validationResult.partErrors}
+                            itemTypeSettings={props.apViewSettings.data!.itemTypes}
+                            globalEntity={props.globalEntity}
+                        />;
+                    }
                 )}
             </div>}
         </div>
