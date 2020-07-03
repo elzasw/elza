@@ -2238,9 +2238,9 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/output/{outputId}/restrict/{scopeId}", method = RequestMethod.PUT)
-    public void addRestrictedScope(@PathVariable(value = "outputId") final Integer outputId,
-                                   @PathVariable(value = "scopeId") final Integer scopeId) {
-        outputService.addRestrictedScope(outputId, scopeId);
+    public ArrOutputRestrictionScopeVO addRestrictedScope(@PathVariable(value = "outputId") final Integer outputId,
+                                                          @PathVariable(value = "scopeId") final Integer scopeId) {
+        return outputService.addRestrictedScope(outputId, scopeId);
     }
 
     /**
