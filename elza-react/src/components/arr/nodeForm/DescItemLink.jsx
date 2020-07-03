@@ -152,7 +152,7 @@ class DescItemString extends AbstractReactComponent {
                     />
                 </div>
                 {descItem.nodeId && (
-                    <RefTemplateField onChange={this.handleTemplate} fundId={fundId} useIdAsValue={true} />
+                    <RefTemplateField onChange={this.handleTemplate} fundId={fundId} useIdAsValue={true} value={descItem.refTemplateId} />
                 )}
             </div>
         );
