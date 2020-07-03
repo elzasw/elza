@@ -78,6 +78,8 @@ public class ConfigMapperConfiguration {
     private ApFactory apFactory;
     @Autowired
     private StaticDataService staticDataService;
+    @Autowired
+    private PartTypeRepository partTypeRepository;
 
     /**
      * @return Tovární třída.
@@ -466,6 +468,21 @@ public class ConfigMapperConfiguration {
 
         mapperFactory.classMap(RulPartType.class, RulPartTypeVO.class)
                 .byDefault()
+                .customize(new CustomMapper<RulPartType, RulPartTypeVO>() {
+                    @Override
+                    public void mapAtoB(final RulPartType rulPartType,
+                                        final RulPartTypeVO rulPartTypeVO,
+                                        final MappingContext context) {
+                        rulPartTypeVO.setChildPartId(rulPartType.getChildPart() != null ? rulPartType.getChildPart().getPartTypeId() : null);
+                    }
+
+                    @Override
+                    public void mapBtoA(final RulPartTypeVO rulPartTypeVO,
+                                        final RulPartType rulPartType,
+                                        final MappingContext context) {
+                        rulPartType.setChildPart(rulPartTypeVO.getChildPartId() != null ? partTypeRepository.findOne(rulPartTypeVO.getChildPartId()) : null);
+                    }
+                })
                 .field("partTypeId", "id")
                 .register();
 

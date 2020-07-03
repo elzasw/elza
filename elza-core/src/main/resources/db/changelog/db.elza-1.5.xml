@@ -556,4 +556,17 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20200703123500" author="fantis">
+        <dropColumn tableName="rul_part_type">
+            <column name="parent_part"/>
+        </dropColumn>
+        <addColumn tableName="rul_part_type">
+            <column name="child_part_id" type="int">
+                <constraints foreignKeyName="fk_rul_part_type_child"
+                             referencedTableName="rul_part_type"
+                             referencedColumnNames="part_type_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

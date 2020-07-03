@@ -21,8 +21,8 @@ public class PartType {
     @XmlElement(name = "name", required = true)
     private String name;
 
-    @XmlElement(name = "parent_part")
-    private Boolean parentPart = false;
+    @XmlElement(name = "child_part")
+    private String childPart;
 
     public String getCode() {
         return code;
@@ -40,11 +40,11 @@ public class PartType {
         this.name = name;
     }
 
-    public Boolean getParentPart() {
-        return parentPart;
+    public String getChildPart() {
+        return childPart;
     }
 
-    public void setParentPart(Boolean parentPart) {
-        this.parentPart = parentPart;
+    public void setChildPart(String childPart) {
+        this.childPart = childPart;
     }
 }
