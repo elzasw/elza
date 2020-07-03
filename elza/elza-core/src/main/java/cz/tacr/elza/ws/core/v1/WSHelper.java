@@ -165,7 +165,7 @@ public class WSHelper {
             ArrDataStructureRef dsr = new ArrDataStructureRef();
             dsr.setStructuredObject(structuredObject);
             data = dsr;
-
+            break;
         default:
             Validate.isTrue(false, "Cannot convert string to data type: %s, item type: %s", itemType.getDataType(),
                             srcItem.getType());

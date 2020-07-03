@@ -20,6 +20,7 @@ import cz.tacr.elza.ws.core.v1.DaoRequestsServiceImpl;
 import cz.tacr.elza.ws.core.v1.ExportServiceImpl;
 import cz.tacr.elza.ws.core.v1.FundServiceImpl;
 import cz.tacr.elza.ws.core.v1.StructuredObjectServiceImpl;
+import cz.tacr.elza.ws.core.v1.UserServiceImpl;
 
 /**
  * CXF Servlet configuration
@@ -38,6 +39,7 @@ public class WebServiceConfig {
     public final static String DAO_CORE_SERVICE_URL = "/DaoCoreService";
     public final static String STRUCT_OBJ_SERVICE_URL = "/StructuredObjectService";
     public final static String FUND_SERVICE_URL = "/FundService";
+    public final static String USER_SERVICE_URL = "/UserService";
 
     @Autowired
     private DaoDigitizationServiceImpl daoDigitizationService;
@@ -56,6 +58,9 @@ public class WebServiceConfig {
 
     @Autowired
     private StructuredObjectServiceImpl structuredObjectService;
+
+    @Autowired
+    private UserServiceImpl userService;
 
     @Autowired
     private SpringBus bus;
@@ -91,6 +96,19 @@ public class WebServiceConfig {
     public Endpoint entitiesServiceEndpoint() {
         EndpointImpl endpoint = new EndpointImpl(bus, exportService);
         endpoint.publish("/ExportService");
+
+        Binding binding = endpoint.getBinding();
+        List<Handler> hc = binding.getHandlerChain();
+        hc.add(new CustomSOAPHandler());
+        binding.setHandlerChain(hc);
+
+        return endpoint;
+    }
+
+    @Bean
+    public Endpoint userServiceEndpoint() {
+        EndpointImpl endpoint = new EndpointImpl(bus, userService);
+        endpoint.publish(USER_SERVICE_URL);
 
         Binding binding = endpoint.getBinding();
         List<Handler> hc = binding.getHandlerChain();
