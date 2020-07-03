@@ -2,7 +2,7 @@ import {getMapFromList, indexById} from 'stores/app/utils.jsx';
 import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx';
 import {DisplayType} from '../../../constants.tsx';
 import {isNormalizeDurationLength, normalizeDurationLength, toDuration} from '../../../components/validate';
-import {ItemAvailability, ItemAvailabilityNumToEnumMap} from "../accesspoint/itemFormUtils";
+import {ItemAvailability, ItemAvailabilityNumToEnumMap} from '../accesspoint/itemFormUtils';
 import {JAVA_ATTR_CLASS} from '../../../constants';
 
 const availability = {
@@ -126,7 +126,7 @@ export function createDescItemFromDb(descItemType, descItem) {
         result.prevDescription = descItem.description;
     }
 
-    prepareNextFormKey(descItemType)
+    prepareNextFormKey(descItemType);
     initFormKey(descItemType, result);
 
     return result;
@@ -149,9 +149,8 @@ function addUid(descItem, index) {
 var _formKeys = {};
 
 export function prepareNextFormKey(descItemType) {
-    _formKeys[descItemType.id] = _formKeys[descItemType.id] + 1
+    _formKeys[descItemType.id] = _formKeys[descItemType.id] + 1;
 }
-
 
 function initFormKey(descItemType, descItem) {
     if (descItem.formKey) {
@@ -342,7 +341,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
                     if (prevDescItem) {
                         item.formKey = prevDescItem.formKey;
                     } else {
-                        prepareNextFormKey(resultDescItemType)
+                        prepareNextFormKey(resultDescItemType);
                         initFormKey(resultDescItemType, item);
                     }
                     resultDescItemType.descItems.push(item);
@@ -504,8 +503,8 @@ export function mergeAfterUpdate(state, data, refTables) {
 
     flatLocalForm.update(flatForm);
 
-    console.log(8888, Object.values(flatLocalForm.types))
-    console.log(9999999999999, flatForm)
+    console.log(8888, Object.values(flatLocalForm.types));
+    console.log(9999999999999, flatForm);
 
     // Update info about descItemTypes
     // XXXXXXXX
@@ -513,21 +512,22 @@ export function mergeAfterUpdate(state, data, refTables) {
     Object.keys(flatLocalForm.types).forEach(key => {
         const {descItems, ...type} = flatLocalForm.types[key];
         state.infoTypesMap[key] = type;
-    })
+    });
     // state.infoTypesMap = flatLocalForm.types;
 
-    console.log(8888, Object.values(flatLocalForm.types))
+    console.log(8888, Object.values(flatLocalForm.types));
 
     // Update form with new data
     state.formData = restoreFormDataStructure(flatLocalForm, state.refTypesMap);
 
     // Odebrání pomocných dat - sice prasárna, ale jinak by se to muselo celé přepsat - commit 85921c4ed7d187d41759fa938370dcaac3da5aa1
     Object.values(flatLocalForm.types).forEach(type => {
-        type.descItems && type.descItems.forEach(descItem => {
-            delete descItem.itemType
-        });
+        type.descItems &&
+            type.descItems.forEach(descItem => {
+                delete descItem.itemType;
+            });
     });
-    console.log(8888, Object.values(flatLocalForm.types))
+    console.log(8888, Object.values(flatLocalForm.types));
 
     return state;
 }
@@ -903,7 +903,7 @@ class FlatFormData {
         if (data.itemTypes) {
             const refGroups = this.refTables.groups.data;
             const itemTypeMap = getMapFromList(data.itemTypes);
-            const groups = refGroups.ids.map((id,index) => {
+            const groups = refGroups.ids.map((id, index) => {
                 const group = refGroups[id];
                 const types = group.itemTypes.map(it => {
                     const dataItemType = itemTypeMap[it.id] || {};
@@ -1124,12 +1124,12 @@ function fillImpossibleTypes(data, refTypesMap) {
                         id: spec.id,
                         type: ItemAvailabilityNumToEnumMap[0],
                         rep: 0,
-                        itemType: itemType.id
+                        itemType: itemType.id,
                     };
                 } else {
                     return {
                         ...dataItemSpecs[specIndex],
-                        itemType: itemType.id
+                        itemType: itemType.id,
                     };
                 }
             });
@@ -1330,27 +1330,29 @@ export function getItemClass(dataType) {
             return '.ArrItemUnitidVO';
         case 'DATE':
             return '.ArrItemDateVO';
+        case 'URI_REF':
+            return '.ArrItemUriRefVO';
         default:
             console.error('Unsupported data type', dataType);
             return null;
     }
 }
 
-const hasString = (str) => {
+const hasString = str => {
     return str != null && typeof str === 'string' && str.length > 0;
-}
+};
 
-const isBool = (b) => {
+const isBool = b => {
     return b != null && typeof b === 'boolean';
-}
+};
 
-const isNumber = (number) => {
+const isNumber = number => {
     return number != null && typeof number === 'number';
-}
+};
 
-const notNull = (obj) => {
+const notNull = obj => {
     return obj != null;
-}
+};
 
 function log(field, data, fce) {
     const value = data[field];
@@ -1433,7 +1435,7 @@ function checkGroup(group) {
  * Kontrola struktury store - zda-li jsou vyplněná požadovaná data.
  * - metoda je pouze pro ladící účely
  */
-export function checkFormData(formData = {}, msg = "#checkFormData") {
+export function checkFormData(formData = {}, msg = '#checkFormData') {
     return;
     // POUZE PRO TESTOVACÍ ÚČELY
     if (formData) {
