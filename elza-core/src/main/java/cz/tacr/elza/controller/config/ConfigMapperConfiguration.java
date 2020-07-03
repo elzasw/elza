@@ -80,6 +80,8 @@ public class ConfigMapperConfiguration {
     private StaticDataService staticDataService;
     @Autowired
     private PartTypeRepository partTypeRepository;
+    @Autowired
+    private ArrRefTemplateRepository refTemplateRepository;
 
     /**
      * @return Tovární třída.
@@ -650,6 +652,7 @@ public class ConfigMapperConfiguration {
                         super.mapAtoB(uriRef, uriRefVO, context);
                         uriRefVO.setValue(uriRef.getValue());
                         uriRefVO.setDescription(uriRef.getDescription());
+                        uriRefVO.setRefTemplateId(uriRef.getRefTemplate() != null ? uriRef.getRefTemplate().getRefTemplateId() : null);
                     }
 
                     @Override
@@ -659,6 +662,7 @@ public class ConfigMapperConfiguration {
                         super.mapBtoA(uriRefVO, uriRef, context);
                         uriRef.setValue(uriRefVO.getValue());
                         uriRef.setDescription(uriRefVO.getDescription());
+                        uriRef.setRefTemplate(uriRefVO.getRefTemplateId() != null ? refTemplateRepository.findOne(uriRefVO.getRefTemplateId()) : null);
                     }
                 }).byDefault().register();
         /*mapperFactory.classMap(ArrDataText.class, ArrItemAbstractTextVO.class).customize(new CustomMapper<ArrDataText, ArrItemAbstractTextVO>() {
