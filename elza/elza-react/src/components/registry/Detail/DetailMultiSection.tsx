@@ -22,7 +22,7 @@ interface Props {
     onDelete?: (part: ApPartVO) => void;
     onEdit?: (part: ApPartVO) => void;
     onAdd?: () => void;
-    onAddRelated?: (part: ApPartVO) => void;
+    onAddRelated?: (parentPartId: number) => void;
     onDeleteParts?: (parts: Array<ApPartVO>) => void;
     editMode?: boolean;
     globalEntity: boolean;

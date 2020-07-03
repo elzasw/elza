@@ -26,7 +26,7 @@ type Props = {
     onSetPreferred?: (part: ApPartVO) => void;
     onDelete?: (part: ApPartVO) => void;
     onEdit?: (part: ApPartVO) => void;
-    onAddRelated?: (part: ApPartVO) => void;
+    onAddRelated?: (parentPartId: number) => void;
     editMode?: boolean;
     singlePart: boolean;
     globalEntity: boolean;
@@ -172,7 +172,7 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
                 {onAddRelated && <Icon
                     className={'mr-2 cursor-pointer'}
                     glyph={'fa-plus'}
-                    onClick={() => onAddRelated(part)}
+                    onClick={() => onAddRelated(part.id)}
                 />}
                 {showValidationError()}
             </Col>
