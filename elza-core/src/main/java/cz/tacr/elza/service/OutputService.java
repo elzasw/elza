@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrOutputRestrictionScope;
 import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
@@ -1446,17 +1447,37 @@ public class OutputService {
         outputRepository.save(output);
     }
 
-    public void addRestrictedScope(Integer outputId, Integer scopeId) {
+    public ArrOutputRestrictionScopeVO addRestrictedScope(Integer outputId, Integer scopeId) {
+        Assert.notNull(scopeId, "Identifikátor třídy musí být vyplněna");
+        Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
         ArrOutput output = outputRepository.findByOutputId(outputId);
+        if (output == null) {
+            throw new ObjectNotFoundException("Nebyl nalezen výstup s ID=" + outputId, OutputCode.OUTPUT_NOT_EXISTS).set("id", outputId);
+        }
+
         ApScope scope = scopeRepository.findOne(scopeId);
+        if (scope == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena oblast s ID=" + scopeId, BaseCode.PROPERTY_NOT_EXIST).set("id", scopeId);
+        }
 
         ArrOutputRestrictionScope restrictionScope = new ArrOutputRestrictionScope();
         restrictionScope.setOutput(output);
         restrictionScope.setScope(scope);
         outputRestrictionScopeRepository.save(restrictionScope);
+        return createArrOutputRestrictionScopeVO(restrictionScope);
+    }
+
+    private ArrOutputRestrictionScopeVO createArrOutputRestrictionScopeVO(ArrOutputRestrictionScope restrictionScope) {
+        ArrOutputRestrictionScopeVO outputRestrictionScopeVO = new ArrOutputRestrictionScopeVO();
+        outputRestrictionScopeVO.setId(restrictionScope.getRestrictionId());
+        outputRestrictionScopeVO.setOutputId(restrictionScope.getOutput() != null ? restrictionScope.getOutput().getOutputId() : null);
+        outputRestrictionScopeVO.setScopeId(restrictionScope.getScope() != null ? restrictionScope.getScope().getScopeId() : null);
+        return outputRestrictionScopeVO;
     }
 
     public void deleteRestrictedScope(Integer outputId, Integer scopeId) {
+        Assert.notNull(scopeId, "Identifikátor třídy musí být vyplněna");
+        Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
         outputRestrictionScopeRepository.deleteByOutputAndScope(outputId, scopeId);
     }
 
