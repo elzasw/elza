@@ -70,7 +70,7 @@ public class StructuredObjectServiceImpl implements StructuredObjectService {
             structObjService.deleteStructObj(structObj);
         } catch (Exception e)
         {
-            logger.error("Failed to delete structured object: {}", e.getMessage());
+            logger.error("Failed to delete structured object: {}", e.getMessage(), e);
             throw prepareDeleteException("Failed to delete structured object.", deleteStructuredObj, e);
         }
     }
@@ -157,7 +157,7 @@ public class StructuredObjectServiceImpl implements StructuredObjectService {
 
             structObjService.updateStructObj(change, structObj, items);
         } catch (Exception e) {
-            logger.error("Failed to update structured object: {}", e.getMessage());
+            logger.error("Failed to update structured object: {}", e.getMessage(), e);
             throw prepareUpdateException("Failed to update structured object.", updateStructuredObject, e);
         }
 
