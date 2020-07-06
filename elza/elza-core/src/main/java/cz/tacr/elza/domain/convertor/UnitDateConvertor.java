@@ -702,6 +702,32 @@ public class UnitDateConvertor {
         return input.contains(DEFAULT_INTERVAL_DELIMITER) || input.contains(ESTIMATE_INTERVAL_DELIMITER);
     }
 
+    public static <T extends IUnitdate> T convertIsoToUnitDate(final String input, final T unitDate) {
+        if (tryParseDate(FORMATTER_ISO, input)) {
+            unitDate.setValueFrom(input);
+            unitDate.setValueFromEstimated(false);
+            unitDate.setValueTo(input);
+            unitDate.setValueToEstimated(true);
+        } else {
+            int isoLength = 19;
+            if (input.startsWith(BC_ISO)) {
+                isoLength++;
+            }
+            String from = input.substring(0, isoLength);
+            String to = input.substring(isoLength + 1);
+
+            if (!tryParseDate(FORMATTER_ISO, from) && !tryParseDate(FORMATTER_ISO, to)) {
+                throw new IllegalStateException("Neplatný interval: " + input);
+            }
+
+            unitDate.setValueFrom(from);
+            unitDate.setValueFromEstimated(false);
+            unitDate.setValueTo(to);
+            unitDate.setValueToEstimated(false);
+        }
+        return unitDate;
+    }
+
     /**
      * Pomocná třída pro reprezentaci jednoho výrazu.
      */

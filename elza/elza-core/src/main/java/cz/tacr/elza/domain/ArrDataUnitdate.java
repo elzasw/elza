@@ -26,6 +26,9 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataUnitdate extends ArrData implements IUnitdate {
 
+    public static final String NORMALIZED_FROM = "normalizedFrom";
+    public static final String NORMALIZED_TO = "normalizedTo";
+
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrCalendarType.class)
     @JoinColumn(name = "calendarTypeId", nullable = false)

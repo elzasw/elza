@@ -4,6 +4,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import java.util.List;
 
 /**
  * Part je popisem části přístupového bodu nebo jména. Part je tvořen prvky popisu. Part má svůj vnitřní stav,
@@ -20,6 +21,7 @@ public class ApPart {
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
     public static final String PARENT_PART = "parentPart";
     public static final String VALUE = "value";
+    public static final String ITEMS = "items";
 
     @Id
     @GeneratedValue
@@ -68,6 +70,9 @@ public class ApPart {
 
     @Column(nullable = false, updatable = false, insertable = false)
     private Integer accessPointId;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "part")
+    private List<ApItem> items;
 
     public Integer getPartId() {
         return partId;
