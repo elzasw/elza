@@ -13,6 +13,8 @@ import java.net.URI;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataUriRef extends ArrData {
 
+    public static final String DESCRIPTION = "description";
+
     @Basic
     @Column(name="schema", nullable = false, length = 50)
     private String schema;

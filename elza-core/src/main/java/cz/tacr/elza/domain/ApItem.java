@@ -16,6 +16,7 @@ import javax.persistence.*;
 public class ApItem implements IntItem{
 
     public static final String PART_ID = "partId";
+    public static final String PART = "part";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
     public static final String FIELD_DATA = "data";
 

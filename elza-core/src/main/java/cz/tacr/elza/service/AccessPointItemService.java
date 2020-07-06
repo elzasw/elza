@@ -793,4 +793,25 @@ public class AccessPointItemService {
         return itemRepository.findItemsByAccessPointIdAndItemTypesAndPartTypeCode(accessPointId, itemTypes, partTypeCode);
     }
 
+    public static void normalize(ArrDataUnitdate aeDataUnitdate) {
+
+        CalendarType calendarType = CalendarType.GREGORIAN;
+
+        String valueFrom = aeDataUnitdate.getValueFrom();
+        if (valueFrom == null) {
+            aeDataUnitdate.setNormalizedFrom(Long.MIN_VALUE);
+        } else {
+            LocalDateTime fromDate = LocalDateTime.parse(valueFrom.trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            aeDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, fromDate));
+        }
+
+        String valueTo = aeDataUnitdate.getValueTo();
+        if (valueTo == null) {
+            aeDataUnitdate.setNormalizedTo(Long.MAX_VALUE);
+        } else {
+            LocalDateTime toDate = LocalDateTime.parse(valueTo.trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            aeDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(calendarType, toDate));
+        }
+    }
+
 }
