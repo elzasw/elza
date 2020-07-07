@@ -1,14 +1,13 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
-import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.*;
-import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.EntityManager;
-import java.net.URI;
 
 public class ArrItemUriRefVO extends ArrItemVO {
+
+    private Integer nodeId;
 
     private String value;
 
@@ -22,6 +21,14 @@ public class ArrItemUriRefVO extends ArrItemVO {
         super(item);
         this.value = value;
         this.description = description;
+    }
+
+    public Integer getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(final Integer nodeId) {
+        this.nodeId = nodeId;
     }
 
     public String getValue() {

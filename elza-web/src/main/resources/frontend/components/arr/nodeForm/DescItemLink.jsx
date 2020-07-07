@@ -79,7 +79,7 @@ class DescItemString extends AbstractReactComponent<Props> {
         const {descItem} = this.props;
         if (descItem.value.startsWith(ELZA_SCHEME_NODE)){
             if (descItem.nodeId) {
-                const uuid = descItem.value.replace(ELZA_SCHEME_NODE + "://");
+                const uuid = descItem.value.replace(ELZA_SCHEME_NODE + "://", "");
                 this.props.dispatch(routerNavigate(`/node/${uuid}`))
             }
         } else {
