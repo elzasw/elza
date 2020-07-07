@@ -653,6 +653,7 @@ public class ConfigMapperConfiguration {
                         uriRefVO.setValue(uriRef.getValue());
                         uriRefVO.setDescription(uriRef.getDescription());
                         uriRefVO.setRefTemplateId(uriRef.getRefTemplate() != null ? uriRef.getRefTemplate().getRefTemplateId() : null);
+                        uriRefVO.setNodeId(uriRef.getNodeId());
                     }
 
                     @Override
