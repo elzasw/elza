@@ -85,6 +85,7 @@ class ArrRefMappingTypeForm extends React.Component<Props> {
                                                         field={ItemSpecField}
                                                         label={i18n('arr.refTemplates.mapping.fromItemSpecId')}
                                                         itemTypeId={fromItemTypeId}
+                                                        useIdAsValue
                                                     />
                                                 </Col>
                                                 <Col>
@@ -93,6 +94,7 @@ class ArrRefMappingTypeForm extends React.Component<Props> {
                                                         field={ItemSpecField}
                                                         label={i18n('arr.refTemplates.mapping.toItemSpecId')}
                                                         itemTypeId={toItemTypeId}
+                                                        useIdAsValue
                                                     />
                                                 </Col>
                                                 <Col xs={'auto'} className={'align-items-end d-flex'}>
