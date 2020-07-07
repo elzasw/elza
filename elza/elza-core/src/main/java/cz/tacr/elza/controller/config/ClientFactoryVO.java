@@ -535,7 +535,8 @@ public class ClientFactoryVO {
             itemVO.setUndefined(true);
         }
 
-        BeanUtils.copyProperties(item, itemVO);
+        // ignorujeme nodeId, protože přepisuje nodeId z ArrItemUriRefVO
+        BeanUtils.copyProperties(item, itemVO, "nodeId");
         itemVO.setId(item.getItemId());
         itemVO.setReadOnly(item.getReadOnly());
 
