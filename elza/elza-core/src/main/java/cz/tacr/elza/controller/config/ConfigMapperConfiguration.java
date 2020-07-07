@@ -916,6 +916,7 @@ public class ConfigMapperConfiguration {
                         super.mapAtoB(uriRef, uriRefVO, context);
                         uriRefVO.setValue(uriRef.getValue());
                         uriRefVO.setDescription(uriRef.getDescription());
+                        uriRefVO.setNodeId(uriRef.getNodeId());
                     }
 
                     @Override
