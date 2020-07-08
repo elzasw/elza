@@ -291,7 +291,7 @@ class SubNodeForm extends AbstractReactComponent {
         const {subNodeForm: {formData}} = this.props;
         const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
         const types = this.getFlatDescItemTypes(true);
-        const indexUnused = this.state.unusedItemTypeInitIds.indexOf(descItemType.id);
+        const indexUnused = (this.state.unusedItemTypeInitIds!=null)?this.state.unusedItemTypeInitIds.indexOf(descItemType.id):-1;
         if (indexUnused !== -1) {
             const unusedItemTypeIds = this.state.unusedItemTypeIds;
             this.setState({

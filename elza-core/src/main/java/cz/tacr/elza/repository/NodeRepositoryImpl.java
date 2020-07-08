@@ -1,6 +1,5 @@
 package cz.tacr.elza.repository;
 
-import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -17,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -34,6 +34,7 @@ import org.hibernate.CacheMode;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
+import org.hibernate.search.engine.ProjectionConstants;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
@@ -138,21 +139,16 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         List<ArrDescItemInfo> itemList = findNodeIdsByValidDescItems(null, query, ctx);
 
-        // mapa (fundId -> nodeIdList -> itemCount)
-        Map<Integer, Map<Integer, Long>> map = itemList.stream().collect(groupingBy(i -> i.getFundId(), groupingBy(i -> i.getNodeId(), counting())));
-
-        List<ArrFundToNodeList> result = map.entrySet().stream().map(entry -> {
-
-            // nodeId list serazeny podle relevance tzn. podle poctu nalezenych itemu
-            List<Integer> nodeIdList = entry.getValue().entrySet().stream()
-                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                    .map(integerLongEntry -> integerLongEntry.getKey())
-                    .collect(toList());
-
-            return new ArrFundToNodeList(entry.getKey(), nodeIdList);
-
+        // mapa ( fundId -> nodeId )
+        Map<Integer, Set<Integer>> fundNodeMap = itemList.stream().collect(groupingBy(
+                                                                                      ArrDescItemInfo::getFundId,
+                                                                                      Collectors.mapping(
+                                                                                                         ArrDescItemInfo::getNodeId,
+                                                                                                         toSet())));
+        List<ArrFundToNodeList> result = fundNodeMap.entrySet().stream().map(entry -> {
+            return new ArrFundToNodeList(entry.getKey(), entry.getValue().stream().collect(toList()));
         }).collect(toList());
-
+        
         return result;
     }
 
@@ -594,12 +590,17 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
                 // .must(validDescItemInVersionQuery)
                 .createQuery();
 
-        FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(ArrDescItem.FIELD_ITEM_ID, ArrDescItem.FIELD_NODE_ID, ArrDescItem.FIELD_FUND_ID);
+        FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(
+                                                                                   ArrDescItem.FIELD_ITEM_ID,
+                                                                                   ArrDescItem.FIELD_NODE_ID,
+                                                                                   ArrDescItem.FIELD_FUND_ID,
+                                                                                   ProjectionConstants.SCORE);
 
         List<Object[]> resultList = fullTextQuery.getResultList();
 
         return resultList.stream()
-                .map(row -> new ArrDescItemInfo((Integer) row[0], (Integer) row[1], (Integer) row[2]))
+                .map(row -> new ArrDescItemInfo((Integer) row[0], (Integer) row[1], (Integer) row[2],
+                        (Float) row[3]))
                 .collect(toList());
     }
 
@@ -814,6 +815,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         private final Integer itemId;
         private final Integer nodeId;
         private final Integer fundId;
+        private final Float score;
 
         public Integer getItemId() {
             return itemId;
@@ -828,10 +830,18 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
             return fundId;
         }
 
-        public ArrDescItemInfo(Integer itemId, Integer nodeId, Integer fundId) {
+        public Float getScore() {
+            return score;
+        }
+
+        public ArrDescItemInfo(final Integer itemId,
+                               final Integer nodeId,
+                               final Integer fundId,
+                               final Float score) {
             this.itemId = itemId;
             this.nodeId = nodeId;
             this.fundId = fundId;
+            this.score = score;
         }
     }
 }

@@ -997,7 +997,7 @@ var messages = {
     "party.detail.name.new": "Nové jméno",
     "party.detail.name.update": "Úprava jména",
     "party.detail.name.delete": "Opravdu chcete ostranit toto jméno?",
-    "party.detail.name.setPrefferedNameAlert": "Opravdu chcete nastavit nové hlavní jméno osoby?",
+    "party.detail.name.setPrefferedNameAlert": "Opravdu chcete nastavit nové preferované jméno osoby?",
     "party.detail.note": "Poznámka",
     "party.detail.history": "Dějiny",
     "party.detail.sources": "Zdroje Informací",

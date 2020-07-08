@@ -231,7 +231,8 @@ class ArrDaoPage extends ArrParentPage {
                 area={types.FUND_TREE_AREA_DAOS_LEFT}
                 {...fund.fundTreeDaosLeft}
             />
-            {/*fund.fundTreeDaosLeft.selectedId !== null &&*/ <ArrDaos
+            {/*fund.fundTreeDaosLeft.selectedId !== null &&*/}
+            <ArrDaos
                 type="NODE"
                 unassigned={false}
                 selectedDaoId={this.state.selectedDaoLeft ? this.state.selectedDaoLeft.id : null}
@@ -240,56 +241,101 @@ class ArrDaoPage extends ArrParentPage {
                 readMode={readMode}
                 nodeId={fund.fundTreeDaosLeft.selectedId ? fund.fundTreeDaosLeft.selectedId : null}
                 onSelect={(item, daoFileId) => { this.setState({selectedDaoLeft: item, selectedDaoLeftFileId: daoFileId}) }}
-            />}
+            />
         </div>
     };
 
+    isDaoType = (type) => {
+        const {selectedDaoLeft} = this.state;
+        return selectedDaoLeft && selectedDaoLeft.daoType === type;
+    }
+
+    renderCenterButtons = (readMode) => {
+        const {selectedDaoLeft} = this.state;
+        const fund = this.getActiveFund(this.props);
+
+        let canLink = selectedDaoLeft 
+            && fund.fundTreeDaosRight.selectedId !== null 
+            && !readMode;
+
+        if(this.isDaoType("LEVEL")){
+            return (
+                <Button 
+                    onClick={this.handleLink} 
+                    disabled={!canLink}
+                >
+                    <Icon 
+                        glyph="ez-move-under"
+                    />
+                    <div>
+                        {i18n('arr.daos.createUnderAndLink')}
+                    </div>
+                </Button>
+            );
+        } else {
+            return [
+                <Button 
+                    key="0"
+                    onClick={this.handleLink} 
+                    disabled={!canLink}
+                >
+                    <Icon 
+                        glyph="fa-thumb-tack"
+                    />
+                    <div>
+                        {i18n('arr.daos.link')}
+                    </div>
+                </Button>,
+                <Button 
+                    key="1"
+                    onClick={this.handleCreateUnderAndLink} 
+                    disabled={!canLink}
+                >
+                    <Icon 
+                        glyph="ez-move-under"
+                    />
+                    <div>
+                        {i18n('arr.daos.createUnderAndLink')}
+                    </div>
+                </Button>
+            ]
+        }
+    }
+
+    renderSelectedTab = (readMode) => {
+        const {selectedTab} = this.state;
+        switch (selectedTab) {
+            case 0:
+                return this.renderUnassignedPackages(readMode);
+            case 1:
+                return this.renderPackages(readMode);
+            case 2:
+                return this.renderLeftTree(readMode);
+            default:
+                return <React.Fragment/>;
+        }
+    }
+
     renderCenterPanel = (readMode, closed) => {
-        const {selectedDaoLeft, selectedTab} = this.state;
+        const {selectedTab} = this.state;
         const fund = this.getActiveFund(this.props);
 
         let rightHasSelection = fund.fundTreeDaosRight.selectedId != null;
         let active = rightHasSelection && !readMode && !fund.closed;
 
-        let tabs = [];
-        tabs.push({
+        let tabs = [{
             id: 0,
             key: 0,
             title: 'Nepřiřazené entity',
-            /*desc: 'zbývá 300'*/
-        });
-
-        tabs.push({
+        },{
             id: 1,
             key: 1,
             title: 'Balíčky'
-        });
-
-        tabs.push({
+        },{
             id: 2,
             key: 2,
             title: 'Archivní strom'
-        });
-
-        let content;
-        switch (selectedTab) {
-            case 0:
-                content = this.renderUnassignedPackages(readMode);
-                break;
-            case 1:
-                content = this.renderPackages(readMode);
-                break;
-            case 2:
-                content = this.renderLeftTree(readMode);
-                break;
-            default:
-                break;
-        }
-
-        let canLink;
-        if (selectedDaoLeft && fund.fundTreeDaosRight.selectedId !== null && !readMode) {
-            canLink = true;
-        }
+        }];
 
         return (
             <div className="daos-content-container">
@@ -297,13 +343,12 @@ class ArrDaoPage extends ArrParentPage {
                     <Tabs.Container ref='tabs' className='daos-tabs-container'>
                         <Tabs.Tabs items={tabs} activeItem={{id: selectedTab}} onSelect={this.handleTabSelect} />
                         <Tabs.Content>
-                            {content}
+                            {this.renderSelectedTab(readMode)}
                         </Tabs.Content>
                     </Tabs.Container>
                 </div>
                 <div key={2} className='actions-container'>
-                    <Button onClick={this.handleLink} disabled={!canLink}><Icon glyph="fa-thumb-tack"/><div>{i18n('arr.daos.link')}</div></Button>
-                    <Button onClick={this.handleCreateUnderAndLink} disabled={!canLink}><Icon glyph="ez-move-under"/><div>{i18n('arr.daos.createUnderAndLink')}</div></Button>
+                    {this.renderCenterButtons(readMode)}
                 </div>
                 <div key={3} className={"right-container"}>
                     <div className="tree-right-container">

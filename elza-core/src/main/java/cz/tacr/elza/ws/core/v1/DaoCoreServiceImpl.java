@@ -66,11 +66,6 @@ public class DaoCoreServiceImpl implements DaoService {
 
     private Logger logger = LoggerFactory.getLogger(DaoCoreServiceImpl.class);
 
-    /**
-     * Name of JSON object containing items and its values
-     */
-    public final static String ITEMS = "ITEMS";
-
     @Autowired
     private DaoPackageRepository daoPackageRepository;
 
@@ -226,14 +221,10 @@ public class DaoCoreServiceImpl implements DaoService {
     private ArrDaoPackage createArrDaoPackage(final DaoPackage daoPackage) {
         Validate.notNull(daoPackage, "DAO obal musí být vyplněn");
 
-        ArrFund fund = getArrFund(daoPackage.getFundIdentifier());
+        ArrFund fund = arrangementService.getFundByString(daoPackage.getFundIdentifier());
+
         ArrDigitalRepository repository = digitalRepositoryRepository.findOneByCode(daoPackage
                 .getRepositoryIdentifier());
-
-        if (fund == null) {
-            throw new ObjectNotFoundException("Nepodařilo se dohledat AS: " + daoPackage.getFundIdentifier(),
-                    ArrangementCode.FUND_NOT_FOUND).set("code/id", daoPackage.getFundIdentifier());
-        }
         if (repository == null) {
             throw new ObjectNotFoundException("Nepodařilo se dohledat digitalRepository: " + daoPackage
                     .getRepositoryIdentifier(), DigitizationCode.REPOSITORY_NOT_FOUND).set("code", daoPackage
@@ -275,14 +266,6 @@ public class DaoCoreServiceImpl implements DaoService {
         return arrDaoPackage;
     }
 
-    private ArrFund getArrFund(String fundIdentifier) {
-        ArrFund arrFund = fundRepository.findByInternalCode(fundIdentifier);
-        if (arrFund == null) {
-            Integer id = Integer.valueOf(fundIdentifier);
-            arrFund = fundRepository.findOne(id);
-        }
-        return arrFund;
-    }
 
     private void createDaos(Daoset daoset, ArrDaoPackage arrDaoPackage) {
 

@@ -28,6 +28,7 @@ import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.*;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
+import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.importnodes.ImportFromFund;
 import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
@@ -361,13 +362,15 @@ public class ArrangementController {
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDao dao = daoRepository.getOneCheckExist(daoId);
         final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
-
+        
         ArrDaoLink daoLink;
         // specializace dle typu DAO
         switch (dao.getDaoType()) {
         case LEVEL:
+            DesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
             ArrLevel level = fundLevelService.addNewLevel(fundVersion, node, node,
-                                                          AddLevelDirection.CHILD, null, null);
+                                                          AddLevelDirection.CHILD, null, null,
+                                                          descItemProvider);
             daoLink = daoService.createOrFindDaoLink(fundVersion, dao, level.getNode());
             break;
         case ATTACHMENT:
@@ -434,8 +437,20 @@ public class ArrangementController {
 
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDaoLink daoLink = daoLinkRepository.getOneCheckExist(daoLinkId);
+        final ArrDao dao = daoLink.getDao();
 
-        final ArrDaoLink deleteDaoLink = daoService.deleteDaoLink(fundVersion, daoLink);
+        switch (dao.getDaoType()) {
+        case LEVEL:
+            // odstraneni urovne
+            ArrNode deleteNode = daoLink.getNode();
+            fundLevelService.deleteLevel(fundVersion, deleteNode, null);
+            break;
+        case ATTACHMENT:
+            daoService.deleteDaoLink(fundVersion, daoLink);
+            break;
+        default:
+            throw new SystemException("Unrecognized dao type");
+        }
     }
 
     /**
@@ -1589,7 +1604,7 @@ public class ArrangementController {
 
         ArrLevel newLevel = moveLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
                 addLevelParam.getDirection(), addLevelParam.getScenarioName(),
-                descItemCopyTypes);
+                                                         descItemCopyTypes, null);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
             UpdateDescItemsParam params = new UpdateDescItemsParam(

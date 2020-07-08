@@ -8,12 +8,11 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.restassured.RestAssured;
 
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.ArrangementController;
+import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
 import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
@@ -23,12 +22,9 @@ import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.ws.core.v1.DaoCoreServiceImpl;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.ws.core.v1.DaoService;
-import cz.tacr.elza.ws.core.v1.items.ItemString;
-import cz.tacr.elza.ws.core.v1.items.Items;
-import cz.tacr.elza.ws.types.v1.Attribute;
-import cz.tacr.elza.ws.types.v1.Attributes;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoImport;
 import cz.tacr.elza.ws.types.v1.DaoLinks;
@@ -45,6 +41,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     static final String FUND_NAME = "TestFund";
     static final String FUND_CODE = "TestFundCode";
     static final String PACKAGE_ID1 = "PackageId1";
+    static final String TEXT_VALUE_XY = "value xy";
 
     private ObjectFactory objFactory = new ObjectFactory();
 
@@ -60,7 +57,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     }
 
     @Test
-    public void importTest() throws JsonProcessingException {
+    public void importTest() {
         createDigitalRepo();
 
         String address = RestAssured.baseURI + ":" + RestAssured.port + "/services"
@@ -102,13 +99,37 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         ArrDaoLinkVO linkVo = createDaoLink(fundVersion.getId(), daoVo.getId(), rootNode.getId());
         assertNotNull(linkVo);
         assertNotNull(linkVo.getId());
+        Integer newNodeId = linkVo.getTreeNodeClient().getId();
+        assertNotNull(linkVo);
+
+        // check form data - if extracted from dao
+        DescFormDataNewVO formData = getNodeFormData(newNodeId, fundVersion.getId());
+        assertNotNull(formData);
+        List<ArrItemVO> descItems = formData.getDescItems();
+        assertTrue(descItems.size() == 1);
+        ArrItemVO descItem = descItems.get(0);
+        assertTrue(descItem.getReadOnly());
+        assertTrue(descItem instanceof ArrItemTextVO);
+        ArrItemTextVO descItemTextVO = (ArrItemTextVO) descItem;
+        assertTrue(descItemTextVO.getValue().equals(TEXT_VALUE_XY));
+
+        // ověření napojeni - neexistence volnych dao
+        List<ArrDaoVO> daosConnected = findDaos(fundVersion.getId());
+        assertTrue(daosConnected.size() == 0);
 
         // disconnect
         deleteDaoLink(fundVersion.getId(), linkVo.getId());
+
+        // ověření vztahu
+        List<ArrDaoVO> daosConnected2 = findDaos(fundVersion.getId());
+        assertTrue(daosConnected2.size() == 1);
+        ArrDaoVO daoConnected2 = daosConnected2.get(0);
+        ArrDaoLinkVO daoLinkVo2 = daoConnected2.getDaoLink();
+        assertTrue(daoLinkVo2 == null);
     }
 
     private DaoPackage createDaoPackage(String fundCode, String digitRepoCode, String packageId, DaoType daoType,
-                                        String label) throws JsonProcessingException {
+                                        String label) {
         DaoPackage daoPackage = objFactory.createDaoPackage();
         daoPackage.setFundIdentifier(fundCode);
         daoPackage.setRepositoryIdentifier(digitRepoCode);
@@ -118,23 +139,15 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         dao.setDaoType(daoType);
         dao.setIdentifier(packageId);
         dao.setLabel(label);
-        Attributes attrs = objFactory.createAttributes();
-        List<Attribute> attrList = attrs.getAttribute();
-        Attribute attr = objFactory.createAttribute();
 
-        Items items = new Items();
-        ItemString its = new ItemString();
-        its.setItemType("SRD_TITLE");
-        its.setValue("value xy");
+        cz.tacr.elza.ws.types.v1.Items items = objFactory.createItems();
+        cz.tacr.elza.ws.types.v1.ItemString its = objFactory.createItemString();
+        its.setType("SRD_TITLE");
+        its.setValue(TEXT_VALUE_XY);
         its.setReadOnly(true);
-        items.getItems().add(its);
-        String itemValues = new ObjectMapper().writeValueAsString(items);
+        items.getStrOrLongOrEnm().add(its);
 
-        attr.setName(DaoCoreServiceImpl.ITEMS);
-        attr.setValue(itemValues);
-        attrList.add(attr);
-
-        dao.setAttributes(attrs);
+        dao.setItems(items);
         daoset.getDao().add(dao);
         daoPackage.setDaos(daoset);
         return daoPackage;
