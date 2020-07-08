@@ -1,10 +1,12 @@
 package cz.tacr.elza.ws.core.v1;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +18,16 @@ import cz.tacr.elza.domain.ParParty;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.ws.types.v1.ErrorDescription;
 import cz.tacr.elza.ws.types.v1.Permission;
 import cz.tacr.elza.ws.types.v1.PermissionsForUser;
+import cz.tacr.elza.ws.types.v1.SetUserState;
 import cz.tacr.elza.ws.types.v1.User;
 
 @Component
@@ -42,11 +47,31 @@ public class UserServiceImpl implements UserService {
     @Autowired
     PartyService partyService;
 
+    @Autowired
+    PermissionRepository permissionRepository;
+
     @Override
     @Transactional
-    public void removeUser(String removeUser) throws CoreServiceException {
-        //userService.re
-
+    public void setUserState(SetUserState setUserState) throws CoreServiceException {
+        try {
+            UsrUser user = userService.findByUsername(setUserState.getUsername());
+            Validate.notNull(user, "User not found: %s", setUserState.getUsername());
+            boolean nextState;
+            switch (setUserState.getState()) {
+            case ACTIVE:
+                nextState = true;
+                break;
+            case INACTIVE:
+                nextState = false;
+                break;
+            default:
+                throw new IllegalStateException("Unexpected state: " + setUserState.getState());
+            }
+            user = userService.changeActive(user, nextState);
+        } catch (Exception e) {
+            logger.error("Failed to remove user: {}", e.toString(), e);
+            throw prepareException("Failed to remove user", e);
+        }
     }
 
     @Override
@@ -55,6 +80,8 @@ public class UserServiceImpl implements UserService {
         try {
             // Find person
             String srcPersonId = createUser.getPersonId();
+            Validate.notNull(srcPersonId, "personId is null");
+
             ApAccessPoint ap;
             if (srcPersonId.length() == 36) {
                 ap = accessPointService.getAccessPointByUuid(srcPersonId);
@@ -73,7 +100,7 @@ public class UserServiceImpl implements UserService {
                 addPermissions(user, createUser.getPermList().getPerm());
             }
         } catch (Exception e) {
-            logger.error("Failed to create user: {}", e.getMessage(), e);
+            logger.error("Failed to create user: {}", e.toString(), e);
             throw prepareException("Failed to create user", e);
         }
 
@@ -146,14 +173,74 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void addPermissions(PermissionsForUser addPermissions) throws CoreServiceException {
-        // TODO Auto-generated method stub
+        try {
+            List<Permission> permList = addPermissions.getPermList().getPerm();
+            List<UsrPermission> permissions = permList.stream().map(p -> preparePermission(p)).collect(Collectors
+                    .toList());
+
+            UsrUser user = userService.findByUsername(addPermissions.getUsername());
+            Validate.notNull(user, "User not found: %s", addPermissions.getUsername());
+            
+            // prevent duplicated permissions
+            List<UsrPermission> dbPerms = permissionRepository.findByUserOrderByPermissionIdAsc(user);            
+            for (UsrPermission srcPerm : permissions) {
+                for (UsrPermission dbPerm : dbPerms) {
+                    // check if permission found
+                    if (srcPerm.isSamePermission(dbPerm)) {
+                        throw new BusinessException("Permission already exists", BaseCode.PROPERTY_IS_INVALID)
+                                .set("permission", srcPerm.getPermission())
+                                .set("fundId", srcPerm.getFundId())
+                                .set("nodeId", srcPerm.getNodeId())
+                                .set("scopeId", srcPerm.getScopeId())
+                                .set("issueListId", srcPerm.getIssueListId());
+                    }
+                }
+            }
+
+            userService.addUserPermission(user, permissions, true);
+        } catch (Exception e) {
+            logger.error("Failed to add permissions: {}", e.toString(), e);
+            throw prepareException("Failed to add permissions", e);
+        }
 
     }
 
     @Override
     @Transactional
     public void removePermissions(PermissionsForUser removePermissions) throws CoreServiceException {
-        // TODO Auto-generated method stub
+        try {
+            List<Permission> permList = removePermissions.getPermList().getPerm();
+            List<UsrPermission> permissions = permList.stream().map(p -> preparePermission(p)).collect(Collectors
+                    .toList());
+
+            UsrUser user = userService.findByUsername(removePermissions.getUsername());
+            Validate.notNull(user, "User not found: %s", removePermissions.getUsername());
+
+            List<UsrPermission> dbPerms = permissionRepository.findByUserOrderByPermissionIdAsc(user);
+
+            List<UsrPermission> removePermList = new ArrayList<>(permissions.size());
+            // prepare dbPerms to be deleted
+            outer: for (UsrPermission srcPerm : permissions) {
+                for (UsrPermission dbPerm : dbPerms) {
+                    // check if permission found
+                    if (srcPerm.isSamePermission(dbPerm)) {
+                        removePermList.add(dbPerm);
+                        continue outer;
+                    }
+                }
+                throw new BusinessException("Permission not found", BaseCode.PROPERTY_NOT_EXIST)
+                        .set("permission", srcPerm.getPermission())
+                        .set("fundId", srcPerm.getFundId())
+                        .set("nodeId", srcPerm.getNodeId())
+                        .set("scopeId", srcPerm.getScopeId())
+                        .set("issueListId", srcPerm.getIssueListId());
+            }
+
+            userService.deleteUserPermission(user, removePermList);
+        } catch (Exception e) {
+            logger.error("Failed to remove permissions: {}", e.toString(), e);
+            throw prepareException("Failed to remove permissions", e);
+        }
 
     }
 

@@ -8,8 +8,8 @@
 	<wsdl:message name="TransferRequestRevokedMsg">
 		<wsdl:part name="requestRevoked" element="eat:transferRequestRevoked"/>
 	</wsdl:message>
-	<wsdl:message name="RemoveUserResponse">
-		<wsdl:documentation>Odpověď na odstranění uživatele</wsdl:documentation>
+	<wsdl:message name="SetUserStateResponse">
+		<wsdl:documentation>Odpověď na změnu stavu uživatele</wsdl:documentation>
 	</wsdl:message>
 	<wsdl:message name="TransferRequestFinishedResponse"/>
 	<wsdl:message name="DestructionRequestFinishedMsg">
@@ -57,8 +57,9 @@
 	<wsdl:message name="ExportRequestMsg">
 		<wsdl:part name="request" element="eat:exportRequest"/>
 	</wsdl:message>
-	<wsdl:message name="RemoveUserMsg">
-		<wsdl:part name="removeUser" element="eat:removeUser"/>
+	<wsdl:message name="SetUserStateMsg">
+		<wsdl:documentation>Změna stavu uživatele</wsdl:documentation>
+		<wsdl:part name="setUserState" element="eat:setUserState"/>
 	</wsdl:message>
 	<wsdl:message name="DeleteFundMsg">
 		<wsdl:part name="fundDelete" element="eat:fundDelete"/>
@@ -97,6 +98,14 @@
 	<wsdl:message name="CreateStructuredObjectResponse">
 		<wsdl:part name="createdStructuredObject" element="eat:structuredObjectCreated"/>
 	</wsdl:message>
+	<wsdl:message name="GetDidResponse">
+		<wsdl:documentation>Description of material/level of description</wsdl:documentation>
+		<wsdl:part name="did" element="eat:did"/>
+	</wsdl:message>
+	<wsdl:message name="UpdateFundResponse"/>
+	<wsdl:message name="CreateUserResponse">
+		<wsdl:documentation>Prázdná odpověď v případě úspěšného založení uživatele.</wsdl:documentation>
+	</wsdl:message>
 	<wsdl:message name="CreateStructuredObjectFailed">
 		<wsdl:part name="createStructuredObjecError" element="eat:createStructuredObjectFailed"/>
 	</wsdl:message>
@@ -126,15 +135,11 @@
 		<wsdl:documentation>Message to create new user</wsdl:documentation>
 		<wsdl:part name="createUser" element="eat:createUser"/>
 	</wsdl:message>
+	<wsdl:message name="ImportRequestMsg">
+		<wsdl:part name="request" element="eat:importRequest"/>
+	</wsdl:message>
 	<wsdl:message name="DigitizationRequestRevokedResponse"/>
-	<wsdl:message name="GetDidResponse">
-		<wsdl:documentation>Description of material/level of description</wsdl:documentation>
-		<wsdl:part name="did" element="eat:did"/>
-	</wsdl:message>
-	<wsdl:message name="UpdateFundResponse"/>
-	<wsdl:message name="CreateUserResponse">
-		<wsdl:documentation>Prázdná odpověď v případě úspěšného založení uživatele.</wsdl:documentation>
-	</wsdl:message>
+	<wsdl:message name="ImportRequestResponse"/>
 	<wsdl:portType name="DaoDigitizationService">
 		<wsdl:documentation>Digitization service has two methods for notification about result of digitization request. For each request exactly one of these methods have to be called.</wsdl:documentation>
 		<wsdl:operation name="DigitizationRequestFinished">
@@ -209,11 +214,11 @@
 			<wsdl:output name="removePermissionsResponse" message="tns:RemovePermissionsResponse"/>
 			<wsdl:fault name="removePermissionsException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
-		<wsdl:operation name="RemoveUser">
-			<wsdl:documentation>Remove user</wsdl:documentation>
-			<wsdl:input name="removeUserRequest" message="tns:RemoveUserMsg"/>
-			<wsdl:output name="removeUserResponse" message="tns:RemoveUserResponse"/>
-			<wsdl:fault name="removeUserException" message="tns:CoreServiceException"/>
+		<wsdl:operation name="SetUserState">
+			<wsdl:documentation>Set user state</wsdl:documentation>
+			<wsdl:input name="setUserStateRequest" message="tns:SetUserStateMsg"/>
+			<wsdl:output name="setUserStateResponse" message="tns:SetUserStateResponse"/>
+			<wsdl:fault name="setUserStateException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:portType name="DaoService">
@@ -285,6 +290,14 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 			<wsdl:input name="exportRequestMsg" message="tns:ExportRequestMsg"/>
 			<wsdl:output name="exportRequestResponse" message="tns:ExportRequestResponse"/>
 			<wsdl:fault name="exportRequestException" message="tns:ExportRequestException"/>
+		</wsdl:operation>
+	</wsdl:portType>
+	<wsdl:portType name="ImportService">
+		<wsdl:operation name="ImportData">
+			<wsdl:documentation>Import data</wsdl:documentation>
+			<wsdl:input name="importRequestMsg" message="tns:ImportRequestMsg"/>
+			<wsdl:output name="importRequestResponse" message="tns:ImportRequestResponse"/>
+			<wsdl:fault name="importException" message="tns:CoreServiceException"/>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:binding name="StructuredObjectServiceBinding" type="tns:StructuredObjectService">
@@ -585,17 +598,33 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 				<soap:fault name="removePermissionsException" use="literal"/>
 			</wsdl:fault>
 		</wsdl:operation>
-		<wsdl:operation name="RemoveUser">
-			<wsdl:documentation>Remove user</wsdl:documentation>
-			<soap:operation soapAction="http://elza/users/removeUser" style="document"/>
-			<wsdl:input name="removeUserRequest">
+		<wsdl:operation name="SetUserState">
+			<wsdl:documentation>Set user state</wsdl:documentation>
+			<soap:operation soapAction="http://elza/users/setUserState" style="document"/>
+			<wsdl:input name="setUserStateRequest">
 				<soap:body use="literal"/>
 			</wsdl:input>
-			<wsdl:output name="removeUserResponse">
+			<wsdl:output name="setUserStateResponse">
 				<soap:body use="literal"/>
 			</wsdl:output>
-			<wsdl:fault name="removeUserException">
-				<soap:fault name="removeUserException" use="literal"/>
+			<wsdl:fault name="setUserStateException">
+				<soap:fault name="setUserStateException" use="literal"/>
+			</wsdl:fault>
+		</wsdl:operation>
+	</wsdl:binding>
+	<wsdl:binding name="ImportServiceBinding" type="tns:ImportService">
+		<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+		<wsdl:operation name="ImportData">
+			<wsdl:documentation>Import data</wsdl:documentation>
+			<soap:operation soapAction="http://www.sampleAction.com" style="document"/>
+			<wsdl:input name="importRequestMsg">
+				<soap:body use="literal"/>
+			</wsdl:input>
+			<wsdl:output name="importRequestResponse">
+				<soap:body use="literal"/>
+			</wsdl:output>
+			<wsdl:fault name="importException">
+				<soap:fault name="importException" use="literal"/>
 			</wsdl:fault>
 		</wsdl:operation>
 	</wsdl:binding>
@@ -620,6 +649,9 @@ Function will throw error if didIdentifier is not valid.</wsdl:documentation>
 		</wsdl:port>
 		<wsdl:port name="ExportService" binding="tns:ExportServiceBinding">
 			<soap:address location="http://elza.tacr.cz/ws/core/v1/export-service"/>
+		</wsdl:port>
+		<wsdl:port name="ImportService" binding="tns:ImportServiceBinding">
+			<soap:address location="http://elza.tacr.cz/ws/core/v1/import-service"/>
 		</wsdl:port>
 	</wsdl:service>
 </wsdl:definitions>
