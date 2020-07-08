@@ -54,5 +54,6 @@
     </grid-view>
     <structure-type-settings code="STRUCT_TYPE_ZP2015_PACKET">
       <ns7:property code="prefixSeparator"> </ns7:property>
+      <ns7:property code="postfixSeparator"> </ns7:property>
     </structure-type-settings>
 </settings>

@@ -9,9 +9,12 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemRecordRef;
 import cz.tacr.elza.print.item.ItemSpec;
+import cz.tacr.elza.print.item.convertors.OutputItemConvertor;
+import cz.tacr.elza.service.cache.RestoredNode;
 
 /**
  * Node with data
@@ -25,10 +28,17 @@ public class Node {
     private List<Record> nodeAPs;
 
     /**
+     * UUID of the node
+     */
+    private String uuid;
+
+    /**
      * Konstruktor s povinnými hodnotami
      *
-     * @param nodeId vazba na nodeId
-     * @param nodel vazba na output
+     * @param nodeId
+     *            vazba na nodeId
+     * @param nodel
+     *            vazba na output
      */
     public Node(NodeId nodeId) {
         this.nodeId = nodeId;
@@ -36,6 +46,10 @@ public class Node {
 
     public NodeId getNodeId() {
         return nodeId;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 
     /**
@@ -192,5 +206,17 @@ public class Node {
 
     void setNodeAPs(List<Record> nodeAPs) {
         this.nodeAPs = nodeAPs;
+    }
+
+    /**
+     * Init output node from node cache.
+     */
+    public void load(RestoredNode cachedNode, OutputItemConvertor conv) {
+        uuid = cachedNode.getUuid();
+        // set node items
+        List<ArrDescItem> descItems = cachedNode.getDescItems();
+        if (descItems != null) {
+            this.items = OutputModel.convert(descItems, conv);
+        }
     }
 }

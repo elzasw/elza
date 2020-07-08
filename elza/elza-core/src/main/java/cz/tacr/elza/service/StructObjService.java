@@ -129,8 +129,8 @@ public class StructObjService {
      * @return nalezené položky
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public List<ArrStructuredItem> findStructureItems(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structureData) {
-        return structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structureData);
+    public List<ArrStructuredItem> findStructureItems(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structureObject) {
+        return structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structureObject);
     }
 
     /**
@@ -156,13 +156,12 @@ public class StructObjService {
                                                final ArrChange change,
                                                final RulStructuredType structureType,
                                                final ArrStructuredObject.State state,
+                                               final String uuid,
                                                List<ArrStructuredItem> items) {
-        ArrStructuredObject structureData = new ArrStructuredObject();
-        structureData.setAssignable(true);
-        structureData.setCreateChange(change);
-        structureData.setFund(fund);
-        structureData.setStructuredType(structureType);
-        structureData.setState(state);
+        ArrStructuredObject structureData = new ArrStructuredObject.Builder(change, fund, structureType)
+                .setState(state)
+                .setUuid(uuid)
+                .build();
 
         ArrStructuredObject structObj = structObjRepository.save(structureData);
 
@@ -209,7 +208,7 @@ public class StructObjService {
                                                final RulStructuredType structureType,
                                                final ArrStructuredObject.State state) {
         ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA);
-        return createStructObj(fund, change, structureType, state, null);
+        return createStructObj(fund, change, structureType, state, null, null);
     }
 
     /**
@@ -229,12 +228,11 @@ public class StructObjService {
                                                               int count) {
         List<ArrStructuredObject> result = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
-            ArrStructuredObject structureData = new ArrStructuredObject();
-            structureData.setAssignable(true);
-            structureData.setCreateChange(change);
-            structureData.setFund(fund);
-            structureData.setStructuredType(structureType);
-            structureData.setState(state);
+
+            ArrStructuredObject structureData = new ArrStructuredObject.Builder(change, fund, structureType)
+                    .setState(state)
+                    .build();
+
             result.add(structureData);
         }
         return structObjRepository.save(result);
@@ -629,20 +627,49 @@ public class StructObjService {
         return structureData;
     }
 
+    public ArrStructuredObject getExistingStructObjByUUID(String uuid) {
+        ArrStructuredObject structureData = structObjRepository.findActiveByUuidOneFetch(uuid);
+        if (structureData == null) {
+            throw new ObjectNotFoundException("Strukturovaná data neexistují: " + uuid, BaseCode.ID_NOT_EXIST).setId(
+                                                                                                                     uuid);
+        }
+        return structureData;
+    }
+
     /**
      * Vrátí strukt. data podle identifikátorů včetně načtených návazných entit.
+     * 
+     * Funkce zachovává pořadí vracených objektů.
      *
-     * @param structureDataIds identifikátory hodnoty strukt. datového typu
-     * @return entity
+     * @param structureDataIds
+     *            identifikátory hodnoty strukt. datového typu
+     * @return entity strukturované typy ve stejném pořadí jako byl požadavek
      */
     public List<ArrStructuredObject> getStructObjByIds(final List<Integer> structureDataIds) {
         List<List<Integer>> idsParts = Lists.partition(structureDataIds, HibernateConfiguration.MAX_IN_SIZE);
-        List<ArrStructuredObject> structureDataList = new ArrayList<>();
+
+        final Map<Integer, ArrStructuredObject> soMap = new HashMap<>();
         for (List<Integer> idsPart : idsParts) {
-            structureDataList.addAll(structObjRepository.findByIdsFetch(idsPart));
+            List<ArrStructuredObject> objs = structObjRepository.findByIdsFetch(idsPart);
+            objs.forEach(so -> soMap.put(so.getStructuredObjectId(), so));
         }
-        if (structureDataList.size() != structureDataIds.size()) {
-            throw new ObjectNotFoundException("Nenalezeny všechny rozšíření", BaseCode.ID_NOT_EXIST).setId(structureDataIds);
+        // final sort
+        List<ArrStructuredObject> structureDataList = new ArrayList<>();
+        List<Integer> notFoundItems = null;
+        for (Integer srcId : structureDataIds) {
+            ArrStructuredObject so = soMap.get(srcId);
+            if (so == null) {
+                if (notFoundItems == null) {
+                    notFoundItems = new ArrayList<>();
+                }
+                notFoundItems.add(srcId);
+            } else {
+                structureDataList.add(so);
+            }
+        }
+        if (notFoundItems != null) {
+            throw new ObjectNotFoundException("Nenalezeny všechny strukturované typye", BaseCode.ID_NOT_EXIST)
+                    .setId(notFoundItems);
         }
         return structureDataList;
     }
@@ -1269,6 +1296,17 @@ public class StructObjService {
             changeIdStructuredObjectMap.computeIfAbsent(changeId, k -> new HashMap<>()).put(structuredObject.getStructuredObjectId(), structuredObject);
         }
         return changeIdStructuredObjectMap;
+    }
+
+    public ArrStructuredObject getExistingStructObj(String value) {
+        if (value.length() == 36) {
+            return getExistingStructObjByUUID(value);
+        } else {
+            int id = Integer.parseInt(value);
+            ArrStructuredObject so = getStructObjById(id);
+            Validate.isTrue(so.getDeleteChangeId() == null, "Structured object is deleted, id: %i", id);
+            return so;
+        }
     }
 
 }

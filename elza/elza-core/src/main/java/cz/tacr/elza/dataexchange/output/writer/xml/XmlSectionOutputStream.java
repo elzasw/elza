@@ -43,7 +43,6 @@ import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.schema.v2.AccessPointRefs;
 import cz.tacr.elza.schema.v2.DescriptionItem;
 import cz.tacr.elza.schema.v2.DescriptionItemAPRef;
 import cz.tacr.elza.schema.v2.DescriptionItemFileRef;
@@ -151,7 +150,9 @@ class XmlSectionOutputStream implements SectionOutputStream {
             byte buff[] = new byte[65536];
             while (encoder.available() > 0) {
                 int numRead = encoder.read(buff);
-
+                if (numRead < 0) {
+                    break;
+                }
                 String str = new String(buff, 0, numRead, Charset.forName("utf-8"));
                 sw.writeCharacters(str);
             }
