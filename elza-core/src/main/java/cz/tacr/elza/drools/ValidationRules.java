@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.core.data.ItemType;
 import org.kie.api.runtime.StatelessKieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,7 +151,13 @@ public class ValidationRules extends Rules {
 					throw new SystemException("Neni vyplnen kod chybejiciho typu.", BaseCode.PROPERTY_NOT_EXIST)
 					        .set("property", "typeCode");
 				}
-				validationResult.setType(sdp.getItemTypeByCode(missingTypeCode).getEntity());
+				ItemType itemType = sdp.getItemTypeByCode(missingTypeCode);
+				if (itemType == null) {
+					throw new SystemException("Item type not found", BaseCode.INVALID_STATE)
+							.set("message", validationResult.getMessage())
+							.set("typeCode", validationResult.getTypeCode());
+				}
+				validationResult.setType(itemType.getEntity());
 				break;
 			case ERROR:
 				Integer descItemId = validationResult.getDescItemId();

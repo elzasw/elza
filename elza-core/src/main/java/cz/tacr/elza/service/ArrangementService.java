@@ -1496,7 +1496,7 @@ public class ArrangementService {
             // přidávání nodů je nutné dělat ve vlastní transakci (podle updateInfoForNodesAfterCommit)
             logger.info("Přidání " + entry.getValue().size() + " uzlů do fronty pro zvalidování");
             if(onStart) {
-                asyncRequestService.enqueue(version, entry.getValue(), AsyncTypeEnum.NODE, null);
+                asyncRequestService.enqueue(version, entry.getValue());
             }
 
         }

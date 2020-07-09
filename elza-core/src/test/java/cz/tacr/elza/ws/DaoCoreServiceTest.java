@@ -117,6 +117,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         List<ArrDaoVO> daosConnected = findDaos(fundVersion.getId());
         assertTrue(daosConnected.size() == 0);
 
+        helperTestService.waitForWorkers();
         // disconnect
         deleteDaoLink(fundVersion.getId(), linkVo.getId());
 

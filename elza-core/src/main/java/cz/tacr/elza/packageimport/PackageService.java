@@ -31,6 +31,7 @@ import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import cz.tacr.elza.service.AsyncRequestService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -517,6 +518,9 @@ public class PackageService {
     @Autowired
     private IndexWorkProcessor indexWorkProcessor;
 
+    @Autowired
+    private AsyncRequestService asyncRequestService;
+
     /**
      * Provede import balíčku.
      *
@@ -602,11 +606,16 @@ public class PackageService {
         // spustit indexovani
         indexWorkProcessor.resumeIndexing();
 
+        asyncRequestService.start();
+
         logger.info("All async threads started.");
     }
 
     public void stopAsyncTasks() {
         logger.debug("Stopping async threads...");
+
+        asyncRequestService.stop();
+
         // zastavit indexovani
         indexWorkProcessor.suspendIndexing();
 

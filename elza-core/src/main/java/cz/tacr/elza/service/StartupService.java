@@ -66,6 +66,8 @@ public class StartupService implements SmartLifecycle {
 
     private final ApplicationContext applicationContext;
 
+    private final AsyncRequestService asyncRequestService;
+
     private boolean running;
 
     @Autowired
@@ -85,7 +87,8 @@ public class StartupService implements SmartLifecycle {
                           final NodeConformityRepository nodeConformityRepository,
                           final VisiblePolicyRepository visiblePolicyRepository,
                           IndexWorkProcessor indexWorkProcessor,
-                          final ApplicationContext applicationContext) {
+                          final ApplicationContext applicationContext,
+                          final AsyncRequestService asyncRequestService) {
         this.nodeRepository = nodeRepository;
         this.arrangementService = arrangementService;
         this.bulkActionRunRepository = bulkActionRunRepository;
@@ -103,6 +106,7 @@ public class StartupService implements SmartLifecycle {
         this.visiblePolicyRepository = visiblePolicyRepository;
         this.indexWorkProcessor = indexWorkProcessor;
         this.applicationContext = applicationContext;
+        this.asyncRequestService = asyncRequestService;
     }
 
     @Autowired
@@ -127,10 +131,10 @@ public class StartupService implements SmartLifecycle {
     @Override
     public void stop() {
         logger.info("Elza stopping ...");
+        asyncRequestService.stop();
         indexWorkProcessor.stopIndexing();
         structureDataService.stopGenerator();
         outputServiceInternal.stop();
-        // TODO: stop async processes
         running = false;
     }
 
@@ -171,6 +175,7 @@ public class StartupService implements SmartLifecycle {
         syncNodeCacheService();
         structureDataService.startGenerator();
         indexWorkProcessor.startIndexing();
+        asyncRequestService.start();
         arrangementService.startNodeValidation(true);
         runQueuedRequests();
         runQueuedAccessPoints();
