@@ -77,8 +77,6 @@ public abstract class AbstractTest {
 
     @After
     public void tearDown() {
-        // try to stop all services which were active during this test run
-        helperTestService.waitForWorkers();
         startupService.stop();
     }
 

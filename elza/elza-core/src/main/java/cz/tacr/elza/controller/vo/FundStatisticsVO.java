@@ -2,14 +2,15 @@ package cz.tacr.elza.controller.vo;
 
 public class FundStatisticsVO implements Comparable<FundStatisticsVO> {
 
-    private ArrFundVO fund;
+    private final ArrFundVO fund;
 
     private int requestCount;
 
-    private Integer fundVersionId;
+    private final Integer fundVersionId;
 
-    public FundStatisticsVO(Integer fundVersionId) {
+    public FundStatisticsVO(Integer fundVersionId, final ArrFundVO fund) {
         this.fundVersionId = fundVersionId;
+        this.fund = fund;
         this.requestCount = 0;
     }
 
@@ -17,16 +18,12 @@ public class FundStatisticsVO implements Comparable<FundStatisticsVO> {
         return fund;
     }
 
-    public void setFund(ArrFundVO fund) {
-        this.fund = fund;
-    }
-
     public int getRequestCount() {
         return requestCount;
     }
 
-    public void setRequestCount(int requestCount) {
-        this.requestCount = requestCount;
+    public void addCount() {
+        this.requestCount++;
     }
 
     public Integer getFundVersionId() {

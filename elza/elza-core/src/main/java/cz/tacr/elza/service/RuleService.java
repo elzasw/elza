@@ -108,15 +108,7 @@ public class RuleService {
 
     public synchronized ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId, final Long asyncRequestId) {
         ArrLevel level = levelRepository.findOne(faLevelId);
-        if(canUpdateConformity(asyncRequestId, level.getNode().getNodeId())) {
-            return setConformityInfo(faLevelId,fundVersionId);
-        } else {
-            return null;
-        }
-    }
-
-    public boolean canUpdateConformity(final Long asyncRequestId, final Integer nodeId) {
-        return asyncRequestService.canUpdateConformity(asyncRequestId, nodeId);
+        return setConformityInfo(faLevelId, fundVersionId);
     }
 
     /**
@@ -388,7 +380,7 @@ public class RuleService {
         nodes.add(rootNode);
         logger.info("Conformity Info All");
         if (!nodes.isEmpty()) {
-            asyncRequestService.enqueue(fundVersion,nodes, AsyncTypeEnum.NODE, null);
+            asyncRequestService.enqueue(fundVersion, nodes);
         }
     }
 
@@ -468,7 +460,7 @@ public class RuleService {
                     .findByNodesAndFundVersion(deleteNodes, version);
 
             deleteConformityInfo(deleteInfos);
-            asyncRequestService.enqueue(version,deleteNodes.stream().collect(Collectors.toList()), AsyncTypeEnum.NODE,validationPriority);
+            asyncRequestService.enqueue(version, deleteNodes.stream().collect(Collectors.toList()), validationPriority);
         }
     }
 
