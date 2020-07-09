@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +29,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.ws.types.v1.ErrorDescription;
 import cz.tacr.elza.ws.types.v1.FundIdentifiers;
 import cz.tacr.elza.ws.types.v1.ItemEnum;
 import cz.tacr.elza.ws.types.v1.ItemLong;
@@ -34,6 +37,8 @@ import cz.tacr.elza.ws.types.v1.ItemString;
 
 @Component
 public class WSHelper {
+    final private static Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
     @Autowired
     ArrangementService arrangementService;
 
@@ -206,5 +211,22 @@ public class WSHelper {
             item.setPosition(position);
         });
 
+    }
+
+    static public CoreServiceException prepareException(String msg, Exception e) {
+
+        return prepareException(msg, (e != null) ? e.toString() : null, e);
+    }
+
+    static public CoreServiceException prepareException(String msg, String detail, Exception e) {
+        ErrorDescription ed = prepareErrorDescription(msg, detail);
+        return new CoreServiceException(msg, ed, e);
+    }
+
+    public static ErrorDescription prepareErrorDescription(String msg, String detail) {
+        ErrorDescription ed = new ErrorDescription();
+        ed.setUserMessage(msg);
+        ed.setDetail(detail);
+        return ed;
     }
 }

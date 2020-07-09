@@ -24,7 +24,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.PartyService;
-import cz.tacr.elza.ws.types.v1.ErrorDescription;
 import cz.tacr.elza.ws.types.v1.Permission;
 import cz.tacr.elza.ws.types.v1.PermissionsForUser;
 import cz.tacr.elza.ws.types.v1.SetUserState;
@@ -70,7 +69,7 @@ public class UserServiceImpl implements UserService {
             user = userService.changeActive(user, nextState);
         } catch (Exception e) {
             logger.error("Failed to remove user: {}", e.toString(), e);
-            throw prepareException("Failed to remove user", e);
+            throw WSHelper.prepareException("Failed to remove user", e);
         }
     }
 
@@ -101,7 +100,7 @@ public class UserServiceImpl implements UserService {
             }
         } catch (Exception e) {
             logger.error("Failed to create user: {}", e.toString(), e);
-            throw prepareException("Failed to create user", e);
+            throw WSHelper.prepareException("Failed to create user", e);
         }
 
     }
@@ -163,13 +162,6 @@ public class UserServiceImpl implements UserService {
         return up;
     }
 
-    private CoreServiceException prepareException(String msg, Exception e) {
-        ErrorDescription ed = new ErrorDescription();
-        ed.setUserMessage(msg);
-        ed.setDetail(e.getMessage());
-        return new CoreServiceException(msg, ed, e);
-    }
-
     @Override
     @Transactional
     public void addPermissions(PermissionsForUser addPermissions) throws CoreServiceException {
@@ -200,7 +192,7 @@ public class UserServiceImpl implements UserService {
             userService.addUserPermission(user, permissions, true);
         } catch (Exception e) {
             logger.error("Failed to add permissions: {}", e.toString(), e);
-            throw prepareException("Failed to add permissions", e);
+            throw WSHelper.prepareException("Failed to add permissions", e);
         }
 
     }
@@ -239,7 +231,7 @@ public class UserServiceImpl implements UserService {
             userService.deleteUserPermission(user, removePermList);
         } catch (Exception e) {
             logger.error("Failed to remove permissions: {}", e.toString(), e);
-            throw prepareException("Failed to remove permissions", e);
+            throw WSHelper.prepareException("Failed to remove permissions", e);
         }
 
     }
