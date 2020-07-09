@@ -19,6 +19,7 @@ import cz.tacr.elza.ws.core.v1.DaoDigitizationServiceImpl;
 import cz.tacr.elza.ws.core.v1.DaoRequestsServiceImpl;
 import cz.tacr.elza.ws.core.v1.ExportServiceImpl;
 import cz.tacr.elza.ws.core.v1.FundServiceImpl;
+import cz.tacr.elza.ws.core.v1.ImportServiceImpl;
 import cz.tacr.elza.ws.core.v1.StructuredObjectServiceImpl;
 import cz.tacr.elza.ws.core.v1.UserServiceImpl;
 
@@ -38,6 +39,8 @@ public class WebServiceConfig {
 
     public final static String DAO_CORE_SERVICE_URL = "/DaoCoreService";
     public final static String STRUCT_OBJ_SERVICE_URL = "/StructuredObjectService";
+    public final static String EXPORT_SERVICE_URL = "/ExportService";
+    public final static String IMPORT_SERVICE_URL = "/ImportService";
     public final static String FUND_SERVICE_URL = "/FundService";
     public final static String USER_SERVICE_URL = "/UserService";
 
@@ -52,6 +55,9 @@ public class WebServiceConfig {
 
     @Autowired
     private ExportServiceImpl exportService;
+
+    @Autowired
+    private ImportServiceImpl importService;
 
     @Autowired
     private FundServiceImpl fundService;
@@ -95,7 +101,20 @@ public class WebServiceConfig {
     @Bean
     public Endpoint entitiesServiceEndpoint() {
         EndpointImpl endpoint = new EndpointImpl(bus, exportService);
-        endpoint.publish("/ExportService");
+        endpoint.publish(EXPORT_SERVICE_URL);
+
+        Binding binding = endpoint.getBinding();
+        List<Handler> hc = binding.getHandlerChain();
+        hc.add(new CustomSOAPHandler());
+        binding.setHandlerChain(hc);
+
+        return endpoint;
+    }
+
+    @Bean
+    public Endpoint importServiceEndpoint() {
+        EndpointImpl endpoint = new EndpointImpl(bus, importService);
+        endpoint.publish(IMPORT_SERVICE_URL);
 
         Binding binding = endpoint.getBinding();
         List<Handler> hc = binding.getHandlerChain();
