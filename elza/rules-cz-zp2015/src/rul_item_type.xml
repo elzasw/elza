@@ -238,6 +238,46 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZP2015_RESTRICTION_ACCESS_SHARED" data-type="STRUCTURED" structure-type="ZP2015_ACCESS_COND_TYPE">
+        <name>Omezení přístupnosti (sdílené)</name>
+        <shortcut>Typové omezení přístupnosti</shortcut>
+        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_RESTRICTION_ACCESS_INLINE" data-type="STRUCTURED" structure-type="ZP2015_ACCESS_COND">
+        <name>Omezení přístupnosti (lokální)</name>
+        <shortcut>Omezení přístupnosti</shortcut>
+        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_RESTRICTION_ACCESS_NAME" data-type="TEXT">
+        <name>Název omezení přístupnosti</name>
+        <shortcut>Název omezení</shortcut>
+        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_RESTRICTED_ACCESS_TYPE" data-type="ENUM">
+        <name>Omezení zveřejnění</name>
+        <shortcut>Přístupnost</shortcut>
+        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="ZP2015_RESTRICTION_ACCESS_DATE" data-type="DATE">
+        <name>Rozhodné datum lhůty omezení</name>
+        <shortcut>Rozhodné datum</shortcut>
+        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
     <item-type code="ZP2015_UNIT_COPY_RIGHTS" data-type="TEXT">
         <name>Možnost zveřejnění reprodukce jednotky popisu</name>
         <shortcut>Zveř. reprod.</shortcut>
@@ -875,5 +915,13 @@
             <item-aptype register-type="TERM_ABSTRACT"/>
             <item-aptype register-type="TERM_GENERAL"/>
         </item-aptypes>        
+    </item-type>
+    <item-type code="ZP2015_ITEM_LINK" data-type="URI_REF">
+        <name>Pevné spojení</name>
+        <shortcut>Spojeno s</shortcut>
+        <description>Pevné spojení s jinou jednotkou popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
     </item-type>
 </item-types>

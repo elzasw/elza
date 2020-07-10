@@ -2,6 +2,7 @@
 <settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types" xmlns:ns5="fund-issues">
     <allow-structure-types settings-type="STRUCTURE_TYPES" entity-type="RULE">
         <ns4:type code="ZP2015_PACKET"/>
+        <ns4:type code="ZP2015_ACCESS_COND_TYPE"/>
     </allow-structure-types>
     <fund-views settings-type="FUND_VIEW" entity-type="RULE">
         <ns2:default>
@@ -99,6 +100,9 @@
                 <type code="ZP2015_LEGALACT_REF" width="0"/>
                 <type code="ZP2015_AWARD_LEVEL" width="2"/>
                 <type code="ZP2015_AWARD_GROUP" width="1"/>
+                <type code="ZP2015_RESTRICTION_ACCESS_NAME" width="0"/>
+                <type code="ZP2015_RESTRICTED_ACCESS_TYPE" width="1"/>
+                <type code="ZP2015_RESTRICTION_ACCESS_DATE" width="1"/>
             </group>
             <group code="06_ZP2015_CH4">
                 <name>Společné prvky popisu</name>
@@ -116,6 +120,8 @@
                 <type code="ZP2015_FUTURE_UNITS" width="0"/>
                 <!-- 4.4.1 Podmínky přístupu, práva k jednotce popisu a její reprodukci -->
                 <type code="ZP2015_UNIT_ACCESS" width="0"/>
+                <type code="ZP2015_RESTRICTION_ACCESS_SHARED" width="2"/>
+                <type code="ZP2015_RESTRICTION_ACCESS_INLINE" width="2"/>
                 <!-- 4.4.2 Možnost zveřejnění informací o jednotce popisu -->
                 <type code="ZP2015_UNIT_INFO_RIGHTS" width="1"/>
                 <!-- 4.4.3 Možnost zveřejnění reprodukce jednotky popisu -->
@@ -179,6 +185,7 @@
                 <type code="ZP2015_INTERNAL_NOTE" width="0"/>
                 <type code="ZP2015_NOTE" width="0"/>
                 <type code="ZP2015_ATTACHMENT" width="2"/>
+                <type code="ZP2015_ITEM_LINK" width="0"/>
             </group>
         </ns3:default>
     </type-groups>
