@@ -76,7 +76,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 @Service
 public class StructObjService {
 
-    private final Logger logger = LoggerFactory.getLogger(StructObjService.class);
+    private final static Logger logger = LoggerFactory.getLogger(StructObjService.class);
     private final StructuredItemRepository structureItemRepository;
     private final StructuredTypeExtensionRepository structureExtensionRepository;
     private final StructuredObjectRepository structObjRepository;
@@ -1192,17 +1192,14 @@ public class StructObjService {
 
         revalidateStructureData(structureDataList);
 
-        notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
-                structureType.getCode(),
-                null,
-                structureDataIds,
-                null,
-                null));
-
-        Collection<Integer> nodeIds = arrangementInternalService.findNodesByStructuredObjectIds(structureDataIds).keySet();
-        if (!nodeIds.isEmpty()) {
-            notificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), nodeIds.toArray(new Integer[0])));
-        }
+        notifyAboutChange(fundVersion.getFundId(),
+                          new EventStructureDataChange(fundVersion.getFundId(),
+                                  structureType.getCode(),
+                                  null,
+                                  structureDataIds,
+                                  null,
+                                  null),
+                          structureDataIds);
     }
 
     /**
@@ -1307,6 +1304,49 @@ public class StructObjService {
             Validate.isTrue(so.getDeleteChangeId() == null, "Structured object is deleted, id: %i", id);
             return so;
         }
+    }
+
+    public void updateStructObj(ArrChange change, ArrStructuredObject structObj, List<ArrStructuredItem> items) {
+
+        // drop all old items
+        List<ArrStructuredItem> currItems = structureItemRepository
+                .findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
+        for (ArrStructuredItem structureItemDB : currItems) {
+            structureItemDB.setDeleteChange(change);
+            ArrStructuredItem save = structureItemRepository.save(structureItemDB);
+        }
+
+        // create new items
+        for (ArrStructuredItem newItem : items) {
+            createItem(newItem, structObj, newItem.getPosition(), change);
+        }
+
+        revalidateStructureData(Collections.singletonList(structObj));
+
+        List<Integer> structObjIds = Collections.singletonList(structObj.getStructuredObjectId());
+
+        notifyAboutChange(structObj.getFundId(),
+                          new EventStructureDataChange(structObj.getFundId(),
+                                  structObj.getStructuredType().getCode(),
+                                  null,
+                                  null,
+                                  structObjIds,
+                                  null),
+                          structObjIds);
+
+    }
+
+    private void notifyAboutChange(Integer fundId, EventStructureDataChange eventStructObjChange,
+                                   List<Integer> structObjIds) {
+        notificationService.publishEvent(eventStructObjChange);
+
+        Collection<Integer> nodeIds = arrangementInternalService.findNodesByStructuredObjectIds(structObjIds)
+                .keySet();
+        if (!nodeIds.isEmpty()) {
+            notificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundId,
+                    nodeIds.toArray(new Integer[0])));
+        }
+
     }
 
 }

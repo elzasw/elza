@@ -10,6 +10,7 @@ import cz.tacr.elza.ws.core.v1.CoreService;
 import cz.tacr.elza.ws.core.v1.DaoService;
 import cz.tacr.elza.ws.core.v1.FundService;
 import cz.tacr.elza.ws.core.v1.StructuredObjectService;
+import cz.tacr.elza.ws.core.v1.UserService;
 
 public class DaoServiceClientFactory {
     static Logger log = LoggerFactory.getLogger(DaoServiceClientFactory.class);
@@ -25,6 +26,12 @@ public class DaoServiceClientFactory {
     public static StructuredObjectService createStructuredObjectService(String address, String username,
                                                                         String password) {
         return createWsdlService(StructuredObjectService.class, address, CoreService.StructuredObjects, username,
+                                 password);
+    }
+
+    public static UserService createUserService(String address, String username,
+                                                            String password) {
+        return createWsdlService(UserService.class, address, CoreService.UserService, username,
                                  password);
     }
 
