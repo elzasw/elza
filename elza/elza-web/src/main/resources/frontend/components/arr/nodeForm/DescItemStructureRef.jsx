@@ -134,7 +134,12 @@ class DescItemStructureRef extends AbstractReactComponent<Props, ComponentState>
     }
 
     componentWillUnmount(): void {
-        const {anonymous, versionId, structureNodeForm: {id, state, subNodeForm}} = this.props;
+        const structureNodeForm = this.props;
+        if (!structureNodeForm) {
+            return;
+        }
+        const {anonymous, versionId} = this.props;
+        const {id, state, subNodeForm} = structureNodeForm;
         if (anonymous &&
             state === 'TEMP' &&
             subNodeForm.formData
@@ -149,8 +154,6 @@ class DescItemStructureRef extends AbstractReactComponent<Props, ComponentState>
                 ).length === 0
         ) {
             WebApi.deleteStructureData(versionId, id);
-        } else {
-            //this.props.onChange
         }
     }
 

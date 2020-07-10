@@ -849,7 +849,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                     }
                     if (i > 0) {
                         try {
-                            Thread.sleep(10);
+                            Thread.sleep(WAIT);
                         } catch (InterruptedException e) {
                             throw new IllegalStateException("Přerušení uspání vlákna", e);
                         }
