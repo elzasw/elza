@@ -583,11 +583,11 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             return this.type;
         }
 
-        private void deleteRequest(AsyncRequest request) {
+        protected void deleteRequest(AsyncRequest request) {
             deleteRequests(Collections.singletonList(request));
         }
 
-        private void deleteRequests(Collection<AsyncRequest> requests) {
+        protected void deleteRequests(Collection<AsyncRequest> requests) {
             tx(() -> {
                 for (AsyncRequest request : requests) {
                     logger.debug("Mazání requestu z DB: {}", request);
@@ -932,6 +932,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                 if (priorityAdding > priorityExists) {
                     // nově přidáváná položka má lepší prioritu; mažeme aktuální z fronty a vložíme novou
                     queue.remove(existAsyncRequest);
+                    deleteRequest(existAsyncRequest);
                     return false;
                 } else {
                     // nově přidáváná položka má horší prioritu, než je ve frontě; proto přeskakujeme
