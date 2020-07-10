@@ -33,14 +33,14 @@ public class UserServiceImplTest extends AbstractControllerTest {
     public void userServiceTest() {
         List<ParPartyVO> party = findParty(null, 0, 1, null, null);
         assertTrue(party.size() > 0);
-        Integer partyId = party.get(0).getId();
+        Integer apId = party.get(0).getAccessPoint().getId();
 
         String address = RestAssured.baseURI + ":" + RestAssured.port + "/services"
                 + WebServiceConfig.USER_SERVICE_URL;
         UserService userServiceClient = DaoServiceClientFactory.createUserService(address, "admin", "admin");
         User createUser = objectFactory.createUser();
         createUser.setUsername("a");
-        createUser.setPersonId(partyId.toString());
+        createUser.setPersonId(apId.toString());
         PermissionList createUserPerms = objectFactory.createPermissionList();
         Permission createUserPermReadAll = objectFactory.createPermission();
         createUserPermReadAll.setPermType(PermissionType.FUND_RD_ALL);
