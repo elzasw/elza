@@ -61,6 +61,7 @@
 			<xs:documentation>Update fund information</xs:documentation>
 		</xs:annotation>
 	</xs:element>
+	<xs:element name="importRequest" type="eat:ImportRequest"/>
 	<xs:element name="onDaoLinked" type="eat:OnDaoLinked"/>
 	<xs:element name="onDaoUnlinked" type="eat:OnDaoUnlinked"/>
 	<xs:element name="removePermissions" type="eat:PermissionsForUser">
@@ -68,7 +69,11 @@
 			<xs:documentation>Remove permissions</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="removeUser" type="eat:Username"/>
+	<xs:element name="setUserState" type="eat:SetUserState">
+		<xs:annotation>
+			<xs:documentation>Element to set user state</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="structuredObjectCreate" type="eat:StructuredObject"/>
 	<xs:element name="structuredObjectCreated" type="eat:StructuredObjectIdentifiers"/>
 	<xs:element name="structuredObjectDelete" type="eat:StructuredObjectIdentifiers">
@@ -152,6 +157,12 @@
 		</xs:annotation>
 		<xs:restriction base="xs:string">
 			<xs:maxLength value="65536"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="EntityConflictResolution">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="KEEP_MODIFIED"/>
+			<xs:enumeration value="UPDATE_MODIFIED"/>
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="Identifier">
@@ -271,6 +282,15 @@ Used to pass unrestricted attribute value.</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="xs:string">
 			<xs:maxLength value="250"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="UserState">
+		<xs:annotation>
+			<xs:documentation>User state</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ACTIVE"/>
+			<xs:enumeration value="INACTIVE"/>
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="Uuid">
@@ -652,6 +672,22 @@ Source: EAD3</xs:documentation>
 			<xs:element name="identifier" type="eat:Identifier" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="ImportDisposition">
+		<xs:annotation>
+			<xs:documentation>Dispositions for import</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="primaryScope" type="eat:String250" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="conflictResolution" type="eat:EntityConflictResolution" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ImportRequest">
+		<xs:sequence>
+			<xs:element name="requiredFormat" type="eat:String250" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="disposition" type="eat:ImportDisposition" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="binData" type="eat:BinaryData" xmime:expectedContentTypes="application/octet-stream" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="ItemEnum">
 		<xs:sequence/>
 		<xs:attributeGroup ref="eat:ItemAttrGroup"/>
@@ -757,6 +793,12 @@ Source: EAD3</xs:documentation>
 				<xs:documentation>identifier of the revoked request in the system where request was created</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="SetUserState">
+		<xs:sequence>
+			<xs:element name="username" type="eat:Username" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="state" type="eat:UserState" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="StructuredObject">
 		<xs:sequence>
