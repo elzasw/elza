@@ -77,21 +77,6 @@ public class AsyncRequest {
 
     @Override
     public String toString() {
-        AsyncTypeEnum type = getType();
-        int id;
-        switch (type) {
-            case BULK:
-                id = bulkActionId;
-                break;
-            case NODE:
-                id = nodeId;
-                break;
-            case OUTPUT:
-                id = outputId;
-                break;
-            default:
-                throw new NotImplementedException(type.toString());
-        }
-        return type + "(" + id + ") p=" + priority + ", fv=" + fundVersionId + ", reqId=" + requestId;
+        return getType() + "(" + getCurrentId() + ") p=" + priority + ", fv=" + fundVersionId + ", reqId=" + requestId;
     }
 }
