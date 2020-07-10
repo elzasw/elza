@@ -51,14 +51,14 @@ public class FundServiceImpl implements FundService {
 
         RulRuleSet ruleset = sdp.getRuleSetByCode(fundInfo.getRulesetCode());
         if (fundInfo.getInstitutionIdentifier() == null) {
-            ErrorDescription errorDesc = new ErrorDescription();
-            errorDesc.setUserMessage("Missing institution ID");
+            ErrorDescription errorDesc = WSHelper.prepareErrorDescription("Missing institution ID", null);
             throw new CreateFundException(errorDesc.getUserMessage(), errorDesc);
         }
         ParInstitution institution = instRepo.findByInternalCode(fundInfo.getInstitutionIdentifier());
         if (institution == null) {
-            ErrorDescription errorDesc = new ErrorDescription();
-            errorDesc.setUserMessage("Failed to find institution ID: " + fundInfo.getInstitutionIdentifier());
+            ErrorDescription errorDesc = WSHelper.prepareErrorDescription("Failed to find institution ID: "
+                    + fundInfo.getInstitutionIdentifier(),
+                                                                          null);
             throw new CreateFundException(errorDesc.getUserMessage(), errorDesc);
         }
         ArrFund fund = arrangementService.createFund(
