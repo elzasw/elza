@@ -18,8 +18,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import cz.tacr.elza.controller.vo.nodes.descitems.*;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -1458,6 +1456,10 @@ public class ClientFactoryVO {
         List<Integer> nodeIds = nodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
         outputExt.setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
         outputExt.setScopes(outputServiceInternal.getRestrictedScopes(output));
+        ApAccessPoint anonymizedAp = output.getAnonymizedAp();
+        if (anonymizedAp != null) {
+            outputExt.setAnonymizedAp(apFactory.createVO(anonymizedAp));
+        }
         return outputExt;
     }
 
