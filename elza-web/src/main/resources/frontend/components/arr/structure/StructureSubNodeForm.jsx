@@ -62,7 +62,7 @@ class StructureSubNodeForm extends AbstractReactComponent {
      * Zobrazení dialogu pro přidání atributu.
      */
     handleAddDescItemType = () => {
-        const {versionId} = this.props;
+        const {versionId, id} = this.props;
 
         const descItemTypes = this.descItemTypeItems();
 
