@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -36,5 +37,5 @@ public interface NodeOutputRepository extends JpaRepository<ArrNodeOutput, Integ
     void deleteByOutputFund(ArrFund fund);
 
     @Modifying
-    void deleteByNodeIdIn(List<Integer> nodeIds);
+    void deleteByNodeIdIn(Collection<Integer> nodeIds);
 }
