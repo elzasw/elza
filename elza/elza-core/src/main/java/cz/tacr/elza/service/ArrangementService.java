@@ -10,6 +10,7 @@ import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -1708,8 +1709,115 @@ public class ArrangementService {
         refTemplateMapTypeRepository.delete(refTemplateMapType);
     }
 
-    public void synchronizeNodes(Integer nodeId, Integer nodeVersion, Integer templateId, Boolean childrenNodes) {
+    public void synchronizeNodes(final Integer nodeId, final Integer nodeVersion, final Integer templateId, final Boolean childrenNodes) {
+        ArrNode node = getNode(nodeId);
+        if (node != null) {
+            List<ArrDescItem> nodeItems = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
+            if (CollectionUtils.isNotEmpty(nodeItems)) {
+                for (ArrDescItem descItem : nodeItems) {
+                    synchronizeNodes(descItem, nodeId, nodeVersion);
+                }
+            }
+            //TODO fantiš childrenNodes
+        }
+    }
 
+    public void synchronizeNodes(final ArrDescItem descItem, final Integer nodeId, final Integer nodeVersion) {
+        if (descItem.getData().getDataType().getCode().equals(DataType.URI_REF.getCode())) {
+            //TODO fantiš check template itemType
+            ArrDataUriRef dataUriRef = (ArrDataUriRef) descItem.getData();
+
+            if (dataUriRef.getRefTemplate() != null && dataUriRef.getArrNode() != null) {
+                ArrNode node = getNode(nodeId);
+                Map<Integer, List<ArrDescItem>> nodeItemMap = descItemRepository.findByNodeAndDeleteChangeIsNull(node).stream()
+                        .collect(Collectors.groupingBy(ArrItem::getItemTypeId));
+
+                ArrNode sourceNode = dataUriRef.getArrNode();
+                Map<Integer, List<ArrDescItem>> sourceNodeItemMap = descItemRepository.findByNodeAndDeleteChangeIsNull(sourceNode).stream()
+                        .collect(Collectors.groupingBy(ArrItem::getItemTypeId));
+
+                synchronizeNodes(node, nodeVersion, nodeItemMap, sourceNode, sourceNodeItemMap, dataUriRef.getRefTemplate());
+            }
+        }
+    }
+
+    private void synchronizeNodes(final ArrNode node,
+                                  final Integer nodeVersion,
+                                  final Map<Integer, List<ArrDescItem>> nodeItemMap,
+                                  final ArrNode sourceNode,
+                                  final Map<Integer, List<ArrDescItem>> sourceNodeItemMap,
+                                  final ArrRefTemplate refTemplate) {
+        List<ArrRefTemplateMapType> refTemplateMapTypes = refTemplateMapTypeRepository.findByRefTemplate(refTemplate);
+        Map<Integer, List<ArrRefTemplateMapSpec>> refTemplateMapSpecMap = refTemplateMapSpecRepository.findByRefTemplate(refTemplate).stream()
+                .collect(Collectors.groupingBy(s -> s.getRefTemplateMapType().getRefTemplateMapTypeId()));
+
+        if (CollectionUtils.isNotEmpty(refTemplateMapTypes)) {
+            for (ArrRefTemplateMapType refTemplateMapType : refTemplateMapTypes) {
+                checkMapTypesDataType(refTemplateMapType.getFormItemType(), refTemplateMapType.getToItemType(), refTemplate.getRefTemplateId());
+
+                List<ArrDescItem> sourceNodeItems = sourceNodeItemMap.getOrDefault(refTemplateMapType.getFormItemType().getItemTypeId(), new ArrayList<>());
+
+                if (CollectionUtils.isEmpty(sourceNodeItems) && refTemplateMapType.getFromParentLevel()) {
+                    sourceNodeItems = findDescItemsFromParentLevelByItemType(sourceNode, refTemplateMapType.getFormItemType());
+                }
+
+                if (CollectionUtils.isNotEmpty(sourceNodeItems)) {
+                    List<ArrDescItem> nodeItems = nodeItemMap.getOrDefault(refTemplateMapType.getToItemType().getItemTypeId(), new ArrayList<>());
+                    ArrChange change = createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
+
+                    if (CollectionUtils.isEmpty(nodeItems)) {
+                    } else if (sourceNodeItems.size() > 1 || nodeItems.size() > 1) {
+                        ArrFundVersion fundVersion = getOpenVersionByFundId(node.getFundId());
+                        descriptionItemService.deleteDescriptionItems(nodeItems, node, fundVersion, change, true);
+                    } else {
+                        ArrDescItem sourceItem = sourceNodeItems.get(0);
+                        ArrDescItem targetItem = nodeItems.get(0);
+                        ArrData oldData = targetItem.getData();
+                        ArrData newData = sourceItem.getData().makeCopy();
+                        targetItem.setData(newData);
+                    }
+                }
+            }
+        }
+    }
+
+    private List<ArrDescItem> findDescItemsFromParentLevelByItemType(ArrNode sourceNode, RulItemType formItemType) {
+        //TODO fantiš formParentLevel
+        return null;
+    }
+
+    private void checkMapTypesDataType(final RulItemType fromItemType, final RulItemType toItemType, final Integer templateId) {
+        DataType fromDataType = DataType.fromCode(fromItemType.getDataType().getCode());
+        DataType toDataType = DataType.fromCode(toItemType.getDataType().getCode());
+
+        if (fromDataType == null) {
+            throw new IllegalArgumentException("Neznámý kód datového typu " + fromItemType.getDataType().getCode() + " u item typu id " + fromItemType.getItemTypeId());
+        }
+
+        if (toDataType == null) {
+            throw new IllegalArgumentException("Neznámý kód datového typu " + toItemType.getDataType().getCode() + " u item typu id " + toItemType.getItemTypeId());
+        }
+
+        if (fromDataType != toDataType) {
+            boolean error = false;
+            switch (fromDataType) {
+                case UNITID:
+                case DATE:
+                case INT:
+                case DECIMAL:
+                case ENUM:
+                    error = (toDataType != DataType.STRING && toDataType != DataType.TEXT);
+                    break;
+                case STRING:
+                    error = toDataType != DataType.TEXT;
+                    break;
+            }
+
+            if (error) {
+                throw new IllegalArgumentException("Nekompatibilní datové typy " + fromDataType.getName() + "->" +
+                        toDataType.getName() + " pro synchronizaci přes šablonu id " + templateId);
+            }
+        }
     }
 
     public static class Holder<T> {
