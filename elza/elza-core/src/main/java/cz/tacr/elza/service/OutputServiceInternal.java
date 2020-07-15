@@ -10,6 +10,8 @@ import javax.transaction.Transactional.TxType;
 
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -94,6 +96,10 @@ public class OutputServiceInternal {
 
     private OutputRestrictionScopeRepository outputRestrictionScopeRepository;
 
+    private final ApStateRepository stateRepository;
+
+    private final PartyService partyService;
+
     @Autowired
     @Lazy
     private AsyncRequestService asyncRequestService;
@@ -117,7 +123,9 @@ public class OutputServiceInternal {
                                  ActionRepository actionRepository,
                                  BulkActionRunRepository bulkActionRunRepository,
                                  RevertingChangesService revertingChangesService,
-                                 OutputRestrictionScopeRepository outputRestrictionScopeRepository) {
+                                 OutputRestrictionScopeRepository outputRestrictionScopeRepository,
+                                 ApStateRepository stateRepository,
+                                 PartyService partyService) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
@@ -137,6 +145,8 @@ public class OutputServiceInternal {
         this.bulkActionRunRepository = bulkActionRunRepository;
         this.revertingChangesService = revertingChangesService;
         this.outputRestrictionScopeRepository = outputRestrictionScopeRepository;
+        this.stateRepository = stateRepository;
+        this.partyService = partyService;
     }
 
     /**
@@ -491,17 +501,97 @@ public class OutputServiceInternal {
         return OutputRequestStatus.OK;
     }
 
-    public List<ApScopeVO> getRestrictedScopes(ArrOutput output) {
+    public List<ApScopeVO> getRestrictedScopeVOs(ArrOutput output) {
         StaticDataProvider sdp = staticDataService.getData();
-        List<ArrOutputRestrictionScope> restrictionScopeList = outputRestrictionScopeRepository.findByOutput(output.getOutputId());
+        List<ApScope> scopeList = getRestrictedScopes(output);
 
         List<ApScopeVO> scopeVOList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(restrictionScopeList)) {
-            for (ArrOutputRestrictionScope restrictionScope : restrictionScopeList) {
-                scopeVOList.add(ApScopeVO.newInstance(restrictionScope.getScope(), sdp));
+        if (CollectionUtils.isNotEmpty(scopeList)) {
+            for (ApScope restrictionScope : scopeList) {
+                scopeVOList.add(ApScopeVO.newInstance(restrictionScope, sdp));
             }
         }
 
         return scopeVOList;
+    }
+
+    public List<ApScope> getRestrictedScopes(ArrOutput output) {
+        List<ArrOutputRestrictionScope> restrictionScopeList = outputRestrictionScopeRepository.findByOutput(output.getOutputId());
+
+        List<ApScope> scopeList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(restrictionScopeList)) {
+            for (ArrOutputRestrictionScope restrictionScope : restrictionScopeList) {
+                scopeList.add(restrictionScope.getScope());
+            }
+        }
+        return scopeList;
+    }
+
+    public List<ArrOutputItem> restrictItemsByScopes(ArrOutput output, List<ArrOutputItem> outputItems) {
+        List<ApScope> restrictedScopes = getRestrictedScopes(output);
+        List<ArrOutputItem> restrictedOutputItems = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(outputItems)) {
+            for (ArrOutputItem outputItem : outputItems) {
+                ArrData data = outputItem.getData();
+                if (data instanceof ArrDataRecordRef) {
+                    ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
+                    if (dataRecordRef.getRecord() != null) {
+                        ApAccessPoint accessPoint = dataRecordRef.getRecord();
+                        ApState state = stateRepository.findLastByAccessPoint(accessPoint);
+                        if (state == null) {
+                            throw new ObjectNotFoundException("Stav pro přístupový bod neexistuje", BaseCode.INVALID_STATE)
+                                    .set("accessPointId", accessPoint.getAccessPointId());
+                        }
+                        ApScope scope = state.getScope();
+                        if (isScopeRestricted(scope, restrictedScopes)) {
+                            if (output.getAnonymizedAp() != null) {
+                                dataRecordRef.setRecord(output.getAnonymizedAp());
+                                restrictedOutputItems.add(outputItem);
+                            }
+                        } else {
+                            restrictedOutputItems.add(outputItem);
+                        }
+                    }
+                } else if (data instanceof ArrDataPartyRef) {
+                   ArrDataPartyRef dataPartyRef = (ArrDataPartyRef) data;
+                   if (dataPartyRef.getParty() != null && dataPartyRef.getParty().getAccessPoint() != null) {
+                       ApAccessPoint accessPoint = dataPartyRef.getParty().getAccessPoint();
+                       ApState state = stateRepository.findLastByAccessPoint(accessPoint);
+                       if (state == null) {
+                           throw new ObjectNotFoundException("Stav pro přístupový bod neexistuje", BaseCode.INVALID_STATE)
+                                   .set("accessPointId", accessPoint.getAccessPointId());
+                       }
+                       ApScope scope = state.getScope();
+                       if (isScopeRestricted(scope, restrictedScopes)) {
+                           if (output.getAnonymizedAp() != null) {
+                               ParParty anonymizedParty = partyService.findParPartyByAccessPoint(output.getAnonymizedAp());
+                               if (anonymizedParty != null) {
+                                   dataPartyRef.setParty(anonymizedParty);
+                                   restrictedOutputItems.add(outputItem);
+                               }
+                           }
+                       } else {
+                           restrictedOutputItems.add(outputItem);
+                       }
+                   }
+                } else {
+                    restrictedOutputItems.add(outputItem);
+                }
+            }
+        }
+
+        return restrictedOutputItems;
+    }
+
+    private boolean isScopeRestricted(ApScope scope, List<ApScope> restrictedScopes) {
+        if (CollectionUtils.isNotEmpty(restrictedScopes)) {
+            for (ApScope restrictedScope : restrictedScopes) {
+                if (restrictedScope.getScopeId().equals(scope.getScopeId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
