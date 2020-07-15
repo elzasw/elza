@@ -3207,5 +3207,20 @@
         <name>stupeň</name>
         <description>stupeň</description>
         <shortcut>stupeň</shortcut>
-    </item-spec>    
+    </item-spec>
+    <item-spec code="ZP2015_ACCESS_STATUTORY_DEADLINE" item-type="ZP2015_RESTRICTED_ACCESS_TYPE">
+        <name>zákonná lhůta (archiválie mladší 30 let)</name>
+        <description>archiválie je mladší 30 let</description>
+        <shortcut>mladší než 30 let</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_ACCESS_PERSONAL_DATA" item-type="ZP2015_RESTRICTED_ACCESS_TYPE">
+        <name>osobní údaje - narození</name>
+        <description>osobní údaje se známým datem narození</description>
+        <shortcut>osobní údaje - narození</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_ACCESS_PERSONAL_DATA2" item-type="ZP2015_RESTRICTED_ACCESS_TYPE">
+        <name>osobní údaje - úmrtí</name>
+        <description>osobní údaje se známým datem úmrtí</description>
+        <shortcut>osobní údaje - úmrtí</shortcut>
+    </item-spec>
 </item-specs>
