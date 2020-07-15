@@ -26,7 +26,6 @@ class UpdateStructureDataForm extends AbstractReactComponent {
 
     componentWillReceiveProps(nextProps) {
         const {fundVersionId, id} = nextProps;
-        this.props.dispatch(structureNodeFormSelectId(id));
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
@@ -35,7 +34,7 @@ class UpdateStructureDataForm extends AbstractReactComponent {
 
         return <div>
             <Modal.Body>
-            {structureNodeForm.fetched ?
+            {structureNodeForm && structureNodeForm.fetched ?
                 <StructureSubNodeForm
                     id={id}
                     versionId={fundVersionId}
@@ -57,6 +56,6 @@ class UpdateStructureDataForm extends AbstractReactComponent {
 export default connect((state, props) => {
     const {structures} = state;
     return {
-        structureNodeForm: structures.stores.hasOwnProperty(props.id) ? structures.stores[props.id].structureNodeForm : null
+        structureNodeForm: structures.stores.hasOwnProperty(props.id) ? structures.stores[props.id] : null
     }
 })(UpdateStructureDataForm);
