@@ -2,4 +2,10 @@
     <structure-type code="ZP2015_PACKET" validValueFromVersion="162" >
         <name>Uložení</name>
     </structure-type>
+    <structure-type code="ZP2015_ACCESS_COND_TYPE" validValueFromVersion="162" >
+        <name>Druh omezení přístupnosti</name>
+    </structure-type>
+    <structure-type code="ZP2015_ACCESS_COND" validValueFromVersion="162" anonymous="true">
+        <name>Omezení přístupnosti</name>
+    </structure-type>
 </structure-types>
