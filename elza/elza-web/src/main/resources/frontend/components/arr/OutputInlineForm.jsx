@@ -13,7 +13,7 @@ import RegistryField from "../registry/RegistryField";
  */
 class OutputInlineForm extends AbstractReactComponent {
 
-    static fields = ['name', 'outputTypeId', 'internalCode', 'templateId', 'anonymizedApId'];
+    static fields = ['name', 'outputTypeId', 'internalCode', 'templateId', 'anonymizedAp'];
 
     /**
      * Validace formuláře.
@@ -55,7 +55,7 @@ class OutputInlineForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {name, internalCode, templateId, outputTypeId, anonymizedApId}, disabled, outputTypes, allTemplates} = this.props;
+        const {fields: {name, internalCode, templateId, outputTypeId, anonymizedAp}, disabled, outputTypes, allTemplates} = this.props;
 
         let outputType = false;
         if (outputTypes) {
@@ -81,10 +81,6 @@ class OutputInlineForm extends AbstractReactComponent {
                            disabled={disabled} {...name} {...decorateFormField(name, true)} />
                 <FormInput type="text" label={i18n('arr.output.internalCode')}
                            disabled={disabled} {...internalCode} {...decorateFormField(internalCode, true)} />
-                <div>
-                    <label className="control-label">{i18n("arr.output.title.anonymizedAp")}</label>
-                    <RegistryField {...anonymizedApId} useIdAsValue={true} disabled={disabled} />
-                </div>
                 <div className="row-layout">
                     <FormInput type="text" label={i18n('arr.output.outputType')} disabled value={outputType}/>
                     <FormInput componentClass="select" label={i18n('arr.output.template')}
@@ -92,6 +88,10 @@ class OutputInlineForm extends AbstractReactComponent {
                         <option key='-templateId'/>
                         {templates && templates.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
                     </FormInput>
+                </div>
+                <div>
+                    <label className="control-label">{i18n("arr.output.title.anonymizedAp")}</label>
+                    <RegistryField {...anonymizedAp} addEmpty={true} emptyTitle={i18n("arr.output.title.anonymizedAp.remove")} disabled={disabled} />
                 </div>
             </form>
         </div>;

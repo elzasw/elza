@@ -10,7 +10,6 @@ import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.*;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -2230,7 +2229,7 @@ public class ArrangementController {
         Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId(), param.getAnonymizedApId());
+        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId(), param.getAnonymizedAp());
     }
 
     /**
@@ -3350,7 +3349,7 @@ public class ArrangementController {
          */
         private Integer templateId;
 
-        private Integer anonymizedApId;
+        private ApAccessPointVO anonymizedAp;
 
         public String getName() {
             return name;
@@ -3384,12 +3383,12 @@ public class ArrangementController {
             this.templateId = templateId;
         }
 
-        public Integer getAnonymizedApId() {
-            return anonymizedApId;
+        public ApAccessPointVO getAnonymizedAp() {
+            return anonymizedAp;
         }
 
-        public void setAnonymizedApId(Integer anonymizedApId) {
-            this.anonymizedApId = anonymizedApId;
+        public void setAnonymizedAp(ApAccessPointVO anonymizedAp) {
+            this.anonymizedAp = anonymizedAp;
         }
     }
 
