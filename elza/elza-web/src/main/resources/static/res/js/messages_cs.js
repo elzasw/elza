@@ -1096,6 +1096,12 @@ var messages = {
     "ap.ext-search.section.relations": "Vztahy",
     "ap.ext-search.section.extends": "Rozšířený filtr",
 
+    "ap.ext-search.section.extends.title": "Přidat rozšířený filtr",
+    "ap.ext-search.section.extends.part": "Část popisu",
+    "ap.ext-search.section.extends.type": "Typ prvku popisu",
+    "ap.ext-search.section.extends.spec": "Specifikace",
+    "ap.ext-search.section.extends.value": "Hodnota",
+
     "ap.validation.title": "Výsledek validace archivní entity",
 
     "ap.form.ref.value": "Externí entita [{0}]",

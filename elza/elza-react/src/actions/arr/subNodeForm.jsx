@@ -276,9 +276,9 @@ export class ItemFormActions {
         // Nastavení správných typů u itemTypes - ze serveru chodí čísla místo enumů
         json.itemTypes &&
             json.itemTypes.forEach(itemType => {
-                itemType.type = ItemAvailabilityNumToEnumMap[itemType.type];
+                itemType.itemType = ItemAvailabilityNumToEnumMap[itemType.type];
                 itemType.specs.forEach(itemSpec => {
-                    itemSpec.type = ItemAvailabilityNumToEnumMap[itemSpec.type];
+                    itemSpec.itemType = ItemAvailabilityNumToEnumMap[itemSpec.type];
                 });
                 itemType.descItemSpecsMap = getMapFromList(itemType.specs);
             });

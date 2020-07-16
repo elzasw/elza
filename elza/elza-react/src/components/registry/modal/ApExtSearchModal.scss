@@ -78,6 +78,13 @@ $max-height: 600px;
         &.btn-link {
             border: none;
         }
+        &.btn-small {
+            padding: 0.25rem;
+            font-size: 10px;
+        }
+    }
+    .fr {
+        float: right;
     }
     .was-validated .form-control:invalid, .form-control.is-invalid {
         background-image: none;
@@ -86,5 +93,35 @@ $max-height: 600px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    .ext-filter {
+        .part {
+            font-weight: bolder;
+            display: block;
+        }
+        .item {
+            display: block;
+        }
+        .value {
+            display: block;
+        }
+        .spec {
+            display: block;
+        }
+        .remove {
+            align-self: center;
+        }
+    }
+    .rel-filter {
+        .item {
+            font-weight: bolder;
+            display: block;
+        }
+        .value {
+            display: block;
+        }
+        .remove {
+            align-self: center;
+        }
     }
 }

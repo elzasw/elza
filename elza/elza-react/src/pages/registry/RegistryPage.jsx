@@ -232,7 +232,7 @@ class RegistryPage extends AbstractReactComponent {
             modalDialogShow(
                 this,
                 i18n('ap.ext-search.title'),
-                <ApExtSearchModal type={TypeModal.SEARCH} initialValues={initialValues} extSystems={extSystems} />,
+                <ApExtSearchModal itemType={TypeModal.SEARCH} initialValues={initialValues} extSystems={extSystems} />,
                 'dialog-xl',
             ),
         );
@@ -282,7 +282,7 @@ class RegistryPage extends AbstractReactComponent {
                 i18n('ap.ext-search.title-connect'),
                 <ApExtSearchModal onConnected={() => {
                     dispatch(registryDetailFetchIfNeeded(id, true));
-                }} type={TypeModal.CONNECT} accessPointId={id} initialValues={initialValues} extSystems={filteredExtSystems} />,
+                }} itemType={TypeModal.CONNECT} accessPointId={id} initialValues={initialValues} extSystems={filteredExtSystems} />,
                 'dialog-xl',
             ),
         );

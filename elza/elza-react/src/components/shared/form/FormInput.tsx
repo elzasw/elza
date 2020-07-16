@@ -104,6 +104,23 @@ const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo(
                         {!inline && hasError && <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>}
                     </Form.Group>
                 );
+            case 'textarea':
+                return (
+                    <Form.Group>
+                        {label && <Form.Label>{label}</Form.Label>}
+                        <Form.Control
+                            ref={ref}
+                            as="textarea"
+                            value={value}
+                            isInvalid={hasError}
+                            {...otherProps}
+                            {...inlineProps}
+                        >
+                            {children}
+                        </Form.Control>
+                        {!inline && hasError && <Form.Control.Feedback type="invalid">{error}</Form.Control.Feedback>}
+                    </Form.Group>
+                );
             case 'autocomplete':
                 return (
                     <Form.Group>
