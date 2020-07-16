@@ -45,6 +45,7 @@ class NodePage extends AbstractReactComponent {
                 const fund = data.fund;
                 this.props.dispatch(fundsSelectFund(fund.id));
                 const fundVersion = fund.versions.find(v => !v.lockDate);
+                this.props.dispatch(routerNavigate('/'));
                 this.props.dispatch(routerNavigate('/arr'));
                 const fundObj = getFundFromFundAndVersion(fund, fundVersion);
                 this.props.dispatch(selectFundTab(fundObj));

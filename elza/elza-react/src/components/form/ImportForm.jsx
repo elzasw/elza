@@ -125,7 +125,7 @@ class ImportForm extends AbstractReactComponent {
                                         help={null} /// TODO odstranit z decorateFormField help
                                         label={i18n('import.registryScope')}
                                         items={this.state.defaultScopes}
-                                        getItemId={item => (item ? item : null)}
+                                        getItemId={this.getItemId}
                                         getItemName={item => (item ? item.name : '')}
                                     />
                                     {/*recordScope.value && (
@@ -158,6 +158,11 @@ class ImportForm extends AbstractReactComponent {
             </div>
         );
     }
+
+    getItemId(item) {
+        return item ? item.id : null;
+    }
+
 }
 
 export default connect(state => ({

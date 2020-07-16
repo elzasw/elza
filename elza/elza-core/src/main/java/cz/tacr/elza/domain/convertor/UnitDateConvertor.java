@@ -163,7 +163,9 @@ public class UnitDateConvertor {
 
         } catch (Exception e) {
             unitdate.setFormat("");
-            throw new SystemException("Vstupní řetězec není validní", BaseCode.PROPERTY_IS_INVALID).set("property", "format");
+            throw new SystemException("Vstupní řetězec není validní", BaseCode.PROPERTY_IS_INVALID)
+                    .set("property", "format")
+                    .set("value", input);
         }
 
         return unitdate;

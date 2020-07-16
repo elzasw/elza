@@ -11,6 +11,22 @@
         <def-type>PARSE_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
+    <structure-definition structure-type="ZP2015_ACCESS_COND_TYPE" filename="AccessCondType.drl">
+        <def-type>ATTRIBUTE_TYPES</def-type>
+        <priority>100</priority>
+    </structure-definition>
+    <structure-definition structure-type="ZP2015_ACCESS_COND_TYPE" filename="AccessCondType.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
+    <structure-definition structure-type="ZP2015_ACCESS_COND" filename="AccessCond.drl">
+        <def-type>ATTRIBUTE_TYPES</def-type>
+        <priority>100</priority>
+    </structure-definition>
+    <structure-definition structure-type="ZP2015_ACCESS_COND" filename="AccessCond.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
     <structure-definition structure-type="ZP2015_TEST_TYP" filename="Testtyp.drl">
         <def-type>ATTRIBUTE_TYPES</def-type>
         <priority>100</priority>

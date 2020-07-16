@@ -1,12 +1,10 @@
 package cz.tacr.elza.service;
 
 import java.time.OffsetDateTime;
-import java.util.Objects;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
-import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -14,6 +12,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;

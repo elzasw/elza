@@ -1,9 +1,8 @@
 package cz.tacr.elza.service.output;
 
 import cz.tacr.elza.asynchactions.AsyncRequestEvent;
-import cz.tacr.elza.asynchactions.AsyncRequestVO;
+import cz.tacr.elza.asynchactions.AsyncRequest;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
-import cz.tacr.elza.asynchactions.TimeRequestInfo;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.ArrChange.Type;
@@ -14,7 +13,6 @@ import cz.tacr.elza.exception.ExceptionResponseBuilder;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.FundLevelServiceInternal;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.output.generator.OutputGenerator;
@@ -26,15 +24,14 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Component
@@ -43,13 +40,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 
     private final static Logger logger = LoggerFactory.getLogger(AsyncOutputGeneratorWorker.class);
 
-    private final int outputId;
-
-    private final int fundVersionId;
-
     private Long beginTime;
-
-    private Long currentRequestId;
 
     @Autowired
     private EntityManager em;
@@ -75,25 +66,21 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     @Autowired
     private ArrangementService arrangementService;
 
-    public AsyncOutputGeneratorWorker(final Integer fundVersionId,
-                                      final Integer outputId,
-                                      final Long asyncRequestId) {
-        this.outputId = outputId;
-        this.fundVersionId = fundVersionId;
-        this.currentRequestId = asyncRequestId;
-    }
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
-    public int getOutputId() {
-        return outputId;
+    private final AsyncRequest request;
+
+    public AsyncOutputGeneratorWorker(final AsyncRequest request) {
+        this.request = request;
     }
 
     @Override
-    @Transactional
     public void run() {
+        running.set(true);
         beginTime = System.currentTimeMillis();
         try {
             new TransactionTemplate(transactionManager).execute(status -> {
-                generateOutput(outputId);
+                generateOutput(request.getOutputId());
                 return null;
             });
         } catch (Throwable t) {
@@ -101,14 +88,14 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
                 handleException(t);
                 return null;
             });
+        } finally {
+            running.set(false);
         }
-
-        // return this;
     }
 
     @Override
-    public Long getRequestId() {
-        return currentRequestId;
+    public AsyncRequest getRequest() {
+        return request;
     }
 
     @Override
@@ -147,17 +134,8 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
             throw new SystemException("Failed to generate output", e, BaseCode.INVALID_STATE);
         }
 
-        outputServiceInternal.publishOutputStateChanged(output, fundVersionId);
-        eventPublisher.publishEvent(new AsyncRequestEvent(resultEvent()));
-    }
-
-    private AsyncRequestVO resultEvent() {
-        AsyncRequestVO publish = new AsyncRequestVO();
-        publish.setType(AsyncTypeEnum.OUTPUT);
-        publish.setFundVersionId(fundVersionId);
-        publish.setRequestId(currentRequestId);
-        publish.setOutputId(outputId);
-        return publish;
+        outputServiceInternal.publishOutputStateChanged(output, request.getFundVersionId());
+        eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
     }
 
     private OutputState resolveEndState(OutputParams params) {
@@ -171,10 +149,10 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     }
 
     private OutputParams createOutputParams(ArrOutput output) {
-        ArrFundVersion fundVersion = em.find(ArrFundVersion.class, fundVersionId);
+        ArrFundVersion fundVersion = em.find(ArrFundVersion.class, request.getFundVersionId());
         if (fundVersion == null) {
             throw new SystemException("Fund version for output not found", BaseCode.ID_NOT_EXIST).set("fundVersionId",
-                    fundVersionId);
+                    request.getFundVersionId());
         }
 
         ArrChange change = arrangementService.createChange(Type.GENERATE_OUTPUT);
@@ -196,30 +174,40 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         ExceptionResponseBuilder builder = ExceptionResponseBuilder.createFrom(t);
         builder.logError(logger);
 
-        ArrOutput output = em.find(ArrOutput.class, outputId);
+        ArrOutput output = em.find(ArrOutput.class, request.getOutputId());
         if (output != null) {
             ExceptionResponse er = builder.build();
             output.setError(er.toJson());
             output.setState(OutputState.OPEN); // saved by commit
+            outputServiceInternal.publishOutputFailed(output, request.getFundVersionId());
         }
-        outputServiceInternal.publishOutputFailed(output, fundVersionId);
-        eventPublisher.publishEvent(new AsyncRequestEvent(resultEvent()));
-    }
-
-    @Override
-    public Integer getFundVersionId() {
-        return fundVersionId;
+        eventPublisher.publishEvent(AsyncRequestEvent.fail(request, this, t));
     }
 
     @Override
     public void terminate() {
-
+        while (running.get()) {
+            try {
+                logger.info("Čekání na dokončení generování výstupu: {}", request.getOutputId());
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                // Nothing to do with this -> simply finish
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     @Override
-    public Integer getCurrentId() {
-        return outputId;
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AsyncOutputGeneratorWorker that = (AsyncOutputGeneratorWorker) o;
+        return request.equals(that.request);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(request);
+    }
 
 }

@@ -190,7 +190,7 @@ public class BulkActionService {
         }
         bulkActionRun.setArrBulkActionNodes(bulkActionNodes);
         storeBulkActionNodes(bulkActionNodes);
-        asyncRequestService.enqueue(bulkActionRun.getFundVersion(), bulkActionRun, AsyncTypeEnum.BULK,null);
+        asyncRequestService.enqueue(bulkActionRun.getFundVersion(), bulkActionRun);
         return bulkActionRun;
     }
 

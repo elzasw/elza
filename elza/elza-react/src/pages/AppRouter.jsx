@@ -39,6 +39,7 @@ class AppRouter extends AbstractReactComponent {
 
     changeRouteIfNeeded = routerStore => {
         const navigateTo = routerStore.navigateTo;
+        const method = routerStore.method;
 
         if (navigateTo) {
             if (navigateTo.startsWith('/~arr')) {
@@ -52,7 +53,11 @@ class AppRouter extends AbstractReactComponent {
                 this.props.history.push(navigateToBack);
                 this.props.dispatch(routerNavigateFinish());
             } else {
-                this.props.history.push(navigateTo);
+                if (method === 'REPLACE') {
+                    this.props.history.replace(navigateTo);
+                } else {
+                    this.props.history.push(navigateTo);
+                }
                 this.props.dispatch(routerNavigateFinish());
             }
         }

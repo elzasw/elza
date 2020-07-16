@@ -28,6 +28,7 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -144,6 +145,8 @@ public class ItemGeneratorAction extends Action {
         private ItemType trgSOValueType;
         private ItemType countSource;
         private ItemType trgSOStartValueType;
+        private ItemType trgSOTypeType;
+        private RulItemSpec trgSOTypeSpec;
 
         private StructType structType;
 
@@ -198,6 +201,21 @@ public class ItemGeneratorAction extends Action {
          * @param soc
          */
         private void init(StaticDataProvider sdp, StructuredObjectConfig soc) {
+            // optional item type
+            StructuredObjectItemConfig itemTypeConfig = soc.getType();
+            if (itemTypeConfig != null) {
+                trgSOTypeType = sdp.getItemTypeByCode(itemTypeConfig.getItemType());
+                if (trgSOTypeType == null) {
+                    throw new SystemException("Incorrect configuration for structured type",
+                            BulkActionCode.INCORRECT_CONFIG);
+                }
+                trgSOTypeSpec = trgSOTypeType.getItemSpecByCode(itemTypeConfig.getItemSpec());
+                if (trgSOTypeSpec == null) {
+                    throw new SystemException("Incorrect configuration for structured type",
+                            BulkActionCode.INCORRECT_CONFIG);
+                }
+            }
+
             // read prefix info
             StructuredObjectItemConfig prefixConfig = soc.getPrefix();
             if(prefixConfig==null) {
@@ -277,7 +295,22 @@ public class ItemGeneratorAction extends Action {
         }
 
         private void createStructObj(LevelWithItems level, String prefix, int cnt) {
-            List<ArrStructuredItem> items = new ArrayList<>(3);
+            List<ArrStructuredItem> items = new ArrayList<>(4);
+
+            // create type
+            if (trgSOTypeType != null) {
+                Validate.isTrue(trgSOTypeType.getDataType() == DataType.ENUM);
+                ArrStructuredItem si = new ArrStructuredItem();
+                si.setPosition(1);
+                si.setItemType(trgSOTypeType.getEntity());
+                si.setItemSpec(trgSOTypeSpec);
+
+                ArrDataNull data = new ArrDataNull();
+                data.setDataType(trgSOTypeType.getDataType().getEntity());
+                si.setData(data);
+
+                items.add(si);
+            }
 
             // create prefix
             Validate.isTrue(trgSOPrefixType.getDataType() == DataType.STRING);
@@ -332,6 +365,7 @@ public class ItemGeneratorAction extends Action {
             ArrStructuredObject structObj = structObjService.createStructObj(fund, change,
                                                                              structType.getStructuredType(),
                                                                              State.OK,
+                                                                             null,
                                                                              items);
 
             // Connect struct obj to the level
