@@ -6,6 +6,7 @@ import {Area} from "../../../api/Area";
 import {ArchiveEntityVO} from "../../../api/ArchiveEntityVO";
 import {WebApi} from "../../../actions/WebApi";
 import {debounce} from "../../../shared/utils";
+import {ArchiveEntityResultListVO} from "../../../api/ArchiveEntityResultListVO";
 
 type OwnProps = {}
 
@@ -13,15 +14,16 @@ type Props = {
     onlyMainPart: boolean;
     area: Area;
     itemTypeId: number;
-    itemSpecId: number;
+    itemSpecId?: number;
     scopeId?: number;
     disabled: boolean;
     name: string;
     label: string;
     modifyFilterData?: (data: any) => any;
+    api?: (itemTypeId: number, itemSpecId: number, filter: any, scopeId?: number) => Promise<ArchiveEntityResultListVO>;
 } & OwnProps;
 
-export const ArchiveEntityRel = ({onlyMainPart, area, itemTypeId, itemSpecId, scopeId, disabled, name, label, modifyFilterData}: Props) => {
+export const ArchiveEntityRel = ({onlyMainPart, area, itemTypeId, itemSpecId, scopeId, disabled, name, label, modifyFilterData, api}: Props) => {
 
     const [items, setItems] = useState<ArchiveEntityVO[]>([]);
 
@@ -36,7 +38,13 @@ export const ArchiveEntityRel = ({onlyMainPart, area, itemTypeId, itemSpecId, sc
             filter = modifyFilterData(filter);
         }
 
-        return WebApi.findAccessPointForRel(0, 50, itemTypeId, itemSpecId, filter, scopeId).then(result => {
+        if (api) {
+            return api(itemTypeId, itemSpecId!, filter, scopeId).then(result => {
+                setItems(result.data);
+            });
+        }
+
+        return WebApi.findAccessPointForRel(0, 50, itemTypeId, itemSpecId!, filter, scopeId).then(result => {
             setItems(result.data);
         })
     }, 1000);
