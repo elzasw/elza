@@ -974,24 +974,26 @@ class ArrPage extends ArrParentPage {
         if (structureTypes && structureTypes.data) {
             const STRUCTURE_TAB_PREFIX_KEY = 'structure-tab-';
             structureTypes.data.forEach(i => {
-                const tabKey = STRUCTURE_TAB_PREFIX_KEY + i.id + '-' + i.code;
-                structureTabs[tabKey] = {
-                    id: tabKey,
-                    key: tabKey,
-                    name: i.name,
-                    ref: tabKey,
-                    render: () => (
-                        <ArrStructurePanel
-                            {...i}
-                            key={tabKey}
-                            ref={(ref) => this.refObjects[tabKey] = ref}
-                            readMode={readMode}
-                            fundId={activeFund.id}
-                            fundVersionId={activeFund.versionId}
-                        />
-                    ),
-                    focus: () => this.wrappedFocus(tabKey),
-                };
+                if (!i.anonymous) {
+                    const tabKey = STRUCTURE_TAB_PREFIX_KEY + i.id + '-' + i.code;
+                    structureTabs[tabKey] = {
+                        id: tabKey,
+                        key: tabKey,
+                        name: i.name,
+                        ref: tabKey,
+                        render: () => (
+                            <ArrStructurePanel
+                                {...i}
+                                key={tabKey}
+                                ref={(ref) => this.refObjects[tabKey] = ref}
+                                readMode={readMode}
+                                fundId={activeFund.id}
+                                fundVersionId={activeFund.versionId}
+                                />
+                            ),
+                        focus: () => this.wrappedFocus(tabKey),
+                    };
+                }
             });
         }
         /**

@@ -54,7 +54,7 @@ public class ArrOutputVO {
 
     private List<ApScopeVO> scopes;
 
-    private Integer anonymizedApId;
+    private ApAccessPointVO anonymizedAp;
 
     // --- getters/setters ---
 
@@ -178,11 +178,11 @@ public class ArrOutputVO {
         this.scopes = scopes;
     }
 
-    public Integer getAnonymizedApId() {
-        return anonymizedApId;
+    public ApAccessPointVO getAnonymizedAp() {
+        return anonymizedAp;
     }
 
-    public void setAnonymizedApId(Integer anonymizedApId) {
-        this.anonymizedApId = anonymizedApId;
+    public void setAnonymizedAp(ApAccessPointVO anonymizedAp) {
+        this.anonymizedAp = anonymizedAp;
     }
 }

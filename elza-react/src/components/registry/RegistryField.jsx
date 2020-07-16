@@ -37,6 +37,7 @@ class RegistryField extends AbstractReactComponent {
         partyId: null,
         versionId: null,
         useIdAsValue: false,
+        addEmpty: false,
     };
 
     static propTypes = {
@@ -55,6 +56,8 @@ class RegistryField extends AbstractReactComponent {
         partyId: PropTypes.number,
         versionId: PropTypes.number,
         useIdAsValue: PropTypes.bool,
+        addEmpty: PropTypes.bool,
+        emptyTitle: PropTypes.string,
     };
 
     state = {registryList: [], count: null, searchText: null};
@@ -177,7 +180,7 @@ class RegistryField extends AbstractReactComponent {
 
     renderRecord = props => {
         const {item, highlighted, selected, ...otherProps} = props;
-        const {apTypeIdMap, eidTypes} = this.props;
+        const {apTypeIdMap, eidTypes, addEmpty, emptyTitle} = this.props;
 
         return (
             <TooltipTrigger
@@ -193,6 +196,8 @@ class RegistryField extends AbstractReactComponent {
                     key={'reg-' + item.id}
                     eidTypes={eidTypes}
                     apTypeIdMap={apTypeIdMap}
+                    addEmpty={addEmpty}
+                    emptyTitle={emptyTitle}
                     className={classNames('item', {focus: highlighted, active: selected})}
                 />
             </TooltipTrigger>
@@ -204,6 +209,9 @@ class RegistryField extends AbstractReactComponent {
             return obj;
         }
         // změna typu aby se objekt dal použít jako návazný
+        if (this.props.addEmpty && (obj == null || obj.id === -1)) {
+            return null;
+        }
         const newobj = {
             ...obj,
             [JAVA_ATTR_CLASS]: JAVA_CLASS_AP_ACCESS_POINT_VO,
@@ -212,7 +220,7 @@ class RegistryField extends AbstractReactComponent {
     };
 
     render() {
-        const {value, footer, detail, className, ...otherProps} = this.props;
+        const {value, footer, detail, className, addEmpty, ...otherProps} = this.props;
 
         let footerRender = null;
         if (footer) {
@@ -237,6 +245,11 @@ class RegistryField extends AbstractReactComponent {
             tmpVal = i18n('subNodeForm.descItemType.notIdentified');
         }
 
+        let items = this.state.registryList;
+        if (addEmpty) {
+            items = [{id: -1, name: 'Prázdný'}, ...items]
+        }
+
         return (
             <Autocomplete
                 {...otherProps}
@@ -244,7 +257,7 @@ class RegistryField extends AbstractReactComponent {
                 customFilter
                 className={classNames('autocomplete-record', className)}
                 footer={footerRender}
-                items={this.state.registryList}
+                items={items}
                 getItemId={item => (item ? item.id : null)}
                 getItemName={item => (item && item.name ? item.name : tmpVal)}
                 onSearchChange={this.handleSearchChange}

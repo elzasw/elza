@@ -232,7 +232,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     void deleteByNodeFund(ArrFund fund);
 
     @Modifying
-    void deleteByNodeIdIn(List<Integer> nodeIds);
+    void deleteByNodeIdIn(Collection<Integer> nodeIds);
 
     @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.data JOIN ArrDataUriRef d on i.data = d WHERE d.arrNode = :node AND i.deleteChange IS NULL")
     List<ArrDescItem> findByUriDataNode(@Param("node") final ArrNode node);
