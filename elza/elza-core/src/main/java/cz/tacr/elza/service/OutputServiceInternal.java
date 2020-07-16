@@ -1,16 +1,20 @@
 package cz.tacr.elza.service;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -21,21 +25,43 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import cz.tacr.elza.common.TaskExecutor;
+import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemSettings;
+import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
+import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrOutputRestrictionScope;
+import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ActionRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
@@ -89,6 +115,7 @@ public class OutputServiceInternal {
 
     private OutputRestrictionScopeRepository outputRestrictionScopeRepository;
 
+    private final ApStateRepository stateRepository;
     private final StructObjService structObjService;
 
     @Autowired
@@ -115,6 +142,7 @@ public class OutputServiceInternal {
                                  BulkActionRunRepository bulkActionRunRepository,
                                  RevertingChangesService revertingChangesService,
                                  OutputRestrictionScopeRepository outputRestrictionScopeRepository,
+                                 ApStateRepository stateRepository,
                                  StructObjService structObjService) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
@@ -135,6 +163,7 @@ public class OutputServiceInternal {
         this.bulkActionRunRepository = bulkActionRunRepository;
         this.revertingChangesService = revertingChangesService;
         this.outputRestrictionScopeRepository = outputRestrictionScopeRepository;
+        this.stateRepository = stateRepository;
         this.structObjService = structObjService;
     }
 
@@ -490,17 +519,75 @@ public class OutputServiceInternal {
         return OutputRequestStatus.OK;
     }
 
-    public List<ApScopeVO> getRestrictedScopes(ArrOutput output) {
+    public List<ApScopeVO> getRestrictedScopeVOs(ArrOutput output) {
         StaticDataProvider sdp = staticDataService.getData();
-        List<ArrOutputRestrictionScope> restrictionScopeList = outputRestrictionScopeRepository.findByOutput(output.getOutputId());
+        List<ApScope> scopeList = getRestrictedScopes(output);
 
         List<ApScopeVO> scopeVOList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(restrictionScopeList)) {
-            for (ArrOutputRestrictionScope restrictionScope : restrictionScopeList) {
-                scopeVOList.add(ApScopeVO.newInstance(restrictionScope.getScope(), sdp));
+        if (CollectionUtils.isNotEmpty(scopeList)) {
+            for (ApScope restrictionScope : scopeList) {
+                scopeVOList.add(ApScopeVO.newInstance(restrictionScope, sdp));
             }
         }
 
         return scopeVOList;
+    }
+
+    public List<ApScope> getRestrictedScopes(ArrOutput output) {
+        List<ArrOutputRestrictionScope> restrictionScopeList = outputRestrictionScopeRepository.findByOutput(output.getOutputId());
+
+        List<ApScope> scopeList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(restrictionScopeList)) {
+            for (ArrOutputRestrictionScope restrictionScope : restrictionScopeList) {
+                scopeList.add(restrictionScope.getScope());
+            }
+        }
+        return scopeList;
+    }
+
+    public List<ArrOutputItem> restrictItemsByScopes(ArrOutput output, List<ArrOutputItem> outputItems) {
+        List<ApScope> restrictedScopes = getRestrictedScopes(output);
+        List<ArrOutputItem> restrictedOutputItems = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(outputItems)) {
+            for (ArrOutputItem outputItem : outputItems) {
+                ArrData data = outputItem.getData();
+                if (data instanceof ArrDataRecordRef) {
+                    ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
+                    if (dataRecordRef.getRecord() != null) {
+                        ApAccessPoint accessPoint = dataRecordRef.getRecord();
+                        ApState state = stateRepository.findLastByAccessPoint(accessPoint);
+                        if (state == null) {
+                            throw new ObjectNotFoundException("Stav pro přístupový bod neexistuje", BaseCode.INVALID_STATE)
+                                    .set("accessPointId", accessPoint.getAccessPointId());
+                        }
+                        ApScope scope = state.getScope();
+                        if (isScopeRestricted(scope, restrictedScopes)) {
+                            if (output.getAnonymizedAp() != null) {
+                                dataRecordRef.setRecord(output.getAnonymizedAp());
+                                restrictedOutputItems.add(outputItem);
+                            }
+                        } else {
+                            restrictedOutputItems.add(outputItem);
+                        }
+                    }
+                } else {
+                    restrictedOutputItems.add(outputItem);
+                }
+            }
+        }
+
+        return restrictedOutputItems;
+    }
+
+    private boolean isScopeRestricted(ApScope scope, List<ApScope> restrictedScopes) {
+        if (CollectionUtils.isNotEmpty(restrictedScopes)) {
+            for (ApScope restrictedScope : restrictedScopes) {
+                if (restrictedScope.getScopeId().equals(scope.getScopeId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

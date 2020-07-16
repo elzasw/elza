@@ -418,6 +418,7 @@ var messages = {
     "arr.output.title.error": "Chyba",
     "arr.output.title.scopes": "Omezení na oblasti přístupových bodů",
     "arr.output.title.anonymizedAp": "Anonymizované AP",
+    "arr.output.title.anonymizedAp.remove": "Odebrat anonymizované AP",
     "arr.output.name": "Název výstupu",
     "arr.output.internalCode": "Interní kód výstupu",
     "arr.output.outputType": "Typ výstup",

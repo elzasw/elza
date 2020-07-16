@@ -1,11 +1,12 @@
 package cz.tacr.elza.service.arrangement;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.*;
-import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -157,10 +159,12 @@ public class DeleteFundHistoryAction {
                 arrDataList.add(data);
             }
         }
-        itemRepository.delete(arrItemList);
+        bulkAction(arrItemList, itemRepository::delete);
         em.flush();
 
         // odmazat opuštěná data
+        // fixme: je potřeba vůbec tahle kontrola? navíc dost pomalá - pro každé ArrData check do DB;
+        //  myslím si, že by se mohlo vždy mazat všechny ArrData; pokud by to bylo opravdu pomalé, přepsat
         for (ArrData arrData : arrDataList) {
             final List<ArrItem> itemList = itemRepository.findByData(arrData);
             if (CollectionUtils.isEmpty(itemList)) {
@@ -171,7 +175,7 @@ public class DeleteFundHistoryAction {
 
         // delete arr_level, které mají vyplněn delete_change_id
         final List<ArrLevel> arrLevelList = levelRepository.findHistoricalByFund(fund);
-        levelRepository.delete(arrLevelList);
+        bulkAction(arrLevelList, levelRepository::delete);
         em.flush();
 
         // arr_node se také smazají, pokud se na ně neodkazuje žádný level a musí se smazat i návazné entity jako výstupy, a podobně
@@ -213,7 +217,7 @@ public class DeleteFundHistoryAction {
         em.flush();
 
         // odeslání informace o změně verze na klienta
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.APPROVE_VERSION, fundId));
+        eventNotificationService.publishEvent(new EventFund(EventType.APPROVE_VERSION, fundVersion.getFund().getFundId(), fundVersion.getFundVersionId()));
 
 
         logger.info("Fund history deleted: {}", fundId);
@@ -225,45 +229,56 @@ public class DeleteFundHistoryAction {
      */
     private void dropNodeInfo(List<Integer> nodeIds) {
         // delete policies
-        visiblePolicyRepository.deleteByNodeIdIn(nodeIds);
+        bulkAction(nodeIds, visiblePolicyRepository::deleteByNodeIdIn);
 
         userService.deletePermissionByNodeIds(nodeIds);
 
         // delete node from cache
-        cachedNodeRepository.deleteByNodeIdIn(nodeIds);
+        bulkAction(nodeIds, cachedNodeRepository::deleteByNodeIdIn);
 
         // delete node conformity
-        nodeConformityErrorRepository.deleteByNodeConformityNodeIdIn(nodeIds);
-        nodeConformityMissingRepository.deleteByNodeConformityNodeIdIn(nodeIds);
-        nodeConformityInfoRepository.deleteByNodeIdIn(nodeIds);
+        bulkAction(nodeIds, nodeConformityErrorRepository::deleteByNodeConformityNodeIdIn);
+        bulkAction(nodeIds, nodeConformityMissingRepository::deleteByNodeConformityNodeIdIn);
+        bulkAction(nodeIds, nodeConformityInfoRepository::deleteByNodeIdIn);
 
         // delete attached extensions
-        nodeExtensionRepository.deleteByNodeIdIn(nodeIds);
+        bulkAction(nodeIds, nodeExtensionRepository::deleteByNodeIdIn);
 
         // ostatní položky navázané na mazané node
-        daoLinkRepository.deleteByNodeIdIn(nodeIds);
-        digitizationRequestNodeRepository.deleteByNodeFundIdIn(nodeIds);
+        bulkAction(nodeIds, daoLinkRepository::deleteByNodeIdIn);
+        bulkAction(nodeIds, digitizationRequestNodeRepository::deleteByNodeFundIdIn);
 
         dropBulkActions(nodeIds);
         dropOutputs(nodeIds);
         dropDescItems(nodeIds);
-
-        em.flush();
     }
 
     private void dropDescItems(List<Integer> nodeIds) {
-        this.descItemRepository.deleteByNodeIdIn(nodeIds);
+        bulkAction(nodeIds, descItemRepository::deleteByNodeIdIn);
         em.flush();
     }
 
     private void dropOutputs(List<Integer> nodeIds) {
-        nodeOutputRepository.deleteByNodeIdIn(nodeIds);
+        bulkAction(nodeIds, nodeOutputRepository::deleteByNodeIdIn);
         em.flush();
     }
 
     private void dropBulkActions(List<Integer> nodeIds) {
-        faBulkActionNodeRepository.deleteByNodeIdIn(nodeIds);
+        bulkAction(nodeIds, faBulkActionNodeRepository::deleteByNodeIdIn);
         em.flush();
+    }
+
+    @FunctionalInterface
+    interface ActionCallback<T> {
+        void action(Collection<T> items);
+    }
+
+    private <T> void bulkAction(final Collection<T> items, final ActionCallback<T> callback) {
+        ObjectListIterator<T> iterator = new ObjectListIterator<>(items);
+        while (iterator.hasNext()) {
+            List<T> next = iterator.next();
+            callback.action(next);
+        }
     }
 
 }

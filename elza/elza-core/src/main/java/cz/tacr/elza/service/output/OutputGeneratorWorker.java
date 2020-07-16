@@ -142,10 +142,11 @@ public class OutputGeneratorWorker implements Runnable {
 
         List<ArrOutputItem> outputItems = outputServiceInternal.getOutputItems(output, fundVersion.getLockChange());
         //omezení
+        List<ArrOutputItem> restrictedItems = outputServiceInternal.restrictItemsByScopes(output, outputItems);
 
         Path templateDir = resourcePathResolver.getTemplateDir(output.getTemplate()).toAbsolutePath();
 
-        return new OutputParams(output, change, fundVersion, nodeIds, outputItems, templateDir);
+        return new OutputParams(output, change, fundVersion, nodeIds, restrictedItems, templateDir);
     }
 
     /**

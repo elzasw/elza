@@ -14,7 +14,7 @@ export interface ArrOutputVO {
     createDate: string;
     deleteDate: any;
     scopes: ApScopeVO[];
-    anonymizedApId: number;
+    anonymizedAp: any;
 }
 export interface BaseCodeVO {
     /**

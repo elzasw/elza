@@ -161,10 +161,12 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         List<Integer> nodeIds = outputNodes.stream().map(no -> no.getNodeId()).collect(Collectors.toList());
 
         List<ArrOutputItem> outputItems = outputServiceInternal.getOutputItems(output, fundVersion.getLockChange());
+        //omezení
+        List<ArrOutputItem> restrictedItems = outputServiceInternal.restrictItemsByScopes(output, outputItems);
 
         Path templateDir = resourcePathResolver.getTemplateDir(output.getTemplate()).toAbsolutePath();
 
-        return new OutputParams(output, change, fundVersion, nodeIds, outputItems, templateDir);
+        return new OutputParams(output, change, fundVersion, nodeIds, restrictedItems, templateDir);
     }
 
     /**
