@@ -11,7 +11,7 @@ import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx';
 
 let _nextRoutingKey = 1;
 const _routingKeyAreaPrefix = 'NODE|';
-const _pageSize = 50;
+const _pageSize = 50; // pro spravnou funkcnost musi byt sude cislo
 
 function initNodeChild(node) {
     return {
@@ -103,21 +103,23 @@ export function nodeInitState(node, prevNodesNode) {
     return result;
 }
 
-function getViewStartIndex(state, selectedId) {
-    const {pageSize, viewStartIndex, nodeIndex} = state;
-    const index = nodeIndex;
-    if (index >= 0) {
-        // -1 může být, pokud nejsou data seznamu položek accordionu (childNodes) ještě načtena
-        if (index < viewStartIndex || index >= viewStartIndex + pageSize) {
-            let newIndex = index - Math.floor(pageSize / 2);
-            /*let lastPageIndex = childNodeIds.length - pageSize;
-            if(newIndex > lastPageIndex){
-                newIndex = lastPageIndex;
-            }*/
-            return Math.max(newIndex, 0);
-        }
+function getViewStartIndex(index, pageSize) {
+    // -1 může být, pokud nejsou data seznamu položek accordionu (childNodes) ještě načtena
+    if (index === undefined || index < 0) {   
+        throw new Error("invalid index provided");
     }
-    return state.viewStartIndex;
+    // Zajisteni ze "okno" je cele cislo
+    const view = Math.floor(pageSize);
+
+    // Ziskani v kolikatem "okne" se polozka nachazi.
+    const startIndex = Math.floor(index/view)*view; 
+
+    // Posunuti o "okno" zpet pokud se polozka nachazi v jeho prvni polovine
+    if(index - startIndex > view/2){
+        return Math.max(startIndex,0);
+    } else {
+        return Math.max(startIndex-view,0);
+    }
 }
 
 const nodeInitialState = {
@@ -375,39 +377,6 @@ export function node(state = nodeInitialState, action) {
                 ...state,
                 filterText: action.filterText,
             };
-        case types.FUND_FUND_SUBNODES_FULLTEXT_RESULT: {
-            if (state.filterText === '') {
-                var result = {
-                    ...state,
-                    nodeInfoDirty: true,
-                    searchedIds: {},
-                    viewStartIndex: 0,
-                };
-                result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
-                return result;
-            }
-
-            var searchedIds = {};
-            action.nodeIds.forEach(n => {
-                searchedIds[n.nodeId] = true;
-            });
-
-            var childNodes = [];
-            state.childNodes.forEach(n => {
-                if (searchedIds[n.id]) {
-                    childNodes.push(n);
-                }
-            });
-
-            var result = {
-                ...state,
-                childNodes: childNodes,
-                searchedIds: searchedIds,
-                viewStartIndex: 0,
-            };
-            result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
-            return result;
-        }
         case types.FUND_NODE_INFO_REQUEST:
             return {
                 ...state,
@@ -416,6 +385,7 @@ export function node(state = nodeInitialState, action) {
         case types.FUND_NODE_INFO_RECEIVE: {
             let result = {
                 ...state,
+                dirty: false,
                 isNodeInfoFetching: false,
                 nodeInfoFetched: true,
                 nodeInfoDirty: false,
@@ -429,8 +399,13 @@ export function node(state = nodeInitialState, action) {
 
             // Změna view tak, aby byla daná položka vidět
             if (state.selectedSubNodeId !== null && !action.viewStartIndexInvalidate) {
-                result.viewStartIndex = getViewStartIndex(result, state.selectedSubNodeId);
-                console.log("change viewStartIndex", result.viewStartIndex)
+                result.viewStartIndex = getViewStartIndex(action.nodeIndex, state.pageSize/2);
+
+                // zneplatneni state, aby se data nacetla znovu se spravnymi hodnotami
+                if(state.viewStartIndex !== result.viewStartIndex || state.nodeIndex !== action.nodeIndex ){
+                    result.nodeInfoDirty = true;
+                    result.dirty = true;
+                }
             }
 
             return result;

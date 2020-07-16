@@ -362,19 +362,17 @@ export default function subNodeForm(state = initialState, action = {}) {
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
+            const { valueLocation } = action;
             var refType = state.refTypesMap[loc.descItemType.id];
             const convertedValue = convertValue(action.value, loc.descItem, refType.dataType.code);
             // touched if new value is not equal with previous value, or something else changed during conversion
+
             const touched = convertedValue.touched || !valuesEquals(convertedValue.value, loc.descItem.prevValue);
             loc.descItem = {
                 ...loc.descItem,
                 ...convertedValue,
                 touched,
             };
-
-            // Object.keys(test).forEach(key => {
-            //     loc.descItem[key] = test[key];
-            // })
 
             // Unitdate server validation
             if (refType.dataType.code === 'UNITDATE') {
@@ -395,7 +393,20 @@ export default function subNodeForm(state = initialState, action = {}) {
             loc.descItem.error = validate(loc.descItem, refType);
 
             setLoc(state, action.valueLocation, loc);
-            state.formData = {...state.formData};
+            //  Zapsani descItem s novou hodnotou do formData naprimo
+            const newFormData = {...state.formData};
+            if( 
+                typeof valueLocation.descItemGroupIndex !== "undefined" &&
+                typeof valueLocation.descItemTypeIndex !== "undefined" &&
+                typeof valueLocation.descItemIndex !== "undefined"
+            ){
+                newFormData
+                    .descItemGroups[valueLocation.descItemGroupIndex]
+                    .descItemTypes[valueLocation.descItemTypeIndex]
+                    .descItems[valueLocation.descItemIndex] = loc.descItem;
+            }
+
+            state.formData = newFormData;
             checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:

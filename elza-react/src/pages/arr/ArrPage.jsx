@@ -94,7 +94,6 @@ class ArrPage extends ArrParentPage {
         this.bindMethods(
             'getActiveInfo',
             'buildRibbon',
-            'handleRegisterJp',
             'handleSelectVisiblePoliciesNode',
             'handleShowVisiblePolicies',
             'handleShortcuts',
@@ -236,9 +235,6 @@ class ArrPage extends ArrParentPage {
         console.log('#handleShortcuts ArrPage', '[' + action + ']', this);
         e.preventDefault();
         switch (action) {
-            case 'registerJp':
-                this.handleRegisterJp();
-                break;
             case 'area1':
                 this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1));
                 break;

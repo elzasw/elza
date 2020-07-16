@@ -38,6 +38,7 @@ import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
@@ -527,7 +528,8 @@ public class FundLevelService {
                                 final ArrNode staticNodeParent,
                                 final AddLevelDirection direction,
                                 @Nullable final String scenarionName,
-                                final Set<RulItemType> descItemCopyTypes) {
+                                final Set<RulItemType> descItemCopyTypes,
+                                final DesctItemProvider desctItemProvider) {
 
         Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
         Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
@@ -580,6 +582,9 @@ public class FundLevelService {
             descriptionItemService.copyDescItemWithDataToNode(newLevel.getNode(),
                                                               siblingDescItems, change, version,
                                                               changeContext);
+        }
+        if (desctItemProvider != null) {
+            desctItemProvider.provide(newLevel, change, version, changeContext);
         }
 
         changeContext.flush();

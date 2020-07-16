@@ -1,18 +1,29 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.asynchactions.*;
+import cz.tacr.elza.asynchactions.AsyncNodeWorker;
+import cz.tacr.elza.asynchactions.AsyncRequest;
+import cz.tacr.elza.asynchactions.AsyncRequestEvent;
+import cz.tacr.elza.asynchactions.AsyncWorkerVO;
+import cz.tacr.elza.asynchactions.IAsyncWorker;
+import cz.tacr.elza.asynchactions.NodePriorityComparator;
+import cz.tacr.elza.asynchactions.ThreadLoadInfo;
+import cz.tacr.elza.asynchactions.TimeRequestInfo;
 import cz.tacr.elza.bulkaction.AsyncBulkActionWorker;
 import cz.tacr.elza.controller.vo.ArrAsyncRequestVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.FundStatisticsVO;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrAsyncRequest;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.AsyncTypeEnum;
 import cz.tacr.elza.repository.ArrAsyncRequestRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.AsyncOutputGeneratorWorker;
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,50 +39,58 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.*;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
 /**
- * Servisní třída pro spouštění validací a hromadných akcí
+ * Servisní třída pro spouštění validací a hromadných akcí.
  */
 @Service
 @Configuration
 @EnableAsync
 public class AsyncRequestService implements ApplicationListener<AsyncRequestEvent> {
 
-    private final Map<Integer, List<IAsyncWorker>> runningNodeWorkers = new ConcurrentHashMap<>(); //fundVersionId, List
+    private static final Logger logger = LoggerFactory.getLogger(AsyncRequestService.class);
 
-    private final Map<Integer, IAsyncWorker> runningBulkActionWorkers = new ConcurrentHashMap<>(); //fundVersionId, List
+    @Value("${elza.asyncActions.node.maxPerFund:2}")
+    @Min(1)
+    @Max(100)
+    private int nodeMaxPerFund;
 
-    private final Set<IAsyncWorker> runningOutputGeneratorWorkers = new HashSet<>();
+    @Value("${elza.asyncActions.bulk.maxPerFund:1}")
+    @Min(1)
+    @Max(100)
+    private int bulkMaxPerFund;
 
-    private Map<Integer, PriorityQueue<AsyncRequestVO>> nodeMap; //fundVersionId, Queue
-
-    private Map<Integer, Queue<AsyncRequestVO>> bulkActionMap; //fundVersionId, Queue
-
-    private Map<Integer, Long> runningNodeIdMap; //nodeId, requestId
-
-    private Map<Integer, Long> runningBulkActionMap; //fundVersionId, requestId
-
-    private Map<Integer, Long> waitingNodeRequestMap; //nodeId, requestId
-
-    private Queue<AsyncRequestVO> outputQueue;
-
-    private ThreadLoadInfo threadLoadInfo;
-
-    private List<FundStatisticsVO> nodeFundStatistics;
-
-    private List<FundStatisticsVO> bulkFundStatistics;
-
-    private List<FundStatisticsVO> outputFundStatistics;
-
-    private List<TimeRequestInfo> lastHourRequests;
+    @Value("${elza.asyncActions.output.maxPerFund:1}")
+    @Min(1)
+    @Max(100)
+    private int outputMaxPerFund;
 
     @Autowired
     private ApplicationContext appCtx;
@@ -104,610 +123,95 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Qualifier("transactionManager")
     private PlatformTransactionManager txManager;
 
-    @Value("${elza.asyncActions.node.requestCount:}")
-    @Min(1)
-    @Max(100)
-    private int MAX_PROCESSED_NODES;
+    private final AtomicBoolean runningService = new AtomicBoolean(false);
+    private final Map<AsyncTypeEnum, AsyncExecutor> asyncExecutors = new HashMap<>();
 
-    @Value("${elza.asyncActions.bulk.requestCount:}")
-    @Min(1)
-    @Max(100)
-    private int MAX_PROCESSED_BULK_ACTIONS;
+    @PostConstruct
+    protected void init() {
+        register(new AsyncNodeExecutor(nodeTaskExecutor, txManager, asyncRequestRepository, appCtx, nodeMaxPerFund));
+        register(new AsyncBulkExecutor(bulkActionTaskExecutor, txManager, asyncRequestRepository, appCtx, bulkMaxPerFund));
+        register(new AsyncOutputExecutor(outputTaskExecutor, txManager, asyncRequestRepository, appCtx, outputMaxPerFund));
+    }
 
-    @Value("${elza.asyncActions.output.requestCount:}")
-    @Min(1)
-    @Max(100)
-    private int MAX_PROCESSED_OUTPUTS;
-
-    private Integer terminatedNodeFundId;
-
-    private static final Logger logger = LoggerFactory.getLogger(AsyncRequestService.class);
-
-    public AsyncRequestService() {
-        lastHourRequests = new LinkedList<>();
-        threadLoadInfo = new ThreadLoadInfo();
-        nodeMap = new ConcurrentHashMap<>();
-        bulkActionMap = new ConcurrentHashMap<>();
-        outputQueue = new LinkedList<>();
-
-        runningNodeIdMap = new ConcurrentHashMap<>();
-        waitingNodeRequestMap = new ConcurrentHashMap<>();
-        runningBulkActionMap = new ConcurrentHashMap<>();
-
-        nodeFundStatistics = new ArrayList<>();
-        bulkFundStatistics = new ArrayList<>();
-        outputFundStatistics = new ArrayList<>();
+    private void register(final AsyncExecutor asyncExecutor) {
+        asyncExecutors.put(asyncExecutor.getType(), asyncExecutor);
     }
 
     /**
      * Přídání výstupu do fronty na zpracování
-     *
-     * @param fundVersion
-     * @param output
-     * @param type
-     * @param validationPriority
      */
-    public void enqueue(ArrFundVersion fundVersion, ArrOutput output, AsyncTypeEnum type, Integer validationPriority) {
-        if (type != AsyncTypeEnum.OUTPUT) {
-            throw new IllegalArgumentException("Nesprávný typ asynchronní akce pro hromadnou akci: " + type);
-        }
-        if (validationPriority == null) {
-            validationPriority = 1;
-        }
-        ArrAsyncRequest request = new ArrAsyncRequest(type, validationPriority, fundVersion);
-        request.setOutput(output);
+    @Transactional
+    public void enqueue(ArrFundVersion fundVersion, ArrOutput output) {
+        ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, output, 1);
         asyncRequestRepository.save(request);
-        AsyncRequestVO mapRequest = new AsyncRequestVO(request);
-        addToMapAfterCommit(mapRequest);
-        beginValidation(type);
+        getExecutor(request.getType()).enqueue(new AsyncRequest(request));
     }
 
     /**
-     * Přidání hromadné akce do fronty na zpracování
-     *
-     * @param fundVersion
-     * @param bulkActionRun
-     * @param type
-     * @param validationPriority
+     * Přidání hromadné akce do fronty na zpracování.
      */
-    public void enqueue(ArrFundVersion fundVersion, ArrBulkActionRun bulkActionRun, AsyncTypeEnum type, Integer validationPriority) {
-        if (type != AsyncTypeEnum.BULK) {
-            throw new IllegalArgumentException("Nesprávný typ asynchronní akce pro hromadnou akci: " + type);
-        }
-        if (validationPriority == null) {
-            validationPriority = 1;
-        }
+    @Transactional
+    public void enqueue(final ArrFundVersion fundVersion,
+                        final ArrBulkActionRun bulkActionRun) {
         eventPublishBulkAction(bulkActionRun);
-        ArrAsyncRequest request = new ArrAsyncRequest(type, validationPriority, fundVersion);
-        request.setBulkAction(bulkActionRun);
+        ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, bulkActionRun, 1);
         asyncRequestRepository.save(request);
-        AsyncRequestVO mapRequest = new AsyncRequestVO(request);
-        addToMapAfterCommit(mapRequest);
-        beginValidation(type);
+        getExecutor(request.getType()).enqueue(new AsyncRequest(request));
     }
 
     /**
-     * Přidání Nodů do fronty ke zpracování
-     *
-     * @param fundVersion
-     * @param nodeList
-     * @param type
-     * @param validationPriority
+     * Přidání JP do fronty ke zpracování s výchozí prioritou.
      */
+    @Transactional
+    public void enqueue(final ArrFundVersion fundVersion,
+                        final List<ArrNode> nodeList) {
+        enqueue(fundVersion, nodeList, null);
+    }
 
-    public void enqueue(ArrFundVersion fundVersion, List<ArrNode> nodeList, AsyncTypeEnum type, Integer validationPriority) {
-        if (type != AsyncTypeEnum.NODE) {
-            throw new IllegalArgumentException("Nesprávný typ asynchronní akce pro ověření nodů: " + type);
-        }
-        if (validationPriority == null) {
-            validationPriority = 1;
-        }
+    /**
+     * Přidání JP do fronty ke zpracování.
+     */
+    @Transactional
+    public void enqueue(final ArrFundVersion fundVersion,
+                        final List<ArrNode> nodeList,
+                        final Integer priority) {
+        List<AsyncRequest> requests = new ArrayList<>(nodeList.size());
         for (ArrNode node : nodeList) {
-            ArrAsyncRequest request = new ArrAsyncRequest(type, validationPriority, fundVersion);
-            request.setNode(node);
+            ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, node, priority == null ? 1 : priority);
             asyncRequestRepository.save(request);
-            AsyncRequestVO mapRequest = new AsyncRequestVO(request);
-            addToMapAfterCommit(mapRequest);
+            requests.add(new AsyncRequest(request));
         }
-        beginValidation(type);
+        getExecutor(AsyncTypeEnum.NODE).enqueue(requests);
+    }
+
+    private AsyncExecutor getExecutor(final AsyncTypeEnum type) {
+        return asyncExecutors.get(type);
     }
 
     /**
-     * Začátek validace po dokončení předchozí transakce
-     *
-     * @param type
+     * Kontrola, jestli běží validace AS před mazáním celého AS.
      */
-    private void beginValidation(AsyncTypeEnum type) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                logger.debug("Begin validation : " + type);
-                selecteNextWorker(type);
-            }
-        });
+    public boolean isFundNodeRunning(final ArrFundVersion version) {
+        return getExecutor(AsyncTypeEnum.NODE).isProcessing(version.getFundVersionId());
     }
 
     /**
-     * Kontrola, jestli běží validace AS před mazáním celého AS
-     *
-     * @param version
-     * @return
+     * Kontrola, jestli běží hromadná akce na AS před mazáním celého AS.
      */
-    public synchronized boolean isFundNodeRunning(final ArrFundVersion version) {
-        if (runningNodeWorkers.containsKey(version.getFundVersionId())) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Kontrola, jestli běží hromadná akce na AS před mazáním celého AS
-     *
-     * @param version
-     * @return
-     */
-    public synchronized boolean isFundBulkActionRunning(final ArrFundVersion version) {
-        if (runningBulkActionWorkers.containsKey(version.getFundVersionId())) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Mazání požadavku z DB fronty po vykonání úkolu
-     *
-     * @param requestId
-     */
-    public synchronized void deleteRequestFromRepository(Long requestId) {
-        asyncRequestRepository.deleteByRequestId(requestId);
-    }
-
-    /**
-     * Načtení dat z DB při prázdné frontě požadavků ke zpracování, rozděleno podle typu požadavků
-     *
-     * @param type
-     */
-    private void findWorkerData(AsyncTypeEnum type) {
-        (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(final TransactionStatus status) {
-                switch (type) {
-                    case NODE:
-                        synchronized (this) {
-                            if (nodeMap == null || nodeMap.isEmpty()) {
-                                if (nodeFundStatistics == null) {
-                                    nodeFundStatistics = new ArrayList<>();
-                                }
-                                List<ArrAsyncRequest> queuedRequests;
-                                if (runningNodeWorkers.isEmpty()) {
-                                    queuedRequests = asyncRequestRepository.findNodeRequestsByPriorityWithLimit(type, new PageRequest(0, MAX_PROCESSED_NODES));
-                                } else {
-                                    queuedRequests = asyncRequestRepository.findNodeRequestsByPriorityAndRequestsWithLimit(type, getCurrentWorkersNodeIds(), new PageRequest(0, MAX_PROCESSED_NODES));
-                                }
-                                for (ArrAsyncRequest request : queuedRequests) {
-                                    addToMap(new AsyncRequestVO(request));
-                                }
-                            }
-                        }
-                        break;
-                    case BULK:
-                        synchronized (this) {
-                            if (bulkActionMap == null || bulkActionMap.isEmpty()) {
-                                if (bulkActionMap == null) {
-                                    bulkActionMap = new HashMap<>();
-                                }
-                                if (bulkFundStatistics == null) {
-                                    bulkFundStatistics = new ArrayList<>();
-                                }
-                                List<ArrAsyncRequest> queuedRequests = asyncRequestRepository.findRequestsByPriorityWithLimit(type, new PageRequest(0, MAX_PROCESSED_BULK_ACTIONS));
-                                for (ArrAsyncRequest request : queuedRequests) {
-                                    addToMap(new AsyncRequestVO(request));
-                                }
-                            }
-                        }
-                        break;
-                    case OUTPUT:
-                        synchronized (this) {
-                            if (outputQueue == null || outputQueue.isEmpty()) {
-                                if (outputQueue == null) {
-                                    outputQueue = new LinkedList<>();
-                                }
-                                if (outputFundStatistics == null) {
-                                    outputFundStatistics = new ArrayList<>();
-                                }
-                                List<ArrAsyncRequest> queuedRequests = asyncRequestRepository.findRequestsByPriorityWithLimit(type, new PageRequest(0, MAX_PROCESSED_OUTPUTS));
-                                for (ArrAsyncRequest request : queuedRequests) {
-                                    addToMap(new AsyncRequestVO(request));
-                                }
-                            }
-                        }
-                        break;
-                }
-            }
-        });
-    }
-
-    /**
-     * Přidání požadavku do seznamu pro zpracování
-     *
-     * @param request
-     */
-
-    private synchronized void addToMap(AsyncRequestVO request) {
-        Integer fundVersionId = request.getFundVersionId();
-        switch (request.getType()) {
-            case NODE:
-                if (nodeMap == null) {
-                    nodeMap = new ConcurrentHashMap<>();
-                }
-                if (nodeFundStatistics == null) {
-                    nodeFundStatistics = new ArrayList<>();
-                }
-                if (nodeMap.containsKey(fundVersionId)) {
-                    PriorityQueue<AsyncRequestVO> requests = nodeMap.get(fundVersionId);
-                    requests.add(request);
-                    nodeMap.put(fundVersionId, requests);
-                } else {
-                    PriorityQueue<AsyncRequestVO> requests = new PriorityQueue<>(1000, new NodePriorityComparator());
-                    requests.add(request);
-                    nodeMap.put(fundVersionId, requests);
-                }
-                waitingNodeRequestMap.put(request.getNodeId(), request.getRequestId());
-                break;
-            case BULK:
-                if (bulkActionMap == null) {
-                    bulkActionMap = new HashMap<>();
-                }
-                if (bulkFundStatistics == null) {
-                    bulkFundStatistics = new ArrayList<>();
-                }
-                if (bulkActionMap.containsKey(fundVersionId)) {
-                    Queue<AsyncRequestVO> requests = bulkActionMap.get(fundVersionId);
-                    requests.add(request);
-                    bulkActionMap.put(fundVersionId, requests);
-                } else {
-                    Queue<AsyncRequestVO> requests = new LinkedList<>();
-                    requests.add(request);
-                    bulkActionMap.put(fundVersionId, requests);
-                }
-                break;
-            case OUTPUT:
-                if (outputQueue == null) {
-                    outputQueue = new LinkedList<>();
-                }
-                if (outputFundStatistics == null) {
-                    outputFundStatistics = new ArrayList<>();
-                }
-                outputQueue.add(request);
-                break;
-        }
-    }
-
-    private synchronized void addToMapAfterCommit(AsyncRequestVO request) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                addToMap(request);
-            }
-        });
-    }
-
-    /**
-     * Výběr dalšího workeru, po začátku validace, nebo po skončení předchozího workeru
-     *
-     * @param type
-     */
-    private void selecteNextWorker(AsyncTypeEnum type) {
-        switch (type) {
-            case NODE:
-                prepareNextNodeWorker(type);
-                break;
-            case BULK:
-                prepareNextBulkActionWorker(type);
-                break;
-            case OUTPUT:
-                prepareNextOutputWorker(type);
-                break;
-        }
-    }
-
-    /**
-     * Příprava workeru pro zpracování NODů
-     *
-     * @param type
-     */
-    private synchronized void prepareNextNodeWorker(AsyncTypeEnum type) {
-        if (nodeMap == null || nodeMap.isEmpty()) {
-            findWorkerData(type);
-        }
-        // Načtení všech nodů podle AS
-        Iterator<Map.Entry<Integer, PriorityQueue<AsyncRequestVO>>> nodeIterator = nodeMap.entrySet().iterator();
-        List<Integer> toDelete = new ArrayList<>();
-        // Procházezní jednotlivých AS s kontrolou, jestli je možn=é spustit nový worker a jestli ve frontě existují požadavky
-        while (canRunNewWorker(type) && nodeIterator.hasNext()) {
-            Map.Entry<Integer, PriorityQueue<AsyncRequestVO>> fundAsyncRequests = nodeIterator.next();
-            Integer currentFundId = fundAsyncRequests.getKey();
-            PriorityQueue<AsyncRequestVO> asyncRequestsQueue = fundAsyncRequests.getValue();
-            /**
-             * Volání spuštění workeru nad NODem, v případě, že :
-             * - je možné spustit worker - je volné vlákno
-             * - vybraný NOD není aktuálně zpracovávaný jiným workerem pod jiným requestem
-             * - jestli už pod aktuálním AS něběží jiným worker, pokud jsou ve frontě AS jiné AS s požadavky ke zpracování
-             */
-            while (canRunNewWorker(type) && canRunNode(asyncRequestsQueue, currentFundId) && !(runningNodeWorkers.containsKey(currentFundId) && nodeIterator.hasNext())) {
-                runNextNodeWorker(asyncRequestsQueue.poll(), currentFundId);
-            }
-            if (asyncRequestsQueue.isEmpty()) {
-                toDelete.add(currentFundId);
-            }
-        }
-        // vymazání AS z interní fronty požadavků, pokud AS nemá žádný přiřazený požadavek
-        for (Integer index : toDelete) {
-            nodeMap.remove(index);
-        }
-    }
-
-    /**
-     * Kontrola, jestli není vybraný NOD zpracovávaný v jiném workeru
-     *
-     * @param asyncRequestsQueue
-     * @param fundVersionId
-     * @return
-     */
-    private boolean canRunNode(PriorityQueue<AsyncRequestVO> asyncRequestsQueue, Integer fundVersionId) {
-        Integer nodeId;
-        if (asyncRequestsQueue.isEmpty()) {
-            return false;
-        } else {
-            nodeId = asyncRequestsQueue.peek().getNodeId();
-        }
-        if (runningNodeIdMap.containsKey(nodeId)) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Seznam aktuálně zpracovávaných NODů
-     *
-     * @return
-     */
-    private List<Long> getCurrentWorkersNodeIds() {
-        List<Long> workerNodeIds = new ArrayList<>();
-        for (Map.Entry<Integer, List<IAsyncWorker>> entry : runningNodeWorkers.entrySet()) {
-            for (IAsyncWorker worker : entry.getValue()) {
-                workerNodeIds.add(worker.getRequestId());
-            }
-        }
-        return workerNodeIds;
-    }
-
-    /**
-     * Příprava hromadné akce ke zpracování
-     *
-     * @param type
-     */
-    private synchronized void prepareNextBulkActionWorker(AsyncTypeEnum type) {
-        (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(final TransactionStatus status) {
-                if (bulkActionMap == null || bulkActionMap.isEmpty()) {
-                    findWorkerData(type);
-                }
-                Iterator<Map.Entry<Integer, Queue<AsyncRequestVO>>> bulkActionIterator = bulkActionMap.entrySet().iterator();
-                // Procházezní jednotlivých AS s kontrolou, jestli je možné spustit nový worker a jestli ve frontě existují požadavky
-                while (canRunNewWorker(type) && bulkActionIterator.hasNext()) {
-                    Map.Entry<Integer, Queue<AsyncRequestVO>> fundAsyncRequests = bulkActionIterator.next();
-                    Integer currentFundId = fundAsyncRequests.getKey();
-                    Queue<AsyncRequestVO> asyncRequestsQueue = fundAsyncRequests.getValue();
-                    // Kontrola, jestli je možné spustit worker a jestli nad daným AS neběží jiná hromadná akce a jestli existuje hromadná akce ke zpracování
-                    while (canRunNewWorker(type) && canBulkActionRun(currentFundId) && !asyncRequestsQueue.isEmpty()) {
-                        runningBulkActionMap.put(currentFundId, asyncRequestsQueue.peek().getRequestId());
-                        runBulkAction(asyncRequestsQueue.poll(), currentFundId);
-                    }
-                    if (asyncRequestsQueue.isEmpty()) {
-                        bulkActionIterator.remove();
-                    }
-                }
-            }
-        });
-    }
-
-    /**
-     * Příprava výstupu ke zpracování
-     *
-     * @param type
-     */
-    private synchronized void prepareNextOutputWorker(AsyncTypeEnum type) {
-        if (outputQueue == null || outputQueue.isEmpty()) {
-            findWorkerData(type);
-        }
-        while (canRunNewWorker(type) && !outputQueue.isEmpty()) {
-            AsyncRequestVO request = outputQueue.poll();
-            IAsyncWorker worker = appCtx.getBean(AsyncOutputGeneratorWorker.class, request.getFundVersionId(), request.getOutputId(), request.getRequestId());
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                @Override
-                public void afterCompletion(int status) {
-                    if (status == TransactionSynchronization.STATUS_COMMITTED) {
-                        runningOutputGeneratorWorkers.add(worker);
-                        outputTaskExecutor.execute(worker);
-                    } else {
-                        logger.warn("Request for output is cancelled due to rollback of source transaction, fundVersionId:{}",
-                                worker.getFundVersionId());
-                    }
-                }
-            });
-        }
-    }
-
-    /**
-     * Spuštění workeru pro zpracování NODu
-     *
-     * @param request
-     * @param currentFundId
-     */
-    private void runNextNodeWorker(AsyncRequestVO request, Integer currentFundId) {
-        runningNodeIdMap.put(request.getNodeId(), request.getRequestId());
-        waitingNodeRequestMap.remove(request.getNodeId());
-        IAsyncWorker worker = appCtx.getBean(AsyncNodeWorker.class, currentFundId, request.getRequestId(), request.getNodeId());
-        if (runningNodeWorkers.containsKey(worker.getFundVersionId())) {
-            runningNodeWorkers.get(worker.getFundVersionId()).add(worker);
-        } else {
-            List<IAsyncWorker> workers = new ArrayList<>();
-            workers.add(worker);
-            runningNodeWorkers.put(worker.getFundVersionId(), workers);
-        }
-        nodeTaskExecutor.execute(worker);
+    public boolean isFundBulkActionRunning(final ArrFundVersion version) {
+        return getExecutor(AsyncTypeEnum.BULK).isProcessing(version.getFundVersionId());
     }
 
     /**
      * Vytvoření statistické třídy pro AS, pokud neexistuje
-     *
-     * @param fundVersionId
-     * @return
      */
     private FundStatisticsVO createFundStatisticsVO(int fundVersionId) {
-        FundStatisticsVO stat = new FundStatisticsVO(fundVersionId);
         ArrFundVersion version = fundVersionRepository.findByIdWithFetchFund(fundVersionId);
         ArrFundVO statFund = new ArrFundVO();
         statFund.setName(version.getFund().getName());
         statFund.setId(version.getFund().getFundId());
         statFund.setInstitutionId(version.getFund().getInstitution().getInstitutionId());
-        stat.setFund(statFund);
-        stat.setRequestCount(1);
-        return stat;
-    }
-
-    /**
-     * Přidání informace o vzniku požadavku do statistiky o zpracování požadavků za poslední hodinu
-     *
-     * @param info
-     */
-    public synchronized void addToLastHourRequests(TimeRequestInfo info) {
-        lastHourRequests.add(info);
-        for (Iterator<TimeRequestInfo> iterator = lastHourRequests.iterator(); iterator.hasNext(); ) {
-            TimeRequestInfo toDelete = iterator.next();
-            if (System.currentTimeMillis() - toDelete.getTimeFinished() > 3600000) {
-                iterator.remove();
-            }
-        }
-    }
-
-    /**
-     * získání počtu běžících workerů pro NODy
-     *
-     * @return
-     */
-    private int getRunningNodeWorkersCount() {
-        int runningNodeWorkersCount = 0;
-        for (Map.Entry<Integer, List<IAsyncWorker>> entry : runningNodeWorkers.entrySet()) {
-            runningNodeWorkersCount += entry.getValue().size();
-        }
-        return runningNodeWorkersCount;
-    }
-
-    /**
-     * kontrola, jestli existuje volné vlákno pro zpracování požadavku
-     *
-     * @param type
-     * @return
-     */
-    private synchronized boolean canRunNewWorker(AsyncTypeEnum type) {
-        switch (type) {
-            case NODE:
-                return (getRunningNodeWorkersCount() < nodeTaskExecutor.getCorePoolSize());
-            case BULK:
-                return (runningBulkActionWorkers.size() < bulkActionTaskExecutor.getCorePoolSize());
-            case OUTPUT:
-                return (runningOutputGeneratorWorkers.size() < outputTaskExecutor.getCorePoolSize());
-            default:
-                throw new NotImplementedException("Typ requestu pro smazání neni implementován: " + type);
-        }
-    }
-
-    /**
-     * Testuje, zda-li může být úloha spuštěna/naplánována.
-     *
-     * @param fundVersionId ID archivn9ho soubor, podle které se testuje možné spuštění
-     * @return true - pokud se může spustit
-     */
-    private synchronized boolean canBulkActionRun(final Integer fundVersionId) {
-        return !runningBulkActionMap.containsKey(fundVersionId);
-    }
-
-    /**
-     * spuštění hromadné akce
-     *
-     * @param requestVO
-     * @param fundVersionId
-     */
-    private void runBulkAction(AsyncRequestVO requestVO, Integer fundVersionId) {
-        AsyncBulkActionWorker bulkActionWorker = this.appCtx.getBean(AsyncBulkActionWorker.class, fundVersionId, requestVO.getRequestId(), requestVO.getBulkActionId());
-        runningBulkActionWorkers.put(fundVersionId, bulkActionWorker);
-        bulkActionTaskExecutor.execute(bulkActionWorker);
-    }
-
-    /**
-     * Kontrola, jestli je možné validovat
-     *
-     * @param asyncRequestId
-     * @param nodeId
-     * @return
-     */
-    public synchronized boolean canUpdateConformity(Long asyncRequestId, Integer nodeId) {
-        if (waitingNodeRequestMap.get(nodeId) != null) {
-            if (waitingNodeRequestMap.get(nodeId) > asyncRequestId) {
-                return false;
-            }
-        }
-        if (runningNodeIdMap.containsKey(nodeId)) {
-            if (runningNodeIdMap.get(nodeId) == asyncRequestId) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return true;
-        }
-    }
-
-    /**
-     * odebrání hromadné akce ze seznamu pro zpracování při jejím přerušení
-     *
-     * @param type
-     * @param id
-     */
-    public void removeFromArrAsyncRequest(AsyncTypeEnum type, Integer id) {
-        switch (type) {
-            case BULK:
-                asyncRequestRepository.deleteByBulkActionRunId(id);
-                break;
-            default:
-                throw new NotImplementedException("Typ requestu pro smazání neni implementován: " + type);
-        }
-    }
-
-    /**
-     * Odebrání ze seznamu bežících workerů pro NODy po jeho ukončení
-     *
-     * @param fundVersionId
-     * @param requestId
-     */
-    private void removeFromRunningNodeWorkers(Integer fundVersionId, Long requestId) {
-        List<IAsyncWorker> workers = runningNodeWorkers.get(fundVersionId);
-        if (workers != null) {
-            for (IAsyncWorker worker : workers) {
-                if (worker.getRequestId() == requestId) {
-                    workers.remove(worker);
-                    if (workers.isEmpty()) {
-                        runningNodeWorkers.remove(fundVersionId);
-                    }
-                    break;
-                }
-            }
-        }
+        return new FundStatisticsVO(fundVersionId, statFund);
     }
 
     /**
@@ -718,17 +222,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
      * @param fundVersionId id verze archivní pomůcky
      */
     public void terminateBulkActions(final Integer fundVersionId) {
-        // TODO: Toto řešení nedává smysl pro mazání AS odkud je funkce volána
-        //       Bude nutné více přepracovat, např. rovnou hromadné akce smazat.
-        bulkActionRepository.findByFundVersionIdAndState(fundVersionId, ArrBulkActionRun.State.WAITING).forEach(bulkActionRun -> {
-            bulkActionRun.setState(ArrBulkActionRun.State.INTERRUPTED);
-            bulkActionRepository.save(bulkActionRun);
-        });
-        bulkActionRepository.flush();
-
-        if (runningBulkActionWorkers.containsKey(fundVersionId)) {
-            runningBulkActionWorkers.get(fundVersionId).terminate();
-        }
+        getExecutor(AsyncTypeEnum.BULK).terminateFund(fundVersionId);
     }
 
     /**
@@ -748,392 +242,134 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             throw new IllegalArgumentException("Nelze přerušit hromadnou akci ve stavu " + originalState + "!");
         }
 
-        boolean needSave = true;
-
-        if (originalState.equals(ArrBulkActionRun.State.RUNNING)) {
-            if (runningBulkActionWorkers.containsKey(bulkActionRun.getFundVersionId())) {
-                AsyncBulkActionWorker bulkActionWorker = (AsyncBulkActionWorker) runningBulkActionWorkers.get(bulkActionRun.getFundVersionId());
-                if (bulkActionWorker.getBulkActionRun().getBulkActionRunId().equals(bulkActionRun.getBulkActionRunId())) {
-                    bulkActionWorker.terminate();
-                    needSave = false;
-                }
-            }
-        }
-
-        if (needSave) {
-            bulkActionRun.setState(ArrBulkActionRun.State.INTERRUPTED);
-            bulkActionRepository.save(bulkActionRun);
-            eventPublishBulkAction(bulkActionRun);
-            removeFromArrAsyncRequest(AsyncTypeEnum.BULK, bulkActionRun.getBulkActionRunId());
-            bulkActionRepository.flush();
-        }
-    }
-
-    public synchronized void terminateNodeWorkersByFund(Integer terminatedNodeFundId) {
-        this.terminatedNodeFundId = terminatedNodeFundId;
+        getExecutor(AsyncTypeEnum.BULK).terminate(bulkActionRun.getBulkActionRunId());
     }
 
     /**
-     * Volání z jednotlivých workerů po jejich skončení, plánování spuštění nových workerů
+     * Zastavení workerů podle verze AS.
      *
-     * @param asyncRequestEvent
+     * @param fundVersionId id verze archivní pomůcky
      */
+    public void terminateNodeWorkersByFund(final Integer fundVersionId) {
+        getExecutor(AsyncTypeEnum.NODE).terminateFund(fundVersionId);
+    }
+
     @Override
-    @Transactional
-    public void onApplicationEvent(AsyncRequestEvent asyncRequestEvent) {
-        switch (asyncRequestEvent.getAsyncRequestVO().getType()) {
-            case NODE:
-                synchronized (this) {
-                    AsyncRequestVO finishedRequestVO = asyncRequestEvent.getAsyncRequestVO();
-                    deleteRequestFromRepository(finishedRequestVO.getRequestId());
-                    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                        @Override
-                        public void afterCommit() {
-                            addToLastHourRequests(new TimeRequestInfo(finishedRequestVO.getType(), System.currentTimeMillis()));
-                            removeFromRunningNodeWorkers(finishedRequestVO.getFundVersionId(), finishedRequestVO.getRequestId());
-                            runningNodeIdMap.remove(finishedRequestVO.getNodeId());
-                            selecteNextWorker(finishedRequestVO.getType());
-                        }
-                    });
-                    break;
-                }
-            case BULK:
-                synchronized (this) {
-                    AsyncRequestVO finishedRequestVO = asyncRequestEvent.getAsyncRequestVO();
-                    deleteRequestFromRepository(finishedRequestVO.getRequestId());
-                    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                        @Override
-                        public void afterCommit() {
-                            addToLastHourRequests(new TimeRequestInfo(finishedRequestVO.getType(), System.currentTimeMillis()));
-                            runningBulkActionWorkers.remove(finishedRequestVO.getFundVersionId());
-                            runningBulkActionMap.remove(finishedRequestVO.getFundVersionId());
-                            selecteNextWorker(finishedRequestVO.getType());
-                        }
-                    });
-                    break;
-                }
-            case OUTPUT:
-                synchronized (this) {
-                    AsyncRequestVO finishedRequestVO = asyncRequestEvent.getAsyncRequestVO();
-                    deleteRequestFromRepository(finishedRequestVO.getRequestId());
-                    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-                        @Override
-                        public void afterCommit() {
-                            addToLastHourRequests(new TimeRequestInfo(finishedRequestVO.getType(), System.currentTimeMillis()));
-                            runningOutputGeneratorWorkers.remove(finishedRequestVO.getFundVersionId());
-                            selecteNextWorker(finishedRequestVO.getType());
-                        }
-                    });
-                    break;
-                }
+    public void onApplicationEvent(final AsyncRequestEvent event) {
+        AsyncRequest request = event.getAsyncRequest();
+        if (event.success()) {
+            getExecutor(request.getType()).onSuccess(event.getWorker());
+        } else {
+            getExecutor(request.getType()).onFail(event.getWorker(), event.getError());
         }
     }
 
     /**
-     * vytváření statistiky pro LOAD
+     * Vytváření statistiky pro zatížení.
      */
     @Scheduled(fixedDelay = 1000)
-    public void scheduledTask() {
+    protected void scheduledTask() {
         LocalDateTime now = LocalDateTime.now();
         int second = now.getSecond() + 60 * now.getMinute();
-        threadLoadInfo.getNodeSlots()[second] = getRunningThreadsCount(AsyncTypeEnum.NODE);
-        threadLoadInfo.getBulkSlots()[second] = getRunningThreadsCount(AsyncTypeEnum.BULK);
-        threadLoadInfo.getOutputSlots()[second] = getRunningThreadsCount(AsyncTypeEnum.OUTPUT);
-        logger.debug("Fixed delay task : " + System.currentTimeMillis());
+        asyncExecutors.values().forEach(s -> s.writeSlot(second));
     }
 
     /**
-     * Vytváření statistiky pčekajících požadavků
-     *
-     * @param type
-     * @return
+     * Vrácení detailních statistik podle jednotlivých typů požadavků.
      */
-    private int getWaitingRequests(AsyncTypeEnum type) {
-        switch (type) {
-            case NODE:
-                int nodeWaitingRequests = 0;
-                Iterator<Map.Entry<Integer, PriorityQueue<AsyncRequestVO>>> nodeIterator = nodeMap.entrySet().iterator();
-                while (nodeIterator.hasNext()) {
-                    nodeWaitingRequests += nodeIterator.next().getValue().size();
+    public List<FundStatisticsVO> getFundStatistics(final AsyncTypeEnum type) {
+        Map<Integer, FundStatisticsVO> map = new HashMap<>();
+        AsyncExecutor asyncExecutor = getExecutor(type);
+        asyncExecutor.doLockQueue(() -> {
+            for (final AsyncRequest request : asyncExecutor.queue) {
+                Integer fundVersionId = request.getFundVersionId();
+                FundStatisticsVO fundStatistics = map.get(fundVersionId);
+                if (fundStatistics == null) {
+                    fundStatistics = createFundStatisticsVO(fundVersionId);
+                    map.put(fundVersionId, fundStatistics);
                 }
-                return nodeWaitingRequests;
-            case BULK:
-                int bulkWaitingRequests = 0;
-
-                Iterator<Map.Entry<Integer, Queue<AsyncRequestVO>>> bulkActionIterator = bulkActionMap.entrySet().iterator();
-                while (bulkActionIterator.hasNext()) {
-                    bulkWaitingRequests += bulkActionIterator.next().getValue().size();
-                }
-                return bulkWaitingRequests;
-            case OUTPUT:
-                return outputQueue.size();
-            default:
-                throw new NotImplementedException("Typ requestu neni implementován: " + type);
-        }
-    }
-
-    /**
-     * Statistika pro počet aktuálně běžících vláken
-     *
-     * @param type
-     * @return
-     */
-    private int getRunningThreadsCount(AsyncTypeEnum type) {
-        switch (type) {
-            case NODE:
-                return nodeTaskExecutor.getThreadPoolExecutor().getActiveCount();
-            case BULK:
-                return bulkActionTaskExecutor.getThreadPoolExecutor().getActiveCount();
-            case OUTPUT:
-                return outputTaskExecutor.getThreadPoolExecutor().getActiveCount();
-            default:
-                throw new NotImplementedException("Typ requestu neni implementován: " + type);
-        }
-    }
-
-    /**
-     * Statistika pro celkový počet vláken
-     *
-     * @param type
-     * @return
-     */
-    private int getThreadCount(AsyncTypeEnum type) {
-        switch (type) {
-            case NODE:
-                return nodeTaskExecutor.getCorePoolSize();
-            case BULK:
-                return bulkActionTaskExecutor.getCorePoolSize();
-            case OUTPUT:
-                return outputTaskExecutor.getCorePoolSize();
-            default:
-                throw new NotImplementedException("Typ requestu neni implementován: " + type);
-        }
-    }
-
-    /**
-     * Vrácení detailních statistik podle jednotlivých typů požadavků
-     *
-     * @param type
-     * @return
-     */
-    public List<FundStatisticsVO> getFundStatistics(AsyncTypeEnum type) {
-        switch (type) {
-            case NODE:
-                createNodeFundStatistics();
-                Collections.sort(nodeFundStatistics, Collections.reverseOrder());
-                return nodeFundStatistics.subList(0, Math.min(nodeFundStatistics.size(), 100));
-            case BULK:
-                createBulkFundStatistics();
-                Collections.sort(bulkFundStatistics, Collections.reverseOrder());
-                return bulkFundStatistics.subList(0, Math.min(bulkFundStatistics.size(), 100));
-            case OUTPUT:
-                createOutputFundStatistics();
-                Collections.sort(outputFundStatistics, Collections.reverseOrder());
-                return outputFundStatistics.subList(0, Math.min(outputFundStatistics.size(), 100));
-            default:
-                throw new NotImplementedException("Typ requestu neni implementován: " + type);
-        }
-    }
-
-    private void createNodeFundStatistics() {
-        Iterator<Map.Entry<Integer, PriorityQueue<AsyncRequestVO>>> nodeIterator = nodeMap.entrySet().iterator();
-        if (!nodeIterator.hasNext()) {
-            nodeFundStatistics = new ArrayList<>();
-        }
-        while (nodeIterator.hasNext()) {
-            boolean nodeFundStatFound = false;
-            Map.Entry<Integer, PriorityQueue<AsyncRequestVO>> nodeEntry = nodeIterator.next();
-            for (FundStatisticsVO stat : nodeFundStatistics) {
-                if (stat.getFundVersionId() == nodeEntry.getKey()) {
-                    stat.setRequestCount(nodeEntry.getValue().size());
-                    nodeFundStatFound = true;
-                    break;
-                }
+                fundStatistics.addCount();
             }
-            if (!nodeFundStatFound) {
-                FundStatisticsVO fundStatisticsVO = createFundStatisticsVO(nodeEntry.getKey());
-                fundStatisticsVO.setRequestCount(nodeEntry.getValue().size());
-                nodeFundStatistics.add(fundStatisticsVO);
-
-            }
-        }
-    }
-
-    private void createBulkFundStatistics() {
-        Iterator<Map.Entry<Integer, Queue<AsyncRequestVO>>> bulkActionIterator = bulkActionMap.entrySet().iterator();
-        if (!bulkActionIterator.hasNext()) {
-            bulkFundStatistics = new ArrayList<>();
-        }
-        while (bulkActionIterator.hasNext()) {
-            boolean bulkFundStatFound = false;
-            Map.Entry<Integer, Queue<AsyncRequestVO>> bulkEntry = bulkActionIterator.next();
-            for (FundStatisticsVO stat : bulkFundStatistics) {
-                if (stat.getFundVersionId() == bulkEntry.getKey()) {
-                    stat.setRequestCount(bulkEntry.getValue().size());
-                    bulkFundStatFound = true;
-                    break;
-                }
-            }
-            if (!bulkFundStatFound) {
-                FundStatisticsVO fundStatisticsVO = createFundStatisticsVO(bulkEntry.getKey());
-                fundStatisticsVO.setRequestCount(bulkEntry.getValue().size());
-                bulkFundStatistics.add(fundStatisticsVO);
-            }
-        }
-    }
-
-    private void createOutputFundStatistics() {
-        if (outputQueue == null || outputQueue.isEmpty()) {
-            outputFundStatistics = new ArrayList<>();
-        }
-        for (AsyncRequestVO requestVO : outputQueue) {
-            boolean outputFundStatFound = false;
-            for (FundStatisticsVO stat : outputFundStatistics) {
-                if (stat.getFundVersionId() == requestVO.getFundVersionId()) {
-                    int count = stat.getRequestCount();
-                    count++;
-                    stat.setRequestCount(count);
-                    outputFundStatFound = true;
-                    break;
-                }
-            }
-            if (!outputFundStatFound) {
-                FundStatisticsVO fundStatisticsVO = createFundStatisticsVO(requestVO.getFundVersionId());
-                fundStatisticsVO.setRequestCount(1);
-                outputFundStatistics.add(fundStatisticsVO);
-            }
-        }
-    }
-
-    /**
-     * Získání běžících workerů
-     *
-     * @param type
-     * @return
-     */
-    private List<AsyncWorkerVO> getRunningWorkers(AsyncTypeEnum type) {
-        switch (type) {
-            case NODE:
-                List<IAsyncWorker> runningList = new ArrayList<>();
-                for (Map.Entry<Integer, List<IAsyncWorker>> entry : runningNodeWorkers.entrySet()) {
-                    runningList.addAll(entry.getValue());
-                }
-                return convertWorkerList(runningList);
-            case BULK:
-                return convertWorkerList(runningBulkActionWorkers.values());
-            case OUTPUT:
-                return convertWorkerList(runningOutputGeneratorWorkers);
-            default:
-                throw new NotImplementedException("Typ requestu neni implementován: " + type);
-        }
+        });
+        List<FundStatisticsVO> statistics = new ArrayList<>(map.values());
+        statistics.sort(Collections.reverseOrder());
+        return statistics.subList(0, Math.min(statistics.size(), 100));
     }
 
     private List<AsyncWorkerVO> convertWorkerList(Collection<IAsyncWorker> workers) {
         List<AsyncWorkerVO> runningVOList = new ArrayList<>();
         for (IAsyncWorker worker : workers) {
-            AsyncWorkerVO workerVO = new AsyncWorkerVO(worker.getFundVersionId(), worker.getRequestId(), worker.getBeginTime(), worker.getRunningTime(), worker.getCurrentId());
+            AsyncRequest request = worker.getRequest();
+            AsyncWorkerVO workerVO = new AsyncWorkerVO(request.getFundVersionId(), request.getRequestId(), worker.getBeginTime(), worker.getRunningTime(), request.getCurrentId());
             runningVOList.add(workerVO);
         }
         return runningVOList;
     }
 
     /**
-     * Přepočítání zpracovaných požadavků za poslední hodinu
-     *
-     * @return
-     */
-    private TypeRequestCount getLastHourRequests() {
-        int nodeRequestCount = 0;
-        int bulkRequestCount = 0;
-        int outputRequestCount = 0;
-        for (TimeRequestInfo requestInfo : lastHourRequests) {
-            if (requestInfo.getType() == AsyncTypeEnum.NODE) {
-                nodeRequestCount++;
-            } else if (requestInfo.getType() == AsyncTypeEnum.BULK) {
-                bulkRequestCount++;
-            } else if (requestInfo.getType() == AsyncTypeEnum.OUTPUT) {
-                outputRequestCount++;
-            }
-        }
-        return new TypeRequestCount(nodeRequestCount, bulkRequestCount, outputRequestCount);
-    }
-
-    /**
-     * Výpočet aktuálního LOADu
-     *
-     * @param type
-     * @return
-     */
-    private double getCurrentLoad(AsyncTypeEnum type) {
-        double sum = 0;
-        switch (type) {
-            case NODE:
-                for (int s : threadLoadInfo.getNodeSlots()) {
-                    sum += s;
-                }
-                return sum / 3600;
-            case BULK:
-                for (int s : threadLoadInfo.getBulkSlots()) {
-                    sum += s;
-                }
-                return sum / 3600;
-            case OUTPUT:
-                for (int s : threadLoadInfo.getOutputSlots()) {
-                    sum += s;
-                }
-                return sum / 3600;
-            default:
-                throw new NotImplementedException("Typ requestu neni implementován: " + type);
-        }
-    }
-
-    /**
-     * Obecné informace o zpracování požadavků
-     *
-     * @return
+     * Obecné informace o zpracování požadavků.
      */
     public List<ArrAsyncRequestVO> dispatcherInfo() {
         List<ArrAsyncRequestVO> infoList = new ArrayList<>();
-        TypeRequestCount requestCount = getLastHourRequests();
 
-        AsyncTypeEnum type = AsyncTypeEnum.NODE;
-        ArrAsyncRequestVO nodeTypeInfo = new ArrAsyncRequestVO(type, getCurrentLoad(type), requestCount.getNodeRequestCount(),
-                getWaitingRequests(type), getRunningThreadsCount(type), getThreadCount(type), getRunningWorkers(type));
-        infoList.add(nodeTypeInfo);
-
-        type = AsyncTypeEnum.BULK;
-        ArrAsyncRequestVO bulkTypeInfo = new ArrAsyncRequestVO(type, getCurrentLoad(type), requestCount.getBulkRequestCount(),
-                getWaitingRequests(type), getRunningThreadsCount(type), getThreadCount(type), getRunningWorkers(type));
-        infoList.add(bulkTypeInfo);
-
-        type = AsyncTypeEnum.OUTPUT;
-        ArrAsyncRequestVO outputTypeInfo = new ArrAsyncRequestVO(type, getCurrentLoad(type), requestCount.getOutputRequestCount(),
-                getWaitingRequests(type), getRunningThreadsCount(type), getThreadCount(type), getRunningWorkers(type));
-        infoList.add(outputTypeInfo);
+        asyncExecutors.values().forEach(asyncExecutor -> {
+            AtomicReference<List<AsyncWorkerVO>> workers = new AtomicReference<>();
+            AtomicReference<Integer> waiting = new AtomicReference<>();
+            AtomicReference<Integer> running = new AtomicReference<>();
+            AtomicReference<Integer> requestCount = new AtomicReference<>();
+            AtomicReference<Double> load = new AtomicReference<>();
+            asyncExecutor.doLockQueue(() -> {
+                load.set(asyncExecutor.getCurrentLoad());
+                workers.set(convertWorkerList(asyncExecutor.processing));
+                waiting.set(asyncExecutor.queue.size());
+                running.set(asyncExecutor.processing.size());
+                requestCount.set(asyncExecutor.getLastHourRequests());
+            });
+            infoList.add(new ArrAsyncRequestVO(asyncExecutor.getType(), load.get(), requestCount.get(),
+                    waiting.get(), running.get(), asyncExecutor.getWorkers(), workers.get()));
+        });
 
         return infoList;
     }
 
     /**
-     * čekání na ukončení všech asynchronních požadavků - pro účely testování
+     * Čekání na ukončení všech asynchronních požadavků - pro synchronizaci v unit testech.
      */
     public void waitForFinishAll() {
-        int i = 0;
-        do {
-            i = 0;
-            i += nodeMap.size();
-            i += waitingNodeRequestMap.size();
-            i += runningNodeIdMap.size();
-            i += getRunningThreadsCount(AsyncTypeEnum.NODE);
-            i += getRunningThreadsCount(AsyncTypeEnum.BULK);
-            i += getRunningThreadsCount(AsyncTypeEnum.OUTPUT);
-            logger.debug("Cekani na dokonceni workeru : " + i);
-            try {
-                Thread.sleep(1000);
-            } catch (Exception e) {
-                throw new IllegalArgumentException();
-            }
-        } while (i > 0);
+        asyncExecutors.values().forEach(AsyncExecutor::waitForFinish);
+    }
+
+    public void start() {
+        boolean result = runningService.compareAndSet(false, true);
+        if (result) {
+            logger.info("Probíhá spouštění asynchronních front");
+            initStart();
+            logger.info("Dokončení spouštění asynchronních front");
+        } else {
+            logger.warn("Asynchronní fronty již běží");
+        }
+    }
+
+    private void initStart() {
+        asyncExecutors.values().forEach(AsyncExecutor::start);
+    }
+
+    public void stop() {
+        boolean result;
+        synchronized (this) {
+            result = runningService.compareAndSet(true, false);
+        }
+        if (result) {
+            logger.info("Zahájení zastavování asynchronních front");
+            stopAll();
+            logger.info("Zastaveny asynchronní fronty");
+        } else {
+            logger.warn("Asynchronní fronty jsou pozastavovány a nebo neběží");
+        }
+    }
+
+    private void stopAll() {
+        asyncExecutors.values().forEach(AsyncExecutor::stop);
     }
 
     /**
@@ -1152,5 +388,570 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                         bulkActionRun.getState()
                 )
         );
+    }
+
+    private static abstract class AsyncExecutor {
+
+        /**
+         * Čekací interval při aktivní čekání.
+         */
+        public final int WAIT = 10;
+
+        /**
+         * Časové okno pro výpočet zatížení.
+         */
+        public final int LOAD_SEC = 3600;
+
+        private final ArrAsyncRequestRepository asyncRequestRepository;
+        private final ApplicationContext appCtx;
+        private final PlatformTransactionManager txManager;
+
+        /**
+         * Informace o zatížení.
+         */
+        private final ThreadLoadInfo threadLoadInfo = new ThreadLoadInfo(LOAD_SEC);
+
+        /**
+         * Informace o počtu požadavků za poslední hodinu.
+         */
+        private final List<TimeRequestInfo> lastHourRequests = new LinkedList<>();
+
+        /**
+         * Běží zpracovávání požadavků?
+         */
+        final AtomicBoolean running = new AtomicBoolean(false);
+
+        /**
+         * Správa vláken.
+         */
+        final ThreadPoolTaskExecutor executor;
+
+        /**
+         * Typ fronty.
+         */
+        final AsyncTypeEnum type;
+
+        /**
+         * Hlavní zámek pro přístup k datům.
+         */
+        final Object lockQueue = new Object();
+
+        /**
+         * Fronta čekajících požadavků.
+         */
+        final Queue<AsyncRequest> queue;
+
+        /**
+         * Seznam přeskočených požadavků na smazání.
+         */
+        final List<AsyncRequest> skipped = new ArrayList<>();
+
+        /**
+         * Seznam probíhajících zpracování.
+         */
+        final List<IAsyncWorker> processing = new ArrayList<>();
+
+        /**
+         * Maximální počet souběžných zpracování v rámci jedné verze archivního souboru.
+         */
+        final int maxPerFundVersion;
+
+        AsyncExecutor(final AsyncTypeEnum type,
+                      final ThreadPoolTaskExecutor executor,
+                      final Queue<AsyncRequest> queue,
+                      final PlatformTransactionManager txManager,
+                      final ArrAsyncRequestRepository asyncRequestRepository,
+                      final ApplicationContext appCtx,
+                      final int maxPerFundVersion) {
+            this.executor = executor;
+            this.type = type;
+            this.queue = queue;
+            this.txManager = txManager;
+            this.asyncRequestRepository = asyncRequestRepository;
+            this.appCtx = appCtx;
+            this.maxPerFundVersion = maxPerFundVersion;
+        }
+
+        /**
+         * Pomocná metoda pro zjištění informací frontě na jedno zamčení.
+         *
+         * @param r spouštěný blok
+         */
+        public void doLockQueue(Runnable r) {
+            synchronized (lockQueue) {
+                r.run();
+            }
+        }
+
+        /**
+         * Zapsání časového okna pro vytížení.
+         *
+         * @param sec časové okno
+         */
+        public void writeSlot(int sec) {
+            synchronized (lockQueue) {
+                threadLoadInfo.getSlots()[sec] = processing.size();
+            }
+        }
+
+        /**
+         * Vypočtení aktuální zatížení.
+         *
+         * @return zatížení
+         */
+        public double getCurrentLoad() {
+            synchronized (lockQueue) {
+                double sum = 0;
+                for (int s : threadLoadInfo.getSlots()) {
+                    sum += s;
+                }
+                return sum / LOAD_SEC;
+            }
+        }
+
+        /**
+         * Počet požadavků za poslední hodinu.
+         *
+         * @return počet požadavků
+         */
+        public int getLastHourRequests() {
+            synchronized (lockQueue) {
+                lastHourRequests.removeIf(toDelete -> System.currentTimeMillis() - toDelete.getTimeFinished() > 3600000);
+                return lastHourRequests.size();
+            }
+        }
+
+        /**
+         * Počet dostupných vláken.
+         *
+         * @return počet vláken
+         */
+        protected int getWorkers() {
+            return executor.getCorePoolSize();
+        }
+
+        private void afterTx(final Runnable task) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                @Override
+                public void afterCommit() {
+                    task.run();
+                }
+            });
+        }
+
+        /**
+         * Spuštění úlohy v nové transakci.
+         *
+         * @param task úloha
+         */
+        private void tx(final Runnable task) {
+            TransactionTemplate transactionTemplate = new TransactionTemplate(txManager);
+            transactionTemplate.setPropagationBehavior(PROPAGATION_REQUIRES_NEW);
+            transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+                @Override
+                protected void doInTransactionWithoutResult(final TransactionStatus status) {
+                    task.run();
+                }
+            });
+        }
+
+        /**
+         * Obnovení fronty z databáze.
+         */
+        private void restoreAndRun() {
+            tx(() -> {
+                logger.info("Obnovení databázové fronty {}", getType());
+                List<AsyncRequest> results = new ArrayList<>();
+                int p = 0;
+                List<ArrAsyncRequest> requests;
+                int MAX = 1000;
+                do {
+                    requests = asyncRequestRepository.findRequestsByPriorityWithLimit(getType(), new PageRequest(p, MAX));
+                    for (ArrAsyncRequest request : requests) {
+                        results.add(new AsyncRequest(request));
+                    }
+                    p++;
+                } while (requests.size() == MAX);
+                logger.info("Obnovení databázové fronty {} - obnoveno: {}", getType(), results.size());
+                if (results.size() > 0) {
+                    enqueue(results);
+                }
+            });
+        }
+
+        public AsyncTypeEnum getType() {
+            return this.type;
+        }
+
+        protected void deleteRequest(AsyncRequest request) {
+            deleteRequests(Collections.singletonList(request));
+        }
+
+        protected void deleteRequests(Collection<AsyncRequest> requests) {
+            tx(() -> {
+                for (AsyncRequest request : requests) {
+                    logger.debug("Mazání requestu z DB: {}", request);
+                    asyncRequestRepository.deleteByRequestId(request.getRequestId());
+                }
+            });
+        }
+
+        private void countRequest() {
+            lastHourRequests.add(new TimeRequestInfo());
+            lastHourRequests.removeIf(toDelete -> System.currentTimeMillis() - toDelete.getTimeFinished() > 3600000);
+        }
+
+        public void onFail(IAsyncWorker worker, final Throwable error) {
+            synchronized (lockQueue) {
+                AsyncRequest request = worker.getRequest();
+                logger.error("Selhání requestu {}", request, error);
+                countRequest();
+                processing.removeIf(next -> next.getRequest().getRequestId().equals(request.getRequestId()));
+                deleteRequest(worker.getRequest());
+                scheduleNext();
+            }
+        }
+
+        public void onSuccess(IAsyncWorker worker) {
+            synchronized (lockQueue) {
+                AsyncRequest request = worker.getRequest();
+                logger.debug("Dokončení requestu {}", request);
+                countRequest();
+                processing.removeIf(next -> next.getRequest().getRequestId().equals(request.getRequestId()));
+                deleteRequest(worker.getRequest());
+                scheduleNext();
+            }
+        }
+
+        public void terminate(Integer currentId) {
+            List<IAsyncWorker> terminateWorkers = new ArrayList<>();
+            synchronized (lockQueue) {
+                Iterator<AsyncRequest> iterator = queue.iterator();
+                List<AsyncRequest> removed = new ArrayList<>();
+                while (iterator.hasNext()) {
+                    AsyncRequest request = iterator.next();
+                    if (currentId.equals(request.getCurrentId())) {
+                        iterator.remove();
+                        removed.add(request);
+                    }
+                }
+                if (removed.size() > 0) {
+                    deleteRequests(removed);
+                }
+                for (IAsyncWorker worker : processing) {
+                    AsyncRequest request = worker.getRequest();
+                    if (currentId.equals(request.getCurrentId())) {
+                        terminateWorkers.add(worker);
+                    }
+                }
+            }
+            for (IAsyncWorker worker : terminateWorkers) {
+                AsyncRequest request = worker.getRequest();
+                logger.debug("Ukončuji {} request: {}", getType(), request.getRequestId());
+                worker.terminate();
+            }
+        }
+
+        public void terminateFund(Integer fundVersionId) {
+            List<IAsyncWorker> terminateWorkers = new ArrayList<>();
+            synchronized (lockQueue) {
+                Iterator<AsyncRequest> iterator = queue.iterator();
+                List<AsyncRequest> removed = new ArrayList<>();
+                while (iterator.hasNext()) {
+                    AsyncRequest next = iterator.next();
+                    if (fundVersionId.equals(next.getFundVersionId())) {
+                        iterator.remove();
+                        removed.add(next);
+                    }
+                }
+                if (removed.size() > 0) {
+                    deleteRequests(removed);
+                }
+                for (IAsyncWorker worker : processing) {
+                    AsyncRequest request = worker.getRequest();
+                    if (fundVersionId.equals(request.getFundVersionId())) {
+                        terminateWorkers.add(worker);
+                    }
+                }
+            }
+            for (IAsyncWorker worker : terminateWorkers) {
+                AsyncRequest request = worker.getRequest();
+                logger.debug("Ukončuji {} request: {}", getType(), request.getRequestId());
+                worker.terminate();
+            }
+        }
+
+        protected boolean isEmptyWorker() {
+            return processing.size() < getWorkers();
+        }
+
+        @Nullable
+        protected AsyncRequest selectNext() {
+            Map<Integer, Integer> fundVersionCount = calcFundVersionsPerWorkers();
+
+            AsyncRequest next;
+            AsyncRequest selected = null;
+            List<AsyncRequest> backToQueue = new ArrayList<>();
+            while ((next = queue.poll()) != null) {
+                Integer fundVersionId = next.getFundVersionId();
+                Integer count = fundVersionCount.getOrDefault(fundVersionId, 0);
+                if (count < maxPerFundVersion) {
+                    selected = next;
+                    break;
+                } else {
+                    backToQueue.add(next);
+                }
+            }
+
+            // vracení požadavků do fronty
+            if (backToQueue.size() > 0) {
+                queue.addAll(backToQueue);
+            }
+
+            return selected;
+        }
+
+        protected Map<Integer, Integer> calcFundVersionsPerWorkers() {
+            Map<Integer, Integer> fundVersionCount = new HashMap<>();
+            for (IAsyncWorker asyncWorker : processing) {
+                AsyncRequest request = asyncWorker.getRequest();
+                Integer fundVersionId = request.getFundVersionId();
+                Integer count = fundVersionCount.get(fundVersionId);
+                if (count == null) {
+                    count = 0;
+                }
+                count++;
+                fundVersionCount.put(fundVersionId, count);
+            }
+            return fundVersionCount;
+        }
+
+        private void scheduleNext() {
+            while (!queue.isEmpty() && isEmptyWorker() && running.get()) {
+                AsyncRequest request = selectNext();
+                if (request != null) {
+                    IAsyncWorker worker = appCtx.getBean(workerClass(), request);
+                    logger.debug("Naplánování requestu: {}", request);
+                    processing.add(worker);
+                    executor.submit(worker);
+                } else {
+                    logger.debug("Nebyl vybrán žádný request {}", getType());
+                    break;
+                }
+            }
+        }
+
+        /**
+         * Třída pro zpracování požadavku.
+         */
+        protected abstract Class<? extends IAsyncWorker> workerClass();
+
+        /**
+         * Vložení do fronty.
+         *
+         * @param request požadavek na zpracování
+         */
+        public void enqueue(final AsyncRequest request) {
+            enqueue(Collections.singleton(request));
+        }
+
+        protected void enqueueInner(final AsyncRequest request) {
+            if (request.getType() != getType()) {
+                throw new IllegalStateException("Neplatný typ požadavku");
+            }
+            // detekci, zda-li se má požadavek přidat nebo přeskočit
+            if (skip(request)) {
+                skipped.add(request); // přidání do fronty na přeskočení
+            } else {
+                logger.debug("Přidání do fronty: {}", request);
+                queue.add(request);
+            }
+        }
+
+        /**
+         * Přeskočit požadavek?
+         *
+         * @param request požadavek na zpracování
+         * @return true - ano, přeskočit
+         */
+        protected boolean skip(final AsyncRequest request) {
+            return false;
+        }
+
+        /**
+         * Synchronní čekání na dokončení všech požadavků.
+         */
+        void waitForFinish() {
+            boolean finish;
+            int waiting = 0;
+            do {
+                synchronized (lockQueue) {
+                    finish = processing.isEmpty() && queue.isEmpty();
+                }
+                if (!finish) {
+                    try {
+                        if (waiting % 1000 == 0) {
+                            logger.info("Čekání na ukončení asynchronní fronty: {}", getType());
+                        }
+                        Thread.sleep(WAIT);
+                        waiting += WAIT;
+                    } catch (InterruptedException e) {
+                        throw new IllegalStateException("Přerušení čekajícího vlákna", e);
+                    }
+                }
+            } while (!finish);
+        }
+
+        /**
+         * Hromadné přidání požadavků.
+         *
+         * @param requests požadavky na zpracování
+         */
+        public void enqueue(final Collection<AsyncRequest> requests) {
+            // přidáváme až po úspěšném dokončení probíhající transakce
+            afterTx(() -> {
+                synchronized (lockQueue) {
+                    for (AsyncRequest asyncRequest : requests) {
+                        enqueueInner(asyncRequest);
+                    }
+                    resolveSkipped();
+                    scheduleNext();
+                }
+            });
+        }
+
+        /**
+         * Vyřešení přeskočených požadavků - je třeba je smazat z DB.
+         */
+        private void resolveSkipped() {
+            if (skipped.size() > 0) {
+                logger.debug("Přeskočeny požadavky z fronty {}: {}, {}", getType(), skipped.size(), skipped.stream()
+                        .map(AsyncRequest::getRequestId)
+                        .collect(Collectors.toList()));
+                deleteRequests(skipped);
+                skipped.clear();
+            }
+        }
+
+        /**
+         * Zastavení zpracování.
+         */
+        public void stop() {
+            boolean result = running.compareAndSet(true, false);
+            if (result) {
+                synchronized (lockQueue) {
+                    queue.clear();
+                }
+                int i;
+                do {
+                    synchronized (lockQueue) {
+                        i = processing.size();
+                    }
+                    if (i > 0) {
+                        try {
+                            Thread.sleep(WAIT);
+                        } catch (InterruptedException e) {
+                            throw new IllegalStateException("Přerušení uspání vlákna", e);
+                        }
+                    }
+                } while (i > 0);
+            }
+        }
+
+        /**
+         * Spuštění zpracování.
+         */
+        void start() {
+            synchronized (lockQueue) {
+                boolean result = running.compareAndSet(false, true);
+                if (result) {
+                    restoreAndRun();
+                }
+            }
+        }
+
+        /**
+         * Zpracovává se (nebo je ve frontě) něco z verze archivní pomůcky.
+         *
+         * @param fundVersionId id verze archivní pomůcky
+         * @return true - je zpracováno něco z verze archivní pomůcky
+         */
+        public boolean isProcessing(final Integer fundVersionId) {
+            synchronized (lockQueue) {
+                for (AsyncRequest request : queue) {
+                    if (fundVersionId.equals(request.getFundVersionId())) {
+                        return true;
+                    }
+                }
+                for (IAsyncWorker worker : processing) {
+                    AsyncRequest request = worker.getRequest();
+                    if (fundVersionId.equals(request.getFundVersionId())) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+    }
+
+    private static class AsyncBulkExecutor extends AsyncExecutor {
+
+        AsyncBulkExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund) {
+            super(AsyncTypeEnum.BULK, executor, new LinkedList<>(), txManager, asyncRequestRepository, appCtx, maxPerFund);
+        }
+
+        @Override
+        protected Class<? extends IAsyncWorker> workerClass() {
+            return AsyncBulkActionWorker.class;
+        }
+
+    }
+
+    private static class AsyncNodeExecutor extends AsyncExecutor {
+
+        AsyncNodeExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund) {
+            super(AsyncTypeEnum.NODE, executor, new PriorityQueue<>(1000, new NodePriorityComparator()), txManager, asyncRequestRepository, appCtx, maxPerFund);
+        }
+
+        @Override
+        protected Class<? extends IAsyncWorker> workerClass() {
+            return AsyncNodeWorker.class;
+        }
+
+        @Override
+        protected boolean skip(final AsyncRequest request) {
+            Map<Integer, AsyncRequest> queuedNodeIds = queue.stream()
+                    .collect(Collectors.toMap(AsyncRequest::getNodeId, Function.identity()));
+            AsyncRequest existAsyncRequest = queuedNodeIds.get(request.getNodeId());
+            if (existAsyncRequest == null) {
+                // neexistuje ve frontě, chceme přidat
+                return false;
+            } else {
+                Integer priorityExists = existAsyncRequest.getPriority();
+                Integer priorityAdding = request.getPriority();
+                if (priorityAdding > priorityExists) {
+                    // nově přidáváná položka má lepší prioritu; mažeme aktuální z fronty a vložíme novou
+                    queue.remove(existAsyncRequest);
+                    deleteRequest(existAsyncRequest);
+                    return false;
+                } else {
+                    // nově přidáváná položka má horší prioritu, než je ve frontě; proto přeskakujeme
+                    return true;
+                }
+            }
+        }
+    }
+
+    private static class AsyncOutputExecutor extends AsyncExecutor {
+
+        AsyncOutputExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund) {
+            super(AsyncTypeEnum.OUTPUT, executor, new LinkedList<>(), txManager, asyncRequestRepository, appCtx, maxPerFund);
+        }
+
+        @Override
+        protected Class<? extends IAsyncWorker> workerClass() {
+            return AsyncOutputGeneratorWorker.class;
+        }
+
     }
 }

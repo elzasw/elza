@@ -111,9 +111,13 @@ public class StaticDataService {
      */
     @Transactional(value = TxType.MANDATORY)
     public void init() {
-        // init type enums and active provider
-        DataType.init(dataTypeRepository);
-        CalendarType.init(calendarTypeRepository);
+        if (activeProvider == null) {
+            // init type enums
+            // enums from DB are initialized only once
+            DataType.init(dataTypeRepository);
+            CalendarType.init(calendarTypeRepository);
+        }
+        // prepare active provider
         activeProvider = createProvider();
 
         // init interceptor

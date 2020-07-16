@@ -159,6 +159,9 @@
 </#switch>
 </#list>
 </ead:did>
+<#if !node.nodeId.published>
+  <ead:otherfindaid localtype="MightExist"><ead:p>Pro úroveň popisu existují nebo vzniknou další archivní pomůcky.</ead:p></ead:otherfindaid>
+</#if>
 <#list node.items as item>
 <#switch item.type.code>
 <#case "ZP2015_UNIT_HIST">
@@ -183,42 +186,52 @@
 <#macro writeNodes nodes>
 <#list nodes as node>
   <@writeTags node.depth />
+  <#local tagname="ead:c">
+  <#if node.depth==1>
+    <#local tagname="ead:archdesc">
+  </#if>
   <#-- Write level type -->
+  <#local level="otherlevel">
   <#switch node.getSingleItem("ZP2015_LEVEL_TYPE").specification.code>
   <#case "ZP2015_LEVEL_ROOT">
-    <ead:c level="fonds">
+    <#local level="fonds">
     <#break>
   <#case "ZP2015_LEVEL_SECTION">
-    <ead:c level="subfonds">
+    <#local level="subfonds">
     <#break>
   <#case "ZP2015_LEVEL_SERIES">
-    <ead:c level="series">
+    <#local level="series">
     <#break>
   <#case "ZP2015_LEVEL_FOLDER">
-    <ead:c level="subseries">
+    <#local level="subseries">
     <#break>
   <#case "ZP2015_LEVEL_ITEM">
-    <ead:c level="item">
+    <#local level="item">
     <#break>
   <#case "ZP2015_LEVEL_PART">
-    <ead:c level="otherlevel" otherlevel="itempart">
-    <#break>
-  <#default>
-  	<ead:c>
+    <#local otherlevel="itempart">    
+    <${tagname} level="otherlevel" otherlevel="itempart">
+    <#break>  	
   </#switch>
+  <${tagname} level="${level}" <#rt>
+    <#if level=="otherlevel">otherlevel="${otherlevel}"</#if> <#t>
+    base="https://archdesc.nacr.cz/dids/${node.uuid}" <#t>
+  ><#lt>
 <@writeNode node />
   <#-- ${node.depth} -->
-  <#assign endtags=endtags+["</ead:c>"]>
+  <#assign endtags=endtags+["</"+tagname+">"]>
 </#list>
 <#-- Write closing tags -->
 <@writeTags 1 />
 </#macro>
 
-<ead:archdesc level="otherlevel" otherlevel="findingaidroot">
+<#-- <ead:archdesc level="otherlevel" otherlevel="findingaidroot">
   <@writeNode output />
   <ead:dsc>
   <@writeNodes output.createFlatNodeIterator() /> 
   </ead:dsc>
-</ead:archdesc>
+</ead:archdesc> -->
+
+<@writeNodes output.createFlatNodeIterator() />
 
 </ead:ead>

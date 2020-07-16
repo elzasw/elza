@@ -3,13 +3,18 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
+import cz.tacr.elza.bulkaction.generator.multiple.StorageOrderGeneratorConfig.WhenCondition;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
@@ -22,7 +27,11 @@ import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.StructObjService;
 
 @Component
 @Scope("prototype")
@@ -39,6 +48,9 @@ public class StorageOrderGeneratorAction extends Action {
 
     @Autowired
     private DescriptionItemService descriptionItemService;
+
+    @Autowired
+    private StructObjService structObjService;
 
     public StorageOrderGeneratorAction(final StorageOrderGeneratorConfig config) {
         this.config = config;
@@ -81,11 +93,16 @@ public class StorageOrderGeneratorAction extends Action {
         if (orderItems != null && orderItems.size() > 0) {
             // store new value
             ArrDescItem orderItem = orderItems.get(0);
-            storeLastUsedOrder(structObjId, orderItem);
+            takeLastUsedOrder(structObjId, orderItem);
         } else {
             // try to add new value
             Integer lastUsedValue = lastOrderValues.get(structObjId);
             if (lastUsedValue == null) {
+                // check if structured object suitable for item order
+                ArrStructuredObject structuredObject = structRef.getStructuredObject();
+                if (!canHaveOrderValue(structuredObject)) {
+                    return;
+                }
                 // storage without defined last value -> set as 1
                 lastUsedValue = 1;
             } else {
@@ -96,6 +113,70 @@ public class StorageOrderGeneratorAction extends Action {
             addOrderWithValue(level, lastUsedValue);
             lastOrderValues.put(structObjId, lastUsedValue);
         }
+    }
+
+    /**
+     * Check if structured object is supported for order value
+     * 
+     * @param structuredObject
+     * @return
+     */
+    private boolean canHaveOrderValue(ArrStructuredObject structuredObject) {
+        List<WhenCondition> whenStorageConds = config.getWhenStorage();
+        if (whenStorageConds != null && whenStorageConds.size() > 0) {
+            // read structured object
+            List<ArrStructuredItem> items = structObjService.findStructureItems(structuredObject);
+            // check condition
+            for (WhenCondition whenStorageCond : whenStorageConds) {
+                if (!checkCondition(whenStorageCond, items)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean checkCondition(WhenCondition whenStorageCond, List<ArrStructuredItem> items) {
+        String itemTypeCode = whenStorageCond.getItemType();
+        // check if itemType exists
+        if (StringUtils.isNotBlank(itemTypeCode)) {
+            StaticDataProvider sdp = this.staticDataService.getData();
+            ItemType itemType = sdp.getItemTypeByCode(itemTypeCode);
+            Validate.notNull(itemType, "Item type not found: %s", itemTypeCode);
+
+            // get required specs
+            Set<Integer> requiredSpecIds = null;
+            List<String> requiredSpecCodes = whenStorageCond.getItemSpecs();
+            if (CollectionUtils.isNotEmpty(requiredSpecCodes)) {
+                Validate.isTrue(itemType.hasSpecifications(), "Item type does not support specifications: %s",
+                                itemTypeCode);
+                requiredSpecIds = requiredSpecCodes.stream().map(itemType::getItemSpecByCode).
+                        map(RulItemSpec::getItemSpecId).collect(Collectors.toSet());
+            }
+
+            // check items if contains required item
+            boolean found = false;
+            for (ArrStructuredItem item : items) {
+                if(item.getItemTypeId().equals(itemType.getItemTypeId())) {
+                    if (requiredSpecIds == null) {
+                        found = true;
+                        break;
+                    } else {
+                        // check spec code
+                        if (requiredSpecIds.contains(item.getItemSpecId())) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!found) {
+                return false;
+            }
+
+        }
+
+        return true;
     }
 
     /**
@@ -117,7 +198,13 @@ public class StorageOrderGeneratorAction extends Action {
         descriptionItemService.createDescriptionItem(descItem, level.getNodeId(), fundVersion, change);
     }
 
-    private void storeLastUsedOrder(Integer structObjId, ArrDescItem orderItem) {
+    /**
+     * Take last used order from existing item
+     * 
+     * @param structObjId
+     * @param orderItem
+     */
+    private void takeLastUsedOrder(Integer structObjId, ArrDescItem orderItem) {
         ArrData data = orderItem.getData();
         // value is unknown -> return
         if (data == null) {

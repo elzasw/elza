@@ -75,6 +75,10 @@ class DescItemStructureRef extends AbstractReactComponent {
     }
 
     componentWillUnmount() {
+        const structureNodeForm = this.props;
+        if (!structureNodeForm) {
+            return;
+        }
         const {anonymous} = this.props;
         if (anonymous) {
             const {
@@ -94,8 +98,6 @@ class DescItemStructureRef extends AbstractReactComponent {
             ) {
                 WebApi.deleteStructureData(versionId, id);
             }
-        } else {
-            //this.props.onChange
         }
     }
 

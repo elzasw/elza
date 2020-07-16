@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 public class TaskExecutor {
 
@@ -41,7 +41,7 @@ public class TaskExecutor {
      * Start async queue processing.
      */
     public synchronized void start() {
-        Validate.isTrue(state == State.INIT);
+        Validate.isTrue(state == State.INIT || state == State.TERMINATED, "Unexpected state: %s", state);
 
         state = State.RUNNING;
         managerThread = new Thread(this::run, "TaskExecutor_managerThread");

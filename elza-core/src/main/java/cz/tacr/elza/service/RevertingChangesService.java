@@ -2,7 +2,28 @@ package cz.tacr.elza.service;
 
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.view.ViewTitles;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundStructureExtension;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeExtension;
+import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.*;
@@ -240,6 +261,7 @@ public class RevertingChangesService {
         // zastavení probíhajících výpočtů pro validaci uzlů u verzí
         stopConformityInfFundVersions(fund);
 
+        // zjisteni uzlu na nez maji zmeny primy dopad
         Query nodeIdsQuery = findChangeNodeIdsQuery(fund, node, toChange);
         Set<Integer> nodeIdsChange = new HashSet<>(nodeIdsQuery.getResultList());
 
@@ -321,7 +343,6 @@ public class RevertingChangesService {
 
             sobjVrequestDelete(fund, toChange);
 
-            structuredObjectDelete(fund, toChange);
             structuredObjectUpdate(fund, toChange);
         }
 
@@ -354,6 +375,11 @@ public class RevertingChangesService {
         deleteNotUseChangesQuery.executeUpdate();
 
         entityManager.flush();
+
+        // strukt typy lze smazat az po vymazani vsech ref. na ne
+        if (nodeId == null) {
+            structuredObjectDelete(fund, toChange);
+        }
 
         // Drop unused node ids
         // Find nodes
@@ -648,7 +674,9 @@ public class RevertingChangesService {
     public Query createDeleteNotUseChangesQuery() {
 
         StringBuilder sqlBuilder = new StringBuilder();
-        sqlBuilder.append("DELETE FROM arr_change c WHERE c.change_id NOT IN (");
+        sqlBuilder.append(
+                          "DELETE FROM arr_change c WHERE c.change_id IN (SELECT distinct c.change_id FROM arr_change c");
+        sqlBuilder.append(" LEFT JOIN (");
 
         String[][] configUnionTables = new String[][]{
                 { ArrLevel.TABLE_NAME, ArrLevel.FIELD_CREATE_CHANGE_ID },
@@ -688,13 +716,18 @@ public class RevertingChangesService {
 
             String columnName = ins.columnName(changeTable[1]);
 
-            unionPart.add(String.format("SELECT distinct t%1$d.%3$s FROM %2$s t%1$d", index, changeTable[0],
+            unionPart.add(String.format("SELECT distinct t%1$d.%3$s as change_id FROM %2$s t%1$d", index,
+                                        changeTable[0],
                                         columnName));
         }
         sqlBuilder.append(String.join("\nUNION\n", unionPart));
-
+        sqlBuilder.append(") as used_change ON c.change_id = used_change.change_id ");
+        sqlBuilder.append("WHERE used_change.change_id IS NULL");
         sqlBuilder.append(")");
+
         String sql = sqlBuilder.toString();
+
+        logger.debug("Prepared query: {}", sql);
 
         return entityManager.createNativeQuery(sql);
     }
@@ -807,20 +840,40 @@ public class RevertingChangesService {
                 null));
     }
 
+    /**
+     * Vytvoreni dotazy zjistujiciho zmenene node do dane change
+     * 
+     * @param fund
+     * @param node
+     * @param change
+     * @return
+     */
     private Query findChangeNodeIdsQuery(@NotNull final ArrFund fund,
                                          @Nullable final ArrNode node,
                                          @NotNull final ArrChange change) {
+        // pole tabulek a sloupcu, kde je zjistovana zmena vcetne vazby na node
         String[][] tables = new String[][]{
-            {"arr_level", "node"},
-            {"arr_node_extension", "node"},
-            {"arr_dao_link", "node"},
-            {"arr_desc_item", "node"},
+                { ArrLevel.TABLE_NAME, ArrLevel.FIELD_NODE,
+                        ArrLevel.FIELD_CREATE_CHANGE },
+                { ArrLevel.TABLE_NAME, ArrLevel.FIELD_NODE,
+                        ArrLevel.FIELD_DELETE_CHANGE },
+                { ArrNodeExtension.TABLE_NAME, ArrNodeExtension.FIELD_NODE, ArrNodeExtension.FIELD_CREATE_CHANGE_ID },
+                { ArrNodeExtension.TABLE_NAME, ArrNodeExtension.FIELD_NODE, ArrNodeExtension.FIELD_DELETE_CHANGE_ID },
+                { ArrDaoLink.TABLE_NAME, ArrDaoLink.FIELD_NODE, ArrDaoLink.FIELD_CREATE_CHANGE_ID },
+                { ArrDaoLink.TABLE_NAME, ArrDaoLink.FIELD_NODE,
+                        ArrDaoLink.FIELD_DELETE_CHANGE_ID },
+                { ArrDescItem.TABLE_NAME,
+                        ArrDescItem.FIELD_NODE, ArrDescItem.FIELD_CREATE_CHANGE_ID },
+                { ArrDescItem.TABLE_NAME,
+                        ArrDescItem.FIELD_NODE,
+                        ArrDescItem.FIELD_DELETE_CHANGE_ID },
         };
 
         List<String> hqls = new ArrayList<>();
         for (String[] table : tables) {
-            String nodesHql = createHQLFindChanges("createChange", table[0], createHqlSubNodeQuery(fund, node));
-            String hql = String.format("SELECT i.nodeId FROM %1$s i WHERE %2$s IN (%3$s)", table[0], "createChange", nodesHql);
+            String nodesHql = createHQLFindChanges(table[2], table[0], createHqlSubNodeQuery(fund, node));
+            String hql = String.format("SELECT i.nodeId FROM %1$s i WHERE %2$s IN (%3$s)", table[0], table[2],
+                                       nodesHql);
             hqls.add(hql);
         }
 

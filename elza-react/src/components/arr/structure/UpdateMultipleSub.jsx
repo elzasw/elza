@@ -332,7 +332,6 @@ class UpdateMultipleSub extends AbstractReactComponent {
             fields: {items, deleteItemTypeIds},
         } = this.props;
         const {
-            fundId,
             subNodeForm,
             descItemCopyFromPrevEnabled,
             singleDescItemTypeEdit,
@@ -343,6 +342,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
             typePrefix,
             descItemFactory,
         } = this.props;
+        const fundId = this.props.fund.id;
 
         const refType = subNodeForm.refTypesMap[descItemType.id];
         const infoType = subNodeForm.infoTypesMap[descItemType.id];
