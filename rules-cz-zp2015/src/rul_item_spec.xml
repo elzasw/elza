@@ -51,19 +51,24 @@
         <shortcut>Část</shortcut>
     </item-spec>
     <item-spec code="ZP2015_FOLDER_LOGICAL" item-type="ZP2015_FOLDER_TYPE">
-        <name>Logická</name>
+        <name>logická</name>
         <description>Logická složka</description>
         <shortcut>Logická</shortcut>
     </item-spec>
     <item-spec code="ZP2015_FOLDER_UNITS" item-type="ZP2015_FOLDER_TYPE">
-        <name>Množstevní EJ</name>
+        <name>množstevní EJ</name>
         <description>Množstevní evidenční jednotka</description>
-        <shortcut>Množstevní EJ</shortcut>
+        <shortcut>množstevní EJ</shortcut>
     </item-spec>
     <item-spec code="ZP2015_FOLDER_SINGLE_TYPE" item-type="ZP2015_FOLDER_TYPE">
-        <name>S typem EJ</name>
+        <name>s typem EJ</name>
         <description>Více evidenčních jednotek stejného typu</description>
-        <shortcut>Typ EJ</shortcut>
+        <shortcut>typ EJ</shortcut>
+    </item-spec>
+    <item-spec code="ZP2015_FOLDER_DAO_TYPE" item-type="ZP2015_FOLDER_TYPE">
+        <name>digitální</name>
+        <description>Množstevní složka s digitálním obsahem</description>
+        <shortcut>digitální</shortcut>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_LIO" item-type="ZP2015_UNIT_TYPE">
         <name>Listina do roku 1850</name>
