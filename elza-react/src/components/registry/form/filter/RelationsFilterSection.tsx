@@ -14,26 +14,29 @@ import {RulDescItemSpecExtVO} from "../../../../api/RulDescItemSpecExtVO";
 import {Col, Row} from "react-bootstrap";
 import RelationFilterModal from "../../modal/RelationFilterModal";
 import {Area} from "../../../../api/Area";
+import {ArchiveEntityResultListVO} from "../../../../api/ArchiveEntityResultListVO";
+import {FilteredResultVO} from "../../../../api/FilteredResultVO";
+import {ApAccessPointVO} from "../../../../api/ApAccessPointVO";
 
 type OwnProps = {
     submitting: boolean;
     name?: string;
     nameFormSection?: string; // název pro FormSection
-    externalSystemCode: string;
+    relApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>
 }
 
 type Props = {
     formName: string;
 } & OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
-const RelationsFilterSection = ({submitting, dispatch, externalSystemCode, nameFormSection = "", name = 'ap.ext-search.section.relations'}: Props) => {
+const RelationsFilterSection = ({submitting, dispatch, relApi, nameFormSection = "", name = 'ap.ext-search.section.relations'}: Props) => {
     return <FormSection name={nameFormSection} className="filter-section">
         <span className="name-section">{i18n(name)}</span>
         <FieldArray
             name="relFilters"
             dispatch={dispatch}
             component={RelFilters}
-            externalSystemCode={externalSystemCode}
+            relApi={relApi}
             disabled={submitting}
         />
     </FormSection>
@@ -61,11 +64,10 @@ const renderRelFilter = (index: number, disabled: boolean, item: RelFilterProps,
 interface RelFilterFieldProps extends WrappedFieldArrayProps<string> {
     disabled: boolean;
     dispatch: ThunkDispatch<{}, {}, Action<string>>;
-    externalSystemCode: string;
+    relApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>
 }
 
-const RelFilters: React.FC<RelFilterFieldProps> = memo(({fields, disabled = false, meta, externalSystemCode, dispatch, ...props}) => {
-    console.log(externalSystemCode)
+const RelFilters: React.FC<RelFilterFieldProps> = memo(({fields, disabled = false, meta, relApi, dispatch, ...props}) => {
     return <>
         <Button size="small" className="fr" disabled={disabled} variant="outline-secondary" onClick={() => {
             dispatch(
@@ -75,7 +77,7 @@ const RelFilters: React.FC<RelFilterFieldProps> = memo(({fields, disabled = fals
                     <RelationFilterModal initialValues={{
                         area: Area.ALLNAMES,
                         onlyMainPart: "false"
-                    }} externalSystemCode={externalSystemCode} onSubmit={(data) => {
+                    }} relApi={relApi} onSubmit={(data) => {
                         fields.push(data);
                         dispatch(modalDialogHide());
                     }} />,

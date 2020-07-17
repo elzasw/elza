@@ -11,28 +11,30 @@ type OwnProps = {
     name?: string;
     nameFormSection?: string; // název pro FormSection
     types: ApTypeVO[];
+    hideState?: boolean;
+    hideType?: boolean;
 }
 
 type Props = {} & OwnProps;
 
-const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-search.section.base', types = []}: Props) => {
+const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-search.section.base', types = [], hideState = false, hideType = false}: Props) => {
 
 
     return <FormSection name={nameFormSection} className="filter-section">
         <span className="name-section">{i18n(name)}</span>
-        <FieldArray
+        {!hideType && <FieldArray
             name="types"
             component={TypesField}
             label={i18n('ap.state.title.type')}
             disabled={submitting}
             items={types}
-        />
-        <FieldArray
+        />}
+        {!hideState && <FieldArray
             name="states"
             component={StatesField}
             label={i18n('ap.ext-search.state')}
             disabled={submitting}
-        />
+        />}
         <Field name="id"
                type="text"
                component={FormInputField}

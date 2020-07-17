@@ -34,6 +34,11 @@ import ListPager from '../shared/listPager/ListPager';
 import * as perms from '../../actions/user/Permission';
 import {FOCUS_KEYS} from '../../constants.tsx';
 import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
+import {Col, Row} from "react-bootstrap";
+import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
+import {Area} from "../../api/Area";
+import ExtFilterModal from "./modal/ExtFilterModal";
+import {Button} from "../ui";
 
 class RegistryList extends AbstractReactComponent {
     static propTypes = {
@@ -98,11 +103,18 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleFilterText = filterText => {
-        this.props.dispatch(
+        const {dispatch, registryList} = this.props;
+        let searchFilter = registryList.filter.searchFilter;
+        const text = filterText && filterText.length === 0 ? null : filterText;
+        if (searchFilter) {
+            searchFilter.search = text
+        }
+        dispatch(
             registryListFilter({
-                ...this.props.registryList.filter,
+                ...registryList.filter,
                 from: 0,
-                text: filterText && filterText.length === 0 ? null : filterText,
+                text: text,
+                searchFilter: searchFilter,
             }),
         );
     };
@@ -159,7 +171,17 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleFilterTextClear = () => {
-        this.props.dispatch(registryListFilter({...this.props.registryList.filter, from: 0, text: null}));
+        const {dispatch, registryList} = this.props;
+        let searchFilter = registryList.filter.searchFilter;
+        if (searchFilter) {
+            searchFilter.search = null
+        }
+        dispatch(registryListFilter({
+            ...registryList.filter,
+            from: 0,
+            text: null,
+            searchFilter: searchFilter
+        }));
     };
 
     handleRegistryDetail = item => {
@@ -242,6 +264,47 @@ class RegistryList extends AbstractReactComponent {
         return scopeId && scopes && scopes.length > 0 && scopes[0].scopes.find(scope => scope.id === scopeId).name;
     }
 
+    handleExtFilterResult = searchFilter => {
+        this.props.dispatch(
+            registryListFilter({
+                ...this.props.registryList.filter,
+                from: 0,
+                text: searchFilter ? searchFilter.search : this.props.registryList.filter.text,
+                searchFilter: searchFilter,
+            }),
+        );
+    };
+
+    handleExtFilterClear = () => {
+        const {dispatch, registryList} = this.props;
+        dispatch(
+            registryListFilter({
+                ...registryList.filter,
+                from: 0,
+                searchFilter: null,
+            }),
+        );
+    }
+
+    handleExtFilter = () => {
+        const {dispatch, registryList} = this.props;
+        dispatch(
+            modalDialogShow(
+                this,
+                i18n('ap.ext-filter.title'),
+                <ExtFilterModal initialValues={{
+                    area: Area.ALLNAMES,
+                    onlyMainPart: "false",
+                    search: registryList.filter.text,
+                    ...registryList.filter.searchFilter
+                }} onSubmit={(data) => {
+                    this.handleExtFilterResult(data);
+                    dispatch(modalDialogHide());
+                }} />,
+            ),
+        );
+    }
+
     /**
      * Výchozí hodnota/placeholder pro registry type filtr
      */
@@ -279,6 +342,11 @@ class RegistryList extends AbstractReactComponent {
 
         let apTypesWithAll = [...registryTypes];
         apTypesWithAll.unshift({name: this.registryTypeDefaultValue});
+
+        let filterCls = 'mb-1 pt-1 pb-1';
+        if (registryList.filter.searchFilter) {
+            filterCls = filterCls + ' ext-filter-used';
+        }
 
         return (
             <div className="registry-list">
@@ -329,6 +397,18 @@ class RegistryList extends AbstractReactComponent {
                         itemsCount={registryList.filteredRows ? registryList.filteredRows.length : 0}
                         allItemsCount={registryList.count}
                     />
+                    <Row noGutters className={filterCls}>
+                        {!registryList.filter.searchFilter && <Col>
+                            <Button variant="link" onClick={this.handleExtFilter}>{i18n('ap.ext-filter.use')}</Button>
+                        </Col>}
+                        {registryList.filter.searchFilter && <>
+                            <Col title={i18n('ap.ext-filter.used')} className="align-self-center used">{i18n('ap.ext-filter.used')}</Col>
+                            <Col xs='auto'>
+                                <Button variant="link" onClick={this.handleExtFilter}>{i18n('global.action.update')}</Button>
+                                <Button variant="link" onClick={this.handleExtFilterClear}>{i18n('global.action.cancel')}</Button>
+                            </Col>
+                        </>}
+                    </Row>
                 </div>
                 <StoreHorizontalLoader store={registryList} />
                 {list}

@@ -15,6 +15,7 @@ import {Col, Row} from "react-bootstrap";
 import {ArchiveEntityResultListVO} from "../../../../api/ArchiveEntityResultListVO";
 import {Area} from "../../../../api/Area";
 import {ApAccessPointVO} from "../../../../api/ApAccessPointVO";
+import {FilteredResultVO} from "../../../../api/FilteredResultVO";
 
 type OwnProps = {
     submitting: boolean;
@@ -24,7 +25,7 @@ type OwnProps = {
 
 type Props = {
     formName: string;
-    relEntityApi: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO>;
+    relEntityApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>;
 } & OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
 const ExtendsFilterSection = ({submitting, dispatch, array, nameFormSection = "", name = 'ap.ext-search.section.extends', relEntityApi}: Props) => {
@@ -67,7 +68,7 @@ const renderExtFilter = (index: number, disabled: boolean, item: ExtFilterProps,
 
 interface ExtFilterFieldProps extends WrappedFieldArrayProps<string> {
     disabled: boolean;
-    relEntityApi: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO>;
+    relEntityApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>;
     dispatch: ThunkDispatch<{}, {}, Action<string>>;
 }
 

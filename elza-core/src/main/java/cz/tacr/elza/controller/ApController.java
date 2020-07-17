@@ -192,7 +192,7 @@ public class ApController {
      * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
      */
 	@Transactional
-    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @RequestMapping(value = "/search", method = RequestMethod.POST)
     public FilteredResultVO<ApAccessPointVO> findAccessPoint(@RequestParam(required = false) @Nullable final String search,
                                                              @RequestParam final Integer from,
                                                              @RequestParam final Integer count,

@@ -789,8 +789,9 @@ export class WebApiCls {
         state = null,
         searchTypeName?: ApSearchType,
         searchTypeUsername?: ApSearchType,
+        searchFilter?: SearchFilterVO
     ): Promise<FilteredResultVO<ApAccessPointVO>> {
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/', {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/search', {
             search,
             from,
             count,
@@ -804,7 +805,7 @@ export class WebApiCls {
             state,
             searchTypeName,
             searchTypeUsername,
-        });
+        }, searchFilter);
     }
 
     /**

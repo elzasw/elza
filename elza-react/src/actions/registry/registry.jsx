@@ -15,6 +15,34 @@ import {AP_VALIDATION} from "../../constants";
 export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 export const AREA_REGISTRY_LIST = 'registryList';
 
+const createFilter = values => {
+    const extFilters = values.extFilters ? values.extFilters.map(f => {
+        return {
+            partTypeCode: f.partType ? f.partType.code : null,
+            itemTypeId: f.itemType ? f.itemType.id : null,
+            itemSpecId: f.itemSpec ? f.itemSpec.id : null,
+            value: f.obj ? f.obj.id : f.value,
+        }
+    }) : null;
+    const relFilters = values.relFilters ? values.relFilters.map(f => {
+        return {
+            relTypeId: f.itemType ? f.itemType.id : null,
+            code: f.obj ? f.obj.id : null,
+        }
+    }) : null;
+    return {
+        search: values.search,
+        area: values.area,
+        onlyMainPart: values.onlyMainPart === 'true',
+        user: values.user,
+        code: values.id,
+        creation: values.creation,
+        extinction: values.extinction,
+        relFilters: relFilters,
+        extFilters: extFilters
+    };
+}
+
 /**
  * Načtení seznamu rejstříků dle filtru
  *
@@ -22,20 +50,25 @@ export const AREA_REGISTRY_LIST = 'registryList';
  * @param size {number} počet položek v seznamu - velikost jedné stránky
  */
 export function registryListFetchIfNeeded(from = 0, size = DEFAULT_REGISTRY_LIST_MAX_SIZE) {
-    return SimpleListActions.fetchIfNeeded(AREA_REGISTRY_LIST, true, (parent, filter) =>
-        WebApi.findAccessPoint(
-            filter.text,
-            filter.registryParentId,
-            filter.registryTypeId,
-            filter.versionId,
-            filter.itemTypeId,
-            filter.itemSpecId,
-            filter.from,
-            size,
-            filter.scopeId,
-            filter.excludeInvalid,
-            filter.state,
-        ),
+    return SimpleListActions.fetchIfNeeded(AREA_REGISTRY_LIST, true, (parent, filter) => {
+        const searchFilter = filter.searchFilter ? createFilter(filter.searchFilter) : null;
+            return WebApi.findAccessPoint(
+                filter.text,
+                filter.registryParentId,
+                filter.registryTypeId,
+                filter.versionId,
+                filter.itemTypeId,
+                filter.itemSpecId,
+                filter.from,
+                size,
+                filter.scopeId,
+                filter.excludeInvalid,
+                filter.state,
+                undefined,
+                undefined,
+                searchFilter
+            );
+        },
     );
 }
 
