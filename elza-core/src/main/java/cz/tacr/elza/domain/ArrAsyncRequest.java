@@ -2,6 +2,7 @@ package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.domain.enumeration.StringLength;
+import org.apache.commons.lang3.Validate;
 
 import javax.persistence.*;
 import javax.persistence.criteria.Fetch;
@@ -45,13 +46,61 @@ public class ArrAsyncRequest {
     @JoinColumn(name="structured_object_id", nullable = true)
     private ArrStructuredObject structuredObject;
 
-    public ArrAsyncRequest() {
+    protected ArrAsyncRequest() {
     }
 
-    public ArrAsyncRequest(AsyncTypeEnum type, int priority, ArrFundVersion fundVersion) {
-        this.type = type;
+    public static ArrAsyncRequest create(final ArrFundVersion fundVersion,
+                                         final ArrBulkActionRun bulkActionRun,
+                                         final Integer priority) {
+        Validate.notNull(fundVersion);
+        Validate.notNull(bulkActionRun);
+        Validate.notNull(priority);
+        return new ArrAsyncRequest(fundVersion, bulkActionRun, priority);
+    }
+
+    public static ArrAsyncRequest create(final ArrFundVersion fundVersion,
+                                         final ArrNode node,
+                                         final Integer priority) {
+        Validate.notNull(fundVersion);
+        Validate.notNull(node);
+        Validate.notNull(priority);
+        return new ArrAsyncRequest(fundVersion, node, priority);
+    }
+
+    public static ArrAsyncRequest create(final ArrFundVersion fundVersion,
+                                         final ArrOutput output,
+                                         final Integer priority) {
+        Validate.notNull(fundVersion);
+        Validate.notNull(output);
+        Validate.notNull(priority);
+        return new ArrAsyncRequest(fundVersion, output, priority);
+    }
+
+    protected ArrAsyncRequest(final ArrFundVersion fundVersion,
+                              final ArrBulkActionRun bulkAction,
+                              final Integer priority) {
+        this.type = AsyncTypeEnum.BULK;
         this.priority = priority;
         this.fundVersion = fundVersion;
+        this.bulkAction = bulkAction;
+    }
+
+    protected ArrAsyncRequest(final ArrFundVersion fundVersion,
+                              final ArrNode node,
+                              final Integer priority) {
+        this.type = AsyncTypeEnum.NODE;
+        this.priority = priority;
+        this.fundVersion = fundVersion;
+        this.node = node;
+    }
+
+    protected ArrAsyncRequest(final ArrFundVersion fundVersion,
+                              final ArrOutput output,
+                              final Integer priority) {
+        this.type = AsyncTypeEnum.OUTPUT;
+        this.priority = priority;
+        this.fundVersion = fundVersion;
+        this.output = output;
     }
 
     public Long getAsyncRequestId() {

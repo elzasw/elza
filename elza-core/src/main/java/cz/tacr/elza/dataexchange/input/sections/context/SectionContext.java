@@ -20,6 +20,7 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.service.ArrangementService;
@@ -151,11 +152,14 @@ public class SectionContext {
         this.processingStructType = st.getStructuredType();
     }
 
-    public StructObjContext addStructObject(ArrStructuredObject entity, String importId) {
+    public StructObjContext addStructObject(String importId) {
         Validate.notNull(processingStructType);
 
-        // update structured type reference
-        entity.setStructuredType(processingStructType);
+        // create entity
+        ArrStructuredObject entity = new ArrStructuredObject.Builder(getCreateChange(),
+                getFund(),
+                processingStructType)
+                        .setState(State.OK).build();
 
         ArrStructObjectWrapper wrapper = new ArrStructObjectWrapper(entity, importId);
         StructObjContext ctx = new StructObjContext(this, wrapper.getIdHolder(), structObjectStorageDispatcher);

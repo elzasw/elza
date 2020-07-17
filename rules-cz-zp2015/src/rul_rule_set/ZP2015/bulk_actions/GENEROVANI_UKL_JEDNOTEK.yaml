@@ -7,7 +7,11 @@ actions:
       someOf:
         # Nesmí být nastaven jako připojený záznam
         - itemType: ZP2015_CONNECTED_RECORD
+        # Nesmí mít nastaveno ukládací číslo
         - itemType: ZP2015_STORAGE_ID
+        # Nesmí mít nastaven typ jednotky neevid. jednotlivost
+        - itemType: ZP2015_UNIT_TYPE
+          itemSpec: ZP2015_UNIT_TYPE_OTHER
     when:
       someOf:
         # Složka s počtem EJ
@@ -30,6 +34,9 @@ actions:
     create:
       - itemType: ZP2015_STORAGE_ID
         structuredObject:
+          type:
+            itemType: ZP2015_PACKET_TYPE
+            itemSpec: ZP2015_PACKET_TYPE_SAMOST
           prefix:
             itemType: ZP2015_PACKET_PREFIX
             valueFrom: ZP2015_UNIT_TYPE

@@ -6,6 +6,7 @@ import cz.tacr.elza.domain.AsyncTypeEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Repository
-public interface ArrAsyncRequestRepository extends JpaRepository<ArrAsyncRequest, Integer> {
+public interface ArrAsyncRequestRepository extends CrudRepository<ArrAsyncRequest, Long> {
 
     @Query("SELECT aar FROM arr_async_request aar JOIN FETCH aar.node WHERE aar.type = :type ORDER BY aar.priority")
     List<ArrAsyncRequest> findNodeRequestsByPriorityWithLimit(@Param(value = "type") AsyncTypeEnum type, Pageable pageable);

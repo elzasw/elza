@@ -1605,26 +1605,10 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         if (calendarType == null) {
             throw new ObjectNotFoundException("Neexistující kalendář: " + splitText[0], BaseCode.ID_NOT_EXIST).setId(splitText[0]);
         }
-
-        ArrDataUnitdate itemUnitdate = new ArrDataUnitdate();
-        itemUnitdate.setCalendarType(calendarType);
-        UnitDateConvertor.convertToUnitDate(splitText[1], itemUnitdate);
-
         CalendarType calendar = CalendarType.valueOf(calendarType.getCode());
-        String value;
-        value = itemUnitdate.getValueFrom();
-        if (value != null) {
-            itemUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendar, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
-        } else {
-            itemUnitdate.setNormalizedFrom(Long.MIN_VALUE);
-        }
 
-        value = itemUnitdate.getValueTo();
-        if (value != null) {
-            itemUnitdate.setNormalizedTo(CalendarConverter.toSeconds(calendar, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
-        } else {
-            itemUnitdate.setNormalizedTo(Long.MAX_VALUE);
-        }
+        ArrDataUnitdate itemUnitdate = ArrDataUnitdate.valueOf(calendar, splitText[1]);
+
         return itemUnitdate;
     }
 

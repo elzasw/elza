@@ -40,10 +40,14 @@ elza:
   asyncActions:
     node:
       threadCount: 4
-      requestCount: 100
+      maxPerFund: 2
     bulk:
       threadCount: 4
-      requestCount: 100
+      maxPerFund: 1
     output:
       threadCount: 4
-      requestCount: 100
+      maxPerFund: 1
+
+logging:
+  level:
+    cz.tacr.elza: DEBUG

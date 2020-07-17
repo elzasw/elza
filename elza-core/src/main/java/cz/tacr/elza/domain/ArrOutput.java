@@ -33,6 +33,7 @@ public class ArrOutput extends AbstractVersionableEntity {
 
     public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String ANONYMIZED_AP_ID = "anonymizedApId";
 
     @Id
     @GeneratedValue
@@ -87,8 +88,9 @@ public class ArrOutput extends AbstractVersionableEntity {
     @JoinColumn(name = FIELD_DELETE_CHANGE_ID)
     private ArrChange deleteChange;
 
-    @Column(name = "anonymized_ap", nullable = true)
-    private Integer anonymizedAp;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
+    @JoinColumn(name = ANONYMIZED_AP_ID)
+    private ApAccessPoint anonymizedAp;
 
     /**
      * @return  identifikátor entity
@@ -285,11 +287,11 @@ public class ArrOutput extends AbstractVersionableEntity {
         this.deleteChange = deleteChange;
     }
 
-    public Integer getAnonymizedAp() {
+    public ApAccessPoint getAnonymizedAp() {
         return anonymizedAp;
     }
 
-    public void setAnonymizedAp(Integer anonymizedAp) {
+    public void setAnonymizedAp(ApAccessPoint anonymizedAp) {
         this.anonymizedAp = anonymizedAp;
     }
 

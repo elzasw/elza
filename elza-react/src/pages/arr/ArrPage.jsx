@@ -96,7 +96,6 @@ class ArrPage extends ArrParentPage {
         this.bindMethods(
             'getActiveInfo',
             'buildRibbon',
-            'handleRegisterJp',
             'handleSelectVisiblePoliciesNode',
             'handleShowVisiblePolicies',
             'handleShortcuts',
@@ -238,9 +237,6 @@ class ArrPage extends ArrParentPage {
         console.log('#handleShortcuts ArrPage', '[' + action + ']', this);
         e.preventDefault();
         switch (action) {
-            case 'registerJp':
-                this.handleRegisterJp();
-                break;
             case 'area1':
                 this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1));
                 break;
@@ -976,24 +972,26 @@ class ArrPage extends ArrParentPage {
         if (structureTypes && structureTypes.data) {
             const STRUCTURE_TAB_PREFIX_KEY = 'structure-tab-';
             structureTypes.data.forEach(i => {
-                const tabKey = STRUCTURE_TAB_PREFIX_KEY + i.id + '-' + i.code;
-                structureTabs[tabKey] = {
-                    id: tabKey,
-                    key: tabKey,
-                    name: i.name,
-                    ref: tabKey,
-                    render: () => (
-                        <ArrStructurePanel
-                            {...i}
-                            key={tabKey}
-                            ref={ref => (this.refObjects[tabKey] = ref)}
-                            readMode={readMode}
-                            fundId={activeFund.id}
-                            fundVersionId={activeFund.versionId}
-                        />
-                    ),
-                    focus: () => this.wrappedFocus(tabKey),
-                };
+                if (!i.anonymous) {
+                    const tabKey = STRUCTURE_TAB_PREFIX_KEY + i.id + '-' + i.code;
+                    structureTabs[tabKey] = {
+                        id: tabKey,
+                        key: tabKey,
+                        name: i.name,
+                        ref: tabKey,
+                        render: () => (
+                            <ArrStructurePanel
+                                {...i}
+                                key={tabKey}
+                                ref={ref => (this.refObjects[tabKey] = ref)}
+                                readMode={readMode}
+                                fundId={activeFund.id}
+                                fundVersionId={activeFund.versionId}
+                                />
+                            ),
+                        focus: () => this.wrappedFocus(tabKey),
+                    };
+                }
             });
         }
         /**
