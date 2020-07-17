@@ -31,5 +31,5 @@ public interface VisiblePolicyRepository extends JpaRepository<UIVisiblePolicy, 
     @Query("SELECT p FROM ui_visible_policy p JOIN p.node n JOIN p.policyType pt WHERE n.nodeId IN ?1 AND pt IN ?2")
     List<UIVisiblePolicy> findByNodeIds(Collection<Integer> nodeIds, Collection<RulPolicyType> policyTypes);
 
-    void deleteByNodeIdIn(List<Integer> unusedNodes);
+    void deleteByNodeIdIn(Collection<Integer> unusedNodes);
 }

@@ -6,31 +6,30 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StructType;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrStructuredItem;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.RulDataType;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.StructType;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.table.ElzaTable;
 
@@ -205,7 +204,9 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
                 recordRef.setRecord(apProxy);
             }
         }
-        ArrStructuredObject structObj = structObjService.createStructObj(fundVersion.getFund(), change, structuredType.getStructuredType(), ArrStructuredObject.State.OK, items);
+        ArrStructuredObject structObj = structObjService.createStructObj(fundVersion.getFund(), change,
+                                                                         structuredType.getStructuredType(),
+                                                                         ArrStructuredObject.State.OK, null, items);
         ArrDataStructureRef structureRef = new ArrDataStructureRef();
         structureRef.setDataType(itemType.getDataType().getEntity());
         structureRef.setStructuredObject(structObj);

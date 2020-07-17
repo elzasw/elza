@@ -8,6 +8,7 @@ import javax.servlet.MultipartConfigElement;
 import org.h2.server.web.WebServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,8 +31,8 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import cz.tacr.elza.ElzaCore;
 
 /**
- * @author by Pavel Stánek, pavel.stanek@marbes.cz.
- * @since 2.12.15
+ * Servlet/Web container specific configuration
+ * 
  */
 @EnableAutoConfiguration
 @Configuration
@@ -43,7 +44,13 @@ import cz.tacr.elza.ElzaCore;
 public class ElzaWebApp {
 
     /** Logger. */
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ElzaWebApp.class);
+
+    @Value("${elza.upload.max_file_size:25MB}")
+    protected String uploadMaxFileSize;
+
+    @Value("${elza.upload.max_request_size:100MB}")
+    protected String uploadMaxRequestSize;
 
     /** Vstupní bod. */
     public static void main(final String[] args) {
@@ -90,14 +97,6 @@ public class ElzaWebApp {
         return ms;
     }
 
-    @Bean
-    public MultipartConfigElement multipartConfigElement() {
-        MultipartConfigFactory factory = new MultipartConfigFactory();
-        factory.setMaxFileSize("25MB");
-        factory.setMaxRequestSize("100MB");
-        return factory.createMultipartConfig();
-    }
-
     /**
      * Allow to accept forwarded headers (X-Forwarded-Prefix, X-Forwarded-Host,...)
      * 
@@ -109,5 +108,16 @@ public class ElzaWebApp {
     @ConditionalOnProperty(prefix = "elza.security", name = "acceptForwardedHeaders", havingValue = "true")
     public Filter forwardedHeaderFilter() {
         return new ForwardedHeaderFilter();
+    }
+
+    @Bean
+    public MultipartConfigElement multipartConfigElement() {
+        logger.info("Initializing MultipartConfigFactory with parameters ({}, {})",
+                    uploadMaxFileSize,
+                    uploadMaxRequestSize);
+        MultipartConfigFactory factory = new MultipartConfigFactory();
+        factory.setMaxFileSize(uploadMaxFileSize);
+        factory.setMaxRequestSize(uploadMaxRequestSize);
+        return factory.createMultipartConfig();
     }
 }

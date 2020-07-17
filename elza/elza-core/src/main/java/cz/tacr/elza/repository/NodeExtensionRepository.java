@@ -25,5 +25,5 @@ public interface NodeExtensionRepository extends JpaRepository<ArrNodeExtension,
 
     void deleteByNodeFund(ArrFund fund);
 
-    void deleteByNodeIdIn(List<Integer> nodeIds);
+    void deleteByNodeIdIn(Collection<Integer> nodeIds);
 }

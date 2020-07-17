@@ -3,22 +3,16 @@ package cz.tacr.elza.asynchactions;
 import java.util.Comparator;
 
 /**
- * Řazení požadavků podle priority a ID požadavku
+ * Řazení požadavků podle priority a ID požadavku.
  */
-public class NodePriorityComparator implements Comparator {
+public class NodePriorityComparator implements Comparator<AsyncRequest> {
 
     @Override
-    public int compare(Object o1, Object o2) {
-        AsyncRequestVO r1 = (AsyncRequestVO) o1;
-        AsyncRequestVO r2 = (AsyncRequestVO) o2;
-        if (r1.getPriority() == r2.getPriority()) {
-            if (r1.getRequestId() > r2.getRequestId())
-                return 1;
-            else if (r1.getRequestId() < r2.getRequestId())
-                return -1;
-            return 0;
+    public int compare(AsyncRequest r1, AsyncRequest r2) {
+        if (r1.getPriority().equals(r2.getPriority())) {
+            return r1.getRequestId().compareTo(r2.getRequestId());
         } else {
-            return (r2.getPriority() - r1.getPriority());
+            return r2.getPriority().compareTo(r1.getPriority());
         }
     }
 }

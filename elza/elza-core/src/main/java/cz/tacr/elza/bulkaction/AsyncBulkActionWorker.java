@@ -1,10 +1,9 @@
 package cz.tacr.elza.bulkaction;
 
 import cz.tacr.elza.asynchactions.AsyncRequestEvent;
-import cz.tacr.elza.asynchactions.AsyncRequestVO;
+import cz.tacr.elza.asynchactions.AsyncRequest;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.AsyncTypeEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +13,12 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @Scope("prototype")
@@ -35,57 +35,33 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
     private ApplicationEventPublisher eventPublisher;
 
     /**
-     * Hromadná akce reprezentovaná v DB
-     */
-    private ArrBulkActionRun bulkActionRun;
-
-    /**
      * Hromadná akce
      */
     private BulkAction bulkAction;
 
-    /**
-     * Identifikátor verze archivní pomůcky
-     */
-    private Integer fundVersionId;
-
     private Long beginTime;
 
-    private Long requestId;
-
-    private Integer bulkActionRunId;
+    private final AsyncRequest request;
 
     /**
      * Seznam vstupních uzlů (podstromů AS)
      */
     private List<Integer> inputNodeIds;
 
-    public AsyncBulkActionWorker(Integer fundVersionId, Long requestId, Integer bulkActionRunId) {
-        this.fundVersionId = fundVersionId;
-        this.requestId = requestId;
-        this.bulkActionRunId = bulkActionRunId;
-    }
-
-    /**
-     * Vrací stav hromadné akce.
-     *
-     * @return stav
-     */
-    public ArrBulkActionRun getBulkActionRun() {
-        return bulkActionRun;
+    public AsyncBulkActionWorker(final AsyncRequest request) {
+        this.request = request;
     }
 
     @Override
-    public Integer getFundVersionId() {
-        return fundVersionId;
+    public AsyncRequest getRequest() {
+        return request;
     }
 
     @Override
-    @Transactional(Transactional.TxType.NEVER)
     public void run() {
-        beginTime = System.currentTimeMillis();
         new TransactionTemplate(transactionManager).execute(status -> {
-            bulkActionRun = bulkActionHelperService.getArrBulkActionRun(bulkActionRunId);
+            beginTime = System.currentTimeMillis();
+            ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
             bulkAction = bulkActionHelperService.prepareToRun(bulkActionRun);
             inputNodeIds = bulkActionHelperService.getBulkActionNodeIds(bulkActionRun);
             logger.info("Bulk action started: {}", this);
@@ -116,7 +92,8 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
     private void executeInTransaction() {
         // prepare sec context
         SecurityContext originalSecCtx = SecurityContextHolder.getContext();
-        SecurityContext ctx = bulkActionHelperService.createSecurityContext(this.bulkActionRun);
+        ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
+        SecurityContext ctx = bulkActionHelperService.createSecurityContext(bulkActionRun);
         SecurityContextHolder.setContext(ctx);
 
         try {
@@ -125,8 +102,6 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
             ActionRunContext runContext = new ActionRunContext(inputNodeIds, bulkActionRun);
 
             bulkAction.execute(runContext);
-
-            //    Thread.sleep(60000); // PRO TESTOVÁNÍ A DALŠÍ VÝVOJ
 
             // TODO: Add check that action was not interrupted
             bulkActionRun.setDateFinished(new Date());
@@ -141,22 +116,8 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
             } else {
                 SecurityContextHolder.setContext(originalSecCtx);
             }
-            eventPublisher.publishEvent(new AsyncRequestEvent(resultEvent()));
+            eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
         }
-    }
-
-    private AsyncRequestVO resultEvent() {
-        AsyncRequestVO publish = new AsyncRequestVO();
-        publish.setType(AsyncTypeEnum.BULK);
-        publish.setFundVersionId(fundVersionId);
-        publish.setRequestId(requestId);
-        publish.setBulkActionId(bulkActionRunId);
-        return publish;
-    }
-
-    @Override
-    public Long getRequestId() {
-        return requestId;
     }
 
     @Override
@@ -173,26 +134,19 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
         }
     }
 
-    /**
-     * Vrací identifikátor verze archivní pomůcky.
-     *
-     * @return identifikátor verze archivní pomůcky
-     */
-    public Integer getVersionId() {
-        return fundVersionId;
-    }
-
     private void handleException(Exception e) {
+        ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
         bulkActionRun.setError(e.getLocalizedMessage());
         bulkActionRun.setState(ArrBulkActionRun.State.ERROR);
         bulkActionHelperService.updateAction(bulkActionRun);
-        eventPublisher.publishEvent(new AsyncRequestEvent(resultEvent()));
+        eventPublisher.publishEvent(AsyncRequestEvent.fail(request, this, e));
     }
 
     /**
      * Ukončí běžící hromadnou akci.
      */
     public void terminate() {
+        ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
         if (!bulkActionRun.setInterrupted(true)) {
             return;
         }
@@ -200,7 +154,11 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
         try {
             while (bulkActionRun.getState() == ArrBulkActionRun.State.RUNNING) {
                 try {
+                    logger.info("Čekání na dokončení hromadné akce: {}", request);
                     Thread.sleep(100);
+                    TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+                    transactionTemplate.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
+                    bulkActionRun = transactionTemplate.execute(status -> bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId()));
                 } catch (InterruptedException e) {
                     // Nothing to do with this -> simply finish
                     Thread.currentThread().interrupt();
@@ -208,10 +166,10 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
             }
 
             bulkActionRun.setState(ArrBulkActionRun.State.INTERRUPTED);
-            bulkActionHelperService.updateAction(bulkActionRun);
 
         } finally {
             bulkActionRun.setInterrupted(false);
+            bulkActionHelperService.updateAction(bulkActionRun);
         }
     }
 
@@ -219,13 +177,20 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
     public String toString() {
         return "BulkActionWorker{" +
                 "bulkAction=" + bulkAction +
-                ", versionId=" + fundVersionId +
-                ", bulkActionRun=" + bulkActionRun +
+                ", versionId=" + request.getFundVersionId() +
                 '}';
     }
 
     @Override
-    public Integer getCurrentId() {
-        return bulkActionRun.getBulkActionRunId();
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AsyncBulkActionWorker that = (AsyncBulkActionWorker) o;
+        return request.equals(that.request);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(request);
     }
 }

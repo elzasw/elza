@@ -161,8 +161,8 @@ public class ArrangementWebsocketController {
 
 
         ArrLevel newLevel = moveLevelService.addNewLevel(version, staticNode, staticParentNode,
-                addLevelParam.getDirection(), addLevelParam.getScenarioName(),
-                descItemCopyTypes);
+                                                         addLevelParam.getDirection(), addLevelParam.getScenarioName(),
+                                                         descItemCopyTypes, null);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
             UpdateDescItemsParam params = new UpdateDescItemsParam(
