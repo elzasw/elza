@@ -29,7 +29,8 @@ public class OutputItemConvertor {
                                    new StructuredObjectRefItemConvertor(),
                                    new FileRefItemConvertor(),
                                    new JsonTableItemConvertor(),
-                                   new DateItemConvertor());
+                                   new DateItemConvertor(),
+                                   new UriRefItemConvertor());
     }
 
     public Item convert(IntItem arrItem) {

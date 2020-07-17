@@ -61,21 +61,27 @@
         <item-type-assign code="ZP2015_LEVEL_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_FOLDER_LOGICAL">
-        <name>Logická</name>
+        <name>logická</name>
         <description>Logická složka</description>
         <shortcut>Logická</shortcut>
         <item-type-assign code="ZP2015_FOLDER_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_FOLDER_UNITS">
-        <name>Množstevní EJ</name>
+        <name>množstevní EJ</name>
         <description>Množstevní evidenční jednotka</description>
-        <shortcut>Množstevní EJ</shortcut>
+        <shortcut>množstevní EJ</shortcut>
         <item-type-assign code="ZP2015_FOLDER_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_FOLDER_SINGLE_TYPE">
-        <name>S typem EJ</name>
+        <name>s typem EJ</name>
         <description>Více evidenčních jednotek stejného typu</description>
-        <shortcut>Typ EJ</shortcut>
+        <shortcut>typ EJ</shortcut>
+        <item-type-assign code="ZP2015_FOLDER_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_FOLDER_DAO_TYPE">
+        <name>digitální</name>
+        <description>Množstevní složka s digitálním obsahem</description>
+        <shortcut>digitální</shortcut>
         <item-type-assign code="ZP2015_FOLDER_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_LIO">
@@ -382,7 +388,7 @@
         <description>List</description>
         <shortcut>lst</shortcut>
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
-    </item-spec>    
+    </item-spec>
 
     <!-- Specifikace pro složky v manip.seznamu -->
     <item-spec code="ZP2015_EXTRA_UNITS_LIO">
@@ -2351,7 +2357,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>        
+    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_75">
         <name>navrhovatel</name>
         <description>navrhovatel</description>
@@ -2375,7 +2381,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>        
+    </item-spec>
     <!-- zastaralé, nově většinou autor textu (ZP2015_ENTITY_ROLE_11),
           používá se nyní již jen u technických výkresů, asi by mohlo být 
           přejmenováno na "autor výkresu" -->
@@ -3030,7 +3036,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>    
+    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_67">
         <name>rod/rodina zachycený/á jednotkou popisu</name>
         <description>všechny typy a podtypy archiválií</description>
@@ -3039,7 +3045,7 @@
             <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>    
+    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_68">
         <name>korporace zachycená jednotkou popisu</name>
         <description>všechny typy a podtypy archiválií</description>
@@ -3048,7 +3054,7 @@
             <item-aptype register-type="PARTY_GROUP"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>    
+    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_69">
         <name>událost zachycená jednotkou popisu</name>
         <description>všechny typy a podtypy archiválií</description>
@@ -3057,7 +3063,7 @@
             <item-aptype register-type="EVENT"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>    
+    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_70">
         <name>dílo/výtvor zachycené/ý jednotkou popisu</name>
         <description>platné pro všechny typy a podtypy archiválií</description>
@@ -3066,7 +3072,7 @@
             <item-aptype register-type="ARTWORK"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>    
+    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_71">
         <name>geografický objekt zachycený jednotkou popisu</name>
         <description>platné pro všechny typy a podtypy archiválií</description>
@@ -3075,7 +3081,7 @@
             <item-aptype register-type="GEO"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
-    </item-spec>    
+    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_72">
         <name>obecný pojem vztahující se k jednotce popisu</name>
         <description>platné pro všechny typy a podtypy archiválií</description>
@@ -3593,7 +3599,7 @@
         <description>třída</description>
         <shortcut>třída</shortcut>
         <item-type-assign code="ZP2015_AWARD_LEVEL"/>
-    </item-spec>    
+    </item-spec>
     <item-spec code="ZP2015_AWARD_LEVEL_DEGREE">
         <name>stupeň</name>
         <description>stupeň</description>
