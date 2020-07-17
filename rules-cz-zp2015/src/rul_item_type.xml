@@ -239,15 +239,15 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_RESTRICTION_ACCESS_SHARED" data-type="STRUCTURED" structure-type="ZP2015_ACCESS_COND_TYPE">
-        <name>Omezení přístupnosti (sdílené)</name>
-        <shortcut>Typové omezení přístupnosti</shortcut>
+        <name>Druh omezení přístupnosti</name>
+        <shortcut>Druh omezení přístupnosti</shortcut>
         <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_RESTRICTION_ACCESS_INLINE" data-type="STRUCTURED" structure-type="ZP2015_ACCESS_COND">
-        <name>Omezení přístupnosti (lokální)</name>
+        <name>Zvláštní omezení přístupnosti</name>
         <shortcut>Omezení přístupnosti</shortcut>
         <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
         <is-value-unique>false</is-value-unique>

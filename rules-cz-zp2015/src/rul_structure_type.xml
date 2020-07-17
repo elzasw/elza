@@ -6,6 +6,6 @@
         <name>Druh omezení přístupnosti</name>
     </structure-type>
     <structure-type code="ZP2015_ACCESS_COND" validValueFromVersion="162" anonymous="true">
-        <name>Omezení přístupnosti</name>
+        <name>Zvláštní omezení přístupnosti</name>
     </structure-type>
 </structure-types>
