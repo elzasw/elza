@@ -1102,9 +1102,19 @@ var messages = {
     "ap.ext-search.section.extends.spec": "Specifikace",
     "ap.ext-search.section.extends.value": "Hodnota",
 
+    "ap.ext-search.section.relations.type": "Typ vztahu",
+    "ap.ext-search.section.relations.spec": "Specifikace",
+    "ap.ext-search.section.relations.area": "Oblast hledání",
+    "ap.ext-search.section.relations.only-main-part": "Pouze hlavní část",
+    "ap.ext-search.section.relations.obj": "Návazná archivní entita",
+
     "ap.validation.title": "Výsledek validace archivní entity",
 
     "ap.form.ref.value": "Externí entita [{0}]",
+
+    "ap.ext-filter.title": "Rozšířený filtr",
+    "ap.ext-filter.use": "Použít rozšířený filtr",
+    "ap.ext-filter.used": "Je použitý rozšířený filtr",
 
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",

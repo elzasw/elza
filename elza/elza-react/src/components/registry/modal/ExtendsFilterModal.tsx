@@ -24,6 +24,8 @@ import * as AreaInfo from "../form/filter/AreaInfo";
 import {ArchiveEntityRel} from "../field/ArchiveEntityRel";
 import {Area} from "../../../api/Area";
 import {ArchiveEntityResultListVO} from "../../../api/ArchiveEntityResultListVO";
+import {FilteredResultVO} from "../../../api/FilteredResultVO";
+import {ApAccessPointVO} from "../../../api/ApAccessPointVO";
 
 const FORM_NAME = "extendsFilter";
 
@@ -58,7 +60,7 @@ type Props = {
     submitting: boolean;
     onSubmit: (data: any) => void;
     onClose: () => void;
-    relEntityApi: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO>;
+    relEntityApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>;
 } & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
 const bitItems = [{

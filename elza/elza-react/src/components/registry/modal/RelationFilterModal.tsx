@@ -13,6 +13,8 @@ import {WebApi} from "../../../actions/WebApi";
 import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
 import {RulDataTypeVO} from "../../../api/RulDataTypeVO";
 import {RulDataTypeCodeEnum} from "../../../api/RulDataTypeCodeEnum";
+import {FilteredResultVO} from "../../../api/FilteredResultVO";
+import {ApAccessPointVO} from "../../../api/ApAccessPointVO";
 
 const FORM_NAME = "relationFilterModalForm";
 
@@ -39,8 +41,8 @@ const formConfig: ConfigProps<RelationFilterClientVO, ModalFormProps> = {
 type Props = {
     refTables?: any;
     scopeId: number;
-    externalSystemCode: string;
     onClose: () => void;
+    relApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>
 } & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
 const RelationFilterModal = ({
@@ -50,9 +52,10 @@ const RelationFilterModal = ({
                                  onlyMainPart,
                                  area,
                                  itemType,
+                                 itemSpec,
                                  scopeId,
-                                 externalSystemCode,
                                  submitting,
+                                 relApi
                              }: Props) => {
     if (!refTables) {
         return <div/>;
@@ -63,27 +66,32 @@ const RelationFilterModal = ({
         return dataType.code === RulDataTypeCodeEnum.RECORD_REF;
     });
 
-    const callApi = (itemTypeId: number, itemSpecId: number, filter: any): Promise<ArchiveEntityResultListVO> => {
-        return WebApi.findArchiveEntitiesInExternalSystem(0, 50, externalSystemCode, filter);
-    };
+    const itemSpecs = itemType != null && itemType.useSpecification ? itemType.descItemSpecs : null;
 
     return <Form onSubmit={handleSubmit}>
         <Modal.Body>
             <Row>
                 <Col xs={12}>
-                    <Form.Label>
-                        Typ vztahu
-                    </Form.Label>
                     <Field name="itemType"
+                           label={i18n('ap.ext-search.section.relations.type')}
                            type="autocomplete"
                            component={FormInputField}
                            items={itemTypes}
                            disabled={submitting}
                     />
                 </Col>
+                {itemSpecs && <Col xs={12}>
+                    <Field name="itemSpec"
+                           type="autocomplete"
+                           label={i18n('ap.ext-search.section.relations.spec')}
+                           component={FormInputField}
+                           items={itemSpecs}
+                           disabled={submitting}
+                    />
+                </Col>}
                 <Col xs={6}>
                     <Form.Label>
-                        Oblast hledání
+                        {i18n('ap.ext-search.section.relations.area')}
                     </Form.Label>
                     <Field
                         name={'area'}
@@ -100,7 +108,7 @@ const RelationFilterModal = ({
                 </Col>
                 <Col xs={6}>
                     <Form.Label>
-                        Pouze hlavní část
+                        {i18n('ap.ext-search.section.relations.only-main-part')}
                     </Form.Label>
                     <Field
                         name="onlyMainPart"
@@ -112,15 +120,17 @@ const RelationFilterModal = ({
                 {itemType && <Col xs={12}>
                     <ArchiveEntityRel
                         name={'obj'}
-                        label={'Návazná archivní entita'}
+                        label={i18n('ap.ext-search.section.relations.obj')}
                         onlyMainPart={onlyMainPart}
                         area={area}
-                        api={callApi}
+                        api={relApi}
                         scopeId={scopeId}
                         itemTypeId={itemType.id}
+                        itemSpecId={itemSpec && itemSpec.id}
                         modifyFilterData={data => {
                             data.relFilters = [{
                                 relTypeId: itemType.id,
+                                relSpecId: itemSpec && itemSpec.id,
                             }]
                             return data;
                         }}
@@ -146,6 +156,7 @@ const mapStateToProps = (state: any) => {
     return {
         refTables: state.refTables,
         itemType: selector(state, "itemType"),
+        itemSpec: selector(state, "itemSpec"),
         onlyMainPart: selector(state, "onlyMainPart"),
         area: selector(state, "area"),
     }

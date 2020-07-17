@@ -13,6 +13,16 @@
     .type {
       margin-bottom: 5px;
     }
+    .ext-filter-used {
+      background-color: rgba(235, 169, 96, 0.75);
+      width: 100%;
+      .used {
+        padding-left: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
   }
 
   .list {

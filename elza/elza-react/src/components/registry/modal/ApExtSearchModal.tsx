@@ -243,7 +243,7 @@ const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSy
                         <TextFilterSection submitting={submitting}/>
                         <BaseFilterSection submitting={submitting} types={apTypes.items}/>
                         <CreExtFilterSection submitting={submitting}/>
-                        <RelationsFilterSection externalSystemCode={extSystem} formName={FORM_NAME} submitting={submitting || !extSystem}/>
+                        <RelationsFilterSection relApi={relEntityApi} formName={FORM_NAME} submitting={submitting || !extSystem}/>
                         <ExtendsFilterSection relEntityApi={relEntityApi} formName={FORM_NAME} submitting={submitting || !extSystem}/>
                     </div>
                     <div className="search-controller">

@@ -289,7 +289,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String ALL_SCOPES = AP_CONTROLLER_URL + "/scopes";
     protected static final String RECORD_TYPES = AP_CONTROLLER_URL + "/recordTypes";
 
-    protected static final String FIND_RECORD = AP_CONTROLLER_URL + "/";
+    protected static final String FIND_RECORD = AP_CONTROLLER_URL + "/search";
     protected static final String FIND_RECORD_FOR_RELATION = AP_CONTROLLER_URL + "/findRecordForRelation";
     protected static final String GET_RECORD = AP_CONTROLLER_URL + "/{recordId}";
     protected static final String CREATE_ACCESS_POINT = AP_CONTROLLER_URL + "/";
@@ -2105,7 +2105,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("count", count != null ? count : 20);
         params.put("excludeInvalid", true);
 
-        return get(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
+        return post(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
     }
 
     /**
