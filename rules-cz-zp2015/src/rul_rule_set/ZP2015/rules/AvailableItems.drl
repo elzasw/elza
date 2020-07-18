@@ -485,6 +485,7 @@ when
     $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
     DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE") ) ) from $activeLevel.descItems
+    not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
     $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
@@ -519,7 +520,9 @@ when
     // nemá poděděný typ složky množstevní nebo s EJ
     not DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE") ) ) from $activeLevel.descItems
     // nejedná se o Film nebo zvuk záznam
-    not DescItem(type=="ZP2015_UNIT_TYPE" && (specCode in ("ZP2015_UNIT_TYPE_KZA", "ZP2015_UNIT_TYPE_ZZA", "ZP2015_UNIT_TYPE_KTT") ) ) from $activeLevel.descItems    
+    not DescItem(type=="ZP2015_UNIT_TYPE" && (specCode in ("ZP2015_UNIT_TYPE_KZA", "ZP2015_UNIT_TYPE_ZZA", "ZP2015_UNIT_TYPE_KTT") ) ) from $activeLevel.descItems
+    // není s ničím pevně spojena
+    not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems    
     $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
@@ -1026,7 +1029,7 @@ no-loop
 when
     $activeLevel: ActiveLevel( )
     $itemType : RulItemTypeExt(code in ( "ZP2015_ITEM_LINK" ) )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
     not DescItem(type=="ZP2015_STORAGE_ID") from $activeLevel.descItems
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
