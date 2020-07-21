@@ -102,8 +102,9 @@
                 <type code="ZP2015_AWARD_LEVEL" width="2"/>
                 <type code="ZP2015_AWARD_GROUP" width="1"/>
                 <type code="ZP2015_RESTRICTION_ACCESS_NAME" width="0"/>
-                <type code="ZP2015_RESTRICTED_ACCESS_TYPE" width="1"/>
+                <type code="ZP2015_RESTRICTED_ACCESS_REASON" width="2"/>                
                 <type code="ZP2015_RESTRICTION_ACCESS_DATE" width="1"/>
+                <type code="ZP2015_RESTRICTED_ACCESS_TYPE" width="2"/>
             </group>
             <group code="06_ZP2015_CH4">
                 <name>Společné prvky popisu</name>

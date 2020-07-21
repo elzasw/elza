@@ -254,7 +254,7 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_RESTRICTION_ACCESS_NAME" data-type="TEXT">
+    <item-type code="ZP2015_RESTRICTION_ACCESS_NAME" data-type="STRING">
         <name>Název omezení přístupnosti</name>
         <shortcut>Název omezení</shortcut>
         <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
@@ -262,10 +262,10 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_RESTRICTED_ACCESS_TYPE" data-type="ENUM">
-        <name>Omezení zveřejnění</name>
-        <shortcut>Přístupnost</shortcut>
-        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
+    <item-type code="ZP2015_RESTRICTED_ACCESS_REASON" data-type="ENUM">
+        <name>Důvod omezení zveřejnění</name>
+        <shortcut>Důvod</shortcut>
+        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu, důvod omezení</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
@@ -277,6 +277,14 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_RESTRICTED_ACCESS_TYPE" data-type="ENUM">
+        <name>Rozsah omezení zveřejnění</name>
+        <shortcut>Rozsah</shortcut>
+        <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu, rozsah omezení</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
     </item-type>
     <item-type code="ZP2015_UNIT_COPY_RIGHTS" data-type="TEXT">
         <name>Možnost zveřejnění reprodukce jednotky popisu</name>
