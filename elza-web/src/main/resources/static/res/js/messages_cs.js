@@ -759,7 +759,6 @@ var messages = {
     "arr.refTemplates.mapping.title": "Mapování prvků popisu",
     "arr.refTemplates.mapping.create.title": "Nové mapování prvků popisu",
     "arr.refTemplates.mapping.update.title": "Úprava mapování prvků popisu",
-    "arr.refTemplates.mapping.apMapping": "Mapování prvků popisu",
     "arr.refTemplates.mapping.specMapping": "Mapování specifikací prvků popisu",
     "arr.refTemplates.mapping.fromItemTypeId": "Zdrojový typ prvku",
     "arr.refTemplates.mapping.toItemTypeId": "Cílový typ prvku",
@@ -947,6 +946,7 @@ var messages = {
 
     "subNodeForm.descItem.link.uri": "URI",
     "subNodeForm.descItem.link.description": "Popisek",
+    "subNodeForm.descItem.link.refTemplate": "Šablona synchronizace",
 
     "subNodeForm.section.jp": "Záznam:",
     "subNodeForm.section.item": "Prvek popisu",
