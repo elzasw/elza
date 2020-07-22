@@ -410,6 +410,7 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class)
                 .exclude("nodes")
                 .exclude("scopes")
+                .exclude("anonymizedAp")
                 .byDefault()
                 .field("outputId", "id")
                 .customize(new CustomMapper<ArrOutput, ArrOutputVO>() {
