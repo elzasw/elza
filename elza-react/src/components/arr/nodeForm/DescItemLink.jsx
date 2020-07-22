@@ -16,13 +16,14 @@ import {ELZA_SCHEME_NODE} from '../../../constants';
 import {routerNavigate} from '../../../actions/router';
 import './DescItemLink.scss';
 import RefTemplateField from '../RefTemplateField';
+import {decorateAutocompleteValue} from './DescItemUtils';
 
 const DescItemString_MAX_LENGTH = 1000;
 
 /**
  * Input prvek pro desc item - typ STRING.
  */
-class DescItemString extends AbstractReactComponent {
+class DescItemLink extends AbstractReactComponent {
     focusEl = null;
     focusEl2 = null;
     focus = () => {
@@ -152,11 +153,17 @@ class DescItemString extends AbstractReactComponent {
                     />
                 </div>
                 {descItem.nodeId && (
-                    <RefTemplateField onChange={this.handleTemplate} fundId={fundId} useIdAsValue={true} value={descItem.refTemplateId} />
+                    <RefTemplateField
+                        {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
+                        onChange={this.handleTemplate}
+                        fundId={fundId}
+                        useIdAsValue={true}
+                        value={descItem.refTemplateId}
+                    />
                 )}
             </div>
         );
     }
 }
 
-export default connect(null, null, null, {forwardRef: true})(DescItemString);
+export default connect(null, null, null, {forwardRef: true})(DescItemLink);

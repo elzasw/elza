@@ -677,6 +677,9 @@ export class ItemFormActions {
                 if (descItem.description !== descItem.prevDescription) {
                     needUpdate = true;
                 }
+                if (descItem.refTemplateId !== descItem.prevRefTemplateId) {
+                    needUpdate = true;
+                }
 
                 return needUpdate;
             } else {

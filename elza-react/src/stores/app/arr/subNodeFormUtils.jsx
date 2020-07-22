@@ -125,6 +125,9 @@ export function createDescItemFromDb(descItemType, descItem) {
     if (descItem.hasOwnProperty('description')) {
         result.prevDescription = descItem.description;
     }
+    if (descItem.hasOwnProperty('refTemplateId')) {
+        result.prevRefTemplateId = descItem.refTemplateId;
+    }
 
     prepareNextFormKey(descItemType);
     initFormKey(descItemType, result);

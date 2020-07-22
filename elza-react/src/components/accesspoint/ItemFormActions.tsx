@@ -433,9 +433,12 @@ export abstract class ItemFormActions {
                     needUpdate = true;
                 }
                 // Nelze použít valuesEquals (prázdný string není !== undefined)
-								if (descItem.description !== descItem.prevDescription) {
-									needUpdate = true;
-								}
+                if (descItem.description !== descItem.prevDescription) {
+                    needUpdate = true;
+                }
+                if (descItem.refTemplateId !== descItem.prevRefTemplateId) {
+                    needUpdate = true;
+                }
 
                 return needUpdate;
             } else {
