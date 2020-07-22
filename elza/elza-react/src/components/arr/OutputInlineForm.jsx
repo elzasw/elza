@@ -3,10 +3,8 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {formValueSelector, Field, reduxForm} from 'redux-form';
 import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
-import {decorateFormField} from 'components/form/FormUtils.jsx';
 import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx';
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx';
-import {initForm} from 'actions/form/inlineForm.jsx';
 import {indexById} from 'stores/app/utils.jsx';
 import RegistryField from '../registry/RegistryField';
 import {FormInputField} from '../shared';
@@ -117,8 +115,10 @@ class OutputInlineForm extends AbstractReactComponent {
                         <Field
                             component={FormInputField}
                             as={RegistryField}
-                            name={'anonymizedApId'}
-                            useIdAsValue={true}
+                            type="simple"
+                            name={'anonymizedAp'}
+                            addEmpty={true}
+                            emptyTitle={i18n("arr.output.title.anonymizedAp.remove")}
                             disabled={disabled}
                         />
                     </div>

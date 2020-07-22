@@ -209,7 +209,7 @@ class RegistryField extends AbstractReactComponent {
             return obj;
         }
         // změna typu aby se objekt dal použít jako návazný
-        if (this.props.addEmpty && (obj == null || obj.id === -1)) {
+        if (this.props.addEmpty && (obj == null || obj === "" || obj.id === -1)) {
             return null;
         }
         const newobj = {

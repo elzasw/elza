@@ -137,6 +137,18 @@ const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo(
                         </Autocomplete>
                     </Form.Group>
                 );
+            case 'simple':
+                return (
+                    <Form.Group
+                        ref={ref}
+                        label={label}
+                        value={value}
+                        children={children}
+                        isInvalid={hasError}
+                        {...otherProps}
+                        {...inlineProps}
+                    />
+                );
             default:
                 return (
                     <Form.Group>
