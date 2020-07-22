@@ -11,7 +11,6 @@ import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -27,6 +26,8 @@ public class RestoreAction {
     private Map<Integer, List<ArrDataStructureRef>> restoreStructData;
     private Map<Integer, List<ArrDataRecordRef>> restoreAPRef;
     private Map<Integer, List<ArrDataFileRef>> restoreFileRef;
+    private Map<Integer, List<ArrDataUriRef>> restoreUriRefTemplate;
+    private Map<Integer, List<ArrDataUriRef>> restoreUriRefNode;
     private Map<Integer, List<ArrDaoLink>> restoreDaoLinks;
 
     final private StructuredObjectRepository structureDataRepository;
@@ -41,6 +42,8 @@ public class RestoreAction {
 
     final private NodeRepository nodeRepository;
 
+    final private ArrRefTemplateRepository refTemplateRepository;
+
     final private EntityManager em;
 
     public RestoreAction(final StaticDataProvider sdp,
@@ -50,7 +53,8 @@ public class RestoreAction {
                          final FundFileRepository fundFileRepository,
                          final DaoRepository daoRepository,
                          final NodeRepository nodeRepository,
-                         final DataUriRefRepository dataUriRefRepository) {
+                         final DataUriRefRepository dataUriRefRepository,
+                         final ArrRefTemplateRepository refTemplateRepository) {
         this.sdp = sdp;
         this.em = em;
         this.structureDataRepository = structureDataRepository;
@@ -59,6 +63,7 @@ public class RestoreAction {
         this.daoRepository = daoRepository;
         this.nodeRepository = nodeRepository;
         this.dataUriRefRepository = dataUriRefRepository;
+        this.refTemplateRepository = refTemplateRepository;
     }
 
     public void restore(Collection<RestoredNode> cachedNodes) {
@@ -69,6 +74,7 @@ public class RestoreAction {
         prepareStructureData();
         prepareAPRefs();
         prepareFileRefs();
+        prepareUriRefs();
         preapareDaoLinks();
     }
 
@@ -185,6 +191,8 @@ public class RestoreAction {
                         addDataAPRef((ArrDataRecordRef) data);
                     } else if (data instanceof ArrDataFileRef) {
                         addDataFileRef((ArrDataFileRef) data);
+                    } else if (data instanceof ArrDataUriRef) {
+                        addDataUriRef((ArrDataUriRef) data);
                     } else if (data instanceof ArrDataUnitdate) {
                         loadUnitdate((ArrDataUnitdate) data);
                     }
@@ -232,6 +240,27 @@ public class RestoreAction {
         }
         List<ArrDataFileRef> dataList = restoreFileRef.computeIfAbsent(data.getFileId(), k -> new ArrayList<>());
         dataList.add(data);
+    }
+
+    private void addDataUriRef(final ArrDataUriRef data) {
+        Integer refTemplateId = data.getRefTemplateId();
+        if (refTemplateId != null) {
+            if (restoreUriRefTemplate == null) {
+                restoreUriRefTemplate = new HashMap<>();
+            }
+            List<ArrDataUriRef> dataList = restoreUriRefTemplate.computeIfAbsent(refTemplateId,
+                    k -> new ArrayList<>());
+            dataList.add(data);
+        }
+        Integer nodeId = data.getNodeId();
+        if (nodeId != null) {
+            if (restoreUriRefNode == null) {
+                restoreUriRefNode = new HashMap<>();
+            }
+            List<ArrDataUriRef> dataList = restoreUriRefNode.computeIfAbsent(nodeId,
+                    k -> new ArrayList<>());
+            dataList.add(data);
+        }
     }
 
     private void restoreDaoLink(ArrDaoLink daoLink) {
@@ -319,6 +348,42 @@ public class RestoreAction {
 
         Validate.isTrue(restoreFileRef.isEmpty());
         restoreFileRef = null;
+    }
+    /**
+     * Vyplnění návazných entity {@link ArrRefTemplate} a {@link ArrNode}.
+     *
+     */
+    private void prepareUriRefs() {
+        if (restoreUriRefNode == null && restoreUriRefTemplate == null) {
+            return;
+        }
+
+        if (restoreUriRefNode != null) {
+            List<ArrNode> nodes = nodeRepository.findAll(restoreUriRefNode.keySet());
+            for (ArrNode node : nodes) {
+                List<ArrDataUriRef> dataList = restoreUriRefNode.remove(node.getNodeId());
+                for (ArrDataUriRef data : dataList) {
+                    data.setArrNode(node);
+                }
+            }
+
+            Validate.isTrue(restoreUriRefNode.isEmpty());
+            restoreUriRefNode = null;
+        }
+
+        if (restoreUriRefTemplate != null) {
+            List<ArrRefTemplate> templates = refTemplateRepository.findAll(restoreUriRefTemplate.keySet());
+            for (ArrRefTemplate template : templates) {
+                List<ArrDataUriRef> dataList = restoreUriRefTemplate.remove(template.getRefTemplateId());
+                for (ArrDataUriRef data : dataList) {
+                    data.setRefTemplate(template);
+                }
+            }
+
+            Validate.isTrue(restoreUriRefTemplate.isEmpty());
+            restoreUriRefTemplate = null;
+        }
+
     }
 
     /**

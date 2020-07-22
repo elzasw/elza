@@ -113,6 +113,9 @@ public class NodeCacheService {
     @Autowired
     private DataUriRefRepository dataUriRefRepository;
 
+    @Autowired
+    private ArrRefTemplateRepository refTemplateRepository;
+
     public NodeCacheService() {
         mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -467,7 +470,8 @@ public class NodeCacheService {
                 fundFileRepository,
                 daoRepository,
                 nodeRepository,
-                dataUriRefRepository);
+                dataUriRefRepository,
+                refTemplateRepository);
         ra.restore(cachedNodes);
     }
 

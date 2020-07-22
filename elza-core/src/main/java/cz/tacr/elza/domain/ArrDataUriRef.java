@@ -39,6 +39,9 @@ public class ArrDataUriRef extends ArrData {
     @JoinColumn(name = "refTemplateId")
     private ArrRefTemplate refTemplate;
 
+    @Column(name = "refTemplateId", updatable = false, insertable = false)
+    private Integer refTemplateId;
+
     @Transient
     private boolean deletingProcess = false;
 
@@ -67,6 +70,7 @@ public class ArrDataUriRef extends ArrData {
         this.arrNode = src.arrNode;
         this.nodeId = src.nodeId;
         this.refTemplate = src.refTemplate;
+        this.refTemplateId = src.refTemplateId;
     }
 
     public String getSchema() {
@@ -113,6 +117,11 @@ public class ArrDataUriRef extends ArrData {
 
     public void setRefTemplate(ArrRefTemplate refTemplate) {
         this.refTemplate = refTemplate;
+        this.refTemplateId = refTemplate == null ? null : refTemplate.getRefTemplateId();
+    }
+
+    public Integer getRefTemplateId() {
+        return refTemplateId;
     }
 
     @Override
