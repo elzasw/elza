@@ -98,7 +98,7 @@ class OutputInlineForm extends AbstractReactComponent {
                         <label className="control-label">{i18n('arr.output.title.anonymizedAp')}</label>
                         <Field
                             component={FormInputField}
-                            input={RegistryField}
+                            as={RegistryField}
                             name={'anonymizedApId'}
                             useIdAsValue={true}
                             disabled={disabled}

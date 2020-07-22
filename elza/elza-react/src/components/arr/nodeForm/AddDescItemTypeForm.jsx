@@ -8,6 +8,7 @@ import {submitForm} from 'components/form/FormUtils.jsx';
 import './AddDescItemTypeForm.scss';
 import {ItemTypeField} from 'components/arr/nodeForm/ItemTypeField';
 import FF from '../../shared/form/FF';
+import {getInfoSpecType} from '../../../stores/app/accesspoint/itemFormUtils';
 
 /**
  * Formulář přidání nové desc item type.
@@ -38,8 +39,9 @@ class AddDescItemTypeForm extends AbstractReactComponent {
         this.props.descItemTypes.forEach(node => {
             const children = [];
             node.children.forEach(item => {
-                item.className = 'type-' + item.type.toLowerCase();
-                if (item.type === AddDescItemTypeForm.ITEM_TYPE_POSSIBLE) {
+                const itemType = getInfoSpecType(item.type);
+                item.className = 'type-' + itemType.toLowerCase();
+                if (itemType === AddDescItemTypeForm.ITEM_TYPE_POSSIBLE) {
                     children.push(item);
                 }
             });
@@ -68,17 +70,12 @@ class AddDescItemTypeForm extends AbstractReactComponent {
             this.submitOptions,
         );
 
-    selectDescItem = (item) => {
+    selectDescItem = item => {
         this.submitReduxForm({descItemTypeId: item}, this.props.dispatch);
-    }
+    };
 
     render() {
-        const {
-            handleSubmit,
-            onClose,
-            descItemTypes,
-            submitting,
-        } = this.props;
+        const {handleSubmit, onClose, descItemTypes, submitting} = this.props;
         const {possibleItemTypes} = this.state;
 
         return (
@@ -88,16 +85,18 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                         {possibleItemTypes.map((node, index) => {
                             return (
                                 <FormGroup key={index}>
-                                    <FormLabel className={"d-block"}>{node.name}</FormLabel>
-                                        {node.children.map(item => <Button
-                                                variant={"link"}
-                                                className="add-link"
-                                                key={item.id}
-                                                onClick={this.selectDescItem.bind(this, item)}
-                                            >
+                                    <FormLabel className={'d-block'}>{node.name}</FormLabel>
+                                    {node.children.map(item => (
+                                        <Button
+                                            variant={'link'}
+                                            className="add-link"
+                                            key={item.id}
+                                            onClick={this.selectDescItem.bind(this, item)}
+                                        >
                                             <Icon glyph="fa-plus" />
                                             {item.name}
-                                        </Button>)}
+                                        </Button>
+                                    ))}
                                 </FormGroup>
                             );
                         })}
@@ -106,10 +105,9 @@ class AddDescItemTypeForm extends AbstractReactComponent {
                         <FF
                             name="descItemTypeId"
                             field={ItemTypeField}
-                            label={i18n('arr.fund.dateRange')}
+                            label={i18n('subNodeForm.descItemType.all')}
                             descItemTypes={descItemTypes}
                         />
-
                     </div>
                 </Modal.Body>
                 <Modal.Footer>

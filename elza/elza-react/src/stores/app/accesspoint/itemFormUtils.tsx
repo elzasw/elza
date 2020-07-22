@@ -29,6 +29,13 @@ export const ItemAvailabilityNumToEnumMap = {
     [0]: ItemAvailability.IMPOSSIBLE,
 };
 
+export const getInfoSpecType = (type: ItemAvailability | number) => {
+    if (typeof type === 'number') {
+        return ItemAvailabilityNumToEnumMap[String(type)];
+    }
+    return type;
+};
+
 /**
  * Vytvoření map na základě - descItemGroup - code, descItemType - id a descItem - objectId.
  * Mapa se vytváří na základě již existujícího formuláře, pokud existuje.
