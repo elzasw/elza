@@ -3,6 +3,7 @@ import {AbstractReactComponent, Autocomplete, i18n} from 'components/shared';
 import classNames from 'classnames';
 
 import './DescItemTypeSpec.scss';
+import {ItemAvailability, ItemAvailabilityNumToEnumMap} from '../../../stores/app/accesspoint/itemFormUtils';
 
 /**
  * Komponenta pro zobrazení specifikace pro daný atribut.
@@ -32,6 +33,13 @@ class DescItemTypeSpec extends AbstractReactComponent {
             favoriteItems: specItemsInfo.favoriteItems,
         };
     };
+
+    getInfoSpecType(type) {
+        if (typeof type === 'number') {
+            return ItemAvailabilityNumToEnumMap[String(type)];
+        }
+        return type;
+    }
 
     /**
      * Sestaví strom specifikací, pokud je vyžadován strom, jinak sestaví plochý seznam. Vytváří nové instance položek stromu.
@@ -75,11 +83,12 @@ class DescItemTypeSpec extends AbstractReactComponent {
                 ) {
                     // vypnutý filtr nebo položka vyhovuje filtru
                     const infoSpec = infoType.descItemSpecsMap[spec.id];
-                    if (!strictMode || (strictMode && infoSpec.type != 'IMPOSSIBLE')) {
+                    const infoSpecType = this.getInfoSpecType(infoSpec.type);
+                    if (!strictMode || (strictMode && infoSpecType !== ItemAvailability.IMPOSSIBLE)) {
                         items.push({
                             ...refSpec,
                             ...spec,
-                            className: 'spec-' + infoSpec.type.toLowerCase(),
+                            className: 'spec-' + infoSpecType.toLowerCase(),
                         });
                     }
                 }
@@ -97,7 +106,8 @@ class DescItemTypeSpec extends AbstractReactComponent {
                 ) {
                     // vypnutý filtr nebo položka vyhovuje filtru
                     const infoSpec = infoType.descItemSpecsMap[specId];
-                    if (!strictMode || (strictMode && infoSpec.type != 'IMPOSSIBLE')) {
+                    const infoSpecType = this.getInfoSpecType(infoSpec.type);
+                    if (!strictMode || (strictMode && infoSpecType !== ItemAvailability.IMPOSSIBLE)) {
                         favoriteItems.push(specId);
                     }
                 }
@@ -163,11 +173,12 @@ class DescItemTypeSpec extends AbstractReactComponent {
                         (lowerFilterText && refSpec.name.toLocaleLowerCase().indexOf(lowerFilterText) >= 0)
                     ) {
                         // vypnutý filtr nebo položka vyhovuje filtru
-                        if (!strictMode || (strictMode && infoSpec.type != 'IMPOSSIBLE')) {
+                        const infoSpecType = this.getInfoSpecType(infoSpec.type);
+                        if (!strictMode || (strictMode && infoSpecType !== ItemAvailability.IMPOSSIBLE)) {
                             return {
                                 ...refSpec,
                                 ...infoSpec,
-                                className: 'spec-' + infoSpec.type.toLowerCase(),
+                                className: 'spec-' + infoSpecType.toLowerCase(),
                             };
                         }
                     }

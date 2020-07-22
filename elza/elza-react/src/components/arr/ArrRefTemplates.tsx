@@ -70,6 +70,15 @@ const ArrRefTemplates = ({descItemTypes, onUpdateBase, onClose, fundId, onCreate
             ...list!.slice(activeIndex! + 1),
         ]);
     };
+    const afterUpdateItem = (result: ArrRefTemplateVO) => {
+        setList([
+            ...list!.slice(0, activeIndex!),
+            {
+                ...result!,
+            },
+            ...list!.slice(activeIndex! + 1),
+        ]);
+    };
     const afterUpdateMapping = (result: ArrRefTemplateMapTypeVO) => {
         const byId = indexById(selectedItem?.refTemplateMapTypeVOList, result.id);
         setList([
@@ -154,7 +163,10 @@ const ArrRefTemplates = ({descItemTypes, onUpdateBase, onClose, fundId, onCreate
                                 <>
                                     <h2>
                                         {i18n('arr.refTemplates.detail.basicInfo')}{' '}
-                                        <Button variant={'action'} onClick={() => onUpdateBase(selectedItem!)}>
+                                        <Button
+                                            variant={'action'}
+                                            onClick={() => onUpdateBase(selectedItem!, afterUpdateItem)}
+                                        >
                                             <Icon glyph={'fa-pencil'} />
                                         </Button>
                                     </h2>
