@@ -140,7 +140,9 @@ class XmlSectionOutputStream implements SectionOutputStream {
             byte buff[] = new byte[65536];
             while (encoder.available() > 0) {
                 int numRead = encoder.read(buff);
-
+                if (numRead < 0) {
+                    break;
+                }
                 String str = new String(buff, 0, numRead, Charset.forName("utf-8"));
                 sw.writeCharacters(str);
             }

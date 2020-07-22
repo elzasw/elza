@@ -13,14 +13,14 @@ elza:
 
   asyncActions:
     node:
-      threadCount: 5
-      requestCount: 100
+      threadCount: 4
+      maxPerFund: 2
     bulk:
-      threadCount: 5
-      requestCount: 100
+      threadCount: 4
+      maxPerFund: 1
     output:
-      threadCount: 5
-      requestCount: 100
+      threadCount: 4
+      maxPerFund: 1
 
 #  hibernate:
 #    index:

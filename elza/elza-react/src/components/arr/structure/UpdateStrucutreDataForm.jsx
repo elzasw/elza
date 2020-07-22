@@ -34,7 +34,7 @@ class UpdateStructureDataForm extends AbstractReactComponent {
         return (
             <div>
                 <Modal.Body>
-                    {structureNodeForm.fetched ? (
+                    {structureNodeForm && structureNodeForm.fetched ? (
                         <StructureSubNodeForm
                             versionId={fundVersionId}
                             readMode={readMode}

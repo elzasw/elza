@@ -430,6 +430,7 @@
                         <configuration>
                             <sources>
                                 <source>${project.build.directory}/generated-sources/jaxb</source>
+                                <!--<source>${project.build.directory}/generated-sources/api/rest</source>-->
                             </sources>
                         </configuration>
                     </execution>
@@ -557,7 +558,7 @@
                             <apiPackage>cz.tacr.elza.controller</apiPackage>
                             <modelPackage>cz.tacr.elza.controller.vo</modelPackage>
                             <configOptions>
-                                <sourceFolder>/</sourceFolder>
+                                <!--<sourceFolder>/</sourceFolder>-->
                                 <interfaceOnly>true</interfaceOnly>
                                 <dateLibrary>java8-localdatetime</dateLibrary>
                                 <!--

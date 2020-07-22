@@ -15,7 +15,7 @@ import {FormInputField} from '../shared';
  * Formulář inline editace výstupu.
  */
 class OutputInlineForm extends AbstractReactComponent {
-    static fields = ['name', 'outputTypeId', 'internalCode', 'templateId', 'anonymizedApId'];
+    static fields = ['name', 'outputTypeId', 'internalCode', 'templateId', 'anonymizedAp'];
 
     static FORM = 'outputEditForm';
 
@@ -94,16 +94,6 @@ class OutputInlineForm extends AbstractReactComponent {
                         disabled={disabled}
                         name={'internalCode'}
                     />
-                    <div>
-                        <label className="control-label">{i18n('arr.output.title.anonymizedAp')}</label>
-                        <Field
-                            component={FormInputField}
-                            as={RegistryField}
-                            name={'anonymizedApId'}
-                            useIdAsValue={true}
-                            disabled={disabled}
-                        />
-                    </div>
                     <div className="row-layout">
                         <FormInput type="text" label={i18n('arr.output.outputType')} disabled value={outputType} />
                         <Field
@@ -121,6 +111,16 @@ class OutputInlineForm extends AbstractReactComponent {
                                     </option>
                                 ))}
                         </Field>
+                    </div>
+                    <div>
+                        <label className="control-label">{i18n('arr.output.title.anonymizedAp')}</label>
+                        <Field
+                            component={FormInputField}
+                            as={RegistryField}
+                            name={'anonymizedApId'}
+                            useIdAsValue={true}
+                            disabled={disabled}
+                        />
                     </div>
                 </form>
             </div>

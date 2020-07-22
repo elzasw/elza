@@ -1,7 +1,5 @@
 package cz.tacr.elza.service;
 
-import static java.util.stream.Collectors.toList;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,6 +17,7 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -55,6 +54,7 @@ import cz.tacr.elza.repository.DaoLinkRequestRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
@@ -107,6 +107,12 @@ public class DaoService {
 
     @Autowired
     private RequestQueueItemRepository requestQueueItemRepository;
+
+    @Autowired
+    private FundVersionRepository fundVersionRepository;
+
+    @Autowired
+    private ApplicationContext appCtx;
 
     /**
      * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
@@ -207,16 +213,34 @@ public class DaoService {
 
     /**
      * Vytvoří změnu o zrušení vazby a nastaví ji na arrDaoLink.
-     * Akci provede jen pokud je link platný a nemá dosud vyplněnou změnu o zrušení vazby.
+     * Akci provede jen pokud je link platný a nemá dosud vyplněnou změnu o zrušení
+     * vazby.
+     * 
+     * Vysokoúrovňová funkce, v případě typu level odstraňuje i úroveň
      *
-     * @param daoLink vazba mezi dao a node
-     * @return upravená kopie linku nebo null pokud ke změně nedošlo
+     * @param daoLink
+     *            vazba mezi dao a node
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrDaoLink deleteDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrDaoLink daoLink) {
-        ArrDaoLink result = deleteDaoLink(Collections.singletonList(fundVersion), daoLink, true);
-        updateNodeCacheDaoLinks(Collections.singletonList(daoLink.getNodeId()));
-        return result;
+    public void deleteDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                              final ArrDaoLink daoLink) {
+
+        final ArrDao dao = daoLink.getDao();
+
+        switch (dao.getDaoType()) {
+        case LEVEL:
+            // odstraneni urovne
+            ArrNode deleteNode = daoLink.getNode();
+            FundLevelService fundLevelService = appCtx.getBean(FundLevelService.class);
+            fundLevelService.deleteLevel(fundVersion, deleteNode, null);
+            break;
+        case ATTACHMENT:
+            ArrDaoLink result = deleteDaoLink(Collections.singletonList(fundVersion), daoLink, true);
+            updateNodeCacheDaoLinks(Collections.singletonList(daoLink.getNodeId()));
+            break;
+        default:
+            throw new SystemException("Unrecognized dao type");
+        }
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
@@ -317,14 +341,16 @@ public class DaoService {
 
         for (ArrDao arrDao : arrDaos) {
             // smazat arr_dao_link
-            final List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDao(arrDao);
-            nodeIds.addAll(arrDaoLinkList.stream().map(arrDaoLink -> arrDaoLink.getNodeId()).collect(toList()));
-            daoLinkRepository.delete(arrDaoLinkList);
+            List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDao(arrDao);
+
             for (ArrDaoLink arrDaoLink : arrDaoLinkList) {
                 if (arrDaoLink.getDeleteChangeId() == null) {
-                    arrangementCacheService.deleteDaoLink(arrDaoLink.getNodeId(), arrDaoLink.getDaoLinkId());
+                    Integer fundId = arrDaoLink.getNode().getFundId();
+                    ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
+                    deleteDaoLink(fundVersion, arrDaoLink);
                 }
             }
+            daoLinkRepository.delete(arrDaoLinkList);
 
             // smazat arr_dao_file
             final List<ArrDaoFile> daoFileList = daoFileRepository.findByDao(arrDao);

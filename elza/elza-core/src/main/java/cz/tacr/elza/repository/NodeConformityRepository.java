@@ -68,6 +68,6 @@ public interface NodeConformityRepository extends JpaRepository<ArrNodeConformit
     @Query("DELETE FROM arr_node_conformity nc WHERE nc.nodeId in (SELECT n.nodeId FROM arr_node n WHERE n.fund = ?1)")
     void deleteByNodeFund(ArrFund fund);
 
-    void deleteByNodeIdIn(List<Integer> nodeIds);
+    void deleteByNodeIdIn(Collection<Integer> nodeIds);
 
 }

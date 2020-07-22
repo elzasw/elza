@@ -183,11 +183,46 @@ public class ArrangementService {
     }
 
     /**
+     * Try to find fund by string
+     * 
+     * @param fundIdentifier
+     * @return fund, throw exception if not found
+     */
+    public ArrFund getFundByString(String fundIdentifier) {
+        logger.debug("Looking for fund: {}", fundIdentifier);
+        // try to find by uuid
+        if (fundIdentifier.length() == 36) {
+            ArrFund fund = fundRepository.findByRootNodeUuid(fundIdentifier);
+            if (fund != null) {
+                logger.debug("Found by UUID as {}", fund.getFundId());
+                return fund;
+            }
+        }
+        // try to find by internal code
+        ArrFund fund = fundRepository.findByInternalCode(fundIdentifier);
+        if (fund != null) {
+            logger.debug("Found by internal code as {}", fund.getFundId());
+            return fund;
+        }
+
+        // try to find by id
+        try {
+            Integer id = Integer.valueOf(fundIdentifier);
+            return getFund(id);
+        } catch (NumberFormatException nfe) {
+            throw new ObjectNotFoundException("Nebyl nalezen AS s ID=" + fundIdentifier, ArrangementCode.FUND_NOT_FOUND)
+                    .setId(fundIdentifier);
+        }
+    }
+
+    /**
      * Načtení uzlu na základě id.
      *
-     * @param nodeId id souboru
+     * @param nodeId
+     *            id souboru
      * @return konkrétní uzel
-     * @throws ObjectNotFoundException objekt nenalezen
+     * @throws ObjectNotFoundException
+     *             objekt nenalezen
      */
     public ArrNode getNode(@NotNull Integer nodeId) {
         ArrNode node = nodeRepository.findOne(nodeId);
@@ -825,7 +860,8 @@ public class ArrangementService {
                 nodeIdList = nodeIdList.subList(0, 20);
             }
             ArrFundVersion fundVersion = getOpenVersionByFundId(fundToNodeList.getFundId());
-            return levelTreeCacheService.getNodesByIds(nodeIdList, fundVersion.getFundVersionId());
+            List<Integer> sortedList = levelTreeCacheService.sortNodesByTreePosition(nodeIdList, fundVersion);
+            return levelTreeCacheService.getNodesByIds(sortedList, fundVersion.getFundVersionId());
         }
         return Collections.emptyList();
     }
@@ -1458,7 +1494,7 @@ public class ArrangementService {
             // přidávání nodů je nutné dělat ve vlastní transakci (podle updateInfoForNodesAfterCommit)
             logger.info("Přidání " + entry.getValue().size() + " uzlů do fronty pro zvalidování");
             if(onStart) {
-                asyncRequestService.enqueue(version, entry.getValue(), AsyncTypeEnum.NODE, null);
+                asyncRequestService.enqueue(version, entry.getValue());
             }
 
         }

@@ -8,15 +8,35 @@ import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.ws.core.v1.CoreService;
 import cz.tacr.elza.ws.core.v1.DaoService;
+import cz.tacr.elza.ws.core.v1.FundService;
+import cz.tacr.elza.ws.core.v1.StructuredObjectService;
+import cz.tacr.elza.ws.core.v1.UserService;
 
 public class DaoServiceClientFactory {
     static Logger log = LoggerFactory.getLogger(DaoServiceClientFactory.class);
 
     public static DaoService createDaoService(String address, String username, String password) {
-        return createDaoService(DaoService.class, address, CoreService.DaoCoreService, username, password);
+        return createWsdlService(DaoService.class, address, CoreService.DaoCoreService, username, password);
     }
 
-    public static <T> T createDaoService(Class<T> targetCls, String address, QName serviceName, String username,
+    public static FundService createFundService(String address, String username, String password) {
+        return createWsdlService(FundService.class, address, CoreService.FundService, username, password);
+    }
+
+    public static StructuredObjectService createStructuredObjectService(String address, String username,
+                                                                        String password) {
+        return createWsdlService(StructuredObjectService.class, address, CoreService.StructuredObjects, username,
+                                 password);
+    }
+
+    public static UserService createUserService(String address, String username,
+                                                            String password) {
+        return createWsdlService(UserService.class, address, CoreService.UserService, username,
+                                 password);
+    }
+
+    public static <T> T createWsdlService(Class<T> targetCls, String address, QName serviceName,
+                                          String username,
                                          String password) {
         try {
             JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();

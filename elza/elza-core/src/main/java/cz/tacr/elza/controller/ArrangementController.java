@@ -10,7 +10,6 @@ import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.*;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -29,6 +28,7 @@ import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.*;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
+import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.importnodes.ImportFromFund;
 import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
@@ -363,20 +363,22 @@ public class ArrangementController {
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDao dao = daoRepository.getOneCheckExist(daoId);
         final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
-
+        
         ArrDaoLink daoLink;
         // specializace dle typu DAO
         switch (dao.getDaoType()) {
-            case LEVEL:
-                ArrLevel level = fundLevelService.addNewLevel(fundVersion, node, node,
-                        AddLevelDirection.CHILD, null, null);
-                daoLink = daoService.createOrFindDaoLink(fundVersion, dao, level.getNode());
-                break;
-            case ATTACHMENT:
-                daoLink = daoService.createOrFindDaoLink(fundVersion, dao, node);
-                break;
-            default:
-                throw new SystemException("Unrecognized dao type");
+        case LEVEL:
+            DesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
+            ArrLevel level = fundLevelService.addNewLevel(fundVersion, node, node,
+                                                          AddLevelDirection.CHILD, null, null,
+                                                          descItemProvider);
+            daoLink = daoService.createOrFindDaoLink(fundVersion, dao, level.getNode());
+            break;
+        case ATTACHMENT:
+            daoLink = daoService.createOrFindDaoLink(fundVersion, dao, node);
+            break;
+        default:
+            throw new SystemException("Unrecognized dao type");
         }
 
         ArrDaoLinkVO daoLinkVo = this.factoryVo.createDaoLink(daoLink, fundVersion);
@@ -438,7 +440,7 @@ public class ArrangementController {
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDaoLink daoLink = daoLinkRepository.getOneCheckExist(daoLinkId);
 
-        final ArrDaoLink deleteDaoLink = daoService.deleteDaoLink(fundVersion, daoLink);
+        daoService.deleteDaoLink(fundVersion, daoLink);
     }
 
     /**
@@ -1601,7 +1603,7 @@ public class ArrangementController {
 
         ArrLevel newLevel = moveLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
                 addLevelParam.getDirection(), addLevelParam.getScenarioName(),
-                descItemCopyTypes);
+                                                         descItemCopyTypes, null);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
             UpdateDescItemsParam params = new UpdateDescItemsParam(
@@ -2239,7 +2241,7 @@ public class ArrangementController {
         Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId(), param.getAnonymizedApId());
+        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId(), param.getAnonymizedAp());
     }
 
     /**
@@ -3492,7 +3494,7 @@ public class ArrangementController {
          */
         private Integer templateId;
 
-        private Integer anonymizedApId;
+        private ApAccessPointVO anonymizedAp;
 
         public String getName() {
             return name;
@@ -3526,12 +3528,12 @@ public class ArrangementController {
             this.templateId = templateId;
         }
 
-        public Integer getAnonymizedApId() {
-            return anonymizedApId;
+        public ApAccessPointVO getAnonymizedAp() {
+            return anonymizedAp;
         }
 
-        public void setAnonymizedApId(Integer anonymizedApId) {
-            this.anonymizedApId = anonymizedApId;
+        public void setAnonymizedAp(ApAccessPointVO anonymizedAp) {
+            this.anonymizedAp = anonymizedAp;
         }
     }
 

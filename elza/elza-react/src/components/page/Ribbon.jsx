@@ -19,6 +19,9 @@ import {userPasswordChange} from 'actions/admin/user.jsx';
 import {routerNavigate} from 'actions/router.jsx';
 import PasswordForm from '../admin/PasswordForm';
 
+// Nacteni globalni promenne ze <script> v <head>
+const displayUserInfo = window.displayUserInfo !== undefined ? window.displayUserInfo : true;
+
 class Ribbon extends AbstractReactComponent {
     static propTypes = {
         subMenu: PropTypes.bool,
@@ -327,7 +330,7 @@ class Ribbon extends AbstractReactComponent {
         return (
             <RibbonMenu>
                 {partsWithSplit}
-                <RibbonGroup className="small" right>
+                {displayUserInfo && <RibbonGroup className="small" right>
                     <Dropdown className="user-menu">
                         <Dropdown.Toggle key="user-menu" id="user-menu">
                             {userDetail.username} <Icon glyph="fa-user" />
@@ -353,7 +356,7 @@ class Ribbon extends AbstractReactComponent {
                             </span>
                         </div>
                     )}
-                </RibbonGroup>
+                </RibbonGroup>}
             </RibbonMenu>
         );
     }

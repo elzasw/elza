@@ -2064,7 +2064,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         params.put("count", count != null ? count : 20);
         params.put("excludeInvalid", true);
 
-        return get(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
+        return post(spec -> spec.queryParameters(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
     }
 
     /**

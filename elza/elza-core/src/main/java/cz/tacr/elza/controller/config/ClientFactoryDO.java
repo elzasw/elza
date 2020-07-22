@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller.config;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -55,8 +54,6 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -612,24 +609,7 @@ public class ClientFactoryDO {
         ArrCalendarType arrCalendarType = calendarTypeRepository.findOne(calendarId);
         CalendarType calendarType = CalendarType.valueOf(arrCalendarType.getCode());
 
-        ArrDataUnitdate unitdate = new ArrDataUnitdate();
-        UnitDateConvertor.convertToUnitDate(split[1], unitdate);
-
-        String valueFrom = unitdate.getValueFrom();
-        if (valueFrom == null) {
-            unitdate.setNormalizedFrom(Long.MIN_VALUE);
-        } else {
-            LocalDateTime fromDate = LocalDateTime.parse(valueFrom, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            unitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, fromDate));
-        }
-
-        String valueTo = unitdate.getValueTo();
-        if (valueTo == null) {
-            unitdate.setNormalizedTo(Long.MAX_VALUE);
-        } else {
-            LocalDateTime toDate = LocalDateTime.parse(valueTo, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            unitdate.setNormalizedTo(CalendarConverter.toSeconds(calendarType, toDate));
-        }
+        ArrDataUnitdate unitdate = ArrDataUnitdate.valueOf(calendarType, split[1]);
 
         return unitdate;
     }
