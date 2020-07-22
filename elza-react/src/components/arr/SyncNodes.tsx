@@ -44,7 +44,7 @@ class SyncNodes extends React.Component<Props> {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>
-                        {i18n('global.action.update')}
+                        {i18n('global.action.run')}
                     </Button>
                 </Modal.Footer>
             </Form>
