@@ -700,6 +700,7 @@ public class DescItemFactory implements InitializingBean {
                         arrDataUnitdateNew.setValueToEstimated(arrDataUnitdate.getValueToEstimated());
                         arrDataUnitdateNew.setFormat(arrDataUnitdate.getFormat());
 
+                                // Proc to tady je?
                         String value;
 
                         String codeCalendar = arrDataUnitdate.getCalendarType().getCode();
@@ -710,7 +711,7 @@ public class DescItemFactory implements InitializingBean {
                             arrDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
                         } else {
                             arrDataUnitdate.setNormalizedFrom(Long.MIN_VALUE);
-                    }
+                                }
                         arrDataUnitdate.setNormalizedFrom(arrDataUnitdate.getNormalizedFrom());
 
                         value = arrDataUnitdate.getValueTo();

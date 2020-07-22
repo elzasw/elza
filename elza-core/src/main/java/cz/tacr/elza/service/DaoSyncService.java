@@ -7,6 +7,7 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -30,6 +33,7 @@ import com.google.common.collect.Lists;
 
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.ArrDaoFile;
@@ -37,9 +41,11 @@ import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
@@ -58,8 +64,10 @@ import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.arrangement.DesctItemProvider;
+import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
 import cz.tacr.elza.ws.WsClient;
-import cz.tacr.elza.ws.types.v1.Attributes;
+import cz.tacr.elza.ws.core.v1.WSHelper;
 import cz.tacr.elza.ws.types.v1.ChecksumType;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoSyncRequest;
@@ -71,6 +79,7 @@ import cz.tacr.elza.ws.types.v1.File;
 import cz.tacr.elza.ws.types.v1.FileGroup;
 import cz.tacr.elza.ws.types.v1.Folder;
 import cz.tacr.elza.ws.types.v1.FolderGroup;
+import cz.tacr.elza.ws.types.v1.Items;
 import cz.tacr.elza.ws.types.v1.NonexistingDaos;
 import cz.tacr.elza.ws.types.v1.ObjectFactory;
 import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
@@ -123,6 +132,9 @@ public class DaoSyncService {
     private ArrangementService arrangementService;
 
     @Autowired
+    private DescriptionItemService descriptionItemService;
+
+    @Autowired
     private RequestService requestService;
 
     @Autowired
@@ -130,6 +142,9 @@ public class DaoSyncService {
 
     @Autowired
     private GroovyScriptService groovyScriptService;
+
+    @Autowired
+    private WSHelper wsHelper;
 
     // --- fields ---
 
@@ -139,17 +154,44 @@ public class DaoSyncService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    static JAXBContext jaxbAttrsContext;
+    static JAXBContext jaxItemsContext;
 
     private ObjectFactory wsObjectFactory = new ObjectFactory();
 
     static {
         try {
-            jaxbAttrsContext = JAXBContext.newInstance(Attributes.class);
+            jaxItemsContext = JAXBContext.newInstance(Items.class);
         } catch (JAXBException e) {
             throw new IllegalStateException("Failed to initialize JAXB Context", e);
         }
     }
+
+    protected class DaoDesctItemProvider implements DesctItemProvider {
+
+        private Items items;
+
+        public DaoDesctItemProvider(Items items) {
+            this.items = items;
+        }
+
+        @Override
+        public void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
+                            MultiplItemChangeContext changeContext) {
+            for (Object item : items.getStrOrLongOrEnm()) {
+                ArrDescItem descItem = prepare(item);
+                descriptionItemService.createDescriptionItemInBatch(descItem,
+                                                                    level.getNode(), fundVersion, change,
+                                                                    changeContext);
+            }
+        }
+
+        private ArrDescItem prepare(Object item) {
+            ArrDescItem di = new ArrDescItem();
+            wsHelper.convertItem(di, item);
+            return di;
+        }
+
+    };
 
     // --- methods ---
 
@@ -395,24 +437,24 @@ public class DaoSyncService {
         arrDao.setValid(true);
 
         // serialize attributes
-        Attributes attrs = dao.getAttributes();
-        if (attrs != null) {
+        Items items = dao.getItems();
+        if (items != null) {
 
-            JAXBElement<Attributes> elemAttrs = wsObjectFactory.createDaoAttributes(attrs);
+            JAXBElement<Items> elemAttrs = wsObjectFactory.createDescriptionItems(items);
             
             try (StringWriter sw = new StringWriter()) {
-                Marshaller mar = jaxbAttrsContext.createMarshaller();
+                Marshaller mar = jaxItemsContext.createMarshaller();
                 mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-
+            
                 mar.marshal(elemAttrs, sw);
-
+            
                 arrDao.setAttributes(sw.toString());
             } catch (IOException | JAXBException e) {
                 logger.error("Failed to serialize attributes to XML: " + e.getMessage());
                 throw new SystemException("Failed to serialize attributes to XML", e,
                         BaseCode.INVALID_STATE)
                         .set("dao.identifier", dao.getIdentifier());
-
+            
             }
         }
 
@@ -531,5 +573,21 @@ public class DaoSyncService {
             return userDetail.getUsername();
         }
         return null;
+    }
+
+    public DesctItemProvider createDescItemProvider(ArrDao dao) {
+        String attrs = dao.getAttributes();
+        if (StringUtils.isBlank(attrs)) {
+            return null;
+        }
+        try (StringReader reader = new StringReader(attrs)) {
+            Unmarshaller unmar = jaxItemsContext.createUnmarshaller();
+            JAXBElement<Items> items = unmar.unmarshal(new StreamSource(reader), Items.class);
+            return new DaoDesctItemProvider(items.getValue());
+        } catch (JAXBException e) {
+            logger.error("Failed to unmarshall attributes: {}, exception: ", attrs, e);
+            throw new BusinessException("Neplatné atributy dao objektu", PackageCode.PARSE_ERROR)
+                    .set("attributes", attrs).set("daoId", dao.getDaoId());
+        }
     }
 }

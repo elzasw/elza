@@ -1,34 +1,17 @@
 package cz.tacr.elza.asynchactions;
 
 /**
- * Třída pro uchovávání informace o vytížení jednotlivých vláken
+ * Třída pro uchovávání informace o vytížení.
  */
 public class ThreadLoadInfo {
-    private int[] nodeSlots = new int[3600];
-    private int[] bulkSlots = new int[3600];
-    private int[] outputSlots = new int[3600];
 
-    public int[] getNodeSlots() {
-        return nodeSlots;
+    private final int[] slots;
+
+    public ThreadLoadInfo(int count) {
+        slots = new int[count];
     }
 
-    public void setNodeSlots(int[] nodeSlots) {
-        this.nodeSlots = nodeSlots;
-    }
-
-    public int[] getBulkSlots() {
-        return bulkSlots;
-    }
-
-    public void setBulkSlots(int[] bulkSlots) {
-        this.bulkSlots = bulkSlots;
-    }
-
-    public int[] getOutputSlots() {
-        return outputSlots;
-    }
-
-    public void setOutputSlots(int[] outputSlots) {
-        this.outputSlots = outputSlots;
+    public int[] getSlots() {
+        return slots;
     }
 }

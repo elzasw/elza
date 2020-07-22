@@ -103,4 +103,11 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20200715141600" author="slapa">
+        <renameColumn tableName="arr_output" oldColumnName="anonymized_ap" newColumnName="anonymized_ap_id" columnDataType="int" />
+        <addForeignKeyConstraint constraintName="fk_arr_output_anonymized_ap_access_point"
+                                 baseTableName="arr_output" baseColumnNames="anonymized_ap_id"
+                                 referencedTableName="ap_access_point" referencedColumnNames="access_point_id"/>
+    </changeSet>
+
 </databaseChangeLog>

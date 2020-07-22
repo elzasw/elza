@@ -1138,19 +1138,12 @@ class NodeFormActions extends ItemFormActions {
                     // # Data požadovaného formuláře
                     // ##
 
-                    // výpočet pozice záznamu
-                    // pokud neznáme node.nodeIndex, nastavíme na -1 (necháme výpočet indexu na serveru)
-                    let indexFrom =
-                        node.nodeIndex == null ? -1 : node.nodeIndex - (node.nodeIndex % (node.pageSize / 2));
-                    //původní výpočet z viewStartIndex
-                    //let indexFrom = node.viewStartIndex - node.viewStartIndex % (node.pageSize / 2);
-
                     const nodeParam = {nodeId};
                     const resultParam = {
                         formData: true,
                         parents: showParents && node.changeParent,
                         children: showChildren,
-                        siblingsFrom: indexFrom,
+                        siblingsFrom: node.viewStartIndex,
                         siblingsMaxCount: node.pageSize,
                         siblingsFilter: node.filterText,
                     };

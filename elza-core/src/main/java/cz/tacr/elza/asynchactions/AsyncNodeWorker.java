@@ -1,22 +1,20 @@
 package cz.tacr.elza.asynchactions;
 
 import com.google.common.eventbus.EventBus;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.events.ConformityInfoUpdatedEvent;
 import cz.tacr.elza.exception.LockVersionChangeException;
-import cz.tacr.elza.repository.ArrAsyncRequestRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -26,15 +24,13 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.persistence.EntityNotFoundException;
-import javax.transaction.Transactional;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Scope("prototype")
@@ -64,61 +60,60 @@ public class AsyncNodeWorker implements IAsyncWorker {
     @Autowired
     private EventBus eventBus;
 
-    private Integer fundVersionId;
+    private final AsyncRequest request;
 
-    private Long requestId;
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
-    private Integer nodeId;
-
-    public AsyncNodeWorker(Integer fundVersionId, Long requestId, Integer nodeId) {
-        logger.debug("Vytvoren worker pro AS:" + fundVersionId + ", node: " + nodeId);
-        this.fundVersionId = Validate.notNull(fundVersionId);
-        this.beginTime = null;
-        this.requestId = requestId;
-        this.nodeId = nodeId;
+    public AsyncNodeWorker(final AsyncRequest request) {
+        running.set(true);
+        this.request = request;
     }
 
     @Override
-    @Transactional
     public void run() {
+        Integer fundVersionId = request.getFundVersionId();
+        Long requestId = request.getRequestId();
+        Integer nodeId = request.getNodeId();
+
         logger.debug("Start worker " + Thread.currentThread().getId() + " - " + System.currentTimeMillis());
         beginTime = System.currentTimeMillis();
         logger.debug("Spusteno AsyncNodeWorker ,  fundVersion : " + fundVersionId);
-
-        Set<Integer> processedRequestIds = new LinkedHashSet<>();
-
         try {
-            ArrFundVersion version = getFundVersion();
+            new TransactionTemplate(transactionManager).execute((status) -> {
+                Set<Integer> processedRequestIds = new LinkedHashSet<>();
+                ArrFundVersion version = getFundVersion();
 
-            if (ruleService.canUpdateConformity(requestId, nodeId)) {
                 processRequest(requestId, nodeId, version);
                 processedRequestIds.add(nodeId);
-            }
 
-            logger.debug("Run cyklus pro request : " + requestId + " - " + nodeId);
-            eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.CONFORMITY_INFO, version,
-            processedRequestIds.toArray(new Integer[processedRequestIds.size()])));
-            logger.debug("Konec vlakna pro aktualizaci stavu, fundVersionId:" + fundVersionId);
-            logger.debug("End worker " + Thread.currentThread().getId() + " - " + System.currentTimeMillis());
-            eventPublisher.publishEvent(new AsyncRequestEvent(resultEvent()));
-
-        } catch (Exception e) {
-            logger.error("Unexpected error during conformity update", e);
+                logger.debug("Run cyklus pro request : " + requestId + " - " + nodeId);
+                eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.CONFORMITY_INFO, version, processedRequestIds.toArray(new Integer[0])));
+                logger.debug("Konec vlakna pro aktualizaci stavu, fundVersionId:" + fundVersionId);
+                logger.debug("End worker " + Thread.currentThread().getId() + " - " + System.currentTimeMillis());
+                eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
+                return null;
+            });
+        } catch (Throwable t) {
+            new TransactionTemplate(transactionManager).execute(status -> {
+                handleException(t);
+                return null;
+            });
+        } finally {
+            running.set(false);
         }
     }
 
+    private void handleException(final Throwable t) {
+        eventPublisher.publishEvent(AsyncRequestEvent.fail(request, this, t));
+    }
+
+    @Override
+    public AsyncRequest getRequest() {
+        return request;
+    }
+
     public Integer getFundVersionId() {
-        return fundVersionId;
-    }
-
-    @Override
-    public Long getRequestId() {
-        return requestId;
-    }
-
-    @Override
-    public Integer getCurrentId() {
-        return nodeId;
+        return request.getFundVersionId();
     }
 
     @Override
@@ -135,19 +130,10 @@ public class AsyncNodeWorker implements IAsyncWorker {
         }
     }
 
-    private AsyncRequestVO resultEvent() {
-        AsyncRequestVO publish = new AsyncRequestVO();
-        publish.setType(AsyncTypeEnum.NODE);
-        publish.setFundVersionId(fundVersionId);
-        publish.setRequestId(requestId);
-        publish.setNodeId(nodeId);
-        return publish;
-    }
-
     private ArrFundVersion getFundVersion() {
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion version = fundVersionRepository.findOne(request.getFundVersionId());
         if (version == null) {
-            throw new EntityNotFoundException("ArrFundVersion for conformity update not found, versionId:" + fundVersionId);
+            throw new EntityNotFoundException("ArrFundVersion for conformity update not found, versionId: " + request.getFundVersionId());
         }
         return version;
     }
@@ -186,14 +172,14 @@ public class AsyncNodeWorker implements IAsyncWorker {
                     eventBus.post(new ConformityInfoUpdatedEvent(nodeId));
                 }
             });
-            ArrNodeConformityExt arrNodeConformityExt = ruleService.setConformityInfo(levelId, fundVersionId, asyncRequestId);
+            ArrNodeConformityExt arrNodeConformityExt = ruleService.setConformityInfo(levelId, request.getFundVersionId(), asyncRequestId);
             if (arrNodeConformityExt != null) {
                 transactionManager.commit(transactionStatus);
             } else {
                 transactionManager.rollback(transactionStatus);
             }
         } catch (Exception e) {
-            logger.debug("Node chyba validace", e.getMessage());
+            logger.debug("Node chyba validace", e);
             if (transactionStatus != null) {
                 transactionManager.rollback(transactionStatus);
             }
@@ -205,14 +191,27 @@ public class AsyncNodeWorker implements IAsyncWorker {
      * Provede ukončení běhu. Počká než vlákno skutečně skončí.
      */
     public void terminate() {
-        while (true) {
+        while (running.get()) {
             try {
+                logger.info("Čekání na dokončení validace JP: {}", request.getNodeId());
                 Thread.sleep(100);
-
             } catch (InterruptedException e) {
                 // Nothing to do with this -> simply finish
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AsyncNodeWorker that = (AsyncNodeWorker) o;
+        return request.equals(that.request);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(request);
     }
 }

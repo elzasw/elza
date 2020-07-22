@@ -30,9 +30,13 @@ public class ArrLevel {
 
     public static final String TABLE_NAME = "arr_level";
 
+    public static final String FIELD_CREATE_CHANGE = "createChange";
     public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
 
+    public static final String FIELD_DELETE_CHANGE = "deleteChange";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
+
+    public static final String FIELD_NODE = "node";
 
     @Id
     @GeneratedValue

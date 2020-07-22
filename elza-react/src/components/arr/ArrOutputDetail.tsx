@@ -295,21 +295,21 @@ class ArrOutputDetail extends AbstractReactComponent {
                     )}
                 </div>
                 <div>
-                    <label className="control-label">{i18n('arr.output.title.nodes')}</label>
-                    <FundNodesList
-                        nodes={fundOutputDetail.nodes}
-                        onDeleteNode={this.handleRemoveNode}
-                        onAddNode={this.handleAddNodes}
-                        readOnly={closed || readMode || !this.isEditable()}
-                    />
-                </div>
-                <div>
                     <label className="control-label">{i18n("arr.output.title.scopes")}</label>
                     {!readonly && <ScopeField scopes={connectableScopes} onChange={this.handleAddScope} value={null} />}
                     <ScopeList
                         scopes={fundOutputDetail.scopes || []}
                         onRemove={this.handleRemoveScope}
                         readOnly={readonly}
+                    />
+                </div>
+                <div>
+                    <label className="control-label">{i18n('arr.output.title.nodes')}</label>
+                    <FundNodesList
+                        nodes={fundOutputDetail.nodes}
+                        onDeleteNode={this.handleRemoveNode}
+                        onAddNode={this.handleAddNodes}
+                        readOnly={closed || readMode || !this.isEditable()}
                     />
                 </div>
                 <hr className="small" />

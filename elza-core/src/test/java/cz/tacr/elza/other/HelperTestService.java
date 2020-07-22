@@ -332,11 +332,6 @@ public class HelperTestService {
      */
     // This method is not running in transaction
     public void waitForWorkers() {
-        List<ArrFundVersion> fundVersions = fundVersionRepository.findAll();
-        for (ArrFundVersion fundVersion : fundVersions) {
-            logger.debug("Finishing worker fundVersionId: " + fundVersion.getFundVersionId());
-            //updateConformityInfoService.terminateWorkerInVersionAndWait(fundVersion.getFundVersionId());
-        }
         asyncRequestService.waitForFinishAll();
     }
 

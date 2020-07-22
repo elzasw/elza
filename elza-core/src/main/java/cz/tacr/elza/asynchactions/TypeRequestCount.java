@@ -2,9 +2,9 @@ package cz.tacr.elza.asynchactions;
 
 public class TypeRequestCount {
 
-    private int nodeRequestCount;
-    private int bulkRequestCount;
-    private int outputRequestCount;
+    private final int nodeRequestCount;
+    private final int bulkRequestCount;
+    private final int outputRequestCount;
 
     public TypeRequestCount(int nodeRequestCount, int bulkRequestCount, int outputRequestCount) {
         this.nodeRequestCount = nodeRequestCount;
