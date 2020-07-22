@@ -22,6 +22,10 @@
             &:focus{
                 box-shadow: none;
             }
+            &:disabled, &[readonly] {
+                background-color: #e9ecef;
+                opacity: 1;
+            }
         }
         .actions{
             display:flex;

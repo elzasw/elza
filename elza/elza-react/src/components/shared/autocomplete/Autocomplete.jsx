@@ -100,6 +100,7 @@ export default class Autocomplete extends AbstractReactComponent {
         getItemId: PropTypes.func,
         getItemName: PropTypes.func,
         useIdAsValue: PropTypes.bool, // pokud je true, pracuje navenek komponenta tak, že jeko hodnotu nemá objekt, ale jeho id - stejně jako html select
+        placeholder: PropTypes.string,
     };
 
     static defaultProps = {
@@ -687,8 +688,9 @@ export default class Autocomplete extends AbstractReactComponent {
                             autoComplete="off"
                             onChange={this.handleChange}
                             value={inputStrValue || ''}
+                            placeholder={this.props.placeholder}
                         />
-                        <div ref={ref => this.actionsRef = ref} className="actions">
+                        <div ref={ref => (this.actionsRef = ref)} className="actions">
                             {this.renderActions()}
                         </div>
                     </div>

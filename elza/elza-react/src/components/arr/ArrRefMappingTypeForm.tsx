@@ -7,6 +7,7 @@ import {
     Field,
     FieldArray,
     WrappedFieldArrayProps,
+    DecoratedFormProps,
 } from 'redux-form';
 import {ArrRefTemplateMapSpecVO, ArrRefTemplateMapTypeVO} from '../../types';
 import {Button, Form, Modal, Row, Col} from 'react-bootstrap';
@@ -17,6 +18,7 @@ import FF from '../shared/form/FF';
 import DescItemTypeField from './DescItemTypeField';
 import ItemSpecField from './ItemSpecField';
 import {connect} from 'react-redux';
+import requireFields from '../../shared/utils/requireFields';
 
 type OwnProps = {create?: boolean};
 type ConnectedProps = ReturnType<typeof mapStateToProps>;
@@ -30,7 +32,6 @@ class ArrRefMappingTypeForm extends React.Component<Props> {
         return (
             <Form onSubmit={handleSubmit}>
                 <Modal.Body>
-                    <h3>{i18n('arr.refTemplates.mapping.apMapping')}</h3>
                     <Row>
                         <Col>
                             <FF
@@ -140,6 +141,23 @@ export default connect(mapStateToProps)(
             toItemTypeId: undefined,
             mapAllSpec: undefined,
             refTemplateMapSpecVOList: [],
+        },
+        validate(
+            values: ArrRefTemplateMapTypeVO,
+            props: DecoratedFormProps<ArrRefTemplateMapTypeVO, OwnProps, FormErrors<ArrRefTemplateMapTypeVO>>,
+        ): FormErrors<ArrRefTemplateMapTypeVO, FormErrors<ArrRefTemplateMapTypeVO>> {
+            const errors: FormErrors<ArrRefTemplateMapTypeVO, FormErrors<ArrRefTemplateMapTypeVO>> = requireFields(
+                'fromItemTypeId',
+                'toItemTypeId',
+            )(values);
+
+            if (values.refTemplateMapSpecVOList && values.refTemplateMapSpecVOList.length > 0) {
+                errors.refTemplateMapSpecVOList = values.refTemplateMapSpecVOList.map(
+                    requireFields('fromItemSpecId', 'toItemSpecId'),
+                ) as any;
+            }
+
+            return errors;
         },
     })(ArrRefMappingTypeForm),
 );

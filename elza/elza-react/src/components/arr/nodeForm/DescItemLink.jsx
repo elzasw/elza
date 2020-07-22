@@ -156,8 +156,10 @@ class DescItemLink extends AbstractReactComponent {
                     <RefTemplateField
                         {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                         onChange={this.handleTemplate}
+                        disabled={locked || descItem.undefined}
                         fundId={fundId}
                         useIdAsValue={true}
+                        placeholder={i18n('subNodeForm.descItem.link.refTemplate')}
                         value={descItem.refTemplateId}
                     />
                 )}
