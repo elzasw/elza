@@ -4,7 +4,7 @@ public class ArrRefTemplateMapSpecVO {
 
     private Integer id;
 
-    private Integer formItemSpecId;
+    private Integer fromItemSpecId;
 
     private Integer toItemSpecId;
 
@@ -16,12 +16,12 @@ public class ArrRefTemplateMapSpecVO {
         this.id = id;
     }
 
-    public Integer getFormItemSpecId() {
-        return formItemSpecId;
+    public Integer getFromItemSpecId() {
+        return fromItemSpecId;
     }
 
-    public void setFormItemSpecId(Integer formItemSpecId) {
-        this.formItemSpecId = formItemSpecId;
+    public void setFromItemSpecId(Integer fromItemSpecId) {
+        this.fromItemSpecId = fromItemSpecId;
     }
 
     public Integer getToItemSpecId() {

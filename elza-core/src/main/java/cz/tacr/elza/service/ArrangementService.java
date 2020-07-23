@@ -46,7 +46,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -59,7 +58,6 @@ import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -184,7 +182,7 @@ public class ArrangementService {
 
     /**
      * Try to find fund by string
-     * 
+     *
      * @param fundIdentifier
      * @return fund, throw exception if not found
      */
@@ -1660,7 +1658,7 @@ public class ArrangementService {
     private ArrRefTemplateMapSpecVO createRefTemplateMapSpecVO(ArrRefTemplateMapSpec refTemplateMapSpec) {
         ArrRefTemplateMapSpecVO refTemplateMapSpecVO = new ArrRefTemplateMapSpecVO();
         refTemplateMapSpecVO.setId(refTemplateMapSpec.getRefTemplateMapSpecId());
-        refTemplateMapSpecVO.setFormItemSpecId(refTemplateMapSpec.getFromItemSpec() != null ? refTemplateMapSpec.getFromItemSpec().getItemSpecId() : null);
+        refTemplateMapSpecVO.setFromItemSpecId(refTemplateMapSpec.getFromItemSpec() != null ? refTemplateMapSpec.getFromItemSpec().getItemSpecId() : null);
         refTemplateMapSpecVO.setToItemSpecId(refTemplateMapSpec.getToItemSpec() != null ? refTemplateMapSpec.getToItemSpec().getItemSpecId() : null);
         return refTemplateMapSpecVO;
     }
@@ -1710,7 +1708,7 @@ public class ArrangementService {
 
                 ArrRefTemplateMapSpec refTemplateMapSpec = new ArrRefTemplateMapSpec();
                 refTemplateMapSpec.setRefTemplateMapType(refTemplateMapType);
-                refTemplateMapSpec.setFromItemSpec(sdp.getItemSpecById(refTemplateMapSpecVO.getFormItemSpecId()));
+                refTemplateMapSpec.setFromItemSpec(sdp.getItemSpecById(refTemplateMapSpecVO.getFromItemSpecId()));
                 refTemplateMapSpec.setToItemSpec(sdp.getItemSpecById(refTemplateMapSpecVO.getToItemSpecId()));
                 refTemplateMapSpecs.add(refTemplateMapSpec);
             }

@@ -25,7 +25,6 @@ import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
 import cz.tacr.elza.controller.vo.nodes.*;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.other.HelperTestService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -41,9 +40,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.ArrangementController.CopySiblingResult;
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
-import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
@@ -54,7 +50,6 @@ import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.controller.vo.FilterNode;
-import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
@@ -1265,7 +1260,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         List<ArrRefTemplateMapSpecVO> refTemplateMapSpecVOList = new ArrayList<>();
         ArrRefTemplateMapSpecVO refTemplateMapSpecVO = new ArrRefTemplateMapSpecVO();
-        refTemplateMapSpecVO.setFormItemSpecId(fromItemSpec.getItemSpecId());
+        refTemplateMapSpecVO.setFromItemSpecId(fromItemSpec.getItemSpecId());
         refTemplateMapSpecVO.setToItemSpecId(toItemSpec.getItemSpecId());
         refTemplateMapSpecVOList.add(refTemplateMapSpecVO);
 
