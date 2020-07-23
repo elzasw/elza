@@ -3606,22 +3606,114 @@
         <shortcut>stupeň</shortcut>
         <item-type-assign code="ZP2015_AWARD_LEVEL"/>
     </item-spec>
+    <!-- Důvod omezení přístupnosti -->
     <item-spec code="ZP2015_ACCESS_STATUTORY_DEADLINE">
         <name>zákonná lhůta (archiválie mladší 30 let)</name>
-        <description>archiválie je mladší 30 let</description>
-        <shortcut>mladší než 30 let</shortcut>
-        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+        <description>mladší než 30 let, zákon č. 499/2004 Sb. § 37 odst. 1</description>
+        <shortcut>zákonná lhůta</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
+    </item-spec>
+    <item-spec code="ZP2015_ACCESS_AGREEMENT">
+        <name>smlouva (o úschově, licenční aj.)</name>
+        <description>omezení vyplývající ze smlouvy, zákon č. 499/2004 Sb. § 34 odst. 4: ustanovení ve smlouvě</description>
+        <shortcut>smluvní omezení</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
+    </item-spec>
+    <item-spec code="ZP2015_ACCESS_COPY_EXISTANCE">
+        <name>existující kopie archiválie</name>
+        <description>existující kopie archiválie, zákon č. 499/2004 Sb. § 34 odst. 3: zhotovení kopie</description>
+        <shortcut>existující kopie archiválie</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
+    </item-spec>
+    <item-spec code="ZP2015_ACCESS_CULT_HERITAGE">
+        <name>Národní kulturní památka</name>
+        <description>Národní kulturní památka, zákon č. 499/2004 Sb. § 34 odst. 5</description>
+        <shortcut>Národní kulturní památka</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
+    </item-spec>
+    <item-spec code="ZP2015_ACCESS_PHYS_STATE">
+        <name>fyzický stav archiválie</name>
+        <description>fyzický stav archiválie, zákon č. 499/2004 Sb. § 38 odst. 1 písm. a)</description>
+        <shortcut>fyzický stav archiválie</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
+    </item-spec>
+    <item-spec code="ZP2015_ACCESS_PROC_STATE">
+        <name>stav zpracování archiválie</name>
+        <description>stav zpracování archiválie, zákon č. 499/2004 Sb. § 38 odst. 1 písm. b)</description>
+        <shortcut>stav zpracování archiválie</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
+    </item-spec>
+    <item-spec code="ZP2015_ACCESS_SECRET">
+        <name>ochrana utajovaných informací a bezpečnostní způsobilost</name>
+        <description>ochrana utajovaných informací a bezpečnostní způsobilost, zákon č. 499/2004 Sb. § 38 odst. 1 písm. e), zákon č. 412/2005 Sb., o ochraně utajovaných informací a o bezpečnostní způsobilosti</description>
+        <shortcut>ochrana utajovaných informací</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
+    </item-spec>
+    <item-spec code="ZP2015_ACCESS_LAW">
+        <name>ustanovení zvláštního právního předpisu</name>
+        <description>ustanovení zvláštního právního předpisu, zákon č. 499/2004 Sb. § 38 odst. 1 písm. e)</description>
+        <shortcut>ustanovení zvláštního předpisu</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <item-spec code="ZP2015_ACCESS_PERSONAL_DATA">
-        <name>osobní údaje - narození</name>
-        <description>osobní údaje se známým datem narození</description>
-        <shortcut>osobní údaje - narození</shortcut>
+        <name>osobní a citlivé údaje</name>
+        <description>osobní a citlivé údaje, zákon č. 499/2004 Sb. § 37 odst. 2 a 3, § 38 odst. 1 písm. c) a d): úmrtí osoby, udělení souhlasu, odvolání námitky, 105? let od vzniku archiválie</description>
+        <shortcut>osobní a citlivé údaje</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
+    </item-spec>
+    <item-spec code="ZP2015_ACCESS_COPYRIGHT1">
+        <name>autorská práva – majetková</name>
+        <description>autorská práva – majetková, zákon č. 121/2000 Sb.</description>
+        <shortcut>autorská práva – majetková</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
+    </item-spec>
+    <item-spec code="ZP2015_ACCESS_COPYRIGHT2">
+        <name>autorské právo – osobnostní</name>
+        <description>autorské právo – osobnostní, zákon č. 121/2000 Sb. § 11</description>
+        <shortcut>autorské právo – osobnostní</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
+    </item-spec>
+    <!-- Druh omezení přístupnosti -->
+    <item-spec code="ZP2015_RESTRICTION_DAO">
+        <name>nepřístupný digitalizát</name>
+        <description>nepřístupný digitalizát</description>
+        <shortcut>nepřístupný digitalizát</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_ACCESS_PERSONAL_DATA2">
-        <name>osobní údaje - úmrtí</name>
-        <description>osobní údaje se známým datem úmrtí</description>
-        <shortcut>osobní údaje - úmrtí</shortcut>
+    <item-spec code="ZP2015_RESTRICTION_DAO_INPERS_ONLY">
+        <name>digitalizát přístupný jen v badatelně</name>
+        <description>digitalizát přístupný jen v badatelně</description>
+        <shortcut>digitalizát jen v badatelně</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_RESTRICTION_ARCHMAT">
+        <name>nepřístupná archiválie</name>
+        <description>nepřístupná archiválie</description>
+        <shortcut>nepřístupná archiválie</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_RESTRICTION_ARCHMAT_INPERS_ONLY">
+        <name>archiválie přístupná jen v badatelně</name>
+        <description>archiválie přístupná jen v badatelně</description>
+        <shortcut>archiválie jen v badatelně</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_RESTRICTION_ARCHDESC">
+        <name>nepřístupná jednotka popisu</name>
+        <description>nepřístupná jednotka popisu</description>
+        <shortcut>nepřístupná jednotka popisu</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_RESTRICTION_ABSTRACT">
+        <name>nepřístupný prvek obsah</name>
+        <description>nepřístupný prvek obsah</description>
+        <shortcut>nepřístupný prvek obsah</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_RESTRICTION_ARCHENTITY">
+        <name>nepřístupné napojené archivní entity</name>
+        <description>nepřístupné napojené archivní entity</description>
+        <shortcut>nepřístupné archivní entity</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
     <item-spec code="CRC_BEGINVALIDNESS">
