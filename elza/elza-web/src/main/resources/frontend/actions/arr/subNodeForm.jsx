@@ -290,6 +290,9 @@ export class ItemFormActions {
                     .then(json => {
                         if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA){
                             dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
+                            if (this.area === StructureFormActions.AREA) {
+                                dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, true));
+                            }
                         } else {
                             dispatch(this._fundSubNodeUpdate(versionId, refTables, json));
                         }
@@ -307,6 +310,9 @@ export class ItemFormActions {
                             console.log("formValueStore - id undefined",json);
                             dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
                             dispatch(statusSaved());
+                            if (this.area === StructureFormActions.AREA) {
+                                dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, true));
+                            }
                         })
                 }
             }
@@ -514,6 +520,9 @@ export class ItemFormActions {
                     .then(json => {
                         const newValueLocation = {...valueLocation, descItemIndex: index};
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, newValueLocation, json, 'UPDATE'));
+                        if (this.area === StructureFormActions.AREA) {
+                            dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, false));
+                        }
                     })
             }
         }
@@ -666,6 +675,9 @@ export class ItemFormActions {
                 this._callDeleteDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItem)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE'));
+                        if (this.area === StructureFormActions.AREA) {
+                            dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, true));
+                        }
                     })
             }
         }
@@ -822,6 +834,9 @@ export class ItemFormActions {
                 this._callDeleteDescItemType(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
+                        if (this.area === StructureFormActions.AREA) {
+                            dispatch(this._fundSubNodeFormFetch(versionId, subNodeForm.data.parent.id, routingKey, true));
+                        }
                     })
             }
         }
