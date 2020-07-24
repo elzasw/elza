@@ -332,6 +332,9 @@ export class ItemFormActions {
                                     'UPDATE',
                                 ),
                             );
+                            if (this.area === StructureFormActions.AREA) {
+                                dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, true));
+                            }
                         } else {
                             dispatch(this._fundSubNodeUpdate(versionId, refTables, json));
                         }
@@ -357,6 +360,9 @@ export class ItemFormActions {
                             this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'),
                         );
                         dispatch(statusSaved());
+                        if (this.area === StructureFormActions.AREA) {
+                            dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, true));
+                        }
                     });
                 }
             }
@@ -583,6 +589,9 @@ export class ItemFormActions {
                     dispatch(
                         this._fundSubNodeFormDescItemResponse(versionId, routingKey, newValueLocation, json, 'UPDATE'),
                     );
+                    if (this.area === StructureFormActions.AREA) {
+                        dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, false));
+                    }
                 });
             }
         };
@@ -744,6 +753,9 @@ export class ItemFormActions {
                     dispatch(
                         this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE'),
                     );
+                    if (this.area === StructureFormActions.AREA) {
+                        dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, true));
+                    }
                 });
             }
         };
@@ -917,6 +929,9 @@ export class ItemFormActions {
                             'DELETE_DESC_ITEM_TYPE',
                         ),
                     );
+                    if (this.area === StructureFormActions.AREA) {
+                        dispatch(this._fundSubNodeFormFetch(versionId, subNodeForm.data.parent.id, routingKey, true));
+                    }
                 });
             }
         };
