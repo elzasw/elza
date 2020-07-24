@@ -3,7 +3,6 @@
     <allow-structure-types settings-type="STRUCTURE_TYPES" entity-type="RULE">
         <ns4:type code="ZP2015_PACKET"/>
         <ns4:type code="ZP2015_ACCESS_COND_TYPE"/>
-        <ns4:type code="ZP2015_ACCESS_COND"/>
     </allow-structure-types>
     <fund-views settings-type="FUND_VIEW" entity-type="RULE">
         <ns2:default>
