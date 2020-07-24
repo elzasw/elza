@@ -1258,7 +1258,7 @@ public class StructObjService {
                     .collect(Collectors.toSet());
             List<RulStructuredType> result = new ArrayList<>();
             for (RulStructuredType structureType : findStructureTypes()) {
-                if (typeCodes.contains(structureType.getCode())) {
+                if (typeCodes.contains(structureType.getCode()) || structureType.getAnonymous()) {
                     result.add(structureType);
                 }
             }
