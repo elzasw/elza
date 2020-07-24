@@ -590,6 +590,7 @@ export class ItemFormActions {
                         this._fundSubNodeFormDescItemResponse(versionId, routingKey, newValueLocation, json, 'UPDATE'),
                     );
                     if (this.area === StructureFormActions.AREA) {
+                        const parentId = subNodeForm.data.parent.id;
                         dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, false));
                     }
                 });
@@ -754,6 +755,7 @@ export class ItemFormActions {
                         this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE'),
                     );
                     if (this.area === StructureFormActions.AREA) {
+                        const parentId = subNodeForm.data.parent.id;
                         dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, true));
                     }
                 });
