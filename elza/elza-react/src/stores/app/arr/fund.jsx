@@ -12,7 +12,7 @@ import fundAction from './fundAction.jsx';
 import {consolidateState} from 'components/Utils.jsx';
 import {isBulkAction} from 'actions/arr/bulkActions.jsx';
 import {isFundTreeAction} from 'actions/arr/fundTree.jsx';
-import {nodeFormActions, outputFormActions, structureFormActions} from 'actions/arr/subNodeForm.jsx';
+import {nodeFormActions, outputFormActions} from 'actions/arr/subNodeForm.jsx';
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx';
 import {isNodeInfoAction} from 'actions/arr/nodeInfo.jsx';
 import {isVersionValidation} from 'actions/arr/versionValidation.jsx';
@@ -29,8 +29,6 @@ import DetailReducer from 'shared/detail/DetailReducer';
 import SimpleListReducer from 'shared/list/simple/SimpleListReducer';
 import processAreaStores from 'shared/utils/processAreaStores';
 import isCommonArea from 'stores/utils/isCommonArea';
-import structureNodeForm from './structureNodeForm';
-import {isStructureNodeForm} from '../../../actions/arr/structureNodeForm';
 
 export function fundInitState(fundWithVersion) {
     const result = {
@@ -65,7 +63,6 @@ export function fundInitState(fundWithVersion) {
         nodeDaoList: SimpleListReducer(), // seznam DAO pro node
         nodeDaoListAssign: SimpleListReducer(), // seznam DAO pro node sloužící pro node, které jsou sekundární, např. pro přiřazení atp.
         packageDaoList: SimpleListReducer(), // seznam DAO pro balíček
-        structureNodeForm: structureNodeForm(),
         reducer: fund,
     };
 
@@ -130,11 +127,6 @@ export function fund(state, action) {
         return consolidateState(state, result);
     }
 
-    if (isStructureNodeForm(action)) {
-        const result = {...state, structureNodeForm: structureNodeForm(state.structureNodeForm, action)};
-        return consolidateState(state, result);
-    }
-
     if (isFundFilesAction(action)) {
         const result = {...state, fundFiles: fundFiles(state.fundFiles, action)};
         return consolidateState(state, result);
@@ -176,9 +168,6 @@ export function fund(state, action) {
         }
     } else if (outputFormActions.isSubNodeFormAction(action)) {
         const result = {...state, fundOutput: fundOutput(state.fundOutput, action)};
-        return consolidateState(state, result);
-    } else if (structureFormActions.isSubNodeFormAction(action)) {
-        const result = {...state, structureNodeForm: structureNodeForm(state.structureNodeForm, action)};
         return consolidateState(state, result);
     }
 
@@ -242,7 +231,6 @@ export function fund(state, action) {
                 nodeDaoList: SimpleListReducer(),
                 nodeDaoListAssign: SimpleListReducer(),
                 packageDaoList: SimpleListReducer(),
-                structureNodeForm: structureNodeForm(),
                 reducer: fund,
             };
         case types.STORE_SAVE:
