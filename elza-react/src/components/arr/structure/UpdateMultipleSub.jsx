@@ -29,7 +29,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
         descItemTypes: PropTypes.object,
         subNodeForm: PropTypes.object,
         focus: PropTypes.object,
-        descItemFactory: PropTypes.object.isRequired,
+        descItemFactory: PropTypes.func.isRequired,
     };
 
     initFocus = () => {

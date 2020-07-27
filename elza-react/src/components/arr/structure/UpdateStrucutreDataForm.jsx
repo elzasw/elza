@@ -15,7 +15,7 @@ class UpdateStructureDataForm extends AbstractReactComponent {
         fundId: PropTypes.number.isRequired,
         id: PropTypes.number.isRequired,
         readMode: PropTypes.bool.isRequired,
-        descItemFactory: PropTypes.object.isRequired,
+        descItemFactory: PropTypes.func.isRequired,
     };
 
     UNSAFE_componentWillMount() {

@@ -1,19 +1,19 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import AbstractReactComponent from "../AbstractReactComponent";
-import DescItemType from "./nodeForm/DescItemType";
-import {objectEquals, objectEqualsDiff, propsEquals} from "../Utils";
+import AbstractReactComponent from '../AbstractReactComponent';
+import DescItemType from './nodeForm/DescItemType';
+import {objectEquals, objectEqualsDiff, propsEquals} from '../Utils';
 
 class FormDescItemType extends AbstractReactComponent {
     shouldComponentUpdate(nextProps, nextState) {
         // return true;
         if (this.state !== nextState) {
-            console.log("[FormDescItemType]#[state]##############", nextProps.refType.name);
+            console.log('[FormDescItemType]#[state]##############', nextProps.refType.name);
             return true;
         }
-        console.log("[FormDescItemType]###############", nextProps.refType.name, nextProps.descItemType.id);
+        console.log('[FormDescItemType]###############', nextProps.refType.name, nextProps.descItemType.id);
         // return !propsEquals(this.props, nextProps, undefined, true);
-        return !objectEqualsDiff(this.props, nextProps, undefined, '', true)
+        return !objectEqualsDiff(this.props, nextProps, undefined, '', true);
     }
 
     static propTypes = {
@@ -36,7 +36,7 @@ class FormDescItemType extends AbstractReactComponent {
         readMode: PropTypes.bool.isRequired,
         calendarTypes: PropTypes.object.isRequired,
         structureTypes: PropTypes.object.isRequired,
-        descItemFactory: PropTypes.object.isRequired,
+        descItemFactory: PropTypes.func.isRequired,
         customActions: PropTypes.object,
         descItemRef: PropTypes.func.isRequired, // (key, ref) => void
 
@@ -63,7 +63,7 @@ class FormDescItemType extends AbstractReactComponent {
         onDescItemTypeCopy: PropTypes.func.isRequired,
         onDescItemTypeCopyFromPrev: PropTypes.func.isRequired,
         onDescItemNotIdentified: PropTypes.func.isRequired,
-    }
+    };
 
     isDescItemLocked(nodeSetting, descItemTypeId) {
         // existuje nastavení o JP - zamykání
@@ -81,10 +81,27 @@ class FormDescItemType extends AbstractReactComponent {
     render() {
         const {descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting} = this.props;
 
-        const {refType, infoType, typePrefix, singleDescItemTypeEdit, arrPerm, fundId, strictMode, showNodeAddons, descItemCopyFromPrevEnabled,
-            conformityInfo, versionId, readMode, calendarTypes, structureTypes, descItemFactory, customActions, descItemRef} = this.props;
+        const {
+            refType,
+            infoType,
+            typePrefix,
+            singleDescItemTypeEdit,
+            arrPerm,
+            fundId,
+            strictMode,
+            showNodeAddons,
+            descItemCopyFromPrevEnabled,
+            conformityInfo,
+            versionId,
+            readMode,
+            calendarTypes,
+            structureTypes,
+            descItemFactory,
+            customActions,
+            descItemRef,
+        } = this.props;
 
-        console.log("[FormDescItemType] RENDER", refType.name)
+        console.log('[FormDescItemType] RENDER', refType.name);
 
         const {
             onCreateParty,
@@ -109,7 +126,7 @@ class FormDescItemType extends AbstractReactComponent {
             onDescItemTypeLock,
             onDescItemTypeCopy,
             onDescItemTypeCopyFromPrev,
-            onDescItemNotIdentified
+            onDescItemNotIdentified,
         } = this.props;
 
         const rulDataType = refType.dataType;
@@ -143,11 +160,12 @@ class FormDescItemType extends AbstractReactComponent {
             }
         });
 
-        return (<DescItemType
+        return (
+            <DescItemType
                 key={descItemType.id}
                 typePrefix={typePrefix}
                 ref={ref => {
-                    descItemRef && descItemRef('descItemType' + descItemType.id, ref)
+                    descItemRef && descItemRef('descItemType' + descItemType.id, ref);
                 }}
                 descItemType={descItemType}
                 singleDescItemTypeEdit={singleDescItemTypeEdit}
@@ -156,31 +174,45 @@ class FormDescItemType extends AbstractReactComponent {
                 rulDataType={rulDataType}
                 calendarTypes={calendarTypes}
                 structureTypes={structureTypes}
-
-                onCreateParty={(descItemIndex, partyTypeId) => onCreateParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyTypeId)}
-                onDetailParty={(descItemIndex, partyId) => onDetailParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyId)}
-                onCreateRecord={(descItemIndex) => onCreateRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
-                onDetailRecord={(descItemIndex, recordId) => onDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId)}
-                onCreateFile={(descItemIndex) => onCreateFile(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
-                onFundFiles={(descItemIndex) => onFundFiles(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
+                onCreateParty={(descItemIndex, partyTypeId) =>
+                    onCreateParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyTypeId)
+                }
+                onDetailParty={(descItemIndex, partyId) =>
+                    onDetailParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyId)
+                }
+                onCreateRecord={descItemIndex => onCreateRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
+                onDetailRecord={(descItemIndex, recordId) =>
+                    onDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId)
+                }
+                onCreateFile={descItemIndex => onCreateFile(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
+                onFundFiles={descItemIndex => onFundFiles(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
                 onDescItemAdd={() => onDescItemAdd(descItemGroupIndex, descItemTypeIndex)}
-                onCoordinatesUpload={(file) => onCoordinatesUpload(descItemType.id, file)}
-                onJsonTableUpload={(file) => onJsonTableUpload(descItemType.id, file)}
-                onDescItemRemove={(descItemIndex) => onDescItemRemove(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
+                onCoordinatesUpload={file => onCoordinatesUpload(descItemType.id, file)}
+                onJsonTableUpload={file => onJsonTableUpload(descItemType.id, file)}
+                onDescItemRemove={descItemIndex =>
+                    onDescItemRemove(descItemGroupIndex, descItemTypeIndex, descItemIndex)
+                }
                 onCoordinatesDownload={onCoordinatesDownload}
-                onJsonTableDownload={ onJsonTableDownload}
-                onChange={(descItemIndex, value, error) => onChange(descItemGroupIndex, descItemTypeIndex, descItemIndex, value, error)}
+                onJsonTableDownload={onJsonTableDownload}
+                onChange={(descItemIndex, value, error) =>
+                    onChange(descItemGroupIndex, descItemTypeIndex, descItemIndex, value, error)
+                }
                 onChangePosition={(from, to) => onChangePosition(descItemGroupIndex, descItemTypeIndex, from, to)}
-                onChangeSpec={(descItemIndex, specId) => onChangeSpec(descItemGroupIndex, descItemTypeIndex, descItemIndex, specId)}
-                onBlur={(descItemIndex) => onBlur(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
-                onFocus={(descItemIndex) => onFocus(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
+                onChangeSpec={(descItemIndex, specId) =>
+                    onChangeSpec(descItemGroupIndex, descItemTypeIndex, descItemIndex, specId)
+                }
+                onBlur={descItemIndex => onBlur(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
+                onFocus={descItemIndex => onFocus(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
                 onDescItemTypeRemove={() => onDescItemTypeRemove(descItemGroupIndex, descItemTypeIndex)}
                 onSwitchCalculating={() => onSwitchCalculating(descItemGroupIndex, descItemTypeIndex)}
-                onDescItemTypeLock={(notLock) => onDescItemTypeLock(descItemType.id, notLock)}
-                onDescItemTypeCopy={(notCopy) => onDescItemTypeCopy(descItemType.id, notCopy)}
-                onDescItemTypeCopyFromPrev={() => onDescItemTypeCopyFromPrev(descItemGroupIndex, descItemTypeIndex, descItemType.id)}
-                onDescItemNotIdentified={(descItemIndex, descItem) => onDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem)}
-
+                onDescItemTypeLock={notLock => onDescItemTypeLock(descItemType.id, notLock)}
+                onDescItemTypeCopy={notCopy => onDescItemTypeCopy(descItemType.id, notCopy)}
+                onDescItemTypeCopyFromPrev={() =>
+                    onDescItemTypeCopyFromPrev(descItemGroupIndex, descItemTypeIndex, descItemType.id)
+                }
+                onDescItemNotIdentified={(descItemIndex, descItem) =>
+                    onDescItemNotIdentified(descItemGroupIndex, descItemTypeIndex, descItemIndex, descItem)
+                }
                 showNodeAddons={showNodeAddons}
                 locked={singleDescItemTypeEdit ? false : locked}
                 closed={closed}
