@@ -80,4 +80,24 @@ public abstract class Action {
 			        BaseCode.ID_NOT_EXIST);
 		}
 	}
+
+    /**
+     * Check if subLevel has given parent
+     * 
+     * @param parent
+     *            Expected parent
+     * @param subLevel
+     *            level to be checked
+     * @return true if subLevel is sub-level or equal with parent node.
+     */
+    static protected boolean isInTree(LevelWithItems parent, LevelWithItems subLevel) {
+    	if (parent == subLevel) {
+    		return true;
+    	}
+    	LevelWithItems level = subLevel.getParent();
+    	if (level == null) {
+    		return false;
+    	}
+    	return isInTree(parent, level);
+    }
 }
