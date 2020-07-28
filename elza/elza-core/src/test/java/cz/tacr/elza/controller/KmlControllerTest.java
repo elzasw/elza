@@ -20,7 +20,6 @@ import java.util.List;
 /**
  *
  */
-@Ignore
 public class KmlControllerTest extends AbstractControllerTest {
 
     protected final static String IMPORT_ARR_COORDINATES = KML_CONTROLLER_URL + "/import/descCoordinates";
@@ -51,15 +50,14 @@ public class KmlControllerTest extends AbstractControllerTest {
 
     // TODO slapa: vyřešit
     @Test
-    @Ignore
     public void arrImportExportTest() {
         List<ApScopeVO> allScopes = getAllScopes();
         importXmlFile(null, allScopes.get(0).getId(), getFile(ALL_IN_ONE_XML));
 
         List<ArrFundVO> funds = getFunds();
-        Assert.assertTrue("Očekáváme 1 archivní pomůcku", funds.size() == 1);
+        Assert.assertEquals("Očekáváme 1 archivní pomůcku", 1, funds.size());
 
-        Assert.assertTrue("Očekáváme jméno FA z importu", funds.get(0).getName().equals("Import z XML"));
+        Assert.assertEquals("Očekáváme jméno FA z importu", "Import z XML", funds.get(0).getName());
 
         int versionId = funds.get(0).getVersions().get(0).getId();
 
@@ -67,7 +65,7 @@ public class KmlControllerTest extends AbstractControllerTest {
         faTreeParam.setVersionId(versionId);
         TreeData faTree = getFundTree(faTreeParam);
 
-        Assert.assertTrue("Očekáváme 3 JP + parent", faTree.getNodes().size() == 4);
+        Assert.assertEquals("Očekáváme 3 JP + parent", 4, faTree.getNodes().size());
         ArrangementController.IdsParam idsParam = new ArrangementController.IdsParam();
         idsParam.setVersionId(versionId);
         idsParam.setIds(Collections.singletonList(faTree.getNodes().iterator().next().getId()));
@@ -98,23 +96,4 @@ public class KmlControllerTest extends AbstractControllerTest {
         cleanUp();
     }
 
-    // TODO slapa: vyřešit
-    @Test
-    @Ignore
-    public void regImportExportTest() {
-        List<ApScopeVO> allScopes = getAllScopes();
-        importXmlFile(null, allScopes.get(0).getId(), getFile(ALL_IN_ONE_XML));
-
-
-        List<ApAccessPointVO> records = findRecord(null, 0, 10, null, null, null);
-        Assert.assertTrue(!records.isEmpty());
-        ApAccessPointVO record = records.iterator().next();
-
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("apRecordId", record.getId());
-        Integer[] ids = multipart(spec -> spec.multiPart("file", getFile(ALL)).params(params), IMPORT_REG_COORDINATES).getBody().as(Integer[].class);
-        for (Integer id : ids) {
-            get(spec -> spec.pathParam("regCoordinatesId", id), EXPORT_REG_COORDINATES);
-        }
-    }
 }

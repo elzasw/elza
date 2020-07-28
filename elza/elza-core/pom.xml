@@ -13,7 +13,6 @@
 
     <properties>
         <drools.version>7.30.0.Final</drools.version>
-        <geotools.version>14.3</geotools.version>
     </properties>
 
     <dependencies>
@@ -228,17 +227,14 @@
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-geojson</artifactId>
-            <version>${geotools.version}</version>
         </dependency>
         <dependency>
             <groupId>org.geotools.xsd</groupId>
             <artifactId>gt-xsd-core</artifactId>
-            <version>${geotools.version}</version>
         </dependency>
         <dependency>
             <groupId>org.geotools.xsd</groupId>
             <artifactId>gt-xsd-kml</artifactId>
-            <version>${geotools.version}</version>
         </dependency>
         <dependency>
           <groupId>org.apache.lucene</groupId>
