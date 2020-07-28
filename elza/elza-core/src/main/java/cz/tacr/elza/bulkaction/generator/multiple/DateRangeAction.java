@@ -36,6 +36,11 @@ public class DateRangeAction extends Action {
 
 	private final DateRangeConfig config;
     /**
+     * Skip subtree
+     */
+    LevelWithItems skipSubtree;
+
+    /**
      * Vstupní atributy datace.
      */
 	private ItemType inputItemType;
@@ -72,13 +77,21 @@ public class DateRangeAction extends Action {
     private ArrDataUnitdate datePosteriorMin;
     private ArrDataUnitdate datePosteriorMax;
 
+    private WhenCondition excludeWhen;
+
 	DateRangeAction(DateRangeConfig config) {
 		this.config = config;
 	}
 
     @Override
 	public void init(ArrBulkActionRun bulkActionRun) {
-		StaticDataProvider ruleSystem = this.getStaticDataProvider();
+        StaticDataProvider sdp = this.getStaticDataProvider();
+
+        // initialize exclude configuration
+        WhenConditionConfig excludeWhenConfig = config.getExcludeWhen();
+        if (excludeWhenConfig != null) {
+            excludeWhen = new WhenCondition(excludeWhenConfig, sdp);
+        }
 
 		// prepare output type
 		String outputType = config.getOutputType();
@@ -86,7 +99,7 @@ public class DateRangeAction extends Action {
 			throw new BusinessException("Není vyplněn parametr 'output_type' v akci.", BaseCode.PROPERTY_NOT_EXIST)
                     .set(PARAM_PROPERTY, "outputType");
 		}
-		outputItemType = ruleSystem.getItemTypeByCode(outputType);
+        outputItemType = sdp.getItemTypeByCode(outputType);
 		if (outputItemType.getDataType() != DataType.TEXT) {
 			throw new BusinessException(
 			        "Datový typ atributu musí být " + DataType.TEXT + " (item type " + outputType + ")",
@@ -98,7 +111,7 @@ public class DateRangeAction extends Action {
 			throw new BusinessException("Není vyplněn parametr 'inputType' v akci.", BaseCode.PROPERTY_NOT_EXIST)
                     .set(PARAM_PROPERTY, "input_type");
 		}
-		inputItemType = ruleSystem.getItemTypeByCode(inputType);
+        inputItemType = sdp.getItemTypeByCode(inputType);
 		checkValidDataType(inputItemType, DataType.UNITDATE);
 
         String bulkRangeCode = config.getBulkRangeType();
@@ -106,13 +119,40 @@ public class DateRangeAction extends Action {
             throw new BusinessException("Není vyplněn parametr 'bulkRangeType' v akci.", BaseCode.PROPERTY_NOT_EXIST)
                     .set(PARAM_PROPERTY, "bulkRangeType");
 		}
-        bulkRangeType = ruleSystem.getItemTypeByCode(bulkRangeCode);
+        bulkRangeType = sdp.getItemTypeByCode(bulkRangeCode);
         checkValidDataType(bulkRangeType, DataType.UNITDATE);
 
     }
 
+    /**
+     * Mark level to be skipped
+     * 
+     * @param level
+     */
+    public void setSkipSubtree(LevelWithItems level) {
+        this.skipSubtree = level;
+    }
+
     @Override
 	public void apply(LevelWithItems level, TypeLevel typeLevel) {
+        // Check if node stopped
+        if (skipSubtree != null) {
+            if (isInTree(skipSubtree, level)) {
+                return;
+            }
+            // reset limit
+            skipSubtree = null;
+        }
+
+        // check exclude condition
+        if (excludeWhen != null) {
+            if (excludeWhen.isTrue(level)) {
+                // set as skip
+                setSkipSubtree(level);
+                return;
+            }
+        }
+
 		List<ArrDescItem> items = level.getDescItems();
 
 		// iterate all items and find unit date
