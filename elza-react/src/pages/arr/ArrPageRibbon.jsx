@@ -9,6 +9,7 @@ import {propsEquals} from '../../components/Utils';
 import ConfirmForm from '../../components/shared/form/ConfirmForm';
 import {WebApi} from '../../actions/WebApi';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
+import ArrHistoryForm from "../../components/arr/ArrHistoryForm";
 
 class ArrPageRibbon extends AbstractReactComponent {
     shouldComponentUpdate(nextProps, nextState) {
@@ -17,6 +18,26 @@ class ArrPageRibbon extends AbstractReactComponent {
         }
         return !propsEquals(this.props, nextProps, null, true);
     }
+
+    /**
+     * Zobrazení formuláře historie.
+     * @param versionId verze AS
+     * @param locked
+     */
+    handleShowFundHistory = (versionId, locked) => {
+        const form = (
+            <ArrHistoryForm versionId={versionId} locked={locked} onDeleteChanges={this.handleDeleteChanges} />
+        );
+        this.props.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, 'dialog-lg'));
+    };
+
+    handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
+        const activeFund = this.getActiveFund(this.props);
+        const versionId = activeFund.versionId;
+        WebApi.revertChanges(versionId, nodeId, fromChangeId, toChangeId).then(() => {
+            this.props.dispatch(modalDialogHide());
+        });
+    };
 
     /**
      * Zobrazení formuláře pro synchronizaci DAOS pro celé AS.

@@ -187,7 +187,7 @@ public class IssueDataService {
      * @return komentář
      */
     public WfComment getLastComment(WfIssue issue) {
-        List<WfComment> commentList = commentRepository.findLastByIssueId(issue.getIssueId(), new PageRequest(0, 1));
+        List<WfComment> commentList = commentRepository.findLastByIssueId(issue.getIssueId(), PageRequest.of(0, 1));
         return !commentList.isEmpty() ? commentList.get(0) : null;
     }
 

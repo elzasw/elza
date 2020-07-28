@@ -21,16 +21,23 @@ import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.core.data.SearchType;
-import org.apache.commons.collections.CollectionUtils;
+import cz.tacr.elza.security.Sha256Support;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.encoding.ShaPasswordEncoder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.scrypt.SCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -89,6 +96,15 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 @Service
 public class UserService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
+    static {
+        Map<String, PasswordEncoder> encoders = new HashMap<>();
+        encoders.put("bcrypt", new BCryptPasswordEncoder());
+        encoders.put("scrypt", new SCryptPasswordEncoder());
+        encoder = new DelegatingPasswordEncoder("bcrypt", encoders);
+    }
+
     @Autowired
     private UserRepository userRepository;
 
@@ -128,12 +144,12 @@ public class UserService {
     @Value("${elza.security.salt:kdFss=+4Df_%}")
     private String SALT;
 
-    private ShaPasswordEncoder encoder = new ShaPasswordEncoder(256);
+    private static final PasswordEncoder encoder;
 
     @Value("${elza.security.defaultUsername:admin}")
     private String defaultUsername;
 
-    @Value("${elza.security.defaultPassword:0bde6ccb27aaa200002df6017ee3ddee70dacf5e9a4f99627af3447b73fde09b}")
+    @Value("${elza.security.defaultPassword:{bcrypt}$2a$10$blaAW9EHjsDVpLv1DJSTIuIfgyrF0uxlIVPV2wcPPdTSFLqDpoAMa}")
     private String defaultPassword;
 
     @Value("${elza.security.allowDefaultUser:true}")
@@ -142,7 +158,7 @@ public class UserService {
     /**
      * Cache pro nakešování oprávnění uživatele.
      */
-    private LoadingCache<Integer, Collection<UserPermission>> userPermissionsCache;
+    private final LoadingCache<Integer, Collection<UserPermission>> userPermissionsCache;
 
 	/**
 	 * Seznam oprávnění, které se mají nastavit při vytváření AS a přiřazení
@@ -165,7 +181,7 @@ public class UserService {
                 .expireAfterAccess(10, TimeUnit.MINUTES)
                 .build(new CacheLoader<Integer, Collection<UserPermission>>() {
                     @Override
-                    public Collection<UserPermission> load(final Integer userId) throws Exception {
+                    public Collection<UserPermission> load(final Integer userId) {
                         final UsrUser user = getUser(userId);
                         return calcUserPermission(user);
                     }
@@ -318,9 +334,9 @@ public class UserService {
             }
         }
 
-        permissionRepository.delete(permissionsDelete);
-        permissionRepository.save(permissionsAdd);
-        permissionRepository.save(permissionsUpdate);
+        permissionRepository.deleteAll(permissionsDelete);
+        permissionRepository.saveAll(permissionsAdd);
+        permissionRepository.saveAll(permissionsUpdate);
 
         List<UsrPermission> result = new ArrayList<>();
         result.addAll(permissionsAdd);
@@ -359,10 +375,8 @@ public class UserService {
      */
     private void setFundRelation(final UsrPermission permission, final Integer fundId) {
         if (fundId != null) {
-            ArrFund fund = fundRepository.findOne(fundId);
-            if (fund == null) {
-                throw new SystemException("Neplatný archivní soubor", ArrangementCode.FUND_NOT_FOUND).set("id", fundId);
-            }
+            ArrFund fund = fundRepository.findById(fundId)
+                    .orElseThrow(() -> new SystemException("Neplatný archivní soubor", ArrangementCode.FUND_NOT_FOUND).set("id", fundId));
             permission.setFund(fund);
         } else {
             permission.setFund(null);
@@ -379,10 +393,8 @@ public class UserService {
      */
     private void setNodeRelation(final UsrPermission permission, final Integer nodeId, final Integer fundId) {
         if (nodeId != null) {
-            ArrNode node = nodeRepository.findOne(nodeId);
-            if (node == null) {
-                throw new SystemException("Neplatná JP", ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
-            }
+            ArrNode node = nodeRepository.findById(nodeId)
+                    .orElseThrow(() -> new SystemException("Neplatná JP", ArrangementCode.NODE_NOT_FOUND).set("id", nodeId));
             if (!node.getFundId().equals(fundId)) {
                 throw new SystemException("Neplatná JP v závislosti k AS", ArrangementCode.NODE_NOT_FOUND)
                         .set("id", nodeId)
@@ -425,7 +437,7 @@ public class UserService {
         }
 
         // nakonec smažu všechny oprávnění s vazbou na JP
-        permissionRepository.delete(permissions);
+        permissionRepository.deleteAll(permissions);
     }
 
     /**
@@ -437,10 +449,8 @@ public class UserService {
      */
     private void setScopeRelation(final UsrPermission permission, final Integer scopeId) {
         if (scopeId != null) {
-            ApScope scope = scopeRepository.findOne(scopeId);
-            if (scope == null) {
-                throw new SystemException("Neplatný scope", BaseCode.ID_NOT_EXIST);
-            }
+            ApScope scope = scopeRepository.findById(scopeId)
+                    .orElseThrow(() -> new SystemException("Neplatný scope", BaseCode.ID_NOT_EXIST));
             permission.setScope(scope);
         } else {
             permission.setScope(null);
@@ -456,10 +466,8 @@ public class UserService {
      */
     private void setControlUserRelation(final UsrPermission permission, final Integer userId) {
         if (userId != null) {
-            UsrUser user = userRepository.findOne(userId);
-            if (user == null) {
-                throw new SystemException("Neplatný uživatel", BaseCode.ID_NOT_EXIST);
-            }
+            UsrUser user = userRepository.findById(userId)
+                    .orElseThrow(() -> new SystemException("Neplatný uživatel", BaseCode.ID_NOT_EXIST));
             permission.setUserControl(user);
         } else {
             permission.setUserControl(null);
@@ -475,10 +483,8 @@ public class UserService {
      */
     private void setControlGroupRelation(final UsrPermission permission, final Integer groupId) {
         if (groupId != null) {
-            UsrGroup group = groupRepository.findOne(groupId);
-            if (group == null) {
-                throw new SystemException("Neplatná skupina", BaseCode.ID_NOT_EXIST);
-            }
+            UsrGroup group = groupRepository.findById(groupId)
+                    .orElseThrow(() -> new SystemException("Neplatná skupina", BaseCode.ID_NOT_EXIST));
             permission.setGroupControl(group);
         } else {
             permission.setGroupControl(null);
@@ -494,10 +500,8 @@ public class UserService {
      */
     private void setIssueListRelation(final UsrPermission permission, final Integer issueListId) {
         if (issueListId != null) {
-            WfIssueList issueList = issueListRepository.findOne(issueListId);
-            if (issueList == null) {
-                throw new SystemException("Neplatný protokol", BaseCode.ID_NOT_EXIST);
-            }
+            WfIssueList issueList = issueListRepository.findById(issueListId)
+                    .orElseThrow(() -> new SystemException("Neplatný protokol", BaseCode.ID_NOT_EXIST));
             permission.setIssueList(issueList);
         } else {
             permission.setIssueList(null);
@@ -706,7 +710,7 @@ public class UserService {
      * @param group skupina
      */
     public void invalidateCache(@NotNull final UsrGroup group) {
-        userRepository.findByGroup(group).stream()
+        userRepository.findByGroup(group)
                 .forEach(x -> invalidateUserCache(x.getUserId()));
     }
 
@@ -758,7 +762,7 @@ public class UserService {
         }
 
         // delete all relations
-      	groupUserRepository.delete(items);
+      	groupUserRepository.deleteAll(items);
 
         invalidateCache(user);
         changeUserEvent(user);
@@ -896,11 +900,11 @@ public class UserService {
         }
 
         if (changeAuthentications.size() > 0) {
-            authenticationRepository.save(changeAuthentications);
+            authenticationRepository.saveAll(changeAuthentications);
         }
 
         if (removeAuthentications.size() > 0) {
-            authenticationRepository.delete(removeAuthentications);
+            authenticationRepository.deleteAll(removeAuthentications);
         }
 
         userRepository.save(user);
@@ -963,7 +967,7 @@ public class UserService {
         authentication.setUser(user);
         authentication.setAuthType(authType);
         if (authType == UsrAuthentication.AuthType.PASSWORD) {
-            authentication.setValue(encodePassword(user.getUsername(), value));
+            authentication.setValue(encodePassword(value));
         } else {
             authentication.setValue(value);
         }
@@ -986,7 +990,7 @@ public class UserService {
                 throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
             }
 
-            String oldPasswordHash = encodePassword(user.getUsername(), oldPassword);
+            String oldPasswordHash = encodePassword(oldPassword);
 
             if (!oldPasswordHash.equals(authentication.getValue())) {
                 throw new BusinessException("Původní heslo se neshoduje", UserCode.PASSWORD_NOT_MATCH);
@@ -1022,7 +1026,7 @@ public class UserService {
         if (authentication == null) {
             throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
         }
-        authentication.setValue(encodePassword(user.getUsername(), newPassword));
+        authentication.setValue(encodePassword(newPassword));
         authenticationRepository.save(authentication);
         changeUserEvent(user);
         return user;
@@ -1056,12 +1060,28 @@ public class UserService {
     /**
      * Zahashování hesla.
      *
-     * @param username uživatelské jméno
      * @param password uživatelské heslo v plaintextu
      * @return zahashované heslo
      */
-    public String encodePassword(final String username, final String password) {
-        return encoder.encodePassword(password, username + SALT);
+    public String encodePassword(final String password) {
+        return encoder.encode(password);
+    }
+
+    /**
+     * Ověření hesla.
+     *
+     * @param password       raw heslo
+     * @param encodePassword očekáváný hash hesla
+     * @param username       uživatel pro kterého hash ověřujeme
+     * @return true - heslo je OK
+     */
+    public boolean matchesPassword(final String password, final String encodePassword, final String username) {
+        if (!encodePassword.startsWith("{")) {
+            // zpětná kompatibilita
+            logger.warn("Uživatel {} používá starý mechanismus ukládání hashe hesla. Prosím, prověďte změnu hesla pro zvýšení bezpečnosti!", username);
+            return Sha256Support.encodePassword(password, username + SALT).equalsIgnoreCase(encodePassword);
+        }
+        return encoder.matches(password, encodePassword);
     }
 
     /**
@@ -1079,7 +1099,8 @@ public class UserService {
 		Integer userId = details.getId();
 		if (userId != null) {
 			// userId is set -> user have to be in the repository
-			user = userRepository.findOne(userId);
+			user = userRepository.findById(userId)
+                    .orElse(null);
 		}
 		return user;
     }
@@ -1333,7 +1354,7 @@ public class UserService {
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public Set<UsrUser> getUsers(final Set<Integer> userIds) {
         Assert.notNull(userIds, "Identifikátory musí být vyplněny");
-        List<UsrUser> users = userRepository.findAll(userIds);
+        List<UsrUser> users = userRepository.findAllById(userIds);
         if (users.size() != userIds.size()) {
             throw new IllegalArgumentException("Některý uživatel neexistuje");
         }
@@ -1349,7 +1370,7 @@ public class UserService {
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
     public Set<UsrGroup> getGroups(final Set<Integer> groupIds) {
         Assert.notNull(groupIds, "Identifikátory musí být vyplněny");
-        List<UsrGroup> groups = groupRepository.findAll(groupIds);
+        List<UsrGroup> groups = groupRepository.findAllById(groupIds);
         if (groups.size() != groupIds.size()) {
             throw new IllegalArgumentException("Některá skupina neexistuje");
         }
@@ -1596,7 +1617,7 @@ public class UserService {
         if (userIds.isEmpty()) {
             return Collections.emptyMap();
         }
-        List<UsrUser> users = userRepository.findAll(userIds);
+        List<UsrUser> users = userRepository.findAllById(userIds);
         return users.stream().collect(Collectors.toMap(UsrUser::getUserId, Function.identity()));
     }
 

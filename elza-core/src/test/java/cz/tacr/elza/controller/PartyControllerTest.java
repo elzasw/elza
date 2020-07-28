@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller;
 
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import org.junit.Test;
 

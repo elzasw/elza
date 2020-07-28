@@ -1,6 +1,6 @@
 package cz.tacr.elza.service.importnodes.vo.descitems;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * Rozhraní pro reprezentaci atributu.

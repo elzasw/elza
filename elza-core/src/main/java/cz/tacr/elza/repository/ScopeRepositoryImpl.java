@@ -67,7 +67,8 @@ public class ScopeRepositoryImpl implements ScopeRepositoryCustom {
 	        + "SELECT distinct s.* FROM treeData t \n"
 	        + "JOIN arr_desc_item di ON di.node_id = t.node_id \n"
 	        + "JOIN arr_item it ON it.item_id = di.item_id \n"
-	        + "JOIN ap_access_point r ON r.access_point_id = p.access_point_id \n"
+			+ "JOIN arr_data_record_ref dp ON it.data_id = dp.data_id \n"
+	        + "JOIN ap_access_point r ON r.access_point_id = dp.record_id \n"
 	        + "JOIN ap_state st ON (st.access_point_id = r.access_point_id AND st.delete_change_id IS NULL) \n"
 	        + "JOIN ap_scope s ON s.scope_id = st.scope_id \n";
 	static String FIND_SCOPE_PART2 = "UNION \n"

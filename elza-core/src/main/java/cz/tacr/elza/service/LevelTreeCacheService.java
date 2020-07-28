@@ -158,7 +158,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             nodesToExpandIDs.addAll(expandedIds);
         }
 
-        ArrFundVersion version = fundVersionRepository.findOne(versionId);
+        ArrFundVersion version = arrangementService.getFundVersion(versionId);
 
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(version);
         Set<Integer> expandedIdsExtended = createExpandedIdsExtension(includeIds, treeMap);
@@ -618,7 +618,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             //projdeme všechny změny, které jsou změny ve stromu uzlů verze a smažeme cache verzí
             if (EventVersion.class.isAssignableFrom(event.getClass())) {
                 Integer changedVersionId = ((EventVersion) event).getVersionId();
-                ArrFundVersion version = fundVersionRepository.findOne(changedVersionId);
+                ArrFundVersion version = arrangementService.getFundVersion(changedVersionId);
 
                 switch (event.getEventType()) {
                     case NODE_DELETE:
@@ -722,7 +722,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         while (iterator.hasNext()) {
             List<Integer> nodeIdsSublist = iterator.next();
 
-            nodes.addAll(nodeRepository.findAll(nodeIdsSublist));
+            nodes.addAll(nodeRepository.findAllById(nodeIdsSublist));
         }
         Map<Integer, ArrNode> nodeMap = new HashMap<>(nodes.size());
         for (ArrNode node : nodes) {
@@ -1125,7 +1125,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @return informace
      */
     public Collection<TreeNodeVO> getFaTreeNodes(final Integer versionId, final Collection<Integer> nodeIds) {
-        ArrFundVersion version = fundVersionRepository.findOne(versionId);
+        ArrFundVersion version = arrangementService.getFundVersion(versionId);
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(version);
         LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
 
@@ -1183,7 +1183,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         Validate.notNull(param);
         Validate.notNull(param.getFundVersionId());
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(param.getFundVersionId());
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(param.getFundVersionId());
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(fundVersion);
 
         TreeNode node;
@@ -1363,7 +1363,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
     @Override
     public boolean checkPermissionInTree(final Integer nodeId) {
-        ArrNode one = nodeRepository.findOne(nodeId);
+        ArrNode one = arrangementService.getNode(nodeId);
         ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(one.getFundId());
         return calcPermNodeIdMap(fundVersion, Collections.singleton(nodeId)).get(nodeId);
     }
@@ -1434,7 +1434,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @return nalezená JP
      */
     public ArrNodeExtendVO getSimpleNode(final Integer fundVersionId, final Integer nodeId) {
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(fundVersion);
         TreeNode treeNode = treeMap.get(nodeId);
         Validate.notNull(treeNode, "Neplatný identifikátor JP: " + nodeId);
@@ -1863,7 +1863,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         ObjectListIterator<Integer> iterator = new ObjectListIterator<>(nodeIds);
         while (iterator.hasNext()) {
             List<Integer> nodeIdsSublist = iterator.next();
-            nodes.addAll(nodeRepository.findAll(nodeIdsSublist));
+            nodes.addAll(nodeRepository.findAllById(nodeIdsSublist));
         }
 
         Map<Integer, ArrNode> arrNodeMap = new HashMap<>(nodes.size());

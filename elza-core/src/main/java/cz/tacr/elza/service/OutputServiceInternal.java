@@ -70,6 +70,8 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
 
+import static cz.tacr.elza.repository.ExceptionThrow.output;
+
 @Service
 public class OutputServiceInternal {
 
@@ -196,11 +198,8 @@ public class OutputServiceInternal {
      */
     @Transactional
     public ArrOutput getOutput(int outputId) {
-        ArrOutput output = outputRepository.findOne(outputId);
-        if (output == null) {
-            throw new SystemException("Output not found", BaseCode.ID_NOT_EXIST).set("outputId", outputId);
-        }
-        return output;
+        return outputRepository.findById(outputId)
+                .orElseThrow(output(outputId));
     }
 
     /**

@@ -27,8 +27,7 @@ public class PasswordAutheticationProvider implements AuthenticationProvider {
 	public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
 		String username = authentication.getName();
 		String password = authentication.getCredentials().toString();
-
-		String encodePassword = userService.encodePassword(username, password);
+		String encodePassword = userService.encodePassword(password);
 
 		UsrUser user = userService.findByUsername(username);
 
@@ -39,7 +38,8 @@ public class PasswordAutheticationProvider implements AuthenticationProvider {
 				throw new UsernameNotFoundException("Pro uživatele není povolen tento typ přihlášení");
 			}
 
-			if (!usrAuthentication.getValue().equalsIgnoreCase(encodePassword)) {
+			encodePassword = usrAuthentication.getValue();
+			if (!userService.matchesPassword(password, encodePassword, username)) {
 				throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
 			}
 

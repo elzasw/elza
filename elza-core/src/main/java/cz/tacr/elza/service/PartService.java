@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+import static cz.tacr.elza.repository.ExceptionThrow.part;
 
 @Service
 public class PartService {
@@ -95,7 +96,7 @@ public class PartService {
         for (ApPart part : partList) {
             part.setParentPart(newPart);
         }
-        partRepository.save(partList);
+        partRepository.saveAll(partList);
     }
 
     /**
@@ -134,12 +135,8 @@ public class PartService {
 
     public ApPart getPart(final Integer partId) {
         Validate.notNull(partId);
-        ApPart part = partRepository.findOne(partId);
-        if (part == null) {
-            throw new ObjectNotFoundException("Part nenalezen", BaseCode.ID_NOT_EXIST)
-                    .setId(partId);
-        }
-        return part;
+        return partRepository.findById(partId)
+                .orElseThrow(part(partId));
     }
 
     public void changeFragmentItems(final ApPart part, final List<ApUpdateItemVO> items) {
@@ -188,7 +185,7 @@ public class PartService {
         Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
         List<ApItem> items = apItemService.createItems(apPartFormVO.getItems(), typeIdItemsMap, itemsDb, apChange, bindingItemList, dataRefList, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createPartItem(apPart, it, is, c, objectId, position));
-        return itemRepository.save(items);
+        return itemRepository.saveAll(items);
     }
 
     public List<ApItem> createPartItems(final ApChange apChange,
@@ -198,7 +195,7 @@ public class PartService {
                                         final List<DataRef> dataRefList) {
         List<ApItem> items = apItemService.createItems(itemList, apChange, binding, dataRefList, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createPartItem(apPart, it, is, c, objectId, position));
-        return itemRepository.save(items);
+        return itemRepository.saveAll(items);
     }
 
     private ApItem createPartItem(final ApPart part, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {
@@ -233,7 +230,7 @@ public class PartService {
         for (ApPart part : partList) {
             part.setDeleteChange(apChange);
         }
-        partRepository.save(partList);
+        partRepository.saveAll(partList);
     }
 
     public void deleteParts(final ApAccessPoint accessPoint, final ApChange apChange) {
@@ -273,8 +270,8 @@ public class PartService {
             for (ApItem item : items) {
                 changes.add(item.getCreateChange());
             }
-            changeRepository.delete(changes);
-            itemRepository.delete(items);
+            changeRepository.deleteAll(changes);
+            itemRepository.deleteAll(items);
             partRepository.delete(part);
         } else {
             throw new NotImplementedException("Mazání platného fragmentu není k dispozici");

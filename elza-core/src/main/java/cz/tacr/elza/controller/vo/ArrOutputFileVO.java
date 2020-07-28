@@ -6,6 +6,8 @@ import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.repository.OutputResultRepository;
 
+import static cz.tacr.elza.repository.ExceptionThrow.outputResult;
+
 /**
  * ArrOutputFile Value object
  *
@@ -37,8 +39,8 @@ public class ArrOutputFileVO extends DmsFileVO {
     public ArrOutputFile createEntity(OutputResultRepository outputResultRepository) {
         ArrOutputFile result = new ArrOutputFile();
 
-        ArrOutputResult dbResult = outputResultRepository.findOne(outputResultId);
-        Validate.notNull(dbResult, "Output not found (ID={})", outputResultId);
+        ArrOutputResult dbResult = outputResultRepository.findById(outputResultId)
+                .orElseThrow(outputResult(outputResultId));
 
         copyTo(result);
         return result;

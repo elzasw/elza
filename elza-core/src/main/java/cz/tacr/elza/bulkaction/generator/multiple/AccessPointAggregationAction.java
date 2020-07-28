@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static cz.tacr.elza.repository.ExceptionThrow.ap;
+
 @Component
 @Scope("prototype")
 public class AccessPointAggregationAction extends Action {
@@ -141,7 +143,7 @@ public class AccessPointAggregationAction extends Action {
             logger.debug("Konec zpracování AP : " + apId + " - již byl přidán");
             return;
         }
-        ApAccessPoint ap = apAccessPointRepository.findOne(apId);
+        ApAccessPoint ap = apAccessPointRepository.findById(apId).orElseThrow(ap(apId));
         List<ApPart> parts = partRepository.findValidPartByAccessPoint(ap);
         List<ApItem> items = itemRepository.findValidItemsByAccessPointMultiFetch(ap);
 

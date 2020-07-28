@@ -198,7 +198,7 @@ public class ItemTypeUpdater {
             for (RulItemSpec rulItemSpec : rulItemSpecOrig.values()) {
                 itemAptypeRepository.deleteByItemSpec(rulItemSpec);
             }
-            itemSpecRepository.delete(rulItemSpecOrig.values());
+            itemSpecRepository.deleteAll(rulItemSpecOrig.values());
         }
     }
 
@@ -241,7 +241,7 @@ public class ItemTypeUpdater {
             }
 
             if(CollectionUtils.isNotEmpty(itemTypeSpecAssigns)) {
-                itemTypeSpecAssigns = itemTypeSpecAssignRepository.save(itemTypeSpecAssigns);
+                itemTypeSpecAssigns = itemTypeSpecAssignRepository.saveAll(itemTypeSpecAssigns);
             }
             rulItemSpec.setItemTypeSpecAssigns(itemTypeSpecAssigns);
         }
@@ -312,7 +312,7 @@ public class ItemTypeUpdater {
             }
 
             // try to save updated items
-            for (RulItemType rulItemType : itemTypeRepository.save(rulItemTypesSave)) {
+            for (RulItemType rulItemType : itemTypeRepository.saveAll(rulItemTypesSave)) {
                 rulItemTypeNew.put(rulItemType.getCode(), rulItemType);
             }
 
@@ -328,7 +328,8 @@ public class ItemTypeUpdater {
             for (RulItemType rulItemType : rulItemTypesOrig.values()) {
                 itemAptypeRepository.deleteByItemType(rulItemType);
             }
-            itemTypeRepository.delete(rulItemTypesOrig.values());
+            itemTypeSpecAssignRepository.deleteByItemTypeIn(rulItemTypesOrig.values());
+            itemTypeRepository.deleteAll(rulItemTypesOrig.values());
         }
     }
 
@@ -674,7 +675,7 @@ public class ItemTypeUpdater {
             List<RulItemAptype> rulItemAptypesNew = updateItemAptypes(itemSpec.getItemAptypes(), rulItemAptypeDb, rulItemSpec, null, apTypeCache);
 
             // Collection of APTypes to delete
-            for (RulItemAptype rulItemAptype : itemAptypeRepository.save(rulItemAptypesNew)) {
+            for (RulItemAptype rulItemAptype : itemAptypeRepository.saveAll(rulItemAptypesNew)) {
                 rulItemAptypesOrig.remove(rulItemAptype.getItemAptypeId());
             }
         }
@@ -686,7 +687,7 @@ public class ItemTypeUpdater {
                             rulItemAptype.getItemSpec().getCode(), rulItemAptype.getApType().getCode());
                 }
             }
-            itemAptypeRepository.delete(rulItemAptypesOrig.values());
+            itemAptypeRepository.deleteAll(rulItemAptypesOrig.values());
         }
     }
 
@@ -720,7 +721,7 @@ public class ItemTypeUpdater {
             List<RulItemAptype> rulItemAptypesNew = updateItemAptypes(itemType.getItemAptypes(), rulItemAptypeDb, null, rulItemType, apTypeCache);
 
             // Collection of APTypes to delete
-            for (RulItemAptype rulItemAptype : itemAptypeRepository.save(rulItemAptypesNew)) {
+            for (RulItemAptype rulItemAptype : itemAptypeRepository.saveAll(rulItemAptypesNew)) {
                 rulItemAptypesOrig.remove(rulItemAptype.getItemAptypeId());
             }
         }
@@ -732,7 +733,7 @@ public class ItemTypeUpdater {
                             rulItemAptype.getItemType().getCode(), rulItemAptype.getApType().getCode());
                 }
             }
-            itemAptypeRepository.delete(rulItemAptypesOrig.values());
+            itemAptypeRepository.deleteAll(rulItemAptypesOrig.values());
         }
     }
 

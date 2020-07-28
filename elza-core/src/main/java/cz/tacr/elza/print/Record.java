@@ -3,6 +3,8 @@ package cz.tacr.elza.print;
 import cz.tacr.elza.core.data.PartType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.ap.ExternalId;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.part.Part;
@@ -123,7 +125,8 @@ public class Record {
         if (part != null) {
             return part;
         }
-        ApPart apPart = partRepository.findOne(partId);
+        ApPart apPart = partRepository.findById(partId)
+                .orElseThrow(() -> new ObjectNotFoundException("Parta neexistuje", BaseCode.ID_NOT_EXIST).setId(partId));
         part = new Part(apPart, staticData);
         partIdMap.put(partId, part);
         return part;

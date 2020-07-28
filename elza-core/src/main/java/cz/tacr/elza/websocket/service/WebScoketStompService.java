@@ -26,6 +26,7 @@ public class WebScoketStompService {
     private transient AbstractSubscribableChannel clientOutboundChannel;
 
     @Autowired
+    @Qualifier("brokerMessageConverter")
     private transient SmartMessageConverter messageConverter;
 
     public void sendReceiptAfterCommit(Object payload, StompHeaderAccessor requestHeaders) {

@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.DataType;

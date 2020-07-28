@@ -244,9 +244,9 @@ public class SettingsService {
         settingsListDelete = new ArrayList<>(settingsListUpdate);
         settingsListDelete.removeAll(settingsListUpdate);
 
-        settingsRepository.delete(settingsListDelete);
-        settingsRepository.save(settingsListAdd);
-        settingsRepository.save(settingsListUpdate);
+        settingsRepository.deleteAll(settingsListDelete);
+        settingsRepository.saveAll(settingsListAdd);
+        settingsRepository.saveAll(settingsListUpdate);
     }
 
     /**

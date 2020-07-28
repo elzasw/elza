@@ -22,9 +22,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.util.unit.DataSize;
 import org.springframework.web.filter.ForwardedHeaderFilter;
-import org.springframework.web.multipart.MultipartResolver;
-import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
@@ -55,7 +54,7 @@ public class ElzaWebApp {
     /** Vstupní bod. */
     public static void main(final String[] args) {
         ElzaCore.configure();
-        System.setProperty("spring.config.location", "classpath:/elza-ui.yaml");
+        //System.setProperty("spring.config.location", "classpath:/elza-ui.yaml");
         SpringApplication.run(ElzaWebApp.class, args);
     }
 
@@ -67,10 +66,10 @@ public class ElzaWebApp {
         return registration;
     }
 
-    @Bean
-    public MultipartResolver multipartResolver() {
-        return new StandardServletMultipartResolver();
-    }
+//    @Bean
+//    public MultipartResolver multipartResolver() {
+//        return new StandardServletMultipartResolver();
+//    }
 
     /**
      * Locale resolver, implicitně je čeština.
@@ -116,8 +115,8 @@ public class ElzaWebApp {
                     uploadMaxFileSize,
                     uploadMaxRequestSize);
         MultipartConfigFactory factory = new MultipartConfigFactory();
-        factory.setMaxFileSize(uploadMaxFileSize);
-        factory.setMaxRequestSize(uploadMaxRequestSize);
+        factory.setMaxFileSize(DataSize.parse(uploadMaxFileSize));
+        factory.setMaxRequestSize(DataSize.parse(uploadMaxRequestSize));
         return factory.createMultipartConfig();
     }
 }

@@ -88,7 +88,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER + 1)
+@Order(SecurityProperties.BASIC_AUTH_ORDER - 1)
 @ConditionalOnProperty(prefix = "elza.saml", name = "entity-id")
 public class SamlSecurity extends WebSecurityConfigurerAdapter {
 

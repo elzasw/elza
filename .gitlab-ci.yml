@@ -2,6 +2,8 @@ build:
   stage: build
   tags:
     - build
+  before_script:
+    - export JAVA_HOME=/opt/jdk-11.0.4+11
   script:
     - cd elza
     - mvn -B -Ptest,release install

@@ -186,7 +186,7 @@ public class StructObjValueService {
     public void addToValidate(final List<ArrStructuredObject> structureDataList) {
         Iterator<ArrSobjVrequest> it = structureDataList.stream().map(sobj -> addToValidateInternal(sobj)).iterator();
 
-        sobjVrequestRepository.save((Iterable<ArrSobjVrequest>) (() -> it));
+        sobjVrequestRepository.saveAll((Iterable<ArrSobjVrequest>) (() -> it));
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
@@ -209,7 +209,7 @@ public class StructObjValueService {
             return addToValidateInternal(sobj);
         }).iterator();
 
-        sobjVrequestRepository.save((Iterable<ArrSobjVrequest>) (() -> it));
+        sobjVrequestRepository.saveAll((Iterable<ArrSobjVrequest>) (() -> it));
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
             @Override
@@ -324,7 +324,7 @@ public class StructObjValueService {
     public boolean processBatch() {
         long startTime = System.currentTimeMillis();
 
-        Pageable pageable = new PageRequest(0, 100);
+        Pageable pageable = PageRequest.of(0, 100);
         // find first items
         Page<ArrSobjVrequest> page = sobjVrequestRepository.findAll(pageable);
         if (page == null || page.getNumberOfElements() <= 0) {
@@ -348,7 +348,7 @@ public class StructObjValueService {
         }
 
         // drop processed items
-        sobjVrequestRepository.delete(delItems);
+        sobjVrequestRepository.deleteAll(delItems);
 
         if (!changedStructObjList.isEmpty()) {
             sendStructDataNotifications(changedStructObjList);
@@ -910,7 +910,7 @@ public class StructObjValueService {
                 Iterator<ArrSobjVrequest> it = needsRecheck.stream().map(sobj -> addToValidateInternal(sobj))
                         .iterator();
 
-                sobjVrequestRepository.save((Iterable<ArrSobjVrequest>) (() -> it));
+                sobjVrequestRepository.saveAll((Iterable<ArrSobjVrequest>) (() -> it));
             }
 
             return duplicated;

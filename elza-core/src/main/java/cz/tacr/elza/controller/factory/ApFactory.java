@@ -31,6 +31,9 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.service.RuleService;
 
+import static cz.tacr.elza.repository.ExceptionThrow.ap;
+import static cz.tacr.elza.repository.ExceptionThrow.scope;
+
 @Service
 public class ApFactory {
 
@@ -104,8 +107,8 @@ public class ApFactory {
     public ApState create(ApAccessPointVO apVO) {
         Integer id = apVO.getId();
         if (id != null) {
-            ApAccessPoint ap = apRepository.findOne(id);
-            Validate.notNull(ap);
+            ApAccessPoint ap = apRepository.findById(id)
+                    .orElseThrow(ap(id));
             ApState apState = stateRepository.findLastByAccessPoint(ap);
             return Validate.notNull(apState);
         }
@@ -113,7 +116,8 @@ public class ApFactory {
         // prepare type and scope
         StaticDataProvider staticData = staticDataService.getData();
         ApType type = staticData.getApTypeById(apVO.getTypeId());
-        ApScope scope = scopeRepository.findOne(apVO.getScopeId());
+        ApScope scope = scopeRepository.findById(apVO.getScopeId())
+                .orElseThrow(scope(apVO.getScopeId()));
         // create new AP
         ApAccessPoint accessPoint = new ApAccessPoint();
         //accessPoint.setAccessPointId(accessPointId);
@@ -451,7 +455,7 @@ public class ApFactory {
 
         Set<Integer> accessPointIds = accessPointsMap.keySet();
         if (!accessPointIds.isEmpty()) {
-            List<ApAccessPoint> accessPoints = apRepository.findAll(accessPointIds);
+            List<ApAccessPoint> accessPoints = apRepository.findAllById(accessPointIds);
             List<ApAccessPointVO> accessPointVOList = createVO(accessPoints);
             for (ApAccessPointVO accessPointVO : accessPointVOList) {
                 List<ApItemAccessPointRefVO> accessPointRefVOS = accessPointsMap.get(accessPointVO.getId());
@@ -463,7 +467,7 @@ public class ApFactory {
 
         Set<Integer> fragmentIds = fragmentMap.keySet();
         if (!fragmentIds.isEmpty()) {
-            List<ApPart> fragments = partRepository.findAll(fragmentIds);
+            List<ApPart> fragments = partRepository.findAllById(fragmentIds);
             List<ApFragmentVO> fragmentVOList = FactoryUtils.transformList(fragments, this::createVO);
             for (ApFragmentVO fragmentVO : fragmentVOList) {
                 List<ApItemAPFragmentRefVO> fragmentRefVOS = fragmentMap.get(fragmentVO.getId());

@@ -27,13 +27,13 @@ public interface DataDateRepository extends JpaRepository<ArrDataDate, Integer> 
         LocalDate getValue();
     }
 
-    Collection<OnlyValues> findValuesByDataId(List<Integer> ids);
+    Collection<OnlyValues> findValuesByDataIdIn(List<Integer> ids);
 
     /**
      * Insert data only in the table arr_data_date.
      * 
      * Data in the {@link ArrData} has to be inserted by other method
-     * 
+     *
      * @param dataId
      * @param locDate
      */

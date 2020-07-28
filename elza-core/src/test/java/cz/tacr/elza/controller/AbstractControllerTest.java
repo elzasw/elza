@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller;
 
-import static com.jayway.restassured.RestAssured.given;
+import static io.restassured.RestAssured.given;
 
 import java.io.File;
 import java.io.InputStream;
@@ -27,6 +27,7 @@ import cz.tacr.elza.controller.vo.nodes.*;
 import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.domain.UsrAuthentication;
+import io.restassured.http.Header;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -39,15 +40,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
-import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.config.EncoderConfig;
-import com.jayway.restassured.config.RestAssuredConfig;
-import com.jayway.restassured.internal.support.Prettifier;
-import com.jayway.restassured.response.Header;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.response.ResponseBody;
-import com.jayway.restassured.response.ResponseOptions;
-import com.jayway.restassured.specification.RequestSpecification;
+import io.restassured.RestAssured;
+import io.restassured.config.EncoderConfig;
+import io.restassured.config.RestAssuredConfig;
+import io.restassured.internal.support.Prettifier;
+import io.restassured.response.Response;
+import io.restassured.response.ResponseBody;
+import io.restassured.response.ResponseOptions;
+import io.restassured.specification.RequestSpecification;
 
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
@@ -2393,11 +2393,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return vytvořený uživatel
      */
     protected UsrUserVO createUser(final String username,
-                                   final Map<UsrAuthentication.AuthType, String> valueMap) {
+                                   final Map<UsrAuthentication.AuthType, String> valueMap,
+                                   final Integer apId) {
         CreateUserVO params = new CreateUserVO();
         params.setUsername(username);
         params.setValuesMap(valueMap);
-        //TODO : smazáno, přidat vazbu na AccessPoint : params.setPartyId(partyId);
+        params.setAccessPointId(apId);
         return createUser(params);
     }
 

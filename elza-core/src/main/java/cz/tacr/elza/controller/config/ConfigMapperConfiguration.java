@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
@@ -48,6 +48,13 @@ import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.builtin.PassThroughConverter;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import ma.glasnost.orika.metadata.Type;
+
+import static cz.tacr.elza.repository.ExceptionThrow.ap;
+import static cz.tacr.elza.repository.ExceptionThrow.calendarType;
+import static cz.tacr.elza.repository.ExceptionThrow.file;
+import static cz.tacr.elza.repository.ExceptionThrow.partType;
+import static cz.tacr.elza.repository.ExceptionThrow.refTemplate;
+import static cz.tacr.elza.repository.ExceptionThrow.structureData;
 
 
 /**
@@ -199,7 +206,8 @@ public class ConfigMapperConfiguration {
                                         final ArrItemUnitdate unitdate,
                                         final MappingContext context) {
                         unitdate.setCalendarType(
-                                calendarTypeRepository.findOne(arrItemUnitdateVO.getCalendarTypeId()));
+                                calendarTypeRepository.findById(arrItemUnitdateVO.getCalendarTypeId())
+                        .orElseThrow(calendarType(arrItemUnitdateVO.getCalendarTypeId())));
                         UnitDateConvertor.convertToUnitDate(arrItemUnitdateVO.getValue(), unitdate);
                     }
                 }).byDefault().register();
@@ -221,7 +229,8 @@ public class ConfigMapperConfiguration {
                                         final ArrItemStructureRef itemStructureRef,
                                         final MappingContext context) {
                         super.mapBtoA(itemStructureVO, itemStructureRef, context);
-                        itemStructureRef.setStructuredObject(itemStructureVO.getValue() == null ? null : structureDataRepository.findOne(itemStructureVO.getValue()));
+                        itemStructureRef.setStructuredObject(itemStructureVO.getValue() == null ? null : structureDataRepository.findById(itemStructureVO.getValue())
+                        .orElseThrow(structureData(itemStructureVO.getValue())));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemFileRef.class, ArrItemFileRefVO.class).customize(
@@ -241,7 +250,8 @@ public class ConfigMapperConfiguration {
                                         final ArrItemFileRef arrItemFileRef,
                                         final MappingContext context) {
                         super.mapBtoA(arrItemFileRefVO, arrItemFileRef, context);
-                        arrItemFileRef.setFile(fundFileRepository.findOne(arrItemFileRefVO.getValue()));
+                        arrItemFileRef.setFile(fundFileRepository.findById(arrItemFileRefVO.getValue())
+                            .orElseThrow(file(arrItemFileRefVO.getValue())));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemRecordRef.class, ArrItemRecordRefVO.class).customize(
@@ -259,7 +269,8 @@ public class ConfigMapperConfiguration {
                                         final ArrItemRecordRef recordRef,
                                         final MappingContext context) {
                         super.mapBtoA(recordRefVO, recordRef, context);
-                        recordRef.setAccessPoint(recordRefVO.getValue() == null ? null : apAccessPointRepository.findOne(recordRefVO.getValue()));
+                        recordRef.setAccessPoint(recordRefVO.getValue() == null ? null : apAccessPointRepository.findById(recordRefVO.getValue())
+                            .orElseThrow(ap(recordRefVO.getValue())));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrItemUriRef.class, ArrItemUriRefVO.class).customize(
@@ -483,7 +494,8 @@ public class ConfigMapperConfiguration {
                     public void mapBtoA(final RulPartTypeVO rulPartTypeVO,
                                         final RulPartType rulPartType,
                                         final MappingContext context) {
-                        rulPartType.setChildPart(rulPartTypeVO.getChildPartId() != null ? partTypeRepository.findOne(rulPartTypeVO.getChildPartId()) : null);
+                        rulPartType.setChildPart(rulPartTypeVO.getChildPartId() != null ? partTypeRepository.findById(rulPartTypeVO.getChildPartId())
+                                .orElseThrow(partType(rulPartTypeVO.getChildPartId())): null);
                     }
                 })
                 .field("partTypeId", "id")
@@ -552,7 +564,8 @@ public class ConfigMapperConfiguration {
                                         final ArrDataUnitdate unitdate,
                                         final MappingContext context) {
                         unitdate.setCalendarType(
-                                calendarTypeRepository.findOne(arrItemUnitdateVO.getCalendarTypeId()));
+                                calendarTypeRepository.findById(arrItemUnitdateVO.getCalendarTypeId())
+                                    .orElseThrow(calendarType(arrItemUnitdateVO.getCalendarTypeId())));
                         UnitDateConvertor.convertToUnitDate(arrItemUnitdateVO.getValue(), unitdate);
 
 
@@ -601,7 +614,8 @@ public class ConfigMapperConfiguration {
                                         final ArrDataStructureRef itemStructureRef,
                                         final MappingContext context) {
                         super.mapBtoA(itemStructureVO, itemStructureRef, context);
-                        itemStructureRef.setStructuredObject(itemStructureVO.getValue() == null ? null : structureDataRepository.findOne(itemStructureVO.getValue()));
+                        itemStructureRef.setStructuredObject(itemStructureVO.getValue() == null ? null : structureDataRepository.findById(itemStructureVO.getValue())
+                        .orElseThrow(structureData(itemStructureVO.getValue())));
                     }
                 })
                 .byDefault().register();
@@ -622,7 +636,8 @@ public class ConfigMapperConfiguration {
                                         final ArrDataFileRef arrItemFileRef,
                                         final MappingContext context) {
                         super.mapBtoA(arrItemFileRefVO, arrItemFileRef, context);
-                        arrItemFileRef.setFile(fundFileRepository.findOne(arrItemFileRefVO.getValue()));
+                        arrItemFileRef.setFile(fundFileRepository.findById(arrItemFileRefVO.getValue())
+                            .orElseThrow(file(arrItemFileRefVO.getValue())));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrDataRecordRef.class, ArrItemRecordRefVO.class).customize(
@@ -640,7 +655,8 @@ public class ConfigMapperConfiguration {
                                         final ArrDataRecordRef recordRef,
                                         final MappingContext context) {
                         super.mapBtoA(recordRefVO, recordRef, context);
-                        recordRef.setRecord(recordRefVO.getValue() == null ? null : apAccessPointRepository.findOne(recordRefVO.getValue()));
+                        recordRef.setRecord(recordRefVO.getValue() == null ? null : apAccessPointRepository.findById(recordRefVO.getValue())
+                        .orElseThrow(ap(recordRefVO.getValue())));
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrDataString.class, ArrItemStringVO.class).byDefault().register();
@@ -664,7 +680,8 @@ public class ConfigMapperConfiguration {
                         super.mapBtoA(uriRefVO, uriRef, context);
                         uriRef.setValue(uriRefVO.getValue());
                         uriRef.setDescription(uriRefVO.getDescription());
-                        uriRef.setRefTemplate(uriRefVO.getRefTemplateId() != null ? refTemplateRepository.findOne(uriRefVO.getRefTemplateId()) : null);
+                        uriRef.setRefTemplate(uriRefVO.getRefTemplateId() != null ? refTemplateRepository.findById(uriRefVO.getRefTemplateId())
+                                .orElseThrow(refTemplate(uriRefVO.getRefTemplateId())): null);
                     }
                 }).byDefault().register();
         /*mapperFactory.classMap(ArrDataText.class, ArrItemAbstractTextVO.class).customize(new CustomMapper<ArrDataText, ArrItemAbstractTextVO>() {

@@ -96,6 +96,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static cz.tacr.elza.repository.ExceptionThrow.calendarType;
+
 
 /**
  * Description Item management
@@ -1310,7 +1312,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             Integer rootNodeId = version.getRootNode().getNodeId();
             Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, rootNodeId, ArrangementController.Depth.SUBTREE);
             nodeIds.add(rootNodeId);
-            for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAll(nodeIds),
+            for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAllById(nodeIds),
                                                            HibernateConfiguration.MAX_IN_SIZE)) {
                 descItemsToReplaceText.addAll(descItemRepository.findByNodesContainingText(partNodes, descItemType, specifications, findText));
             }
@@ -1431,9 +1433,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             Integer rootNodeId = version.getRootNode().getNodeId();
             Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, rootNodeId, ArrangementController.Depth.SUBTREE);
             nodeIds.add(rootNodeId);
-            dbNodes = nodeRepository.findAll(nodeIds);
+            dbNodes = nodeRepository.findAllById(nodeIds);
         } else {
-            dbNodes = nodeRepository.findAll(nodesMap.keySet());
+            dbNodes = nodeRepository.findAllById(nodesMap.keySet());
         }
 
         for (ArrNode dbNode : dbNodes) {
@@ -1600,11 +1602,10 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             throw new SystemException("Neplatný vstupní řetězec: " + text, BaseCode.PROPERTY_IS_INVALID);
         }
 
-        ArrCalendarType calendarType = calendarTypeRepository.findOne(Integer.valueOf(splitText[0]));
+        Integer calendarTypeId = Integer.valueOf(splitText[0]);
+        ArrCalendarType calendarType = calendarTypeRepository.findById(calendarTypeId)
+                .orElseThrow(calendarType(calendarTypeId));
 
-        if (calendarType == null) {
-            throw new ObjectNotFoundException("Neexistující kalendář: " + splitText[0], BaseCode.ID_NOT_EXIST).setId(splitText[0]);
-        }
         CalendarType calendar = CalendarType.valueOf(calendarType.getCode());
 
         ArrDataUnitdate itemUnitdate = ArrDataUnitdate.valueOf(calendar, splitText[1]);
@@ -1828,7 +1829,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             return Collections.emptyMap();
         }
         // moznost optimalizovat nacteni vcene zavislosti
-        return descItemRepository.findAll(ids).stream().collect(Collectors.toMap(o -> o.getItemId(), o -> o));
+        return descItemRepository.findAllById(ids).stream().collect(Collectors.toMap(o -> o.getItemId(), o -> o));
     }
 
     @Transactional

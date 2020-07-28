@@ -209,7 +209,7 @@ public class DaoSyncService {
 
         if (!daoLinks.isEmpty()) {
 
-            daoPackageRepository.findAll(daoLinks.stream().map(daoLink -> daoLink.getDao().getDaoPackageId()).collect(toList()));  // nacist do Hibernate session
+            daoPackageRepository.findAllById(daoLinks.stream().map(daoLink -> daoLink.getDao().getDaoPackageId()).collect(toList()));  // nacist do Hibernate session
 
             Map<Integer, List<ArrDao>> daosByDigitalRepository = daoLinks.stream()
                     .collect(groupingBy(vo -> vo.getDao().getDaoPackage().getDigitalRepository().getExternalSystemId(), mapping(vo -> vo.getDao(), toList())));
@@ -416,10 +416,10 @@ public class DaoSyncService {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
 
-        List<ArrDao> daos = daoRepository.findAll(daoIds);
+        List<ArrDao> daos = daoRepository.findAllById(daoIds);
 
         // natahnout packages do hibernate session, protoze v createDaoRequest se package z DAO pouzivaji
-        daoPackageRepository.findAll(daos.stream().map(dao -> dao.getDaoPackage().getDaoPackageId()).collect(toSet()));
+        daoPackageRepository.findAllById(daos.stream().map(dao -> dao.getDaoPackage().getDaoPackageId()).collect(toSet()));
 
         ArrDaoRequest daoRequest = requestService.createDaoRequest(daos, null, ArrDaoRequest.Type.SYNC, fundVersion, digitalRepository);
 

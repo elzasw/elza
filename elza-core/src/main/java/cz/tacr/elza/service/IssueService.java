@@ -33,6 +33,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static cz.tacr.elza.repository.ExceptionThrow.comment;
+import static cz.tacr.elza.repository.ExceptionThrow.issue;
+import static cz.tacr.elza.repository.ExceptionThrow.issueList;
+import static cz.tacr.elza.repository.ExceptionThrow.issueState;
+import static cz.tacr.elza.repository.ExceptionThrow.issueType;
 import static cz.tacr.elza.utils.CsvUtils.*;
 import static org.apache.commons.io.IOUtils.LINE_SEPARATOR_WINDOWS;
 
@@ -111,11 +116,8 @@ public class IssueService {
      * @return stav
      */
     public WfIssueState getIssueState(@NotNull Integer stateId) {
-        WfIssueState state = issueStateRepository.findOne(stateId);
-        if (state == null) {
-            throw new ObjectNotFoundException("Stav protokolu nenalezen [issueStateId=" + stateId + "]", BaseCode.ID_NOT_EXIST).setId(stateId);
-        }
-        return state;
+        return issueStateRepository.findById(stateId)
+                .orElseThrow(issueState(stateId));
     }
 
     /**
@@ -125,11 +127,8 @@ public class IssueService {
      * @return druh
      */
     public WfIssueType getIssueType(@NotNull Integer typeId) {
-        WfIssueType type = issueTypeRepository.findOne(typeId);
-        if (type == null) {
-            throw new ObjectNotFoundException("Typ protokolu nenalezen [issueTypeId=" + typeId + "]", BaseCode.ID_NOT_EXIST).setId(typeId);
-        }
-        return type;
+        return issueTypeRepository.findById(typeId)
+                .orElseThrow(issueType(typeId));
     }
 
     /**
@@ -140,11 +139,8 @@ public class IssueService {
      */
     @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public WfIssueList getIssueList(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull Integer issueListId) {
-        WfIssueList issueList = issueListRepository.findOne(issueListId);
-        if (issueList == null) {
-            throw new ObjectNotFoundException("Protokol nenalezen [issueListId=" + issueListId + "]", BaseCode.ID_NOT_EXIST).setId(issueListId);
-        }
-        return issueList;
+        return issueListRepository.findById(issueListId)
+                .orElseThrow(issueList(issueListId));
     }
 
     /**
@@ -155,11 +151,8 @@ public class IssueService {
      */
     @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public WfIssue getIssue(@AuthParam(type = AuthParam.Type.ISSUE) @NotNull Integer issueId) {
-        WfIssue issue = issueRepository.findOne(issueId);
-        if (issue == null) {
-            throw new ObjectNotFoundException("Připomínka nenalezena [issueId=" + issueId + "]", BaseCode.ID_NOT_EXIST).setId(issueId);
-        }
-        return issue;
+        return issueRepository.findById(issueId)
+                .orElseThrow(issue(issueId));
     }
 
     /**
@@ -170,11 +163,8 @@ public class IssueService {
      */
     @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public WfComment getComment(@AuthParam(type = AuthParam.Type.COMMENT) @NotNull Integer commentId) {
-        WfComment comment = commentRepository.findOne(commentId);
-        if (comment == null) {
-            throw new ObjectNotFoundException("Komentář nenalezen [commentId=" + commentId + "]", BaseCode.ID_NOT_EXIST).setId(commentId);
-        }
-        return comment;
+        return commentRepository.findById(commentId)
+                .orElseThrow(comment(commentId));
     }
 
     /**

@@ -62,6 +62,10 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
+import static cz.tacr.elza.repository.ExceptionThrow.bulkAction;
+import static cz.tacr.elza.repository.ExceptionThrow.node;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 /**
  * Serviska pro obsluhu hromadných akcí.
  *
@@ -122,7 +126,8 @@ public class BulkActionService {
      * @return objekt hromadné akce
      */
     public ArrBulkActionRun queue(final Integer userId, final String bulkActionCode, final Integer fundVersionId) {
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
         return queue(userId, bulkActionCode, fundVersionId, Collections.singletonList(version.getRootNode().getNodeId()), null);
     }
 
@@ -180,10 +185,8 @@ public class BulkActionService {
         List<ArrBulkActionNode> bulkActionNodes = new ArrayList<>(inputNodeIds.size());
         for (Integer nodeId : inputNodeIds) {
             ArrBulkActionNode bulkActionNode = new ArrBulkActionNode();
-            ArrNode arrNode = nodeRepository.findOne(nodeId);
-            if (arrNode == null) {
-                throw new SystemException("Uzel s id " + nodeId + " neexistuje!", BaseCode.ID_NOT_EXIST);
-            }
+            ArrNode arrNode = nodeRepository.findById(nodeId)
+                    .orElseThrow(node(nodeId));
             bulkActionNode.setNode(arrNode);
             bulkActionNode.setBulkActionRun(bulkActionRun);
             bulkActionNodes.add(bulkActionNode);
@@ -218,7 +221,7 @@ public class BulkActionService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrBulkActionRun> getAllArrBulkActionRun(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
-        return bulkActionRepository.findByFundVersionId(fundVersionId, new PageRequest(0, MAX_BULK_ACTIONS_LIST));
+        return bulkActionRepository.findByFundVersionId(fundVersionId, PageRequest.of(0, MAX_BULK_ACTIONS_LIST));
     }
 
     /**
@@ -229,7 +232,8 @@ public class BulkActionService {
      */
     public ArrBulkActionRun getArrBulkActionRun(final Integer bulkActionRunId) {
         Assert.notNull(bulkActionRunId, "Identifikátor běhu hromadné akce musí být vyplněn");
-        ArrBulkActionRun bulkActionRun = bulkActionRepository.findOne(bulkActionRunId);
+        ArrBulkActionRun bulkActionRun = bulkActionRepository.findById(bulkActionRunId)
+                .orElseThrow(bulkAction(bulkActionRunId));
         checkAuthBA(bulkActionRun.getFundVersion());
         return bulkActionRun;
     }
@@ -252,11 +256,8 @@ public class BulkActionService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<BulkActionConfig> getBulkActions(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-
-        if (version == null) {
-            throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
-        }
+        ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
 
         List<RulAction> ruleActions = actionRepository.findByRuleSet(version.getRuleSet());
         List<BulkActionConfig> configs = new ArrayList<>(ruleActions.size());
@@ -283,7 +284,9 @@ public class BulkActionService {
                 throw new IllegalArgumentException("Hromadná akce neexistuje!");
             }
 
-            ArrFundVersion version = fundVersionRepository.findOne(bulkActionRun.getFundVersion().getFundVersionId());
+            Integer fundVersionId = bulkActionRun.getFundVersion().getFundVersionId();
+            ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
+                    .orElseThrow(version(fundVersionId));
 
             if (version == null) {
                 throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
@@ -305,7 +308,7 @@ public class BulkActionService {
      * @param bulkActionNodes the bulk action nodes
      */
     public void storeBulkActionNodes(final List<ArrBulkActionNode> bulkActionNodes) {
-        bulkActionNodeRepository.save(bulkActionNodes);
+        bulkActionNodeRepository.saveAll(bulkActionNodes);
     }
 
     /**

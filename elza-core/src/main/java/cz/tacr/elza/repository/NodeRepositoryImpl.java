@@ -83,7 +83,14 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     @Autowired
     private CalendarTypeRepository calendarTypeRepository;
 
-    private FullTextEntityManager fullTextEntityManager;
+    private FullTextEntityManager fullTextEntityManager = null;
+
+    private FullTextEntityManager getFullTextEntityManager() {
+        if (fullTextEntityManager == null) {
+            fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
+        }
+        return fullTextEntityManager;
+    }
 
     @Override
     public List<ArrNode> findNodesByDirection(final ArrNode node,
@@ -557,7 +564,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return hibernate jpa query
      */
     private FullTextQuery createFullTextQuery(final Query query, final Class<?> entityClass) {
-        return fullTextEntityManager.createFullTextQuery(query, entityClass);
+        return getFullTextEntityManager().createFullTextQuery(query, entityClass);
     }
 
     /**
@@ -568,7 +575,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return query builder
      */
     private QueryBuilder createQueryBuilder(final Class<?> entityClass) {
-        return fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(entityClass).get();
+        return getFullTextEntityManager().getSearchFactory().buildQueryBuilder().forEntity(entityClass).get();
     }
 
     /**
@@ -694,7 +701,6 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @PostConstruct
     private void buildFullTextEntityManager() {
-        fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
         BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
     }
 
@@ -742,7 +748,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Map<Integer, Set<Integer>> allDescItemIds = null;
         for (DescItemTypeFilter filter : filters) {
             QueryBuilder queryBuilder = createQueryBuilder(ArrDescItem.class);
-            Map<Integer, Set<Integer>> nodeIdToDescItemIds = filter.resolveConditions(fullTextEntityManager, queryBuilder, fundId, entityManager, lockChangeId);
+            Map<Integer, Set<Integer>> nodeIdToDescItemIds = filter.resolveConditions(getFullTextEntityManager(), queryBuilder, fundId, entityManager, lockChangeId);
 
             if (allDescItemIds == null) {
                 allDescItemIds = new HashMap<>(nodeIdToDescItemIds);
@@ -812,7 +818,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
          * @return hibernate jpa query
          */
         public FullTextQuery createFullTextQuery(Query query) {
-            return fullTextEntityManager.createFullTextQuery(query, entityClass);
+            return getFullTextEntityManager().createFullTextQuery(query, entityClass);
         }
     }
 

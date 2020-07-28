@@ -35,7 +35,7 @@ import cz.tacr.elza.service.UserService;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
+@Order(SecurityProperties.BASIC_AUTH_ORDER - 2)
 public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationSecurity.class);

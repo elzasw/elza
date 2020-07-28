@@ -8,7 +8,7 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.jayway.restassured.RestAssured;
+import io.restassured.RestAssured;
 
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.vo.ArrFundVO;

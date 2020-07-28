@@ -15,7 +15,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 
 import cz.tacr.elza.controller.ArrangementController.FaTreeParam;
 import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
@@ -56,7 +56,6 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
     @Autowired
     private StaticDataService staticDataService;
 
-    //@Ignore //TODO: smazat po změně importu institucí
     @Test
     public void importExportTest() throws IOException {
 

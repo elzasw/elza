@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static cz.tacr.elza.repository.ExceptionThrow.fund;
+
 /**
  * Action to delete fund history
  * <p>
@@ -116,10 +118,7 @@ public class DeleteFundHistoryAction {
     private void prepare() {
 
         // Check if exists
-        this.fund = fundRepository.findOne(fundId);
-        if (fund == null) {
-            throw new BusinessException("Fund does not exists", BaseCode.ID_NOT_EXIST).set("fundId", fundId);
-        }
+        this.fund = fundRepository.findById(fundId).orElseThrow(fund(fundId));
 
         // get last version and rootId
         this.fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
@@ -159,7 +158,7 @@ public class DeleteFundHistoryAction {
                 arrDataList.add(data);
             }
         }
-        bulkAction(arrItemList, itemRepository::delete);
+        bulkAction(arrItemList, itemRepository::deleteAll);
         em.flush();
 
         // odmazat opuštěná data
@@ -175,7 +174,7 @@ public class DeleteFundHistoryAction {
 
         // delete arr_level, které mají vyplněn delete_change_id
         final List<ArrLevel> arrLevelList = levelRepository.findHistoricalByFund(fund);
-        bulkAction(arrLevelList, levelRepository::delete);
+        bulkAction(arrLevelList, levelRepository::deleteAll);
         em.flush();
 
         // arr_node se také smazají, pokud se na ně neodkazuje žádný level a musí se smazat i návazné entity jako výstupy, a podobně

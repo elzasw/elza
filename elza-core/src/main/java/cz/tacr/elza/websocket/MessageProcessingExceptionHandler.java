@@ -30,6 +30,7 @@ public class MessageProcessingExceptionHandler {
     private transient AbstractSubscribableChannel clientOutboundChannel;
 
     @Autowired
+    @Qualifier("brokerMessageConverter")
     private transient SmartMessageConverter messageConverter;
 
     /**

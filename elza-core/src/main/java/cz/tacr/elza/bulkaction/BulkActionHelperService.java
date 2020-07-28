@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static cz.tacr.elza.repository.ExceptionThrow.bulkAction;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 /**
  * Pomocá třída pro zpracovávání požadavků při vykonávání hromadných akcí
  */
@@ -88,11 +91,10 @@ public class BulkActionHelperService {
             if (bulkActionConfigOrig == null) {
                 throw new IllegalArgumentException("Hromadná akce neexistuje!");
             }
-            ArrFundVersion version = fundVersionRepository.findOne(bulkActionRun.getFundVersion().getFundVersionId());
+            Integer fundVersionId = bulkActionRun.getFundVersion().getFundVersionId();
+            ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
+                    .orElseThrow(version(fundVersionId));
 
-            if (version == null) {
-                throw new IllegalArgumentException("Verze archivní pomůcky neexistuje!");
-            }
             if (version.getLockChange() != null) {
                 throw new IllegalArgumentException("Verze archivní pomůcky je uzamčená!");
             }
@@ -128,7 +130,9 @@ public class BulkActionHelperService {
     @Transactional(Transactional.TxType.MANDATORY)
     public void onFinished(final ArrBulkActionRun bulkActionRun) {
         // find action nodes for output update
-        ArrBulkActionRun bulkActionRunReload = bulkActionRepository.findOne(bulkActionRun.getBulkActionRunId());
+        Integer bulkActionRunId = bulkActionRun.getBulkActionRunId();
+        ArrBulkActionRun bulkActionRunReload = bulkActionRepository.findById(bulkActionRunId)
+                .orElseThrow(bulkAction(bulkActionRunId));
         List<ArrBulkActionNode> arrBulkActionNodes = bulkActionRunReload.getArrBulkActionNodes();
         List<Integer> nodeIds = arrBulkActionNodes.stream().map(ArrBulkActionNode::getNodeId).collect(Collectors.toList());
 
@@ -187,7 +191,8 @@ public class BulkActionHelperService {
     }
 
     public ArrBulkActionRun getArrBulkActionRun(Integer bulkActionRunId) {
-        return bulkActionRepository.findOne(bulkActionRunId);
+        return bulkActionRepository.findById(bulkActionRunId)
+                .orElseThrow(bulkAction(bulkActionRunId));
     }
 
     public BulkAction prepareToRun(ArrBulkActionRun bulkActionRun) {

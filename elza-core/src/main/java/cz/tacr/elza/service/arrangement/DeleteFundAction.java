@@ -21,6 +21,8 @@ import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 import java.util.List;
 
+import static cz.tacr.elza.repository.ExceptionThrow.fund;
+
 /**
  * Action to delete fund
  * <p>
@@ -178,10 +180,7 @@ public class DeleteFundAction {
     private void prepare() {
 
         // Check if exists
-        this.fund = fundRepository.findOne(fundId);
-        if (fund == null) {
-            throw new BusinessException("Fund does not exists", BaseCode.ID_NOT_EXIST).set("fundId", fundId);
-        }
+        this.fund = fundRepository.findById(fundId).orElseThrow(fund(fundId));
 
         // get last version and rootId
         this.fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
@@ -247,7 +246,7 @@ public class DeleteFundAction {
 
         eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FUND_DELETE, fundId));
 
-        fundRepository.delete(fundId);
+        fundRepository.deleteById(fundId);
 
         // TODO: rewrite to better solution
         Query deleteNotUseChangesQuery = revertingChangesService.createDeleteNotUseChangesQuery();
@@ -403,7 +402,7 @@ public class DeleteFundAction {
         commentRepository.deleteByFundId(fundId);
         issueRepository.deleteByFundId(fundId);
         // issueListRepository.deleteByFundId(fundId);
-        issueListRepository.delete(issueLists);
+        issueListRepository.deleteAll(issueLists);
 
         em.flush();
     }

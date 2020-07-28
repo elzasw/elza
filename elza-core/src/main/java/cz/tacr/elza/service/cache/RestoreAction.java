@@ -297,7 +297,7 @@ public class RestoreAction {
         if (restoreStructData == null) {
             return;
         }
-        List<ArrStructuredObject> structureDataList = structureDataRepository.findAll(restoreStructData.keySet());
+        List<ArrStructuredObject> structureDataList = structureDataRepository.findAllById(restoreStructData.keySet());
         for (ArrStructuredObject structObj : structureDataList) {
             List<ArrDataStructureRef> dataList = restoreStructData.remove(structObj.getStructuredObjectId());
             for (ArrDataStructureRef data : dataList) {
@@ -317,7 +317,7 @@ public class RestoreAction {
         if (restoreAPRef == null) {
             return;
         }
-        List<ApAccessPoint> records = accessPointRepository.findAll(restoreAPRef.keySet());
+        List<ApAccessPoint> records = accessPointRepository.findAllById(restoreAPRef.keySet());
         //Map<Integer, ApAccessPoint> recordsMapFound = new HashMap<>();
         for (ApAccessPoint record : records) {
             List<ArrDataRecordRef> dataList = restoreAPRef.remove(record.getAccessPointId());
@@ -338,7 +338,7 @@ public class RestoreAction {
         if (restoreFileRef == null) {
             return;
         }
-        List<ArrFile> files = fundFileRepository.findAll(restoreFileRef.keySet());
+        List<ArrFile> files = fundFileRepository.findAllById(restoreFileRef.keySet());
         for (ArrFile file : files) {
             List<ArrDataFileRef> dataList = restoreFileRef.remove(file.getFileId());
             for (ArrDataFileRef data : dataList) {
@@ -359,7 +359,7 @@ public class RestoreAction {
         }
 
         if (restoreUriRefNode != null) {
-            List<ArrNode> nodes = nodeRepository.findAll(restoreUriRefNode.keySet());
+            List<ArrNode> nodes = nodeRepository.findAllById(restoreUriRefNode.keySet());
             for (ArrNode node : nodes) {
                 List<ArrDataUriRef> dataList = restoreUriRefNode.remove(node.getNodeId());
                 for (ArrDataUriRef data : dataList) {
@@ -372,7 +372,7 @@ public class RestoreAction {
         }
 
         if (restoreUriRefTemplate != null) {
-            List<ArrRefTemplate> templates = refTemplateRepository.findAll(restoreUriRefTemplate.keySet());
+            List<ArrRefTemplate> templates = refTemplateRepository.findAllById(restoreUriRefTemplate.keySet());
             for (ArrRefTemplate template : templates) {
                 List<ArrDataUriRef> dataList = restoreUriRefTemplate.remove(template.getRefTemplateId());
                 for (ArrDataUriRef data : dataList) {
@@ -395,12 +395,12 @@ public class RestoreAction {
         if (restoreDaoLinks == null) {
             return;
         }
-        List<ArrDao> daos = daoRepository.findAll(restoreDaoLinks.keySet());
+        List<ArrDao> daos = daoRepository.findAllById(restoreDaoLinks.keySet());
         Set<Integer> nodeIds = restoreDaoLinks.values().stream()
                 .flatMap(Collection::stream)
                 .map(ArrDaoLink::getNodeId)
                 .collect(Collectors.toSet());
-        Map<Integer, ArrNode> nodesMap = nodeRepository.findAll(nodeIds).stream()
+        Map<Integer, ArrNode> nodesMap = nodeRepository.findAllById(nodeIds).stream()
                 .collect(Collectors.toMap(ArrNode::getNodeId, Function.identity()));
 
         for (ArrDao dao : daos) {

@@ -9,7 +9,7 @@ import org.apache.commons.lang.Validate;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.common.GeometryConvertor.GeometryJsonDeserializer;
@@ -24,7 +24,7 @@ import cz.tacr.elza.common.GeometryConvertor.GeometryJsonSerializer;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataCoordinates extends ArrData {
 
-    @Column(nullable = false, columnDefinition = "geometry")
+    @Column(nullable = false)
     @JsonDeserialize(using = GeometryJsonDeserializer.class)
     @JsonSerialize(using = GeometryJsonSerializer.class)
     private Geometry value;

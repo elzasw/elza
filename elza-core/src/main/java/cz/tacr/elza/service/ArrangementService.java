@@ -62,6 +62,12 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static cz.tacr.elza.repository.ExceptionThrow.fund;
+import static cz.tacr.elza.repository.ExceptionThrow.node;
+import static cz.tacr.elza.repository.ExceptionThrow.refTemplate;
+import static cz.tacr.elza.repository.ExceptionThrow.refTemplateMapType;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 /**
  * Main arrangement service.
  * <p>
@@ -158,11 +164,8 @@ public class ArrangementService {
      * @throws ObjectNotFoundException objekt nenalezen
      */
     public ArrFundVersion getFundVersion(@NotNull Integer fundVersionId) {
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        if (fundVersion == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).setId(fundVersionId);
-        }
-        return fundVersion;
+        return fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
     }
 
     /**
@@ -173,11 +176,8 @@ public class ArrangementService {
      * @throws ObjectNotFoundException objekt nenalezen
      */
     public ArrFund getFund(@NotNull Integer fundId) {
-        ArrFund fund = fundRepository.findOne(fundId);
-        if (fund == null) {
-            throw new ObjectNotFoundException("Nebyl nalezen AS s ID=" + fundId, ArrangementCode.FUND_NOT_FOUND).setId(fundId);
-        }
-        return fund;
+        return fundRepository.findById(fundId)
+                .orElseThrow(fund(fundId));
     }
 
     /**
@@ -223,11 +223,8 @@ public class ArrangementService {
      *             objekt nenalezen
      */
     public ArrNode getNode(@NotNull Integer nodeId) {
-        ArrNode node = nodeRepository.findOne(nodeId);
-        if (node == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND).setId(nodeId);
-        }
-        return node;
+        return nodeRepository.findById(nodeId)
+                .orElseThrow(node(nodeId));
     }
 
     /**
@@ -279,8 +276,8 @@ public class ArrangementService {
         Assert.notNull(fund, "AS musí být vyplněn");
         Assert.notNull(ruleSet, "Pravidla musí být vyplněna");
 
-        ArrFund originalFund = fundRepository.findOne(fund.getFundId());
-        Assert.notNull(originalFund, "AS neexistuje");
+        ArrFund originalFund = fundRepository.findById(fund.getFundId())
+                .orElseThrow(fund(fund.getFundId()));
 
         originalFund.setName(fund.getName());
         originalFund.setInternalCode(fund.getInternalCode());
@@ -338,7 +335,7 @@ public class ArrangementService {
             faRegisterRepository.save(oldScope);
         }
 
-        faRegisterRepository.delete(removeScopes);
+        faRegisterRepository.deleteAll(removeScopes);
     }
 
     /**
@@ -622,7 +619,7 @@ public class ArrangementService {
 
         ArrFund fund = version.getFund();
 
-        if (!fundRepository.exists(fund.getFundId())) {
+        if (!fundRepository.existsById(fund.getFundId())) {
             throw new ObjectNotFoundException("AS s ID=" + fund.getFundId() + " nebylo nalezeno", ArrangementCode.FUND_NOT_FOUND).set("id", fund.getFundId());
         }
 
@@ -1578,23 +1575,19 @@ public class ArrangementService {
     }
 
     public void deleteRefTemplate(Integer templateId) {
-        ArrRefTemplate refTemplate = refTemplateRepository.findOne(templateId);
-        if (refTemplate == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena šablona s ID=" + templateId, ArrangementCode.TEMPLATE_NOT_FOUND).setId(templateId);
-        }
+        ArrRefTemplate refTemplate = refTemplateRepository.findById(templateId)
+                .orElseThrow(refTemplate(templateId));
         List<ArrRefTemplateMapType> refTemplateMapTypes = refTemplateMapTypeRepository.findByRefTemplate(refTemplate);
         if (CollectionUtils.isNotEmpty(refTemplateMapTypes)) {
             refTemplateMapSpecRepository.deleteByRefTemplateMapTypes(refTemplateMapTypes);
-            refTemplateMapTypeRepository.delete(refTemplateMapTypes);
+            refTemplateMapTypeRepository.deleteAll(refTemplateMapTypes);
         }
         refTemplateRepository.delete(refTemplate);
     }
 
     public ArrRefTemplateVO updateRefTemplate(Integer templateId, ArrRefTemplateEditVO refTemplateEditVO) {
-        ArrRefTemplate rt = refTemplateRepository.findOne(templateId);
-        if (rt == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena šablona s ID=" + templateId, ArrangementCode.TEMPLATE_NOT_FOUND).setId(templateId);
-        }
+        ArrRefTemplate rt = refTemplateRepository.findById(templateId)
+                .orElseThrow(refTemplate(templateId));
         ArrRefTemplate refTemplate = updateRefTemplate(rt, refTemplateEditVO);
         List<ArrRefTemplateMapType> refTemplateMapTypes = refTemplateMapTypeRepository.findByRefTemplate(refTemplate);
         List<ArrRefTemplateMapSpec> refTemplateMapSpecs = refTemplateMapSpecRepository.findByRefTemplate(refTemplate);
@@ -1684,10 +1677,8 @@ public class ArrangementService {
 
     public ArrRefTemplateMapTypeVO createRefTemplateMapType(Integer templateId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
         StaticDataProvider sdp = staticDataService.getData();
-        ArrRefTemplate refTemplate = refTemplateRepository.findOne(templateId);
-        if (refTemplate == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena šablona s ID=" + templateId, ArrangementCode.TEMPLATE_NOT_FOUND).setId(templateId);
-        }
+        ArrRefTemplate refTemplate = refTemplateRepository.findById(templateId)
+                .orElseThrow(refTemplate(templateId));
 
         ArrRefTemplateMapType refTemplateMapType = new ArrRefTemplateMapType();
         refTemplateMapType.setRefTemplate(refTemplate);
@@ -1712,17 +1703,15 @@ public class ArrangementService {
                 refTemplateMapSpec.setToItemSpec(sdp.getItemSpecById(refTemplateMapSpecVO.getToItemSpecId()));
                 refTemplateMapSpecs.add(refTemplateMapSpec);
             }
-            refTemplateMapSpecRepository.save(refTemplateMapSpecs);
+            refTemplateMapSpecRepository.saveAll(refTemplateMapSpecs);
         }
         return refTemplateMapSpecs;
     }
 
     public ArrRefTemplateMapTypeVO updateRefTemplateMapType(Integer templateId, Integer mapTypeId, ArrRefTemplateMapTypeVO refTemplateMapTypeFormVO) {
         StaticDataProvider sdp = staticDataService.getData();
-        ArrRefTemplateMapType refTemplateMapType = refTemplateMapTypeRepository.findOne(mapTypeId);
-        if (refTemplateMapType == null) {
-            throw new ObjectNotFoundException("Nebylo nalezeno mapování pro šablonu s ID=" + mapTypeId, ArrangementCode.TEMPLATE_NOT_FOUND).setId(mapTypeId);
-        }
+        ArrRefTemplateMapType refTemplateMapType = refTemplateMapTypeRepository.findById(mapTypeId)
+                .orElseThrow(refTemplateMapType(mapTypeId));
         refTemplateMapSpecRepository.deleteByRefTemplateMapType(refTemplateMapType);
 
         refTemplateMapType.setFormItemType(sdp.getItemType(refTemplateMapTypeFormVO.getFromItemTypeId()));
@@ -1735,10 +1724,8 @@ public class ArrangementService {
     }
 
     public void deleteRefTemplateMapType(Integer templateId, Integer mapTypeId) {
-        ArrRefTemplateMapType refTemplateMapType = refTemplateMapTypeRepository.findOne(mapTypeId);
-        if (refTemplateMapType == null) {
-            throw new ObjectNotFoundException("Nebylo nalezeno mapování pro šablonu s ID=" + mapTypeId, ArrangementCode.TEMPLATE_NOT_FOUND).setId(mapTypeId);
-        }
+        ArrRefTemplateMapType refTemplateMapType = refTemplateMapTypeRepository.findById(mapTypeId)
+                .orElseThrow(refTemplateMapType(mapTypeId));
         refTemplateMapSpecRepository.deleteByRefTemplateMapType(refTemplateMapType);
         refTemplateMapTypeRepository.delete(refTemplateMapType);
     }

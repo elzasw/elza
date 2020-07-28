@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static cz.tacr.elza.repository.ExceptionThrow.ruleSet;
+
 
 /**
  * Nastavení strategií pravidel.
@@ -68,7 +70,8 @@ public class ConfigRules {
         // prepare objects
         if (uiSettingsList!=null) {
             uiSettingsList.forEach(uiSettings -> {
-                RulRuleSet ruleSet = ruleSetRepository.findOne(uiSettings.getEntityId());
+                RulRuleSet ruleSet = ruleSetRepository.findById(uiSettings.getEntityId())
+                        .orElseThrow(ruleSet(uiSettings.getEntityId()));
                 SettingTypeGroups ruleSettings = SettingTypeGroups.newInstance(uiSettings);
                 RuleConfiguration ruleConfig = new RuleConfiguration(ruleSettings);
                 ruleConfigs.put(ruleSet.getCode(), ruleConfig);

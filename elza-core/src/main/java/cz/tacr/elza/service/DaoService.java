@@ -350,27 +350,27 @@ public class DaoService {
                     deleteDaoLink(fundVersion, arrDaoLink);
                 }
             }
-            daoLinkRepository.delete(arrDaoLinkList);
+            daoLinkRepository.deleteAll(arrDaoLinkList);
 
             // smazat arr_dao_file
             final List<ArrDaoFile> daoFileList = daoFileRepository.findByDao(arrDao);
-            daoFileRepository.delete(daoFileList);
+            daoFileRepository.deleteAll(daoFileList);
 
             // smazat arr_dao_file_group
             final List<ArrDaoFileGroup> daoFileGroupList = daoFileGroupRepository.findByDaoOrderByCodeAsc(arrDao);
-            daoFileGroupRepository.delete(daoFileGroupList);
+            daoFileGroupRepository.deleteAll(daoFileGroupList);
 
             // smazat arr_dao_link_request
             final List<ArrDaoLinkRequest> arrDaoLinkRequestList = daoLinkRequestRepository.findByDao(arrDao);
             if (!arrDaoLinkRequestList.isEmpty()) {
                 List<ArrRequestQueueItem> queueItems = requestQueueItemRepository.findByRequest(arrDaoLinkRequestList);
-                requestQueueItemRepository.delete(queueItems);
+                requestQueueItemRepository.deleteAll(queueItems);
             }
-            daoLinkRequestRepository.delete(arrDaoLinkRequestList);
+            daoLinkRequestRepository.deleteAll(arrDaoLinkRequestList);
 
             // smazat arr_dao_request_dao
             final List<ArrDaoRequestDao> arrDaoRequestDaoList = daoRequestDaoRepository.findByDao(arrDao);
-            daoRequestDaoRepository.delete(arrDaoRequestDaoList);
+            daoRequestDaoRepository.deleteAll(arrDaoRequestDaoList);
 
             // smazat dao
             daoRepository.delete(arrDao);

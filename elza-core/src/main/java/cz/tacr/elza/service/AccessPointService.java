@@ -343,7 +343,7 @@ public class AccessPointService {
 
             List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(accessPoint);
             eids.forEach(eid -> eid.setDeleteChange(change));
-            bindingStateRepository.save(eids);
+            bindingStateRepository.saveAll(eids);
 
             publishAccessPointDeleteEvent(accessPoint);
             reindexDescItem(accessPoint);
@@ -380,7 +380,7 @@ public class AccessPointService {
         final List<ApScopeRelation> apScopeRelations = scopeRelationRepository.findByConnectedScope(scope);
         ExceptionUtils.isEmptyElseBusiness(apScopeRelations, "Nelze smazat oblast která je návaznou oblastí jiné oblasti.", RegistryCode.CANT_DELETE_CONNECTED_SCOPE);
 
-        fundRegisterScopeRepository.delete(fundRegisterScopeRepository.findByScope(scope));
+        fundRegisterScopeRepository.deleteAll(fundRegisterScopeRepository.findByScope(scope));
         scopeRepository.delete(scope);
     }
 
@@ -806,7 +806,7 @@ public class AccessPointService {
                 states.add(state);
                 setAccessPointInDataRecordRefs(state.getAccessPoint(), dataRecordRefList, binding);
             }
-            dataRecordRefRepository.save(dataRecordRefList);
+            dataRecordRefRepository.saveAll(dataRecordRefList);
             List<ApPart> partList = itemRepository.findPartsByDataRecordRefList(dataRecordRefList);
             if (CollectionUtils.isNotEmpty(partList)) {
                 for (ApPart part : partList) {
@@ -1175,7 +1175,7 @@ public class AccessPointService {
                     }
                 }
                 if (CollectionUtils.isNotEmpty(bindingItemList)) {
-                    bindingItemRepository.delete(bindingItemList);
+                    bindingItemRepository.deleteAll(bindingItemList);
                 }
             }
 
@@ -1615,7 +1615,7 @@ public class AccessPointService {
             apItemService.deletePartsItems(partList, apChange);
             partService.deleteParts(partList, apChange);
 
-            bindingItemRepository.delete(bindingParts);
+            bindingItemRepository.deleteAll(bindingParts);
         }
     }
 
@@ -1644,8 +1644,8 @@ public class AccessPointService {
 
                 bindingItem.setItem(newItem);
             }
-            bindingItemRepository.save(notChangeItems);
-            itemRepository.save(itemList);
+            bindingItemRepository.saveAll(notChangeItems);
+            itemRepository.saveAll(itemList);
         }
     }
 
@@ -1660,7 +1660,7 @@ public class AccessPointService {
                 ApItem newItem = apItemService.createItem(item, apChange, apPart);
                 itemList.add(newItem);
             }
-            itemRepository.save(itemList);
+            itemRepository.saveAll(itemList);
         }
     }
 
@@ -1672,8 +1672,8 @@ public class AccessPointService {
                 item.setDeleteChange(apChange);
                 itemList.add(item);
             }
-            bindingItemRepository.delete(bindingItemsInPart);
-            itemRepository.save(itemList);
+            bindingItemRepository.deleteAll(bindingItemsInPart);
+            itemRepository.saveAll(itemList);
         }
     }
 
@@ -1994,11 +1994,8 @@ public class AccessPointService {
      * @return přístupový bod
      */
     public ApAccessPoint getAccessPointInternal(final Integer accessPointId) {
-        ApAccessPoint accessPoint = apAccessPointRepository.findOne(accessPointId);
-        if (accessPoint == null) {
-            throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(accessPointId);
-        }
-        return accessPoint;
+        return apAccessPointRepository.findById(accessPointId)
+                .orElseThrow(() -> new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(accessPointId));
     }
 
     /**
@@ -2018,7 +2015,7 @@ public class AccessPointService {
      * @return nalezené jazyky
      */
     public List<SysLanguage> findAllLanguagesOrderByCode() {
-        return sysLanguageRepository.findAll(new Sort(Sort.Direction.ASC, SysLanguage.FIELD_CODE));
+        return sysLanguageRepository.findAll(Sort.by(Sort.Direction.ASC, SysLanguage.FIELD_CODE));
     }
 
     /**
@@ -2028,11 +2025,8 @@ public class AccessPointService {
      * @return třída
      */
     public ApScope getScope(final Integer scopeId) {
-        ApScope scope = scopeRepository.findOne(scopeId);
-        if (scope == null) {
-            throw new ObjectNotFoundException("Třída neexistuje", BaseCode.ID_NOT_EXIST).setId(scopeId);
-        }
-        return scope;
+        return scopeRepository.findById(scopeId)
+                .orElseThrow(() -> new ObjectNotFoundException("Třída neexistuje", BaseCode.ID_NOT_EXIST).setId(scopeId));
     }
 
     /**
@@ -2042,11 +2036,8 @@ public class AccessPointService {
      * @return typ
      */
     public ApType getType(final Integer typeId) {
-        ApType type = apTypeRepository.findOne(typeId);
-        if (type == null) {
-            throw new ObjectNotFoundException("Typ neexistuje", BaseCode.ID_NOT_EXIST).setId(typeId);
-        }
-        return type;
+        return apTypeRepository.findById(typeId)
+                .orElseThrow(() -> new ObjectNotFoundException("Typ neexistuje", BaseCode.ID_NOT_EXIST).setId(typeId));
     }
 
     /**
@@ -2090,7 +2081,7 @@ public class AccessPointService {
         if (accessPointIds.isEmpty()) {
             return Collections.emptyMap();
         }
-        List<ApAccessPoint> accessPoints = apAccessPointRepository.findAll(accessPointIds); // nahrat vsechny potrebne AP do Hibernate session
+        List<ApAccessPoint> accessPoints = apAccessPointRepository.findAllById(accessPointIds); // nahrat vsechny potrebne AP do Hibernate session
         Map<Integer, ApState> result = stateRepository.findLastByAccessPoints(accessPoints).stream()
                 .collect(toMap(o -> o.getAccessPointId(), o -> o));
         for (ApAccessPoint accessPoint : accessPoints) {
@@ -2119,12 +2110,12 @@ public class AccessPointService {
             aps.add(state.getAccessPoint());
         }
         if (!states.isEmpty()) {
-            apStateRepository.delete(states);
+            apStateRepository.deleteAll(states);
         }
         if (!changes.isEmpty()) {
-            apChangeRepository.delete(changes);
+            apChangeRepository.deleteAll(changes);
         }
-        apAccessPointRepository.delete(aps);
+        apAccessPointRepository.deleteAll(aps);
         apAccessPointRepository.removeTemp();
     }
 
@@ -2143,10 +2134,10 @@ public class AccessPointService {
             }
         }
         if (!states.isEmpty()) {
-            apStateRepository.delete(states);
+            apStateRepository.deleteAll(states);
         }
         if (!changes.isEmpty()) {
-            apChangeRepository.delete(changes);
+            apChangeRepository.deleteAll(changes);
         }
         apAccessPointRepository.delete(ap);
     }

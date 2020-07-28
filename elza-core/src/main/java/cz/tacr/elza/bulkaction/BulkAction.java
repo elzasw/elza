@@ -31,6 +31,8 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
 
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 
 /**
  * Abstraktní třída pro tvorbu hromadných akcí.
@@ -104,8 +106,7 @@ public abstract class BulkAction {
 	protected void init(ArrBulkActionRun bulkActionRun) {
 		this.bulkActionRun = bulkActionRun;
 
-		this.version = fundVersionRepository.findOne(bulkActionRun.getFundVersionId());
-		Validate.notNull(version);
+		this.version = fundVersionRepository.findById(bulkActionRun.getFundVersionId()).orElseThrow(version(bulkActionRun.getFundVersionId()));
 		checkVersion(version);
 
 		staticDataProvider = staticDataService.getData();

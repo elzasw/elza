@@ -724,9 +724,9 @@ public class PackageService {
             }
             rulesDelete.addAll(apRules);
         }
-        ruleRepository.delete(rulesDelete);
-        componentRepository.delete(componentsDelete);
-        ruleSystemRepository.delete(apRuleSystemsDelete);
+        ruleRepository.deleteAll(rulesDelete);
+        componentRepository.deleteAll(componentsDelete);
+        ruleSystemRepository.deleteAll(apRuleSystemsDelete);
 
         try {
             for (ApRule apRule : apRulesNew) {
@@ -783,13 +783,13 @@ public class PackageService {
         }
         List<RulComponent> componentsDelete = apRulesDelete.stream().map(ApRule::getComponent).collect(Collectors.toList());
 
-        ruleRepository.delete(apRulesDelete);
-        componentRepository.delete(componentsDelete);
+        ruleRepository.deleteAll(apRulesDelete);
+        componentRepository.deleteAll(componentsDelete);
 
         List<RulComponent> components = apRulesNew.stream().map(ApRule::getComponent).collect(Collectors.toList());
-        componentRepository.save(components);
+        componentRepository.saveAll(components);
 
-        return ruleRepository.save(apRulesNew);
+        return ruleRepository.saveAll(apRulesNew);
     }
 
     private void convertApRuleSystem(final RulPackage rulPackage, final RuleSystem ruleSystem, final ApRuleSystem apRuleSystem) {
@@ -819,12 +819,12 @@ public class PackageService {
             }
         }
 
-        apExternalIdTypesNew = externalIdTypeRepository.save(apExternalIdTypesNew);
+        apExternalIdTypesNew = externalIdTypeRepository.saveAll(apExternalIdTypesNew);
 
         List<ApExternalIdType> apExternalIdTypesDelete = new ArrayList<>(apExternalIdTypes);
         apExternalIdTypesDelete.removeAll(apExternalIdTypesNew);
 
-        externalIdTypeRepository.delete(apExternalIdTypesDelete);
+        externalIdTypeRepository.deleteAll(apExternalIdTypesDelete);
     }
 
     /**
@@ -872,14 +872,14 @@ public class PackageService {
             }
         }
 
-        rulStructureDefinitionsNew = structureDefinitionRepository.save(rulStructureDefinitionsNew);
+        rulStructureDefinitionsNew = structureDefinitionRepository.saveAll(rulStructureDefinitionsNew);
 
         List<RulStructureDefinition> rulStructureDefinitionDelete = new ArrayList<>(rulStructureDefinitions);
         rulStructureDefinitionDelete.removeAll(rulStructureDefinitionsNew);
 
         List<RulComponent> rulComponentsDelete = rulStructureDefinitionDelete.stream().map(RulStructureDefinition::getComponent).collect(Collectors.toList());
-        structureDefinitionRepository.delete(rulStructureDefinitionDelete);
-        componentRepository.delete(rulComponentsDelete);
+        structureDefinitionRepository.deleteAll(rulStructureDefinitionDelete);
+        componentRepository.deleteAll(rulComponentsDelete);
 
         Set<RulStructuredType> revalidateStructureTypes = new HashSet<>();
         try {
@@ -998,11 +998,11 @@ public class PackageService {
             }
         }
 
-        newStructTypes = structureTypeRepository.save(newStructTypes);
+        newStructTypes = structureTypeRepository.saveAll(newStructTypes);
 
         List<RulStructuredType> rulRuleDelete = new ArrayList<>(currStructTypes);
         rulRuleDelete.removeAll(newStructTypes);
-        structureTypeRepository.delete(rulRuleDelete);
+        structureTypeRepository.deleteAll(rulRuleDelete);
 
         currStructTypes.addAll(newStructTypes);
         puc.setStructureTypes(currStructTypes);
@@ -1041,11 +1041,11 @@ public class PackageService {
             processPartTypesChildPart(partTypes.getPartTypes(), newPartTypes);
         }
 
-        newPartTypes = partTypeRepository.save(newPartTypes);
+        newPartTypes = partTypeRepository.saveAll(newPartTypes);
 
         List<RulPartType> rulRuleDelete = new ArrayList<>(currPartTypes);
         rulRuleDelete.removeAll(newPartTypes);
-        partTypeRepository.delete(rulRuleDelete);
+        partTypeRepository.deleteAll(rulRuleDelete);
     }
 
     private void processPartTypesChildPart(List<PartType> partTypes, List<RulPartType> newPartTypes) {
@@ -1173,7 +1173,7 @@ public class PackageService {
             settingsRepository.save(sett);
         }
 
-        settingsRepository.delete(currSettings);
+        settingsRepository.deleteAll(currSettings);
     }
 
     private List<UISettings> createUISettings(final Settings settings,
@@ -1242,12 +1242,12 @@ public class PackageService {
             }
         }
 
-        wfIssueTypesNew = issueTypeRepository.save(wfIssueTypesNew);
+        wfIssueTypesNew = issueTypeRepository.saveAll(wfIssueTypesNew);
 
         List<WfIssueType> WfIssueTypeDelete = new ArrayList<>(wfIssueTypes);
         WfIssueTypeDelete.removeAll(wfIssueTypesNew);
 
-        issueTypeRepository.delete(WfIssueTypeDelete);
+        issueTypeRepository.deleteAll(WfIssueTypeDelete);
     }
 
     /**
@@ -1277,12 +1277,12 @@ public class PackageService {
             }
         }
 
-        wfIssueStatesNew = issueStateRepository.save(wfIssueStatesNew);
+        wfIssueStatesNew = issueStateRepository.saveAll(wfIssueStatesNew);
 
         List<WfIssueState> WfIssueStateDelete = new ArrayList<>(wfIssueStates);
         WfIssueStateDelete.removeAll(wfIssueStatesNew);
 
-        issueStateRepository.delete(WfIssueStateDelete);
+        issueStateRepository.deleteAll(WfIssueStateDelete);
     }
 
     /**
@@ -1364,11 +1364,11 @@ public class PackageService {
             }
         }
 
-        rulPolicyTypesNew = policyTypeRepository.save(rulPolicyTypesNew);
+        rulPolicyTypesNew = policyTypeRepository.saveAll(rulPolicyTypesNew);
 
         List<RulPolicyType> rulPolicyTypesDelete = new ArrayList<>(rulPolicyTypesNew);
         rulPolicyTypesDelete.removeAll(rulPolicyTypesNew);
-        policyTypeRepository.delete(rulPolicyTypesDelete);
+        policyTypeRepository.deleteAll(rulPolicyTypesDelete);
     }
 
     /**
@@ -1456,13 +1456,13 @@ public class PackageService {
             }
         }
 
-        rulRuleNew = arrangementRuleRepository.save(rulRuleNew);
+        rulRuleNew = arrangementRuleRepository.saveAll(rulRuleNew);
 
         List<RulArrangementRule> rulRuleDelete = new ArrayList<>(rulPackageRules);
         rulRuleDelete.removeAll(rulRuleNew);
         List<RulComponent> rulComponentsDelete = rulRuleDelete.stream().map(RulArrangementRule::getComponent).collect(Collectors.toList());
-        arrangementRuleRepository.delete(rulRuleDelete);
-        componentRepository.delete(rulComponentsDelete);
+        arrangementRuleRepository.deleteAll(rulRuleDelete);
+        componentRepository.deleteAll(rulComponentsDelete);
 
         try {
             for (RulArrangementRule rule : rulRuleNew) {
@@ -1509,11 +1509,11 @@ public class PackageService {
             }
         }
 
-        rulArrangementExtensionsNew = arrangementExtensionRepository.save(rulArrangementExtensionsNew);
+        rulArrangementExtensionsNew = arrangementExtensionRepository.saveAll(rulArrangementExtensionsNew);
 
         List<RulArrangementExtension> rulArrangementExtensionDelete = new ArrayList<>(rulArrangementExtensions);
         rulArrangementExtensionDelete.removeAll(rulArrangementExtensionsNew);
-        arrangementExtensionRepository.delete(rulArrangementExtensionDelete);
+        arrangementExtensionRepository.deleteAll(rulArrangementExtensionDelete);
 
         return rulArrangementExtensionsNew;
     }
@@ -1554,14 +1554,14 @@ public class PackageService {
             }
         }
 
-        rulExtensionRulesNew = extensionRuleRepository.save(rulExtensionRulesNew);
+        rulExtensionRulesNew = extensionRuleRepository.saveAll(rulExtensionRulesNew);
 
         List<RulExtensionRule> rulExtensionRulesDelete = new ArrayList<>(rulExtensionRules);
         rulExtensionRulesDelete.removeAll(rulExtensionRulesNew);
 
         List<RulComponent> rulComponentsDelete = rulExtensionRulesDelete.stream().map(RulExtensionRule::getComponent).collect(Collectors.toList());
-        extensionRuleRepository.delete(rulExtensionRulesDelete);
-        componentRepository.delete(rulComponentsDelete);
+        extensionRuleRepository.deleteAll(rulExtensionRulesDelete);
+        componentRepository.deleteAll(rulComponentsDelete);
 
         try {
             for (RulExtensionRule rule : rulExtensionRulesNew) {
@@ -1701,7 +1701,7 @@ public class PackageService {
         }
 
         // uložení nově vytvořených hromadných akcí
-        rulPackageActionsNew = packageActionsRepository.save(rulPackageActionsNew);
+        rulPackageActionsNew = packageActionsRepository.saveAll(rulPackageActionsNew);
 
         // smazání nedefinovaných hromadných akcí včetně vazeb
         List<RulAction> rulPackageActionsDelete = new ArrayList<>(dbActions);
@@ -1711,7 +1711,7 @@ public class PackageService {
             itemTypeActionRepository.deleteByAction(rulAction);
             actionRecommendedRepository.deleteByAction(rulAction);
         }
-        packageActionsRepository.delete(rulPackageActionsDelete);
+        packageActionsRepository.deleteAll(rulPackageActionsDelete);
 
         // odstranění/vytvoření definičních souborů pro hromadné akce
         try {
@@ -1755,13 +1755,13 @@ public class PackageService {
             }
 
             // uložení seznamu upravených/přidaných vazeb na doporučené akce
-            actionRecommendedRepository.save(rulActionRecomendedsNew);
+            actionRecommendedRepository.saveAll(rulActionRecomendedsNew);
 
         }
         // vyhkedat a odstranit již nenavázané doporučené akce
         List<RulActionRecommended> rulActionRecommendedsDelete = new ArrayList<>(rulActionRecommendeds);
         rulActionRecommendedsDelete.removeAll(rulActionRecomendedsNew);
-        actionRecommendedRepository.delete(rulActionRecommendedsDelete);
+        actionRecommendedRepository.deleteAll(rulActionRecommendedsDelete);
     }
 
     private void processActionItemTypes(RuleUpdateContext ruc, List<ActionItemType> xmlActionItemTypes,
@@ -1805,7 +1805,7 @@ public class PackageService {
         if (rulTypeActionsDelete.size() > 0) {
             logger.info("Deleting action related item types, count: {}", rulTypeActionsDelete.size());
             // deleting actions
-            itemTypeActionRepository.delete(rulTypeActionsDelete);
+            itemTypeActionRepository.deleteAll(rulTypeActionsDelete);
         }
     }
 
@@ -1891,7 +1891,7 @@ public class PackageService {
             }
         }
 
-        rulOutputTypesNew = outputTypeRepository.save(rulOutputTypesNew);
+        rulOutputTypesNew = outputTypeRepository.saveAll(rulOutputTypesNew);
 
         // update templates
         TemplateUpdater templateUpdater = new TemplateUpdater(this.templateRepository, outputRepository,
@@ -1912,8 +1912,8 @@ public class PackageService {
 
             List<RulComponent> rulComponentsDelete = rulOutputTypesDelete.stream().map(RulOutputType::getComponent)
                     .filter(Objects::nonNull).collect(Collectors.toList());
-            outputTypeRepository.delete(rulOutputTypesDelete);
-            componentRepository.delete(rulComponentsDelete);
+            outputTypeRepository.deleteAll(rulOutputTypesDelete);
+            componentRepository.deleteAll(rulComponentsDelete);
         }
 
         try {
@@ -1965,7 +1965,7 @@ public class PackageService {
         }
 
         // Uložení pravidel
-        rulRuleSetsNew = ruleSetRepository.save(rulRuleSetsNew);
+        rulRuleSetsNew = ruleSetRepository.saveAll(rulRuleSetsNew);
 
         // Naplnění pravidel ke smazání, které již nejsou v xml
         for (RulRuleSet dbRuleset : rulRuleSets) {
@@ -2139,7 +2139,7 @@ public class PackageService {
             packageDependency.setDependsOnPackage(requiredDependency);
             newDependencies.add(packageDependency);
         }
-        packageDependencyRepository.save(newDependencies);
+        packageDependencyRepository.saveAll(newDependencies);
     }
 
     /**
@@ -2171,7 +2171,7 @@ public class PackageService {
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
             itemAptypeRepository.deleteByItemSpec(rulDescItemSpec);
         }
-        itemSpecRepository.delete(rulDescItemSpecs);
+        itemSpecRepository.deleteAll(rulDescItemSpecs);
 
         List<RulRuleSet> ruleSets = ruleSetRepository.findByRulPackage(rulPackage);
         List<RulArrangementRule> arrangementRules = arrangementRuleRepository.findByRulPackage(rulPackage);
@@ -2201,7 +2201,7 @@ public class PackageService {
         outputTypeRepository.deleteByRulPackage(rulPackage);
         extensionRuleRepository.deleteByRulPackage(rulPackage);
         arrangementExtensionRepository.deleteByRulPackage(rulPackage);
-        ruleSetRepository.delete(ruleSets);
+        ruleSetRepository.deleteAll(ruleSets);
         apTypeRepository.preDeleteByRulPackage(rulPackage);
         apTypeRepository.deleteByRulPackage(rulPackage);
         settingsRepository.deleteByRulPackage(rulPackage);

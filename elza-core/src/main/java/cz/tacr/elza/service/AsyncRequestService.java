@@ -65,6 +65,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static cz.tacr.elza.repository.ExceptionThrow.bulkAction;
 import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
 /**
@@ -231,11 +232,9 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
      * @param bulkActionId Id hromadné akce
      */
     public void interruptBulkAction(final int bulkActionId) {
-        ArrBulkActionRun bulkActionRun = bulkActionRepository.findOne(bulkActionId);
+        ArrBulkActionRun bulkActionRun = bulkActionRepository.findById(bulkActionId)
+                .orElseThrow(bulkAction(bulkActionId));
 
-        if (bulkActionRun == null) {
-            throw new IllegalArgumentException("Hromadná akce s ID " + bulkActionId + " nebyla nalezena!");
-        }
         ArrBulkActionRun.State originalState = bulkActionRun.getState();
 
         if (!originalState.equals(ArrBulkActionRun.State.WAITING) && !originalState.equals(ArrBulkActionRun.State.PLANNED) && !originalState.equals(ArrBulkActionRun.State.RUNNING)) {
@@ -566,7 +565,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                 List<ArrAsyncRequest> requests;
                 int MAX = 1000;
                 do {
-                    requests = asyncRequestRepository.findRequestsByPriorityWithLimit(getType(), new PageRequest(p, MAX));
+                    requests = asyncRequestRepository.findRequestsByPriorityWithLimit(getType(), PageRequest.of(p, MAX));
                     for (ArrAsyncRequest request : requests) {
                         results.add(new AsyncRequest(request));
                     }

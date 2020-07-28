@@ -22,6 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import static cz.tacr.elza.repository.ExceptionThrow.ruleSet;
+
 
 /**
  * Test for rule controller
@@ -186,7 +188,8 @@ public class RuleControllerTest extends AbstractControllerTest {
         final RulArrangementExtension extension = new RulArrangementExtension();
         extension.setCode(baseName);
         extension.setName(baseName);
-        final RulRuleSet ruleSet = ruleSetRepository.findOne(fundVersion.getRuleSetId());
+        RulRuleSet ruleSet = ruleSetRepository.findById(fundVersion.getRuleSetId())
+                .orElseThrow(ruleSet(fundVersion.getRuleSetId()));
         extension.setRulPackage(ruleSet.getPackage());
         extension.setRuleSet(ruleSet);
         return arrExtsRepo.save(extension);

@@ -488,7 +488,8 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
             (new TransactionTemplate(txManager)).execute(new TransactionCallbackWithoutResult() {
                 @Override
                 protected void doInTransactionWithoutResult(final TransactionStatus transactionStatus) {
-                    ArrRequestQueueItem queueItem = requestQueueItemRepository.findOne(requestQueueItemId);
+                    ArrRequestQueueItem queueItem = requestQueueItemRepository.findById(requestQueueItemId)
+                            .orElse(null);
                     if (queueItem != null) {
                         try {
                             queueItem.setAttemptToSend(LocalDateTime.now());
