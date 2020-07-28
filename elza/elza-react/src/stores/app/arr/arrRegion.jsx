@@ -26,7 +26,6 @@ import {isFundOutput} from 'actions/arr/fundOutput.jsx';
 import processAreaStores from 'shared/utils/processAreaStores';
 import isCommonArea from 'stores/utils/isCommonArea';
 import globalFundTree from './globalFundTree';
-import {isStructureNodeForm} from '../../../actions/arr/structureNodeForm';
 import fundTree from './fundTree';
 
 const initialCustomFundState = {
@@ -116,14 +115,12 @@ export default function arrRegion(state = initialState, action) {
         isBulkAction(action) ||
         (isFundTreeAction(action) &&
             action.area !== types.FUND_TREE_AREA_COPY &&
-                action.area !== types.FUND_TREE_AREA_USAGE &&
-                action.area !== types.CUSTOM_FUND_TREE_AREA_NODES) ||
+            action.area !== types.FUND_TREE_AREA_USAGE &&
+            action.area !== types.CUSTOM_FUND_TREE_AREA_NODES) ||
         nodeFormActions.isSubNodeFormAction(action) ||
         outputFormActions.isSubNodeFormAction(action) ||
-        structureFormActions.isSubNodeFormAction(action) ||
         nodeFormActions.isSubNodeFormCacheAction(action) ||
         outputFormActions.isSubNodeFormCacheAction(action) ||
-        structureFormActions.isSubNodeFormCacheAction(action) ||
         isSubNodeDaosAction(action) ||
         isSubNodeInfoAction(action) ||
         isNodeInfoAction(action) ||

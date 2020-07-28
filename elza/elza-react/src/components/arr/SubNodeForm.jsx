@@ -25,7 +25,7 @@ import {SUB_NODE_FORM_CMP} from '../../stores/app/arr/subNodeForm';
 
 import classNames from 'classnames';
 import {Button} from '../ui';
-import FormDescItemGroup from "./FormDescItemGroup";
+import FormDescItemGroup from './FormDescItemGroup';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -66,7 +66,7 @@ class SubNodeForm extends AbstractReactComponent {
             'handleFundFiles',
             'handleCoordinatesUpload',
             'handleJsonTableUpload',
-            'handleCoordinatesDownload'
+            'handleCoordinatesDownload',
         );
     }
 
@@ -78,7 +78,7 @@ class SubNodeForm extends AbstractReactComponent {
     static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
-        routingKey: PropTypes.string,
+        routingKey: PropTypes.oneOf(PropTypes.string, PropTypes.number),
         nodeSetting: PropTypes.object,
         rulDataTypes: PropTypes.object.isRequired,
         calendarTypes: PropTypes.object.isRequired,
@@ -102,7 +102,13 @@ class SubNodeForm extends AbstractReactComponent {
             const log = false;
             return (
                 !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, SUB_NODE_FORM_CMP, '', log) ||
-                !objectEqualsDiff(this.props.descItemCopyFromPrevEnabled, nextProps.descItemCopyFromPrevEnabled, {}, '',log) ||
+                !objectEqualsDiff(
+                    this.props.descItemCopyFromPrevEnabled,
+                    nextProps.descItemCopyFromPrevEnabled,
+                    {},
+                    '',
+                    log,
+                ) ||
                 !objectEqualsDiff(this.props.nodeSetting, nextProps.nodeSetting, undefined, {}, log) ||
                 !objectEqualsDiff(this.props.readMode, nextProps.readMode, undefined, {}, log)
             );
@@ -177,8 +183,8 @@ class SubNodeForm extends AbstractReactComponent {
     handleShortcuts(action) {}
 
     descItemRef = (key, ref) => {
-        this.refObjects[key] = ref
-    }
+        this.refObjects[key] = ref;
+    };
 
     /**
      * Renderování skupiny atributů.
@@ -188,8 +194,25 @@ class SubNodeForm extends AbstractReactComponent {
      * @return {Object} view
      */
     renderDescItemGroup(descItemGroup, descItemGroupIndex, nodeSetting) {
-        const {userDetail, readMode, versionId, arrRegion, descItemCopyFromPrevEnabled, fundId, arrPerm, typePrefix, subNodeForm, singleDescItemTypeEdit,
-            singleDescItemTypeId, showNodeAddons, conformityInfo, calendarTypes, structureTypes, descItemFactory, customActions} = this.props;
+        const {
+            userDetail,
+            readMode,
+            versionId,
+            arrRegion,
+            descItemCopyFromPrevEnabled,
+            fundId,
+            arrPerm,
+            typePrefix,
+            subNodeForm,
+            singleDescItemTypeEdit,
+            singleDescItemTypeId,
+            showNodeAddons,
+            conformityInfo,
+            calendarTypes,
+            structureTypes,
+            descItemFactory,
+            customActions,
+        } = this.props;
 
         const fund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
         let strictMode = false;
@@ -201,53 +224,53 @@ class SubNodeForm extends AbstractReactComponent {
             }
         }
 
-        return <FormDescItemGroup
-            descItemGroup={descItemGroup}
-            descItemGroupIndex={descItemGroupIndex}
-            nodeSetting={nodeSetting}
-            singleDescItemTypeEdit={singleDescItemTypeEdit}
-            singleDescItemTypeId={singleDescItemTypeId}
-
-            subNodeForm={subNodeForm}
-            typePrefix={typePrefix}
-            arrPerm={arrPerm || (subNodeForm.data && subNodeForm.data.arrPerm)}
-            fundId={fundId}
-            strictMode={strictMode}
-            showNodeAddons={showNodeAddons}
-            descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
-            conformityInfo={conformityInfo}
-            versionId={versionId}
-            readMode={readMode}
-            calendarTypes={calendarTypes}
-            structureTypes={structureTypes}
-            descItemFactory={descItemFactory}
-            customActions={customActions}
-            descItemRef={this.descItemRef}
-
-            onCreateParty={this.handleCreateParty}
-            onDetailParty={this.handleDetailParty}
-            onCreateRecord={this.handleCreateRecord}
-            onDetailRecord={this.handleDetailRecord}
-            onCreateFile={this.handleCreateFile}
-            onFundFiles={this.handleFundFiles}
-            onDescItemAdd={this.handleDescItemAdd}
-            onCoordinatesUpload={this.handleCoordinatesUpload}
-            onJsonTableUpload={this.handleJsonTableUpload}
-            onDescItemRemove={this.handleDescItemRemove}
-            onCoordinatesDownload={this.handleCoordinatesDownload}
-            onJsonTableDownload={this.handleJsonTableDownload}
-            onChange={this.handleChange}
-            onChangePosition={this.handleChangePosition}
-            onChangeSpec={this.handleChangeSpec}
-            onBlur={this.handleBlur}
-            onFocus={this.handleFocus}
-            onDescItemTypeRemove={this.handleDescItemTypeRemove}
-            onSwitchCalculating={this.handleSwitchCalculating}
-            onDescItemTypeLock={this.handleDescItemTypeLock}
-            onDescItemTypeCopy={this.handleDescItemTypeCopy}
-            onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev}
-            onDescItemNotIdentified={this.handleDescItemNotIdentified}
-        />
+        return (
+            <FormDescItemGroup
+                descItemGroup={descItemGroup}
+                descItemGroupIndex={descItemGroupIndex}
+                nodeSetting={nodeSetting}
+                singleDescItemTypeEdit={singleDescItemTypeEdit}
+                singleDescItemTypeId={singleDescItemTypeId}
+                subNodeForm={subNodeForm}
+                typePrefix={typePrefix}
+                arrPerm={arrPerm || (subNodeForm.data && subNodeForm.data.arrPerm)}
+                fundId={fundId}
+                strictMode={strictMode}
+                showNodeAddons={showNodeAddons}
+                descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
+                conformityInfo={conformityInfo}
+                versionId={versionId}
+                readMode={readMode}
+                calendarTypes={calendarTypes}
+                structureTypes={structureTypes}
+                descItemFactory={descItemFactory}
+                customActions={customActions}
+                descItemRef={this.descItemRef}
+                onCreateParty={this.handleCreateParty}
+                onDetailParty={this.handleDetailParty}
+                onCreateRecord={this.handleCreateRecord}
+                onDetailRecord={this.handleDetailRecord}
+                onCreateFile={this.handleCreateFile}
+                onFundFiles={this.handleFundFiles}
+                onDescItemAdd={this.handleDescItemAdd}
+                onCoordinatesUpload={this.handleCoordinatesUpload}
+                onJsonTableUpload={this.handleJsonTableUpload}
+                onDescItemRemove={this.handleDescItemRemove}
+                onCoordinatesDownload={this.handleCoordinatesDownload}
+                onJsonTableDownload={this.handleJsonTableDownload}
+                onChange={this.handleChange}
+                onChangePosition={this.handleChangePosition}
+                onChangeSpec={this.handleChangeSpec}
+                onBlur={this.handleBlur}
+                onFocus={this.handleFocus}
+                onDescItemTypeRemove={this.handleDescItemTypeRemove}
+                onSwitchCalculating={this.handleSwitchCalculating}
+                onDescItemTypeLock={this.handleDescItemTypeLock}
+                onDescItemTypeCopy={this.handleDescItemTypeCopy}
+                onDescItemTypeCopyFromPrev={this.handleDescItemTypeCopyFromPrev}
+                onDescItemNotIdentified={this.handleDescItemNotIdentified}
+            />
+        );
     }
 
     /**
@@ -353,7 +376,8 @@ class SubNodeForm extends AbstractReactComponent {
         } = this.props;
         const descItemType = formData.descItemGroups[descItemGroupIndex].descItemTypes[descItemTypeIndex];
         const types = this.getFlatDescItemTypes(true);
-        const indexUnused = (this.state.unusedItemTypeInitIds!=null)?this.state.unusedItemTypeInitIds.indexOf(descItemType.id):-1;
+        const indexUnused =
+            this.state.unusedItemTypeInitIds != null ? this.state.unusedItemTypeInitIds.indexOf(descItemType.id) : -1;
         if (indexUnused !== -1) {
             const unusedItemTypeIds = this.state.unusedItemTypeIds;
             this.setState({
@@ -917,7 +941,7 @@ class SubNodeForm extends AbstractReactComponent {
                 <Accordion>
                     <Card eventKey="1">
                         <Card.Header>
-                            {i18n("arr.output.title.unusedGeneratedItems", unusedItemTypeIds.length)}
+                            {i18n('arr.output.title.unusedGeneratedItems', unusedItemTypeIds.length)}
                         </Card.Header>
                         <Accordion.Collapse eventKey={'1'}>
                             <Card.Body>
