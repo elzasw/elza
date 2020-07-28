@@ -66,7 +66,7 @@
                 <artifactId>liquibase-slf4j</artifactId>
                 <version>2.0.0</version>
             </dependency>
-            <!--- JAX-WS  -->
+            <!-- JAX-WS  -->
             <dependency>
                 <groupId>com.sun.xml.ws</groupId>
                 <artifactId>jaxws-ri-bom-ext</artifactId>
@@ -74,7 +74,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!--- Jackson -->
+            <!-- Jackson -->
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
