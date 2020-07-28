@@ -84,7 +84,8 @@ public abstract class Rules {
                 ResourceType.DRL);
 
         if (kbuilder.hasErrors()) {
-            throw new SystemException("Fail to parse rule: " + kbuilder.getErrors());
+            throw new SystemException("Fail to parse rule: " + kbuilder.getErrors() + 
+                    ", file: " + path.toString());
         }
         KnowledgeBase tmpKbase = KnowledgeBaseFactory.newKnowledgeBase();
         tmpKbase.addKnowledgePackages(kbuilder.getKnowledgePackages());

@@ -10,6 +10,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.nodes.descitems.*;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,111 +82,12 @@ import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDateVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFileRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrCalendarType;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataDate;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataFileRef;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataJsonTable;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataStructureRef;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUnitid;
-import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemCoordinates;
-import cz.tacr.elza.domain.ArrItemDate;
-import cz.tacr.elza.domain.ArrItemDecimal;
-import cz.tacr.elza.domain.ArrItemEnum;
-import cz.tacr.elza.domain.ArrItemFileRef;
-import cz.tacr.elza.domain.ArrItemFormattedText;
-import cz.tacr.elza.domain.ArrItemInt;
-import cz.tacr.elza.domain.ArrItemJsonTable;
-import cz.tacr.elza.domain.ArrItemPartyRef;
-import cz.tacr.elza.domain.ArrItemRecordRef;
-import cz.tacr.elza.domain.ArrItemString;
-import cz.tacr.elza.domain.ArrItemStructureRef;
-import cz.tacr.elza.domain.ArrItemText;
-import cz.tacr.elza.domain.ArrItemUnitdate;
-import cz.tacr.elza.domain.ArrItemUnitid;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ArrOutput;
-import cz.tacr.elza.domain.ArrOutputResult;
-import cz.tacr.elza.domain.ParComplementType;
-import cz.tacr.elza.domain.ParCreator;
-import cz.tacr.elza.domain.ParDynasty;
-import cz.tacr.elza.domain.ParEvent;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.ParInstitutionType;
-import cz.tacr.elza.domain.ParParty;
-import cz.tacr.elza.domain.ParPartyGroup;
-import cz.tacr.elza.domain.ParPartyGroupIdentifier;
-import cz.tacr.elza.domain.ParPartyName;
-import cz.tacr.elza.domain.ParPartyNameComplement;
-import cz.tacr.elza.domain.ParPartyNameFormType;
-import cz.tacr.elza.domain.ParPartyType;
-import cz.tacr.elza.domain.ParPerson;
-import cz.tacr.elza.domain.ParRelation;
-import cz.tacr.elza.domain.ParRelationClassType;
-import cz.tacr.elza.domain.ParRelationEntity;
-import cz.tacr.elza.domain.ParRelationRoleType;
-import cz.tacr.elza.domain.ParRelationType;
-import cz.tacr.elza.domain.ParUnitdate;
-import cz.tacr.elza.domain.RulArrangementExtension;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemSpecExt;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulPolicyType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulStructuredType;
-import cz.tacr.elza.domain.RulTemplate;
-import cz.tacr.elza.domain.UIPartyGroup;
-import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrGroup;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.repository.CalendarTypeRepository;
-import cz.tacr.elza.repository.FundFileRepository;
-import cz.tacr.elza.repository.PartyRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.RuleService;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
@@ -216,6 +120,8 @@ public class ConfigMapperConfiguration {
     private ApAccessPointRepository apAccessPointRepository;
     @Autowired
     private ApStateRepository apStateRepository;
+    @Autowired
+    private NodeRepository nodeRepository;
     @Autowired
     private RuleService ruleService;
     @Autowired
@@ -420,6 +326,24 @@ public class ConfigMapperConfiguration {
                         recordRef.setAccessPoint(recordRefVO.getValue() == null ? null : apAccessPointRepository.findOne(recordRefVO.getValue()));
                     }
                 }).byDefault().register();
+        mapperFactory.classMap(ArrItemUriRef.class, ArrItemUriRefVO.class).customize(
+                new CustomMapper<ArrItemUriRef, ArrItemUriRefVO>() {
+                    @Override
+                    public void mapAtoB(ArrItemUriRef arrItemUriRef, ArrItemUriRefVO arrItemUriRefVO, MappingContext context) {
+                        super.mapAtoB(arrItemUriRef, arrItemUriRefVO, context);
+                        arrItemUriRefVO.setValue(arrItemUriRef.getValue());
+                        arrItemUriRefVO.setDescription(arrItemUriRef.getDescription());
+
+                    }
+
+                    @Override
+                    public void mapBtoA(ArrItemUriRefVO arrItemUriRefVO, ArrItemUriRef arrItemUriRef, MappingContext context) {
+                        super.mapBtoA(arrItemUriRefVO, arrItemUriRef, context);
+                        arrItemUriRef.setValue(arrItemUriRefVO.getValue());
+                        arrItemUriRef.setDescription(arrItemUriRefVO.getDescription());
+                    }
+                }
+        ).byDefault().register();
         mapperFactory.classMap(ArrItemString.class, ArrItemStringVO.class).byDefault().register();
 
         mapperFactory.classMap(ArrNode.class, ArrNodeVO.class).byDefault().field("nodeId", "id").register();
@@ -741,6 +665,7 @@ public class ConfigMapperConfiguration {
                 .register();
         mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class)
                 .exclude("nodes")
+                .exclude("scopes")
                 .byDefault()
                 .field("outputId", "id")
                 .customize(new CustomMapper<ArrOutput, ArrOutputVO>() {
@@ -834,6 +759,7 @@ public class ConfigMapperConfiguration {
         mapperFactory.classMap(ArrDataDate.class, ArrItemDateVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataDecimal.class, ArrItemDecimalVO.class).byDefault().register();
+
         mapperFactory.classMap(ArrDataUnitid.class, ArrItemUnitidVO.class).customize(
                                                                                      new CustomMapper<ArrDataUnitid, ArrItemUnitidVO>() {
                                                                                          @Override
@@ -981,7 +907,27 @@ public class ConfigMapperConfiguration {
                     }
                 }).byDefault().register();
         mapperFactory.classMap(ArrDataString.class, ArrItemStringVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataUriRef.class, ArrItemUriRefVO.class).customize(
+                new CustomMapper<ArrDataUriRef, ArrItemUriRefVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDataUriRef uriRef,
+                                        final ArrItemUriRefVO uriRefVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(uriRef, uriRefVO, context);
+                        uriRefVO.setValue(uriRef.getValue());
+                        uriRefVO.setDescription(uriRef.getDescription());
+                        uriRefVO.setNodeId(uriRef.getNodeId());
+                    }
 
+                    @Override
+                    public void mapBtoA(final ArrItemUriRefVO uriRefVO,
+                                        final ArrDataUriRef uriRef,
+                                        final MappingContext context) {
+                        super.mapBtoA(uriRefVO, uriRef, context);
+                        uriRef.setValue(uriRefVO.getValue());
+                        uriRef.setDescription(uriRefVO.getDescription());
+                    }
+                }).byDefault().register();
         /*mapperFactory.classMap(ArrDataText.class, ArrItemAbstractTextVO.class).customize(new CustomMapper<ArrDataText, ArrItemAbstractTextVO>() {
             @Override
             public void mapAtoB(final ArrDataText arrDataText, ArrItemAbstractTextVO arrItemAbstractTextVO, final MappingContext context) {

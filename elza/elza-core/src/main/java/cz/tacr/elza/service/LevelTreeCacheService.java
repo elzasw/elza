@@ -43,31 +43,14 @@ import cz.tacr.elza.config.view.LevelConfig;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.AccordionNodeVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.WfSimpleIssueVO;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
 import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformityExt;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.WfIssue;
+import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.SystemException;
@@ -80,13 +63,7 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventChangeMessage;
-import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
-import cz.tacr.elza.service.eventnotification.events.EventAddNode;
-import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
-import cz.tacr.elza.service.eventnotification.events.EventIdInVersion;
-import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.eventnotification.events.EventVersion;
+import cz.tacr.elza.service.eventnotification.events.*;
 import cz.tacr.elza.service.vo.TitleItemsByType;
 
 
@@ -449,7 +426,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         Integer rootId = version.getRootNode().getNodeId();
         ArrChange change = version.getLockChange();
 
-        //všechny uzly stromu        
+        //všechny uzly stromu
         return createTreeNodeMap(change, rootId);
     }
 
@@ -583,6 +560,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @return mapa všech uzlů stromu (nodeid uzlu -> uzel)
      */
     synchronized public Map<Integer, TreeNode> getVersionTreeCache(final ArrFundVersion version) {
+        Assert.notNull(version, "Verze AS není vyplněna");
         Map<Integer, TreeNode> versionTreeMap = versionCache.get(version.getFundVersionId());
 
         if (versionTreeMap == null) {
@@ -1444,6 +1422,37 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     }
 
     /**
+     * Získání informací o JP ve verzi.
+     *
+     * <ul>Vyplněné položky:
+     *  <li> název
+     *  <li> ikona
+     *  <li> accordion
+     *
+     * @param nodeId      identifkátor požadované JP
+     * @param fundVersionId id verze AS
+     * @return nalezená JP
+     */
+    public ArrNodeExtendVO getSimpleNode(final Integer fundVersionId, final Integer nodeId) {
+        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        Map<Integer, TreeNode> treeMap = getVersionTreeCache(fundVersion);
+        TreeNode treeNode = treeMap.get(nodeId);
+        Validate.notNull(treeNode, "Neplatný identifikátor JP: " + nodeId);
+        NodeParam param = NodeParam.create()
+                .name()
+                .icon()
+                .accordion();
+
+        LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
+        nodesMap.put(nodeId, treeNode);
+        Node tempResult = getNodes(nodesMap, treeNode.getParent(), param, fundVersion).get(nodeId);
+        ArrNodeExtendVO result = new ArrNodeExtendVO(tempResult.getId(),tempResult.getName(),tempResult.getUuid(), fundVersion.getFund().getName());
+        return result;
+    }
+
+
+
+    /**
      * Parametry vyplnění pro požadované JP.
      */
     public static class NodeParam {
@@ -1538,6 +1547,11 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         private String name;
 
         /**
+         * UUID
+         */
+        private String uuid;
+
+        /**
          * Popisek v akordeonu - levá strana.
          */
         private String accordionLeft;
@@ -1577,9 +1591,10 @@ public class LevelTreeCacheService implements NodePermissionChecker {
          */
         private List<ArrDigitizationRequestVO> digitizationRequests;
 
-        public Node(final Integer id, final Integer version) {
+        public Node(final Integer id, final Integer version, final String uuid) {
             this.id = id;
             this.version = version;
+            this.uuid = uuid;
         }
 
         public Integer getId() {
@@ -1593,6 +1608,8 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         public String getName() {
             return name;
         }
+
+        public String getUuid() { return uuid; }
 
         public String getAccordionLeft() {
             return accordionLeft;
@@ -1685,7 +1702,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(), fundVersion.getFund().getFundId());
         // read LevelTypeId
         Integer levelTypeId = viewTitles.getLevelTypeId();
-        
+
         Map<Integer, TitleItemsByType> nodeValueMap = createValuesMap(treeNodeMap, fundVersion, subtreeRoot);
 
         String[] rootReferenceMark = new String[0];
@@ -1718,7 +1735,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         for (TreeNode treeNode : treeNodeMap.values()) {
             Integer id = treeNode.getId();
 
-            Node node = new Node(id, arrNodeMap.get(id).getVersion());
+            Node node = new Node(id, arrNodeMap.get(id).getVersion(), arrNodeMap.get(id).getUuid());
             node.setHasChildren(!treeNode.getChilds().isEmpty());
             node.setDepth(treeNode.getDepth());
 

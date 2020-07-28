@@ -50,14 +50,11 @@ import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.StructObjCode;
 import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
-import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundStructureExtensionRepository;
@@ -79,20 +76,21 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 @Service
 public class StructObjService {
 
-    private final Logger logger = LoggerFactory.getLogger(StructObjService.class);
+    private final static Logger logger = LoggerFactory.getLogger(StructObjService.class);
     private final StructuredItemRepository structureItemRepository;
     private final StructuredTypeExtensionRepository structureExtensionRepository;
     private final StructuredObjectRepository structObjRepository;
     private final StructuredTypeRepository structureTypeRepository;
     private final ArrangementService arrangementService;
+    private final ArrangementInternalService arrangementInternalService;
     private final DataRepository dataRepository;
     private final FundStructureExtensionRepository fundStructureExtensionRepository;
     private final StructObjValueService structObjService;
     private final ItemTypeRepository itemTypeRepository;
-    private final ChangeRepository changeRepository;
     private final EventNotificationService notificationService;
     private final SettingsService settingsService;
     private final StaticDataService staticDataService;
+    private final StructObjInternalService structObjInternalService;
 
     @Autowired
     public StructObjService(final StructuredItemRepository structureItemRepository,
@@ -100,27 +98,28 @@ public class StructObjService {
                             final StructuredObjectRepository structureDataRepository,
                             final StructuredTypeRepository structureTypeRepository,
                             final ArrangementService arrangementService,
-                            final DataRepository dataRepository,
+                            final ArrangementInternalService arrangementInternalService, final DataRepository dataRepository,
                             final FundStructureExtensionRepository fundStructureExtensionRepository,
                             final StructObjValueService structureDataService,
                             final ItemTypeRepository itemTypeRepository,
-                            final ChangeRepository changeRepository,
                             final EventNotificationService notificationService,
                             final SettingsService settingsService,
-                            final StaticDataService staticDataService) {
+                            final StaticDataService staticDataService,
+                            final StructObjInternalService structObjInternalService) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionRepository = structureExtensionRepository;
         this.structObjRepository = structureDataRepository;
         this.structureTypeRepository = structureTypeRepository;
         this.arrangementService = arrangementService;
+        this.arrangementInternalService = arrangementInternalService;
         this.dataRepository = dataRepository;
         this.fundStructureExtensionRepository = fundStructureExtensionRepository;
         this.structObjService = structureDataService;
         this.itemTypeRepository = itemTypeRepository;
-        this.changeRepository = changeRepository;
         this.notificationService = notificationService;
         this.settingsService = settingsService;
         this.staticDataService = staticDataService;
+        this.structObjInternalService = structObjInternalService;
     }
 
     /**
@@ -157,13 +156,12 @@ public class StructObjService {
                                                final ArrChange change,
                                                final RulStructuredType structureType,
                                                final ArrStructuredObject.State state,
+                                               final String uuid,
                                                List<ArrStructuredItem> items) {
-        ArrStructuredObject structureData = new ArrStructuredObject();
-        structureData.setAssignable(true);
-        structureData.setCreateChange(change);
-        structureData.setFund(fund);
-        structureData.setStructuredType(structureType);
-        structureData.setState(state);
+        ArrStructuredObject structureData = new ArrStructuredObject.Builder(change, fund, structureType)
+                .setState(state)
+                .setUuid(uuid)
+                .build();
 
         ArrStructuredObject structObj = structObjRepository.save(structureData);
 
@@ -210,7 +208,7 @@ public class StructObjService {
                                                final RulStructuredType structureType,
                                                final ArrStructuredObject.State state) {
         ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA);
-        return createStructObj(fund, change, structureType, state, null);
+        return createStructObj(fund, change, structureType, state, null, null);
     }
 
     /**
@@ -230,12 +228,11 @@ public class StructObjService {
                                                               int count) {
         List<ArrStructuredObject> result = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
-            ArrStructuredObject structureData = new ArrStructuredObject();
-            structureData.setAssignable(true);
-            structureData.setCreateChange(change);
-            structureData.setFund(fund);
-            structureData.setStructuredType(structureType);
-            structureData.setState(state);
+
+            ArrStructuredObject structureData = new ArrStructuredObject.Builder(change, fund, structureType)
+                    .setState(state)
+                    .build();
+
             result.add(structureData);
         }
         return structObjRepository.save(result);
@@ -250,57 +247,7 @@ public class StructObjService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj) {
-        if (structObj.getDeleteChange() != null) {
-            throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
-        }
-
-        if (structObj.getState() == ArrStructuredObject.State.TEMP) {
-
-            // remove temporary object
-            structureItemRepository.deleteByStructuredObject(structObj);
-            dataRepository.deleteByStructuredObject(structObj);
-            ArrChange change = structObjRepository.findTempChangeByStructuredObject(structObj);
-            structObjRepository.delete(structObj);
-            changeRepository.delete(change);
-
-        } else {
-
-            // drop permanent object
-
-            // check usage
-            Integer count = structureItemRepository.countItemsUsingStructObj(structObj);
-            if (count > 0) {
-                throw new BusinessException("Existují návazné entity, položka nelze smazat", ArrangementCode.STRUCTURE_DATA_DELETE_ERROR)
-                        .level(Level.WARNING)
-                        .set("count", count)
-                                .set("id", structObj.getStructuredObjectId());
-            }
-
-            ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA);
-            structObj.setDeleteChange(change);
-
-            structObjRepository.save(structObj);
-
-            // check duplicates for deleted item
-            // find potentially duplicated items
-            List<ArrStructuredObject> potentialDuplicates = structObjRepository
-                    .findValidByStructureTypeAndFund(structObj.getStructuredType(),
-                                                     structObj.getFund(),
-                                                     structObj.getSortValue(),
-                                                     structObj);
-            for (ArrStructuredObject pd : potentialDuplicates) {
-                if (pd.getState().equals(State.ERROR)) {
-                    structObjService.addToValidate(pd);
-                }
-            }
-
-            notificationService.publishEvent(new EventStructureDataChange(structObj.getFundId(),
-                    structObj.getStructuredType().getCode(),
-                    null,
-                    null,
-                    null,
-                    Collections.singletonList(structObj.getStructuredObjectId())));
-        }
+        structObjInternalService.deleteStructObj(structObj);
     }
 
     /**
@@ -680,6 +627,15 @@ public class StructObjService {
         return structureData;
     }
 
+    public ArrStructuredObject getExistingStructObjByUUID(String uuid) {
+        ArrStructuredObject structureData = structObjRepository.findActiveByUuidOneFetch(uuid);
+        if (structureData == null) {
+            throw new ObjectNotFoundException("Strukturovaná data neexistují: " + uuid, BaseCode.ID_NOT_EXIST).setId(
+                                                                                                                     uuid);
+        }
+        return structureData;
+    }
+
     /**
      * Vrátí strukt. data podle identifikátorů včetně načtených návazných entit.
      * 
@@ -829,7 +785,7 @@ public class StructObjService {
                                                                  @Nullable final Boolean assignable,
                                                                  final int from,
                                                                  final int count) {
-        return structObjRepository.findStructureData(structureType.getStructuredTypeId(), 
+        return structObjRepository.findStructureData(structureType.getStructuredTypeId(),
                                                      fund.getFundId(), search, assignable, from, count);
     }
 
@@ -1236,17 +1192,14 @@ public class StructObjService {
 
         revalidateStructureData(structureDataList);
 
-        notificationService.publishEvent(new EventStructureDataChange(fundVersion.getFundId(),
-                structureType.getCode(),
-                null,
-                structureDataIds,
-                null,
-                null));
-
-        Collection<Integer> nodeIds = arrangementService.findNodesByStructuredObjectIds(structureDataIds).keySet();
-        if (!nodeIds.isEmpty()) {
-            notificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), nodeIds.toArray(new Integer[0])));
-        }
+        notifyAboutChange(fundVersion.getFundId(),
+                          new EventStructureDataChange(fundVersion.getFundId(),
+                                  structureType.getCode(),
+                                  null,
+                                  structureDataIds,
+                                  null,
+                                  null),
+                          structureDataIds);
     }
 
     /**
@@ -1277,7 +1230,7 @@ public class StructObjService {
             }
         }
     }
-    
+
     /**
      * Vyhledání povolených strukturovaných typů ve verzi AS.
      *
@@ -1305,7 +1258,7 @@ public class StructObjService {
                     .collect(Collectors.toSet());
             List<RulStructuredType> result = new ArrayList<>();
             for (RulStructuredType structureType : findStructureTypes()) {
-                if (typeCodes.contains(structureType.getCode())) {
+                if (typeCodes.contains(structureType.getCode()) || structureType.getAnonymous()) {
                     result.add(structureType);
                 }
             }
@@ -1340,6 +1293,60 @@ public class StructObjService {
             changeIdStructuredObjectMap.computeIfAbsent(changeId, k -> new HashMap<>()).put(structuredObject.getStructuredObjectId(), structuredObject);
         }
         return changeIdStructuredObjectMap;
+    }
+
+    public ArrStructuredObject getExistingStructObj(String value) {
+        if (value.length() == 36) {
+            return getExistingStructObjByUUID(value);
+        } else {
+            int id = Integer.parseInt(value);
+            ArrStructuredObject so = getStructObjById(id);
+            Validate.isTrue(so.getDeleteChangeId() == null, "Structured object is deleted, id: %i", id);
+            return so;
+        }
+    }
+
+    public void updateStructObj(ArrChange change, ArrStructuredObject structObj, List<ArrStructuredItem> items) {
+
+        // drop all old items
+        List<ArrStructuredItem> currItems = structureItemRepository
+                .findByStructuredObjectAndDeleteChangeIsNullFetchData(structObj);
+        for (ArrStructuredItem structureItemDB : currItems) {
+            structureItemDB.setDeleteChange(change);
+            ArrStructuredItem save = structureItemRepository.save(structureItemDB);
+        }
+
+        // create new items
+        for (ArrStructuredItem newItem : items) {
+            createItem(newItem, structObj, newItem.getPosition(), change);
+        }
+
+        revalidateStructureData(Collections.singletonList(structObj));
+
+        List<Integer> structObjIds = Collections.singletonList(structObj.getStructuredObjectId());
+
+        notifyAboutChange(structObj.getFundId(),
+                          new EventStructureDataChange(structObj.getFundId(),
+                                  structObj.getStructuredType().getCode(),
+                                  null,
+                                  null,
+                                  structObjIds,
+                                  null),
+                          structObjIds);
+
+    }
+
+    private void notifyAboutChange(Integer fundId, EventStructureDataChange eventStructObjChange,
+                                   List<Integer> structObjIds) {
+        notificationService.publishEvent(eventStructObjChange);
+
+        Collection<Integer> nodeIds = arrangementInternalService.findNodesByStructuredObjectIds(structObjIds)
+                .keySet();
+        if (!nodeIds.isEmpty()) {
+            notificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundId,
+                    nodeIds.toArray(new Integer[0])));
+        }
+
     }
 
 }

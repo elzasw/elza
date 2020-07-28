@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.domain.*;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -125,6 +126,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     private final Map<Integer, RecordType> apTypeIdMap = new HashMap<>();
 
     private final Map<Integer, Party> partyIdMap = new HashMap<>();
+
+    private final Map<Integer, Node> nodeIdMap = new HashMap<>();
 
     private final Map<Integer, RelationType> relationTypeIdMap = new HashMap<>();
 
@@ -528,6 +531,18 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         apIdMap.put(ap.getAccessPointId(), record);
 
         return record;
+    }
+
+    @Override
+    public Node getNode(ArrNode arrNode) {
+        Node node = nodeIdMap.get(arrNode.getNodeId());
+
+        if (node != null) {
+            return node;
+        }
+
+        //TODO implement
+        return null;
     }
 
     private RecordType getAPType(Integer apTypeId) {

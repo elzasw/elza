@@ -6,13 +6,14 @@ import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx'
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx'
 import {initForm} from "actions/form/inlineForm.jsx"
 import {indexById} from 'stores/app/utils.jsx'
+import RegistryField from "../registry/RegistryField";
 
 /**
  * Formulář inline editace výstupu.
  */
 class OutputInlineForm extends AbstractReactComponent {
 
-    static fields = ['name', 'outputTypeId', 'internalCode', 'templateId'];
+    static fields = ['name', 'outputTypeId', 'internalCode', 'templateId', 'anonymizedAp'];
 
     /**
      * Validace formuláře.
@@ -54,7 +55,7 @@ class OutputInlineForm extends AbstractReactComponent {
     }
 
     render() {
-        const {fields: {name, internalCode, templateId, outputTypeId}, disabled, outputTypes, allTemplates} = this.props;
+        const {fields: {name, internalCode, templateId, outputTypeId, anonymizedAp}, disabled, outputTypes, allTemplates} = this.props;
 
         let outputType = false;
         if (outputTypes) {
@@ -87,6 +88,10 @@ class OutputInlineForm extends AbstractReactComponent {
                         <option key='-templateId'/>
                         {templates && templates.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
                     </FormInput>
+                </div>
+                <div>
+                    <label className="control-label">{i18n("arr.output.title.anonymizedAp")}</label>
+                    <RegistryField {...anonymizedAp} addEmpty={true} emptyTitle={i18n("arr.output.title.anonymizedAp.remove")} disabled={disabled} />
                 </div>
             </form>
         </div>;

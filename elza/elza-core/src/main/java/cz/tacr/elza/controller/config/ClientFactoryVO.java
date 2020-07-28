@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -87,23 +88,6 @@ import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFileRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemPartyRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -803,6 +787,7 @@ public class ClientFactoryVO {
         ArrItemVO itemVO = null;
         ArrData data = item.getData();
         DataType dataType = DataType.fromId(item.getItemType().getDataTypeId()); //.getCode();
+
         switch (dataType) {
         case STRING:
             return ArrItemStringVO.newInstance(item);
@@ -847,13 +832,20 @@ public class ClientFactoryVO {
             case JSON_TABLE:
                 itemVO = new ArrItemJsonTableVO();
                 break;
+            case URI_REF:
+                itemVO = new ArrItemUriRefVO();
+                break;
+            case DATE:
+                itemVO = new ArrItemDateVO();
+                break;
             default:
                 throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
             }
             itemVO.setUndefined(true);
         }
 
-        BeanUtils.copyProperties(item, itemVO);
+        // ignorujeme nodeId, protože přepisuje nodeId z ArrItemUriRefVO
+        BeanUtils.copyProperties(item, itemVO, "nodeId");
         itemVO.setId(item.getItemId());
         itemVO.setReadOnly(item.getReadOnly());
 
@@ -1463,6 +1455,11 @@ public class ClientFactoryVO {
         List<ArrNodeOutput> nodes = outputServiceInternal.getOutputNodes(output, fundVersion.getLockChange());
         List<Integer> nodeIds = nodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
         outputExt.setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
+        outputExt.setScopes(outputServiceInternal.getRestrictedScopeVOs(output));
+        ApAccessPoint anonymizedAp = output.getAnonymizedAp();
+        if (anonymizedAp != null) {
+            outputExt.setAnonymizedAp(apFactory.createVO(anonymizedAp));
+        }
         return outputExt;
     }
 

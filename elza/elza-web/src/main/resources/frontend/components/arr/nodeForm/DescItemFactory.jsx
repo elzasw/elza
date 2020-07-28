@@ -12,6 +12,7 @@ import DescItemPartyRef from './DescItemPartyRef.jsx';
 import DescItemRecordRef from './DescItemRecordRef.jsx';
 import DescItemJsonTable from './DescItemJsonTable.jsx';
 import DescItemDate from './DescItemDate.jsx';
+import DescItemLink from './DescItemLink.jsx';
 
 export default class DescItemFactory {
     static typeComponentMap = {
@@ -28,8 +29,9 @@ export default class DescItemFactory {
         "DECIMAL": DescItemDecimal,
         "INT": DescItemInt,
         "COORDINATES": DescItemCoordinates,
-        "DATE": DescItemDate
-    }
+        "DATE": DescItemDate,
+        "URI_REF": DescItemLink
+    };
 
     static createDescItem = (type, props) => {
         const DescItem = DescItemFactory.typeComponentMap[type];

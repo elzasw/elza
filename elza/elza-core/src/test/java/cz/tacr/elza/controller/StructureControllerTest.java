@@ -220,7 +220,7 @@ public class StructureControllerTest extends AbstractControllerTest {
         // find structure types
         List<RulStructureTypeVO> structureTypes = findStructureTypes();
         assertNotNull(structureTypes);
-        assertEquals(2, structureTypes.size()); // SRD_PACKET, STAT_ZASTUPCE
+        assertEquals(3, structureTypes.size()); // SRD_PACKET, STAT_ZASTUPCE, SRD_*
 
         // check name and id
         RulStructureTypeVO structureType = structureTypes.get(0);

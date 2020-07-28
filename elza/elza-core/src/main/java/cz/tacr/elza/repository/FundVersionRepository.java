@@ -1,19 +1,18 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
- * 
+ *
  * @since 22.7.15
  */
 @Repository
@@ -21,7 +20,6 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
 
     @Query(value = "select v from arr_fund_version v join v.createChange ch join v.fund fa where fa.fundId = :fundId order by ch.changeDate desc")
     List<ArrFundVersion> findVersionsByFundIdOrderByCreateDateDesc(@Param(value = "fundId") Integer fundId);
-
 
     @Query(value = "select v from arr_fund_version v join v.fund fa where fa.fundId = :fundId and v.lockChange is null")
     ArrFundVersion findByFundIdAndLockChangeIsNull(@Param(value = "fundId") Integer fundId);
@@ -41,12 +39,19 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
     @Query(value = "SELECT v FROM arr_fund_version v JOIN FETCH v.fund f JOIN FETCH f.institution i LEFT JOIN FETCH v.lockChange lc WHERE v.fundVersionId = :fundVersionId")
     ArrFundVersion findByIdWithFetchForExport(@Param(value = "fundVersionId") Integer fundVersionId);
 
+    @Query(value = "SELECT v FROM arr_fund_version v JOIN FETCH v.fund f WHERE v.fundVersionId = :fundVersionId")
+    ArrFundVersion findByIdWithFetchFund(@Param(value = "fundVersionId") Integer fundVersionId);
+
     /**
      * Delete fund versions by fund
-     * 
+     *
      * @param fund
      */
     @Modifying
     @Query("DELETE FROM arr_fund_version fv WHERE fv.fund = ?1")
     void deleteByFund(ArrFund fund);
+
+    @Modifying
+    @Query("DELETE FROM arr_fund_version fv WHERE fv.fund = ?1  and fv.rootNodeId is null")
+    void deleteByFundNotRootNode(ArrFund fund);
 }

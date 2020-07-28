@@ -1098,6 +1098,8 @@ export function getItemClass(dataType) {
             return '.ApItemDateVO';
         case DataTypeCode.APFRAG_REF:
             return '.ApItemAPFragmentRefVO';
+        case DataTypeCode.URI_REF:
+            return '.ApItemUriRefVO';
         default:
             console.error("Unsupported data type", dataType);
             return null;

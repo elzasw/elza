@@ -1,16 +1,15 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
+import java.util.List;
 
 /**
  * Repozitory pro práci s hierarchickým stromem (level) AP.
@@ -65,14 +64,26 @@ public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, Level
     @Query("SELECT c FROM arr_level c WHERE c.node = ?1 and c.createChange < ?2 and (c.deleteChange is null or c.deleteChange > ?2)")
     ArrLevel findByNodeAndNotNullLockChange(ArrNode node, ArrChange lockChange);
 
+    @Query("SELECT c FROM arr_level c WHERE c.node.nodeId = ?1 and c.createChange < ?2 and (c.deleteChange is null or c.deleteChange > ?2)")
+    ArrLevel findByNodeIdAndNotNullLockChange(Integer nodeId, ArrChange lockChange);
+
     @Query("SELECT l FROM arr_level l WHERE l.node = ?1 order by l.createChange.changeDate asc")
     List<ArrLevel> findByNodeOrderByCreateChangeAsc(ArrNode node);
 
     @Query("SELECT l FROM arr_level l WHERE l.nodeParent = ?1")
     List<ArrLevel> findByParentNode(ArrNode node);
 
+    @Query("SELECT l FROM arr_level l WHERE l.node.nodeId = ?1 AND l.deleteChange is null")
+    ArrLevel findByNodeIdAndDeleteChangeIsNull(Integer nodeId);
+
     @Modifying
     @Query("DELETE FROM arr_level l WHERE l.node IN (SELECT n FROM arr_node n WHERE n.fund = ?1)")
     void deleteByNodeFund(ArrFund fund);
 
+    @Query("SELECT l FROM arr_level l "
+           + "inner join l.deleteChange c "
+           + "inner join c.primaryNode n "
+           + "inner join n.fund f "
+           + "where f = ?1")
+    List<ArrLevel> findHistoricalByFund(ArrFund fund);
 }

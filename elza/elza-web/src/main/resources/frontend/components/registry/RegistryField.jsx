@@ -35,9 +35,11 @@ class RegistryField extends AbstractReactComponent {
         roleTypeId: null,
         partyId: null,
         versionId: null,
+        useIdAsValue: false,
+        addEmpty: false,
     };
 
-    static PropTypes = {
+    static propTypes = {
         detail: React.PropTypes.bool.isRequired,
         footer: React.PropTypes.bool.isRequired,
         footerButtons: React.PropTypes.bool,
@@ -51,7 +53,10 @@ class RegistryField extends AbstractReactComponent {
         itemSpecId: React.PropTypes.number,
         roleTypeId: React.PropTypes.number,
         partyId: React.PropTypes.number,
-        versionId: React.PropTypes.number
+        versionId: React.PropTypes.number,
+        useIdAsValue: React.PropTypes.bool,
+        addEmpty: React.PropTypes.bool,
+        emptyTitle: React.PropTypes.string,
     };
 
     state = {registryList: [], count: null, searchText: null};
@@ -152,7 +157,7 @@ class RegistryField extends AbstractReactComponent {
 
     renderRecord = (props) => {
         const {item, highlighted, selected, ...otherProps} = props;
-        const {apTypeIdMap, eidTypes} = this.props;
+        const {apTypeIdMap, eidTypes, addEmpty, emptyTitle} = this.props;
 
         return <TooltipTrigger
             content={item.characteristics}
@@ -165,6 +170,8 @@ class RegistryField extends AbstractReactComponent {
                 {...item}
                 eidTypes={eidTypes}
                 apTypeIdMap={apTypeIdMap}
+                addEmpty={addEmpty}
+                emptyTitle={emptyTitle}
                 className={classNames('item', {focus: highlighted, active: selected})}
             />
         </TooltipTrigger>;
@@ -172,7 +179,13 @@ class RegistryField extends AbstractReactComponent {
 
 
     normalizeValue = (obj) => {
+        if (this.props.useIdAsValue) {
+            return obj;
+        }
         // změna typu aby se objekt dal použít jako návazný
+        if (this.props.addEmpty && (obj == null || obj.id === -1)) {
+            return null;
+        }
         const newobj = {
             ...obj,
             '@class': 'cz.tacr.elza.controller.vo.ApAccessPointVO',
@@ -181,7 +194,7 @@ class RegistryField extends AbstractReactComponent {
     };
 
     render() {
-        const {value, footer, detail, className, undefined, ...otherProps} = this.props;
+        const {value, footer, detail, className, undefined, addEmpty, ...otherProps} = this.props;
 
         let footerRender = null;
         if (footer) {
@@ -205,13 +218,18 @@ class RegistryField extends AbstractReactComponent {
             tmpVal = i18n('subNodeForm.descItemType.notIdentified');
         }
 
+        let items = this.state.registryList;
+        if (addEmpty) {
+            items = [{id: -1, name: 'Prázdný'}, ...items]
+        }
+
         return <Autocomplete
             {...otherProps}
             ref='autocomplete'
             customFilter
             className={classNames("autocomplete-record", className)}
             footer={footerRender}
-            items={this.state.registryList}
+            items={items}
             getItemId={(item) => item ? item.id : null}
             getItemName={(item) => item && item.record ? item.record : tmpVal}
             onSearchChange={this.handleSearchChange}

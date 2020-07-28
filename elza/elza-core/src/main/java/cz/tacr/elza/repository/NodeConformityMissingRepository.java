@@ -1,17 +1,16 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -51,5 +50,6 @@ public interface NodeConformityMissingRepository extends JpaRepository<ArrNodeCo
     @Query("DELETE FROM arr_node_conformity_missing nc WHERE nc.nodeConformity IN (SELECT n FROM arr_node_conformity n WHERE n.node.fund = ?1)")
     void deleteByNodeConformityNodeFund(ArrFund fund);
 
-    void deleteByNodeConformityNodeIdIn(List<Integer> nodeIds);
+    void deleteByNodeConformityNodeIdIn(Collection<Integer> nodeIds);
+    
 }

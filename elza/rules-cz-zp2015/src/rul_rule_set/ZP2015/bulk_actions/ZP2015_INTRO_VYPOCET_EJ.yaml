@@ -11,8 +11,11 @@ actions:
         aggegators:
            # Extra EJ - kdekoliv
            - excludeWhen:
-               # Nesmí být nastaven jako připojený záznam
-               itemType: ZP2015_CONNECTED_RECORD
+               someOf:
+                 # Nesmí být nastaven jako připojený záznam
+                 - itemType: ZP2015_CONNECTED_RECORD
+                 # Nesmí být nastaven jako pevné spojení s jinou
+                 - itemType: ZP2015_ITEM_LINK
              when:
                # Je nastaven typ i pocet
                itemType: ZP2015_EXTRA_UNITS
@@ -58,8 +61,11 @@ actions:
                ZP2015_EXTRA_UNITS_JIN: ZP2015_UNIT_COUNT_JIN
            # Neevidovaná jednotlivost v kartonu - pocita se jako hromadina
            - excludeWhen:
-               # Nesmí být nastaven jako připojený záznam
-               itemType: ZP2015_CONNECTED_RECORD
+               someOf:
+                 # Nesmí být nastaven jako připojený záznam
+                 - itemType: ZP2015_CONNECTED_RECORD
+                 # Nesmí být nastaven jako pevné spojení s jinou
+                 - itemType: ZP2015_ITEM_LINK
              when:
                all:
                  - itemType: ZP2015_LEVEL_TYPE
@@ -73,8 +79,11 @@ actions:
                ZP2015_PACKET_TYPE_KAR: ZP2015_UNIT_COUNT_KAR
                ZP2015_PACKET_TYPE_FAS: ZP2015_UNIT_COUNT_FAS
            - excludeWhen:
-               # Nesmí být nastaven jako připojený záznam
-               itemType: ZP2015_CONNECTED_RECORD
+               someOf:
+                 # Nesmí být nastaven jako připojený záznam
+                 - itemType: ZP2015_CONNECTED_RECORD
+                 # Nesmí být nastaven jako pevné spojení s jinou
+                 - itemType: ZP2015_ITEM_LINK
              when:
                someOf:
                  # Složka s počtem EJ
@@ -139,8 +148,11 @@ actions:
                ZP2015_UNIT_TYPE_JIN: ZP2015_UNIT_COUNT_JIN
            # Složka s hromadinou
            - excludeWhen:
-               # Nesmí být nastaven jako připojený záznam
-               itemType: ZP2015_CONNECTED_RECORD
+               someOf:
+                 # Nesmí být nastaven jako připojený záznam
+                 - itemType: ZP2015_CONNECTED_RECORD
+                 # Nesmí být nastaven jako pevné spojení s jinou
+                 - itemType: ZP2015_ITEM_LINK
              when:
                itemType: ZP2015_FOLDER_TYPE
                itemSpec: ZP2015_FOLDER_UNITS
@@ -150,3 +162,18 @@ actions:
              objectItemMapping:
                ZP2015_PACKET_TYPE_KAR: ZP2015_UNIT_COUNT_KAR
                ZP2015_PACKET_TYPE_FAS: ZP2015_UNIT_COUNT_FAS
+           # Digitální složka
+           - excludeWhen:
+               someOf:
+                 # Nesmí být nastaven jako připojený záznam
+                 - itemType: ZP2015_CONNECTED_RECORD
+                 # Nesmí být nastaven jako pevné spojení s jinou
+                 - itemType: ZP2015_ITEM_LINK
+             when:
+               itemType: ZP2015_FOLDER_TYPE
+               itemSpec: ZP2015_FOLDER_DAO
+             stopProcessing: true
+             itemType: ZP2015_FOLDER_TYPE
+             itemSpecMapping:
+               ZP2015_FOLDER_DAO: ZP2015_UNIT_COUNT_DAJ
+               

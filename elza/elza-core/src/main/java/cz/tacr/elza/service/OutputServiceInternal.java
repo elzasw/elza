@@ -1,23 +1,24 @@
 package cz.tacr.elza.service;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -29,20 +30,8 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.Authorization;
-import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrItemSettings;
-import cz.tacr.elza.domain.ArrNodeOutput;
-import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
-import cz.tacr.elza.domain.ArrOutputItem;
-import cz.tacr.elza.domain.ArrOutputResult;
-import cz.tacr.elza.domain.RulAction;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -105,6 +94,16 @@ public class OutputServiceInternal {
 
     private final RevertingChangesService revertingChangesService;
 
+    private OutputRestrictionScopeRepository outputRestrictionScopeRepository;
+
+    private final ApStateRepository stateRepository;
+
+    private final PartyService partyService;
+
+    @Autowired
+    @Lazy
+    private AsyncRequestService asyncRequestService;
+
     @Autowired
     public OutputServiceInternal(PlatformTransactionManager transactionManager,
                                  OutputGeneratorFactory outputGeneratorFactory,
@@ -123,7 +122,10 @@ public class OutputServiceInternal {
                                  RuleService ruleService,
                                  ActionRepository actionRepository,
                                  BulkActionRunRepository bulkActionRunRepository,
-                                 RevertingChangesService revertingChangesService) {
+                                 RevertingChangesService revertingChangesService,
+                                 OutputRestrictionScopeRepository outputRestrictionScopeRepository,
+                                 ApStateRepository stateRepository,
+                                 PartyService partyService) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
@@ -142,6 +144,9 @@ public class OutputServiceInternal {
         this.actionRepository = actionRepository;
         this.bulkActionRunRepository = bulkActionRunRepository;
         this.revertingChangesService = revertingChangesService;
+        this.outputRestrictionScopeRepository = outputRestrictionScopeRepository;
+        this.stateRepository = stateRepository;
+        this.partyService = partyService;
     }
 
     /**
@@ -160,6 +165,10 @@ public class OutputServiceInternal {
 
         // start queue manager
         taskExecutor.start();
+    }
+
+    public void stop() {
+        taskExecutor.stop();
     }
 
     /**
@@ -302,25 +311,7 @@ public class OutputServiceInternal {
         // save generating state only when caller transaction is committed
         output.setState(OutputState.GENERATING);
 
-        // create worker
-        OutputGeneratorWorker worker = new OutputGeneratorWorker(outputId, fundVersion.getFundVersionId(), em,
-                outputGeneratorFactory, this, resourcePathResolver, fundLevelServiceInternal, transactionManager, arrangementService);
-
-        // delegate security context
-        Runnable runnable = Authorization.createRunnableWithCurrentSecurity(worker);
-
-        // register after commit action
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCompletion(int status) {
-                if (status == TransactionSynchronization.STATUS_COMMITTED) {
-                    taskExecutor.addTask(runnable);
-                } else {
-                    logger.warn("Request for output is cancelled due to rollback of source transaction, outputId:{}",
-                            worker.getOutputId());
-                }
-            }
-        });
+        asyncRequestService.enqueue(fundVersion, output);
 
         return OutputRequestStatus.OK;
     }
@@ -508,5 +499,99 @@ public class OutputServiceInternal {
         }
 
         return OutputRequestStatus.OK;
+    }
+
+    public List<ApScopeVO> getRestrictedScopeVOs(ArrOutput output) {
+        StaticDataProvider sdp = staticDataService.getData();
+        List<ApScope> scopeList = getRestrictedScopes(output);
+
+        List<ApScopeVO> scopeVOList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(scopeList)) {
+            for (ApScope restrictionScope : scopeList) {
+                scopeVOList.add(ApScopeVO.newInstance(restrictionScope, sdp));
+            }
+        }
+
+        return scopeVOList;
+    }
+
+    public List<ApScope> getRestrictedScopes(ArrOutput output) {
+        List<ArrOutputRestrictionScope> restrictionScopeList = outputRestrictionScopeRepository.findByOutput(output.getOutputId());
+
+        List<ApScope> scopeList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(restrictionScopeList)) {
+            for (ArrOutputRestrictionScope restrictionScope : restrictionScopeList) {
+                scopeList.add(restrictionScope.getScope());
+            }
+        }
+        return scopeList;
+    }
+
+    public List<ArrOutputItem> restrictItemsByScopes(ArrOutput output, List<ArrOutputItem> outputItems) {
+        List<ApScope> restrictedScopes = getRestrictedScopes(output);
+        List<ArrOutputItem> restrictedOutputItems = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(outputItems)) {
+            for (ArrOutputItem outputItem : outputItems) {
+                ArrData data = outputItem.getData();
+                if (data instanceof ArrDataRecordRef) {
+                    ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
+                    if (dataRecordRef.getRecord() != null) {
+                        ApAccessPoint accessPoint = dataRecordRef.getRecord();
+                        ApState state = stateRepository.findLastByAccessPoint(accessPoint);
+                        if (state == null) {
+                            throw new ObjectNotFoundException("Stav pro přístupový bod neexistuje", BaseCode.INVALID_STATE)
+                                    .set("accessPointId", accessPoint.getAccessPointId());
+                        }
+                        ApScope scope = state.getScope();
+                        if (isScopeRestricted(scope, restrictedScopes)) {
+                            if (output.getAnonymizedAp() != null) {
+                                dataRecordRef.setRecord(output.getAnonymizedAp());
+                                restrictedOutputItems.add(outputItem);
+                            }
+                        } else {
+                            restrictedOutputItems.add(outputItem);
+                        }
+                    }
+                } else if (data instanceof ArrDataPartyRef) {
+                   ArrDataPartyRef dataPartyRef = (ArrDataPartyRef) data;
+                   if (dataPartyRef.getParty() != null && dataPartyRef.getParty().getAccessPoint() != null) {
+                       ApAccessPoint accessPoint = dataPartyRef.getParty().getAccessPoint();
+                       ApState state = stateRepository.findLastByAccessPoint(accessPoint);
+                       if (state == null) {
+                           throw new ObjectNotFoundException("Stav pro přístupový bod neexistuje", BaseCode.INVALID_STATE)
+                                   .set("accessPointId", accessPoint.getAccessPointId());
+                       }
+                       ApScope scope = state.getScope();
+                       if (isScopeRestricted(scope, restrictedScopes)) {
+                           if (output.getAnonymizedAp() != null) {
+                               ParParty anonymizedParty = partyService.findParPartyByAccessPoint(output.getAnonymizedAp());
+                               if (anonymizedParty != null) {
+                                   dataPartyRef.setParty(anonymizedParty);
+                                   restrictedOutputItems.add(outputItem);
+                               }
+                           }
+                       } else {
+                           restrictedOutputItems.add(outputItem);
+                       }
+                   }
+                } else {
+                    restrictedOutputItems.add(outputItem);
+                }
+            }
+        }
+
+        return restrictedOutputItems;
+    }
+
+    private boolean isScopeRestricted(ApScope scope, List<ApScope> restrictedScopes) {
+        if (CollectionUtils.isNotEmpty(restrictedScopes)) {
+            for (ApScope restrictedScope : restrictedScopes) {
+                if (restrictedScope.getScopeId().equals(scope.getScopeId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

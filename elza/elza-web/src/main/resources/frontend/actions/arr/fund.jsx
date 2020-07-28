@@ -134,6 +134,11 @@ export function deleteFund(fundId) {
     }
 }
 
+export function deleteFundHistory(fundId) {
+    return dispatch => {
+        return WebApi.deleteFundHistory(fundId);
+    }
+}
 
 export function exportFund(fundId, transformationName) {
     let requestData = {

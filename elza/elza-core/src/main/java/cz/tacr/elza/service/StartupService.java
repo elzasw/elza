@@ -6,6 +6,8 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,16 +20,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApFulltextProviderImpl;
-import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrDataPartyRef;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.search.DbQueueProcessor;
 import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -74,6 +66,8 @@ public class StartupService implements SmartLifecycle {
 
     private final ApplicationContext applicationContext;
 
+    private final AsyncRequestService asyncRequestService;
+
     private boolean running;
 
     @Autowired
@@ -93,7 +87,8 @@ public class StartupService implements SmartLifecycle {
                           final NodeConformityRepository nodeConformityRepository,
                           final VisiblePolicyRepository visiblePolicyRepository,
                           IndexWorkProcessor indexWorkProcessor,
-                          final ApplicationContext applicationContext) {
+                          final ApplicationContext applicationContext,
+                          final AsyncRequestService asyncRequestService) {
         this.nodeRepository = nodeRepository;
         this.arrangementService = arrangementService;
         this.bulkActionRunRepository = bulkActionRunRepository;
@@ -111,6 +106,7 @@ public class StartupService implements SmartLifecycle {
         this.visiblePolicyRepository = visiblePolicyRepository;
         this.indexWorkProcessor = indexWorkProcessor;
         this.applicationContext = applicationContext;
+        this.asyncRequestService = asyncRequestService;
     }
 
     @Autowired
@@ -125,6 +121,7 @@ public class StartupService implements SmartLifecycle {
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
         ArrDataPartyRef.setFulltextProvider(fulltextProvider);
+        ArrDataUriRef.setFulltextProvider(fulltextProvider);
         startInTransaction();
 
         running = true;
@@ -134,9 +131,10 @@ public class StartupService implements SmartLifecycle {
     @Override
     public void stop() {
         logger.info("Elza stopping ...");
+        asyncRequestService.stop();
         indexWorkProcessor.stopIndexing();
         structureDataService.stopGenerator();
-        // TODO: stop async processes
+        outputServiceInternal.stop();
         running = false;
     }
 
@@ -175,9 +173,10 @@ public class StartupService implements SmartLifecycle {
         clearOrphanedNodes();
         bulkActionConfigManager.load();
         syncNodeCacheService();
-        arrangementService.startNodeValidation();
         structureDataService.startGenerator();
         indexWorkProcessor.startIndexing();
+        asyncRequestService.start();
+        arrangementService.startNodeValidation(true);
         runQueuedRequests();
         runQueuedAccessPoints();
     }

@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.Access;
@@ -713,5 +714,46 @@ public class UsrPermission {
             } // if permission is global
             return false;
     }
+    }
+
+    /**
+     * Compare if two permissions are same
+     * 
+     * Permissions are same if all attributes except ID,
+     * userId and groupId are equal
+     * 
+     * @param otherPerm
+     *            Other permission
+     * @return true if permissions are same
+     */
+    public boolean isSamePermission(UsrPermission otherPerm) {
+        if (!Objects.equals(permission, otherPerm.permission)) {
+            return false;
+        }
+
+        if (!Objects.equals(nodeId, otherPerm.nodeId)) {
+            return false;
+        }
+
+        if (!Objects.equals(fundId, otherPerm.fundId)) {
+            return false;
+        }
+
+        if (!Objects.equals(scopeId, otherPerm.scopeId)) {
+            return false;
+        }
+
+        if (!Objects.equals(issueListId, otherPerm.issueListId)) {
+            return false;
+        }
+
+        if (!Objects.equals(userControlId, otherPerm.userControlId)) {
+            return false;
+        }
+
+        if (!Objects.equals(groupControlId, otherPerm.groupControlId)) {
+            return false;
+        }
+        return true;
     }
 }

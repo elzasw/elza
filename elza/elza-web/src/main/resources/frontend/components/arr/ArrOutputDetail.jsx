@@ -21,6 +21,13 @@ import FundNodesSelectForm from "./FundNodesSelectForm";
 import defaultKeymap from './ArrOutputDetailKeymap.jsx';
 import FundOutputFiles from "./FundOutputFiles";
 import ToggleContent from "../shared/toggle-content/ToggleContent";
+import {ApScopeVO, ArrOutputVO} from "../../typings/Outputs";
+import {AppFetchingStore} from "../../typings/globals";
+import ScopeList from './ScopeList';
+import ScopeField from "../admin/ScopeField";
+import * as scopeActions from "../../actions/scopes/scopes";
+import storeFromArea from "../../shared/utils/storeFromArea";
+import {WebApi} from "actions/index";
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -31,19 +38,40 @@ const OutputState = {
     ERROR: 'ERROR' /// Pomocný stav websocketu
 };
 
+type ComponentProps = {
+    versionId: number;
+    fund: any;
+    calendarTypes: any;
+    descItemTypes: any;
+    templates: any;
+    rulDataTypes: any;
+    closed: boolean;
+    readMode: boolean;
+    fundOutputDetail: ArrOutputVO & AppFetchingStore & {subNodeForm: any};
+};
+
+type ConnectedProps = {
+    outputTypes: any;
+    focus: any;
+    userDetail: any;
+};
+
+type Props = ComponentProps & ConnectedProps;
+
 /**
  * Formulář detailu a editace verze výstupu.
  */
-class ArrOutputDetail extends AbstractReactComponent {
+class ArrOutputDetail extends AbstractReactComponent<Props> {
     static contextTypes = { shortcuts: PropTypes.object };
     static childContextTypes = { shortcuts: PropTypes.object.isRequired };
+    props: Props;
     componentWillMount(){
         addShortcutManager(this,defaultKeymap);
     }
     getChildContext() {
         return { shortcuts: this.shortcutManager };
     }
-    static PropTypes = {
+    static propTypes = {
         versionId: React.PropTypes.number.isRequired,
         fund: React.PropTypes.object.isRequired,
         calendarTypes: React.PropTypes.object.isRequired,
@@ -60,7 +88,7 @@ class ArrOutputDetail extends AbstractReactComponent {
         const {versionId, fundOutputDetail} = this.props;
         fundOutputDetail.id !== null && this.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
         this.dispatch(outputTypesFetchIfNeeded());
-
+        this.props.dispatch(scopeActions.scopesListFetchIfNeeded());
         this.requestData(this.props.versionId, this.props.fundOutputDetail);
 
         this.trySetFocus(this.props)
@@ -70,6 +98,7 @@ class ArrOutputDetail extends AbstractReactComponent {
         const {versionId, fundOutputDetail} = nextProps;
         fundOutputDetail.id !== null && this.dispatch(fundOutputDetailFetchIfNeeded(versionId, fundOutputDetail.id));
         this.dispatch(outputTypesFetchIfNeeded());
+        nextProps.dispatch(scopeActions.scopesListFetchIfNeeded());
 
         this.requestData(nextProps.versionId, nextProps.fundOutputDetail);
 
@@ -107,7 +136,7 @@ class ArrOutputDetail extends AbstractReactComponent {
         console.log("#handleShortcuts", '[' + action + ']', this);
     };
 
-    handleSaveOutput = (data) => {
+    handleSaveOutput = (data: ApScopeVO) => {
         const {fund, fundOutputDetail} = this.props;
         this.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data));
     };
@@ -118,6 +147,22 @@ class ArrOutputDetail extends AbstractReactComponent {
         if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
             this.dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]))
         }
+    };
+
+    handleRemoveScope = (scope: ApScopeVO) => {
+        const {fundOutputDetail} = this.props;
+
+        if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
+            WebApi.deleteRestrictedScope(fundOutputDetail.id, scope.id);
+        }
+    };
+
+
+    handleAddScope = (scope: ApScopeVO) => {
+        const {fundOutputDetail} = this.props;
+
+        WebApi.addRestrictedScope(fundOutputDetail.id, scope.id);
+        // Zbytek zařídí websocket
     };
 
     handleRenderNodeItem = (node) => {
@@ -174,9 +219,18 @@ class ArrOutputDetail extends AbstractReactComponent {
     }
 
     render() {
-        const {fundOutputDetail, focus,
-            fund, versionId, descItemTypes,
-            calendarTypes, rulDataTypes, closed, readMode} = this.props;
+        const {
+            fundOutputDetail,
+            focus,
+            fund,
+            versionId,
+            descItemTypes,
+            calendarTypes,
+            rulDataTypes,
+            closed,
+            readMode,
+            scopeList
+        } = this.props;
 
         if (fundOutputDetail.id === null) {
             return <div className='arr-output-detail-container'>
@@ -207,6 +261,9 @@ class ArrOutputDetail extends AbstractReactComponent {
 
         let readonly = closed || readMode || !this.isEditable();
 
+        const existingScopes = (fundOutputDetail.scopes || []).map(i => i.id);
+        const connectableScopes = scopeList.rows && scopeList.rows.filter(s => existingScopes.indexOf(s.id) === -1);
+
         return <Shortcuts name='ArrOutputDetail' className={"arr-output-detail-container"} style={{height: "100%"}} handler={this.handleShortcuts}>
             <div className="output-definition-commons">
                 <OutputInlineForm
@@ -217,6 +274,15 @@ class ArrOutputDetail extends AbstractReactComponent {
                 {fundOutputDetail.error && <div>
                     <FormInput componentClass="textarea" value={fundOutputDetail.error} disabled label={i18n('arr.output.title.error')}/>
                 </div>}
+            </div>
+            <div>
+                <label className="control-label">{i18n("arr.output.title.scopes")}</label>
+                {!readonly && <ScopeField scopes={connectableScopes} onChange={this.handleAddScope} value={null} />}
+                <ScopeList
+                    scopes={fundOutputDetail.scopes || []}
+                    onRemove={this.handleRemoveScope}
+                    readOnly={readonly}
+                />
             </div>
             <div>
                 <label className="control-label">{i18n("arr.output.title.nodes")}</label>
@@ -243,6 +309,7 @@ function mapStateToProps(state) {
         outputTypes: state.refTables.outputTypes.items,
         focus,
         userDetail,
+        scopeList: storeFromArea(state, scopeActions.AREA_SCOPE_LIST),
     }
 }
 

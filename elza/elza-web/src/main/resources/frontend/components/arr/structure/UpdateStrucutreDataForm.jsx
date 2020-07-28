@@ -3,7 +3,7 @@ import {connect} from 'react-redux';
 import {Button, Modal} from "react-bootstrap";
 import {i18n, AbstractReactComponent} from "components";
 import StructureSubNodeForm from "./StructureSubNodeForm";
-import {structureNodeFormFetchIfNeeded} from "../../../actions/arr/structureNodeForm";
+import {structureNodeFormFetchIfNeeded, structureNodeFormSelectId} from "../../../actions/arr/structureNodeForm";
 import Loading from "../../shared/loading/Loading";
 import PropTypes from 'prop-types';
 
@@ -20,6 +20,7 @@ class UpdateStructureDataForm extends AbstractReactComponent {
 
     componentWillMount() {
         const {fundVersionId, id} = this.props;
+        this.props.dispatch(structureNodeFormSelectId(id));
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
@@ -29,18 +30,19 @@ class UpdateStructureDataForm extends AbstractReactComponent {
     }
 
     render() {
-        const {onClose, fundVersionId, fundId, structureNodeForm, readMode, descItemFactory} = this.props;
+        const {onClose, fundVersionId, fundId, structureNodeForm, readMode, descItemFactory, id} = this.props;
 
         return <div>
             <Modal.Body>
-            {structureNodeForm.fetched ?
+            {structureNodeForm && structureNodeForm.fetched ?
                 <StructureSubNodeForm
+                    id={id}
                     versionId={fundVersionId}
                     readMode={readMode}
                     fundId={fundId}
                     selectedSubNodeId={structureNodeForm.id}
                     descItemFactory={descItemFactory}
-                />:
+                /> :
                 <Loading />
             }
             </Modal.Body>
@@ -52,12 +54,8 @@ class UpdateStructureDataForm extends AbstractReactComponent {
 }
 
 export default connect((state, props) => {
-    const {arrRegion} = state;
-    let fund = null;
-    if (arrRegion.activeIndex != null) {
-        fund = arrRegion.funds[arrRegion.activeIndex];
-    }
+    const {structures} = state;
     return {
-        structureNodeForm: fund ? fund.structureNodeForm : null
+        structureNodeForm: structures.stores.hasOwnProperty(props.id) ? structures.stores[props.id] : null
     }
 })(UpdateStructureDataForm);

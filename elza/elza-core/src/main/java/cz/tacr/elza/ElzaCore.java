@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +57,21 @@ public class ElzaCore {
     @Value("${elza.hibernate.index.thread_max:4}")
     private int threadMax;
 
+    @Value("${elza.asyncActions.node.threadCount:5}")
+    @Min(1)
+    @Max(50)
+    private int nodeThreadCount;
+
+    @Value("${elza.asyncActions.bulk.threadCount:5}")
+    @Min(1)
+    @Max(50)
+    private int bulkThreadCount;
+
+    @Value("${elza.asyncActions.output.threadCount:5}")
+    @Min(1)
+    @Max(50)
+    private int outputThreadCount;
+
     public static void main(final String[] args) {
         configure();
         SpringApplication.run(ElzaCore.class, args);
@@ -87,7 +104,17 @@ public class ElzaCore {
     @Bean(name = "threadPoolTaskExecutorBA")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorBulkAction() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(10);
+        threadPoolTaskExecutor.setCorePoolSize(bulkThreadCount);
+        threadPoolTaskExecutor.setMaxPoolSize(48);
+        threadPoolTaskExecutor.setQueueCapacity(512);
+        threadPoolTaskExecutor.afterPropertiesSet();
+        return threadPoolTaskExecutor;
+    }
+
+    @Bean(name = "threadPoolTaskExecutorAR")
+    public ThreadPoolTaskExecutor threadPoolTaskExecutorAsyncRequest() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(nodeThreadCount);
         threadPoolTaskExecutor.setMaxPoolSize(48);
         threadPoolTaskExecutor.setQueueCapacity(512);
         threadPoolTaskExecutor.afterPropertiesSet();
@@ -98,6 +125,15 @@ public class ElzaCore {
     public ThreadPoolTaskExecutor threadPoolTaskExecutorRequestQueue() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(3);
+        threadPoolTaskExecutor.setMaxPoolSize(10);
+        threadPoolTaskExecutor.afterPropertiesSet();
+        return threadPoolTaskExecutor;
+    }
+
+    @Bean(name = "threadPoolTaskExecutorOP")
+    public ThreadPoolTaskExecutor threadPoolTaskExecutorOutput() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(outputThreadCount);
         threadPoolTaskExecutor.setMaxPoolSize(10);
         threadPoolTaskExecutor.afterPropertiesSet();
         return threadPoolTaskExecutor;
@@ -119,6 +155,11 @@ public class ElzaCore {
     @Bean(name = "conformityUpdateTaskExecutor")
     public Executor conformityUpdateTaskExecutor() {
         return threadPoolTaskExecutorBulkAction();
+    }
+
+    @Bean(name = "asyncRequestTaskExecutor")
+    public Executor asyncRequestTaskExectutor() {
+        return threadPoolTaskExecutorAsyncRequest();
     }
 
     @Bean

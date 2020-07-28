@@ -47,6 +47,7 @@
     </fund-views>
     <allow-structure-types settings-type="STRUCTURE_TYPES" entity-type="RULE">
         <ns4:type code="SRD_PACKET"/>
+        <ns4:type code="SRD_ACCESS_RESTRICTION"/>
     </allow-structure-types>
 	<type-groups settings-type="TYPE_GROUPS" entity-type="RULE">
         <ns3:default>

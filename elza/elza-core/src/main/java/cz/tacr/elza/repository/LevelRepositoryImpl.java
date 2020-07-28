@@ -74,6 +74,15 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     }
 
     @Override
+    public ArrLevel findByNodeId(final Integer nodeId, @Nullable final ArrChange lockChange) {
+        if (lockChange == null) {
+            return levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
+        } else {
+            return levelRepository.findByNodeIdAndNotNullLockChange(nodeId, lockChange);
+        }
+    }
+
+    @Override
     public Integer countChildsByParent(final ArrNode node, @Nullable final ArrChange lockChange) {
         if(lockChange == null){
             return levelRepository.countChildsByParent(node);

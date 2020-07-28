@@ -1,17 +1,16 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrNode;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrNode;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Martin Šlapa
@@ -33,6 +32,8 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
     void deleteByNode(ArrNode node);
 
     void deleteByNodeFund(ArrFund fund);
+
+    void deleteByNodeIdIn(Collection<Integer> nodeIds);
 
     @Query("SELECT dl" +
             " FROM arr_dao_link dl" +
