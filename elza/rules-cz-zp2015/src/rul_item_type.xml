@@ -279,8 +279,8 @@
         <use-specification>true</use-specification>
     </item-type>
     <item-type code="ZP2015_RESTRICTION_ACCESS_DATE" data-type="DATE">
-        <name>Rozhodné datum lhůty omezení</name>
-        <shortcut>Rozhodné datum</shortcut>
+        <name>Datum zveřejnění</name>
+        <shortcut>Datum zveřejnění</shortcut>
         <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
