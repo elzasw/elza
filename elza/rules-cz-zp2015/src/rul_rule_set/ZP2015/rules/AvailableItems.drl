@@ -419,7 +419,9 @@ when
     // nesmi jiz mit deti
     $activeLevel : ActiveLevel( !hasChildren )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_OTHER") ) from $activeLevel.descItems
-    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_LOGICAL") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", 
+    													"ZP2015_FOLDER_LOGICAL", 
+    													"ZP2015_FOLDER_SINGLE_TYPE") ) from $activeLevel.descItems
     $itemType : RulItemTypeExt(code == "ZP2015_EXTRA_UNITS")
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
@@ -430,7 +432,9 @@ no-loop
 when
     $activeLevel : ActiveLevel( !hasChildren )
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_OTHER") ) from $activeLevel.descItems
-    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_LOGICAL") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", 
+    												    "ZP2015_FOLDER_LOGICAL",
+    												    "ZP2015_FOLDER_SINGLE_TYPE") ) from $activeLevel.descItems
     $itemType : RulItemTypeExt(code == "ZP2015_EXTRA_UNITS")
     $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
 then
