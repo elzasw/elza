@@ -35,6 +35,8 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.service.RuleService;
 
+import static cz.tacr.elza.repository.ExceptionThrow.descItem;
+
 /**
  * Zpracování pravidel pro validaci parametrů uzlu.
  *
@@ -165,7 +167,7 @@ public class ValidationRules extends Rules {
 					throw new SystemException("Neni vyplneno id chybneho atributu.", BaseCode.PROPERTY_NOT_EXIST)
 					        .set("property", "descItemId");
 				}
-				validationResult.setDescItem(descItemRepository.findOne(descItemId));
+				validationResult.setDescItem(descItemRepository.findById(descItemId).orElseThrow(descItem(descItemId)));
 				break;
 			default:
 				throw new IllegalArgumentException(

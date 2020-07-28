@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain.vo;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 
 /**

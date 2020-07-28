@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller.config;
 
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -8,7 +7,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +28,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.config.ConfigRules;
@@ -41,9 +38,6 @@ import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.WfFactory;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.nodes.*;
-import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
@@ -1374,7 +1368,7 @@ public class ClientFactoryVO {
             didCodes.add(requestForDaoLink.getDidCode());
         }
 
-        List<ArrNode> nodes = nodeRepository.findByUuid(didCodes);
+        List<ArrNode> nodes = nodeRepository.findAllByUuidIn(didCodes);
         Set<Integer> nodeIds = new HashSet<>();
         for (ArrNode node : nodes) {
             nodeIds.add(node.getNodeId());
@@ -1400,7 +1394,7 @@ public class ClientFactoryVO {
             daoIds.add(daoRequestDao.getDao().getDaoId());
         }
 
-        List<ArrDao> arrDaos = daoRepository.findAll(daoIds);
+        List<ArrDao> arrDaos = daoRepository.findAllById(daoIds);
         Map<Integer, ArrDao> daosMap = new HashMap<>(arrDaos.size());
         for (ArrDao arrDao : arrDaos) {
             daosMap.put(arrDao.getDaoId(), arrDao);

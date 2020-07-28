@@ -1,6 +1,8 @@
 package cz.tacr.elza.ws;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -9,7 +11,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.jayway.restassured.RestAssured;
+import io.restassured.RestAssured;
 
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.ArrangementController;
@@ -58,7 +60,6 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     }
 
     @Test
-    @Ignore
     public void importTest() {
         createDigitalRepo();
 
@@ -75,7 +76,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         // Musí existovat root node
         assertNotNull(treeData.getNodes());
         // Musí existovat pouze root node
-        assertTrue(treeData.getNodes().size() == 1);
+        assertEquals(1, treeData.getNodes().size());
         TreeNodeVO rootTreeNodeClient = treeData.getNodes().iterator().next();
         ArrNodeVO rootNode = convertTreeNode(rootTreeNodeClient);
 
@@ -94,7 +95,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         daoServiceClient._import(daoImport);
 
         List<ArrDaoVO> daos = this.findDaos(fundVersion.getId());
-        Assert.assertTrue(daos.size()==1);
+        Assert.assertEquals(1, daos.size());
         ArrDaoVO daoVo = daos.get(0);
 
         // connect
@@ -108,16 +109,16 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         DescFormDataNewVO formData = getNodeFormData(newNodeId, fundVersion.getId());
         assertNotNull(formData);
         List<ArrItemVO> descItems = formData.getDescItems();
-        assertTrue(descItems.size() == 1);
+        assertEquals(1, descItems.size());
         ArrItemVO descItem = descItems.get(0);
         assertTrue(descItem.getReadOnly());
         assertTrue(descItem instanceof ArrItemTextVO);
         ArrItemTextVO descItemTextVO = (ArrItemTextVO) descItem;
-        assertTrue(descItemTextVO.getValue().equals(TEXT_VALUE_XY));
+        assertEquals(TEXT_VALUE_XY, descItemTextVO.getValue());
 
         // ověření napojeni - neexistence volnych dao
         List<ArrDaoVO> daosConnected = findDaos(fundVersion.getId());
-        assertTrue(daosConnected.size() == 0);
+        assertEquals(0, daosConnected.size());
 
         helperTestService.waitForWorkers();
         // disconnect
@@ -125,10 +126,10 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
 
         // ověření vztahu
         List<ArrDaoVO> daosConnected2 = findDaos(fundVersion.getId());
-        assertTrue(daosConnected2.size() == 1);
+        assertEquals(1, daosConnected2.size());
         ArrDaoVO daoConnected2 = daosConnected2.get(0);
         ArrDaoLinkVO daoLinkVo2 = daoConnected2.getDaoLink();
-        assertTrue(daoLinkVo2 == null);
+        assertNull(daoLinkVo2);
     }
 
     private DaoPackage createDaoPackage(String fundCode, String digitRepoCode, String packageId, DaoType daoType,

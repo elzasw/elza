@@ -122,7 +122,7 @@ public class RequestService {
         }
 
         digitizationRequestRepository.save(digitizationRequest);
-        digitizationRequestNodeRepository.save(requestNodes);
+        digitizationRequestNodeRepository.saveAll(requestNodes);
 
         sendNotification(fundVersion, digitizationRequest, EventType.REQUEST_CREATE, nodes);
 
@@ -161,7 +161,7 @@ public class RequestService {
         }
 
         daoRequestRepository.save(daoRequest);
-        daoRequestDaoRepository.save(requestDaos);
+        daoRequestDaoRepository.saveAll(requestDaos);
 
         sendDaoNotification(fundVersion, daoRequest, EventType.REQUEST_DAO_CREATE, daos);
 
@@ -211,7 +211,7 @@ public class RequestService {
         digitizationRequest.setDigitizationFrontdesk(digitizationFrontdesk);
 
         digitizationRequestRepository.save(digitizationRequest);
-        digitizationRequestNodeRepository.save(digitizationRequestNodes);
+        digitizationRequestNodeRepository.saveAll(digitizationRequestNodes);
         sendNotification(fundVersion, digitizationRequest, EventType.REQUEST_CHANGE, nodes);
     }
 
@@ -250,7 +250,7 @@ public class RequestService {
         }
 
         daoRequestRepository.save(daoRequest);
-        daoRequestDaoRepository.save(daoRequestDaos);
+        daoRequestDaoRepository.saveAll(daoRequestDaos);
         sendDaoNotification(fundVersion, daoRequest, EventType.REQUEST_DAO_CHANGE, daos);
     }
 
@@ -267,7 +267,7 @@ public class RequestService {
             throw new BusinessException("Požadavek již neobsahuje odebírané JP", ArrangementCode.ALREADY_REMOVED);
         }
 
-        digitizationRequestNodeRepository.delete(digitizationRequestNodes);
+        digitizationRequestNodeRepository.deleteAll(digitizationRequestNodes);
         sendNotification(fundVersion, digitizationRequest, EventType.REQUEST_CHANGE, nodes);
     }
 

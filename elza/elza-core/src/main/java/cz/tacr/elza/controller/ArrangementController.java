@@ -480,8 +480,8 @@ public class ArrangementController {
      * Smazání hodnot atributu podle typu.
      *
      * @param fundVersionId identfikátor verze AP
-     * @param nodeId        identfikátor výstupu
-     * @param nodeVersion   verze výstupu
+     * @param outputId      identfikátor výstupu
+     * @param outputVersion verze výstupu
      * @param itemTypeId    identfikátor typu hodnoty atributu
      */
     @Transactional
@@ -869,12 +869,14 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ValidateResult copyLevelsValidate(@RequestBody final CopyNodesValidate copyNodesValidate) {
         Assert.notNull(copyNodesValidate, "Neplatná struktura");
-        Assert.notNull(copyNodesValidate.getSourceFundVersionId(), "Neplatný identifikátor zdrojové verze AS");
+        Integer sourceFundVersionId = copyNodesValidate.getSourceFundVersionId();
+        Integer targetFundVersionId = copyNodesValidate.getTargetFundVersionId();
+        Assert.notNull(sourceFundVersionId, "Neplatný identifikátor zdrojové verze AS");
         Assert.notEmpty(copyNodesValidate.getSourceNodes(), "Musí být vybrána alespoň jedna cílová JP");
-        Assert.notNull(copyNodesValidate.getTargetFundVersionId(), "Neplatný identifikátor cílové verze AS");
+        Assert.notNull(targetFundVersionId, "Neplatný identifikátor cílové verze AS");
 
-        ArrFundVersion sourceFundVersion = fundVersionRepository.findOne(copyNodesValidate.getSourceFundVersionId());
-        ArrFundVersion targetFundVersion = fundVersionRepository.findOne(copyNodesValidate.getTargetFundVersionId());
+        ArrFundVersion sourceFundVersion = arrangementService.getFundVersion(sourceFundVersionId);
+        ArrFundVersion targetFundVersion = arrangementService.getFundVersion(targetFundVersionId);
 
         List<ArrNode> sourceNodes = factoryDO.createNodes(copyNodesValidate.getSourceNodes());
 
@@ -889,14 +891,15 @@ public class ArrangementController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public void copyLevels(@RequestBody final CopyNodesParams copyNodesParams) {
+         Integer targetFundVersionId = copyNodesParams.getTargetFundVersionId();
         Assert.notNull(copyNodesParams, "Neplatná struktura");
         Assert.notNull(copyNodesParams.getSourceFundVersionId(), "Neplatný identifikátor zdrojové verze AS");
         Assert.notEmpty(copyNodesParams.getSourceNodes(), "Musí být vybrána alespoň jedna cílová JP");
-        Assert.notNull(copyNodesParams.getTargetFundVersionId(), "Neplatný identifikátor cílové verze AS");
+        Assert.notNull(targetFundVersionId, "Neplatný identifikátor cílové verze AS");
         Assert.notNull(copyNodesParams.getTargetStaticNode(), "Neplatná cílová JP");
         Assert.notNull(copyNodesParams.getSelectedDirection(), "Neplatný směr vložení");
 
-        ArrFundVersion targetFundVersion = fundVersionRepository.findOne(copyNodesParams.getTargetFundVersionId());
+        ArrFundVersion targetFundVersion = arrangementService.getFundVersion(targetFundVersionId);
 
         ArrNode targetStaticNode = factoryDO.createNode(copyNodesParams.getTargetStaticNode());
         ArrNode targetStaticParentNode = copyNodesParams.getTargetStaticNodeParent() == null ? null : factoryDO
@@ -1022,9 +1025,10 @@ public class ArrangementController {
                                            @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                            @PathVariable(value = "itemTypeId") final Integer itemTypeId,
                                            @RequestParam(value = "strict", required = false, defaultValue = "false") final Boolean strict) {
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
+        RulItemType itemType = itemTypeRepository.findById(itemTypeId)
+                .orElseThrow(() -> new ObjectNotFoundException("Typ atributu neexistuje", BaseCode.ID_NOT_EXIST).setId(itemTypeId));
 
         return outputService.switchOutputCalculating(output, fundVersion, itemType, strict);
     }
@@ -1043,8 +1047,7 @@ public class ArrangementController {
         Assert.notNull(fundVersionId, "Identifikátor verze musí být vyplněn");
         Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        Assert.notNull(fundVersion, "Verze AP neexistuje");
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
         ArrOutput output = outputService.getOutput(outputId);
         List<ArrOutputItem> outputItems = outputService.getOutputItems(fundVersion, output);
@@ -1122,10 +1125,7 @@ public class ArrangementController {
     @RequestMapping(value = "/getFund/{fundId}", method = RequestMethod.GET)
     @Transactional
     public ArrFundVO getFund(@PathVariable("fundId") final Integer fundId) {
-        ArrFund fund = fundRepository.findOne(fundId);
-        if (fund == null) {
-            throw new ObjectNotFoundException("AS s ID=" + fundId + " nebyl nalezen", ArrangementCode.FUND_NOT_FOUND).set("id", fundId);
-        }
+        ArrFund fund = arrangementService.getFund(fundId);
         return factoryVo.createFundVO(fund, true, userService.getLoggedUserDetail());
     }
 
@@ -1175,14 +1175,14 @@ public class ArrangementController {
             return Collections.emptyList();
         }
 
-        List<ArrFundVersion> versions = fundVersionRepository.findAll(idsParam.getIds());
+        List<ArrFundVersion> versions = fundVersionRepository.findAllById(idsParam.getIds());
 
         UserDetail user = userService.getLoggedUserDetail();
         List<ArrFundVO> result = new LinkedList<>();
         for (ArrFundVersion version : versions) {
             ArrFundVO fund = factoryVo.createFundVO(version.getFund(), false, user);
             ArrFundVersionVO versionVo = factoryVo.createFundVersion(version, user);
-            fund.setVersions(Arrays.asList(versionVo));
+            fund.setVersions(Collections.singletonList(versionVo));
 
             result.add(fund);
         }
@@ -1250,9 +1250,7 @@ public class ArrangementController {
                                            @RequestParam(value = "dateRange", required = false) final String dateRange) {
         Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
 
-        ArrFundVersion version = fundVersionRepository.findOne(versionId);
-
-        Assert.notNull(version, "Nebyla nalezena verze s id " + versionId);
+        ArrFundVersion version = arrangementService.getFundVersion(versionId);
 
         UserDetail user = userService.getLoggedUserDetail();
         ArrFundVersion nextVersion = arrangementService.approveVersion(version, dateRange);
@@ -1316,8 +1314,9 @@ public class ArrangementController {
         Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
         Assert.notNull(around, "Velikost okolí musí být vyplněno");
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(versionId);
-        ArrNode node = nodeRepository.findOne(nodeId);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(versionId);
+        ArrNode node = nodeRepository.findById(nodeId)
+                .orElseThrow(() -> new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST).setId(nodeId));
 
         Assert.notNull(fundVersion, "Verze AP neexistuje");
         Assert.notNull(node, "Uzel neexistuje");
@@ -1353,14 +1352,16 @@ public class ArrangementController {
 
         // Kontrola a vytvoření AS
         Assert.hasText(createFund.getName(), "Musí být vyplněn název");
-        Assert.notNull(createFund.getInstitutionId(), "Identifikátor instituce musí být vyplněn");
-        Assert.notNull(createFund.getRuleSetId(), "Identifikátor pravidel musí být vyplněn");
+        Integer institutionId = createFund.getInstitutionId();
+        Assert.notNull(institutionId, "Identifikátor instituce musí být vyplněn");
+        Integer ruleSetId = createFund.getRuleSetId();
+        Assert.notNull(ruleSetId, "Identifikátor pravidel musí být vyplněn");
 
-        RulRuleSet ruleSet = ruleSetRepository.findOne(createFund.getRuleSetId());
-        Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s id " + createFund.getRuleSetId());
+        RulRuleSet ruleSet = ruleSetRepository.findById(ruleSetId)
+                .orElseThrow(() -> new ObjectNotFoundException("Nebyla nalezena pravidla tvorby", BaseCode.ID_NOT_EXIST).setId(ruleSetId));
 
-        ParInstitution institution = institutionRepository.findOne(createFund.getInstitutionId());
-        Assert.notNull(institution, "Nebyla nalezena instituce s id " + createFund.getInstitutionId());
+        ParInstitution institution = institutionRepository.findById(institutionId)
+                .orElseThrow(() -> new ObjectNotFoundException("Nebyla nalezena instituce", BaseCode.ID_NOT_EXIST).setId(institutionId));
 
         ArrFund newFund = arrangementService
                 .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getDateRange(), null, null, null, null);
@@ -1431,10 +1432,13 @@ public class ArrangementController {
         StaticDataProvider staticData = staticDataService.getData();
         List<ApScope> apScopes = FactoryUtils.transformList(arrFundVO.getApScopes(), s -> s.createEntity(staticData));
 
+        RulRuleSet ruleSet = ruleSetRepository.findById(ruleSetId)
+                .orElseThrow(() -> new ObjectNotFoundException("Pravidla nenalezena", BaseCode.ID_NOT_EXIST).setId(ruleSetId));
+
         return factoryVo.createFundVO(
                 arrangementService.updateFund(
                         factoryDO.createFund(arrFundVO),
-                        ruleSetRepository.findOne(ruleSetId),
+                        ruleSet,
                         apScopes
                 ), false, userService.getLoggedUserDetail()
         );
@@ -1453,7 +1457,7 @@ public class ArrangementController {
 
 
         Integer fundVersionId = moveParam.getVersionId();
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
         ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
         ArrNode staticNodeParent = factoryDO.createNode(moveParam.getStaticNodeParent());
@@ -1483,7 +1487,7 @@ public class ArrangementController {
 
 
         Integer fundVersionId = moveParam.getVersionId();
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
         ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
         ArrNode staticNodeParent = factoryDO.createNode(moveParam.getStaticNodeParent());
@@ -1513,7 +1517,7 @@ public class ArrangementController {
         Assert.notNull(moveParam, "Parametry přesunu musí být vyplněny");
 
         Integer fundVersionId = moveParam.getVersionId();
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
         ArrNode staticNode = factoryDO.createNode(moveParam.getStaticNode());
         List<ArrNode> transportNodes = factoryDO.createNodes(moveParam.getTransportNodes());
@@ -1541,7 +1545,8 @@ public class ArrangementController {
             @RequestParam(required = false, value = "withGroups") final Boolean withGroups,
             @RequestBody final DescriptionItemParam param) {
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(param.getVersionId());
+        Integer fundVersionId = param.getVersionId();
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         Validate.notNull(fundVersion, "Neplatná verze AP");
 
         Integer fundId = fundVersion.getFund().getFundId();
@@ -1589,7 +1594,7 @@ public class ArrangementController {
 
         Assert.notNull(addLevelParam.getDirection(), "Směr musí být vyplněn");
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(addLevelParam.getVersionId());
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(addLevelParam.getVersionId());
 
         ArrNode staticNode = factoryDO.createNode(addLevelParam.getStaticNode());
         ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ? null : factoryDO
@@ -1597,7 +1602,7 @@ public class ArrangementController {
 
         Set<RulItemType> descItemCopyTypes = new HashSet<>();
         if (CollectionUtils.isNotEmpty(addLevelParam.getDescItemCopyTypes())) {
-            descItemCopyTypes.addAll(itemTypeRepository.findAll(addLevelParam.getDescItemCopyTypes()));
+            descItemCopyTypes.addAll(itemTypeRepository.findAllById(addLevelParam.getDescItemCopyTypes()));
         }
 
 
@@ -1635,7 +1640,7 @@ public class ArrangementController {
         ArrNode deleteParent = nodeParam.getStaticNodeParent() == null ? null : factoryDO
                 .createNode(nodeParam.getStaticNodeParent());
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(nodeParam.getVersionId());
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(nodeParam.getVersionId());
 
         ArrLevel deleteLevel = moveLevelService.deleteLevel(fundVersion, deleteNode, deleteParent);
 
@@ -1761,10 +1766,7 @@ public class ArrangementController {
         Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(showAll, "Parametr musí být vyplněn");
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(versionId);
-        if (fundVersion == null) {
-            throw new SystemException("Neexistuje verze archivní pomůcky s id " + versionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
-        }
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(versionId);
 
         List<ArrNodeConformity> validationErrors = arrangementService.findConformityErrors(fundVersion, showAll);
 
@@ -1782,10 +1784,7 @@ public class ArrangementController {
     public Integer validateVersionCount(@PathVariable("versionId") final Integer versionId) {
         Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(versionId);
-        if (fundVersion == null) {
-            throw new SystemException("Neexistuje verze archivní pomůcky s id " + versionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", versionId);
-        }
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(versionId);
 
         return arrangementService.getVersionErrorCount(fundVersion);
     }
@@ -1891,7 +1890,7 @@ public class ArrangementController {
                                            @RequestBody(required = false) final Set<Integer> specIds) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = ruleService.getItemTypeById(descItemTypeId);
 
         return filterTreeService.filterUniqueValues(fundVersion, descItemType, specIds, fulltext, max);
     }
@@ -1909,7 +1908,7 @@ public class ArrangementController {
                                            @RequestBody final Filters filters) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
+        RulItemType descItemType = ruleService.getItemTypeById(itemTypeId);
         List<DescItemTypeFilter> descItemFilters = factoryDO.createFilters(filters);
         List<Integer> specIds = filterTreeService.findUniqueSpecIds(fundVersion, descItemType, descItemFilters, filters.getNodeId());
         specIds.add(null); // pro "Prázdné" položky
@@ -1934,7 +1933,7 @@ public class ArrangementController {
                                   @RequestBody final ReplaceDataBody replaceDataBody) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = ruleService.getItemTypeById(descItemTypeId);
 
         replaceDataBody.getNodes()
                 .forEach(node -> descriptionItemService.checkNodeWritePermission(versionId, node.getId(), node.getVersion()));
@@ -1943,7 +1942,7 @@ public class ArrangementController {
 
         Set<RulItemSpec> specifications =
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
-                        new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+                        new HashSet<>(itemSpecRepository.findAllById(replaceDataBody.getSpecIds()));
 
         descriptionItemService.replaceDescItemValues(fundVersion, descItemType, nodesDO, specifications, searchText, replaceText, replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
@@ -1966,16 +1965,16 @@ public class ArrangementController {
                                 @RequestBody final ReplaceDataBody replaceDataBody) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = ruleService.getItemTypeById(descItemTypeId);
 
         replaceDataBody.getNodes()
                 .forEach(node -> descriptionItemService.checkNodeWritePermission(versionId, node.getId(), node.getVersion()));
 
         Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
-        RulItemSpec newDescItemSpec = newDescItemSpecId == null ? null : itemSpecRepository.findOne(newDescItemSpecId);
+        RulItemSpec newDescItemSpec = newDescItemSpecId == null ? null : ruleService.getItemSpecById(newDescItemSpecId);
         Set<RulItemSpec> specifications = CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
-                new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+                new HashSet<>(itemSpecRepository.findAllById(replaceDataBody.getSpecIds()));
 
         descriptionItemService
                 .placeDescItemValues(fundVersion, descItemType, nodesDO, newDescItemSpec, specifications, text, replaceDataBody.getSelectionType() == SelectionType.FUND);
@@ -1997,16 +1996,16 @@ public class ArrangementController {
                                  @RequestBody final ReplaceDataBody replaceDataBody) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
+        RulItemType descItemType = ruleService.getItemTypeById(itemTypeId);
 
         replaceDataBody.getNodes()
                 .forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getId(), node.getVersion()));
 
         Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
-        RulItemSpec setSpecification = replaceSpecId == null ? null : itemSpecRepository.findOne(replaceSpecId);
+        RulItemSpec setSpecification = replaceSpecId == null ? null : ruleService.getItemSpecById(replaceSpecId);
         Set<RulItemSpec> specifications = CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
-                new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+                new HashSet<>(itemSpecRepository.findAllById(replaceDataBody.getSpecIds()));
 
         descriptionItemService.setSpecification(fundVersion, descItemType, nodesDO,
                 setSpecification, specifications, replaceDataBody.getSpecIds().contains(null),
@@ -2027,7 +2026,7 @@ public class ArrangementController {
                                  @RequestBody final ReplaceDataBody replaceDataBody) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
+        RulItemType descItemType = ruleService.getItemTypeById(descItemTypeId);
 
         replaceDataBody.getNodes()
                 .forEach(node -> descriptionItemService.checkNodeWritePermission(versionId, node.getId(), node.getVersion()));
@@ -2035,7 +2034,7 @@ public class ArrangementController {
         Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
         Set<RulItemSpec> specifications = CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
-                new HashSet<>(itemSpecRepository.findAll(replaceDataBody.getSpecIds()));
+                new HashSet<>(itemSpecRepository.findAllById(replaceDataBody.getSpecIds()));
 
         descriptionItemService.deleteDescItemValues(fundVersion, descItemType, nodesDO, specifications, replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
@@ -2374,7 +2373,7 @@ public class ArrangementController {
         Assert.notEmpty(param.nodeIds, "Musí být vyplněna alespoň jedna JP");
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
+        List<ArrNode> nodes = nodeRepository.findAllById(param.nodeIds);
 
         ArrDigitizationFrontdesk digitizationFrontdesk = externalSystemService.findDigitizationFrontdesk(param.digitizationFrontdeskId);
 
@@ -2413,7 +2412,7 @@ public class ArrangementController {
         Assert.notEmpty(param.daoIds, "Musí být vyplněno alespoň jedno DAO");
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        List<ArrDao> daos = daoRepository.findAll(param.daoIds);
+        List<ArrDao> daos = daoRepository.findAllById(param.daoIds);
 
         if (daos.size() != param.daoIds.size()) {
             throw new SystemException("Neplatný počet nalezených digitalizátů (" + daos.size() + ", " + param.daoIds.size() + ")", BaseCode.ID_NOT_EXIST);
@@ -2487,7 +2486,7 @@ public class ArrangementController {
         Assert.notEmpty(param.nodeIds, "Musí být vyplněna alespoň jedna JP");
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        List<ArrNode> nodes = nodeRepository.findAll(param.nodeIds);
+        List<ArrNode> nodes = nodeRepository.findAllById(param.nodeIds);
 
         if (nodes.size() != param.nodeIds.size()) {
             throw new SystemException("Neplatný počet nalezených jednotek popisu (" + nodes.size() + ", " + param.nodeIds.size() + ")", BaseCode.ID_NOT_EXIST);

@@ -201,7 +201,7 @@ public class IndexWorkProcessor implements Runnable {
                         }
                         */
 
-                        workPage = indexWorkService.findAllToIndex(new PageRequest(0, taskExecutor.getCorePoolSize() * batchSize));
+                        workPage = indexWorkService.findAllToIndex(PageRequest.of(0, taskExecutor.getCorePoolSize() * batchSize));
 
                         if (workPage.hasContent()) {
 

@@ -196,7 +196,6 @@ public class BulkActionControllerTest extends AbstractControllerTest {
      * Spustí homadnou akci a poté se ji pokusí přerušit
      */
     @Test
-    @Ignore //TODO: gotzy doresit
     public void interruptBulkAction() throws InterruptedException {
         helperTestService.waitForWorkers();
         int fundVersionId = importAndGetVersionId();

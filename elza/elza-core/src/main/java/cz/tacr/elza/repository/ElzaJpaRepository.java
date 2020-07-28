@@ -24,13 +24,8 @@ public interface ElzaJpaRepository<T, ID extends Serializable> extends JpaReposi
      * @throws IllegalStateException objekt nebyl nalezen
      */
     default T getOneCheckExist(final ID id) throws IllegalStateException {
-        T result = findOne(id);
-
-        if (result == null) {
-            throw new IllegalStateException("Nebyla nalezena entita v úložišti " + getClassName() + " s id " + id);
-        }
-
-        return result;
+        return findById(id)
+                .orElseThrow(() -> new IllegalStateException("Nebyla nalezena entita v úložišti " + getClassName() + " s id " + id));
     }
 
     /**

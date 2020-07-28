@@ -38,8 +38,8 @@ public class ElzaCoreMain {
     }
 
     public static void configure() {
-        System.setProperty("liquibase.databaseChangeLogTableName", "db_databasechangelog");
-        System.setProperty("liquibase.databaseChangeLogLockTableName", "db_databasechangeloglock");
+        System.setProperty("spring.liquibase.database-change-log-table", "db_databasechangelog");
+        System.setProperty("spring.liquibase.database-change-log-lock-table", "db_databasechangeloglock");
     }
 
     @Bean

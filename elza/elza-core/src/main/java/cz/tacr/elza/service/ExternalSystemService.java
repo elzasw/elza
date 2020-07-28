@@ -127,7 +127,7 @@ public class ExternalSystemService {
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
     public void delete(final Integer id) {
         sendDeleteExternalSystemNotification(id);
-        externalSystemRepository.delete(id);
+        externalSystemRepository.deleteById(id);
     }
 
     /**
@@ -230,7 +230,7 @@ public class ExternalSystemService {
         if (ids.isEmpty()) {
             return Collections.emptyList();
         }
-        return digitalRepositoryRepository.findAll(ids);
+        return digitalRepositoryRepository.findAllById(ids);
     }
 
     public ApBinding createApBinding(final ApScope scope,

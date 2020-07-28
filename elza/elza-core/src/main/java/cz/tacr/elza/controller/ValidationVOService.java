@@ -27,7 +27,7 @@ public class ValidationVOService {
 
     public ApState checkAccessPoint(Integer accessPointId) {
         if (accessPointId != null) {
-            ApAccessPoint accessPoint = apAccessPointRepository.findOne(accessPointId);
+            ApAccessPoint accessPoint = apAccessPointRepository.findById(accessPointId).orElse(null);
             if (accessPoint != null) {
                 ApState state = apStateRepository.findLastByAccessPoint(accessPoint);
                 if (state.getDeleteChange() != null) {

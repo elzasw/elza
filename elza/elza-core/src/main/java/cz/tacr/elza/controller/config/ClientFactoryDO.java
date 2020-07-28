@@ -91,6 +91,11 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
+import static cz.tacr.elza.repository.ExceptionThrow.calendarType;
+import static cz.tacr.elza.repository.ExceptionThrow.institution;
+import static cz.tacr.elza.repository.ExceptionThrow.itemSpec;
+import static cz.tacr.elza.repository.ExceptionThrow.itemType;
+
 /**
  * Továrna na vytváření DO objektů z VO objektů.
  */
@@ -169,17 +174,11 @@ public class ClientFactoryDO {
         ArrDescItem descItem = new ArrDescItem();
         descItem.setData(data);
 
-        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
-        if (descItemType == null) {
-            throw new SystemException("Typ s ID=" + descItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
-        }
+        RulItemType descItemType = getItemType(descItemTypeId);
         descItem.setItemType(descItemType);
 
         if (descItemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());
-            if (descItemSpec == null) {
-                throw new SystemException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
-            }
+            RulItemSpec descItemSpec = getItemSpec(descItemVO.getDescItemSpecId());
             descItem.setItemSpec(descItemSpec);
         }
 
@@ -191,17 +190,11 @@ public class ClientFactoryDO {
         ArrStructuredItem structureItem = new ArrStructuredItem();
         structureItem.setData(data);
 
-        RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
-        if (descItemType == null) {
-            throw new SystemException("Typ s ID=" + itemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
-        }
+        RulItemType descItemType = getItemType(itemTypeId);
         structureItem.setItemType(descItemType);
 
         if (itemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = itemSpecRepository.findOne(itemVO.getDescItemSpecId());
-            if (descItemSpec == null) {
-                throw new SystemException("Specifikace s ID=" + itemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
-            }
+            RulItemSpec descItemSpec = getItemSpec(itemVO.getDescItemSpecId());
             structureItem.setItemSpec(descItemSpec);
         }
 
@@ -216,10 +209,7 @@ public class ClientFactoryDO {
         structureItem.setItemId(descItemVO.getId());
 
         if (descItemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());
-            if (descItemSpec == null) {
-                throw new SystemException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
-            }
+            RulItemSpec descItemSpec = getItemSpec(descItemVO.getDescItemSpecId());
             structureItem.setItemSpec(descItemSpec);
         }
 
@@ -251,10 +241,7 @@ public class ClientFactoryDO {
         descItemVO.fill(descItem);
 
         if (descItemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());
-            if (descItemSpec == null) {
-                throw new SystemException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
-            }
+            RulItemSpec descItemSpec = getItemSpec(descItemVO.getDescItemSpecId());
             descItem.setItemSpec(descItemSpec);
         }
 
@@ -271,7 +258,8 @@ public class ClientFactoryDO {
         Assert.notNull(fundVO, "AS musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFund fund = mapper.map(fundVO, ArrFund.class);
-        ParInstitution institution = institutionRepository.findOne(fundVO.getInstitutionId());
+        ParInstitution institution = institutionRepository.findById(fundVO.getInstitutionId())
+                .orElseThrow(institution(fundVO.getInstitutionId()));
         fund.setInstitution(institution);
         return fund;
     }
@@ -297,7 +285,7 @@ public class ClientFactoryDO {
 
         Map<Integer, Filter> filtersMap = filters.getFilters();
         Set<Integer> descItemTypeIds = filtersMap.keySet();
-        List<RulItemType> descItemTypes = itemTypeRepository.findAll(descItemTypeIds);
+        List<RulItemType> descItemTypes = itemTypeRepository.findAllById(descItemTypeIds);
 
 
         List<DescItemTypeFilter> descItemTypeFilters = new ArrayList<>(descItemTypes.size());
@@ -606,7 +594,8 @@ public class ClientFactoryDO {
     private ArrDataUnitdate createUnitdate(final String value) {
         String[] split = StringUtils.split(value, '|');
         Integer calendarId = Integer.valueOf(split[0]);
-        ArrCalendarType arrCalendarType = calendarTypeRepository.findOne(calendarId);
+        ArrCalendarType arrCalendarType = calendarTypeRepository.findById(calendarId)
+                .orElseThrow(calendarType(calendarId));
         CalendarType calendarType = CalendarType.valueOf(arrCalendarType.getCode());
 
         ArrDataUnitdate unitdate = ArrDataUnitdate.valueOf(calendarType, split[1]);
@@ -762,17 +751,11 @@ public class ClientFactoryDO {
         ArrOutputItem outputItem = new ArrOutputItem();
         outputItem.setData(data);
 
-        RulItemType descItemType = itemTypeRepository.findOne(itemTypeId);
-        if (descItemType == null) {
-            throw new SystemException("Typ s ID=" + outputItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
-        }
+        RulItemType descItemType = getItemType(itemTypeId);
         outputItem.setItemType(descItemType);
 
         if (outputItemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = itemSpecRepository.findOne(outputItemVO.getDescItemSpecId());
-            if (descItemSpec == null) {
-                throw new SystemException("Specifikace s ID=" + outputItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
-            }
+            RulItemSpec descItemSpec = getItemSpec(outputItemVO.getDescItemSpecId());
             outputItem.setItemSpec(descItemSpec);
         }
 
@@ -787,7 +770,7 @@ public class ClientFactoryDO {
         outputItem.setItemId(descItemVO.getId());
 
         if (descItemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = itemSpecRepository.findOne(descItemVO.getDescItemSpecId());
+            RulItemSpec descItemSpec = getItemSpec(descItemVO.getDescItemSpecId());
             if (descItemSpec == null) {
                 throw new SystemException("Specifikace s ID=" + descItemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
             }
@@ -827,5 +810,14 @@ public class ClientFactoryDO {
         Assert.notNull(configVO, "Nastavení musí být vyplněno");
         MapperFacade mapper = mapperFactory.getMapperFacade();
         return mapper.map(configVO, PersistentSortRunConfig.class);
+    }
+
+    private RulItemSpec getItemSpec(final Integer itemSpecId) {
+        return itemSpecRepository.findById(itemSpecId).orElseThrow(itemSpec(itemSpecId));
+    }
+
+    private RulItemType getItemType(final Integer itemTypeId) {
+        return itemTypeRepository.findById(itemTypeId)
+                .orElseThrow(itemType(itemTypeId));
     }
 }

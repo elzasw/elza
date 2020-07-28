@@ -7,6 +7,8 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.service.attachment.AttachmentService;
 
+import static cz.tacr.elza.repository.ExceptionThrow.fund;
+
 /**
  * ArrFile Value object
  *
@@ -64,8 +66,8 @@ public class ArrFileVO extends DmsFileVO {
     public ArrFile createEntity(FundRepository fundRepository) {
         ArrFile result = new ArrFile();
         if (fundId != null) {
-            ArrFund fund = fundRepository.findOne(fundId);
-            Validate.notNull(fund, "Archivní pomůcka neexistuje (ID={})", fundId);
+            ArrFund fund = fundRepository.findById(fundId)
+                    .orElseThrow(fund(fundId));
             result.setFund(fund);
         }
         copyTo(result);

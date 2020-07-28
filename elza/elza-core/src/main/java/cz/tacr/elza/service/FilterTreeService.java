@@ -260,7 +260,7 @@ public class FilterTreeService {
         if (descItemType.getUseSpecification()) {
             Assert.notEmpty(specIds, "Musí být vyplněn alespoň jeden identifikátor specifikace");
             withoutSpec = FilterTools.removeNullValues(specIds);
-            specs = new HashSet<>(itemSpecRepository.findAll(specIds));
+            specs = new HashSet<>(itemSpecRepository.findAllById(specIds));
         }
 
         return dataRepository.findUniqueSpecValuesInVersion(version, descItemType, dataTypeClass, specs, withoutSpec,
@@ -313,7 +313,7 @@ public class FilterTreeService {
             }
         }
         Map<Integer, ArrNode> filterIdsMap = ElzaTools
-                .createEntityMap(nodeRepository.findAll(filteredIds), ArrNode::getNodeId);
+                .createEntityMap(nodeRepository.findAllById(filteredIds), ArrNode::getNodeId);
 
         Map<Integer, TreeNodeVO> parentIdsMap = ElzaTools.createEntityMap(
                 levelTreeCacheService.getNodesByIds(parentIds, version.getFundVersionId()),

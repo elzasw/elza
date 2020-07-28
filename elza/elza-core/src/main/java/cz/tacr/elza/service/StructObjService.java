@@ -213,7 +213,7 @@ public class StructObjService {
 
             result.add(structureData);
         }
-        return structObjRepository.save(result);
+        return structObjRepository.saveAll(result);
     }
 
     /**
@@ -256,7 +256,7 @@ public class StructObjService {
                 null,
                 structureDataList.stream().map(ArrStructuredObject::getStructuredObjectId).collect(Collectors.toList()),
                 null));
-        return structObjRepository.save(structureDataList);
+        return structObjRepository.saveAll(structureDataList);
     }
 
     /**
@@ -371,7 +371,7 @@ public class StructObjService {
             resultStructureItems.add(newStructureItem);
         }
 
-        structureItemRepository.save(structureItems); // uložení změny deleteChange
+        structureItemRepository.saveAll(structureItems); // uložení změny deleteChange
 
         if (createNewDataVersion) {
             List<ArrData> resultDataList = new ArrayList<>(resultStructureItems.size());
@@ -380,10 +380,10 @@ public class StructObjService {
                 newStructureItem.setData(newData);
                 resultDataList.add(newData);
             }
-            dataRepository.save(resultDataList);
+            dataRepository.saveAll(resultDataList);
         }
 
-        return structureItemRepository.save(resultStructureItems);
+        return structureItemRepository.saveAll(resultStructureItems);
     }
 
     /**
@@ -395,7 +395,7 @@ public class StructObjService {
      */
     private int findNextPosition(final ArrStructuredObject structureData, final RulItemType itemType) {
         List<ArrStructuredItem> structureItems = structureItemRepository.findOpenItemsAfterPosition(itemType,
-                structureData, 0, new PageRequest(0, 1, Sort.Direction.DESC, ArrItem.FIELD_POSITION));
+                structureData, 0, PageRequest.of(0, 1, Sort.Direction.DESC, ArrItem.FIELD_POSITION));
         if (structureItems.size() == 0) {
             return 1;
         } else {
@@ -553,7 +553,7 @@ public class StructObjService {
             structureData.setComplement(null);
             structureData.setErrorDescription(null);
         }
-        structObjRepository.save(structureDataList);
+        structObjRepository.saveAll(structureDataList);
         structObjService.addToValidate(structureDataList);
         return structureDataList;
     }
@@ -696,7 +696,7 @@ public class StructObjService {
             structureItem.setDeleteChange(change);
         }
 
-        structureItemRepository.save(structureItems);
+        structureItemRepository.saveAll(structureItems);
 
         structObjService.addToValidate(structObj);
 
@@ -830,8 +830,8 @@ public class StructObjService {
             final ArrChange change = arrangementInternalService.createChange(ArrChange.Type.SET_FUND_STRUCTURE_EXT);
             fundStructureExtensionsCreate.forEach(fse -> fse.setCreateChange(change));
             fundStructureExtensionsDelete.forEach(fse -> fse.setDeleteChange(change));
-            fundStructureExtensionRepository.save(fundStructureExtensionsCreate);
-            fundStructureExtensionRepository.save(fundStructureExtensionsDelete);
+            fundStructureExtensionRepository.saveAll(fundStructureExtensionsCreate);
+            fundStructureExtensionRepository.saveAll(fundStructureExtensionsDelete);
 
             revalidateStructObjs(structureType, fundVersion.getFund());
         }
@@ -1033,8 +1033,8 @@ public class StructObjService {
                     newStructureItems.add(copyStructureItem);
                 }
             }
-            dataRepository.save(newDataList);
-            structureItemRepository.save(newStructureItems);
+            dataRepository.saveAll(newDataList);
+            structureItemRepository.saveAll(newStructureItems);
         }
 
         ArrStructuredObject confirmStructureData = confirmInternal(fundVersion.getFund(), structureData);
@@ -1101,7 +1101,7 @@ public class StructObjService {
             throw new BusinessException("Autoincrementující typ musí být alespoň jeden", BaseCode.INVALID_STATE);
         }
 
-        List<RulItemType> itemTypes = itemTypeRepository.findAll(itemTypeIds);
+        List<RulItemType> itemTypes = itemTypeRepository.findAllById(itemTypeIds);
         if (itemTypes.size() != itemTypeIds.size()) {
             throw new BusinessException("Některý z typů atributů neexistuje", BaseCode.INVALID_STATE);
         }
@@ -1185,9 +1185,9 @@ public class StructObjService {
                 newStructureItems.add(copyStructureItem);
             }
         }
-        structureItemRepository.save(deleteStructureItems);
-        dataRepository.save(newDataList);
-        structureItemRepository.save(newStructureItems);
+        structureItemRepository.saveAll(deleteStructureItems);
+        dataRepository.saveAll(newDataList);
+        structureItemRepository.saveAll(newStructureItems);
 
         revalidateStructureData(structureDataList);
 

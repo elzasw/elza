@@ -50,7 +50,7 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
 
     ArrNode findOneByUuid(String uuid);
 
-    List<ArrNode> findByUuid(Collection<String> uuids);
+    List<ArrNode> findAllByUuidIn(Collection<String> uuids);
 
     @Modifying
     void deleteByNodeIdIn(Collection<Integer> nodeIds);

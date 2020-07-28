@@ -23,6 +23,7 @@ import org.hibernate.search.exception.SearchException;
 import org.hibernate.search.indexes.spi.IndexManager;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.hibernate.search.spi.IndexedTypeIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,9 +51,17 @@ public class SearchIndexService {
     @PersistenceContext
     private EntityManager em;
 
-    private ExtendedSearchIntegrator integrator;
+    private ExtendedSearchIntegrator integrator = null;
 
     private Map<Class, SearchIndexSupport> repositoryMap = new HashedMap<>();
+
+    private ExtendedSearchIntegrator getExtendedSearchIntegrator() {
+        if (integrator == null) {
+            FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
+            integrator = fullTextEntityManager.getSearchFactory().unwrap(ExtendedSearchIntegrator.class);
+        }
+        return integrator;
+    }
 
     // --- constructor ---
 
@@ -65,8 +74,6 @@ public class SearchIndexService {
 
     @PostConstruct
     public void init() {
-        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
-        this.integrator = fullTextEntityManager.getSearchFactory().unwrap(ExtendedSearchIntegrator.class);
         // AbstractDocumentBuilder builder = getEntityBuilder(integrator, ArrDescItem.class);
         repositoryMap.put(ArrDescItem.class, descriptionItemService);
     }
@@ -79,7 +86,7 @@ public class SearchIndexService {
             String indexName = entityClass.getName();
 
             // predpokladame, ze index name odpovida nazvu entity
-            IndexManager indexManager = integrator.getIndexManager(indexName);
+            IndexManager indexManager = getExtendedSearchIntegrator().getIndexManager(indexName);
             if (indexManager == null) {
                 logger.error("Index manager not found for entity [{}]", entityClass);
                 return;
@@ -89,7 +96,7 @@ public class SearchIndexService {
 
             Map<Integer, Object> entityMap = findAll(entityClass, entityIdSet);
 
-            WorkPlan plan = new WorkPlan(integrator);
+            WorkPlan plan = new WorkPlan(getExtendedSearchIntegrator());
 
             entityIdSet.removeAll(entityMap.keySet());
 
@@ -116,7 +123,7 @@ public class SearchIndexService {
         return repository.findToIndex(ids);
     }
 
-    private static AbstractDocumentBuilder getEntityBuilder(ExtendedSearchIntegrator extendedIntegrator, Class<?> entityClass) {
+    private static AbstractDocumentBuilder getEntityBuilder(ExtendedSearchIntegrator extendedIntegrator, IndexedTypeIdentifier entityClass) {
         EntityIndexBinding entityIndexBinding = extendedIntegrator.getIndexBinding(entityClass);
         if (entityIndexBinding == null) {
             DocumentBuilderContainedEntity entityBuilder = extendedIntegrator.getDocumentBuilderContainedEntity(entityClass);

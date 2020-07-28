@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.Validate;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -271,13 +271,13 @@ public class ItemService {
         }
 
         Set<Integer> structureDataIds = structureMap.keySet();
-        List<ArrStructuredObject> structureDataEntities = structureDataRepository.findAll(structureDataIds);
+        List<ArrStructuredObject> structureDataEntities = structureDataRepository.findAllById(structureDataIds);
         for (ArrStructuredObject structureDataEntity : structureDataEntities) {
             structureMap.get(structureDataEntity.getStructuredObjectId()).setStructuredObject(structureDataEntity);
         }
 
         Set<Integer> fileIds = fileMap.keySet();
-        List<ArrFile> fileEntities = fundFileRepository.findAll(fileIds);
+        List<ArrFile> fileEntities = fundFileRepository.findAllById(fileIds);
         for (ArrFile fileEntity : fileEntities) {
             ArrDataFileRef ref = fileMap.get(fileEntity.getFileId());
             if (ref != null) {
@@ -286,7 +286,7 @@ public class ItemService {
         }
 
         Set<Integer> recordIds = recordMap.keySet();
-        List<ApAccessPoint> recordEntities = recordRepository.findAll(recordIds);
+        List<ApAccessPoint> recordEntities = recordRepository.findAllById(recordIds);
         for (ApAccessPoint recordEntity : recordEntities) {
             recordMap.get(recordEntity.getAccessPointId()).setRecord(recordEntity);
         }

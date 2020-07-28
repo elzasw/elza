@@ -67,6 +67,9 @@ import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RuleService;
 
+import static cz.tacr.elza.repository.ExceptionThrow.node;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 
 /**
  * Kontroler pro pravidla.
@@ -202,8 +205,8 @@ public class RuleController {
     public List<RulPolicyTypeVO> getPolicyTypes(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         Assert.notNull(fundVersionId, "Verze fondu musí být vyplněna");
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        Assert.notNull(fundVersion, "Nebyla nalezena verze fondu s id " + fundVersionId);
+        ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
 
         List<RulPolicyType> policyTypes = policyService.getPolicyTypes(fundVersion);
         return factoryVo.createPolicyTypes(policyTypes);
@@ -217,7 +220,8 @@ public class RuleController {
      */
     @RequestMapping(value = "/groups/{fundVersionId}", method = RequestMethod.GET)
     public List<GroupVO> getGroups(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
         Integer fundId = fundVersion.getFundId();
 
         String ruleCode = fundVersion.getRuleSet().getCode();
@@ -286,11 +290,11 @@ public class RuleController {
 
 
 
-        ArrNode node = nodeRepository.findOne(nodeId);
-        Assert.notNull(node, "Uzel s id=" + nodeId + " neexistuje");
+        ArrNode node = nodeRepository.findById(nodeId)
+                .orElseThrow(node(nodeId));
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        Assert.notNull(fundVersion, "Verze fondu s id=" + fundVersionId + " neexistuje");
+        ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
 
         ruleService.syncNodeExtensions(fundVersion.getFundVersionId(), nodeId, visiblePolicyParams.getNodeExtensions());
         policyService.setVisiblePolicy(node, fundVersion, visiblePolicyParams.getPolicyTypeIdsMap(),
@@ -313,11 +317,11 @@ public class RuleController {
         Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
-        ArrNode node = nodeRepository.findOne(nodeId);
-        Assert.notNull(node, "Uzel s id=" + nodeId + " neexistuje");
+        ArrNode node = nodeRepository.findById(nodeId)
+                .orElseThrow(node(nodeId));
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        Assert.notNull(fundVersion, "Verze fondu s id=" + fundVersionId + " neexistuje");
+        ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
 
         // TODO: Develop new request in policy service to prepare list of active
         //       policy types. Recursive query could be used

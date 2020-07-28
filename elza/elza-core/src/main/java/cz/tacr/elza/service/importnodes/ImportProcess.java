@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
@@ -49,6 +49,9 @@ import cz.tacr.elza.service.importnodes.vo.DeepCallback;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ImportSource;
 import cz.tacr.elza.service.importnodes.vo.Node;
+
+import static cz.tacr.elza.repository.ExceptionThrow.file;
+import static cz.tacr.elza.repository.ExceptionThrow.structureData;
 
 /**
  * Obsluha importního procesu zdroje do AS.
@@ -344,13 +347,16 @@ public class ImportProcess {
             ((ArrDataCoordinates) data).setValue(geoClone);
         } else if (item instanceof ItemFileRef) {
             data = new ArrDataFileRef();
-            ArrFile file = fundFileRepository.findOne(((ItemFileRef) item).getFileId());
+            Integer fileId = ((ItemFileRef) item).getFileId();
+            ArrFile file = fundFileRepository.findById(fileId)
+                    .orElseThrow(file(fileId));
             ArrFile fileNew = filesMapper.get(file.getName());
             ((ArrDataFileRef) data).setFile(fileNew);
         } else if (item instanceof ItemStructureRef) {
             data = new ArrDataStructureRef();
-            ArrStructuredObject structureData = structureDataRepository
-                    .findOne(((ItemStructureRef) item).getStructureDataId());
+            Integer structureDataId = ((ItemStructureRef) item).getStructureDataId();
+            ArrStructuredObject structureData = structureDataRepository.findById(structureDataId)
+                    .orElseThrow(structureData(structureDataId));
             ArrStructuredObject structureDataNew = structureDataMapper.get(structureData.getStructuredObjectId());
 
             // mapping should exists -> if mapping not found then whole item should not be imported?
@@ -673,13 +679,13 @@ public class ImportProcess {
             logger.debug("Import: uložení dat do DB: start");
             nodeIds.addAll(levels.stream().map(level -> level.getNode().getNodeId()).collect(Collectors.toList()));
 
-            levelRepository.save(levels);
+            levelRepository.saveAll(levels);
             levelRepository.flush();
 
-            dataRepository.save(dataList);
+            dataRepository.saveAll(dataList);
             dataRepository.flush();
 
-            descItemRepository.save(descItems);
+            descItemRepository.saveAll(descItems);
             descItemRepository.flush();
 
             levels = new ArrayList<>();

@@ -3,7 +3,7 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;

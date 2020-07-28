@@ -1,6 +1,6 @@
 package cz.tacr.elza.print.item;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 import cz.tacr.elza.common.GeometryConvertor;
 

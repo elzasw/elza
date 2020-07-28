@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.jayway.restassured.response.Response;
+import io.restassured.response.Response;
 
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;

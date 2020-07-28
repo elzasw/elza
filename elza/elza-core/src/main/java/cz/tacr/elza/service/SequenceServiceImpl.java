@@ -105,7 +105,7 @@ public class SequenceServiceImpl implements SequenceService {
         int val;
         int nextVal;
         do {
-            DbHibernateSequence sequence = hibernateSequenceRepository.findOne(sequenceName);
+            DbHibernateSequence sequence = hibernateSequenceRepository.findById(sequenceName).orElse(null);
             if (sequence == null) {
                 sequence = new DbHibernateSequence();
                 sequence.setSequenceName(sequenceName);

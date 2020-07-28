@@ -90,6 +90,12 @@ import cz.tacr.elza.service.output.OutputRequestStatus;
 
 import static cz.tacr.elza.domain.RulItemType.Type.RECOMMENDED;
 import static cz.tacr.elza.domain.RulItemType.Type.REQUIRED;
+import static cz.tacr.elza.repository.ExceptionThrow.ap;
+import static cz.tacr.elza.repository.ExceptionThrow.output;
+import static cz.tacr.elza.repository.ExceptionThrow.outputType;
+import static cz.tacr.elza.repository.ExceptionThrow.scope;
+import static cz.tacr.elza.repository.ExceptionThrow.template;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
 
 @Service
 public class OutputService {
@@ -243,7 +249,7 @@ public class OutputService {
         if (outputResult != null) {
             List<ArrOutputFile> outputFiles = outputResult.getOutputFiles();
             if (outputFiles != null && !outputFiles.isEmpty()) {
-                outputFileRepository.delete(outputFiles);
+                outputFileRepository.deleteAll(outputFiles);
             }
             outputResultRepository.delete(outputResult);
         }
@@ -304,7 +310,7 @@ public class OutputService {
             }
         });
 
-        nodeOutputRepository.save(newNodes);
+        nodeOutputRepository.saveAll(newNodes);
 
         return newOutput;
     }
@@ -339,12 +345,12 @@ public class OutputService {
         output.setInternalCode(internalCode);
         output.setState(OutputState.OPEN);
 
-        RulOutputType type = outputTypeRepository.findOne(outputTypeId);
-        Assert.notNull(type, "Typ musí být vyplněn");
+        RulOutputType type = outputTypeRepository.findById(outputTypeId)
+                .orElseThrow(outputType(outputTypeId));
         output.setOutputType(type);
 
         if (templateId != null) {
-            output.setTemplate(templateRepository.findOne(templateId));
+            output.setTemplate(templateRepository.findById(templateId).orElseThrow(template(templateId)));
         } else {
             output.setTemplate(null);
         }
@@ -428,7 +434,7 @@ public class OutputService {
             throw new BusinessException("Byl předán seznam s neplatným identifikátorem uzlu: " + nodeIds, ArrangementCode.NODE_NOT_FOUND).set("id", nodeIds);
         }
 
-        nodeOutputRepository.save(removedNodes);
+        nodeOutputRepository.saveAll(removedNodes);
 
         updateCalculatedItems(fundVersion, change, remainingNodeIds, output);
 
@@ -475,13 +481,14 @@ public class OutputService {
         output.setName(name);
         output.setInternalCode(internalCode);
         if (templateId != null) {
-            output.setTemplate(templateRepository.findOne(templateId));
+            output.setTemplate(templateRepository.findById(templateId).orElseThrow(template(templateId)));
         } else {
             output.setTemplate(null);
         }
 
         if (anonymizedAp != null) {
-            ApAccessPoint accessPoint = apAccessPointRepository.findOne(anonymizedAp.getId());
+            ApAccessPoint accessPoint = apAccessPointRepository.findById(anonymizedAp.getId())
+                    .orElseThrow(ap(anonymizedAp.getId()));
             output.setAnonymizedAp(accessPoint);
         } else {
             output.setAnonymizedAp(null);
@@ -567,7 +574,7 @@ public class OutputService {
             }
         }
 
-        List<ArrNode> nodes = nodeRepository.findAll(connectNodeIds);
+        List<ArrNode> nodes = nodeRepository.findAllById(connectNodeIds);
 
         if (nodes.size() != connectNodeIds.size()) {
             throw new BusinessException("Byl předán seznam s neplatným identifikátorem uzlu: " + connectNodeIds,
@@ -583,7 +590,7 @@ public class OutputService {
             nodeOutputs.add(nodeOutput);
         }
 
-        nodeOutputRepository.save(nodeOutputs);
+        nodeOutputRepository.saveAll(nodeOutputs);
 
         currNodeIds.addAll(connectNodeIds);
         updateCalculatedItems(fundVersion, change, currNodeIds, output);
@@ -745,7 +752,8 @@ public class OutputService {
         Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
         Assert.notNull(outputVersion, "Verze výstupu musí být vyplněna");
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
 
         ArrOutput output = getOutput(outputId);
         output.setVersion(outputVersion);
@@ -863,7 +871,8 @@ public class OutputService {
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrChange change = arrangementService.createChange(null);
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
         List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(descItemObjectId);
 
         if (outputItems.size() > 1) {
@@ -955,7 +964,8 @@ public class OutputService {
         Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrChange change = null;
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
 
         List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(outputItem.getDescItemObjectId());
 
@@ -1121,7 +1131,8 @@ public class OutputService {
         Assert.notNull(outputVersion, "Verze výstupu musí být vyplněna");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
 
         ArrOutput output = getOutput(outputId);
 
@@ -1184,8 +1195,8 @@ public class OutputService {
                                              final Integer itemTypeId) {
 
         ArrChange change = arrangementService.createChange(null);
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        Validate.notNull(fundVersion, "Verze archivní pomůcky neexistuje");
+        ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
 
         StaticDataProvider sdp = staticDataService.getData();
         ItemType itemType = sdp.getItemTypeById(itemTypeId);
@@ -1387,15 +1398,11 @@ public class OutputService {
                                                   final Integer fundVersionId,
                                                   final Integer outputItemSpecId,
                                                   final Integer outputItemObjectId) {
-        ArrOutput output = outputRepository.findOne(outputId);
-        if (output == null) {
-            throw new ObjectNotFoundException("Nebyl nalezen výstup s ID=" + outputId, OutputCode.OUTPUT_NOT_EXISTS).set("id", outputId);
-        }
+        ArrOutput output = outputRepository.findById(outputId)
+                .orElseThrow(output(outputId));
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
-        if (fundVersion == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
-        }
+        ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
 
         StaticDataProvider sdp = staticDataService.getData();
         ItemType itemType = sdp.getItemTypeById(outputItemTypeId);
@@ -1467,10 +1474,8 @@ public class OutputService {
             throw new ObjectNotFoundException("Nebyl nalezen výstup s ID=" + outputId, OutputCode.OUTPUT_NOT_EXISTS).set("id", outputId);
         }
 
-        ApScope scope = scopeRepository.findOne(scopeId);
-        if (scope == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena oblast s ID=" + scopeId, BaseCode.PROPERTY_NOT_EXIST).set("id", scopeId);
-        }
+        ApScope scope = scopeRepository.findById(scopeId)
+                .orElseThrow(scope(scopeId));
 
         ArrOutputRestrictionScope restrictionScope = new ArrOutputRestrictionScope();
         restrictionScope.setOutput(output);

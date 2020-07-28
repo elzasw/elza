@@ -2,7 +2,7 @@ package cz.tacr.elza.domain;
 
 import java.util.Objects;
 
-import com.vividsolutions.jts.geom.Geometry;
+import org.locationtech.jts.geom.Geometry;
 
 import cz.tacr.elza.common.GeometryConvertor;
 

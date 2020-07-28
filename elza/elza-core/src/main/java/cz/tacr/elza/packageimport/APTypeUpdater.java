@@ -202,7 +202,7 @@ public class APTypeUpdater {
         }
 
         // save new types
-        apTypeRepository.save(this.apTypes);
+        apTypeRepository.saveAll(this.apTypes);
 
         // map old types to new types
         for (Entry<ApType, ApType> mapType : mapTypes.entrySet()) {
@@ -213,7 +213,7 @@ public class APTypeUpdater {
         Collection<ApType> oldTypes = oldTypeCodeMap.values();
        // TODO: smazáno - odstranění starých typů - oldTypes.forEach(registryRoleRepository::deleteByApType);
 
-        apTypeRepository.delete(oldTypes);
+        apTypeRepository.deleteAll(oldTypes);
     }
 
     public void run(PackageContext pkgCtx) {

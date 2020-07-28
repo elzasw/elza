@@ -1,6 +1,5 @@
 package cz.tacr.elza.security.saml;
 
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -8,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Configuration

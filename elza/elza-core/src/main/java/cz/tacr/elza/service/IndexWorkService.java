@@ -64,7 +64,7 @@ public class IndexWorkService {
                 .distinct()
                 .map(entityId -> _createIndexWork(entityClass, entityClass.getName(), entityId))
                 .collect(Collectors.toList());
-        return indexWorkRepository.save(workList);
+        return indexWorkRepository.saveAll(workList);
     }
 
     private SysIndexWork _createIndexWork(String indexName, LuceneWork luceneWork) {
@@ -80,7 +80,7 @@ public class IndexWorkService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public List<SysIndexWork> createIndexWork(String indexName, List<LuceneWork> luceneWorkList) {
         List<SysIndexWork> workList = luceneWorkList.stream().map(luceneWork -> _createIndexWork(indexName, luceneWork)).collect(Collectors.toList());
-        return indexWorkRepository.save(workList);
+        return indexWorkRepository.saveAll(workList);
     }
 
     public Page<SysIndexWork> findAllToIndex(Pageable pageable) {

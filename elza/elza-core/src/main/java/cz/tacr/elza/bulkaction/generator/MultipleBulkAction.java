@@ -107,7 +107,7 @@ public class MultipleBulkAction extends BulkAction {
 
     @Override
 	public void run(ActionRunContext runContext) {
-		List<ArrNode> startingNodes = nodeRepository.findAll(runContext.getInputNodeIds());
+		List<ArrNode> startingNodes = nodeRepository.findAllById(runContext.getInputNodeIds());
 
         // map of root nodes for action
         Map<ArrNode, LevelWithItems> nodeStartingLevels = new HashMap<>();

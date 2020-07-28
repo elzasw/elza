@@ -77,7 +77,7 @@ public class TypeUpdateTest extends AbstractServiceTest {
     }
 
     // test will migrate values from SRD_STRING2DATE to DATE
-    @Ignore //TODO: smazat po změně importu institucí
+    @Ignore //TODO: problém s FK ApItem na specifikaci
     @Test
     @Transactional(TxType.REQUIRES_NEW)
     public void updateTypeTest2() {
@@ -128,7 +128,7 @@ public class TypeUpdateTest extends AbstractServiceTest {
         Assert.assertEquals(1, itu.getNumDroppedCachedNode());
 
         // read values from repository
-        Collection<OnlyValues> ddc = dataDateRepository.findValuesByDataId(Collections.singletonList(descItemResult
+        Collection<OnlyValues> ddc = dataDateRepository.findValuesByDataIdIn(Collections.singletonList(descItemResult
                 .getData()
                 .getDataId()));
         Assert.assertNotNull(ddc);

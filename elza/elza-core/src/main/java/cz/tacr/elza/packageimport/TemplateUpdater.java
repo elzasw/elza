@@ -102,7 +102,7 @@ public class TemplateUpdater {
             }
         }
 
-        templateRepository.save(this.templates);
+        templateRepository.saveAll(this.templates);
 
         // Run mapping
         for (Entry<RulTemplate, RulTemplate> itemMapping : otherTemplMapping.entrySet()) {

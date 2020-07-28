@@ -47,6 +47,8 @@ import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 import cz.tacr.elza.websocket.service.WebScoketStompService;
 
+import static cz.tacr.elza.repository.ExceptionThrow.node;
+
 /**
  * Service to handle form related requests
  *
@@ -137,11 +139,7 @@ public class ArrangementFormService {
 			descItems = restoredNode.getDescItems();
 		} else {
 			// check if node exists
-			node = nodeRepository.findOne(nodeId);
-			if (node == null) {
-				throw new ObjectNotFoundException("Nebyla nalezena JP s ID=" + nodeId, ArrangementCode.NODE_NOT_FOUND)
-				        .set("id", nodeId);
-			}
+			node = nodeRepository.findById(nodeId).orElseThrow(node(nodeId));
 			descItems = arrangementInternal.getDescItems(lockChange, node);
 		}
 

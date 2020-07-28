@@ -117,7 +117,7 @@ public class StructTypeExtensionUpdater
 		}
 
 		rulStructureExtensionDefinitionsNew = structureExtensionDefinitionRepository
-				.save(rulStructureExtensionDefinitionsNew);
+				.saveAll(rulStructureExtensionDefinitionsNew);
 
 		List<RulStructureExtensionDefinition> rulStructureDefinitionDelete = new ArrayList<>(
 				rulStructureExtensionDefinitions);
@@ -125,8 +125,8 @@ public class StructTypeExtensionUpdater
 
 		List<RulComponent> rulComponentsDelete = rulStructureDefinitionDelete.stream()
 				.map(RulStructureExtensionDefinition::getComponent).collect(Collectors.toList());
-		structureExtensionDefinitionRepository.delete(rulStructureDefinitionDelete);
-		componentRepository.delete(rulComponentsDelete);
+		structureExtensionDefinitionRepository.deleteAll(rulStructureDefinitionDelete);
+		componentRepository.deleteAll(rulComponentsDelete);
 
 		Set<RulStructuredTypeExtension> revalidateStructureExtensions = new HashSet<>();
 		try {
@@ -236,7 +236,7 @@ public class StructTypeExtensionUpdater
             }
         }
 
-        this.structExts = structureExtensionRepository.save(rulStructureExtensionsNew);
+        this.structExts = structureExtensionRepository.saveAll(rulStructureExtensionsNew);
 
         // prepare list of extensions for delete
         List<RulStructuredTypeExtension> rulStructureExtensionsDelete = new ArrayList<>(origStructExts);
@@ -255,7 +255,7 @@ public class StructTypeExtensionUpdater
 
         // Remove unused extensions
         if(CollectionUtils.isNotEmpty(rulStructureExtensionsDelete)) {
-            structureExtensionRepository.delete(rulStructureExtensionsDelete);
+            structureExtensionRepository.deleteAll(rulStructureExtensionsDelete);
         }
 	}
 }

@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.repository.NodeRepository;
 
+import static cz.tacr.elza.repository.ExceptionThrow.node;
+
 /**
  *
  *
@@ -34,8 +36,9 @@ public class ParentNodeIdsBridge implements StringBridge, FieldBridge , Applicat
     }
 
     private static String getValue(Object object) {
-        // TODO Auto-generated method stub
-        return nodeRepository.findOne((Integer.valueOf((String) object)) ).toString();
+        Integer nodeId = Integer.valueOf((String) object);
+        return nodeRepository.findById(nodeId)
+                .orElseThrow(node(nodeId)).toString();
     }
 
     @Override

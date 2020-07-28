@@ -58,6 +58,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static cz.tacr.elza.exception.codes.BaseCode.INVALID_STATE;
+import static cz.tacr.elza.repository.ExceptionThrow.itemType;
+import static cz.tacr.elza.repository.ExceptionThrow.node;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
 
 
 /**
@@ -143,7 +146,6 @@ public class RuleService {
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
     public synchronized ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId, final Long asyncRequestId) {
-        ArrLevel level = levelRepository.findOne(faLevelId);
         return setConformityInfo(faLevelId, fundVersionId);
     }
 
@@ -158,13 +160,15 @@ public class RuleService {
         Assert.notNull(faLevelId, "Musí být vyplněn identifikátor levelu");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
-        ArrLevel level = levelRepository.findOne(faLevelId);
+        ArrLevel level = levelRepository.findById(faLevelId)
+                .orElseThrow(ExceptionThrow.level(faLevelId));
         Integer nodeId = level.getNode().getNodeId();
 
         ArrNode nodeBeforeValidation = nodeRepository.getOneCheckExist(nodeId);
         Integer nodeVersionBeforeValidation = nodeBeforeValidation.getVersion();
 
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
 
         if (!arrangementInternalService.validLevelInVersion(level, version)) {
             throw new SystemException("Level s id " + faLevelId + " nespadá do verze s id " + fundVersionId);
@@ -203,12 +207,12 @@ public class RuleService {
      */
     public List<RulTemplate> getTemplates(final String outputTypeCode) {
         if (outputTypeCode == null) {
-            return templateRepository.findAll(new Sort(Sort.Direction.ASC, RulTemplate.FIELD_NAME));
+            return templateRepository.findAll(Sort.by(Sort.Direction.ASC, RulTemplate.FIELD_NAME));
         }
         RulOutputType outputType = outputTypeRepository.findByCode(outputTypeCode);
         Assert.notNull(outputType, "Typ outputu s kodem '" + outputTypeCode + "' nebyl nalezen");
 
-        return templateRepository.findNotDeletedByOutputType(outputType, new Sort(Sort.Direction.ASC, RulTemplate.FIELD_NAME));
+        return templateRepository.findNotDeletedByOutputType(outputType, Sort.by(Sort.Direction.ASC, RulTemplate.FIELD_NAME));
     }
 
 
@@ -436,11 +440,8 @@ public class RuleService {
                                                                 final List<ArrDescItem> updateDescItems,
                                                                 final List<ArrDescItem> deleteDescItems) {
 
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
-
-        if (version == null) {
-            throw new ObjectNotFoundException("Nebyla nalezena verze AS s ID=" + fundVersionId, ArrangementCode.FUND_VERSION_NOT_FOUND).set("id", fundVersionId);
-        }
+        ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
 
         return rulesExecutor
                 .executeImpactOfChangesLevelStateRules(createDescItems, updateDescItems, deleteDescItems,
@@ -474,8 +475,9 @@ public class RuleService {
         Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Validate.notEmpty(nodeIds, "Musí být vyplněna alespoň jedna JP");
 
-        List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
+        ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
 
         Set<ArrNode> deleteNodes = new HashSet<>();
 
@@ -511,15 +513,15 @@ public class RuleService {
             List<ArrNodeConformityMissing> missing = nodeConformityMissingRepository
                     .findByNodeConformityInfos(infos);
             if (CollectionUtils.isNotEmpty(missing)) {
-                nodeConformityMissingRepository.delete(missing);
+                nodeConformityMissingRepository.deleteAll(missing);
             }
 
             List<ArrNodeConformityError> errors = nodeConformityErrorsRepository.findByNodeConformityInfos(infos);
             if (CollectionUtils.isNotEmpty(errors)) {
-                nodeConformityErrorsRepository.delete(errors);
+                nodeConformityErrorsRepository.deleteAll(errors);
             }
 
-            nodeConformityInfoRepository.delete(infos);
+            nodeConformityInfoRepository.deleteAll(infos);
         }
     }
 
@@ -648,7 +650,8 @@ public class RuleService {
         Assert.notNull(nodeExtension, "Přirazení musí být vyplněno");
         Assert.isNull(nodeExtension.getNodeExtensionId(), "Identifikátor přiřazení nesmí být vyplěn");
 
-        ArrNode node = nodeRepository.findOne(nodeId);
+        ArrNode node = nodeRepository.findById(nodeId)
+                .orElseThrow(node(nodeId));
 
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_NODE_EXTENSION, node);
 
@@ -684,9 +687,11 @@ public class RuleService {
         Assert.notNull(nodeExtension, "Rejstříkové heslo musí být vyplněno");
         Assert.notNull(nodeExtension.getNodeExtensionId(), "Identifikátor musí být vyplněn");
 
-        ArrNodeExtension nodeExtensionDB = nodeExtensionRepository.findOne(nodeExtension.getNodeExtensionId());
+        ArrNodeExtension nodeExtensionDB = nodeExtensionRepository.findById(nodeExtension.getNodeExtensionId())
+                .orElseThrow(node(nodeExtension.getNodeExtensionId()));
 
-        ArrNode node = nodeRepository.findOne(nodeId);
+        ArrNode node = nodeRepository.findById(nodeId)
+                .orElseThrow(node(nodeExtension.getNodeExtensionId()));
 
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_NODE_EXTENSION, node);
 
@@ -754,7 +759,8 @@ public class RuleService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
     public List<RulArrangementExtension> findArrangementExtensionsByFundVersionId(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
         Assert.notNull(fundVersionId, "Identifikátor verze AS musí být vyplněn");
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
         RulRuleSet ruleSet = version.getRuleSet();
         return arrangementExtensionRepository.findByRuleSet(ruleSet);
     }
@@ -771,7 +777,8 @@ public class RuleService {
                                                                            final Integer nodeId) {
         Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
         Assert.notNull(fundVersionId, "Identifikátor verze AS musí být vyplněn");
-        ArrFundVersion version = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
         ArrNode node = nodeRepository.getOneCheckExist(nodeId);
         if (!node.getFundId().equals(version.getFundId())) {
             throw new IllegalArgumentException("JP nespadá pod verzi AS");
@@ -791,11 +798,8 @@ public class RuleService {
     }
 
     public RulItemType getItemTypeById(final Integer itemTypeId) {
-        RulItemType itemType = itemTypeRepository.findOne(itemTypeId);
-        if (itemType == null) {
-            throw new ObjectNotFoundException("Neexistuje typ: " + itemTypeId, BaseCode.ID_NOT_EXIST).setId(itemTypeId);
-        }
-        return itemType;
+        return itemTypeRepository.findById(itemTypeId)
+                .orElseThrow(itemType(itemTypeId));
     }
 
     public List<RulExtensionRule> findExtensionRuleByNode(final ArrNode node, final RulExtensionRule.RuleType attributeTypes) {
@@ -856,13 +860,13 @@ public class RuleService {
             // Nastavení smazání
             toDelete.forEach(i -> i.setDeleteChange(change));
 
-            toDelete = nodeExtensionRepository.save(toDelete);
+            toDelete = nodeExtensionRepository.saveAll(toDelete);
         }
 
         List<ArrNodeExtension> toAdd = null;
         if (!toAddIds.isEmpty()) {
             // Seznam ArrExts k přidání
-            final List<RulArrangementExtension> toAddExts = arrangementExtensionRepository.findAll(toAddIds);
+            final List<RulArrangementExtension> toAddExts = arrangementExtensionRepository.findAllById(toAddIds);
 
             // Seznam platných rozšíření pro verzi fund
             final List<RulArrangementExtension> validArrExts = findArrangementExtensionsByFundVersionId(versionId);
@@ -879,7 +883,7 @@ public class RuleService {
                 return ext;
             }).collect(Collectors.toList());
 
-            toAdd = nodeExtensionRepository.save(toAdd);
+            toAdd = nodeExtensionRepository.saveAll(toAdd);
         }
 
         nodeExtensionRepository.flush();
@@ -939,7 +943,7 @@ public class RuleService {
      * @return typy atributů
      */
     public List<RulItemType> findItemTypesByIdsOrdered(List<Integer> ids) {
-        Map<Integer, RulItemType> rulItemTypeMap = itemTypeRepository.findAll(ids).stream().
+        Map<Integer, RulItemType> rulItemTypeMap = itemTypeRepository.findAllById(ids).stream().
                 collect(Collectors.toMap(RulItemType::getItemTypeId, Function.identity()));
 
         return ids.stream().
@@ -1688,5 +1692,14 @@ public class RuleService {
         }
 
         return modelValidation;
+    }
+
+    public RulItemSpec getItemSpecById(final Integer specId) {
+        StaticDataProvider sdp = staticDataService.getData();
+        RulItemSpec itemSpec = sdp.getItemSpecById(specId);
+        if (itemSpec == null) {
+            throw new ObjectNotFoundException("Neexistuje specifikace", BaseCode.ID_NOT_EXIST).setId(specId);
+        }
+        return itemSpec;
     }
 }

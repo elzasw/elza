@@ -37,6 +37,8 @@ spring:
     url: ${elza.data.url}
     username: ${elza.data.user}
     password: ${elza.data.pass}
+  main:
+    allow-bean-definition-overriding: true
   data:
     rest:
       base-uri: /rest

@@ -30,7 +30,6 @@ public class PackageTest extends AbstractControllerTest {
         loadInstitutions = true;
     }
 
-    @Ignore
     @Test
     public void deleteImportExportPackageTest() throws Exception {
         List<PackageVO> packages = getPackages();

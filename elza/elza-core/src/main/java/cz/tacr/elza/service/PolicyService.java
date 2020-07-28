@@ -344,7 +344,7 @@ public class PolicyService {
                             collect(Collectors.toCollection(LinkedList::new));
 
             // smazání všech včetně podstromu
-            visiblePolicyRepository.delete(deleteVisiblePolicies);
+            visiblePolicyRepository.deleteAll(deleteVisiblePolicies);
         } else {
             // smazání všech aktuálně přidaných k node
             visiblePolicyRepository.deleteByNode(node);
@@ -360,7 +360,7 @@ public class PolicyService {
             visiblePolicies.add(visiblePolicy);
         }
 
-        visiblePolicyRepository.save(visiblePolicies);
+        visiblePolicyRepository.saveAll(visiblePolicies);
 
         List<Integer> parentNodeIds = new ArrayList<>();
         if (treeNode.getParent() != null) {
@@ -410,7 +410,7 @@ public class PolicyService {
 
         List<UIVisiblePolicy> policies = visiblePolicyRepository.findByFund(fund);
         if (!policies.isEmpty()) {
-            visiblePolicyRepository.delete(policies);
+            visiblePolicyRepository.deleteAll(policies);
         }
     }
 

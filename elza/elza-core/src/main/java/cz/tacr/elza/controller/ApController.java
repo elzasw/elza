@@ -110,6 +110,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static cz.tacr.elza.repository.ExceptionThrow.ap;
+import static cz.tacr.elza.repository.ExceptionThrow.scope;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 
 /**
  * REST kontroler pro registry.
@@ -616,8 +620,8 @@ public class ApController {
     @RequestMapping(value = "/scopes/{scopeId}/withConnected", method = RequestMethod.GET)
     @Transactional
     public ApScopeWithConnectedVO getScopeWithConnected(@PathVariable("scopeId") Integer scopeId) {
-        ApScope apScope = scopeRepository.findOne(scopeId);
-        Assert.notNull(apScope, "Nebyla nalezena třída rejstříku s ID=" + scopeId);
+        ApScope apScope = scopeRepository.findById(scopeId)
+                .orElseThrow(scope(scopeId));
         List<ApScope> connectedScopes = scopeRepository.findConnectedByScope(apScope);
         StaticDataProvider staticData = staticDataService.getData();
         return ApScopeWithConnectedVO.newInstance(apScope, staticData, connectedScopes);
@@ -636,8 +640,8 @@ public class ApController {
         if (versionId == null) {
             fund = null;
         } else {
-            ArrFundVersion version = fundVersionRepository.findOne(versionId);
-            Assert.notNull(version, "Nebyla nalezena verze s id " + versionId);
+            ArrFundVersion version = fundVersionRepository.findById(versionId)
+                    .orElseThrow(version(versionId));
             fund = version.getFund();
         }
 
@@ -646,7 +650,7 @@ public class ApController {
             return Collections.emptyList();
         }
 
-        List<ApScope> apScopes = scopeRepository.findAll(scopeIdsByFund);
+        List<ApScope> apScopes = scopeRepository.findAllById(scopeIdsByFund);
         StaticDataProvider staticData = staticDataService.getData();
         List<ApScopeVO> result = FactoryUtils.transformList(apScopes, s -> ApScopeVO.newInstance(s, staticData));
         result.sort(Comparator.comparing(ApScopeVO::getCode));
@@ -708,8 +712,10 @@ public class ApController {
             throw new BusinessException("Třídu rejstříku nelze navázat sama na sebe", RegistryCode.CANT_CONNECT_SCOPE_TO_SELF);
         }
 
-        final ApScope scope = scopeRepository.findOne(scopeId);
-        final ApScope connectedScope = scopeRepository.findOne(connectedScopeId);
+        final ApScope scope = scopeRepository.findById(scopeId)
+                .orElseThrow(scope(scopeId));
+        final ApScope connectedScope = scopeRepository.findById(connectedScopeId)
+                .orElseThrow(scope(connectedScopeId));
         accessPointService.connectScope(scope, connectedScope);
     }
 
@@ -724,8 +730,10 @@ public class ApController {
     public void disconnectScope(@PathVariable("scopeId") final Integer scopeId, @RequestBody final Integer connectedScopeId) {
         Assert.notNull(connectedScopeId, "Identifikátor vázané třídy musí být vyplněn");
 
-        final ApScope scope = scopeRepository.findOne(scopeId);
-        final ApScope connectedScope = scopeRepository.findOne(connectedScopeId);
+        final ApScope scope = scopeRepository.findById(scopeId)
+                .orElseThrow(scope(scopeId));
+        final ApScope connectedScope = scopeRepository.findById(connectedScopeId)
+                .orElseThrow(scope(connectedScopeId));
         accessPointService.disconnectScope(scope, connectedScope);
     }
 
@@ -737,7 +745,8 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/scopes/{scopeId}", method = RequestMethod.DELETE)
     public void deleteScope(@PathVariable final Integer scopeId) {
-        ApScope scope = scopeRepository.findOne(scopeId);
+        ApScope scope = scopeRepository.findById(scopeId)
+                .orElseThrow(scope(scopeId));
         accessPointService.deleteScope(scope);
     }
 
@@ -853,7 +862,8 @@ public class ApController {
     @RequestMapping(value = "{accessPointId}/part", method = RequestMethod.POST)
     public void createPart(@PathVariable final Integer accessPointId,
                            @RequestBody final ApPartFormVO apPartFormVO) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findOne(accessPointId);
+        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
+                .orElseThrow(ap(accessPointId));
         ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
         accessPointService.updatePartValue(apPart);
     }
@@ -870,7 +880,8 @@ public class ApController {
     public void updatePart(@PathVariable final Integer accessPointId,
                            @PathVariable final Integer partId,
                            @RequestBody final ApPartFormVO apPartFormVO) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findOne(accessPointId);
+        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
+                .orElseThrow(ap(accessPointId));
         ApPart apPart = partService.getPart(partId);
         accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO);
     }
@@ -886,7 +897,8 @@ public class ApController {
     @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.DELETE)
     public void deletePart(@PathVariable final Integer accessPointId,
                            @PathVariable final Integer partId) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findOne(accessPointId);
+        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
+                .orElseThrow(ap(accessPointId));
         partService.deletePart(apAccessPoint, partId);
     }
 
@@ -901,7 +913,8 @@ public class ApController {
     @RequestMapping(value = "{accessPointId}/part/{partId}/prefer-name", method = RequestMethod.PUT)
     public void setPreferName(@PathVariable final Integer accessPointId,
                               @PathVariable final Integer partId) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findOne(accessPointId);
+        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
+                .orElseThrow(ap(accessPointId));
         ApPart apPart = partService.getPart(partId);
         accessPointService.setPreferName(apAccessPoint, apPart);
     }

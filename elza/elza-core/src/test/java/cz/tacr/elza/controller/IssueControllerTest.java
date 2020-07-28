@@ -49,7 +49,6 @@ public class IssueControllerTest extends AbstractControllerTest {
      * Pozitivni test na operace s protokoly, pripominkami a komentari - formou scenare.
      * Test zohlednuje i opravneni uzivatelu.
      */
-    @Ignore
     @Test
     public void issueTest1() throws Exception {
 
@@ -57,12 +56,15 @@ public class IssueControllerTest extends AbstractControllerTest {
 
         ArrFundVO fund = createFund();
 
-        UsrUserVO adminUserVO = createAdmin("admin1", fund.getId());
+        List<ApAccessPointVO> records = findRecord(null, null, null, null, null, null);
+        ApAccessPointVO ap = records.get(0);
 
-        UsrUserVO userVO1 = createUser("user1");
-        UsrUserVO userVO2 = createUser("user2");
-        UsrUserVO userVO3 = createUser("user3");
-        UsrUserVO userVO4 = createUser("user4");
+        UsrUserVO adminUserVO = createAdmin("admin1", fund.getId(), ap);
+
+        UsrUserVO userVO1 = createUser("user1", ap);
+        UsrUserVO userVO2 = createUser("user2", ap);
+        UsrUserVO userVO3 = createUser("user3", ap);
+        UsrUserVO userVO4 = createUser("user4", ap);
 
         try {
 
@@ -283,9 +285,9 @@ public class IssueControllerTest extends AbstractControllerTest {
     /**
      * Zalozeni uzivatele s opravnenim na zakladani protokulu k danemu AS.
      */
-    private UsrUserVO createAdmin(String username, Integer fundId) {
+    private UsrUserVO createAdmin(String username, Integer fundId, ApAccessPointVO ap) {
 
-        UsrUserVO adminUserVO = createUser(username);
+        UsrUserVO adminUserVO = createUser(username, ap);
 
         UsrPermissionVO permissionVO = new UsrPermissionVO();
         ArrFundBaseVO fund1 = new ArrFundBaseVO();
@@ -301,12 +303,10 @@ public class IssueControllerTest extends AbstractControllerTest {
     /**
      * Zalozeni testovaciho uzivatele bez jakychkoliv opravneni
      */
-    private UsrUserVO createUser(String username) {
-       //TODO : smazáno, získat AccessPoint List<ParPartyVO> party = findParty(null, 0, 1, null, null);
+    private UsrUserVO createUser(String username, ApAccessPointVO ap) {
         Map<UsrAuthentication.AuthType, String> valueMap = new HashMap<>();
         valueMap.put(UsrAuthentication.AuthType.PASSWORD, PASSWORD);
-        //TODO : smazáno, získat AccessPoint : return createUser(username, valueMap, party.get(0).getId());
-        return createUser(username, valueMap);
+        return createUser(username, valueMap, ap.getId());
     }
 
 

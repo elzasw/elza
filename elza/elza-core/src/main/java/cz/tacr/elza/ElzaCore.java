@@ -24,8 +24,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scripting.ScriptEvaluator;
 import org.springframework.scripting.groovy.GroovyScriptEvaluator;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.web.multipart.MultipartResolver;
-import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 
 import com.google.common.eventbus.EventBus;
 
@@ -79,8 +77,8 @@ public class ElzaCore {
 
     public static void configure() {
         System.setProperty("spring.config.name", "elza");
-        System.setProperty("liquibase.databaseChangeLogTableName", "DB_DATABASECHANGELOG");
-        System.setProperty("liquibase.databaseChangeLogLockTableName", "DB_DATABASECHANGELOGLOCK");
+        System.setProperty("spring.liquibase.database-change-log-table", "DB_DATABASECHANGELOG");
+        System.setProperty("spring.liquibase.database-change-log-lock-table", "DB_DATABASECHANGELOGLOCK");
     }
 
     @Bean
@@ -90,10 +88,10 @@ public class ElzaCore {
                                                         exception));
     }
 
-    @Bean
-    public MultipartResolver multipartResolver() {
-        return new StandardServletMultipartResolver();
-    }
+//    @Bean
+//    public MultipartResolver multipartResolver() {
+//        return new StandardServletMultipartResolver();
+//    }
 
 
     @Bean

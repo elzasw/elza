@@ -275,7 +275,7 @@ public class NodeCacheService {
             i++;
             logger.debug("Sestavuji JP " + ((i - 1) * SYNC_BATCH_NODE_SIZE + 1) + "-" + ((i * SYNC_BATCH_NODE_SIZE) < nodeIds.size() ? (i * SYNC_BATCH_NODE_SIZE) : nodeIds.size()));
 			List<ArrCachedNode> updatedNodes = updateCachedNodes(partCachedNodes);
-			cachedNodeRepository.save(updatedNodes);
+			cachedNodeRepository.saveAll(updatedNodes);
         }
     }
 
@@ -321,7 +321,7 @@ public class NodeCacheService {
 
 	private void processNewNodes(List<Integer> nodeIds) {
 		List<ArrCachedNode> cachedNodes = createCachedNodes(nodeIds);
-		cachedNodeRepository.save(cachedNodes);
+		cachedNodeRepository.saveAll(cachedNodes);
 		//flush a batch of updates and release memory:
 		entityManager.flush();
 		entityManager.clear();
@@ -336,7 +336,7 @@ public class NodeCacheService {
     private List<ArrCachedNode> createCachedNodes(final List<Integer> nodeIds) {
         List<ArrCachedNode> result = new ArrayList<>(nodeIds.size());
 
-        List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
+        List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
 
@@ -371,7 +371,7 @@ public class NodeCacheService {
         }
 
         Set<Integer> nodeIds = nodeCachedNodes.keySet();
-        List<ArrNode> nodes = nodeRepository.findAll(nodeIds);
+        List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
 
@@ -618,7 +618,7 @@ public class NodeCacheService {
 			record.setData(data);
 			records.add(record);
 		}
-		cachedNodeRepository.save(records);
+		cachedNodeRepository.saveAll(records);
 	}
 
     /**

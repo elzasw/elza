@@ -134,7 +134,7 @@ public class AccessPointItemService {
         List<ApItem> itemsCreated = createItems(createItems, typeIdItemsMap, itemsDb, change, null, null, create);
         updateItems(updateItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
 
-        itemRepository.save(itemsDb);
+        itemRepository.saveAll(itemsDb);
 
         return itemsCreated;
     }
@@ -153,7 +153,7 @@ public class AccessPointItemService {
         for (ApItem item : items) {
             item.setDeleteChange(change);
         }
-        itemRepository.save(items);
+        itemRepository.saveAll(items);
     }
 
     /**
@@ -167,7 +167,7 @@ public class AccessPointItemService {
         for (ApItem item : items) {
             item.setDeleteChange(change);
         }
-        itemRepository.save(items);
+        itemRepository.saveAll(items);
     }
 
     /**
@@ -181,7 +181,7 @@ public class AccessPointItemService {
         for (ApItem item : items) {
             item.setDeleteChange(change);
         }
-        itemRepository.save(items);
+        itemRepository.saveAll(items);
     }
 
     private void updateItems(final List<ApItemVO> updateItems,
@@ -226,7 +226,7 @@ public class AccessPointItemService {
                 existsItems.addAll(newItems);
             }
         }
-        dataRepository.save(dataToSave);
+        dataRepository.saveAll(dataToSave);
     }
 
     private int findMaxPosition(final List<ApItem> items) {
@@ -313,7 +313,7 @@ public class AccessPointItemService {
 
             changeBindingItemsItems(createItem, itemCreated, bindingItemList);
         }
-        dataRepository.save(dataToSave);
+        dataRepository.saveAll(dataToSave);
         return itemsCreated;
     }
 
@@ -344,7 +344,7 @@ public class AccessPointItemService {
                 }
             }
             if (CollectionUtils.isNotEmpty(currentItemBindings)) {
-                bindingItemRepository.save(currentItemBindings);
+                bindingItemRepository.saveAll(currentItemBindings);
             }
         }
     }
@@ -363,7 +363,7 @@ public class AccessPointItemService {
             ApItem itemCreated = createItem(createItem, change, create, typeIdItemsMap, dataToSave, binding, dataRefList);
             itemsCreated.add(itemCreated);
         }
-        dataRepository.save(dataToSave);
+        dataRepository.saveAll(dataToSave);
         return itemsCreated;
     }
 

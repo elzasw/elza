@@ -8,7 +8,7 @@ import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulItemSpec;
-import liquibase.util.Validate;
+import org.apache.commons.lang3.Validate;
 
 public class WhenCondition {
 

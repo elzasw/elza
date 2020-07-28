@@ -45,6 +45,8 @@ import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 import cz.tacr.elza.websocket.WebSocketAwareController;
 import cz.tacr.elza.websocket.service.WebScoketStompService;
 
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 /**
  * Kontroler pro zpracování websocket požadavků pro některé kritické modifikace v pořádíní.
  * Jedná se o modifikace, které vyžadují seriové zpracování.
@@ -145,10 +147,12 @@ public class ArrangementWebsocketController {
                          final StompHeaderAccessor requestHeaders) {
 
         Assert.notNull(addLevelParam, "Parametry musí být vyplněny");
-        Assert.notNull(addLevelParam.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
+        Integer versionId = addLevelParam.getVersionId();
+        Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(addLevelParam.getDirection(), "Směr musí být vyplněn");
 
-        ArrFundVersion version = fundVersionRepository.findOne(addLevelParam.getVersionId());
+        ArrFundVersion version = fundVersionRepository.findById(versionId)
+                .orElseThrow(version(versionId));
 
         ArrNode staticNode = factoryDO.createNode(addLevelParam.getStaticNode());
         ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ? null : factoryDO
@@ -156,7 +160,7 @@ public class ArrangementWebsocketController {
 
         Set<RulItemType> descItemCopyTypes = new HashSet<>();
         if (CollectionUtils.isNotEmpty(addLevelParam.getDescItemCopyTypes())) {
-            descItemCopyTypes.addAll(itemTypeRepository.findAll(addLevelParam.getDescItemCopyTypes()));
+            descItemCopyTypes.addAll(itemTypeRepository.findAllById(addLevelParam.getDescItemCopyTypes()));
         }
 
 
@@ -197,7 +201,8 @@ public class ArrangementWebsocketController {
         ArrNode deleteParent = nodeParam.getStaticNodeParent() == null ? null : factoryDO
                 .createNode(nodeParam.getStaticNodeParent());
 
-        ArrFundVersion version = fundVersionRepository.findOne(nodeParam.getVersionId());
+        ArrFundVersion version = fundVersionRepository.findById(nodeParam.getVersionId())
+                .orElseThrow(version(nodeParam.getVersionId()));
 
         ArrLevel deleteLevel = moveLevelService.deleteLevel(version, deleteNode, deleteParent);
 

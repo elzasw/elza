@@ -131,11 +131,8 @@ public class AsyncNodeWorker implements IAsyncWorker {
     }
 
     private ArrFundVersion getFundVersion() {
-        ArrFundVersion version = fundVersionRepository.findOne(request.getFundVersionId());
-        if (version == null) {
-            throw new EntityNotFoundException("ArrFundVersion for conformity update not found, versionId: " + request.getFundVersionId());
-        }
-        return version;
+        return fundVersionRepository.findById(request.getFundVersionId())
+                .orElseThrow(() -> new EntityNotFoundException("ArrFundVersion for conformity update not found, versionId: " + request.getFundVersionId()));
     }
 
     private void processRequest(Long requestId, Integer nodeId, ArrFundVersion version) {

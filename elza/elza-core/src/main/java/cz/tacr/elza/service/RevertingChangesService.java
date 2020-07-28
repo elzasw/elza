@@ -325,7 +325,7 @@ public class RevertingChangesService {
             Query deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", /*"item",*/ "arr_item", toChange);
             deleteEntityQuery.executeUpdate();
 
-            dataRepository.delete(arrDataList);
+            dataRepository.deleteAll(arrDataList);
 
             // preindexovat všechny aktualni
             toReindex.addAll(node != null
@@ -782,7 +782,7 @@ public class RevertingChangesService {
             structuredItem.setDeleteChange(null);
         }
 
-        structuredItemRepository.save(structuredItemList);
+        structuredItemRepository.saveAll(structuredItemList);
     }
 
     private void sobjVrequestDelete(@NotNull ArrFund fund, @NotNull ArrChange toChange) {
@@ -830,7 +830,7 @@ public class RevertingChangesService {
             structureDataIds.add(structuredObject.getStructuredObjectId());
         }
 
-        structuredObjectRepository.save(structuredObjectList);
+        structuredObjectRepository.saveAll(structuredObjectList);
 
         eventNotificationService.publishEvent(new EventStructureDataChange(fund.getFundId(),
                 null,
@@ -1020,7 +1020,7 @@ public class RevertingChangesService {
 
         List<RulItemType> descItemTypes = Collections.emptyList();
         if (!descItemTypeCodes.isEmpty()) {
-            descItemTypes = itemTypeRepository.findAll(descItemTypeCodes);
+            descItemTypes = itemTypeRepository.findAllById(descItemTypeCodes);
             if (descItemTypes.size() != descItemTypeCodes.size()) {
                 List<String> foundCodes = descItemTypes.stream().map(RulItemType::getCode).collect(Collectors.toList());
                 Collection<Integer> missingCodes = new HashSet<>(descItemTypeCodes);

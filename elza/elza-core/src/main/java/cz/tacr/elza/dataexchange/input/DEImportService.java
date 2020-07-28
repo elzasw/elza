@@ -55,6 +55,9 @@ import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
+import static cz.tacr.elza.repository.ExceptionThrow.scope;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 /**
  * Service for data-exchange import.
  */
@@ -226,10 +229,8 @@ public class DEImportService {
                 initHelper);
 
         // find import scope
-        ApScope importScope = scopeRepository.findOne(params.getScopeId());
-        if (importScope == null) {
-            throw new SystemException("Import scope not found, id:" + params.getScopeId());
-        }
+        ApScope importScope = scopeRepository.findById(params.getScopeId())
+                .orElseThrow(scope(params.getScopeId()));
 
         // get static data for current transaction
         StaticDataProvider staticData = staticDataService.getData();
@@ -264,7 +265,8 @@ public class DEImportService {
         ImportPosition pos = null;
         if (posParams != null) {
             // find fund version
-            ArrFundVersion fundVersion = fundVersionRepository.findOne(posParams.getFundVersionId());
+            ArrFundVersion fundVersion = fundVersionRepository.findById(posParams.getFundVersionId())
+                    .orElseThrow(version(posParams.getFundVersionId()));
             // find & lock parent level
             ArrLevel parentLevel = arrangementService.lockLevel(posParams.getParentNode(), fundVersion);
             // find & lock target level

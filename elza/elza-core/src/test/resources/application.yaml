@@ -8,8 +8,10 @@ spring:
 #     username: app
 #     password: app
 
-# !!! při změně DB změnit i elza.data.url !!!
+  main:
+    allow-bean-definition-overriding: true
 
+# !!! při změně DB změnit i elza.data.url !!!
   jpa:
     show-sql: false
     #pametova databaze automaticky zapina hibernate.ddl-auto: create

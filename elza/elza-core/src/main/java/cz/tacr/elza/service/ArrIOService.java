@@ -1,5 +1,7 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.repository.ExceptionThrow.itemType;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
 import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_ENCODING;
 import static cz.tacr.elza.utils.CsvUtils.CSV_EXCEL_FORMAT;
 
@@ -41,10 +43,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.xml.sax.SAXException;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 
 import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.vo.FilterNode;
@@ -262,10 +264,9 @@ public class ArrIOService {
                                                                 final Integer parentVersion,
                                                                 final MultipartFile importFile,
                                                                 final Class<T> clazz) throws IOException, SAXException, ParserConfigurationException {
-        RulItemType descItemType = itemTypeRepository.findOne(descItemTypeId);
-        if (descItemType == null) {
-            throw new BusinessException("Typ s ID=" + descItemTypeId + " neexistuje", ArrangementCode.ITEM_TYPE_NOT_FOUND).set("id", descItemTypeId);
-        }
+        RulItemType descItemType = itemTypeRepository.findById(descItemTypeId)
+                .orElseThrow(itemType(descItemTypeId));
+
         if (!"COORDINATES".equals(descItemType.getDataType().getCode())) {
             throw new SystemException("Pouze typ COORDINATES může být importován pomocí KML.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
                     .set("property", "descItemTypeId")
@@ -342,7 +343,8 @@ public class ArrIOService {
 
     public void coordinatesExport(final HttpServletResponse response, final Integer descItemObjectId, final Integer fundVersionId) throws IOException {
 
-        ArrFundVersion fundVersion = fundVersionRepository.findOne(fundVersionId);
+        ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
         ArrChange lockChange = fundVersion.getLockChange();
 
         ArrItem item;
