@@ -29,7 +29,7 @@ class StructureSubNodeForm extends AbstractReactComponent {
         subNodeForm: PropTypes.object,
         focus: PropTypes.object,
         readMode: PropTypes.bool,
-        descItemFactory: PropTypes.object.isRequired,
+        descItemFactory: PropTypes.func.isRequired,
     };
 
     static defaultProps = {

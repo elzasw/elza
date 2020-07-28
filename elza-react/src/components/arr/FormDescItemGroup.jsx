@@ -1,8 +1,8 @@
 import PropTypes, {bool, object} from 'prop-types';
 import React from 'react';
-import AbstractReactComponent from "../AbstractReactComponent";
-import classNames from "classnames";
-import FormDescItemType from "./FormDescItemType";
+import AbstractReactComponent from '../AbstractReactComponent';
+import classNames from 'classnames';
+import FormDescItemType from './FormDescItemType';
 
 class FormDescItemGroup extends AbstractReactComponent {
     static propTypes = {
@@ -24,7 +24,7 @@ class FormDescItemGroup extends AbstractReactComponent {
         readMode: PropTypes.bool.isRequired,
         calendarTypes: PropTypes.object.isRequired,
         structureTypes: PropTypes.object.isRequired,
-        descItemFactory: PropTypes.object.isRequired,
+        descItemFactory: PropTypes.func.isRequired,
         customActions: PropTypes.object,
         descItemRef: PropTypes.func.isRequired, // (key, ref) => void
 
@@ -50,12 +50,33 @@ class FormDescItemGroup extends AbstractReactComponent {
         onDescItemTypeLock: PropTypes.func.isRequired,
         onDescItemTypeCopy: PropTypes.func.isRequired,
         onDescItemTypeCopyFromPrev: PropTypes.func.isRequired,
-    }
+    };
 
     render() {
-        const {descItemGroup, descItemGroupIndex, nodeSetting, singleDescItemTypeId, singleDescItemTypeEdit} = this.props;
-        const {typePrefix, subNodeForm, arrPerm, fundId, strictMode, showNodeAddons, descItemCopyFromPrevEnabled, conformityInfo, versionId, readMode,
-            calendarTypes, structureTypes, descItemFactory, customActions, descItemRef} = this.props;
+        const {
+            descItemGroup,
+            descItemGroupIndex,
+            nodeSetting,
+            singleDescItemTypeId,
+            singleDescItemTypeEdit,
+        } = this.props;
+        const {
+            typePrefix,
+            subNodeForm,
+            arrPerm,
+            fundId,
+            strictMode,
+            showNodeAddons,
+            descItemCopyFromPrevEnabled,
+            conformityInfo,
+            versionId,
+            readMode,
+            calendarTypes,
+            structureTypes,
+            descItemFactory,
+            customActions,
+            descItemRef,
+        } = this.props;
 
         const {
             onCreateParty,
@@ -80,7 +101,7 @@ class FormDescItemGroup extends AbstractReactComponent {
             onDescItemTypeLock,
             onDescItemTypeCopy,
             onDescItemTypeCopyFromPrev,
-            onDescItemNotIdentified
+            onDescItemNotIdentified,
         } = this.props;
 
         const onFuncs = {
@@ -106,8 +127,8 @@ class FormDescItemGroup extends AbstractReactComponent {
             onDescItemTypeLock,
             onDescItemTypeCopy,
             onDescItemTypeCopyFromPrev,
-            onDescItemNotIdentified
-        }
+            onDescItemNotIdentified,
+        };
 
         const descItemTypes = [];
         descItemGroup.descItemTypes.forEach((descItemType, descItemTypeIndex) => {
@@ -119,35 +140,35 @@ class FormDescItemGroup extends AbstractReactComponent {
                 const refType = subNodeForm.refTypesMap[descItemType.id];
                 const infoType = subNodeForm.infoTypesMap[descItemType.id];
                 const rulDataType = refType.dataType;
-                const customActionsValue = customActions && customActions(rulDataType.code, infoType)
+                const customActionsValue = customActions && customActions(rulDataType.code, infoType);
 
-                descItemTypes.push(<FormDescItemType
-                    key={descItemType.id}
-                    descItemType={descItemType}
-                    descItemTypeIndex={descItemTypeIndex}
-                    descItemGroupIndex={descItemGroupIndex}
-                    nodeSetting={nodeSetting}
-                    fundId={fundId}
-                    strictMode={strictMode}
-                    descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
-                    conformityInfo={conformityInfo}
-                    versionId={versionId}
-                    readMode={readMode}
-                    calendarTypes={calendarTypes}
-                    structureTypes={structureTypes}
-
-                    refType={refType}
-                    infoType={infoType}
-                    typePrefix={typePrefix}
-                    singleDescItemTypeEdit={singleDescItemTypeEdit}
-                    arrPerm={arrPerm}
-                    showNodeAddons={showNodeAddons}
-                    descItemFactory={descItemFactory}
-                    customActions={customActionsValue}
-                    descItemRef={descItemRef}
-
-                    {...onFuncs}
-                />)
+                descItemTypes.push(
+                    <FormDescItemType
+                        key={descItemType.id}
+                        descItemType={descItemType}
+                        descItemTypeIndex={descItemTypeIndex}
+                        descItemGroupIndex={descItemGroupIndex}
+                        nodeSetting={nodeSetting}
+                        fundId={fundId}
+                        strictMode={strictMode}
+                        descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
+                        conformityInfo={conformityInfo}
+                        versionId={versionId}
+                        readMode={readMode}
+                        calendarTypes={calendarTypes}
+                        structureTypes={structureTypes}
+                        refType={refType}
+                        infoType={infoType}
+                        typePrefix={typePrefix}
+                        singleDescItemTypeEdit={singleDescItemTypeEdit}
+                        arrPerm={arrPerm}
+                        showNodeAddons={showNodeAddons}
+                        descItemFactory={descItemFactory}
+                        customActions={customActionsValue}
+                        descItemRef={descItemRef}
+                        {...onFuncs}
+                    />,
+                );
                 // const i = this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting);
                 // descItemTypes.push(i);
             }
