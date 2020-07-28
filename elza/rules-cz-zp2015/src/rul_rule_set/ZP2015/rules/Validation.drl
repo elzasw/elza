@@ -15,7 +15,8 @@ rule "List musí mít ukládací jednotku směrem ke kořeni"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
 	not ( $level: Level( $items: descItems ) and
-		DescItem(type=="ZP2015_STORAGE_ID") from $items )
+		DescItem(type in ("ZP2015_STORAGE_ID", "ZP2015_AIP_ID")) from $items 
+		)
 then
 	results.createMissing("ZP2015_STORAGE_ID", "Chybí ukládací jednotka", "ZP2015_POL_STORAGE_ID");
 end

@@ -2,6 +2,11 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 
 public class DateRangeConfig implements ActionConfig {
 
+    /**
+     * Exclude condition
+     */
+    WhenConditionConfig excludeWhen;
+
 	String inputType;
 
     String bulkRangeType;
@@ -31,7 +36,15 @@ public class DateRangeConfig implements ActionConfig {
 		this.outputType = outputType;
 	}
 
-	@Override
+    public WhenConditionConfig getExcludeWhen() {
+        return excludeWhen;
+    }
+
+    public void setExcludeWhen(WhenConditionConfig excludeWhen) {
+        this.excludeWhen = excludeWhen;
+    }
+
+    @Override
 	public Class<? extends Action> getActionClass() {
 		return DateRangeAction.class;
 	}

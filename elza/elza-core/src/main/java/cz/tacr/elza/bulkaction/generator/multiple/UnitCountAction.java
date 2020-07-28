@@ -171,18 +171,7 @@ public class UnitCountAction extends Action {
 		}
     }
 
-	private boolean isInTree(LevelWithItems parent, LevelWithItems subLevel) {
-		if (parent == subLevel) {
-			return true;
-		}
-		LevelWithItems level = subLevel.getParent();
-		if (level == null) {
-			return false;
-		}
-		return isInTree(parent, level);
-	}
-
-    @Override
+	@Override
     public ActionResult getResult() {
         UnitCountActionResult result = new UnitCountActionResult();
         if (isLocal()) {
