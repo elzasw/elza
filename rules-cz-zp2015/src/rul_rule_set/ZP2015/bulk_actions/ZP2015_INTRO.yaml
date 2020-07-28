@@ -3,6 +3,11 @@ name: Agregace úvodu
 
 actions:
     - !DateRange
+      # Extra EJ - kdekoliv
+      excludeWhen:
+        someOf:
+          # Nesmí být nastaven jako pevné spojení s jinou
+          - itemType: ZP2015_ITEM_LINK    
       inputType: ZP2015_UNIT_DATE
       bulkRangeType: ZP2015_UNIT_DATE_BULK
       outputType: ZP2015_DATE_RANGE
@@ -249,3 +254,17 @@ actions:
              objectItemMapping:
                ZP2015_PACKET_TYPE_KAR: kar
                ZP2015_PACKET_TYPE_FAS: fas
+           # Digitální složka
+           - excludeWhen:
+               someOf:
+                 # Nesmí být nastaven jako připojený záznam
+                 - itemType: ZP2015_CONNECTED_RECORD
+                 # Nesmí být nastaven jako pevné spojení s jinou
+                 - itemType: ZP2015_ITEM_LINK
+             when:
+               itemType: ZP2015_FOLDER_TYPE
+               itemSpec: ZP2015_FOLDER_DAO
+             stopProcessing: true
+             itemType: ZP2015_FOLDER_TYPE
+             itemSpecMapping:
+               ZP2015_FOLDER_DAO: daj

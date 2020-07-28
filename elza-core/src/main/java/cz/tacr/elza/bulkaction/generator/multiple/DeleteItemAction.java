@@ -1,6 +1,6 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -19,6 +19,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.service.DescriptionItemService;
 
@@ -63,17 +64,27 @@ public class DeleteItemAction extends Action {
             return;
         }
 
+        List<ArrDescItem> deleteItems = null;
+        ArrNode node = null;
+
         for (ArrItem item : descItems) {
             if (item instanceof ArrDescItem) {
                 ArrDescItem arrDescItem = descItemRepository.getOne(item.getItemId());
-
-                List<ArrDescItem> items = Collections.singletonList(arrDescItem);
-                descriptionItemService.deleteDescriptionItems(items,
-                                                              arrDescItem.getNode(),
-                                                              fundVersion,
-                                                              change,
-                                                              true);
+                if (deleteItems == null) {
+                    deleteItems = new ArrayList<>(descItems.size());
+                    node = arrDescItem.getNode();
+                }
+                deleteItems.add(arrDescItem);
             }
+        }
+        if (deleteItems != null) {
+            descriptionItemService.deleteDescriptionItems(deleteItems,
+                                                          node,
+                                                          fundVersion,
+                                                          change,
+                                                          // mazou se vsechny prvky popisu daneho typu,
+                                                          // nemohou se posouvat pozice
+                                                          false);
         }
     }
 

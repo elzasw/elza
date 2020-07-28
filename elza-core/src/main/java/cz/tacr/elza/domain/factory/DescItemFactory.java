@@ -9,8 +9,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -21,10 +19,62 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDate;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataPartyRef;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrItemCoordinates;
+import cz.tacr.elza.domain.ArrItemDate;
+import cz.tacr.elza.domain.ArrItemDecimal;
+import cz.tacr.elza.domain.ArrItemEnum;
+import cz.tacr.elza.domain.ArrItemFileRef;
+import cz.tacr.elza.domain.ArrItemFormattedText;
+import cz.tacr.elza.domain.ArrItemInt;
+import cz.tacr.elza.domain.ArrItemJsonTable;
+import cz.tacr.elza.domain.ArrItemPartyRef;
+import cz.tacr.elza.domain.ArrItemRecordRef;
+import cz.tacr.elza.domain.ArrItemString;
+import cz.tacr.elza.domain.ArrItemStructureRef;
+import cz.tacr.elza.domain.ArrItemText;
+import cz.tacr.elza.domain.ArrItemUnitdate;
+import cz.tacr.elza.domain.ArrItemUnitid;
+import cz.tacr.elza.domain.ArrItemUriRef;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.DataCoordinatesRepository;
+import cz.tacr.elza.repository.DataDateRepository;
+import cz.tacr.elza.repository.DataDecimalRepository;
+import cz.tacr.elza.repository.DataFileRefRepository;
+import cz.tacr.elza.repository.DataIntegerRepository;
+import cz.tacr.elza.repository.DataJsonTableRepository;
+import cz.tacr.elza.repository.DataNullRepository;
+import cz.tacr.elza.repository.DataPartyRefRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.DataStringRepository;
+import cz.tacr.elza.repository.DataStructureRefRepository;
+import cz.tacr.elza.repository.DataTextRepository;
+import cz.tacr.elza.repository.DataUnitdateRepository;
+import cz.tacr.elza.repository.DataUnitidRepository;
+import cz.tacr.elza.repository.DataUriRefRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ItemService;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
@@ -1000,6 +1050,9 @@ public class DescItemFactory implements InitializingBean {
                 }
                 URI tempUri = URI.create(dataTemp.getValue()).normalize();
                 dataTemp.setDataType(descItem.getItemType().getDataType());
+                if (StringUtils.isEmpty(tempUri.getScheme())) {
+                    throw new IllegalArgumentException("Nebylo zadáno schéme, nebo je prázdné: " + dataTemp.getValue());
+                }
                 dataTemp.setSchema(tempUri.getScheme());
 
                 if(dataTemp.getSchema().equals(ELZA_NODE)) {
