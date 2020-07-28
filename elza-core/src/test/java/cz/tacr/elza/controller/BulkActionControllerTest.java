@@ -200,6 +200,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
      */
     @Test
     public void interruptBulkAction() throws InterruptedException {
+        helperTestService.waitForWorkers();
         int fundVersionId = importAndGetVersionId();
         BulkActionRunVO state;
 
@@ -214,6 +215,8 @@ public class BulkActionControllerTest extends AbstractControllerTest {
             counter--;
 
             logger.info("Čekání na dokončení asynchronních operací...");
+
+            helperTestService.waitForWorkers();
             Thread.sleep(10000);
 
             try {

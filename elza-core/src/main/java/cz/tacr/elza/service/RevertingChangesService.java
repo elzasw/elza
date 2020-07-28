@@ -1,44 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.math.BigInteger;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TemporalType;
-import javax.persistence.TypedQuery;
-import javax.validation.constraints.NotNull;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.hibernate.cfg.ImprovedNamingStrategy;
-import org.hibernate.cfg.NamingStrategy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -65,14 +26,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.LockedValueRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.StructuredItemRepository;
-import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -81,6 +35,26 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.service.vo.TitleItemsByType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.hibernate.cfg.ImprovedNamingStrategy;
+import org.hibernate.cfg.NamingStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.math.BigInteger;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Servisní třída pro práci s obnovou změn v archivní souboru - "UNDO".
@@ -103,7 +77,7 @@ public class RevertingChangesService {
     private LevelTreeCacheService levelTreeCacheService;
 
     @Autowired
-    private UpdateConformityInfoService updateConformityInfoService;
+    private AsyncRequestService asyncRequestService;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -422,6 +396,7 @@ public class RevertingChangesService {
             // Drop from cache
             nodeCacheService.deleteNodes(deleteNodeIds);
             // Remove from DB
+
             nodeRepository.deleteByNodeIdIn(deleteNodeIds);
         }
 
@@ -444,7 +419,7 @@ public class RevertingChangesService {
         }
 
         levelTreeCacheService.invalidateFundVersion(fund);
-        arrangementService.startNodeValidation();
+        arrangementService.startNodeValidation(false);
     }
 
     private TypedQuery<ArrData> findChangeArrDataQuery(final ArrFund fund, final ArrNode node, final ArrChange change) {
@@ -657,7 +632,7 @@ public class RevertingChangesService {
      */
     private void stopConformityInfFundVersions(final @NotNull ArrFund fund) {
         for (ArrFundVersion fundVersion : fund.getVersions()) {
-            updateConformityInfoService.terminateWorkerInVersionAndWait(fundVersion.getFundVersionId());
+            asyncRequestService.terminateNodeWorkersByFund(fundVersion.getFundVersionId());
         }
     }
 

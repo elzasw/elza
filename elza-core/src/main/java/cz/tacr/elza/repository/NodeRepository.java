@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrNodeConformity;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,8 +23,8 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
     List<Integer> findNodeIdsForFondWithPolicy(ArrFund fund);
 
     /* Basic query:
-     * 
-       select distinct n.node_id from arr_node n 
+     *
+       select distinct n.node_id from arr_node n
        left join arr_level l on l.node_id = n.node_id
        where n.fund_id = ... and l.level_id is null
      */
@@ -31,6 +32,16 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
             "LEFT JOIN n.levels l " +
             "WHERE n.fund = ?1 AND l.levelId IS NULL")
     List<Integer> findUnusedNodeIdsByFund(ArrFund fund);
+
+    /* Basic query:
+    *
+      select distinct n.node_id from arr_node n
+      left join arr_level l on l.node_id = n.node_id
+      where n.fund_id = ... and l.level_id is null
+    */
+    @Query("SELECT distinct n.nodeId FROM arr_node n " +
+            "WHERE n.fund = ?1")
+    List<Integer> findNodeIdsByFund(ArrFund fund);
 
     @Query("SELECT distinct n.nodeId FROM arr_node n " +
             "LEFT JOIN n.levels l " +
@@ -54,4 +65,7 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
             " where dsr.structuredObject.structuredObjectId in :structuredObjectIds" +
             " and i.deleteChange is null")
     List<ArrNode> findNodesByStructuredObjectIds(@Param(value = "structuredObjectIds") Collection<Integer> structuredObjectIds);
+
+    @Query("SELECT node FROM arr_node node JOIN FETCH arr_node_conformity conf ON conf.node = node AND conf.state = :state")
+    List<ArrNode> findNodesByConformityState(@Param(value= "state") ArrNodeConformity.State state);
 }

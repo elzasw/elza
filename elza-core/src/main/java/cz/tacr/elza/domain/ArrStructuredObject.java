@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_ENUM;
 
+import java.util.UUID;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -16,6 +18,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.apache.commons.lang3.Validate;
 import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -50,6 +53,54 @@ public class ArrStructuredObject implements IArrFund, Structured {
     public final static String FIELD_VALUE = "value";
 
     public final static String FIELD_STATE = "state";
+
+    /**
+     * Builder for ArrStructuredObject
+     * 
+     *
+     */
+    public static class Builder {
+        private ArrChange createChange;
+        private ArrFund fund;
+        private RulStructuredType structureType;
+        private State state = State.TEMP;
+        private String uuid;
+
+        public Builder(final ArrChange createChange,
+                       final ArrFund fund,
+                       final RulStructuredType structureType) {
+            this.createChange = createChange;
+            this.fund = fund;
+            this.structureType = structureType;
+        }
+
+        public ArrStructuredObject build() {
+            ArrStructuredObject so = new ArrStructuredObject();
+            so.setCreateChange(createChange);
+            so.setAssignable(true);
+            so.setFund(fund);
+            so.setStructuredType(structureType);
+            so.setState(state);
+
+            if (uuid != null) {
+                Validate.isTrue(uuid.length() == 36, "Unexpected UUID value: %s", uuid);
+                so.setUuid(uuid);
+            } else {
+                so.setUuid(UUID.randomUUID().toString());
+            }
+            return so;
+        }
+
+        public Builder setState(final State state) {
+            this.state = state;
+            return this;
+        }
+
+        public Builder setUuid(final String uuid) {
+            this.uuid = uuid;
+            return this;
+        }
+    }
 
     @Id
     @GeneratedValue
@@ -95,6 +146,9 @@ public class ArrStructuredObject implements IArrFund, Structured {
 
     @Column(nullable = false)
     private Boolean assignable;
+
+    @Column(length = StringLength.LENGTH_36, nullable = false)
+    private String uuid;
 
     @Column
     @Lob
@@ -277,6 +331,14 @@ public class ArrStructuredObject implements IArrFund, Structured {
 
     public Integer getFundId() {
         return fundId;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     /**

@@ -1,18 +1,17 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
-
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformity.State;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -69,5 +68,6 @@ public interface NodeConformityRepository extends JpaRepository<ArrNodeConformit
     @Query("DELETE FROM arr_node_conformity nc WHERE nc.nodeId in (SELECT n.nodeId FROM arr_node n WHERE n.fund = ?1)")
     void deleteByNodeFund(ArrFund fund);
 
-    void deleteByNodeIdIn(List<Integer> nodeIds);
+    void deleteByNodeIdIn(Collection<Integer> nodeIds);
+
 }

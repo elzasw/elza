@@ -15,8 +15,6 @@ import cz.tacr.elza.dataexchange.input.sections.context.SectionContext;
 import cz.tacr.elza.dataexchange.input.sections.context.StructObjContext;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrStructuredItem;
-import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.schema.v2.DescriptionItem;
 import cz.tacr.elza.schema.v2.DescriptionItemStructObjectRef;
 import cz.tacr.elza.schema.v2.StructuredObject;
@@ -44,13 +42,8 @@ public class StructObjProcessor implements ItemProcessor {
         if (StringUtils.isEmpty(item.getId())) {
             throw new DEImportException("Structured object id is not set");
         }
-        ArrStructuredObject entity = new ArrStructuredObject();
-        entity.setCreateChange(section.getCreateChange());
-        entity.setFund(section.getFund());
-        entity.setState(State.OK);
-        entity.setAssignable(Boolean.TRUE);
 
-        return section.addStructObject(entity, item.getId());
+        return section.addStructObject(item.getId());
     }
 
     private void processItems(Collection<DescriptionItem> items, StructObjContext structObjCtx) {

@@ -23,7 +23,7 @@ import { selectFundTab } from 'actions/arr/fund.jsx'
 import { routerNavigate } from 'actions/router.jsx'
 import { fundsFetchIfNeeded, fundsSelectFund, fundsFundDetailFetchIfNeeded, fundsSearch, fundsFilter, DEFAULT_FUND_LIST_MAX_SIZE } from 'actions/fund/fund.jsx'
 import { getFundFromFundAndVersion } from 'components/arr/ArrUtils.jsx'
-import { approveFund, deleteFund, exportFund, updateFund } from 'actions/arr/fund.jsx'
+import { approveFund, deleteFund, deleteFundHistory, exportFund, updateFund } from 'actions/arr/fund.jsx'
 import { scopesDirty } from 'actions/refTables/scopesData.jsx'
 import * as perms from 'actions/user/Permission.jsx';
 import { globalFundTreeInvalidate } from "../../actions/arr/globalFundTree";
@@ -55,6 +55,7 @@ class FundPage extends AbstractReactComponent {
             'handleEditFundVersion',
             'handleCallEditFundVersion',
             'handleDeleteFund',
+            'handleDeleteFundHistory',
             'handleRuleSetUpdateFundVersion'
         );
 
@@ -248,6 +249,11 @@ class FundPage extends AbstractReactComponent {
                         <div><span className="btnText">{i18n('arr.fund.action.delete')}</span></div>
                     </Button>,
                 )
+                itemActions.push(
+                    <Button key="fa-deletehistory" onClick={this.handleDeleteFundHistory}><Icon glyph='fa-trash' />
+                        <div><span className="btnText">{i18n('arr.fund.action.deletehistory')}</span></div>
+                    </Button>,
+                )
             }
             if (userDetail.hasOne(perms.FUND_EXPORT_ALL, { type: perms.FUND_EXPORT, fundId: fundRegion.fundDetail.id })) {
                 itemActions.push(
@@ -279,6 +285,15 @@ class FundPage extends AbstractReactComponent {
 
         if (confirm(i18n('arr.fund.action.delete.confirm', fundDetail.name))) {
             this.dispatch(deleteFund(fundDetail.id))
+        }
+    }
+
+    handleDeleteFundHistory() {
+        const { fundRegion } = this.props
+        const fundDetail = fundRegion.fundDetail
+
+        if (confirm(i18n('arr.fund.action.deletehistory.confirm', fundDetail.name))) {
+            this.dispatch(deleteFundHistory(fundDetail.id))
         }
     }
 

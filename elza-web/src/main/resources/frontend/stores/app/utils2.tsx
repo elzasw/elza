@@ -8,7 +8,7 @@ export function getMapFromList<T>(list : T[], attrName : any = 'id'): Map<any, T
 }
 
 export function getSetFromIdsList<T>(list: T[]) : Set<T> {
-    const map = new Set();
+    const map = new Set<T>();
     list && list.forEach(x => {
         !map.has(x) && map.add(x);
     });

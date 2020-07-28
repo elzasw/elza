@@ -14,6 +14,7 @@ import {
     lockDescItemType,
     nocopyDescItemType,
     unlockAllDescItemType,
+    toggleCopyAllDescItemType,
     unlockDescItemType
 } from 'actions/arr/nodeSetting.jsx'
 import {deleteNode} from '../../actions/arr/node.jsx'
@@ -52,6 +53,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
             "handleDescItemTypeLock",
             "handleDescItemTypeCopy",
             "handleDescItemTypeUnlockAll",
+            "handleCopyAll",
             "getNodeSetting",
             "initFocus",
         );
@@ -87,6 +89,13 @@ class NodeSubNodeForm extends AbstractReactComponent {
      */
     handleDescItemTypeUnlockAll() {
         this.dispatch(unlockAllDescItemType(this.props.nodeId));
+    }
+
+    /**
+     * Odebrání všech zámků pro všechny atributy
+     */
+    handleCopyAll() {
+        this.dispatch(toggleCopyAllDescItemType(this.props.nodeId));
     }
 
     /**
@@ -223,11 +232,15 @@ class NodeSubNodeForm extends AbstractReactComponent {
     renderFormActions() {
         const notRoot = !isFundRootId(this.props.nodeId);
 
-        const {fundId, userDetail, issueProtocol} = this.props;
+        const {fundId, userDetail, issueProtocol, nodeId, nodeSettings} = this.props;
         const editPermAllowed = userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId},
                                                  perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId});
 
         const isProtocolLoaded = issueProtocol.fetched && issueProtocol.data && fundId === issueProtocol.data.fundId;
+
+        const nodeSettingsIndex = indexById(nodeSettings.nodes, nodeId);
+        const nodeSetting = nodeSettings.nodes[nodeSettingsIndex];
+        const isCopyAll = nodeSetting && nodeSetting.copyAll;
 
         const haveProtocolPermissionToWrite =
             isProtocolLoaded && (
@@ -247,6 +260,9 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     <div className='section'>
                         <NoFocusButton onClick={this.handleDescItemTypeUnlockAll}>
                             <Icon glyph="fa-unlock"/>
+                        </NoFocusButton>
+                        <NoFocusButton onClick={this.handleCopyAll} active={isCopyAll} title={i18n('subNodeForm.section.copyAll')}>
+                            <Icon glyph="fa-files-o"/>
                         </NoFocusButton>
                         <NoFocusButton onClick={this.props.onVisiblePolicy}>
                             <Icon glyph="fa-cogs"/>

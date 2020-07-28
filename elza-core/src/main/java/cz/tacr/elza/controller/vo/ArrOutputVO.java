@@ -52,6 +52,10 @@ public class ArrOutputVO {
      */
     private Date deleteDate;
 
+    private List<ApScopeVO> scopes;
+
+    private ApAccessPointVO anonymizedAp;
+
     // --- getters/setters ---
 
     public Integer getId() {
@@ -164,5 +168,21 @@ public class ArrOutputVO {
 
     public void setDeleteDate(Date deleteDate) {
         this.deleteDate = deleteDate;
+    }
+
+    public List<ApScopeVO> getScopes() {
+        return scopes;
+    }
+
+    public void setScopes(List<ApScopeVO> scopes) {
+        this.scopes = scopes;
+    }
+
+    public ApAccessPointVO getAnonymizedAp() {
+        return anonymizedAp;
+    }
+
+    public void setAnonymizedAp(ApAccessPointVO anonymizedAp) {
+        this.anonymizedAp = anonymizedAp;
     }
 }

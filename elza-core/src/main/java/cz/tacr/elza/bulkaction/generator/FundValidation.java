@@ -1,11 +1,5 @@
 package cz.tacr.elza.bulkaction.generator;
 
-import java.util.List;
-
-import org.apache.commons.lang3.Validate;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.BulkActionService;
@@ -14,6 +8,11 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.service.AsyncRequestService;
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  * Hromadná akce pro kontrolu validace (stavů popisu) celé archivní pomůcky.
@@ -27,7 +26,7 @@ public class FundValidation extends BulkAction {
     public static final String TYPE = "FUND_VALIDATION";
 
     @Autowired
-    private UpdateConformityInfoService updateConformityInfoService;
+    private AsyncRequestService asyncRequestService;
 
     @Autowired
     private BulkActionService bulkActionService;
@@ -57,7 +56,7 @@ public class FundValidation extends BulkAction {
 	public void run(ActionRunContext runContext) {
 
         // v případě, že existuje nějaké přepočítávání uzlů, je nutné to ukončit
-        updateConformityInfoService.terminateWorkerInVersionAndWait(version.getFundVersionId());
+        asyncRequestService.terminateNodeWorkersByFund(version.getFundVersionId());
 
 		for (Integer nodeId : runContext.getInputNodeIds()) {
 			ArrNode nodeRef = nodeRepository.getOne(nodeId);

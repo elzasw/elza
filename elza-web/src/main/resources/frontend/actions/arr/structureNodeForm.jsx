@@ -8,6 +8,7 @@ export function isStructureNodeForm(action) {
         case types.CHANGE_STRUCTURE:
         case types.STRUCTURE_NODE_FORM_REQUEST:
         case types.STRUCTURE_NODE_FORM_RECEIVE:
+        case types.STRUCTURE_NODE_FORM_SET_DATA:
         case types.STRUCTURE_NODE_FORM_SELECT_ID:
             return true;
         default:
@@ -15,36 +16,40 @@ export function isStructureNodeForm(action) {
     }
 }
 
-export function structureNodeFormSelectId(versionId, id) {
+export function structureNodeFormSelectId(id) {
     return {
         type: types.STRUCTURE_NODE_FORM_SELECT_ID,
-        versionId,
         id
     }
 }
 
-function structureNodeFormRequest(versionId, id) {
+function structureNodeFormRequest(id) {
     return {
         type: types.STRUCTURE_NODE_FORM_REQUEST,
-        versionId,
         id
     }
 }
-function structureNodeFormReceive(versionId, data) {
+function structureNodeFormReceive(id, data) {
     return {
         type: types.STRUCTURE_NODE_FORM_RECEIVE,
-        versionId,
+        id,
+        data
+    }
+}
+export function structureNodeFormSetData(id, data) {
+    return {
+        type: types.STRUCTURE_NODE_FORM_SET_DATA,
+        id,
         data
     }
 }
 
 
-function _getArea(getState, versionId) {
+function _getArea(getState, id) {
     const state = getState();
-    const index = indexById(state.arrRegion.funds, versionId, "versionId");
-    if (index !== null) {
-        const fund = state.arrRegion.funds[index];
-        return fund.structureNodeForm;
+    const subStore = state.structures.stores[id];
+    if (subStore !== null) {
+        return subStore;
     }
     return null;
 }
@@ -52,26 +57,25 @@ function _getArea(getState, versionId) {
 /**
  * Fetch dat pro formulář struktur
  */
-export function structureNodeFormFetchIfNeeded(versionId, id) {
+export function structureNodeFormFetchIfNeeded(versionId, id, force = false) {
     return (dispatch, getState) => {
-        const storeArea = _getArea(getState, versionId);
+        const storeArea = _getArea(getState, id);
 
         if (storeArea === null) {
             return
         }
 
-
-        if (storeArea.currentDataKey !== id) {
-            dispatch(structureNodeFormRequest(versionId, id));
+        if ((storeArea.currentDataKey !== id && !storeArea.fetching) || force) {
+            dispatch(structureNodeFormRequest(id));
             WebApi.getStructureData(versionId, id)
                 .then(json => {
-                    const newStoreArea = _getArea(getState, versionId);
+                    const newStoreArea = _getArea(getState, id);
                     if (newStoreArea === null) {
                         return;
                     }
 
                     if (json.id === id) {
-                        dispatch(structureNodeFormReceive(versionId, json))
+                        dispatch(structureNodeFormReceive(id, json))
                     }
                 })
         }

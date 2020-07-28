@@ -1,12 +1,10 @@
 package cz.tacr.elza;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
+import cz.tacr.elza.domain.ArrAsyncRequest;
+import cz.tacr.elza.domain.ArrRequest;
 import org.apache.commons.collections4.CollectionUtils;
 
 
@@ -22,7 +20,7 @@ public class ElzaTools {
         // Cannot be instantiated
     }
 
-    /** 
+    /**
      * vytvoří z listu mapu listů zagrupovanou podle zadaného klíče.
      *
      * @param <T> typ zpracovávaného objektu.
@@ -38,6 +36,66 @@ public class ElzaTools {
             List<T> itemConstrainList = itemConstrainMap.get(itemTypeId);
             if (itemConstrainList == null) {
                 itemConstrainList = new LinkedList<>();
+                itemConstrainMap.put(itemTypeId, itemConstrainList);
+            }
+            itemConstrainList.add(itemConstraint);
+        }
+        return itemConstrainMap;
+    }
+
+    /**
+     * vytvoří z listu mapu front zagrupovanou podle zadaného klíče.
+     *
+     * @param <T> typ zpracovávaného objektu.
+     * @param findItemConstList list pro grupovani
+     * @param function - funkce vracejici hodnotu klíčš pro grupovani.
+     * @return výsledná mapa.
+     */
+    public static <T> Map<Integer, Queue<T>> createGroupQueueMap(final List<T> findItemConstList,
+                                                            final Function<T, Integer> function) {
+        Map<Integer, Queue<T>> itemConstrainMap = new HashMap<>();
+        for (T itemConstraint : findItemConstList) {
+            Integer itemTypeId = function.apply(itemConstraint);
+            Queue<T> itemConstrainList = itemConstrainMap.get(itemTypeId);
+            if (itemConstrainList == null) {
+                itemConstrainList = new LinkedList<>();
+                itemConstrainMap.put(itemTypeId, itemConstrainList);
+            }
+            itemConstrainList.add(itemConstraint);
+        }
+        return itemConstrainMap;
+    }
+
+    /**
+     * vytvoří z listu mapu front zagrupovanou podle zadaného klíče.
+     *
+     * @param <T> typ zpracovávaného objektu.
+     * @param findItemConstList list pro grupovani
+     * @param function - funkce vracejici hodnotu klíčš pro grupovani.
+     * @return výsledná mapa.
+     */
+    public static <T> Map<Integer, PriorityQueue<ArrAsyncRequest>> createGroupPriorityQueueMap(final List<ArrAsyncRequest> findItemConstList,
+                                                                 final Function<ArrAsyncRequest, Integer> function) {
+        Map<Integer, PriorityQueue<ArrAsyncRequest>> itemConstrainMap = new HashMap<>();
+        for (ArrAsyncRequest itemConstraint : findItemConstList) {
+            Integer itemTypeId = function.apply(itemConstraint);
+            PriorityQueue<ArrAsyncRequest> itemConstrainList = itemConstrainMap.get(itemTypeId);
+            if (itemConstrainList == null) {
+                itemConstrainList = new PriorityQueue<ArrAsyncRequest>(1000,new Comparator<ArrAsyncRequest>() {
+                    @Override
+                    public int compare(ArrAsyncRequest r1, ArrAsyncRequest r2) {
+                        if(r1.getPriority() == r2.getPriority()) {
+                            if(r1.getAsyncRequestId() > r2.getAsyncRequestId())
+                                return 1;
+                            else if(r1.getAsyncRequestId() < r2.getAsyncRequestId())
+                                return -1;
+                            return 0;
+                        } else {
+                            return (r2.getPriority() - r1.getPriority());
+                        }
+
+                    }
+                });
                 itemConstrainMap.put(itemTypeId, itemConstrainList);
             }
             itemConstrainList.add(itemConstraint);

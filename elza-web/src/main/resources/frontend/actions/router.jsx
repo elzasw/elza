@@ -1,8 +1,9 @@
 import * as types from 'actions/constants/ActionTypes.js';
 
-export function routerNavigate(path) {
+export function routerNavigate(path, method = 'PUSH') {
     return {
         type: types.ROUTER_NAVIGATE,
+        method,
         path
     }
 }

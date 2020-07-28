@@ -1,18 +1,13 @@
 package cz.tacr.elza.repository;
 
-import java.util.Collection;
-import java.util.List;
-
-import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.*;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrRequest;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -40,4 +35,7 @@ public interface DigitizationRequestNodeRepository extends ElzaJpaRepository<Arr
     @Modifying
     @Query("DELETE FROM arr_digitization_request_node dd WHERE dd.digitizationRequestId IN (SELECT d.requestId FROM arr_digitization_request d WHERE d.fund = ?1)")
     void deleteByFund(ArrFund fund);
+
+    @Modifying
+    void deleteByNodeFundIdIn(Collection<Integer> nodeIds);
 }

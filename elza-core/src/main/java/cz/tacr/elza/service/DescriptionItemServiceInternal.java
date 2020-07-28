@@ -26,6 +26,7 @@ import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -171,6 +172,9 @@ public class DescriptionItemServiceInternal {
         case DATE:
             ArrDataDate dataDate = (ArrDataDate) data;
             return new TitleValue(DateTimeFormatter.ISO_LOCAL_DATE.format(dataDate.getValue()));
+        case URI_REF:
+             ArrDataUriRef uriRef = (ArrDataUriRef) data;
+             return new TitleValue(uriRef.getValue());
         default:
             throw new SystemException("Failed to create title, uknown data type: " + dataType, BaseCode.SYSTEM_ERROR);
         }

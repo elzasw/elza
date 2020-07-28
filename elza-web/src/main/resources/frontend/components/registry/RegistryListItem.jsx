@@ -17,7 +17,9 @@ class RegistryListItem extends AbstractReactComponent {
         eidTypes: React.PropTypes.object.isRequired,
         record: React.PropTypes.object.isRequired,
         relations: React.PropTypes.array,
-        invalid: React.PropTypes.bool
+        invalid: React.PropTypes.bool,
+        addEmpty: React.PropTypes.bool,
+        emptyTitle: React.PropTypes.string
     };
 
     getDisplayIds = () => {
@@ -47,12 +49,21 @@ class RegistryListItem extends AbstractReactComponent {
     }
 
     render() {
-        const {className, isActive, id, record, invalid, scopeName} = this.props;
+        const {className, isActive, id, record, invalid, scopeName, addEmpty, emptyTitle} = this.props;
 
-        const cls = classNames(className, 'registry-list-item', {
+        let cls = classNames(className, 'registry-list-item', {
             active: isActive,
             invalid: invalid
         });
+        if (addEmpty && id === -1) {
+            cls = cls + " empty";
+            return <div key={'record-id-' + id} className={cls}>
+                <div>
+                    <Icon glyph='fa-trash' />
+                    <span className="name" title={emptyTitle}>{emptyTitle}</span>
+                </div>
+            </div>;
+        }
 
 		const typeNames = this.getApTypeNames().join(' | ');
 		const displayId = this.getDisplayIds().join(', ');

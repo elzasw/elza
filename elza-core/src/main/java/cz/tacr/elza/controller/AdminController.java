@@ -1,21 +1,27 @@
 package cz.tacr.elza.controller;
 
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.AsyncTypeEnum;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -32,6 +38,9 @@ import cz.tacr.elza.service.*;
 @RequestMapping("/api/admin")
 public class AdminController {
 
+    /** Logger. */
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     @Autowired
     private AdminService adminService;
 
@@ -46,6 +55,12 @@ public class AdminController {
 
     @Autowired
     private ArrangementService arrangementService;
+
+    @Autowired
+    private AsyncRequestService asyncRequestService;
+
+    @Value("${elza.logFile:}")
+    private String logFilePath;
 
     @RequestMapping(value = "/reindex", method = RequestMethod.GET)
 	@Transactional
@@ -153,7 +168,6 @@ public class AdminController {
      * @return seznam JP
      */
     @RequestMapping(value = "/{fundId}/nodes/byIds", method = RequestMethod.POST)
-    @Transactional
     public List<TreeNodeVO> findNodeByIds(@PathVariable("fundId") Integer fundId,
                                           @RequestBody List<Integer> nodeIds) {
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fundId);
@@ -162,5 +176,73 @@ public class AdminController {
                     .setId(fundId);
         }
         return adminService.findNodeByIds(fundVersion, nodeIds);
+    }
+
+    @RequestMapping(value="/asyncRequests", method = RequestMethod.GET)
+    public List<ArrAsyncRequestVO> getAsyncRequestInfo() {
+        List<ArrAsyncRequestVO> requestList =  asyncRequestService.dispatcherInfo();
+        return requestList;
+    }
+
+    @RequestMapping(value= "/asyncRequests/{requestType}", method = RequestMethod.GET)
+    public List<FundStatisticsVO> getAsyncRequestDetail(@PathVariable("requestType") AsyncTypeEnum requestType) {
+        return asyncRequestService.getFundStatistics(requestType);
+    }
+
+    @RequestMapping(value = "/logs", method = RequestMethod.GET)
+    public LogVO getLogs(@RequestParam(name = "lineCount", required = false, defaultValue = "1000") Integer lineCount) {
+        List<String> lines = new ArrayList<>(lineCount);
+
+        try {
+            if (StringUtils.isBlank(logFilePath)) {
+                lines.add("Chyba konfigurace, není nastavena cesta k souboru logu.");
+            } else {
+                FileInputStream fileInputStream = new FileInputStream(new File(logFilePath));
+                FileChannel channel = fileInputStream.getChannel();
+                ByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+                buffer.position((int) channel.size());
+                int count = 0;
+                byte[] lineArray = new byte[0];
+                for (long i = channel.size() - 1; i >= 0; i--) {
+                    byte c = buffer.get((int) i);
+                    if (c == '\n') {
+                        ArrayUtils.reverse(lineArray);
+                        lines.add(new String(lineArray, "UTF8"));
+                        lineArray = new byte[0];
+                        if (count == lineCount) break;
+                        count++;
+                    } else {
+                        lineArray = ArrayUtils.add(lineArray, c);
+                    }
+                }
+                if (lineArray.length > 0) {
+                    ArrayUtils.reverse(lineArray);
+                    lines.add(new String(lineArray, "UTF8"));
+                }
+                channel.close();
+            }
+        } catch (FileNotFoundException e) {
+            lines.add("Soubor logu " + logFilePath + " nebyl nalezen.");
+            logger.error("Soubor logu " + logFilePath + " nebyl nalezen.", e);
+        } catch (IOException e) {
+            lines.add("Chyba při čtení souboru logu " + logFilePath + ".");
+            logger.error("Chyba při čtení souboru logu " + logFilePath + ".", e);
+        }
+
+//        logger.info("Z logu načteno " + lineCount + " řádek.");
+
+        LogVO result = new LogVO();
+        Collections.reverse(lines);
+        result.setLines(lines);
+        result.setLineCount(lines.size());
+        return result;
+    }
+
+    public String getLogFilePath() {
+        return logFilePath;
+    }
+
+    public void setLogFilePath(String logFilePath) {
+        this.logFilePath = logFilePath;
     }
 }

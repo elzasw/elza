@@ -117,9 +117,10 @@ public class ExportServiceImpl implements ExportService {
         
         List<String> missing = subList.stream().filter(e -> !foundItems.contains(e)).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(missing)) {
-            cz.tacr.elza.ws.types.v1.ErrorDescription ed = new cz.tacr.elza.ws.types.v1.ErrorDescription();
-            ed.setUserMessage("Missing some items");
-            ed.setDetail("Missing items: " + String.join(",", missing));
+            cz.tacr.elza.ws.types.v1.ErrorDescription ed = WSHelper.prepareErrorDescription("Missing some items",
+                                                                                            "Missing items: " + String
+                                                                                                    .join(",",
+                                                                                                          missing));
 
             throw new ExportRequestException("Missing some items", ed);
         }

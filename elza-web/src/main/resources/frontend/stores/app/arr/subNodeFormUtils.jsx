@@ -124,6 +124,9 @@ export function createDescItemFromDb(descItemType, descItem) {
         visited: false,
         error: {hasError: false}
     };
+    if (descItem.hasOwnProperty("description")) {
+        result.prevDescription = descItem.description;
+    }
 
     initFormKey(descItemType, result);
 
@@ -605,7 +608,7 @@ function restoreFormDataStructure(data, refTypesMap, oldFormData){
                 return {
                     ...type,
                     descItemSpecsMap: getMapFromList(type.specs)
-                }                                    
+                }
             })
 
             usedGroups[type.group] = group;
@@ -636,7 +639,7 @@ function restoreFormDataStructure(data, refTypesMap, oldFormData){
                     }
                 }
                 break;
-            }            
+            }
         }
         descItemGroups.push(group);
     }
@@ -853,7 +856,7 @@ class FlatFormData{
                     if(candidate!==null) {
                         newItem = { ...candidate };
                     } else {
-                        newItem = createDescItem(type, refType, false);                        
+                        newItem = createDescItem(type, refType, false);
                         newItem.itemType = typeId;
                     }
                     newItem.position = 1;
@@ -1361,6 +1364,8 @@ export function getItemClass(dataType) {
             return '.ArrItemUnitidVO';
         case 'DATE':
             return '.ArrItemDateVO';
+        case 'URI_REF':
+            return '.ArrItemUriRefVO';
         default:
             console.error("Unsupported data type", dataType);
             return null;

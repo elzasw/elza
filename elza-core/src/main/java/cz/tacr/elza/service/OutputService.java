@@ -13,6 +13,16 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrOutputRestrictionScope;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,6 +149,15 @@ public class OutputService {
 
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    private OutputRestrictionScopeRepository outputRestrictionScopeRepository;
+
+    @Autowired
+    private ScopeRepository scopeRepository;
+
+    @Autowired
+    private ApAccessPointRepository apAccessPointRepository;
 
     public ArrOutput getOutput(int outputId) {
         return outputServiceInternal.getOutput(outputId);
@@ -425,6 +444,7 @@ public class OutputService {
      * @param name název výstupu
      * @param internalCode kód výstupu
      * @param templateId id šablony
+     * @param anonymizedAp id anonymizovaného přístupového bodu
      * @return upravený výstup
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
@@ -433,7 +453,8 @@ public class OutputService {
                                        final ArrOutput output,
                                        final String name,
                                        final String internalCode,
-                                       final Integer templateId) {
+                                       final Integer templateId,
+                                       final ApAccessPointVO anonymizedAp) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(output, "Výstup musí být vyplněn");
         Assert.notNull(name, "Název musí být vyplněn");
@@ -457,6 +478,13 @@ public class OutputService {
             output.setTemplate(templateRepository.findOne(templateId));
         } else {
             output.setTemplate(null);
+        }
+
+        if (anonymizedAp != null) {
+            ApAccessPoint accessPoint = apAccessPointRepository.findOne(anonymizedAp.getId());
+            output.setAnonymizedAp(accessPoint);
+        } else {
+            output.setAnonymizedAp(null);
         }
 
         outputRepository.save(output);
@@ -1430,4 +1458,48 @@ public class OutputService {
         output.setOutputSettings(s);
         outputRepository.save(output);
     }
+
+    public ArrOutputRestrictionScopeVO addRestrictedScope(Integer outputId, Integer scopeId) {
+        Assert.notNull(scopeId, "Identifikátor třídy musí být vyplněna");
+        Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
+        ArrOutput output = outputRepository.findByOutputId(outputId);
+        if (output == null) {
+            throw new ObjectNotFoundException("Nebyl nalezen výstup s ID=" + outputId, OutputCode.OUTPUT_NOT_EXISTS).set("id", outputId);
+        }
+
+        ApScope scope = scopeRepository.findOne(scopeId);
+        if (scope == null) {
+            throw new ObjectNotFoundException("Nebyla nalezena oblast s ID=" + scopeId, BaseCode.PROPERTY_NOT_EXIST).set("id", scopeId);
+        }
+
+        ArrOutputRestrictionScope restrictionScope = new ArrOutputRestrictionScope();
+        restrictionScope.setOutput(output);
+        restrictionScope.setScope(scope);
+        outputRestrictionScopeRepository.save(restrictionScope);
+
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(output.getFundId());
+        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, output.getOutputId()));
+
+        return createArrOutputRestrictionScopeVO(restrictionScope);
+    }
+
+    private ArrOutputRestrictionScopeVO createArrOutputRestrictionScopeVO(ArrOutputRestrictionScope restrictionScope) {
+        ArrOutputRestrictionScopeVO outputRestrictionScopeVO = new ArrOutputRestrictionScopeVO();
+        outputRestrictionScopeVO.setId(restrictionScope.getRestrictionId());
+        outputRestrictionScopeVO.setOutputId(restrictionScope.getOutput() != null ? restrictionScope.getOutput().getOutputId() : null);
+        outputRestrictionScopeVO.setScopeId(restrictionScope.getScope() != null ? restrictionScope.getScope().getScopeId() : null);
+        return outputRestrictionScopeVO;
+    }
+
+    public void deleteRestrictedScope(Integer outputId, Integer scopeId) {
+        Assert.notNull(scopeId, "Identifikátor třídy musí být vyplněna");
+        Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
+
+        ArrOutput output = outputRepository.findByOutputId(outputId);
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(output.getFundId());
+        outputRestrictionScopeRepository.deleteByOutputAndScope(outputId, scopeId);
+        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, outputId));
+
+    }
+
 }

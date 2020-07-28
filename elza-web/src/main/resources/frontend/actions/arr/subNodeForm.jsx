@@ -257,7 +257,7 @@ export class ItemFormActions {
      * @param {Function} dispatch odkaz na funkci dispatch
      * @param {Function} getState odkaz na funkci pro načtení store
      * @param {int} versionId verze AS
-     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, 
+     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE,
      *                         ve které je formulář
      * @param {Object} valueLocation konkrétní umístění hodnoty
      */
@@ -290,6 +290,9 @@ export class ItemFormActions {
                     .then(json => {
                         if(this.area === OutputFormActions.AREA || this.area === StructureFormActions.AREA){
                             dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'UPDATE'));
+                            if (this.area === StructureFormActions.AREA) {
+                                dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, true));
+                            }
                         } else {
                             dispatch(this._fundSubNodeUpdate(versionId, refTables, json));
                         }
@@ -307,6 +310,9 @@ export class ItemFormActions {
                             console.log("formValueStore - id undefined",json);
                             dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'CREATE'));
                             dispatch(statusSaved());
+                            if (this.area === StructureFormActions.AREA) {
+                                dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, true));
+                            }
                         })
                 }
             }
@@ -514,6 +520,9 @@ export class ItemFormActions {
                     .then(json => {
                         const newValueLocation = {...valueLocation, descItemIndex: index};
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, newValueLocation, json, 'UPDATE'));
+                        if (this.area === StructureFormActions.AREA) {
+                            dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, false));
+                        }
                     })
             }
         }
@@ -604,6 +613,10 @@ export class ItemFormActions {
                 if (!valuesEquals(descItem.calendarTypeId, descItem.prevCalendarTypeId)) {
                     needUpdate = true;
                 }
+                // Nelze použít valuesEquals (prázdný string není !== undefined)
+                if (descItem.description !== descItem.prevDescription) {
+                    needUpdate = true;
+                }
 
                 return needUpdate
             } else {
@@ -662,6 +675,9 @@ export class ItemFormActions {
                 this._callDeleteDescItem(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItem)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE'));
+                        if (this.area === StructureFormActions.AREA) {
+                            dispatch(this._fundSubNodeFormFetch(versionId, parentId, routingKey, true));
+                        }
                     })
             }
         }
@@ -818,6 +834,9 @@ export class ItemFormActions {
                 this._callDeleteDescItemType(versionId, subNodeForm.data.parent.id, subNodeForm.data.parent.version, loc.descItemType.id)
                     .then(json => {
                         dispatch(this._fundSubNodeFormDescItemResponse(versionId, routingKey, valueLocation, json, 'DELETE_DESC_ITEM_TYPE'));
+                        if (this.area === StructureFormActions.AREA) {
+                            dispatch(this._fundSubNodeFormFetch(versionId, subNodeForm.data.parent.id, routingKey, true));
+                        }
                     })
             }
         }
@@ -1109,7 +1128,7 @@ class NodeFormActions extends ItemFormActions {
         // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
         console.log("Before update, parentVersionId: ",parentVersionId);
         dispatch(increaseNodeVersion(versionId, parentId, parentVersionId));
-        
+
         console.log("update desc Item");
         return new Promise((resolve, reject) => {
             NodeRequestController.updateRequest(versionId, parentVersionId, parentId, descItem, (json) => {resolve(json)})
@@ -1266,9 +1285,9 @@ class StructureFormActions extends ItemFormActions {
 
     // @Override
     _getItemFormStore(state, versionId, routingKey) {
-        const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
-        if (fundIndex !== null) {
-            return state.arrRegion.funds[fundIndex].structureNodeForm.subNodeForm
+        const subStore = state.structures.stores[routingKey];
+        if (!!subStore) {
+            return subStore.subNodeForm;
         } else {
             return null
         }
@@ -1276,10 +1295,9 @@ class StructureFormActions extends ItemFormActions {
 
     // @Override
     _getParentObjStore(state, versionId, routingKey) {
-        const fundIndex = indexById(state.arrRegion.funds, versionId, "versionId");
-        if (fundIndex !== null) {
-            const fund = state.arrRegion.funds[fundIndex];
-            return fund.structureNodeForm;
+        const subStore = state.structures.stores[routingKey];
+        if (!!subStore) {
+            return subStore;
         } else {
             return null;
         }

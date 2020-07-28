@@ -1,13 +1,5 @@
 package cz.tacr.elza.dao.bo;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
-import org.apache.commons.lang3.Validate;
-
 import cz.tacr.elza.dao.DCStorageConfig;
 import cz.tacr.elza.dao.bo.resource.DaoConfig;
 import cz.tacr.elza.dao.bo.resource.DaoConfigResource;
@@ -18,6 +10,12 @@ import cz.tacr.elza.ws.types.v1.DaoLink;
 import cz.tacr.elza.ws.types.v1.FileGroup;
 import cz.tacr.elza.ws.types.v1.ItemString;
 import cz.tacr.elza.ws.types.v1.Items;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class DaoBo {
 
@@ -34,8 +32,8 @@ public class DaoBo {
 	private boolean allFileInitialized;
 
 	public DaoBo(DaoPackageBo daoPackage, String identifier, boolean eagerInit) {
-        Validate.notNull(daoPackage);
-        Validate.notNull(identifier);
+        Assert.notNull(daoPackage);
+		Assert.notNull(identifier);
 		this.daoPackage = daoPackage;
 		this.identifier = identifier;
 		configResource = new DaoConfigResource(daoPackage.getIdentifier(), identifier);

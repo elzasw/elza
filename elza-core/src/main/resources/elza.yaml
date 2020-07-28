@@ -5,11 +5,22 @@ elza:
     h2:
        # Enable H2 DB console on URL .../console
        console: false
-   
+
   # ISO code of locale
   locale: cs
 
   workingDir: ./work
+
+  asyncActions:
+    node:
+      threadCount: 4
+      maxPerFund: 2
+    bulk:
+      threadCount: 4
+      maxPerFund: 1
+    output:
+      threadCount: 4
+      maxPerFund: 1
 
 #  hibernate:
 #    index:

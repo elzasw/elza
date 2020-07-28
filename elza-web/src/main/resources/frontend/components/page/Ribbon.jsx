@@ -113,6 +113,12 @@ class Ribbon extends AbstractReactComponent {
                             <span className="btnText">{i18n('ribbon.action.admin.packages')}</span>
                         </Button>
                     </LinkContainer>,
+                    <LinkContainer key="ribbon-btn-admin-bulkActions" to="/admin/backgroundProcesses">
+                        <Button>
+                             <Icon glyph="fa-list-alt"/>
+                             <span className="btnText">{i18n('ribbon.action.admin.backgroundProcesses')}</span>
+                        </Button>
+                    </LinkContainer>,
                     <LinkContainer key="ribbon-btn-admin-requestsQueue" to="/admin/requestsQueue">
                         <Button>
                             <Icon glyph="fa-shopping-basket"/>
@@ -123,6 +129,12 @@ class Ribbon extends AbstractReactComponent {
                         <Button>
                             <Icon glyph="fa-external-link"/>
                             <span className="btnText">{i18n('ribbon.action.admin.externalSystems')}</span>
+                        </Button>
+                    </LinkContainer>,
+                    <LinkContainer key="ribbon-btn-admin-show-logs" to="/admin/logs">
+                        <Button>
+                            <Icon glyph="fa-file-text-o"/>
+                            <span className="btnText">{i18n('ribbon.action.admin.showLogs')}</span>
                         </Button>
                     </LinkContainer>]}
                 </RibbonGroup>

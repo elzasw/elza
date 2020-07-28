@@ -1,26 +1,5 @@
 package cz.tacr.elza.other;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
-
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import cz.tacr.elza.asynchactions.UpdateConformityInfoService;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulPackage;
@@ -34,6 +13,7 @@ import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApNameRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ArrAsyncRequestRepository;
 import cz.tacr.elza.repository.AuthenticationRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
@@ -94,6 +74,25 @@ import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.WfCommentRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.repository.WfIssueRepository;
+import cz.tacr.elza.service.AsyncRequestService;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 
 /**
@@ -205,7 +204,7 @@ public class HelperTestService {
     @Autowired
     private ApExternalIdRepository apEidRepository;
     @Autowired
-    private UpdateConformityInfoService updateConformityInfoService;
+    private AsyncRequestService asyncRequestService;
     @Autowired
     private ApItemRepository apItemRepository;
     @Autowired
@@ -222,6 +221,8 @@ public class HelperTestService {
     private AuthenticationRepository authenticationRepository;
     @Autowired
     private ApStateRepository apStateRepository;
+    @Autowired
+    protected ArrAsyncRequestRepository asyncRequestRepository;
     @Autowired
     private DaoRepository daoRepository;
     @Autowired
@@ -294,6 +295,7 @@ public class HelperTestService {
         daoLinkRepository.deleteAll();
         daoRepository.deleteAll();
 
+        asyncRequestRepository.deleteAll();
         commentRepository.deleteAll();
         issueRepository.deleteAll();
         issueListRepository.deleteAll();
@@ -443,11 +445,7 @@ public class HelperTestService {
      */
     // This method is not running in transaction
     public void waitForWorkers() {
-        List<ArrFundVersion> fundVersions = fundVersionRepository.findAll();
-        for (ArrFundVersion fundVersion : fundVersions) {
-            logger.debug("Finishing worker fundVersionId: " + fundVersion.getFundVersionId());
-            updateConformityInfoService.terminateWorkerInVersionAndWait(fundVersion.getFundVersionId());
-        }
+        asyncRequestService.waitForFinishAll();
     }
 
 }

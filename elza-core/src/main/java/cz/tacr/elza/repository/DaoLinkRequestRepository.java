@@ -1,16 +1,15 @@
 package cz.tacr.elza.repository;
 
-import java.util.List;
-
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrRequest;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoLinkRequest;
-import cz.tacr.elza.domain.ArrRequest;
+import java.util.List;
 
 
 /**
@@ -30,4 +29,5 @@ public interface DaoLinkRequestRepository extends ElzaJpaRepository<ArrDaoLinkRe
 
     @Modifying
     void deleteByFund(ArrFund fund);
+
 }

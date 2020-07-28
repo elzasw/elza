@@ -65,6 +65,13 @@ public interface LevelRepositoryCustom {
     ArrLevel findByNode(ArrNode node, @Nullable ArrChange change);
 
     /**
+     * Najde uzel pro daný node.
+     * @param nodeId
+     * @param change čas uzamčení uzamčení verze  (null pro otevřenou verzi)
+     */
+     ArrLevel findByNodeId(final Integer nodeId, @Nullable final ArrChange change);
+
+    /**
      * Vrací počet potomků daného uzlu.
      *
      * @param node       uzel
