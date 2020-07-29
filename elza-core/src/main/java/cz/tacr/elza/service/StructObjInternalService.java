@@ -2,6 +2,8 @@ package cz.tacr.elza.service;
 
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.domain.RulPartType;
@@ -20,6 +22,7 @@ import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -124,5 +127,37 @@ public class StructObjInternalService {
             throw new ObjectNotFoundException("Typ části neexistuje: " + partTypeCode, BaseCode.ID_NOT_EXIST).setId(partTypeCode);
         }
         return partType;
+    }
+
+    public ArrStructuredObject deepCopy(final ArrStructuredObject structuredObject) {
+        ArrStructuredObject copyStructuredObject = structObjRepository.save(structuredObject.makeCopyWithoutId());
+        copyItems(copyStructuredObject);
+        return copyStructuredObject;
+    }
+
+    private void copyItems(final ArrStructuredObject copyStructuredObject) {
+        List<ArrStructuredItem> items = structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(copyStructuredObject);
+        List<ArrStructuredItem> copyItems = new ArrayList<>(items.size());
+        for (ArrStructuredItem item : items) {
+            ArrData newData = copyData(item);
+            ArrStructuredItem arrStructuredItem = item.makeCopy();
+            arrStructuredItem.setData(newData);
+            arrStructuredItem.setStructuredObject(copyStructuredObject);
+            arrStructuredItem.setDescItemObjectId(arrangementInternalService.getNextDescItemObjectId());
+            copyItems.add(arrStructuredItem);
+        }
+        if (copyItems.size() > 0) {
+            structureItemRepository.saveAll(copyItems);
+        }
+    }
+
+    private ArrData copyData(final ArrStructuredItem item) {
+        ArrData data = item.getData();
+        ArrData newData = data;
+        if (data != null) {
+            newData = ArrData.makeCopyWithoutId(data);
+            newData = dataRepository.save(newData);
+        }
+        return newData;
     }
 }
