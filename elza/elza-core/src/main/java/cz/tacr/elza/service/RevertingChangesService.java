@@ -26,7 +26,14 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.LockedValueRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -38,22 +45,44 @@ import cz.tacr.elza.service.vo.TitleItemsByType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.hibernate.Session;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.NamingStrategy;
+import org.hibernate.query.NativeQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import javax.persistence.*;
+import javax.persistence.ColumnResult;
+import javax.persistence.ConstructorResult;
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.Id;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.SqlResultSetMapping;
+import javax.persistence.TemporalType;
+import javax.persistence.TypedQuery;
 import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -1140,39 +1169,6 @@ public class RevertingChangesService {
     }
 
     /**
-     * Konverze výsledků z databázového dotazu na typovaný seznam změn.
-     *
-     * @param inputList seznam z databázového dotazu
-     * @return typovaný seznam z databázového dotazu
-     */
-    private List<ChangeResult> convertResults(final List<Object[]> inputList) {
-        List<ChangeResult> result = new ArrayList<>(inputList.size());
-        for (Object[] o : inputList) {
-            result.add(convertResult(o));
-        }
-        return result;
-    }
-
-    /**
-     * Konverze výsledku z databázového dotazu na třídu změny.
-     *
-     * @param o pole parametrů z dotazu
-     * @return převedený objekt
-     */
-    private @NotNull ChangeResult convertResult(@NotNull final Object[] o) {
-        ChangeResult change = new ChangeResult();
-        change.setChangeId((Integer) o[0]);
-        Timestamp ts = (Timestamp) o[1];
-        change.setChangeDate(OffsetDateTime.ofInstant(Instant.ofEpochMilli(ts.getTime()), ZoneId.systemDefault()));
-        change.setUserId((Integer) o[2]);
-        change.setType(o[3] == null ? null : ((String) o[3]).trim());
-        change.setPrimaryNodeId((Integer) o[4]);
-        // pokud je váha (weights) rovna nule, nebyl ovlivněna žádná JP
-        change.setNodeChanges(((Number) o[6]).intValue() == 0 ? BigInteger.ZERO : (BigInteger.valueOf(((Number) o[5]).intValue())));
-        return change;
-    }
-
-    /**
      * Sestavení řetězce pro vnořený dotaz, který vrací seznam JP omezený AS nebo JP.
      *
      * @param fund AS
@@ -1196,8 +1192,19 @@ public class RevertingChangesService {
      * @param nodeId identifikátor JP
      * @return SQL řetězec
      */
+    private Query createFindChangeQuery(String selectParams, @NotNull Integer fundId, @Nullable Integer nodeId, String querySpecification, String mapping) {
+        return createFindChangeQuery(selectParams, fundId, nodeId, false, querySpecification, mapping);
+    }
+
+    /**
+     * Sestavení řetězce pro vnořený dotaz, který vrací seznam JP omezený AS nebo JP.
+     *
+     * @param fundId identifikátor AS
+     * @param nodeId identifikátor JP
+     * @return SQL řetězec
+     */
     private Query createFindChangeQuery(String selectParams, @NotNull Integer fundId, @Nullable Integer nodeId, String querySpecification) {
-        return createFindChangeQuery(selectParams, fundId, nodeId, false, querySpecification);
+        return createFindChangeQuery(selectParams, fundId, nodeId, false, querySpecification, null);
     }
 
     /**
@@ -1208,7 +1215,7 @@ public class RevertingChangesService {
      * @param excludeAction vynechat změny, které byly provedeny v rámci hromadných akcí
      * @return SQL řetězec
      */
-    private Query createFindChangeQuery(String selectParams, @NotNull Integer fundId, @Nullable Integer nodeId, boolean excludeAction, String querySpecification) {
+    private Query createFindChangeQuery(String selectParams, @NotNull Integer fundId, @Nullable Integer nodeId, boolean excludeAction, String querySpecification, String mapping) {
 
         Validate.notNull(fundId, "Identifikátor AS musí být vyplněn");
 
@@ -1281,7 +1288,7 @@ public class RevertingChangesService {
                 "%3$s");
 
         String queryString = String.format(sqlTemplate.toString(), selectParams, nodeSubquery, querySpecification);
-        return entityManager.createNativeQuery(queryString);
+        return mapping == null ? entityManager.createNativeQuery(queryString) : entityManager.createNativeQuery(queryString, mapping);
     }
 
     /**
@@ -1297,14 +1304,14 @@ public class RevertingChangesService {
     private List<ChangeResult> findChange(@NotNull Integer fundId, @Nullable Integer nodeId, int maxSize, int offset, @Nullable Integer fromChangeId) {
 
         // doplňující parametry dotazu
-        String selectParams = "ch.change_id, ch.change_date, ch.user_id, ch.type, ch.primary_node_id, chl.node_changes, chl.weights";
+        String selectParams = "ch.change_id as changeId, ch.change_date AS changeDate, ch.user_id as userId, ch.type as type, ch.primary_node_id as primaryNodeId, chl.node_changes as nodeChanges, chl.weights as weights";
         String querySpecification = "GROUP BY ch.change_id, ch.change_date, ch.user_id, ch.type, ch.primary_node_id, chl.node_changes, chl.weights ORDER BY ch.change_id DESC";
         if (fromChangeId != null) {
             querySpecification = "WHERE ch.change_id <= :fromChangeId " + querySpecification;
         }
 
         // vnoření parametrů a vytvoření query objektu
-        Query query = createFindChangeQuery(selectParams, fundId, nodeId, querySpecification);
+        Query query = createFindChangeQuery(selectParams, fundId, nodeId, querySpecification, "ChangeResultMapping");
 
         // nastavení parametrů dotazu
         query.setParameter("fundId", fundId);
@@ -1317,7 +1324,7 @@ public class RevertingChangesService {
         query.setMaxResults(maxSize);
         query.setFirstResult(offset);
 
-        return convertResults(query.getResultList());
+        return query.getResultList();
     }
 
     /**
@@ -1471,11 +1478,43 @@ public class RevertingChangesService {
     /**
      * Pomocná struktura změn získaných z DB.
      */
-    private class ChangeResult {
+    @SqlResultSetMapping(
+            name = "ChangeResultMapping",
+            classes = {
+                    @ConstructorResult(
+                            targetClass = ChangeResult.class,
+                            columns = {
+                                    @ColumnResult(name = "changeId", type = Integer.class),
+                                    @ColumnResult(name = "changeDate", type = OffsetDateTime.class),
+                                    @ColumnResult(name = "userId", type = Integer.class),
+                                    @ColumnResult(name = "type", type = String.class),
+                                    @ColumnResult(name = "primaryNodeId", type = Integer.class),
+                                    @ColumnResult(name = "nodeChanges", type = BigInteger.class),
+                                    @ColumnResult(name = "weights", type = BigInteger.class),
+                            }
+                    )
+            }
+    )
+    @Entity
+    public static class ChangeResult {
+
+        public ChangeResult() {
+        }
+
+        public ChangeResult(final Integer changeId, final OffsetDateTime changeDate, final Integer userId, final String type, final Integer primaryNodeId, final BigInteger nodeChanges, final BigInteger weights) {
+            this.changeId = changeId;
+            this.changeDate = changeDate;
+            this.userId = userId;
+            this.type = StringUtils.trim(type);
+            this.primaryNodeId = primaryNodeId;
+            // pokud je váha (weights) rovna nule, nebyl ovlivněna žádná JP
+            this.nodeChanges = ((Number) weights).intValue() == 0 ? BigInteger.ZERO : (BigInteger.valueOf(((Number) nodeChanges).intValue()));
+        }
 
         /**
          * Identifikátor změny.
          */
+        @Id
         private Integer changeId;
 
         /**

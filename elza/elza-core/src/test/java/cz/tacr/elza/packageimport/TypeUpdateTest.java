@@ -10,6 +10,7 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.repository.ApItemRepository;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -49,6 +50,9 @@ public class TypeUpdateTest extends AbstractServiceTest {
     @Autowired
     private ItemTypeActionRepository itemTypeActionRepository;
 
+    @Autowired
+    private ApItemRepository apItemRepository;
+
     // drop all types and specs
     //@Test TODO: gotzy vratit zpatky
     @Transactional(TxType.REQUIRES_NEW)
@@ -77,7 +81,6 @@ public class TypeUpdateTest extends AbstractServiceTest {
     }
 
     // test will migrate values from SRD_STRING2DATE to DATE
-    @Ignore //TODO: problém s FK ApItem na specifikaci
     @Test
     @Transactional(TxType.REQUIRES_NEW)
     public void updateTypeTest2() {
@@ -116,6 +119,7 @@ public class TypeUpdateTest extends AbstractServiceTest {
 
         // drop foreign keys
         itemTypeActionRepository.deleteAll();
+        apItemRepository.deleteAll();
 
         // update (and also change type)
         ItemTypeUpdater itu = appCtx.getBean(ItemTypeUpdater.class);

@@ -210,7 +210,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @Ignore // TODO: je třeba dořešit, nativní query s H2 má problém s OffsetDateTime, Dialekt, Hibernate?
     public void revertingChangeTest() throws IOException, InterruptedException {
 
         ArrFundVO fund = createdFund();
