@@ -78,7 +78,7 @@
         <shortcut>typ EJ</shortcut>
         <item-type-assign code="ZP2015_FOLDER_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_FOLDER_DAO_TYPE">
+    <item-spec code="ZP2015_FOLDER_DAO">
         <name>digitální</name>
         <description>Množstevní složka s digitálním obsahem</description>
         <shortcut>digitální</shortcut>
@@ -3324,235 +3324,241 @@
 
     <!-- Počet EJ -->
     <item-spec code="ZP2015_UNIT_COUNT_KAR">
-        <name>Karton</name>
+        <name>kartony</name>
         <description>Karton</description>
         <shortcut>kar</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_FAS">
-        <name>Fascikl</name>
+        <name>fascikly</name>
         <description>Fascikl</description>
         <shortcut>fas</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_DAJ">
+        <name>digitální archivní jednotky</name>
+        <description>Digitální archivní jednotka</description>
+        <shortcut>daj</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>    
     <item-spec code="ZP2015_UNIT_COUNT_LIO">
-        <name>Listiny do roku 1850</name>
+        <name>listiny do roku 1850</name>
         <description>Listiny do roku 1850</description>
         <shortcut>lio</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_LIP">
-        <name>Listiny po roce 1850</name>
+        <name>listiny po roce 1850</name>
         <description>Listiny po roce 1850</description>
         <shortcut>lip</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_UKN">
-        <name>Úřední knihy</name>
+        <name>úřední knihy</name>
         <description>Úřední knihy</description>
         <shortcut>ukn</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_RKP">
-        <name>Rukopisy</name>
+        <name>rukopisy</name>
         <description>Rukopisy</description>
         <shortcut>rkp</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_PPR">
-        <name>Podací protokoly</name>
+        <name>podací protokoly</name>
         <description>Podací protokoly</description>
         <shortcut>ppr</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_IND">
-        <name>Indexy</name>
+        <name>indexy</name>
         <description>Indexy</description>
         <shortcut>ind</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_ELE">
-        <name>Elenchy</name>
+        <name>elenchy</name>
         <description>Elenchy</description>
         <shortcut>ele</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_REP">
-        <name>Repertáře</name>
+        <name>repertáře</name>
         <description>Repertáře</description>
         <shortcut>rep</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_KTT">
-        <name>Kartotéky</name>
+        <name>kartotéky</name>
         <description>Kartotéky</description>
         <shortcut>ktt</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_PEC">
-        <name>Pečetidla</name>
+        <name>pečetidla</name>
         <description>Pečetidla</description>
         <shortcut>pec</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_RAZ">
-        <name>Razítka</name>
+        <name>razítka</name>
         <description>Razítka</description>
         <shortcut>raz</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_OTD">
-        <name>Samostatné pečetě, odlitky pečetí a otisky typářů</name>
+        <name>samostatné pečetě, odlitky pečetí a otisky typářů</name>
         <description>Samostatné pečetě, odlitky pečetí a otisky typářů</description>
         <shortcut>otd</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_MAP">
-        <name>Mapy</name>
+        <name>mapy</name>
         <description>Mapy</description>
         <shortcut>map</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_ATL">
-        <name>Atlasy</name>
+        <name>atlasy</name>
         <description>Atlasy</description>
         <shortcut>atl</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_TVY">
-        <name>Technické výkresy</name>
+        <name>technické výkresy</name>
         <description>Technické výkresy</description>
         <shortcut>tvy</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_GLI">
-        <name>Grafické listy</name>
+        <name>grafické listy</name>
         <description>Grafické listy</description>
         <shortcut>gli</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_KRE">
-        <name>Kresby</name>
+        <name>kresby</name>
         <description>Kresby</description>
         <shortcut>kre</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_FSN">
-        <name>Fotografie na papírové podložce</name>
+        <name>fotografie na papírové podložce</name>
         <description>Fotografie na papírové podložce</description>
         <shortcut>fsn</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_FSD">
-        <name>Fotografické desky</name>
+        <name>fotografické desky</name>
         <description>Fotografické desky</description>
         <shortcut>fsd</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_LFI">
-        <name>Listové filmy</name>
+        <name>listové filmy</name>
         <description>Listové filmy</description>
         <shortcut>lfi</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_SFI">
-        <name>Svitkové filmy</name>
+        <name>svitkové filmy</name>
         <description>Svitkové filmy</description>
         <shortcut>sfi</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_KIN">
-        <name>Kinofilmy</name>
+        <name>kinofilmy</name>
         <description>Kinofilmy</description>
         <shortcut>kin</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_MF">
-        <name>Mikrofilmy</name>
+        <name>mikrofilmy</name>
         <description>Mikrofilmy</description>
         <shortcut>mf</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_MFS">
-        <name>Mikrofiše</name>
+        <name>mikrofiše</name>
         <description>Mikrofiše</description>
         <shortcut>mfis</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_FAL">
-        <name>Fotoalba</name>
+        <name>fotoalba</name>
         <description>Fotoalba</description>
         <shortcut>fal</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_DFO">
-        <name>Digitální fotografie</name>
+        <name>digitální fotografie</name>
         <description>Digitální fotografie</description>
         <shortcut>dfo</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_KZA">
-        <name>Kinematografické záznamy (díla) v analogové i digitální podobě</name>
+        <name>kinematografické záznamy (díla) v analogové i digitální podobě</name>
         <description>Kinematografické záznamy (díla) v analogové i digitální podobě</description>
         <shortcut>kza</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_ZZA">
-        <name>Zvukové záznamy (díla) v analogové i digitální podobě</name>
+        <name>zvukové záznamy (díla) v analogové i digitální podobě</name>
         <description>Zvukové záznamy (díla) v analogové i digitální podobě</description>
         <shortcut>zza</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_TIO">
-        <name>Tisky do roku 1800</name>
+        <name>tisky do roku 1800</name>
         <description>Tisky do roku 1800</description>
         <shortcut>tio</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_TIP">
-        <name>Tisky po roce 1800</name>
+        <name>tisky po roce 1800</name>
         <description>Tisky po roce 1800</description>
         <shortcut>tip</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_POH">
-        <name>Pohlednice</name>
+        <name>pohlednice</name>
         <description>Pohlednice</description>
         <shortcut>poh</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_PKT">
-        <name>Plakáty</name>
+        <name>plakáty</name>
         <description>Plakáty</description>
         <shortcut>pkt</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_CPA">
-        <name>Cenné papíry</name>
+        <name>cenné papíry</name>
         <description>Cenné papíry</description>
         <shortcut>cpa</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_STO">
-        <name>Štočky</name>
+        <name>štočky</name>
         <description>Štočky</description>
         <shortcut>sto</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_PNP">
-        <name>Předměty numizmatické povahy</name>
+        <name>předměty numizmatické povahy</name>
         <description>Předměty numizmatické povahy</description>
         <shortcut>pnp</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_PFP">
-        <name>Předměty faleristické povahy</name>
+        <name>předměty faleristické povahy</name>
         <description>Předměty faleristické povahy</description>
         <shortcut>pfp</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_COUNT_JIN">
-        <name>Jiné</name>
+        <name>jiné</name>
         <description>Jiné</description>
         <shortcut>jin</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>

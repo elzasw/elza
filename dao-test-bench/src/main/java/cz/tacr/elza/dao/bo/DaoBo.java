@@ -1,5 +1,13 @@
 package cz.tacr.elza.dao.bo;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.dao.DCStorageConfig;
 import cz.tacr.elza.dao.bo.resource.DaoConfig;
 import cz.tacr.elza.dao.bo.resource.DaoConfigResource;
@@ -10,12 +18,6 @@ import cz.tacr.elza.ws.types.v1.DaoLink;
 import cz.tacr.elza.ws.types.v1.FileGroup;
 import cz.tacr.elza.ws.types.v1.ItemString;
 import cz.tacr.elza.ws.types.v1.Items;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 public class DaoBo {
 
