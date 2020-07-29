@@ -128,7 +128,7 @@ when $part: Part(parent != null)
      $parent: Part(type == PartType.PT_EVENT) from $part.parent
      $parentItem: Item(type == "EV_TYPE", spec == "ET_MEMBERSHIP") from $parent.items
      $it: ItemType(code == "REL_ENTITY")
-     $is : ItemSpec(code in ("RT_REPRESENT")) from $it.specs
+     $is : ItemSpec(code in ("RT_REPRESENT","RT_FUNCTION")) from $it.specs
 then
     $is.setPossible();
     $is.setRepeatable(true);

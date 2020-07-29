@@ -1,0 +1,3304 @@
+<item-specs>
+    <item-spec code="CRC_BIRTH">
+        <name>narození</name>
+        <description>narození</description>
+        <shortcut>narození</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
+    <item-spec code="CRC_FIRSTMBIRTH">
+        <name>narození prvního známého člena rodu/rodiny</name>
+        <description>narození prvního známého člena rodu/rodiny</description>
+        <shortcut>narození prvního známého člena rodu/rodiny</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
+    <item-spec code="CRC_FIRSTWMENTION">
+        <name>první písemná zmínka</name>
+        <description>první písemná zmínka</description>
+        <shortcut>první písemná zmínka</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
+    <item-spec code="CRC_BEGINSCOPE">
+        <name>působnost od</name>
+        <description>působnost od</description>
+        <shortcut>působnost od</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
+    <item-spec code="CRC_RISE">
+        <name>vznik</name>
+        <description>vznik</description>
+        <shortcut>vznik</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
+    <item-spec code="CRC_ORIGIN">
+        <name>začátek</name>
+        <description>začátek</description>
+        <shortcut>začátek</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
+    <item-spec code="CRC_BEGINVALIDNESS">
+        <name>začátek platnosti</name>
+        <description>začátek platnosti</description>
+        <shortcut>začátek platnosti</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
+    <item-spec code="CRT_UNSPECIFIED">
+        <name>nespecifikovaný vznik</name>
+        <description>nespecifikovaný vznik</description>
+        <shortcut>nespecifikovaný vznik</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
+    </item-spec>
+    <item-spec code="CRT_VALIDITYBEGIN">
+        <name>počátek platnosti</name>
+        <description>počátek platnosti</description>
+        <shortcut>počátek platnosti</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
+    </item-spec>
+    <item-spec code="CRT_FIRSTREALIZATION">
+        <name>první realizace</name>
+        <description>první realizace</description>
+        <shortcut>první realizace</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
+    </item-spec>
+    <item-spec code="CRT_EDITION">
+        <name>vydání</name>
+        <description>vydání</description>
+        <shortcut>vydání</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
+    </item-spec>
+    <item-spec code="CRT_CREATION">
+        <name>vytvoření</name>
+        <description>vytvoření</description>
+        <shortcut>vytvoření</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
+    </item-spec>
+    <item-spec code="CRT_COMMENCEMENT">
+        <name>vznik zahájením činnosti</name>
+        <description>vznik zahájením činnosti</description>
+        <shortcut>vznik zahájením činnosti</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
+    </item-spec>
+    <item-spec code="CRT_RECORDSENTRY">
+        <name>vznik zápisem do evidence</name>
+        <description>vznik zápisem do evidence</description>
+        <shortcut>vznik zápisem do evidence</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
+    </item-spec>
+    <item-spec code="CRT_PREDECESSOR">
+        <name>vznik změnou předchůdce</name>
+        <description>vznik změnou předchůdce</description>
+        <shortcut>vznik změnou předchůdce</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
+    </item-spec>
+    <item-spec code="CRT_ESTAB">
+        <name>vznik zřízením/založením</name>
+        <description>vznik zřízením/založením</description>
+        <shortcut>vznik zřízením/založením</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_MEMBERSHIP">
+        <name>členství</name>
+        <description>členství</description>
+        <shortcut>členství</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_MILESTONES">
+        <name>historické milníky</name>
+        <description>historické milníky</description>
+        <shortcut>historické milníky</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_MARRIAGE">
+        <name>manželství</name>
+        <description>manželství</description>
+        <shortcut>manželství</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_REASSIGN">
+        <name>přeřazení</name>
+        <description>přeřazení</description>
+        <shortcut>přeřazení</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_STUDY">
+        <name>studium</name>
+        <description>studium</description>
+        <shortcut>studium</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_AWARD">
+        <name>udělení ocenění</name>
+        <description>udělení ocenění</description>
+        <shortcut>udělení ocenění</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_HOBBY">
+        <name>záliba / soukromá činnost</name>
+        <description>záliba / soukromá činnost</description>
+        <shortcut>záliba / soukromá činnost</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_JOB">
+        <name>zaměstnání / veřejná funkce</name>
+        <description>zaměstnání / veřejná funkce</description>
+        <shortcut>zaměstnání / veřejná funkce</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="EXC_END">
+        <name>konec</name>
+        <description>konec</description>
+        <shortcut>konec</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
+    </item-spec>
+    <item-spec code="EXC_ENDVALIDNESS">
+        <name>konec platnosti</name>
+        <description>konec platnosti</description>
+        <shortcut>konec platnosti</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
+    </item-spec>
+    <item-spec code="EXC_LASTWMENTION">
+        <name>poslední písemná zmínka</name>
+        <description>poslední písemná zmínka</description>
+        <shortcut>poslední písemná zmínka</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
+    </item-spec>
+    <item-spec code="EXC_ENDSCOPE">
+        <name>působnost do</name>
+        <description>působnost do</description>
+        <shortcut>působnost do</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
+    </item-spec>
+    <item-spec code="EXC_DEATH">
+        <name>úmrtí</name>
+        <description>úmrtí</description>
+        <shortcut>úmrtí</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
+    </item-spec>
+    <item-spec code="EXC_LASTMDEATH">
+        <name>úmrtí posledního známého člena rodu/rodiny</name>
+        <description>úmrtí posledního známého člena rodu/rodiny</description>
+        <shortcut>úmrtí posledního známého člena rodu/rodiny</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
+    </item-spec>
+    <item-spec code="EXC_EXTINCTION">
+        <name>zánik</name>
+        <description>zánik</description>
+        <shortcut>zánik</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
+    </item-spec>
+    <item-spec code="EXT_OTHER">
+        <name>jiný typ zániku</name>
+        <description>jiný typ zániku</description>
+        <shortcut>jiný typ zániku</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_UNSPECIFIED">
+        <name>nespecifikovaný zánik</name>
+        <description>nespecifikovaný zánik</description>
+        <shortcut>nespecifikovaný zánik</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_LASTREALIZATION">
+        <name>poslední realizace</name>
+        <description>poslední realizace</description>
+        <shortcut>poslední realizace</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_STOPPUBLISHING">
+        <name>ukončení vydávání</name>
+        <description>ukončení vydávání</description>
+        <shortcut>ukončení vydávání</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_ACTIVITYEND">
+        <name>zánik ukončením činnosti</name>
+        <description>zánik ukončením činnosti</description>
+        <shortcut>zánik ukončením činnosti</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_REGISTRYDELETION">
+        <name>zánik výmazem z evidence</name>
+        <description>zánik výmazem z evidence</description>
+        <shortcut>zánik výmazem z evidence</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_MININGACTIVITY">
+        <name>zánik z důvodu důlní činnosti</name>
+        <description>zánik z důvodu důlní činnosti</description>
+        <shortcut>zánik z důvodu důlní činnosti</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_INDUSTRIALACTIVITY">
+        <name>zánik z důvodu průmyslové činnosti</name>
+        <description>zánik z důvodu průmyslové činnosti</description>
+        <shortcut>zánik z důvodu průmyslové činnosti</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_BATTLE">
+        <name>zánik z důvodu vojenského konfliktu</name>
+        <description>zánik z důvodu vojenského konfliktu</description>
+        <shortcut>zánik z důvodu vojenského konfliktu</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_DISPLACEMENT">
+        <name>zánik z důvodu vysídlení po roce 1945</name>
+        <description>zánik z důvodu vysídlení po roce 1945</description>
+        <shortcut>zánik z důvodu vysídlení po roce 1945</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_WATERWORK">
+        <name>zánik z důvodu výstavby vodního díla</name>
+        <description>zánik z důvodu výstavby vodního díla</description>
+        <shortcut>zánik z důvodu výstavby vodního díla</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_MILITARYAREA">
+        <name>zánik z důvodu zřízení vojenského prostoru</name>
+        <description>zánik z důvodu zřízení vojenského prostoru</description>
+        <shortcut>zánik z důvodu zřízení vojenského prostoru</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_DISASTER">
+        <name>zánik z důvodu živelní pohromy</name>
+        <description>zánik z důvodu živelní pohromy</description>
+        <shortcut>zánik z důvodu živelní pohromy</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_CHANGE">
+        <name>zánik zrušením/změnou</name>
+        <description>zánik zrušením/změnou</description>
+        <shortcut>zánik zrušením/změnou</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_CANCEL">
+        <name>zánik zrušením</name>
+        <description>zánik zrušením</description>
+        <shortcut>zánik zrušením</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_DESTRUCTION">
+        <name>zničení</name>
+        <description>zničení</description>
+        <shortcut>zničení</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_ARCHSITE">
+        <name>archeologická lokalita</name>
+        <description>archeologická lokalita</description>
+        <shortcut>archeologická lokalita</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_AUTONOMOUSPART">
+        <name>autonomní část státu</name>
+        <description>autonomní část státu</description>
+        <shortcut>autonomní část státu</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_TERRITORIALUNIT">
+        <name>jiná část státu</name>
+        <description>jiná část státu</description>
+        <shortcut>jiná část státu</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_MUNIPPART">
+        <name>část obce</name>
+        <description>část obce</description>
+        <shortcut>část obce</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_DEPARTEMENT">
+        <name>departement</name>
+        <description>departement</description>
+        <shortcut>departement</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_GALAXY">
+        <name>galaxie</name>
+        <description>galaxie</description>
+        <shortcut>galaxie</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_MOUNTAIN">
+        <name>hora</name>
+        <description>hora</description>
+        <shortcut>hora</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_SHIRE">
+        <name>hrabství</name>
+        <description>hrabství</description>
+        <shortcut>hrabství</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_STAR">
+        <name>hvězda</name>
+        <description>hvězda</description>
+        <shortcut>hvězda</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_PROTNATPART">
+        <name>chráněná část přírody</name>
+        <description>chráněná část přírody</description>
+        <shortcut>chráněná část přírody</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_CAVE">
+        <name>jeskyně</name>
+        <description>jeskyně</description>
+        <shortcut>jeskyně</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_LAKE">
+        <name>jezero</name>
+        <description>jezero</description>
+        <shortcut>jezero</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_COSMOSPART">
+        <name>jiná část vesmíru</name>
+        <description>jiná část vesmíru</description>
+        <shortcut>jiná část vesmíru</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_WATERAREA">
+        <name>jiná vodní plocha/tok</name>
+        <description>jiná vodní plocha/tok</description>
+        <shortcut>jiná vodní plocha/tok</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_NATUREPART">
+        <name>jiné administrativně vymezené části přírody</name>
+        <description>jiné administrativně vymezené části přírody</description>
+        <shortcut>jiné administrativně vymezené části přírody</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_OTHERAREA">
+        <name>jiné vymezené území</name>
+        <description>jiné vymezené území</description>
+        <shortcut>jiné vymezené území</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_NAMEDFORMATION">
+        <name>jiný pojmenovaný útvar</name>
+        <description>jiný pojmenovaný útvar</description>
+        <shortcut>jiný pojmenovaný útvar</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_NATFORMATION">
+        <name>jiný přírodní útvar</name>
+        <description>jiný přírodní útvar</description>
+        <shortcut>jiný přírodní útvar</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_CANAL">
+        <name>kanál</name>
+        <description>kanál</description>
+        <shortcut>kanál</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_CANTON">
+        <name>kanton</name>
+        <description>kanton</description>
+        <shortcut>kanton</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_CADASTRALTERRITORY">
+        <name>katastrální území</name>
+        <description>katastrální území</description>
+        <shortcut>katastrální území</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_CONTINENT">
+        <name>kontinent/světadíl</name>
+        <description>kontinent/světadíl</description>
+        <shortcut>kontinent/světadíl</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_HILL">
+        <name>kopec</name>
+        <description>kopec</description>
+        <shortcut>kopec</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_ADMREGION">
+        <name>kraj</name>
+        <description>kraj</description>
+        <shortcut>kraj</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_CRATER">
+        <name>kráter</name>
+        <description>kráter</description>
+        <shortcut>kráter</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_FOREST">
+        <name>les</name>
+        <description>les</description>
+        <shortcut>les</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_FORESTPARK">
+        <name>lesopark/park/sad</name>
+        <description>lesopark/park/sad</description>
+        <shortcut>lesopark/park/sad</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_MOON">
+        <name>měsíc</name>
+        <description>měsíc</description>
+        <shortcut>měsíc</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_CITYDISTRICT">
+        <name>městská část/obvod</name>
+        <description>městská část/obvod</description>
+        <shortcut>městská část/obvod</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_PEAKBOG">
+        <name>mokřad</name>
+        <description>mokřad</description>
+        <shortcut>mokřad</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_SEA">
+        <name>moře</name>
+        <description>moře</description>
+        <shortcut>moře</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_HEADLAND">
+        <name>mys</name>
+        <description>mys</description>
+        <shortcut>mys</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_WATERFRONT">
+        <name>nábřeží</name>
+        <description>nábřeží</description>
+        <shortcut>nábřeží</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_SQUARE">
+        <name>náměstí</name>
+        <description>náměstí</description>
+        <shortcut>náměstí</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_ETHNOGRAPHICAREA">
+        <name>národopisná oblast</name>
+        <description>národopisná oblast</description>
+        <shortcut>národopisná oblast</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_LOWLAND">
+        <name>nížina</name>
+        <description>nížina</description>
+        <shortcut>nížina</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_SETTLEMENT">
+        <name>nižší sídelní jednotka</name>
+        <description>nižší sídelní jednotka</description>
+        <shortcut>nižší sídelní jednotka</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_OASIS">
+        <name>oáza</name>
+        <description>oáza</description>
+        <shortcut>oáza</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_MUNIP">
+        <name>obec</name>
+        <description>obec</description>
+        <shortcut>obec</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_MUNIPDISTR">
+        <name>obec se širší působností</name>
+        <description>obec se širší působností</description>
+        <shortcut>obec se širší působností</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_AREA">
+        <name>oblast</name>
+        <description>oblast</description>
+        <shortcut>oblast</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_OCEAN">
+        <name>oceán</name>
+        <description>oceán</description>
+        <shortcut>oceán</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_DISTRICT">
+        <name>okres</name>
+        <description>okres</description>
+        <shortcut>okres</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_OKRUH">
+        <name>okruh</name>
+        <description>okruh</description>
+        <shortcut>okruh</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_ISLAND">
+        <name>ostrov</name>
+        <description>ostrov</description>
+        <shortcut>ostrov</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_HILLYAREA">
+        <name>pahorkatina</name>
+        <description>pahorkatina</description>
+        <shortcut>pahorkatina</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_MONUMENTZONE">
+        <name>památková zóna</name>
+        <description>památková zóna</description>
+        <shortcut>památková zóna</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_MANOR">
+        <name>panství</name>
+        <description>panství</description>
+        <shortcut>panství</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_RAPIDS">
+        <name>peřej</name>
+        <description>peřej</description>
+        <shortcut>peřej</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_PLANET">
+        <name>planeta</name>
+        <description>planeta</description>
+        <shortcut>planeta</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_PLATEAU">
+        <name>plošina</name>
+        <description>plošina</description>
+        <shortcut>plošina</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_MOUNTAINS">
+        <name>pohoří</name>
+        <description>pohoří</description>
+        <shortcut>pohoří</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_PENINSULA">
+        <name>poloostrov</name>
+        <description>poloostrov</description>
+        <shortcut>poloostrov</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_BROOK">
+        <name>potok</name>
+        <description>potok</description>
+        <shortcut>potok</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_DESERT">
+        <name>poušť</name>
+        <description>poušť</description>
+        <shortcut>poušť</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_CATCHMENTAREA">
+        <name>povodí</name>
+        <description>povodí</description>
+        <shortcut>povodí</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_VIRGINFOREST">
+        <name>prales</name>
+        <description>prales</description>
+        <shortcut>prales</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_SPRING">
+        <name>pramen</name>
+        <description>pramen</description>
+        <shortcut>pramen</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_CHASM">
+        <name>propast</name>
+        <description>propast</description>
+        <shortcut>propast</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_PROVINCE">
+        <name>provincie</name>
+        <description>provincie</description>
+        <shortcut>provincie</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_NAVIGATIONCANAL">
+        <name>průplav</name>
+        <description>průplav</description>
+        <shortcut>průplav</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_PASS">
+        <name>průsmyk</name>
+        <description>průsmyk</description>
+        <shortcut>průsmyk</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_REGION">
+        <name>region</name>
+        <description>region</description>
+        <shortcut>region</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_RECREATIONAREA">
+        <name>rekreační území</name>
+        <description>rekreační území</description>
+        <shortcut>rekreační území</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_POND">
+        <name>rybník</name>
+        <description>rybník</description>
+        <shortcut>rybník</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_RIVER">
+        <name>řeka</name>
+        <description>řeka</description>
+        <shortcut>řeka</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_ROCKCITY">
+        <name>skalní město</name>
+        <description>skalní město</description>
+        <shortcut>skalní město</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_ROCK">
+        <name>skalní útvar</name>
+        <description>skalní útvar</description>
+        <shortcut>skalní útvar</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_TREEGROUP">
+        <name>skupina stromů</name>
+        <description>skupina stromů</description>
+        <shortcut>skupina stromů</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_VOLCANO">
+        <name>sopka</name>
+        <description>sopka</description>
+        <shortcut>sopka</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_COURTDISTRICT">
+        <name>soudní okres</name>
+        <description>soudní okres</description>
+        <shortcut>soudní okres</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_CONSTELLATION">
+        <name>souhvězdí</name>
+        <description>souhvězdí</description>
+        <shortcut>souhvězdí</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_ARCHIPELAGO">
+        <name>souostroví</name>
+        <description>souostroví</description>
+        <shortcut>souostroví</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_RAVINE">
+        <name>soutěska</name>
+        <description>soutěska</description>
+        <shortcut>soutěska</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_COUNTRY">
+        <name>stát</name>
+        <description>stát</description>
+        <shortcut>stát</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_TREE">
+        <name>strom</name>
+        <description>strom</description>
+        <shortcut>strom</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_CLIMATICPHEN">
+        <name>trvalý klimatický jev</name>
+        <description>trvalý klimatický jev</description>
+        <shortcut>trvalý klimatický jev</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_VALLEY">
+        <name>údolí</name>
+        <description>údolí</description>
+        <shortcut>údolí</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_STREET">
+        <name>ulice</name>
+        <description>ulice</description>
+        <shortcut>ulice</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_CLIFF">
+        <name>útes</name>
+        <description>útes</description>
+        <shortcut>útes</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_SEABOTSHAPE">
+        <name>útvar na dně moře/oceánu</name>
+        <description>útvar na dně moře/oceánu</description>
+        <shortcut>útvar na dně moře/oceánu</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_DAM">
+        <name>vodní nádrž</name>
+        <description>vodní nádrž</description>
+        <shortcut>vodní nádrž</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_WATERFALL">
+        <name>vodopád</name>
+        <description>vodopád</description>
+        <shortcut>vodopád</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_MILITARYAREA">
+        <name>vojenský újezd</name>
+        <description>vojenský újezd</description>
+        <shortcut>vojenský újezd</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_VOJVODSTVI">
+        <name>vojvodství</name>
+        <description>vojvodství</description>
+        <shortcut>vojvodství</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_HIGHLANDS">
+        <name>vrchovina</name>
+        <description>vrchovina</description>
+        <shortcut>vrchovina</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_GARDEN">
+        <name>zahrada</name>
+        <description>zahrada</description>
+        <shortcut>zahrada</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_BAY">
+        <name>záliv</name>
+        <description>záliv</description>
+        <shortcut>záliv</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_LAND">
+        <name>země</name>
+        <description>země</description>
+        <shortcut>země</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="GT_COUNTY">
+        <name>župa</name>
+        <description>župa</description>
+        <shortcut>župa</shortcut>
+        <item-type-assign code="GEO_TYPE"/>
+    </item-spec>
+    <item-spec code="ARCHNUM">
+        <name>číslo archivu</name>
+        <description>číslo archivu</description>
+        <shortcut>číslo archivu</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="VAT">
+        <name>DIČ</name>
+        <shortcut>DIČ</shortcut>
+        <description>DIČ organizace</description>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="IC">
+        <name>IČ</name>
+        <shortcut>IČ</shortcut>
+        <description>IČ organizace</description>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="INTERPI">
+        <name>INTERPI</name>
+        <description>INTERPI</description>
+        <shortcut>INTERPI</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISO3166_2">
+        <name>ISO 3166-1 alpha-2</name>
+        <shortcut>ISO 3166-1 alpha-2</shortcut>
+        <description>Kód země (ISO 3166-1, 2 znaky)</description>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISO3166_3">
+        <name>ISO 3166-1 alpha-3</name>
+        <shortcut>ISO 3166-1 alpha-3</shortcut>
+        <description>Kód země (ISO 3166-1, 3 znaky)</description>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISO3166_NUM">
+        <name>ISO 3166-1 numeric</name>
+        <shortcut>ISO 3166-1 numeric</shortcut>
+        <description>Kód země (ISO 3166-1, číslo)</description>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="CZ_RETRO">
+        <name>Kód CZ_RETRO</name>
+        <shortcut>Kód CZ_RETRO</shortcut>
+        <description>Kódy lokalit z databáze CZ Retro</description>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="TAXONOMY">
+        <name>Kód archivní taxonomické kategorie</name>
+        <description>Kód archivní taxonomické kategorie</description>
+        <shortcut>Kód archivní taxonomické kategorie</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="NUTSLAU">
+        <name>NUTS/LAU</name>
+        <description>Kód lokality, https://ec.europa.eu/eurostat/web/nuts/local-administrative-units</description>
+        <shortcut>NUTS/LAU</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ORCID_ID">
+        <name>ORCID</name>
+        <description>Mezinárodní, jednoznačný a trvalý identifikátor autora v akademickém a vědeckém prostředí (viz https://orcid.org)</description>
+        <shortcut>ORCID</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="PEVA">
+        <name>PEVA</name>
+        <shortcut>PEVA</shortcut>
+        <description>Kódy z aplikace PEvA</description>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="RUIAN">
+        <name>RÚIAN</name>
+        <shortcut>RÚIAN</shortcut>
+        <description>Kód z databáze ČÚZK - RÚIAN.</description>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="LNG_heb">
+        <name>(novo)hebrejština</name>
+        <shortcut>(novo)hebrejština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <category>semitské</category>
+        <description>AFROASIJSKÉ/semitské/(novo)hebrejština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_per">
+        <name>(novo)perština</name>
+        <shortcut>(novo)perština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoíránské</category>
+        <description>INDOEVROPSKÉ/indoíránské/(novo)perština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_abk">
+        <name>abcházština</name>
+        <shortcut>abcházština</shortcut>
+        <category>SEVEROKAVKAZSKÉ</category>
+        <description>SEVEROKAVKAZSKÉ/abcházština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_afr">
+        <name>afrikánština</name>
+        <shortcut>afrikánština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/afrikánština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_akk">
+        <name>akkadština</name>
+        <shortcut>akkadština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <category>semitské</category>
+        <description>AFROASIJSKÉ/semitské/akkadština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_alb">
+        <name>albánština</name>
+        <shortcut>albánština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>ostatní</category>
+        <description>INDOEVROPSKÉ/ostatní/albánština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gsw">
+        <name>alsaština</name>
+        <shortcut>alsaština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/alsaština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_amh">
+        <name>amharština</name>
+        <shortcut>amharština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <category>semitské</category>
+        <description>AFROASIJSKÉ/semitské/amharština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_eng">
+        <name>angličtina</name>
+        <shortcut>angličtina</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/angličtina</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ara">
+        <name>arabština</name>
+        <shortcut>arabština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <category>semitské</category>
+        <description>AFROASIJSKÉ/semitské/arabština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_arc">
+        <name>aramejština</name>
+        <shortcut>aramejština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <category>semitské</category>
+        <description>AFROASIJSKÉ/semitské/aramejština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_arm">
+        <name>arménština</name>
+        <shortcut>arménština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>ostatní</category>
+        <description>INDOEVROPSKÉ/ostatní/arménština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_asm">
+        <name>asámština</name>
+        <shortcut>asámština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/asámština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_0as">
+        <name>assyrština</name>
+        <shortcut>assyrština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <category>semitské</category>
+        <description>AFROASIJSKÉ/semitské/assyrština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_aze">
+        <name>azerbajdžánština</name>
+        <shortcut>azerbajdžánština</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>turkické</category>
+        <description>ALTAJSKÉ/turkické/azerbajdžánština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_0ba">
+        <name>babylonština</name>
+        <shortcut>babylonština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <category>semitské</category>
+        <description>AFROASIJSKÉ/semitské/babylonština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bur">
+        <name>barmština</name>
+        <shortcut>barmština</shortcut>
+        <category>TIBETSKOČÍNSKÉ</category>
+        <description>TIBETSKOČÍNSKÉ/barmština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_baq">
+        <name>baskičtina</name>
+        <shortcut>baskičtina</shortcut>
+        <category>IZOLOVANÉ</category>
+        <description>IZOLOVANÉ/baskičtina</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bak">
+        <name>baškirština</name>
+        <shortcut>baškirština</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>turkické</category>
+        <description>ALTAJSKÉ/turkické/baškirština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bel">
+        <name>běloruština</name>
+        <shortcut>běloruština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/běloruština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ben">
+        <name>bengálština</name>
+        <shortcut>bengálština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/bengálština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dzo">
+        <name>bhútánština</name>
+        <shortcut>bhútánština</shortcut>
+        <category>TIBETSKOČÍNSKÉ</category>
+        <description>TIBETSKOČÍNSKÉ/bhútánština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bih">
+        <name>Bihárštiina (maithilština)</name>
+        <shortcut>Bihárštiina (maithilština)</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/Bihárštiina (maithilština)</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_afa">
+        <name>blíže neurčený afroasijský jazyk</name>
+        <shortcut>blíže neurčený afroasijský jazyk</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <description>AFROASIJSKÉ/blíže neurčený afroasijský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tut">
+        <name>blíže neurčený altajský jazyk</name>
+        <shortcut>blíže neurčený altajský jazyk</shortcut>
+        <category>ALTAJSKÉ</category>
+        <description>ALTAJSKÉ/blíže neurčený altajský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_aav">
+        <name>blíže neurčený austroasijský jazyk</name>
+        <shortcut>blíže neurčený austroasijský jazyk</shortcut>
+        <category>AUSTROASIJSKÉ</category>
+        <description>AUSTROASIJSKÉ/blíže neurčený austroasijský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_map">
+        <name>blíže neurčený austronéský jazyk</name>
+        <shortcut>blíže neurčený austronéský jazyk</shortcut>
+        <category>AUSTRONÉSKÉ</category>
+        <description>AUSTRONÉSKÉ/blíže neurčený austronéský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bat">
+        <name>blíže neurčený baltský jazyk</name>
+        <shortcut>blíže neurčený baltský jazyk</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>baltské</category>
+        <description>INDOEVROPSKÉ/baltské/blíže neurčený baltský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dra">
+        <name>blíže neurčený drávidský jazyk</name>
+        <shortcut>blíže neurčený drávidský jazyk</shortcut>
+        <category>DRÁVIDSKÉ</category>
+        <description>DRÁVIDSKÉ/blíže neurčený drávidský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_esx">
+        <name>blíže neurčený eskymácko-aleutský jazyk</name>
+        <shortcut>blíže neurčený eskymácko-aleutský jazyk</shortcut>
+        <category>ESKYMÁCKO-ALEUTSKÉ</category>
+        <description>ESKYMÁCKO-ALEUTSKÉ/blíže neurčený eskymácko-aleutský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gem">
+        <name>blíže neurčený germánský jazyk</name>
+        <shortcut>blíže neurčený germánský jazyk</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/blíže neurčený germánský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_0ni">
+        <name>blíže neurčený indiánský jazyk</name>
+        <shortcut>blíže neurčený indiánský jazyk</shortcut>
+        <category>INDIÁNSKÉ</category>
+        <description>INDIÁNSKÉ/blíže neurčený indiánský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_inc">
+        <name>blíže neurčený indoárijský jazyk</name>
+        <shortcut>blíže neurčený indoárijský jazyk</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/blíže neurčený indoárijský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ine">
+        <name>blíže neurčený indoevropský jazyk</name>
+        <shortcut>blíže neurčený indoevropský jazyk</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <description>INDOEVROPSKÉ/blíže neurčený indoevropský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_iir">
+        <name>blíže neurčený indoíránský jazyk</name>
+        <shortcut>blíže neurčený indoíránský jazyk</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoíránské</category>
+        <description>INDOEVROPSKÉ/indoíránské/blíže neurčený indoíránský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_0nz">
+        <name>blíže neurčený izolovaný jazyk</name>
+        <shortcut>blíže neurčený izolovaný jazyk</shortcut>
+        <category>IZOLOVANÉ</category>
+        <description>IZOLOVANÉ/blíže neurčený izolovaný jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ccs">
+        <name>blíže neurčený kartvelský jazyk</name>
+        <shortcut>blíže neurčený kartvelský jazyk</shortcut>
+        <category>KARTVELSKÉ</category>
+        <description>KARTVELSKÉ/blíže neurčený kartvelský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cel">
+        <name>blíže neurčený keltský jazyk</name>
+        <shortcut>blíže neurčený keltský jazyk</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>keltské</category>
+        <description>INDOEVROPSKÉ/keltské/blíže neurčený keltský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_crs">
+        <name>blíže neurčený kreolský jazyk</name>
+        <shortcut>blíže neurčený kreolský jazyk</shortcut>
+        <category>KREOLSKÉ</category>
+        <description>KREOLSKÉ/blíže neurčený kreolský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_xgn">
+        <name>blíže neurčený mongolský jazyk</name>
+        <shortcut>blíže neurčený mongolský jazyk</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>mongolské</category>
+        <description>ALTAJSKÉ/mongolské/blíže neurčený mongolský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mun">
+        <name>blíže neurčený mundský jazyk</name>
+        <shortcut>blíže neurčený mundský jazyk</shortcut>
+        <category>AUSTROASIJSKÉ</category>
+        <category>mundské</category>
+        <description>AUSTROASIJSKÉ/mundské/blíže neurčený mundský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nic">
+        <name>blíže neurčený nigerokonžský jazyk</name>
+        <shortcut>blíže neurčený nigerokonžský jazyk</shortcut>
+        <category>NIGEROKONŽSKÉ</category>
+        <description>NIGEROKONŽSKÉ/blíže neurčený nigerokonžský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_roa">
+        <name>blíže neurčený románský jazyk</name>
+        <shortcut>blíže neurčený románský jazyk</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>románské</category>
+        <description>INDOEVROPSKÉ/románské/blíže neurčený románský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sem">
+        <name>blíže neurčený semitský jazyk</name>
+        <shortcut>blíže neurčený semitský jazyk</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <category>semitské</category>
+        <description>AFROASIJSKÉ/semitské/blíže neurčený semitský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ccn">
+        <name>blíže neurčený severokavkazský jazyk</name>
+        <shortcut>blíže neurčený severokavkazský jazyk</shortcut>
+        <category>SEVEROKAVKAZSKÉ</category>
+        <description>SEVEROKAVKAZSKÉ/blíže neurčený severokavkazský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sla">
+        <name>blíže neurčený slovanský jazyk</name>
+        <shortcut>blíže neurčený slovanský jazyk</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/blíže neurčený slovanský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tai">
+        <name>blíže neurčený tajsko-kadajský jazyk</name>
+        <shortcut>blíže neurčený tajsko-kadajský jazyk</shortcut>
+        <category>TAJSKO-KADAJSKÉ</category>
+        <description>TAJSKO-KADAJSKÉ/blíže neurčený tajsko-kadajský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sit">
+        <name>blíže neurčený tibetskočínský jazyk</name>
+        <shortcut>blíže neurčený tibetskočínský jazyk</shortcut>
+        <category>TIBETSKOČÍNSKÉ</category>
+        <description>TIBETSKOČÍNSKÉ/blíže neurčený tibetskočínský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_trk">
+        <name>blíže neurčený turkický jazyk</name>
+        <shortcut>blíže neurčený turkický jazyk</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>turkické</category>
+        <description>ALTAJSKÉ/turkické/blíže neurčený turkický jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_0uj">
+        <name>blíže neurčený umělý jazyk</name>
+        <shortcut>blíže neurčený umělý jazyk</shortcut>
+        <category>UMĚLÉ</category>
+        <description>UMĚLÉ/blíže neurčený umělý jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_urj">
+        <name>blíže neurčený uralský jazyk</name>
+        <shortcut>blíže neurčený uralský jazyk</shortcut>
+        <category>URALSKÉ</category>
+        <description>URALSKÉ/blíže neurčený uralský jazyk</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_brx">
+        <name>bodo</name>
+        <shortcut>bodo</shortcut>
+        <category>TIBETSKOČÍNSKÉ</category>
+        <description>TIBETSKOČÍNSKÉ/bodo</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bos">
+        <name>bosenština</name>
+        <shortcut>bosenština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/bosenština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bre">
+        <name>bretonština</name>
+        <shortcut>bretonština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>keltské</category>
+        <description>INDOEVROPSKÉ/keltské/bretonština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bul">
+        <name>bulharština</name>
+        <shortcut>bulharština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/bulharština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cze">
+        <name>čeština</name>
+        <shortcut>čeština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/čeština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_chi">
+        <name>čínština</name>
+        <shortcut>čínština</shortcut>
+        <category>TIBETSKOČÍNSKÉ</category>
+        <description>TIBETSKOČÍNSKÉ/čínština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dan">
+        <name>dánština</name>
+        <shortcut>dánština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/dánština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_doi">
+        <name>dógrí</name>
+        <shortcut>dógrí</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/dógrí</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nds">
+        <name>dolnoněmčina</name>
+        <shortcut>dolnoněmčina</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/dolnoněmčina</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_egy">
+        <name>egyptština</name>
+        <shortcut>egyptština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <description>AFROASIJSKÉ/egyptština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_epo">
+        <name>esperanto</name>
+        <shortcut>esperanto</shortcut>
+        <category>UMĚLÉ</category>
+        <description>UMĚLÉ/esperanto</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_est">
+        <name>estonština</name>
+        <shortcut>estonština</shortcut>
+        <category>URALSKÉ</category>
+        <description>URALSKÉ/estonština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fao">
+        <name>faerština</name>
+        <shortcut>faerština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/faerština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fin">
+        <name>finština</name>
+        <shortcut>finština</shortcut>
+        <category>URALSKÉ</category>
+        <description>URALSKÉ/finština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fre">
+        <name>francouzština</name>
+        <shortcut>francouzština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>románské</category>
+        <description>INDOEVROPSKÉ/románské/francouzština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fry">
+        <name>fríština</name>
+        <shortcut>fríština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/fríština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gag">
+        <name>gagauzština</name>
+        <shortcut>gagauzština</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>turkické</category>
+        <description>ALTAJSKÉ/turkické/gagauzština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_glg">
+        <name>galicijština</name>
+        <shortcut>galicijština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>románské</category>
+        <description>INDOEVROPSKÉ/románské/galicijština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kal">
+        <name>grónština</name>
+        <shortcut>grónština</shortcut>
+        <category>ESKYMÁCKO-ALEUTSKÉ</category>
+        <description>ESKYMÁCKO-ALEUTSKÉ/grónština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_geo">
+        <name>gruzínština</name>
+        <shortcut>gruzínština</shortcut>
+        <category>KARTVELSKÉ</category>
+        <description>KARTVELSKÉ/gruzínština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_guj">
+        <name>gudžarátština</name>
+        <shortcut>gudžarátština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/gudžarátština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hau">
+        <name>hauština</name>
+        <shortcut>hauština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <category>semitské</category>
+        <description>AFROASIJSKÉ/semitské/hauština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_zkz">
+        <name>hazarština</name>
+        <shortcut>hazarština</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>turkické</category>
+        <description>ALTAJSKÉ/turkické/hazarština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hin">
+        <name>hindština</name>
+        <shortcut>hindština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/hindština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dut">
+        <name>holandština (nizozemština)</name>
+        <shortcut>holandština (nizozemština)</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/holandština (nizozemština)</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hit">
+        <name>chetitština</name>
+        <shortcut>chetitština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <category>semitské</category>
+        <description>AFROASIJSKÉ/semitské/chetitština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hrv">
+        <name>chorvatština</name>
+        <shortcut>chorvatština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/chorvatština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ido">
+        <name>ido</name>
+        <shortcut>ido</shortcut>
+        <category>UMĚLÉ</category>
+        <description>UMĚLÉ/ido</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ind">
+        <name>indonéština</name>
+        <shortcut>indonéština</shortcut>
+        <category>AUSTRONÉSKÉ</category>
+        <description>AUSTRONÉSKÉ/indonéština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ina">
+        <name>interlingua</name>
+        <shortcut>interlingua</shortcut>
+        <category>UMĚLÉ</category>
+        <description>UMĚLÉ/interlingua</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ile">
+        <name>interlingue</name>
+        <shortcut>interlingue</shortcut>
+        <category>UMĚLÉ</category>
+        <description>UMĚLÉ/interlingue</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gle">
+        <name>irština</name>
+        <shortcut>irština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>keltské</category>
+        <description>INDOEVROPSKÉ/keltské/irština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ice">
+        <name>islandština</name>
+        <shortcut>islandština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/islandština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ita">
+        <name>italština</name>
+        <shortcut>italština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>románské</category>
+        <description>INDOEVROPSKÉ/románské/italština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_jpn">
+        <name>japonština</name>
+        <shortcut>japonština</shortcut>
+        <category>ALTAJSKÉ</category>
+        <description>ALTAJSKÉ/japonština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_yid">
+        <name>jidiš</name>
+        <shortcut>jidiš</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/jidiš</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_0jd">
+        <name>judendeutsch</name>
+        <shortcut>judendeutsch</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/judendeutsch</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kan">
+        <name>kannadština (též kannarština)</name>
+        <shortcut>kannadština (též kannarština)</shortcut>
+        <category>DRÁVIDSKÉ</category>
+        <description>DRÁVIDSKÉ/kannadština (též kannarština)</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kas">
+        <name>kašmírština</name>
+        <shortcut>kašmírština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/kašmírština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_csb">
+        <name>kašubština</name>
+        <shortcut>kašubština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/kašubština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cat">
+        <name>katalánština</name>
+        <shortcut>katalánština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>románské</category>
+        <description>INDOEVROPSKÉ/románské/katalánština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_khm">
+        <name>khmérština</name>
+        <shortcut>khmérština</shortcut>
+        <category>AUSTROASIJSKÉ</category>
+        <description>AUSTROASIJSKÉ/khmérština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kok">
+        <name>konkánština</name>
+        <shortcut>konkánština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoíránské</category>
+        <description>INDOEVROPSKÉ/indoíránské/konkánština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cop">
+        <name>koptština</name>
+        <shortcut>koptština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <description>AFROASIJSKÉ/koptština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kor">
+        <name>korejština</name>
+        <shortcut>korejština</shortcut>
+        <category>ALTAJSKÉ</category>
+        <description>ALTAJSKÉ/korejština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cos">
+        <name>korsičtina</name>
+        <shortcut>korsičtina</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>románské</category>
+        <description>INDOEVROPSKÉ/románské/korsičtina</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_crh">
+        <name>krymská tatarština</name>
+        <shortcut>krymská tatarština</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>turkické</category>
+        <description>ALTAJSKÉ/turkické/krymská tatarština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kur">
+        <name>kurdština</name>
+        <shortcut>kurdština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoíránské</category>
+        <description>INDOEVROPSKÉ/indoíránské/kurdština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kir">
+        <name>kyrgyzština</name>
+        <shortcut>kyrgyzština</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>turkické</category>
+        <description>ALTAJSKÉ/turkické/kyrgyzština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lao">
+        <name>laoština</name>
+        <shortcut>laoština</shortcut>
+        <category>TAJSKO-KADAJSKÉ</category>
+        <description>TAJSKO-KADAJSKÉ/laoština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lat">
+        <name>latina</name>
+        <shortcut>latina</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>románské</category>
+        <description>INDOEVROPSKÉ/románské/latina</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lit">
+        <name>litevština</name>
+        <shortcut>litevština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>baltské</category>
+        <description>INDOEVROPSKÉ/baltské/litevština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_liv">
+        <name>livština</name>
+        <shortcut>livština</shortcut>
+        <category>URALSKÉ</category>
+        <description>URALSKÉ/livština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lav">
+        <name>lotyština</name>
+        <shortcut>lotyština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>baltské</category>
+        <description>INDOEVROPSKÉ/baltské/lotyština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ltz">
+        <name>lucemburština</name>
+        <shortcut>lucemburština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/lucemburština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dsb">
+        <name>lužická srbština dolní (dolnolužičtina)</name>
+        <shortcut>lužická srbština dolní (dolnolužičtina)</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/lužická srbština dolní (dolnolužičtina)</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hsb">
+        <name>lužická srbština horní (hornolužičtina)</name>
+        <shortcut>lužická srbština horní (hornolužičtina)</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/lužická srbština horní (hornolužičtina)</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hun">
+        <name>maďarština</name>
+        <shortcut>maďarština</shortcut>
+        <category>URALSKÉ</category>
+        <description>URALSKÉ/maďarština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mac">
+        <name>makedonština</name>
+        <shortcut>makedonština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/makedonština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mal">
+        <name>malajalámština</name>
+        <shortcut>malajalámština</shortcut>
+        <category>DRÁVIDSKÉ</category>
+        <description>DRÁVIDSKÉ/malajalámština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_may">
+        <name>malajština</name>
+        <shortcut>malajština</shortcut>
+        <category>AUSTRONÉSKÉ</category>
+        <description>AUSTRONÉSKÉ/malajština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mlt">
+        <name>maltština</name>
+        <shortcut>maltština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <category>semitské</category>
+        <description>AFROASIJSKÉ/semitské/maltština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mni">
+        <name>manípurština</name>
+        <shortcut>manípurština</shortcut>
+        <category>TIBETSKOČÍNSKÉ</category>
+        <description>TIBETSKOČÍNSKÉ/manípurština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mar">
+        <name>maráthština</name>
+        <shortcut>maráthština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/maráthština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mol">
+        <name>moldavština</name>
+        <shortcut>moldavština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>románské</category>
+        <description>INDOEVROPSKÉ/románské/moldavština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mon">
+        <name>mongolština</name>
+        <shortcut>mongolština</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>mongolské</category>
+        <description>ALTAJSKÉ/mongolské/mongolština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ger">
+        <name>němčina</name>
+        <shortcut>němčina</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/němčina</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nor">
+        <name>norština</name>
+        <shortcut>norština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/norština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_oci">
+        <name>okcitánština</name>
+        <shortcut>okcitánština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>románské</category>
+        <description>INDOEVROPSKÉ/románské/okcitánština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nep">
+        <name>pahárské jazyky (nepálština)</name>
+        <shortcut>pahárské jazyky (nepálština)</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/pahárské (nepálština)</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pan">
+        <name>pandžábština</name>
+        <shortcut>pandžábština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/pandžábština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pus">
+        <name>paštština</name>
+        <shortcut>paštština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoíránské</category>
+        <description>INDOEVROPSKÉ/indoíránské/paštština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pol">
+        <name>polština</name>
+        <shortcut>polština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/polština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_por">
+        <name>portugalština</name>
+        <shortcut>portugalština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>románské</category>
+        <description>INDOEVROPSKÉ/románské/portugalština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_roh">
+        <name>rétorománština</name>
+        <shortcut>rétorománština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>románské</category>
+        <description>INDOEVROPSKÉ/románské/rétorománština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_rom">
+        <name>romština</name>
+        <shortcut>romština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/romština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_rum">
+        <name>rumunština</name>
+        <shortcut>rumunština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>románské</category>
+        <description>INDOEVROPSKÉ/románské/rumunština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_0ru">
+        <name>rusínština</name>
+        <shortcut>rusínština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/rusínština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_rus">
+        <name>ruština</name>
+        <shortcut>ruština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/ruština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gre">
+        <name>řečtina</name>
+        <shortcut>řečtina</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>ostatní</category>
+        <description>INDOEVROPSKÉ/ostatní/řečtina</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_san">
+        <name>sanskrt</name>
+        <shortcut>sanskrt</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/sanskrt</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sat">
+        <name>santalština</name>
+        <shortcut>santalština</shortcut>
+        <category>AUSTROASIJSKÉ</category>
+        <category>mundské</category>
+        <description>AUSTROASIJSKÉ/mundské/santalština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_snd">
+        <name>sindština</name>
+        <shortcut>sindština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/sindština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sin">
+        <name>sinhálština</name>
+        <shortcut>sinhálština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/sinhálština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gla">
+        <name>skotská gaelština</name>
+        <shortcut>skotská gaelština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>keltské</category>
+        <description>INDOEVROPSKÉ/keltské/skotská gaelština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_slo">
+        <name>slovenština</name>
+        <shortcut>slovenština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/slovenština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_slv">
+        <name>slovinština</name>
+        <shortcut>slovinština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/slovinština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_0sl">
+        <name>slovio</name>
+        <shortcut>slovio</shortcut>
+        <category>UMĚLÉ</category>
+        <description>UMĚLÉ/slovio</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_0sc">
+        <name>srbochorvatština</name>
+        <shortcut>srbochorvatština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/srbochorvatština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_srp">
+        <name>srbština</name>
+        <shortcut>srbština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/srbština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hbo">
+        <name>stará hebrejština</name>
+        <shortcut>stará hebrejština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <category>semitské</category>
+        <description>AFROASIJSKÉ/semitské/stará hebrejština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_peo">
+        <name>stará perština</name>
+        <shortcut>stará perština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoíránské</category>
+        <description>INDOEVROPSKÉ/indoíránské/stará perština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_chu">
+        <name>staroslověnština, církevní slovanština</name>
+        <shortcut>staroslověnština, církevní slovanština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/staroslověnština, církevní slovanština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pal">
+        <name>střední perština</name>
+        <shortcut>střední perština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoíránské</category>
+        <description>INDOEVROPSKÉ/indoíránské/střední perština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sux">
+        <name>sumerština</name>
+        <shortcut>sumerština</shortcut>
+        <category>AFROASIJSKÉ</category>
+        <category>semitské</category>
+        <description>AFROASIJSKÉ/semitské/sumerština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_swa">
+        <name>svahilština</name>
+        <shortcut>svahilština</shortcut>
+        <category>NIGEROKONŽSKÉ</category>
+        <description>NIGEROKONŽSKÉ/svahilština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_spa">
+        <name>španělština</name>
+        <shortcut>španělština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>románské</category>
+        <description>INDOEVROPSKÉ/románské/španělština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_swe">
+        <name>švédština</name>
+        <shortcut>švédština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>germánské</category>
+        <description>INDOEVROPSKÉ/germánské/švédština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tgk">
+        <name>tádžičtina</name>
+        <shortcut>tádžičtina</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoíránské</category>
+        <description>INDOEVROPSKÉ/indoíránské/tádžičtina</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tam">
+        <name>tamilština</name>
+        <shortcut>tamilština</shortcut>
+        <category>DRÁVIDSKÉ</category>
+        <description>DRÁVIDSKÉ/tamilština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tat">
+        <name>tatarština</name>
+        <shortcut>tatarština</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>turkické</category>
+        <description>ALTAJSKÉ/turkické/tatarština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tel">
+        <name>telugština</name>
+        <shortcut>telugština</shortcut>
+        <category>DRÁVIDSKÉ</category>
+        <description>DRÁVIDSKÉ/telugština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tha">
+        <name>thajština</name>
+        <shortcut>thajština</shortcut>
+        <category>TAJSKO-KADAJSKÉ</category>
+        <description>TAJSKO-KADAJSKÉ/thajština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tib">
+        <name>tibetština</name>
+        <shortcut>tibetština</shortcut>
+        <category>TIBETSKOČÍNSKÉ</category>
+        <description>TIBETSKOČÍNSKÉ/tibetština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tur">
+        <name>turečtina</name>
+        <shortcut>turečtina</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>turkické</category>
+        <description>ALTAJSKÉ/turkické/turečtina</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tuk">
+        <name>turkménština</name>
+        <shortcut>turkménština</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>turkické</category>
+        <description>ALTAJSKÉ/turkické/turkménština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_uig">
+        <name>ujgurština</name>
+        <shortcut>ujgurština</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>turkické</category>
+        <description>ALTAJSKÉ/turkické/ujgurština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ukr">
+        <name>ukrajinština</name>
+        <shortcut>ukrajinština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>slovanské</category>
+        <description>INDOEVROPSKÉ/slovanské/ukrajinština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_urd">
+        <name>urdština</name>
+        <shortcut>urdština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/urdština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ori">
+        <name>urijština</name>
+        <shortcut>urijština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>indoárijské</category>
+        <description>INDOEVROPSKÉ/indoárijské/urijština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_uzb">
+        <name>uzbečtina</name>
+        <shortcut>uzbečtina</shortcut>
+        <category>ALTAJSKÉ</category>
+        <category>turkické</category>
+        <description>ALTAJSKÉ/turkické/uzbečtina</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_wel">
+        <name>velština</name>
+        <shortcut>velština</shortcut>
+        <category>INDOEVROPSKÉ</category>
+        <category>keltské</category>
+        <description>INDOEVROPSKÉ/keltské/velština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_vie">
+        <name>vietnamština</name>
+        <shortcut>vietnamština</shortcut>
+        <category>AUSTROASIJSKÉ</category>
+        <description>AUSTROASIJSKÉ/vietnamština</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="LNG_vol">
+        <name>volapük</name>
+        <shortcut>volapük</shortcut>
+        <category>UMĚLÉ</category>
+        <description>UMĚLÉ/volapük</description>
+        <item-type-assign code="NM_LANG"/>
+        <item-type-assign code="LANG"/>
+    </item-spec>
+    <item-spec code="NT_AUTHORCIPHER">
+        <name>autorská šifra</name>
+        <description>autorská šifra</description>
+        <shortcut>autorská šifra</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_RELIGIOUS">
+        <name>církevní</name>
+        <description>církevní</description>
+        <shortcut>církevní</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_EQUIV">
+        <name>ekvivalent</name>
+        <description>ekvivalent</description>
+        <shortcut>ekvivalent</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_HISTORICAL">
+        <name>historická podoba</name>
+        <description>historická podoba</description>
+        <shortcut>historická podoba</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_FORMER">
+        <name>historická/dřívější podoba</name>
+        <description>historická/dřívější podoba</description>
+        <shortcut>historická/dřívější podoba</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_HOMONYMUM">
+        <name>homonymum</name>
+        <description>homonymum</description>
+        <shortcut>homonymum</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_INCIPIT">
+        <name>incipit</name>
+        <description>incipit</description>
+        <shortcut>incipit</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_INVERTED">
+        <name>invertovaná podoba</name>
+        <description>invertovaná podoba</description>
+        <shortcut>invertovaná podoba</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_ONLYKNOWN">
+        <name>jediný známý tvar</name>
+        <description>jediný známý tvar</description>
+        <shortcut>jediný známý tvar</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_ORIGINAL">
+        <name>název originálu</name>
+        <description>název originálu</description>
+        <shortcut>název originálu</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_INAPPROPRIATE">
+        <name>nevhodný termín</name>
+        <description>nevhodný termín</description>
+        <shortcut>nevhodný termín</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_TERM">
+        <name>odborný termín</name>
+        <description>odborný termín</description>
+        <shortcut>odborný termín</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_PLURAL">
+        <name>plurál</name>
+        <description>plurál</description>
+        <shortcut>plurál</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_OTHERRULES">
+        <name>podle jiných pravidel</name>
+        <description>podle jiných pravidel</description>
+        <shortcut>podle jiných pravidel</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_HONOR">
+        <name>podoba s čestným názvem</name>
+        <description>podoba s čestným názvem</description>
+        <shortcut>podoba s čestným názvem</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_TAKEN">
+        <name>přejatý termín</name>
+        <description>přejatý termín</description>
+        <shortcut>přejatý termín</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_TRANSLATED">
+        <name>překlad</name>
+        <description>překlad</description>
+        <shortcut>překlad</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_ALIAS">
+        <name>přezdívka/zlidovělá podoba</name>
+        <description>přezdívka/zlidovělá podoba</description>
+        <shortcut>přezdívka/zlidovělá podoba</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_ACCEPTED">
+        <name>přijaté</name>
+        <description>přijaté</description>
+        <shortcut>přijaté</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_DIRECT">
+        <name>přímé pořadí</name>
+        <description>přímé pořadí</description>
+        <shortcut>přímé pořadí</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_PSEUDONYM">
+        <name>pseudonym</name>
+        <description>pseudonym</description>
+        <shortcut>pseudonym</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_NATIV">
+        <name>rodné</name>
+        <description>rodné</description>
+        <shortcut>rodné</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_SINGULAR">
+        <name>singulár</name>
+        <description>singulár</description>
+        <shortcut>singulár</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_ACTUAL">
+        <name>současná podoba</name>
+        <description>současná podoba</description>
+        <shortcut>současná podoba</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_SECULAR">
+        <name>světské</name>
+        <description>světské</description>
+        <shortcut>světské</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_ARTIFICIAL">
+        <name>uměle vytvořené</name>
+        <description>uměle vytvořené</description>
+        <shortcut>uměle vytvořené</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_OFFICIAL">
+        <name>úřední</name>
+        <description>úřední</description>
+        <shortcut>úřední</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_NARROWER">
+        <name>užší termín</name>
+        <description>užší termín</description>
+        <shortcut>užší termín</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_SIMPLIFIED">
+        <name>zjednodušená podoba</name>
+        <description>zjednodušená podoba</description>
+        <shortcut>zjednodušená podoba</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_GARBLED">
+        <name>zkomolená podoba</name>
+        <description>zkomolená podoba</description>
+        <shortcut>zkomolená podoba</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_ACRONYM">
+        <name>zkratka/akronym</name>
+        <description>zkratka/akronym</description>
+        <shortcut>zkratka/akronym</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_FOLK">
+        <name>zlidovělá podoba</name>
+        <description>zlidovělá podoba</description>
+        <shortcut>zlidovělá podoba</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="RT_AUTHOR">
+        <name>autor/tvůrce</name>
+        <description>autor/tvůrce</description>
+        <shortcut>autor/tvůrce</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="DYNASTY"/>
+            <item-aptype register-type="EVENT"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_AUTHOROFCHANGE">
+        <name>autor změny / tvůrce změny</name>
+        <description>autor změny / tvůrce změny</description>
+        <shortcut>autor změny / tvůrce změny</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GRANDMOTHER">
+        <name>babička</name>
+        <description>babička</description>
+        <shortcut>babička</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_BROTHER">
+        <name>bratr</name>
+        <description>bratr</description>
+        <shortcut>bratr</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_HECOUSIN">
+        <name>bratranec</name>
+        <description>bratranec</description>
+        <shortcut>bratranec</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_WHOLE">
+        <name>celek</name>
+        <description>celek</description>
+        <shortcut>celek</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_CEREMONY">
+        <name>ceremoniál ocenění</name>
+        <description>ceremoniál ocenění</description>
+        <shortcut>ceremoniál ocenění</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="EVENT"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_MEMBERORG">
+        <name>členská organizace</name>
+        <description>členská organizace</description>
+        <shortcut>členská organizace</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RELATIONS">
+        <name>další rodinné vztahy</name>
+        <description>další rodinné vztahy</description>
+        <shortcut>další rodinné vztahy</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GRANDFATHER">
+        <name>dědeček</name>
+        <description>dědeček</description>
+        <shortcut>dědeček</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_DOCUMENT">
+        <name>dokument</name>
+        <description>dokument</description>
+        <shortcut>dokument</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ENTITYEND">
+        <name>entita související s koncem</name>
+        <description>entita související s koncem</description>
+        <shortcut>entita související s koncem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_ENTITYBIRTH">
+        <name>entita související s narozením</name>
+        <description>entita související s narozením</description>
+        <shortcut>entita související s narozením</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_ENTITYDEATH">
+        <name>entita související s úmrtím</name>
+        <description>entita související s úmrtím</description>
+        <shortcut>entita související s úmrtím</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_ENTINTYRISE">
+        <name>entita související se vznikem</name>
+        <description>entita související se vznikem</description>
+        <shortcut>entita související se vznikem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_ENTITYORIGIN">
+        <name>entita související se začátkem</name>
+        <description>entita související se začátkem</description>
+        <shortcut>entita související se začátkem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_ENTITYEXTINCTION">
+        <name>entita související se zánikem</name>
+        <description>entita související se zánikem</description>
+        <shortcut>entita související se zánikem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_FUNCTION">
+        <name>funkce/činnost</name>
+        <description>funkce/činnost</description>
+        <shortcut>funkce/činnost</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GEOSCOPE">
+        <name>geografická působnost</name>
+        <description>geografická působnost</description>
+        <shortcut>geografická působnost</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_MILESTONE">
+        <name>historický milník</name>
+        <description>historický milník</description>
+        <shortcut>historický milník</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_ISPART">
+        <name>je část</name>
+        <description>je část</description>
+        <shortcut>je část</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ISMEMBER">
+        <name>je členem</name>
+        <description>je členem</description>
+        <shortcut>je členem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GENUSMEMBER">
+        <name>je členem rodiny/rodu</name>
+        <description>je členem rodiny/rodu</description>
+        <shortcut>je členem rodiny/rodu</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_OTHERNAME">
+        <name>jiná entita reprezentující tutéž osobu</name>
+        <description>jiná entita reprezentující tutéž osobu</description>
+        <shortcut>jiná entita reprezentující tutéž osobu</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ANCESTOR">
+        <name>jiný předek</name>
+        <description>jiný předek</description>
+        <shortcut>jiný předek</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ACTIVITYCORP">
+        <name>korporace veřejného působení</name>
+        <description>korporace veřejného působení</description>
+        <shortcut>korporace veřejného působení</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_LIQUIDATOR">
+        <name>likvidátor</name>
+        <description>likvidátor</description>
+        <shortcut>likvidátor</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_OWNER">
+        <name>majitel</name>
+        <description>majitel</description>
+        <shortcut>majitel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_HOLDER">
+        <name>majitel, držitel</name>
+        <description>majitel, držitel</description>
+        <shortcut>majitel, držitel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_HUSBAND">
+        <name>manžel</name>
+        <description>manžel</description>
+        <shortcut>manžel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_WIFE">
+        <name>manželka</name>
+        <description>manželka</description>
+        <shortcut>manželka</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_MOTHER">
+        <name>matka</name>
+        <description>matka</description>
+        <shortcut>matka</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PLACE">
+        <name>místo</name>
+        <description>místo</description>
+        <shortcut>místo</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_VENUE">
+        <name>místo konání</name>
+        <description>místo konání</description>
+        <shortcut>místo konání</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PLACEEND">
+        <name>místo ukončení</name>
+        <description>místo ukončení</description>
+        <shortcut>místo ukončení</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PLACESTART">
+        <name>místo uzavření</name>
+        <description>místo uzavření</description>
+        <shortcut>místo uzavření</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SUPCORP">
+        <name>nadřazená korporace</name>
+        <description>nadřazená korporace</description>
+        <shortcut>nadřazená korporace</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SUPTERM">
+        <name>nadřazený pojem</name>
+        <description>nadřazený pojem</description>
+        <shortcut>nadřazený pojem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SENIOR">
+        <name>nadřízený</name>
+        <description>nadřízený</description>
+        <shortcut>nadřízený</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SUCCESSOR">
+        <name>nástupce</name>
+        <description>nástupce</description>
+        <shortcut>nástupce</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ACTIVITYFIELD">
+        <name>obor činnosti</name>
+        <description>obor činnosti</description>
+        <shortcut>obor činnosti</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_STUDYFIELD">
+        <name>obor studia</name>
+        <description>obor studia</description>
+        <shortcut>obor studia</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_AWARD">
+        <name>ocenění</name>
+        <description>ocenění</description>
+        <shortcut>ocenění</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ORGANIZER">
+        <name>organizátor, svolavatel</name>
+        <description>organizátor, svolavatel</description>
+        <shortcut>organizátor, svolavatel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_FATHER">
+        <name>otec</name>
+        <description>otec</description>
+        <shortcut>otec</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PARTNER">
+        <name>partner</name>
+        <description>partner</description>
+        <shortcut>partner</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SHEPARTNER">
+        <name>partnerka</name>
+        <description>partnerka</description>
+        <shortcut>partnerka</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SUBTERM">
+        <name>podřazený pojem</name>
+        <description>podřazený pojem</description>
+        <shortcut>podřazený pojem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_NAMEDAFTER">
+        <name>pojmenováno po</name>
+        <description>pojmenováno po</description>
+        <shortcut>pojmenováno po</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="GEO"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+            <item-aptype register-type="ARTWORK"/>
+            <item-aptype register-type="EVENT"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_LASTKMEMBER">
+        <name>poslední známý člen rodu/rodiny</name>
+        <description>poslední známý člen rodu/rodiny</description>
+        <shortcut>poslední známý člen rodu/rodiny</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_FIRSTKMEMBER">
+        <name>první známý člen rodu/rodiny</name>
+        <description>první známý člen rodu/rodiny</description>
+        <shortcut>první známý člen rodu/rodiny</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PREDECESSOR">
+        <name>předchůdce</name>
+        <description>předchůdce</description>
+        <shortcut>předchůdce</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_AFFILIATION">
+        <name>příslušnost k</name>
+        <description>příslušnost k</description>
+        <shortcut>příslušnost k</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+            <item-aptype register-type="REGION"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SISTER">
+        <name>sestra</name>
+        <description>sestra</description>
+        <shortcut>sestra</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SHECOUSIN">
+        <name>sestřenice</name>
+        <description>sestřenice</description>
+        <shortcut>sestřenice</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RESIDENCE">
+        <name>sídlo</name>
+        <description>sídlo</description>
+        <shortcut>sídlo</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_COMPEVENT">
+        <name>souborná událost, celek</name>
+        <description>souborná událost, celek</description>
+        <shortcut>souborná událost, celek</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="EVENT"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RELATED">
+        <name>související entita</name>
+        <description>související entita</description>
+        <shortcut>související entita</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="GEO"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+            <item-aptype register-type="ARTWORK"/>
+            <item-aptype register-type="EVENT"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RELATEDTERM">
+        <name>související pojem</name>
+        <description>související pojem</description>
+        <shortcut>související pojem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_COLLABORATOR">
+        <name>spolupracovník</name>
+        <description>spolupracovník</description>
+        <shortcut>spolupracovník</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SCHOOLMATE">
+        <name>spolužák</name>
+        <description>spolužák</description>
+        <shortcut>spolužák</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_UNCLE">
+        <name>strýc</name>
+        <description>strýc</description>
+        <shortcut>strýc</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SCHOOL">
+        <name>škola</name>
+        <description>škola</description>
+        <shortcut>škola</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_BROTHERINLAW">
+        <name>švagr</name>
+        <description>švagr</description>
+        <shortcut>švagr</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SISTERINLAW">
+        <name>švagrová</name>
+        <description>švagrová</description>
+        <shortcut>švagrová</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_CATEGORY">
+        <name>taxonomická kategorie</name>
+        <description>taxonomická kategorie</description>
+        <shortcut>taxonomická kategorie</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM_TAXONOMY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_THEME">
+        <name>tematický celek</name>
+        <description>tematický celek</description>
+        <shortcut>tematický celek</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_AUNT">
+        <name>teta</name>
+        <description>teta</description>
+        <shortcut>teta</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_FATHERINLAW">
+        <name>tchán</name>
+        <description>tchán</description>
+        <shortcut>tchán</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_MOTHERINLAW">
+        <name>tchyně</name>
+        <description>tchyně</description>
+        <shortcut>tchyně</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_TEACHER">
+        <name>učitel</name>
+        <description>učitel</description>
+        <shortcut>učitel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GRANTAUTH">
+        <name>udělovatel</name>
+        <description>udělovatel</description>
+        <shortcut>udělovatel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_STORAGE">
+        <name>uložení</name>
+        <description>uložení</description>
+        <shortcut>uložení</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK_CONSTR"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_LOCATION">
+        <name>umístění</name>
+        <description>umístění</description>
+        <shortcut>umístění</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_OBJECT">
+        <name>vazba na objekt</name>
+        <description>vazba na objekt</description>
+        <shortcut>vazba na objekt</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK_CONSTR"/>
+            <item-aptype register-type="ARTWORK_ARTWORK"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ACTIVITIES">
+        <name>významné aktivity</name>
+        <description>významné aktivity</description>
+        <shortcut>významné aktivity</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK"/>
+            <item-aptype register-type="EVENT"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_FOUNDER">
+        <name>zakladatel/zřizovatel</name>
+        <description>zakladatel/zřizovatel</description>
+        <shortcut>zakladatel/zřizovatel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_EMPLOYER">
+        <name>zaměstnavatel</name>
+        <description>zaměstnavatel</description>
+        <shortcut>zaměstnavatel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ROOF">
+        <name>zjednodušená zastřešující entita</name>
+        <description>zjednodušená zastřešující entita</description>
+        <shortcut>zjednodušená zastřešující entita</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="COMPANY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_REPRESENT">
+        <name>zástupce</name>
+        <description>zástupce</description>
+        <shortcut>zástupce</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_NAMECHANGE">
+        <name>změna jména/identity</name>
+        <description>změna jména/identity</description>
+        <shortcut>změna jména/identity</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_MENTION">
+        <name>zmínka o existenci</name>
+        <description>zmínka o existenci</description>
+        <shortcut>zmínka o existenci</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ORIGINATOR">
+        <name>zřizovatel</name>
+        <description>zřizovatel</description>
+        <shortcut>zřizovatel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GEOPARTNER">
+        <name>partner</name>
+        <description>partner</description>
+        <shortcut>partner</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+</item-specs>

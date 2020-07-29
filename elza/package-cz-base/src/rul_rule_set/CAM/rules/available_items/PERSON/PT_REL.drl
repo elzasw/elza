@@ -10,7 +10,7 @@ import cz.tacr.elza.drools.model.PartType;
 rule "R_REL_002 Použití typu vztahu u odkazu na jinou entitu"
 when $part: Part(parent == null)
      $it: ItemType(code == "REL_ENTITY")
-     $is : ItemSpec(code in ("RT_GRANDMOTHER","RT_BROTHER","RT_HECOUSIN","RT_RELATIONS","RT_GRANDFATHER","RT_GENUSMEMBER","RT_OTHERNAME","RT_ANCESTOR","RT_PLACE","RT_PLACEACT","RT_SCOPEFIELD","RT_PARTNER","RT_SHEPARTNER","RT_SISTER","RT_SHECOUSIN","RT_RESIDENCE","RT_UNCLE","RT_BROTHERINLAW","RT_SISTERINLAW","RT_AUNT","RT_FATHERINLAW","RT_MOTHERINLAW","RT_OBJECT","RT_ACTIVITIES","RT_NAMECHANGE")) from $it.specs
+     $is : ItemSpec(code in ("RT_GRANDMOTHER","RT_BROTHER","RT_HECOUSIN","RT_RELATIONS","RT_GRANDFATHER","RT_GENUSMEMBER","RT_OTHERNAME","RT_ANCESTOR","RT_PLACE","RT_PARTNER","RT_SHEPARTNER","RT_SISTER","RT_SHECOUSIN","RT_RESIDENCE","RT_UNCLE","RT_BROTHERINLAW","RT_SISTERINLAW","RT_AUNT","RT_FATHERINLAW","RT_MOTHERINLAW","RT_OBJECT","RT_ACTIVITIES","RT_NAMECHANGE")) from $it.specs
 then
     $is.setPossible();
     $is.setRepeatable(true);
@@ -107,7 +107,7 @@ when $part: Part(parent != null)
      $parent: Part(type == PartType.PT_EVENT) from $part.parent
      $parentItem: Item(type == "EV_TYPE", spec == "ET_JOB") from $parent.items
      $it: ItemType(code == "REL_ENTITY")
-     $is : ItemSpec(code in ("RT_PLACE", "RT_SENIOR", "RT_ACTIVITYFIELD","RT_COLLABORATOR")) from $it.specs
+     $is : ItemSpec(code in ("RT_PLACE", "RT_SENIOR", "RT_ACTIVITYFIELD","RT_COLLABORATOR","RT_FUNCTION")) from $it.specs
 then
     $is.setPossible();
     $is.setRepeatable(true);
@@ -118,7 +118,7 @@ when $part: Part(parent != null)
      $parent: Part(type == PartType.PT_EVENT) from $part.parent
      $parentItem: Item(type == "EV_TYPE", spec == "ET_JOB") from $parent.items
      $it: ItemType(code == "REL_ENTITY")
-     $is : ItemSpec(code in ("RT_EMPLOYER")) from $it.specs
+     $is : ItemSpec(code in ("RT_EMPLOYER","RT_ACTIVITYCORP")) from $it.specs
 then
     $is.setPossible();
 end
@@ -148,7 +148,7 @@ when $part: Part(parent != null)
      $parent: Part(type == PartType.PT_EVENT) from $part.parent
      $parentItem: Item(type == "EV_TYPE", spec == "ET_MEMBERSHIP") from $parent.items
      $it: ItemType(code == "REL_ENTITY")
-     $is : ItemSpec(code in ("RT_PLACE")) from $it.specs
+     $is : ItemSpec(code in ("RT_PLACE","RT_ACTIVITYFIELD","RT_FUNCTION")) from $it.specs
 then
     $is.setPossible();
     $is.setRepeatable(true);
@@ -173,6 +173,17 @@ when $part: Part(parent != null)
      $is : ItemSpec(code in ("RT_SCHOOL")) from $it.specs
 then
     $is.setPossible();
+end
+
+rule "R_EVE_003.10 Použití vztahů u události"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EVENT) from $part.parent
+     $parentItem: Item(type == "EV_TYPE", spec == "ET_HOBBY") from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_PLACE", "RT_ACTIVITYFIELD","RT_FUNCTION")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
 end
 
 

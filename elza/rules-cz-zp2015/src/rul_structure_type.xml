@@ -11,25 +11,4 @@
     <structure-type code="ZP2015_TEST_TYP" validValueFromVersion="149" anonymous="true">
         <name>Agregace původce</name>
     </structure-type>
-    <structure-type code="PT_NAME">
-        <name>Označení</name>
-    </structure-type>
-    <structure-type code="PT_CRE">
-        <name>Vznik</name>
-    </structure-type>
-    <structure-type code="PT_EXT">
-        <name>Zánik</name>
-    </structure-type>
-    <structure-type code="PT_EVENT">
-        <name>Událost</name>
-    </structure-type>
-    <structure-type code="PT_REL">
-        <name>Vztah</name>
-    </structure-type>
-    <structure-type code="PT_IDENT">
-        <name>Identifikátor</name>
-    </structure-type>
-    <structure-type code="PT_BODY">
-        <name>Tělo</name>
-    </structure-type>
 </structure-types>
