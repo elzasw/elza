@@ -124,7 +124,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="GEO_ADMIN_UNIT" parent-ap-type="GEO">
-        <name>vymezené obvody a správní celky</name>
+        <name>další vymezené lokality, oblasti a zóny</name>
         <hierarchical>true</hierarchical>
         <read-only>false</read-only>
     </ap-type>
@@ -233,7 +233,7 @@
         <read-only>false</read-only>
     </ap-type>
     <ap-type code="TERM_GENERAL" parent-ap-type="TERM">
-        <name>nepojmenované objekty a jejich fyzické části</name>
+        <name>netaxonomické obecné pojmy</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
@@ -259,6 +259,11 @@
     </ap-type>
     <ap-type code="TERM_NOMENC" parent-ap-type="TERM">
         <name>binominální nomenklatura</name>
+        <hierarchical>false</hierarchical>
+        <read-only>false</read-only>
+    </ap-type>
+    <ap-type code="TERM_TAXONOMY" parent-ap-type="TERM">
+        <name>archivní taxonomická kategorie</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>

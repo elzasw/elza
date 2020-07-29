@@ -245,16 +245,6 @@ public class PackageService {
     /**
      * Osoby... TODO
      */
-    public static final String RELATION_ROLE_TYPE_XML = "par_relation_role_type.xml";
-    public static final String PARTY_NAME_FORM_TYPE_XML = "par_party_name_form_type.xml";
-    public static final String RELATION_CLASS_TYPE_XML = "par_relation_class_type.xml";
-    public static final String COMPLEMENT_TYPE_XML = "par_complement_type.xml";
-    public static final String PARTY_GROUP_XML = "ui_party_group.xml";
-    public static final String PARTY_TYPE_COMPLEMENT_TYPE_XML = "par_party_type_complement_type.xml";
-    public static final String PARTY_TYPE_RELATION_XML = "par_party_type_relation.xml";
-    public static final String RELATION_TYPE_XML = "par_relation_type.xml";
-    public static final String RELATION_TYPE_ROLE_TYPE_XML = "par_relation_type_role_type.xml";
-    public static final String REGISTRY_ROLE_XML = "par_registry_role.xml";
     public static final String SETTING_XML = "ui_setting.xml";
 
     /**

@@ -335,6 +335,9 @@
   <arrangement-extension code="AVAILABLE_ITEMS/TERM_TAXONOMY/PT_REL">
     <name>AVAILABLE_ITEMS TERM_TAXONOMY PT_REL</name>
   </arrangement-extension>
+  <arrangement-extension code="AVAILABLE_ITEMS/COMPANY/PT_REL">
+    <name>AVAILABLE_ITEMS COMPANY PT_REL</name>
+  </arrangement-extension>
   <arrangement-extension code="VALIDATION">
     <name>VALIDATION</name>
   </arrangement-extension>
@@ -367,5 +370,8 @@
   </arrangement-extension>
   <arrangement-extension code="VALIDATION/TERM_GENERAL">
     <name>VALIDATION TERM_GENERAL</name>
+  </arrangement-extension>
+  <arrangement-extension code="VALIDATION/TERM_TAXONOMY">
+    <name>VALIDATION TERM_TAXONOMY</name>
   </arrangement-extension>
 </arrangement-extensions>

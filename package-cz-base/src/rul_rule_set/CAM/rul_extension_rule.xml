@@ -447,6 +447,10 @@
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
+    <extension-rule filename="available_items/COMPANY/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/COMPANY/PT_REL">
+        <rule-type>ATTRIBUTE_TYPES</rule-type>
+        <priority>100</priority>
+    </extension-rule>
     <extension-rule filename="validation/GLOBAL.drl" arrangement-extension="VALIDATION">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
@@ -488,6 +492,10 @@
         <priority>100</priority>
     </extension-rule>
     <extension-rule filename="validation/TERM_GENERAL/GLOBAL.drl" arrangement-extension="VALIDATION/TERM_GENERAL">
+        <rule-type>ATTRIBUTE_TYPES</rule-type>
+        <priority>100</priority>
+    </extension-rule>
+    <extension-rule filename="validation/TERM_TAXONOMY/GLOBAL.drl" arrangement-extension="VALIDATION/TERM_TAXONOMY">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
