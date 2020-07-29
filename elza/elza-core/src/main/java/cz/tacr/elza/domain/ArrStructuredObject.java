@@ -102,6 +102,22 @@ public class ArrStructuredObject implements IArrFund, Structured {
         }
     }
 
+    public ArrStructuredObject makeCopyWithoutId() {
+        ArrStructuredObject trg = new ArrStructuredObject();
+        trg.setState(state);
+        trg.setValue(value);
+        trg.setComplement(complement);
+        trg.setAssignable(assignable);
+        trg.setDeleteChange(deleteChange);
+        trg.setErrorDescription(errorDescription);
+        trg.setSortValue(sortValue);
+        trg.setUuid(uuid);
+        trg.setCreateChange(createChange);
+        trg.setFund(fund);
+        trg.setStructuredType(structuredType);
+        return trg;
+    }
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db

@@ -35,12 +35,11 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -83,8 +82,6 @@ import org.springframework.util.Assert;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -622,7 +619,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         for (ArrDescItem descItemMove : descItems) {
 
 			// make data copy
-			ArrData trgData = copyDescItemData(descItemMove);
+			ArrData trgData = withoutDeepCopyItemData(descItemMove);
 			// prepare new item and close old one
 			ArrDescItem descItemNew = prepareNewDescItem(descItemMove, trgData, change);
 			descItemNew.setPosition(descItemMove.getPosition() + 1);
@@ -782,7 +779,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         for (ArrDescItem descItemMove : descItems) {
 
 			// copy data
-			ArrData trgData = copyDescItemData(descItemMove);
+			ArrData trgData = withoutDeepCopyItemData(descItemMove);
 
 			// copy description item
 			ArrDescItem descItemNew = prepareNewDescItem(descItemMove, trgData, change);
@@ -852,8 +849,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         for (ArrDescItem sourceDescItem : sourceDescItems) {
 
-			// copy and save data
-			ArrData trgData = copyDescItemData(sourceDescItem);
+            // copy and save data
+			ArrData trgData = copyItemData(sourceDescItem);
 			// prepare new description item
 			// first make copy from original
 			ArrDescItem descItemNew = new ArrDescItem(sourceDescItem);
@@ -881,6 +878,37 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         return result;
     }
 
+    public ArrData copyItemData(final ArrItem itemFrom) {
+        ArrData data = itemFrom.getData();
+        ArrData resultData;
+        boolean deepCopy = false;
+        if (data instanceof ArrDataStructureRef) {
+            ArrStructuredObject structuredObject = ((ArrDataStructureRef) data).getStructuredObject();
+            RulStructuredType structuredType = structuredObject.getStructuredType();
+            deepCopy = BooleanUtils.isTrue(structuredType.getAnonymous());
+        }
+        if (deepCopy) {
+            resultData = deepCopyItemData(itemFrom);
+        } else {
+            resultData = withoutDeepCopyItemData(itemFrom);
+        }
+        return resultData;
+    }
+
+    private ArrData deepCopyItemData(final ArrItem itemFrom) {
+        ArrData srcData = itemFrom.getData();
+        if (srcData == null) {
+            return null;
+        }
+        ArrData dataNew = ArrData.makeCopyWithoutId(srcData);
+        if (dataNew instanceof ArrDataStructureRef) {
+            ArrStructuredObject structuredObject = ((ArrDataStructureRef) srcData).getStructuredObject();
+            ArrStructuredObject copyStructuredObject = structObjInternalService.deepCopy(structuredObject);
+            ((ArrDataStructureRef) dataNew).setStructuredObject(copyStructuredObject);
+        }
+        return dataRepository.save(dataNew);
+    }
+
     /**
      * Vypropagovani zmeny hodnoty atributu - sockety.
      *
@@ -904,7 +932,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 	 * @return Return object with data copy. If data are not defined in source
 	 *         item method will return null.
 	 */
-	private ArrData copyDescItemData(final ArrItem itemFrom) {
+	private ArrData withoutDeepCopyItemData(final ArrItem itemFrom) {
 		ArrData srcData = itemFrom.getData();
 		if (srcData == null) {
 			return null;
