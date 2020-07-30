@@ -43,10 +43,6 @@ public class ApType {
     @Column(insertable = false, updatable = false)
     private Integer parentApTypeId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApRuleSystem.class)
-    @JoinColumn(name = "ruleSystemId")
-    private ApRuleSystem ruleSystem;
-
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
@@ -68,7 +64,6 @@ public class ApType {
         this.readOnly = src.isReadOnly();
         this.parentApType = src.getParentApType();
         this.parentApTypeId = src.getParentApTypeId();
-        this.ruleSystem = src.getRuleSystem();
         this.rulPackage = src.getRulPackage();
     }
 
@@ -171,13 +166,6 @@ public class ApType {
         return parentApTypeId;
     }
 
-    public ApRuleSystem getRuleSystem() {
-        return ruleSystem;
-    }
-
-    public void setRuleSystem(final ApRuleSystem ruleSystem) {
-        this.ruleSystem = ruleSystem;
-    }
     public RulPackage getRulPackage() {
         return rulPackage;
     }

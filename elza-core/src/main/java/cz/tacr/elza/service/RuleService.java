@@ -956,11 +956,6 @@ public class RuleService {
         return rulesExecutor.executeFragmentItemTypesRules(fragmentType, rulDescItemTypeExtList, items);
     }
 
-    public List<RulItemTypeExt> getApItemTypesInternal(final ApType type, final List<ApItem> items, final ApRule.RuleType ruleType) {
-        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
-        return rulesExecutor.executeApItemTypesRules(type, rulDescItemTypeExtList, items, ruleType);
-    }
-
     @Transactional
     public ModelAvailable executeAvailable(final ApAccessPointCreateVO form) {
         if (form == null || form.getTypeId() == null || form.getPartForm() == null) {

@@ -58,7 +58,6 @@ public class AccessPointGeneratorService {
     public static final String ITEMS = "ITEMS";
     public static final String AP = "AP";
 
-    private final ApRuleRepository ruleRepository;
     private final ResourcePathResolver resourcePathResolver;
     private final ApItemRepository itemRepository;
     private final RuleService ruleService;
@@ -80,8 +79,7 @@ public class AccessPointGeneratorService {
     private final BlockingQueue<ApQueueItem> queue = new LinkedBlockingQueue<>();
 
     @Autowired
-    public AccessPointGeneratorService(final ApRuleRepository ruleRepository,
-                                       final ResourcePathResolver resourcePathResolver,
+    public AccessPointGeneratorService(final ResourcePathResolver resourcePathResolver,
                                        final ApItemRepository itemRepository,
                                        final RuleService ruleService,
                                        final ApPartRepository partRepository,
@@ -95,7 +93,6 @@ public class AccessPointGeneratorService {
                                        final StructureDefinitionRepository structureDefinitionRepository,
                                        final AccessPointService accessPointService,
                                        final EntityManager em) {
-        this.ruleRepository = ruleRepository;
         this.resourcePathResolver = resourcePathResolver;
         this.itemRepository = itemRepository;
         this.ruleService = ruleService;
@@ -331,51 +328,6 @@ public class AccessPointGeneratorService {
         List<RulItemTypeExt> fragmentItemTypes = ruleService.getFragmentItemTypesInternal(fragment.getFragmentType(), items);
         validateItems(errorDescription, items, fragmentItemTypes);
     }*/
-
-    private void validateNameItems(final ErrorDescription errorDescription,
-                                   final ApState apState,
-                                   final List<ApItem> items) {
-        List<RulItemTypeExt> nameItemTypes = ruleService.getApItemTypesInternal(apState.getApType(), items, ApRule.RuleType.NAME_ITEMS);
-        validateItems(errorDescription, items, nameItemTypes);
-    }
-
-    private void validateApItems(final ErrorDescription errorDescription,
-                                 final ApState apState,
-                                 final List<ApItem> items) {
-        List<RulItemTypeExt> bodyItemTypes = ruleService.getApItemTypesInternal(apState.getApType(), items, ApRule.RuleType.BODY_ITEMS);
-        validateItems(errorDescription, items, bodyItemTypes);
-    }
-
-    private void validateItems(final ErrorDescription errorDescription, final List<ApItem> items, final List<RulItemTypeExt> fragmentItemTypes) {
-        List<RulItemTypeExt> requiredItemTypes = fragmentItemTypes.stream().filter(itemType -> RulItemType.Type.REQUIRED == itemType.getType()).collect(Collectors.toList());
-        List<RulItemTypeExt> impossibleItemTypes = fragmentItemTypes.stream().filter(itemType -> RulItemType.Type.IMPOSSIBLE == itemType.getType()).collect(Collectors.toList());
-
-        for (RulItemTypeExt requiredItemType : requiredItemTypes) {
-            boolean add = true;
-            for (ApItem item : items) {
-                if (item.getItemType().getCode().equals(requiredItemType.getCode())) {
-                    add = false;
-                    break;
-                }
-            }
-            if (add) {
-                errorDescription.getRequiredItemTypeIds().add(requiredItemType.getItemTypeId());
-            }
-        }
-
-        for (RulItemTypeExt impossibleItemType : impossibleItemTypes) {
-            boolean add = false;
-            for (ApItem item : items) {
-                if (item.getItemType().getCode().equals(impossibleItemType.getCode())) {
-                    add = true;
-                    break;
-                }
-            }
-            if (add) {
-                errorDescription.getImpossibleItemTypeIds().add(impossibleItemType.getItemTypeId());
-            }
-        }
-    }
 
     private static class ErrorDescription {
 

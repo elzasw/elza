@@ -569,4 +569,10 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20200730094400" author="slapa">
+        <dropColumn tableName="ap_type" columnName="rule_system_id" />
+        <dropTable tableName="ap_rule" />
+        <dropTable tableName="ap_rule_system" />
+    </changeSet>
+
 </databaseChangeLog>

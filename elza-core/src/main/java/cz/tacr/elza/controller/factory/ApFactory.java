@@ -399,16 +399,6 @@ public class ApFactory {
         return form;
     }*/
 
-    private ApFormVO createFormVO(ApAccessPoint accessPoint, ApType apType) {
-        List<ApItem> apItems = new ArrayList<>(itemRepository.findValidItemsByAccessPoint(accessPoint));
-        List<RulItemTypeExt> rulItemTypes = ruleService.getApItemTypesInternal(apType, apItems, ApRule.RuleType.BODY_ITEMS);
-
-        ApFormVO form = new ApFormVO();
-        form.setItemTypes(createItemTypesVO(rulItemTypes));
-        form.setItems(createItemsVO(apItems));
-        return form;
-    }
-
     private ApFormVO createFormVO(ApType type) {
         ApFormVO form = new ApFormVO();
         return form;

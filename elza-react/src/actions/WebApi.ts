@@ -736,9 +736,7 @@ export class WebApiCls {
     confirmStructuredAccessPoint(accessPointId) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/confirm', null, null);
     }
-    migrateAccessPoint(accessPointId) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/migrate', null, null);
-    }
+
     changeAccessPointItems(accessPointId, items) {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId + '/items', null, items);
     }

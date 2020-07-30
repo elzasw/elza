@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.FileSystemUtils;
 
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.ApRule;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
@@ -239,19 +238,6 @@ public class PackageContext {
 				return dirGroovies;
 			default:
 				throw new NotImplementedException("Def type: " + definition.getDefType());
-		}
-	}
-
-	public File getDir(ApRule apRule) {
-		switch (apRule.getRuleType()) {
-			case BODY_ITEMS:
-			case NAME_ITEMS:
-				return dirRules;
-			case TEXT_GENERATOR:
-			case MIGRATE:
-				return dirGroovies;
-			default:
-				throw new NotImplementedException("Rule type: " + apRule.getRuleType());
 		}
 	}
 

@@ -1,25 +1,35 @@
 package cz.tacr.elza.drools.service;
 
-import java.util.*;
-
-import javax.annotation.Nullable;
-
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.StructObjItem;
 import cz.tacr.elza.drools.model.Structured;
 import cz.tacr.elza.repository.StructuredItemRepository;
-import cz.tacr.elza.drools.model.StructObjItem;
-import cz.tacr.elza.service.vo.AccessPoint;
-import cz.tacr.elza.service.vo.AccessPointMigrate;
 import cz.tacr.elza.service.vo.Language;
-import cz.tacr.elza.service.vo.Name;
-import cz.tacr.elza.service.vo.NameMigrate;
 import cz.tacr.elza.service.vo.SimpleItem;
 import org.apache.commons.collections4.CollectionUtils;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Factory method for the base Drools model objects.
@@ -184,7 +194,4 @@ public class ModelFactory {
         return new Language(language.getLanguageId(), language.getName(), language.getCode());
     }
 
-    public static AccessPointMigrate createApMigrate(final ApAccessPoint apAcessPoint) {
-        return new AccessPointMigrate(null, apAcessPoint.getAccessPointId(), apAcessPoint.getUuid(), null);
-    }
 }
