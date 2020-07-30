@@ -20,7 +20,7 @@ class StructureSubNodeForm extends React.Component {
     static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
-        selectedSubNodeId: PropTypes.number.isRequired,
+        id: PropTypes.number.isRequired,
         // Store
         rulDataTypes: PropTypes.object,
         structureTypes: PropTypes.object.isRequired,
