@@ -91,7 +91,8 @@ export default function fundOutputDetail(state = initialState, action = {}) {
             };
         }
         case types.CHANGE_OUTPUTS:
-            if (action.getOutputIds && action.getOutputIds.indexOf(state.id) >= 0) {
+            console.warn(action.outputIds, state.id);
+            if (action.outputIds && action.outputIds.indexOf(state.id) >= 0) {
                 return {
                     ...state,
                     subNodeForm: subNodeForm(state.subNodeForm, action),

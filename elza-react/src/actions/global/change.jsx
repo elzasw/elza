@@ -107,11 +107,11 @@ export function changeNodes(versionId, nodeIds) {
     };
 }
 
-export function changeOutputs(versionId, getOutputIds) {
+export function changeOutputs(versionId, outputIds) {
     return {
         type: types.CHANGE_OUTPUTS,
         versionId,
-        getOutputIds,
+        outputIds,
     };
 }
 
@@ -421,7 +421,7 @@ export function structureChange(data) {
                             type: types.CHANGE_STRUCTURE,
                             fundId: data.fundId,
                             versionId: fund.versionId,
-                            structureIds: data.updateIds
+                            structureIds: data.updateIds,
                         });
                     }
                 }
