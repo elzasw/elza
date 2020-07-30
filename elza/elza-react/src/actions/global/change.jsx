@@ -415,13 +415,15 @@ export function structureChange(data) {
             );
             if (funds.length > 0) {
                 dispatch(structureTypeInvalidate());
-                for (let fund of funds) {
-                    dispatch({
-                        type: types.CHANGE_STRUCTURE,
-                        fundId: data.fundId,
-                        versionId: fund.versionId,
-                        structureIds: data.updateIds,
-                    });
+                if (data.updateIds && data.updateIds.length > 0) {
+                    for (let fund of funds) {
+                        dispatch({
+                            type: types.CHANGE_STRUCTURE,
+                            fundId: data.fundId,
+                            versionId: fund.versionId,
+                            structureIds: data.updateIds
+                        });
+                    }
                 }
             }
         }
