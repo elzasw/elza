@@ -1,8 +1,8 @@
 import * as types from '../../../actions/constants/ActionTypes';
-import subNodeForm from '../arr/subNodeForm'
-import {structureFormActions} from '../../../actions/arr/subNodeForm'
-import {consolidateState} from '../../../components/Utils'
-import {Action} from "redux";
+import subNodeForm from '../arr/subNodeForm';
+import {structureFormActions} from '../../../actions/arr/subNodeForm';
+import {consolidateState} from '../../../components/Utils';
+import {Action} from 'redux';
 
 type State = {
     id: number | null;
@@ -11,14 +11,14 @@ type State = {
     currentDataKey: any;
     subNodeForm: ReturnType<typeof subNodeForm>;
     version?: number;
-}
+};
 
 const initialState: State = {
     id: null,
     fetched: false,
     fetching: false,
     currentDataKey: '',
-    subNodeForm: subNodeForm()
+    subNodeForm: subNodeForm(),
 };
 
 export interface StructureNodeFormAction extends Action {
@@ -27,11 +27,14 @@ export interface StructureNodeFormAction extends Action {
     routingKey?: number;
     versionId?: number;
     data?: {
-        [extraProps: string]: any
+        [extraProps: string]: any;
     };
 }
 
-export default function structureNodeForm(state: State = initialState, action: StructureNodeFormAction = {} as any): State {
+export default function structureNodeForm(
+    state: State = initialState,
+    action: StructureNodeFormAction = {} as any,
+): State {
     if (structureFormActions.isSubNodeFormAction(action) || structureFormActions.isSubNodeFormCacheAction(action)) {
         const result = {
             ...state,
@@ -46,7 +49,7 @@ export default function structureNodeForm(state: State = initialState, action: S
                 return {
                     ...state,
                     subNodeForm: subNodeForm(state.subNodeForm, action),
-                }
+                };
             } else {
                 return state;
             }
@@ -55,16 +58,19 @@ export default function structureNodeForm(state: State = initialState, action: S
                 ...state,
                 id: action.id!,
                 version: action.versionId!,
-                subNodeForm: subNodeForm()
+                subNodeForm: subNodeForm(),
             };
         case types.STRUCTURE_NODE_FORM_REQUEST:
             return {
                 ...state,
-                subNodeForm: state.subNodeForm.nodeId && state.subNodeForm.nodeId !== action.id ? subNodeForm() : state.subNodeForm,
+                subNodeForm:
+                    state.subNodeForm.nodeId && state.subNodeForm.nodeId !== action.id
+                        ? subNodeForm()
+                        : state.subNodeForm,
                 id: action.id!,
                 fetching: true,
                 fetched: false,
-                currentDataKey: action.id
+                currentDataKey: action.id,
             };
         case types.STRUCTURE_NODE_FORM_SET_DATA:
         case types.STRUCTURE_NODE_FORM_RECEIVE:
@@ -76,7 +82,6 @@ export default function structureNodeForm(state: State = initialState, action: S
                 ...action.data,
             };
         default:
-            return state
+            return state;
     }
 }
-
