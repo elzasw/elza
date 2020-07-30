@@ -131,18 +131,19 @@ public class StructObjInternalService {
 
     public ArrStructuredObject deepCopy(final ArrStructuredObject structuredObject) {
         ArrStructuredObject copyStructuredObject = structObjRepository.save(structuredObject.makeCopyWithoutId());
-        copyItems(copyStructuredObject);
+        copyItems(structuredObject, copyStructuredObject);
         return copyStructuredObject;
     }
 
-    private void copyItems(final ArrStructuredObject copyStructuredObject) {
-        List<ArrStructuredItem> items = structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(copyStructuredObject);
+    private void copyItems(final ArrStructuredObject sourceStructuredObject, final ArrStructuredObject targetStructuredObject) {
+        List<ArrStructuredItem> items = structureItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(sourceStructuredObject);
         List<ArrStructuredItem> copyItems = new ArrayList<>(items.size());
         for (ArrStructuredItem item : items) {
             ArrData newData = copyData(item);
             ArrStructuredItem arrStructuredItem = item.makeCopy();
+            arrStructuredItem.setItemId(null);
             arrStructuredItem.setData(newData);
-            arrStructuredItem.setStructuredObject(copyStructuredObject);
+            arrStructuredItem.setStructuredObject(targetStructuredObject);
             arrStructuredItem.setDescItemObjectId(arrangementInternalService.getNextDescItemObjectId());
             copyItems.add(arrStructuredItem);
         }
