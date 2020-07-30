@@ -16,7 +16,7 @@ import objectById from '../../../shared/utils/objectById';
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
-class StructureSubNodeForm extends AbstractReactComponent {
+class StructureSubNodeForm extends React.Component {
     static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,

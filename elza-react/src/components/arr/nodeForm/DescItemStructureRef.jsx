@@ -3,7 +3,7 @@ import {structureTypeInvalidate} from 'actions/arr/structureType';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
 import classNames from 'classnames';
 import AddStructureDataForm from 'components/arr/structure/AddStructureDataForm';
-import {AbstractReactComponent, Autocomplete, i18n, Icon} from 'components/shared';
+import {Autocomplete, i18n, Icon} from 'components/shared';
 import PropTypes from 'prop-types';
 import React from 'react';
 import {connect, DispatchProp} from 'react-redux';
@@ -21,7 +21,7 @@ import {IDescItemBaseProps} from './DescItemTypes';
 import {decorateAutocompleteValue} from './DescItemUtils.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
-class DescItemStructureRef extends AbstractReactComponent {
+class DescItemStructureRef extends React.Component {
     state = {data: [], active: false};
 
     static propTypes = {
@@ -38,19 +38,20 @@ class DescItemStructureRef extends AbstractReactComponent {
             } else {
                 const {structureTypeCode, versionId} = props;
                 WebApi.createStructureData(versionId, structureTypeCode, this.findValue()).then(structureData => {
-                    //props.changeStrucutreId(structureData.id);
+                    this.props.onChange({id: structureData.id});
                     props.dispatch(structureNodeFormSelectId(props.versionId, structureData.id));
                 });
             }
         }
     }
 
-    componentWillReceiveProps(nextProps, nextContext) {
-        if ((nextProps.descItem.value || nextProps.structureId) && nextProps.anonymous && nextProps.structureNodeForm) {
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        const {descItem, structureId, anonymous, structureNodeForm} = this.props;
+        if (((descItem && descItem.value) || structureId) && anonymous && structureNodeForm) {
             const {
                 versionId,
                 structureNodeForm: {id, state, subNodeForm},
-            } = nextProps;
+            } = this.props;
             if (
                 state === 'TEMP' &&
                 subNodeForm.formData &&
@@ -61,15 +62,15 @@ class DescItemStructureRef extends AbstractReactComponent {
                         i.descItemTypes.filter(n => n.descItems && n.descItems.filter(q => q.id).length > 0).length > 0,
                 ).length > 0
             ) {
-                nextProps.dispatch(structureNodeFormSetData(id, {state: 'TEMP->OK'}));
+                this.props.dispatch(structureNodeFormSetData(id, {state: 'TEMP->OK'}));
                 WebApi.confirmStructureData(versionId, id).then(data => {
-                    nextProps.onChange(data);
-                    nextProps.onBlur();
-                    nextProps.dispatch(structureNodeFormSetData(id, data));
+                    this.props.onChange(data);
+                    this.props.onBlur();
+                    this.props.dispatch(structureNodeFormSetData(id, data));
                 });
             }
 
-            nextProps.dispatch(structureNodeFormFetchIfNeeded(nextProps.versionId, nextProps.descItem.value));
+            this.props.dispatch(structureNodeFormFetchIfNeeded(versionId, descItem.value));
         }
     }
 
@@ -261,10 +262,7 @@ class DescItemStructureRef extends AbstractReactComponent {
                             locked || descItem.undefined,
                             ['autocomplete-structure'],
                         )}
-                        ref={ref => {
-                            this.input = ref;
-                            console.log('### add input ref', ref);
-                        }}
+                        ref={ref => (this.input = ref)}
                         customFilter
                         onFocus={this.handleFocus}
                         onBlur={this.handleBlur}
@@ -292,7 +290,6 @@ export default connect(
     (state, props) => {
         const {structures} = state;
         const key = props.descItem.value;
-
         return {
             structureNodeForm:
                 key && structures.stores.hasOwnProperty(String(key)) ? structures.stores[String(key)] : null,
