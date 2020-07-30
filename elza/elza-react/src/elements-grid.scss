@@ -15,7 +15,7 @@
         .el-#{$i} {
             width: ($node-form-item-type-element-width * $i);
         }
-        .desc-item-value-container .structure-item-form-container .el-#{i} {
+        .desc-item-value-container .structure-item-form-container .el-#{$i} {
             width: ($node-form-item-type-element-width * $i - 40);
         }
     }
