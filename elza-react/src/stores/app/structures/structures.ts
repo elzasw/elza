@@ -35,18 +35,22 @@ export default function sturctures(state = initialState, action: StructureNodeFo
     switch (action.type) {
         case types.CHANGE_STRUCTURE:
             const modifiedStores = {};
-            for (let id of action.structureIds!) {
-                if (state.stores.hasOwnProperty(id)) {
-                    modifiedStores[id] = structureNodeForm(state.stores[id], action);
+            if (action.structureIds) {
+                for (let id of action.structureIds!) {
+                    if (state.stores.hasOwnProperty(id)) {
+                        modifiedStores[id] = structureNodeForm(state.stores[id], action);
+                    }
                 }
+                return {
+                    ...state,
+                    stores: {
+                        ...state.stores,
+                        ...modifiedStores,
+                    },
+                };
+            } else {
+                return state;
             }
-            return {
-                ...state,
-                stores: {
-                    ...state.stores,
-                    ...modifiedStores,
-                },
-            };
         case types.STRUCTURE_NODE_FORM_SELECT_ID:
             if (action.id && !state.stores.hasOwnProperty(action.id)) {
                 return {

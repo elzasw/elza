@@ -74,7 +74,7 @@ class DescItemStructureRef extends AbstractReactComponent {
     }
 
     componentWillUnmount() {
-        const structureNodeForm = this.props;
+        const {structureNodeForm} = this.props;
         if (!structureNodeForm) {
             return;
         }
