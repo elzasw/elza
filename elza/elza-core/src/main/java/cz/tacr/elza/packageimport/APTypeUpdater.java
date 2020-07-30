@@ -12,15 +12,12 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.domain.ApRuleSystem;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
@@ -54,19 +51,15 @@ public class APTypeUpdater {
 
     private Map<String, ApType> apTypesMap = new HashMap<>();
 
-    private List<ApRuleSystem> apRuleSystems;
-
     private StaticDataProvider staticDataProvider;
 
     public APTypeUpdater(final ApStateRepository apStateRepository,
                          final ApTypeRepository apTypeRepository,
                          final ApAccessPointRepository accessPointRepository,
-                         final List<ApRuleSystem> apRuleSystems,
                          final StaticDataProvider staticDataProvider) {
         this.apStateRepository = apStateRepository;
         this.apTypeRepository = apTypeRepository;
         this.accessPointRepository = accessPointRepository;
-        this.apRuleSystems = apRuleSystems;
         this.staticDataProvider = staticDataProvider;
     }
 
@@ -93,19 +86,6 @@ public class APTypeUpdater {
         apType.setCode(apTypeXml.getCode());
         apType.setName(apTypeXml.getName());
         apType.setReadOnly(apTypeXml.isReadOnly());
-
-        // read rules
-        if (StringUtils.isNotEmpty(apTypeXml.getRuleSystem())) {
-            ApRuleSystem apRuleSystem = PackageService.findEntity(apRuleSystems, apTypeXml.getRuleSystem(),
-                    ApRuleSystem::getCode);
-            if (apRuleSystem == null) {
-                throw new ObjectNotFoundException("Cannot find rules for access point type", BaseCode.ID_NOT_EXIST)
-                        .setId(apTypeXml.getRuleSystem());
-            }
-            apType.setRuleSystem(apRuleSystem);
-        } else {
-            apType.setRuleSystem(null);
-        }
 
         // prepare parent ApType
         ApType parent = null;

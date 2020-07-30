@@ -7,7 +7,6 @@ import ExtImportForm from '../../components/form/ExtImportForm';
 import RegistryList from '../../components/registry/RegistryList';
 import {Button} from '../../components/ui';
 import {
-    apMigrate,
     registryDelete,
     registryDetailFetchIfNeeded,
     registryListInvalidate,
@@ -74,16 +73,6 @@ class RegistryPage extends AbstractReactComponent {
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.initData(nextProps);
     }
-
-    canMigrateAp = () => {
-        const {
-            registryDetail: {id, data},
-            refTables,
-        } = this.props;
-        const apTypeIdMap = refTables.apTypes.itemsMap;
-
-        return id && data && apTypeIdMap[data.typeId] && apTypeIdMap[data.typeId].ruleSystemId !== null && data.ruleSystemId === null;
-    };
 
     canDeleteRegistry = () => {
         // We can delete item if has id and data
@@ -198,15 +187,6 @@ class RegistryPage extends AbstractReactComponent {
             } = this.props;
             this.props.dispatch(registryDelete(id));
         }
-    };
-
-    handleApMigrate = () => {
-        const {
-            registryDetail: {
-                data: {id},
-            },
-        } = this.props;
-        this.props.dispatch(apMigrate(id));
     };
 
     /* MCV-45365
@@ -336,16 +316,15 @@ class RegistryPage extends AbstractReactComponent {
     handleChangeApState = () => {
         const {
             registryDetail: {
-                data: {id, partyId, typeId, scopeId},
+                data: {id, typeId, scopeId},
             },
         } = this.props;
         const form = (
             <ApStateChangeForm
                 initialValues={{
-                    typeId: partyId === null ? typeId : null,
+                    typeId: typeId,
                     scopeId: scopeId,
                 }}
-                hideType={partyId !== null}
                 onSubmit={data => {
                     const finalData = {
                         comment: data.comment,
@@ -471,24 +450,6 @@ class RegistryPage extends AbstractReactComponent {
                     </Button>
                 );
             }*/
-        }
-
-        if (this.canMigrateAp()) {
-            if (
-                userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
-                    type: perms.AP_SCOPE_WR,
-                    scopeId: data ? data.scopeId : null,
-                })
-            ) {
-                itemActions.push(
-                    <Button key="apMigrate" onClick={this.handleApMigrate}>
-                        <Icon glyph="fa-share"/>
-                        <div>
-                            <span className="btnText">{i18n('registry.migrateAp')}</span>
-                        </div>
-                    </Button>,
-                );
-            }
         }
 
         if (id && data) {

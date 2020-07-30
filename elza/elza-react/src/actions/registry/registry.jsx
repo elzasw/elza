@@ -171,25 +171,6 @@ export function registryUpdate(id, typeId, callback = null) {
     };
 }
 
-export function apMigrate(id) {
-    return (dispatch, getState) => {
-        WebApi.migrateAccessPoint(id).then(() => {
-            const store = getState();
-            const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
-
-            const list = storeFromArea(store, AREA_REGISTRY_LIST);
-
-            if (detail.id === id) {
-                dispatch(registryDetailInvalidate());
-            }
-
-            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
-                dispatch(registryListInvalidate());
-            }
-        });
-    };
-}
-
 export function registryDelete(id) {
     return (dispatch, getState) => {
         WebApi.deleteAccessPoint(id).then(() => {

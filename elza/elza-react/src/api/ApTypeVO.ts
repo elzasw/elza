@@ -21,11 +21,6 @@ export interface ApTypeVO extends BaseCodeVo {
     relationRoleTypIds: number;
 
     /**
-     * Kód pravidla.
-     */
-    ruleSystemId?: number;
-
-    /**
      * Seznam rodičů seřazený od přímého rodiče po kořen.
      * @deprecated
      */

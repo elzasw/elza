@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApRule;
-import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -58,9 +56,6 @@ public class RulesExecutor {
 
     @Autowired
     private FragmentItemTypesRules fragmentItemTypesRules;
-
-    @Autowired
-    private AccessPointItemTypesRules accessPointItemTypesRules;
 
     /**
      * Spustí pravidla nad typy atributů a jejich specifikacema.
@@ -133,17 +128,6 @@ public class RulesExecutor {
     public List<RulItemTypeExt> executeFragmentItemTypesRules(final RulStructuredType fragmentType, final List<RulItemTypeExt> rulDescItemTypeExtList, final List<ApItem> items) {
         try {
             return fragmentItemTypesRules.execute(fragmentType, rulDescItemTypeExtList, items);
-        } catch (NoSuchFileException e) {
-            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
-            return rulDescItemTypeExtList;
-        } catch (Exception e) {
-            throw new SystemException(e);
-        }
-    }
-
-    public List<RulItemTypeExt> executeApItemTypesRules(final ApType type, final List<RulItemTypeExt> rulDescItemTypeExtList, final List<ApItem> items, final ApRule.RuleType ruleType) {
-        try {
-            return accessPointItemTypesRules.execute(type, rulDescItemTypeExtList, items, ruleType);
         } catch (NoSuchFileException e) {
             logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
             return rulDescItemTypeExtList;

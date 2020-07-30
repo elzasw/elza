@@ -70,14 +70,11 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
-import cz.tacr.elza.service.AccessPointMigrationService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
-import cz.tacr.elza.service.PartyService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.StructObjService;
@@ -134,22 +131,13 @@ public class ApController {
     private AccessPointService accessPointService;
 
     @Autowired
-    private AccessPointMigrationService apMigrationService;
-
-    @Autowired
     private ExternalSystemService externalSystemService;
-
-    @Autowired
-    private PartyService partyService;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
 
     @Autowired
     private ScopeRepository scopeRepository;
-
-    @Autowired
-    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private ItemAptypeRepository itemAptypeRepository;
@@ -321,20 +309,6 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState apState = accessPointService.getState(accessPoint);
         accessPointService.confirmAccessPoint(apState);
-    }
-
-    /**
-     * Provede migraci přístupového bodu na strukturovaný.
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     */
-    @Transactional
-    @RequestMapping(value = "/{accessPointId}/migrate", method = RequestMethod.POST)
-    public void migrateAccessPoint(@PathVariable final Integer accessPointId) {
-        Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState apState = accessPointService.getState(accessPoint);
-        apMigrationService.migrateAccessPoint(apState);
     }
 
     /**

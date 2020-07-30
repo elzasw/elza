@@ -38,7 +38,6 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,9 +49,6 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.FileSystemUtils;
 
-import cz.tacr.elza.api.UseUnitdateEnum;
-import cz.tacr.elza.api.enums.ParRelationClassTypeRepeatabilityEnum;
-import cz.tacr.elza.api.enums.UIPartyGroupTypeEnum;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.AutoDeletingTempFile;
 import cz.tacr.elza.core.ResourcePathResolver;
@@ -60,8 +56,6 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApExternalIdType;
-import cz.tacr.elza.domain.ApRule;
-import cz.tacr.elza.domain.ApRuleSystem;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulAction;
@@ -105,8 +99,6 @@ import cz.tacr.elza.packageimport.xml.ArrangementExtension;
 import cz.tacr.elza.packageimport.xml.ArrangementExtensions;
 import cz.tacr.elza.packageimport.xml.ArrangementRule;
 import cz.tacr.elza.packageimport.xml.ArrangementRules;
-import cz.tacr.elza.packageimport.xml.ComplementType;
-import cz.tacr.elza.packageimport.xml.ComplementTypes;
 import cz.tacr.elza.packageimport.xml.ExtensionRule;
 import cz.tacr.elza.packageimport.xml.ExtensionRules;
 import cz.tacr.elza.packageimport.xml.ExternalIdType;
@@ -125,31 +117,10 @@ import cz.tacr.elza.packageimport.xml.PackageDependency;
 import cz.tacr.elza.packageimport.xml.PackageInfo;
 import cz.tacr.elza.packageimport.xml.PartType;
 import cz.tacr.elza.packageimport.xml.PartTypes;
-import cz.tacr.elza.packageimport.xml.PartyGroup;
-import cz.tacr.elza.packageimport.xml.PartyGroups;
-import cz.tacr.elza.packageimport.xml.PartyNameFormType;
-import cz.tacr.elza.packageimport.xml.PartyNameFormTypes;
-import cz.tacr.elza.packageimport.xml.PartyTypeComplementType;
-import cz.tacr.elza.packageimport.xml.PartyTypeComplementTypes;
-import cz.tacr.elza.packageimport.xml.PartyTypeRelation;
-import cz.tacr.elza.packageimport.xml.PartyTypeRelations;
 import cz.tacr.elza.packageimport.xml.PolicyType;
 import cz.tacr.elza.packageimport.xml.PolicyTypes;
-import cz.tacr.elza.packageimport.xml.RegistryRole;
-import cz.tacr.elza.packageimport.xml.RegistryRoles;
-import cz.tacr.elza.packageimport.xml.RelationClassType;
-import cz.tacr.elza.packageimport.xml.RelationClassTypes;
-import cz.tacr.elza.packageimport.xml.RelationRoleType;
-import cz.tacr.elza.packageimport.xml.RelationRoleTypes;
-import cz.tacr.elza.packageimport.xml.RelationType;
-import cz.tacr.elza.packageimport.xml.RelationTypeRoleType;
-import cz.tacr.elza.packageimport.xml.RelationTypeRoleTypes;
-import cz.tacr.elza.packageimport.xml.RelationTypes;
-import cz.tacr.elza.packageimport.xml.Rule;
 import cz.tacr.elza.packageimport.xml.RuleSetXml;
 import cz.tacr.elza.packageimport.xml.RuleSets;
-import cz.tacr.elza.packageimport.xml.RuleSystem;
-import cz.tacr.elza.packageimport.xml.RuleSystems;
 import cz.tacr.elza.packageimport.xml.Setting;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.packageimport.xml.Settings;
@@ -256,11 +227,6 @@ public class PackageService {
      * typy fragmentů
      */
     public static final String FRAGMENT_TYPE_XML = "ap_fragment_type.xml";
-
-    /**
-     * pravidla popisu ap
-     */
-    public static final String RULE_SYSTEM_XML = "ap_rule_system.xml";
 
     /**
      * stavy připomínek
@@ -389,12 +355,6 @@ public class PackageService {
 
     @Autowired
     private StructuredTypeRepository structureTypeRepository;
-
-    @Autowired
-    private ApRuleSystemRepository ruleSystemRepository;
-
-    @Autowired
-    private ApRuleRepository ruleRepository;
 
     @Autowired
     private StructureDefinitionRepository structureDefinitionRepository;
@@ -660,75 +620,13 @@ public class PackageService {
     }
 
     private void importApTypes(PackageContext pkgCtx) throws IOException {
-        List<ApRuleSystem> apRuleSystems = processRuleSystems(pkgCtx);
         APTypeUpdater apTypeUpdater = new APTypeUpdater(
                 apStateRepository,
                 apTypeRepository,
                 accessPointRepository,
-                apRuleSystems,
                 staticDataService.getData()
         );
         apTypeUpdater.run(pkgCtx);
-    }
-
-    private List<ApRuleSystem> processRuleSystems(final PackageContext pkgCtx) throws IOException {
-        RuleSystems ruleSystems = PackageUtils.convertXmlStreamToObject(RuleSystems.class,
-                pkgCtx.getByteStream(RULE_SYSTEM_XML));
-
-        List<ApRuleSystem> apRuleSystems = ruleSystemRepository.findByRulPackage(pkgCtx.getPackage());
-        Map<Integer, List<ApRule>> typeRules = apRuleSystems.isEmpty()
-                ? Collections.emptyMap()
-                : ruleRepository.findByRuleSystemIn(apRuleSystems).stream()
-                .collect(Collectors.groupingBy(ApRule::getRuleSystemId));
-
-        List<ApRuleSystem> apRuleSystemsNew = new ArrayList<>();
-        List<ApRule> apRulesNew = new ArrayList<>();
-
-        if (ruleSystems != null && !CollectionUtils.isEmpty(ruleSystems.getRuleSystems())) {
-            for (RuleSystem ruleSystem : ruleSystems.getRuleSystems()) {
-                ApRuleSystem item = findEntity(apRuleSystems, ruleSystem.getCode(), ApRuleSystem::getCode);
-                if (item == null) {
-                    item = new ApRuleSystem();
-                }
-                convertApRuleSystem(pkgCtx.getPackage(), ruleSystem, item);
-                ruleSystemRepository.save(item);
-                List<ApRule> apRules = typeRules.get(item.getRuleSystemId());
-                apRules = mergeApRules(apRules == null ? new ArrayList<>() : apRules, ruleSystem.getRules(), item,
-                        pkgCtx);
-                apRulesNew.addAll(apRules);
-                apRuleSystemsNew.add(item);
-            }
-        }
-
-        List<ApRuleSystem> apRuleSystemsDelete = new ArrayList<>(apRuleSystems);
-        apRuleSystemsDelete.removeAll(apRuleSystemsNew);
-
-        List<RulComponent> componentsDelete = new ArrayList<>();
-        List<ApRule> rulesDelete = new ArrayList<>();
-        for (ApRuleSystem apRuleSystem : apRuleSystemsDelete) {
-            List<ApRule> apRules = typeRules.get(apRuleSystem.getRuleSystemId());
-            for (ApRule apRule : apRules) {
-                RulComponent component = apRule.getComponent();
-                componentsDelete.add(component);
-                deleteFile(pkgCtx.getDir(apRule), component.getFilename());
-            }
-            rulesDelete.addAll(apRules);
-        }
-        ruleRepository.deleteAll(rulesDelete);
-        componentRepository.deleteAll(componentsDelete);
-        ruleSystemRepository.deleteAll(apRuleSystemsDelete);
-
-        try {
-            for (ApRule apRule : apRulesNew) {
-                RulComponent component = apRule.getComponent();
-                updateComponentHash(pkgCtx, component, pkgCtx.getDir(apRule), getZipDir(apRule));
-            }
-        } catch (IOException e) {
-            throw new SystemException(e);
-        }
-
-        apRuleSystems.addAll(apRuleSystemsNew);
-        return apRuleSystems;
     }
 
     private void updateComponentHash(final PackageContext pkgCtx, final RulComponent component, final File dir,
@@ -742,49 +640,6 @@ public class PackageService {
             component.setHash(newHash);
         }
         componentRepository.save(component);
-    }
-
-    private List<ApRule> mergeApRules(final List<ApRule> apRules, final List<Rule> rules,
-                                      final ApRuleSystem apRuleSystem, final PackageContext pkgCtx)
-            throws IOException {
-        Validate.notEmpty(rules);
-        Validate.notNull(apRules);
-        List<ApRule> apRulesNew = new ArrayList<>();
-        for (Rule rule : rules) {
-            ApRule apRule = findEntity(apRules, rule.getRuleType(), ApRule::getRuleType);
-            if (apRule == null) {
-                apRule = new ApRule();
-                RulComponent component = new RulComponent();
-                component.setFilename(rule.getFilename());
-                apRule.setComponent(component);
-            } else {
-                RulComponent component = apRule.getComponent();
-                component.setFilename(rule.getFilename());
-            }
-            apRule.setRuleSystem(apRuleSystem);
-            apRule.setRuleType(rule.getRuleType());
-            apRulesNew.add(apRule);
-        }
-
-        List<ApRule> apRulesDelete = new ArrayList<>(apRules);
-        apRulesDelete.removeAll(apRulesNew);
-        for (ApRule apRule : apRulesDelete) {
-            deleteFile(pkgCtx.getDir(apRule), apRule.getComponent().getFilename());
-        }
-        List<RulComponent> componentsDelete = apRulesDelete.stream().map(ApRule::getComponent).collect(Collectors.toList());
-
-        ruleRepository.deleteAll(apRulesDelete);
-        componentRepository.deleteAll(componentsDelete);
-
-        List<RulComponent> components = apRulesNew.stream().map(ApRule::getComponent).collect(Collectors.toList());
-        componentRepository.saveAll(components);
-
-        return ruleRepository.saveAll(apRulesNew);
-    }
-
-    private void convertApRuleSystem(final RulPackage rulPackage, final RuleSystem ruleSystem, final ApRuleSystem apRuleSystem) {
-        apRuleSystem.setCode(ruleSystem.getCode());
-        apRuleSystem.setRulPackage(rulPackage);
     }
 
     /**
@@ -910,19 +765,6 @@ public class PackageService {
                 return ZIP_DIR_SCRIPTS;
             default:
                 throw new NotImplementedException("Def type: " + definition.getDefType());
-        }
-    }
-
-    public String getZipDir(final ApRule rule) {
-        switch (rule.getRuleType()) {
-            case BODY_ITEMS:
-            case NAME_ITEMS:
-                return ZIP_DIR_RULES;
-            case TEXT_GENERATOR:
-            case MIGRATE:
-                return ZIP_DIR_SCRIPTS;
-            default:
-                throw new NotImplementedException("Rule type: " + rule.getRuleType());
         }
     }
 
@@ -2195,8 +2037,6 @@ public class PackageService {
         apTypeRepository.preDeleteByRulPackage(rulPackage);
         apTypeRepository.deleteByRulPackage(rulPackage);
         settingsRepository.deleteByRulPackage(rulPackage);
-        ruleRepository.deleteByRulPackage(rulPackage);
-        ruleSystemRepository.deleteByRulPackage(rulPackage);
         issueStateRepository.deleteByRulPackage(rulPackage);
         issueTypeRepository.deleteByRulPackage(rulPackage);
         packageRepository.delete(rulPackage);
@@ -2583,7 +2423,6 @@ public class PackageService {
         registerType.setCode(apType.getCode());
         registerType.setReadOnly(apType.isReadOnly());
         registerType.setParentType(apType.getParentApType() == null ? null : apType.getParentApType().getCode());
-        registerType.setRuleSystem(apType.getRuleSystem() == null ? null : apType.getRuleSystem().getCode());
     }
 
     private void exportOutputTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {

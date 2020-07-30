@@ -1716,9 +1716,6 @@ public class AccessPointService {
     public ApState createStructuredAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApScope scope, final ApType type, final SysLanguage language) {
         Assert.notNull(scope, "Třída musí být vyplněna");
         Assert.notNull(type, "Typ musí být vyplněn");
-        Assert.notNull(type.getRuleSystem(), "Typ musí mít vazbu na pravidla");
-
-        apDataService.validateStructureType(type);
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
         ApState apState = createStrucuredAccessPoint(scope, type, change);
@@ -1802,28 +1799,6 @@ public class AccessPointService {
         apDataService.changeDescription(apState, description, null);
         publishAccessPointUpdateEvent(accessPoint);
         return accessPoint;
-    }
-
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void migrateApItems(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState,
-                               final List<ApUpdateItemVO> apItems) {
-        Validate.notNull(apState, "Přístupový bod musí být vyplněn");
-        Validate.notNull(apItems);
-
-        apDataService.validationMigrateAp(apState);
-
-        ApRuleSystem ruleSystem = apState.getApType().getRuleSystem();
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-        accessPoint.setState(ApStateEnum.INIT);
-        saveWithLock(accessPoint);
-
-        ApChange change = apDataService.createChange(ApChange.Type.AP_MIGRATE);
-
-        List<ApItem> itemsDbAp = itemRepository.findValidItemsByAccessPoint(accessPoint);
-        apItemService.changeItems(apItems, new ArrayList<>(itemsDbAp), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
-                -> createApItem(accessPoint, it, is, c, objectId, position));
-
-        apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
     }
 
     /**
@@ -1950,10 +1925,6 @@ public class AccessPointService {
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
-        ApType apType = apState.getApType();
-        if (apType.getRuleSystem() == null) {
-            throw new BusinessException("Typ nemá vazbu na pravidla", BaseCode.INVALID_STATE);
-        }
         saveWithLock(accessPoint);
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
