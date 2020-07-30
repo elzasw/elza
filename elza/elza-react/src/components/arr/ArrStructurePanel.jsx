@@ -165,7 +165,11 @@ class ArrStructurePanel extends AbstractReactComponent {
             } = this.props;
             if (checkedIndexes.length === 1) {
                 // Vybrána pouze 1 položka
-                return [rows[parseInt(checkedIndexes[0])].id];
+                const x = rows[parseInt(checkedIndexes[0])];
+                if (!x) {
+                    return null;
+                }
+                return [x.id];
             } else if (checkedIndexes.length > 1) {
                 // Vybráno více položek
                 return checkedIndexes.map(i => rows[i].id);
@@ -646,9 +650,14 @@ class ArrStructurePanel extends AbstractReactComponent {
     }
 }
 
-export default connect((state, props) => {
-    return {
-        store: storeFromArea(state, AREA),
-        descItemTypes: state.refTables.descItemTypes.items,
-    };
-}, null, null, {forwardRef: true})(ArrStructurePanel);
+export default connect(
+    (state, props) => {
+        return {
+            store: storeFromArea(state, AREA),
+            descItemTypes: state.refTables.descItemTypes.items,
+        };
+    },
+    null,
+    null,
+    {forwardRef: true},
+)(ArrStructurePanel);

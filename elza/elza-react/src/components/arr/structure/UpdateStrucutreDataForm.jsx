@@ -4,7 +4,7 @@ import {Modal} from 'react-bootstrap';
 import {Button} from '../../ui';
 import {AbstractReactComponent, i18n} from 'components';
 import StructureSubNodeForm from './StructureSubNodeForm';
-import {structureNodeFormFetchIfNeeded} from '../../../actions/arr/structureNodeForm';
+import {structureNodeFormFetchIfNeeded, structureNodeFormSelectId} from '../../../actions/arr/structureNodeForm';
 import Loading from '../../shared/loading/Loading';
 import PropTypes from 'prop-types';
 
@@ -20,26 +20,28 @@ class UpdateStructureDataForm extends AbstractReactComponent {
 
     UNSAFE_componentWillMount() {
         const {fundVersionId, id} = this.props;
+        this.props.dispatch(structureNodeFormSelectId(fundVersionId, id));
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         const {fundVersionId, id} = nextProps;
-        this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
+        nextProps.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
     render() {
-        const {onClose, fundVersionId, fundId, structureNodeForm, readMode, descItemFactory} = this.props;
+        const {onClose, fundVersionId, fundId, storeStructure, readMode, descItemFactory} = this.props;
 
         return (
             <div>
                 <Modal.Body>
-                    {structureNodeForm && structureNodeForm.fetched ? (
+                    {storeStructure && storeStructure.fetched ? (
                         <StructureSubNodeForm
                             versionId={fundVersionId}
                             readMode={readMode}
                             fundId={fundId}
-                            selectedSubNodeId={structureNodeForm.id}
+                            id={storeStructure.id}
+                            selectedSubNodeId={storeStructure.id}
                             descItemFactory={descItemFactory}
                         />
                     ) : (
@@ -57,12 +59,10 @@ class UpdateStructureDataForm extends AbstractReactComponent {
 }
 
 export default connect((state, props) => {
-    const {arrRegion} = state;
-    let fund = null;
-    if (arrRegion.activeIndex != null) {
-        fund = arrRegion.funds[arrRegion.activeIndex];
-    }
+    const {structures} = state;
+
+    const key = props.id ? String(props.id) : null;
     return {
-        structureNodeForm: fund ? fund.structureNodeForm : null,
+        storeStructure: key && structures.stores.hasOwnProperty(key) ? structures.stores[key] : null,
     };
 })(UpdateStructureDataForm);
