@@ -35,10 +35,7 @@ export default function nodeSetting(state = initialState, action) {
             } else {
                 return {
                     ...state,
-                    nodes: [
-                        ...state.nodes,
-                        createNodeState(action.nodeId, undefined, [action.descItemTypeId]),
-                    ],
+                    nodes: [...state.nodes, createNodeState(action.nodeId, undefined, [action.descItemTypeId])],
                 };
             }
 
@@ -71,8 +68,8 @@ export default function nodeSetting(state = initialState, action) {
                     nodes: [
                         ...state.nodes.slice(0, nodeIndex),
                         Object.assign({}, state.nodes[nodeIndex], {descItemTypeLockIds: []}),
-                        ...state.nodes.slice(nodeIndex + 1)
-                    ]
+                        ...state.nodes.slice(nodeIndex + 1),
+                    ],
                 };
             }
             return state;
@@ -91,13 +88,9 @@ export default function nodeSetting(state = initialState, action) {
             } else {
                 return {
                     ...state,
-                    nodes: [
-                        ...state.nodes,
-                        createNodeState(action.nodeId, undefined, undefined, true),
-                    ]
+                    nodes: [...state.nodes, createNodeState(action.nodeId, undefined, undefined, true)],
                 };
             }
-            return state;
 
         case types.NODE_DESC_ITEM_TYPE_COPY:
             nodeIndex = indexById(state.nodes, action.nodeId);
@@ -116,10 +109,7 @@ export default function nodeSetting(state = initialState, action) {
             } else {
                 return {
                     ...state,
-                    nodes: [
-                        ...state.nodes,
-                        createNodeState(action.nodeId, [action.descItemTypeId]),
-                    ],
+                    nodes: [...state.nodes, createNodeState(action.nodeId, [action.descItemTypeId])],
                 };
             }
 

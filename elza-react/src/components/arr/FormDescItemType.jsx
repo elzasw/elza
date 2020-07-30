@@ -20,7 +20,7 @@ class FormDescItemType extends AbstractReactComponent {
         descItemType: PropTypes.object.isRequired,
         descItemTypeIndex: PropTypes.number.isRequired,
         descItemGroupIndex: PropTypes.number.isRequired,
-        nodeSetting: PropTypes.object.isRequired,
+        nodeSetting: PropTypes.object,
 
         refType: PropTypes.object.isRequired,
         infoType: PropTypes.object.isRequired,

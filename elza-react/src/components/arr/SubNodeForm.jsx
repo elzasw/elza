@@ -78,7 +78,7 @@ class SubNodeForm extends AbstractReactComponent {
     static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
-        routingKey: PropTypes.oneOf(PropTypes.string, PropTypes.number),
+        routingKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         nodeSetting: PropTypes.object,
         rulDataTypes: PropTypes.object.isRequired,
         calendarTypes: PropTypes.object.isRequired,
@@ -96,6 +96,10 @@ class SubNodeForm extends AbstractReactComponent {
     };
 
     shouldComponentUpdate(nextProps, nextState) {
+        // TODO @stanek nutno upravit - bez tohoto nefungují strucutures
+        return true;
+        // TODO @stanek po opravě odstranit tuto řádku eslint
+        // eslint-disable-next-line
         if (this.state !== nextState) {
             return true;
         } else {
@@ -226,6 +230,7 @@ class SubNodeForm extends AbstractReactComponent {
 
         return (
             <FormDescItemGroup
+                key={'dscgrp-' + descItemGroupIndex}
                 descItemGroup={descItemGroup}
                 descItemGroupIndex={descItemGroupIndex}
                 nodeSetting={nodeSetting}
