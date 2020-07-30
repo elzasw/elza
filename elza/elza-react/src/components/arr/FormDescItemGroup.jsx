@@ -8,7 +8,7 @@ class FormDescItemGroup extends AbstractReactComponent {
     static propTypes = {
         descItemGroup: PropTypes.object.isRequired,
         descItemGroupIndex: PropTypes.number.isRequired,
-        nodeSetting: PropTypes.object.isRequired,
+        nodeSetting: PropTypes.object,
         singleDescItemTypeEdit: PropTypes.bool,
         singleDescItemTypeId: PropTypes.number,
 

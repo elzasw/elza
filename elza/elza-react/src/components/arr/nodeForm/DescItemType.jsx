@@ -144,7 +144,7 @@ class DescItemType extends AbstractReactComponent {
         //     descItemType: {...nextProps.descItemType},
         // });
         const log = false;
-        log && console.log(1111111111, nextProps.refType.name)
+        log && console.log(1111111111, nextProps.refType.name);
         if (!objectEqualsDiff(this.props.descItemType, nextProps.descItemType, undefined, '', log)) {
             // propsEquals(this.props.descItemType, nextProps.descItemType, undefined, true);
 
@@ -157,12 +157,12 @@ class DescItemType extends AbstractReactComponent {
     shouldComponentUpdate(nextProps, nextState) {
         // return true;
         if (this.state !== nextState) {
-            console.log("[DescItemType]#[state]##############", nextProps.refType.name);
+            console.log('[DescItemType]#[state]##############', nextProps.refType.name);
             return true;
         }
-        console.log("[DescItemType]###############", nextProps.refType.name);
+        console.log('[DescItemType]###############', nextProps.refType.name);
         // return !propsEquals(this.props, nextProps, undefined, true);
-        return !objectEqualsDiff(this.props, nextProps, undefined, '', true)
+        return !objectEqualsDiff(this.props, nextProps, undefined, '', true);
     }
     // shouldComponentUpdate(nextProps, nextState) {
     //     return true;
@@ -1205,7 +1205,7 @@ class DescItemType extends AbstractReactComponent {
         } = this.props;
         const {descItemType} = this.state;
 
-        console.log("[DescItemType] RENDER", this.props.refType.name)
+        console.log('[DescItemType] RENDER', this.props.refType.name);
 
         const label = this.renderLabel();
         const showDeleteDescItemType = this.getShowDeleteDescItemType();

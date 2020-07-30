@@ -1441,6 +1441,7 @@ function checkGroup(group) {
 export function checkFormData(formData = {}, msg = '#checkFormData') {
     return;
     // POUZE PRO TESTOVACÍ ÚČELY
+    // eslint-disable-next-line
     if (formData) {
         const descItemGroups = formData.descItemGroups;
         console.log(msg, descItemGroups);

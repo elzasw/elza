@@ -1,29 +1,29 @@
 import React, {FC} from 'react';
 import {connect} from 'react-redux';
-import "./DetailItem.scss";
-import {NavLink} from "react-router-dom";
-import DetailCoordinateItem from "./coordinate/DetailCoordinateItem";
-import {ApItemVO} from "../../../api/ApItemVO";
-import {ApItemCoordinatesVO} from "../../../api/ApItemCoordinatesVO";
-import {ApItemAccessPointRefVO} from "../../../api/ApItemAccessPointRefVO";
-import {ApItemUriRefVO} from "../../../api/ApItemUriRefVO";
-import {RulDataTypeCodeEnum} from "../../../api/RulDataTypeCodeEnum";
-import {RulDataTypeVO} from "../../../api/RulDataTypeVO";
-import {ApItemBitVO} from "../../../api/ApItemBitVO";
-import {formatDate} from "../../validate";
-import {ApItemStringVO} from "../../../api/ApItemStringVO";
-import {ApItemDateVO} from "../../../api/ApItemDateVO";
-import {ApItemUnitdateVO} from "../../../api/ApItemUnitdateVO";
-import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
-import {getMapFromList, objectById} from "../../../shared/utils";
-import {RulDescItemSpecExtVO} from "../../../api/RulDescItemSpecExtVO";
-import {Bindings} from "../../../types";
-import Icon from "../../shared/icon/Icon";
-import i18n from "../../i18n";
-import {ThunkDispatch} from "redux-thunk";
-import {Action} from "redux";
-import {registryDetailFetchIfNeeded} from "../../../actions/registry/registry";
-import {Button} from "../../ui";
+import './DetailItem.scss';
+import {NavLink} from 'react-router-dom';
+import DetailCoordinateItem from './coordinate/DetailCoordinateItem';
+import {ApItemVO} from '../../../api/ApItemVO';
+import {ApItemCoordinatesVO} from '../../../api/ApItemCoordinatesVO';
+import {ApItemAccessPointRefVO} from '../../../api/ApItemAccessPointRefVO';
+import {ApItemUriRefVO} from '../../../api/ApItemUriRefVO';
+import {RulDataTypeCodeEnum} from '../../../api/RulDataTypeCodeEnum';
+import {RulDataTypeVO} from '../../../api/RulDataTypeVO';
+import {ApItemBitVO} from '../../../api/ApItemBitVO';
+import {formatDate} from '../../validate';
+import {ApItemStringVO} from '../../../api/ApItemStringVO';
+import {ApItemDateVO} from '../../../api/ApItemDateVO';
+import {ApItemUnitdateVO} from '../../../api/ApItemUnitdateVO';
+import {RulDescItemTypeExtVO} from '../../../api/RulDescItemTypeExtVO';
+import {getMapFromList, objectById} from '../../../shared/utils';
+import {RulDescItemSpecExtVO} from '../../../api/RulDescItemSpecExtVO';
+import {Bindings} from '../../../types';
+import Icon from '../../shared/icon/Icon';
+import i18n from '../../i18n';
+import {ThunkDispatch} from 'redux-thunk';
+import {Action} from 'redux';
+import {registryDetailFetchIfNeeded} from '../../../actions/registry/registry';
+import {Button} from '../../ui';
 
 interface OwnProps extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
@@ -63,7 +63,7 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
 
         case RulDataTypeCodeEnum.COORDINATES:
             customFieldRender = true;
-            valueField = <DetailCoordinateItem item={item as ApItemCoordinatesVO} globalEntity={globalEntity}/>;
+            valueField = <DetailCoordinateItem item={item as ApItemCoordinatesVO} globalEntity={globalEntity} />;
             break;
 
         case RulDataTypeCodeEnum.RECORD_REF:
@@ -86,11 +86,22 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
             }
 
             if (recordRefItem.value) {
-                valueField = <Button variant="link" onClick={() => {
-                    selectAp(recordRefItem.value);
-                } }>{displayValue}</Button>;
+                valueField = (
+                    <Button
+                        variant="link"
+                        onClick={() => {
+                            selectAp(recordRefItem.value);
+                        }}
+                    >
+                        {displayValue}
+                    </Button>
+                );
             } else if (recordRefItem.externalUrl) {
-                valueField = <a target="_blank" href={recordRefItem.externalUrl}>{displayValue}</a>;
+                valueField = (
+                    <a target="_blank" href={recordRefItem.externalUrl} rel="noopener noreferrer">
+                        {displayValue}
+                    </a>
+                );
             } else {
                 valueField = <span>{displayValue}</span>;
             }
@@ -113,8 +124,11 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
 
         case RulDataTypeCodeEnum.URI_REF:
             let ii = item as ApItemUriRefVO;
-            valueField = <a href={ii.value} title={ii.value} target={"_blank"}
-                            rel={"noopener noreferrer"}>{ii.description || ii.value}</a>
+            valueField = (
+                <a href={ii.value} title={ii.value} target={'_blank'} rel={'noopener noreferrer'}>
+                    {ii.description || ii.value}
+                </a>
+            );
             break;
 
         //todo: Dodelat zobrazeni pro tyto typy
@@ -125,13 +139,14 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
         case RulDataTypeCodeEnum.STRUCTURED:
         default:
             let defItem = item as ApItemStringVO;
-            valueField = 'value' in defItem && typeof defItem.value !== 'undefined' && defItem.value ? defItem.value : '?';
+            valueField =
+                'value' in defItem && typeof defItem.value !== 'undefined' && defItem.value ? defItem.value : '?';
             break;
     }
 
     let valueSpecification;
-    if (!customFieldRender && itemType.useSpecification ) {
-        valueSpecification = <i>Bez specifikace</i>
+    if (!customFieldRender && itemType.useSpecification) {
+        valueSpecification = <i>Bez specifikace</i>;
         if (item.specId) {
             const itemSpec = getMapFromList(itemType.descItemSpecs) as Record<number, RulDescItemSpecExtVO>;
             if (itemSpec[item.specId]) {
@@ -142,23 +157,32 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
 
     return (
         <div className="detail-item-content-value">
-            {valueSpecification}{valueSpecification && valueField && ": "}{valueField}
-            {itemBinding != null && <Icon glyph="fa-refresh" title={i18n('ap.binding.syncState.' + (itemBinding ? 'SYNC_OK' : 'NOT_SYNCED'))} className={itemBinding ? 'ml-2 ' : 'ml-2 disabled'} />}
+            {valueSpecification}
+            {valueSpecification && valueField && ': '}
+            {valueField}
+            {itemBinding != null && (
+                <Icon
+                    glyph="fa-refresh"
+                    title={i18n('ap.binding.syncState.' + (itemBinding ? 'SYNC_OK' : 'NOT_SYNCED'))}
+                    className={itemBinding ? 'ml-2 ' : 'ml-2 disabled'}
+                />
+            )}
         </div>
     );
 };
 
-const mapDispatchToProps = (
-    dispatch: ThunkDispatch<{}, {}, Action<string>>
-) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => ({
     selectAp: (apId: number) => {
         dispatch(registryDetailFetchIfNeeded(apId, true));
     },
 });
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
     rulDataTypes: state.refTables.rulDataTypes,
-    descItemTypes: state.refTables.descItemTypes as { itemsMap: Record<number, RulDescItemTypeExtVO>, items: RulDescItemTypeExtVO[] },
+    descItemTypes: state.refTables.descItemTypes as {
+        itemsMap: Record<number, RulDescItemTypeExtVO>;
+        items: RulDescItemTypeExtVO[];
+    },
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(DetailItemContent);
