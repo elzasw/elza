@@ -1784,12 +1784,19 @@ public class ArrangementService {
 
                 if (CollectionUtils.isNotEmpty(sourceNodeItems)) {
                     List<ArrDescItem> nodeItems = nodeItemMap.getOrDefault(refTemplateMapType.getToItemType().getItemTypeId(), new ArrayList<>());
-                    ArrChange change = createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
 
                     if (CollectionUtils.isEmpty(nodeItems)) {
+                        ArrChange change = createChange(ArrChange.Type.ADD_DESC_ITEM);
+                        List<ArrDescItem> newItems = descriptionItemService.createDescriptionItems(sourceNodeItems, refTemplateMapType);
+                        ArrFundVersion fundVersion = getOpenVersionByFundId(node.getFundId());
+                        descriptionItemService.createDescriptionItems(newItems, node, fundVersion, change);
                     } else if (sourceNodeItems.size() > 1 || nodeItems.size() > 1) {
+                        ArrChange change = createChange(ArrChange.Type.UPDATE_DESC_ITEM, node);
                         ArrFundVersion fundVersion = getOpenVersionByFundId(node.getFundId());
                         descriptionItemService.deleteDescriptionItems(nodeItems, node, fundVersion, change, true);
+
+                        List<ArrDescItem> newItems = descriptionItemService.createDescriptionItems(sourceNodeItems, refTemplateMapType);
+                        descriptionItemService.createDescriptionItems(newItems, node, fundVersion, change);
                     } else {
                         ArrDescItem sourceItem = sourceNodeItems.get(0);
                         ArrDescItem targetItem = nodeItems.get(0);
