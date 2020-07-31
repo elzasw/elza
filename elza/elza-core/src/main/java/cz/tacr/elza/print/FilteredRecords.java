@@ -95,9 +95,9 @@ public class FilteredRecords {
      * This method allows to sort items
      */
     public void nodesAdded() {
-       /* Collator collator = elzaLocale.getCollator();
+        Collator collator = elzaLocale.getCollator();
         records = recordsMap.values().stream()
-                .sorted((v1, v2) -> collator.compare(v1.getPrefName().getFullName(), v2.getPrefName().getFullName()))
-                .collect(Collectors.toList());*/
+                .sorted((v1, v2) -> collator.compare(v1.getPreferredPart().getValue(), v2.getPreferredPart().getValue()))
+                .collect(Collectors.toList());
     }
 }

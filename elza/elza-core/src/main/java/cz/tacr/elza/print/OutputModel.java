@@ -297,7 +297,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         // sort collection
-
+        filteredAPs.nodesAdded();
 
         return filteredAPs;
     }
