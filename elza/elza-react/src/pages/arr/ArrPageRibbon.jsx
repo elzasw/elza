@@ -39,6 +39,11 @@ class ArrPageRibbon extends AbstractReactComponent {
         });
     };
 
+    getActiveFund(props) {
+        const arrRegion = props.arrRegion;
+        return arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+    }
+
     /**
      * Zobrazení formuláře pro synchronizaci DAOS pro celé AS.
      *
@@ -277,5 +282,12 @@ class ArrPageRibbon extends AbstractReactComponent {
     }
 }
 
+function mapStateToProps(state) {
+    const {splitter, arrRegion} = state;
+    return {
+        arrRegion
+    }
+}
+
 // export default ArrPageRibbon;
-export default connect(null, null, null, {forwardRef: true})(ArrPageRibbon);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(ArrPageRibbon);
