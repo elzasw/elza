@@ -19,7 +19,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static cz.tacr.elza.repository.ExceptionThrow.fund;
 
@@ -158,7 +160,7 @@ public class DeleteFundHistoryAction {
                 arrDataList.add(data);
             }
         }
-        bulkAction(arrItemList, itemRepository::deleteAll);
+        iterateAction(arrItemList, itemRepository::deleteAll);
         em.flush();
 
         // odmazat opuštěná data
@@ -174,7 +176,7 @@ public class DeleteFundHistoryAction {
 
         // delete arr_level, které mají vyplněn delete_change_id
         final List<ArrLevel> arrLevelList = levelRepository.findHistoricalByFund(fund);
-        bulkAction(arrLevelList, levelRepository::deleteAll);
+        iterateAction(arrLevelList, levelRepository::deleteAll);
         em.flush();
 
         // arr_node se také smazají, pokud se na ně neodkazuje žádný level a musí se smazat i návazné entity jako výstupy, a podobně
@@ -195,9 +197,8 @@ public class DeleteFundHistoryAction {
         em.flush();
 
         // verze AS budou vymazány všechny a založí se nová verze kopii poslední, aktuální
-        final String timeRange = fundVersion.getDateRange();
-        final RulRuleSet ruleSet = fundVersion.getRuleSet();
-        final ArrChange createChange = fundVersion.getCreateChange();
+        String timeRange = fundVersion.getDateRange();
+        RulRuleSet ruleSet = fundVersion.getRuleSet();
 
         nodeConformityMissingRepository.deleteByNodeConformityNodeFund(fund);
         nodeConformityErrorRepository.deleteByNodeConformityNodeFund(fund);
@@ -209,8 +210,11 @@ public class DeleteFundHistoryAction {
 
         fundVersionRepository.deleteByFund(fund);
 
+        ArrChange change = arrangementService.createChange(ArrChange.Type.CREATE_AS);
         // create new version
-        fundVersion = arrangementService.createVersion(createChange, fund, ruleSet, rootNode, timeRange);
+        fundVersion = arrangementService.createVersion(change, fund, ruleSet, rootNode, timeRange);
+
+        updateChanges(fund, change);
 
         // vynutit uložení změn do DB
         em.flush();
@@ -223,29 +227,51 @@ public class DeleteFundHistoryAction {
 
     }
 
+    private void updateChanges(final ArrFund fund, final ArrChange change) {
+        Set<ArrChange> changes = new HashSet<>();
+
+        List<ArrItem> items = itemRepository.findByFund(fund);
+        Set<Integer> itemIds = new HashSet<>(items.size());
+        for (ArrItem item : items) {
+            changes.add(item.getCreateChange());
+            itemIds.add(item.getItemId());
+        }
+        iterateAction(itemIds, ids -> itemRepository.updateCreateChange(ids, change));
+
+        List<ArrLevel> levels = levelRepository.findByFund(fund);
+        Set<Integer> levelIds = new HashSet<>();
+        for (ArrLevel level : levels) {
+            changes.add(level.getCreateChange());
+            levelIds.add(level.getLevelId());
+        }
+        iterateAction(levelIds, ids -> levelRepository.updateCreateChange(ids, change));
+
+        iterateAction(changes, changeRepository::deleteAll);
+    }
+
     /**
      * Drop all information connected with node
      */
     private void dropNodeInfo(List<Integer> nodeIds) {
         // delete policies
-        bulkAction(nodeIds, visiblePolicyRepository::deleteByNodeIdIn);
+        iterateAction(nodeIds, visiblePolicyRepository::deleteByNodeIdIn);
 
         userService.deletePermissionByNodeIds(nodeIds);
 
         // delete node from cache
-        bulkAction(nodeIds, cachedNodeRepository::deleteByNodeIdIn);
+        iterateAction(nodeIds, cachedNodeRepository::deleteByNodeIdIn);
 
         // delete node conformity
-        bulkAction(nodeIds, nodeConformityErrorRepository::deleteByNodeConformityNodeIdIn);
-        bulkAction(nodeIds, nodeConformityMissingRepository::deleteByNodeConformityNodeIdIn);
-        bulkAction(nodeIds, nodeConformityInfoRepository::deleteByNodeIdIn);
+        iterateAction(nodeIds, nodeConformityErrorRepository::deleteByNodeConformityNodeIdIn);
+        iterateAction(nodeIds, nodeConformityMissingRepository::deleteByNodeConformityNodeIdIn);
+        iterateAction(nodeIds, nodeConformityInfoRepository::deleteByNodeIdIn);
 
         // delete attached extensions
-        bulkAction(nodeIds, nodeExtensionRepository::deleteByNodeIdIn);
+        iterateAction(nodeIds, nodeExtensionRepository::deleteByNodeIdIn);
 
         // ostatní položky navázané na mazané node
-        bulkAction(nodeIds, daoLinkRepository::deleteByNodeIdIn);
-        bulkAction(nodeIds, digitizationRequestNodeRepository::deleteByNodeFundIdIn);
+        iterateAction(nodeIds, daoLinkRepository::deleteByNodeIdIn);
+        iterateAction(nodeIds, digitizationRequestNodeRepository::deleteByNodeFundIdIn);
 
         dropBulkActions(nodeIds);
         dropOutputs(nodeIds);
@@ -253,17 +279,17 @@ public class DeleteFundHistoryAction {
     }
 
     private void dropDescItems(List<Integer> nodeIds) {
-        bulkAction(nodeIds, descItemRepository::deleteByNodeIdIn);
+        iterateAction(nodeIds, descItemRepository::deleteByNodeIdIn);
         em.flush();
     }
 
     private void dropOutputs(List<Integer> nodeIds) {
-        bulkAction(nodeIds, nodeOutputRepository::deleteByNodeIdIn);
+        iterateAction(nodeIds, nodeOutputRepository::deleteByNodeIdIn);
         em.flush();
     }
 
     private void dropBulkActions(List<Integer> nodeIds) {
-        bulkAction(nodeIds, faBulkActionNodeRepository::deleteByNodeIdIn);
+        iterateAction(nodeIds, faBulkActionNodeRepository::deleteByNodeIdIn);
         em.flush();
     }
 
@@ -272,7 +298,7 @@ public class DeleteFundHistoryAction {
         void action(Collection<T> items);
     }
 
-    private <T> void bulkAction(final Collection<T> items, final ActionCallback<T> callback) {
+    private <T> void iterateAction(final Collection<T> items, final ActionCallback<T> callback) {
         ObjectListIterator<T> iterator = new ObjectListIterator<>(items);
         while (iterator.hasNext()) {
             List<T> next = iterator.next();
