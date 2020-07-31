@@ -29,6 +29,14 @@ public class NodeId {
      */
     private final boolean published;
 
+    protected NodeId(final int arrNodeId, final NodeId parentNodeId, final int position, final int depth, final boolean published) {
+        this.arrNodeId = arrNodeId;
+        this.parentNodeId = parentNodeId;
+        this.position = position;
+        this.depth = depth;
+        this.published = published;
+    }
+
     /**
      * Creates internal or leaf node.
      */

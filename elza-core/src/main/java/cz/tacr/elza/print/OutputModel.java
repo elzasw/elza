@@ -435,7 +435,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
      * Creates NodeId with all parent nodes up to root.
      */
     private NodeId createNodeIdWithParents(TreeNode treeNode, Map<Integer, NodeId> nodeIdMap, boolean published) {
-        Integer arrNodeId = new Integer(treeNode.getNodeId());
+        Integer arrNodeId = treeNode.getNodeId();
 
         NodeId nodeId = nodeIdMap.get(arrNodeId);
         if (nodeId != null) {
@@ -528,14 +528,22 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public Node getNode(ArrNode arrNode) {
-        Node node = nodeIdMap.get(arrNode.getNodeId());
+        Integer id = arrNode.getNodeId();
+        Node node = nodeIdMap.get(id);
 
         if (node != null) {
             return node;
         }
 
-        //TODO implement
-        return null;
+        NodeId nodeId = new RefNodeId(id);
+        node = new Node(nodeId);
+        OutputItemConvertor conv = new OutputItemConvertor(this);
+        RestoredNode cachedNode = nodeCacheService.getNode(id);
+        Validate.notNull(cachedNode);
+        node.load(cachedNode, conv);
+
+        nodeIdMap.put(id, node);
+        return node;
     }
 
     private RecordType getAPType(Integer apTypeId) {
