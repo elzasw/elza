@@ -45,14 +45,13 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.IntItem;
+import cz.tacr.elza.domain.Item;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.print.item.ItemType;
 import cz.tacr.elza.print.item.convertors.ItemConvertorContext;
@@ -83,7 +82,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     /* general description */
 
-    private List<Item> outputItems;
+    private List<cz.tacr.elza.print.item.Item> outputItems;
 
     private String name;
 
@@ -218,12 +217,12 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     @Override
-    public List<Item> getItems() {
+    public List<cz.tacr.elza.print.item.Item> getItems() {
         return outputItems;
     }
 
     @Override
-    public List<Item> getItems(Collection<String> typeCodes) {
+    public List<cz.tacr.elza.print.item.Item> getItems(Collection<String> typeCodes) {
         Validate.notNull(typeCodes);
 
         return outputItems.stream().filter(item -> {
@@ -233,7 +232,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     @Override
-    public List<Item> getItemsWithout(Collection<String> typeCodes) {
+    public List<cz.tacr.elza.print.item.Item> getItemsWithout(Collection<String> typeCodes) {
         Validate.notNull(typeCodes);
 
         return outputItems.stream().filter(item -> {
@@ -243,11 +242,11 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     @Override
-    public Item getSingleItem(String typeCode) {
+    public cz.tacr.elza.print.item.Item getSingleItem(String typeCode) {
         Validate.notEmpty(typeCode);
 
-        Item found = null;
-        for (Item item : outputItems) {
+        cz.tacr.elza.print.item.Item found = null;
+        for (cz.tacr.elza.print.item.Item item : outputItems) {
             if (typeCode.equals(item.getType().getCode())) {
                 // check if item already found
                 if (found != null) {
@@ -261,7 +260,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public String getSingleItemValue(String itemTypeCode) {
-        Item found = getSingleItem(itemTypeCode);
+        cz.tacr.elza.print.item.Item found = getSingleItem(itemTypeCode);
         if (found != null) {
             return found.getSerializedValue();
         }
@@ -333,9 +332,9 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         return nodes;
     }
 
-    private List<Item> convertItems(List<? extends IntItem> srcItems) {
+    private List<cz.tacr.elza.print.item.Item> convertItems(List<? extends Item> srcItems) {
         OutputItemConvertor conv = new OutputItemConvertor(this);
-        List<Item> result = srcItems.stream()
+        List<cz.tacr.elza.print.item.Item> result = srcItems.stream()
                 .map(i -> conv.convert(i))
                 /*
                 // add packet reference
@@ -343,7 +342,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                     item.getValue(Structured.class).addNodeId(node.getNodeId());
                 }*/
                 .filter(Objects::nonNull)
-                .sorted(Item::compareTo)
+                .sorted(cz.tacr.elza.print.item.Item::compareTo)
                 .collect(Collectors.toList());
         return result;
     }
@@ -660,18 +659,18 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     @Override
-    public List<Item> loadStructItems(Integer structObjId) {
+    public List<cz.tacr.elza.print.item.Item> loadStructItems(Integer structObjId) {
         List<ArrStructuredItem> items = structItemRepos.findByStructuredObjectAndDeleteChangeIsNullFetchData(
                 structObjId);
-        List<Item> result = convert(items, new OutputItemConvertor(this));
+        List<cz.tacr.elza.print.item.Item> result = convert(items, new OutputItemConvertor(this));
         return result;
     }
 
-    static public List<Item> convert(List<? extends ArrItem> items, OutputItemConvertor conv) {
+    static public List<cz.tacr.elza.print.item.Item> convert(List<? extends ArrItem> items, OutputItemConvertor conv) {
         return items.stream()
                 .map(i -> conv.convert(i))
                 .filter(Objects::nonNull)
-                .sorted(Item::compareTo)
+                .sorted(cz.tacr.elza.print.item.Item::compareTo)
                 .collect(Collectors.toList());
     }
 }

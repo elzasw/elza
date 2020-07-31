@@ -3,10 +3,9 @@ package cz.tacr.elza.print.item.convertors;
 import java.util.Arrays;
 import java.util.List;
 
-import cz.tacr.elza.domain.IntItem;
+import cz.tacr.elza.domain.Item;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.print.item.Item;
 
 public class OutputItemConvertor {
 
@@ -33,12 +32,12 @@ public class OutputItemConvertor {
                                    new UriRefItemConvertor());
     }
 
-    public Item convert(IntItem arrItem) {
+    public cz.tacr.elza.print.item.Item convert(Item arrItem) {
         if (arrItem.isUndefined()) {
             return null;
         }
         for (ItemConvertor conv : convertors) {
-            Item item = conv.convert(arrItem, context);
+            cz.tacr.elza.print.item.Item item = conv.convert(arrItem, context);
             if (item != null) {
                 return item;
             }
