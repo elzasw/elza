@@ -1,6 +1,6 @@
 package cz.tacr.elza.print.item.convertors;
 
-import cz.tacr.elza.domain.IntItem;
+import cz.tacr.elza.domain.Item;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.DataType;
@@ -12,7 +12,7 @@ import cz.tacr.elza.print.item.ItemType;
 public class EnumItemConvertor extends AbstractItemConvertor {
 
     @Override
-    protected AbstractItem convert(IntItem item, ItemType itemType) {
+    protected AbstractItem convert(Item item, ItemType itemType) {
         if (itemType.getDataType() != DataType.ENUM) {
             return null;
         }

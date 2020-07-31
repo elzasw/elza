@@ -1,11 +1,10 @@
 package cz.tacr.elza.print.item.convertors;
 
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.IntItem;
+import cz.tacr.elza.domain.Item;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.item.AbstractItem;
-import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.print.item.ItemType;
 
@@ -14,7 +13,7 @@ public abstract class AbstractItemConvertor implements ItemConvertor {
     protected ItemConvertorContext context;
 
     @Override
-    public final Item convert(IntItem iItem, ItemConvertorContext context) {
+    public final cz.tacr.elza.print.item.Item convert(Item iItem, ItemConvertorContext context) {
         this.context = context; // prepare context for implementation
 
         ItemType itemType = context.getItemTypeById(iItem.getItemTypeId());
@@ -43,6 +42,6 @@ public abstract class AbstractItemConvertor implements ItemConvertor {
         return item;
     }
 
-    protected abstract AbstractItem convert(IntItem item, ItemType itemType);
+    protected abstract AbstractItem convert(Item item, ItemType itemType);
 
 }

@@ -34,7 +34,7 @@ import cz.tacr.elza.service.cache.NodeCacheSerializable;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public abstract class ArrItem implements NodeCacheSerializable, IntItem {
+public abstract class ArrItem implements NodeCacheSerializable, Item {
 
     public static final String TABLE_NAME = "arr_item";
 
