@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.print.party.Institution;
 
 /**
@@ -26,13 +27,27 @@ public class Fund {
     private String dateRange;
 
     private Institution institution;
+    
+    private Integer fundNumber;
+
+    private String unitdate;
+    
+    private String mark;
+
+    public Fund(NodeId rootNodeId, NodeLoader nodeLoader, ArrFund arrFund) {
+        this.rootNodeId = Validate.notNull(rootNodeId);
+        this.nodeLoader = Validate.notNull(nodeLoader);
+		this.fundNumber = arrFund.getFundNumber();
+		this.unitdate = arrFund.getUnitdate();
+		this.mark = arrFund.getMark();
+	}
 
     public Fund(NodeId rootNodeId, NodeLoader nodeLoader) {
         this.rootNodeId = Validate.notNull(rootNodeId);
         this.nodeLoader = Validate.notNull(nodeLoader);
     }
-
-    public NodeId getRootNodeId() {
+    
+	public NodeId getRootNodeId() {
         return rootNodeId;
     }
 
@@ -81,4 +96,28 @@ public class Fund {
     void setInstitution(final Institution institution) {
         this.institution = institution;
     }
+
+	public Integer getFundNumber() {
+		return fundNumber;
+	}
+
+	public void setFundNumber(Integer fundNumber) {
+		this.fundNumber = fundNumber;
+	}
+
+	public String getUnitdate() {
+		return unitdate;
+	}
+
+	public void setUnitdate(final String unitdate) {
+		this.unitdate = unitdate;
+	}
+
+	public String getMark() {
+		return mark;
+	}
+
+	public void setMark(final String mark) {
+		this.mark = mark;
+	}
 }
