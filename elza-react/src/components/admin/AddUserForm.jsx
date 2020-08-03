@@ -96,23 +96,22 @@ class AddUserForm extends AbstractReactComponent {
         return (
             <Form className="add-user-form" onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
-                    {create && (
-                        <Row>
-                            <Col xs={12}>
-                                <Field
-                                    component={ReduxFormFieldErrorDecorator}
-                                    passOnly={true}
-                                    renderComponent={ApField}
-                                    disabled={submitting}
-                                    label={i18n('admin.user.add.party')}
-                                    detail={false}
-                                    name={"accessPointId"}
-                                    useIdAsValue
-                                    isCreate
-                                />
-                            </Col>
-                        </Row>
-                    )}
+                    <Row>
+                        <Col xs={12}>
+                            <Field
+                                component={ReduxFormFieldErrorDecorator}
+                                passOnly={true}
+                                renderComponent={ApField}
+                                disabled={submitting}
+                                label={i18n('admin.user.add.party')}
+                                detail={false}
+                                name={"accessPointId"}
+                                initData={this.props.accessPoint ? [this.props.accessPoint] : null}
+                                useIdAsValue
+                                isCreate
+                            />
+                        </Col>
+                    </Row>
                     <Row>
                         <Col xs={12}>
                             <Field
