@@ -253,7 +253,7 @@ class ArrPageRibbon extends AbstractReactComponent {
         let altSection;
 
         altActions.push(
-            <Button key="search-fa" onClick={this.handleFundsSearchForm}>
+            <Button key="search-fa" onClick={this.props.handleFundsSearchForm}>
                 <Icon glyph="fa-search" />
                 <div>
                     <span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span>
