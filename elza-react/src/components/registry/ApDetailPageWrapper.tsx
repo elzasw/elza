@@ -103,7 +103,7 @@ function sortPrefer(parts: ApPartVO[], preferredPart?: number) {
  * Detail globální archivní entity.
  */
 const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
-    const apTypeId = props.detail.fetched ? props.detail.data!.typeId : 0;
+    const apTypeId = props.detail.fetched && props.detail.data ? props.detail.data.typeId : 0;
     const refTables = props.refTables;
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
