@@ -38,7 +38,6 @@ import ListPager from '../../components/shared/listPager/ListPager';
 import {Autocomplete} from "../../components/shared";
 import {refInstitutionsFetchIfNeeded} from "../../actions/refTables/institutions";
 import {objectById} from "../../shared/utils";
-import institutions from "../../stores/app/refTables/institutions";
 
 /**
  * Stránka archivní soubory.
@@ -210,7 +209,7 @@ class FundPage extends AbstractReactComponent {
                     institutionIdentifier: institution.code,
                     internalCode: fundDetail.internalCode,
                     ruleSetCode: rules.code,
-                    apScopes: json.scopes,
+                    scopes: (fundDetail.apScopes || []).map(i => i.code),
                 };
                 this.props.dispatch(
                     modalDialogShow(
@@ -233,6 +232,7 @@ class FundPage extends AbstractReactComponent {
 
         this.props.dispatch(scopesDirty(fundDetail.versionId));
         return this.props.dispatch(updateFund(fundDetail.id, {
+            scopes: data.scopes,
             institutionIdentifier: data.institutionIdentifier,
             internalCode: data.internalCode,
             name: data.name,
