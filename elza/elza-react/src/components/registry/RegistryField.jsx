@@ -127,7 +127,7 @@ class RegistryField extends AbstractReactComponent {
             modalDialogShow(
                 this,
                 i18n('extImport.title'),
-                <ExtImportForm isParty={false} versionId={versionId} />,
+                <ExtImportForm versionId={versionId} />,
                 'dialog-lg',
             ),
         );

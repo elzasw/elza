@@ -198,20 +198,17 @@ class ExtImportForm extends AbstractReactComponent {
 
     static propTypes = {
         autocomplete: PropTypes.bool,
-        isParty: PropTypes.bool,
         count: PropTypes.number,
         versionId: PropTypes.number,
     };
 
     static defaultProps = {
-        isParty: false,
         count: 200,
         versionId: -1,
     };
 
     submit = data => {
         const {results, systemId} = this.state;
-        const {isParty} = this.props;
         const record = objectById(results, data.interpiRecordId, 'recordId');
 
         let update = false;
@@ -235,12 +232,7 @@ class ExtImportForm extends AbstractReactComponent {
 
             promise.then(e => {
                 this.props.dispatch(modalDialogHide());
-                let msg;
-                if (isParty) {
-                    msg = update ? 'extImport.done.party.messageUpdate' : 'extImport.done.party.messageImport';
-                } else {
-                    msg = update ? 'extImport.done.record.messageUpdate' : 'extImport.done.record.messageImport';
-                }
+                let msg = update ? 'extImport.done.record.messageUpdate' : 'extImport.done.record.messageImport';
                 this.props.dispatch(addToastrSuccess(i18n('extImport.done.title'), i18n(msg)));
                 this.props.onSubmitForm && this.props.onSubmitForm(e);
             });
@@ -248,33 +240,7 @@ class ExtImportForm extends AbstractReactComponent {
             return promise;
         };
 
-        if (importVO.originator) {
-            return WebApi.findInterpiRecordRelations(importVO.interpiRecordId, relationsVO).then(mapping => {
-                if (mapping != null && mapping.mappings != null && mapping.mappings.length > 0) {
-                    this.props.dispatch(modalDialogHide());
-                    this.props.dispatch(
-                        modalDialogShow(
-                            this,
-                            i18n('extMapperForm.title'),
-                            <ExtMapperForm
-                                initialValues={mapping}
-                                record={mapping.externalRecord}
-                                isUpdate={update}
-                                onSubmit={data => {
-                                    return send({...importVO, ...data}, update, recordId);
-                                }}
-                            />,
-                            'dialog-lg',
-                        ),
-                    );
-                } else {
-                    // pokud osoba neobsahuje žádné vztahy a je importována jako původce, rovnou se naimportuje
-                    return send(importVO, update, recordId);
-                }
-            });
-        } else {
-            return send(importVO, update, recordId);
-        }
+        return send(importVO, update, recordId);
     };
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -291,11 +257,11 @@ class ExtImportForm extends AbstractReactComponent {
     }
 
     submitSearch = data => {
-        const {isParty, count} = this.props;
+        const {count} = this.props;
 
         return WebApi.findInterpiRecords({
             ...data,
-            isParty,
+            isParty: false,
             count,
             systemId: parseInt(data.systemId),
         }).then(results => {
@@ -304,16 +270,9 @@ class ExtImportForm extends AbstractReactComponent {
     };
 
     showDetail = detailId => {
-        const {isParty} = this.props;
-        if (isParty) {
-            // FIXME ?: Removing Party
-            this.props.dispatch(modalDialogHide());
-            this.props.dispatch(routerNavigate('party'));
-        } else {
-            this.props.dispatch(registryDetailFetchIfNeeded(detailId));
-            this.props.dispatch(modalDialogHide());
-            this.props.dispatch(routerNavigate('registry'));
-        }
+        this.props.dispatch(registryDetailFetchIfNeeded(detailId));
+        this.props.dispatch(modalDialogHide());
+        this.props.dispatch(routerNavigate('registry'));
     };
 
     validate = (values, props) => {
@@ -331,11 +290,10 @@ class ExtImportForm extends AbstractReactComponent {
         const {
             autocomplete,
             onClose,
-            fields: {scopeId, interpiRecordId, originator},
+            fields: {scopeId, interpiRecordId},
             handleSubmit,
             submitting,
             versionId,
-            isParty,
         } = this.props;
 
         let record = null;
@@ -351,11 +309,7 @@ class ExtImportForm extends AbstractReactComponent {
                 for (let pairedRec of record.pairedRecords) {
                     if (pairedRec.scope.id == scopeId.value) {
                         showDetail = true;
-                        if (isParty) {
-                            detailId = pairedRec.partyId;
-                        } else {
-                            detailId = pairedRec.recordId;
-                        }
+                        detailId = pairedRec.recordId;
                         break;
                     }
                 }
@@ -447,11 +401,6 @@ class ExtImportForm extends AbstractReactComponent {
                                                     versionId={versionId}
                                                 />
                                             </div>
-                                            {isParty && (
-                                                <div>
-                                                    <FormCheck {...originator} label={i18n('extImport.originator')} />
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -492,6 +441,6 @@ class ExtImportForm extends AbstractReactComponent {
 }
 
 export default reduxForm({
-    fields: ['scopeId', 'interpiRecordId', 'originator'],
+    fields: ['scopeId', 'interpiRecordId'],
     form: 'extImportForm',
 })(ExtImportForm);

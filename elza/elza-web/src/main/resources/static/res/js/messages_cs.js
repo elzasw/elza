@@ -1471,8 +1471,6 @@ var messages = {
     "extImport.update": "Aktualizovat",
     "extImport.showDetail": "Přejít na detail",
     "extImport.done.title": "Hotovo",
-    "extImport.done.party.messageImport": "Osoba úspěšně naimportována",
-    "extImport.done.party.messageUpdate": "Osoba úspěšně aktualizována",
     "extImport.done.record.messageImport": "Heslo úspěšně naimportováno",
     "extImport.done.record.messageUpdate": "Heslo úspěšně aktualizováno",
 

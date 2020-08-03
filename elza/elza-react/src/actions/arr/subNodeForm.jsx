@@ -57,7 +57,6 @@ export class ItemFormActions {
                 case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
                 case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
                 case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
-                case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
                 case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
                 case types.FUND_SUB_NODE_FORM_VALUE_VALIDATE_RESULT:
                 case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
@@ -595,27 +594,6 @@ export class ItemFormActions {
                     }
                 });
             }
-        };
-    }
-
-    /**
-     * Akce změna hodnoty atributu - odkaz na osoby.
-     * @param {int} versionId verze AS
-     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
-     * @param {Object} valueLocation konkrétní umístění hodnoty
-     * @param {Object} value hodnota
-     */
-    fundSubNodeFormValueChangeParty(versionId, routingKey, valueLocation, value) {
-        return (dispatch, getState) => {
-            dispatch({
-                type: types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY,
-                area: this.area,
-                versionId,
-                routingKey,
-                valueLocation,
-                value,
-                dispatch,
-            });
         };
     }
 
