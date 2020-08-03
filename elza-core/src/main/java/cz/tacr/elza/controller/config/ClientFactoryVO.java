@@ -1179,7 +1179,9 @@ public class ClientFactoryVO {
         if (user.getAccessPoint() != null) {
             accessPointVO.setId(user.getAccessPoint().getAccessPointId());
             accessPointVO.setUuid(user.getAccessPoint().getUuid());
-            accessPointVO.setName(user.getAccessPoint().getPreferredPart().getValue());
+            if (user.getAccessPoint().getPreferredPart() != null) {
+                accessPointVO.setName(user.getAccessPoint().getPreferredPart().getValue());
+            }
         }
         UsrUserVO result = new UsrUserVO(user, accessPointVO);
         result.setAuthTypes(authenticationRepository.findByUser(user).stream().map(UsrAuthentication::getAuthType).collect(Collectors.toList()));
