@@ -358,7 +358,6 @@ export default function subNodeForm(state = initialState, action = {}) {
             checkFormData(state.formData);
             return {...state};
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
-        case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_PARTY:
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
             const {valueLocation} = action;
             var refType = state.refTypesMap[loc.descItemType.id];

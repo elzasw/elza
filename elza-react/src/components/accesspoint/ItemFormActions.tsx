@@ -360,23 +360,6 @@ export abstract class ItemFormActions {
     }
 
     /**
-     * Akce změna hodnoty atributu - odkaz na osoby.
-     * @param {Object} valueLocation konkrétní umístění hodnoty
-     * @param {Object} value hodnota
-     */
-    fundSubNodeFormValueChangeParty(valueLocation, value): ThunkResult<void> {
-        return (dispatch, getState) => {
-            dispatch({
-                type: types.ITEM_FORM_VALUE_CHANGE_PARTY,
-                area: this.area,
-                valueLocation,
-                value,
-                dispatch,
-            });
-        };
-    }
-
-    /**
      * Akce změna hodnoty atributu - odkaz na rejstřík.
      * @param {Object} valueLocation konkrétní umístění hodnoty
      * @param {Object} value hodnota
