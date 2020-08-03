@@ -581,6 +581,7 @@ class ArrPage extends ArrParentPage {
                 handleErrorPrevious={this.handleErrorPrevious}
                 handleErrorNext={this.handleErrorNext}
                 handleOpenFundActionForm={this.handleOpenFundActionForm}
+                handleFundsSearchForm={this.handleFundsSearchForm}
                 issueProtocol={issueProtocol}
                 arrRegionActiveIndex={arrRegion.activeIndex}
             />
