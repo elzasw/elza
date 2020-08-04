@@ -38,13 +38,7 @@ class ArrHistoryForm extends AbstractReactComponent {
         };
     }
 
-    componentDidMount() {
-    }
-
-    UNSAFE_componentWillReceiveProps(nextProps) {
-    }
-
-    renderItemContent = item => {
+    renderItemContent = (item, isActive, index) => {
         if (item === null) {
             return null;
         }
@@ -55,7 +49,10 @@ class ArrHistoryForm extends AbstractReactComponent {
         const description = this.getItemDescription(item);
 
         return (
-            <div className={`row-container ${item.revert ? ' canRevert' : ''} ${canDelete ? ' delete' : ''}`}>
+            <div
+                key={index}
+                className={`row-container ${item.revert ? ' canRevert' : ''} ${canDelete ? ' delete' : ''}`}
+            >
                 <div className="col col1">{dateToString(new Date(item.changeDate))}</div>
                 <div className="col col2">{timeToString(new Date(item.changeDate))}</div>
                 <div className="col col3" title={description}>
@@ -117,31 +114,31 @@ class ArrHistoryForm extends AbstractReactComponent {
         });
 
         return WebApi.findChanges(versionId, this.getNodeId(), fromIndex, toIndex - fromIndex, changeId)
-                     .then(json => {
-                         if (json.totalCount > 0 && changeId === null) {
-                             // pokud nemáme uložen první changeId, uložíme si ho do state
-                             this.setState({
-                                 changeId: json.changes[0].changeId,
-                             });
-                         }
+            .then(json => {
+                if (json.totalCount > 0 && changeId === null) {
+                    // pokud nemáme uložen první changeId, uložíme si ho do state
+                    this.setState({
+                        changeId: json.changes[0].changeId,
+                    });
+                }
 
-                         const lbData = {
-                             items: json.changes,
-                             count: json.totalCount,
-                             outdated: json.outdated,
-                         };
+                const lbData = {
+                    items: json.changes,
+                    count: json.totalCount,
+                    outdated: json.outdated,
+                };
 
-                         this.setState({
-                             fetching: false,
-                         });
+                this.setState({
+                    fetching: false,
+                });
 
-                         return lbData;
-                     })
-                     .catch(e => {
-                         this.setState({
-                             fetching: false,
-                         });
-                     });
+                return lbData;
+            })
+            .catch(e => {
+                this.setState({
+                    fetching: false,
+                });
+            });
     };
 
     handleSelect = (item, index) => {
@@ -191,16 +188,16 @@ class ArrHistoryForm extends AbstractReactComponent {
 
         return (
             <ErrorBoundary>
-            <FormInput
-                className="selected-item-info-container"
-                type="static"
-                label={i18n('arr.history.title.deleteFrom')}
-            >
-                <input type="text" value={infoText} disabled />
-                <Button disabled={!selectedItem} onClick={this.handleShowSelectedItem}>
-                    {i18n('arr.history.action.deleteFrom.show')}
-                </Button>
-            </FormInput>
+                <FormInput
+                    className="selected-item-info-container"
+                    type="static"
+                    label={i18n('arr.history.title.deleteFrom')}
+                >
+                    <input type="text" value={infoText} disabled />
+                    <Button disabled={!selectedItem} onClick={this.handleShowSelectedItem}>
+                        {i18n('arr.history.action.deleteFrom.show')}
+                    </Button>
+                </FormInput>
             </ErrorBoundary>
         );
     };
@@ -304,15 +301,15 @@ class ArrHistoryForm extends AbstractReactComponent {
 
     render() {
         const {
-                  goToDateValue,
-                  goToDate,
-                  selectedItem,
-                  node,
-                  showHistoryForNode,
-                  selectedIndex,
-                  activeIndex,
-                  fetching,
-              } = this.state;
+            goToDateValue,
+            goToDate,
+            selectedItem,
+            node,
+            showHistoryForNode,
+            selectedIndex,
+            activeIndex,
+            fetching,
+        } = this.state;
         const {onClose, locked} = this.props;
 
         let content;
@@ -326,8 +323,10 @@ class ArrHistoryForm extends AbstractReactComponent {
         } else {
             content = (
                 <LazyListBox
+                    key={'listbox'}
                     ref="listbox"
                     className="data-container"
+                    itemIdAttrName={'changeId'}
                     selectedIndex={selectedIndex}
                     activeIndex={activeIndex}
                     getItems={this.getItems}
@@ -341,78 +340,85 @@ class ArrHistoryForm extends AbstractReactComponent {
 
         return (
             <ErrorBoundary>
-            <div className="arr-history-form-container">
-                <Modal.Body>
-                    <Form.Group>
-                        <FormInput
-                            disabled={fetching}
-                            type="radio"
-                            checked={!showHistoryForNode}
-                            onClick={() => this.onChangeRadio(false)}
-                            label={i18n('arr.history.title.globalChanges')}
-                        />
-                        <div className="selected-node-container">
+                <div className="arr-history-form-container">
+                    <Modal.Body>
+                        <Form.Group>
                             <FormInput
                                 disabled={fetching}
                                 type="radio"
-                                checked={showHistoryForNode}
-                                onClick={() => this.onChangeRadio(true)}
-                                label={i18n('arr.history.title.nodeChanges')}
+                                checked={!showHistoryForNode}
+                                onClick={() => this.onChangeRadio(false)}
+                                label={i18n('arr.history.title.globalChanges')}
                             />
-                            <FormInput
-                                className="selected-node-info-container"
-                                type="static"
-                                label={false}
-                            >
-                                <input type="text" value={node ? node.name : ''} disabled/>
-                                <Button disabled={!showHistoryForNode || fetching} onClick={this.handleChooseNode}>
-                                    {i18n('global.action.choose')}
+                            <div className="selected-node-container">
+                                <FormInput
+                                    disabled={fetching}
+                                    type="radio"
+                                    checked={showHistoryForNode}
+                                    onClick={() => this.onChangeRadio(true)}
+                                    label={i18n('arr.history.title.nodeChanges')}
+                                />
+                                <FormInput className="selected-node-info-container" type="static" label={false}>
+                                    <input type="text" value={node ? node.name : ''} disabled />
+                                    <Button
+                                        variant="outline-secondary"
+                                        disabled={!showHistoryForNode || fetching}
+                                        onClick={this.handleChooseNode}
+                                    >
+                                        {i18n('global.action.choose')}
+                                    </Button>
+                                </FormInput>
+                            </div>
+                            <div className="go-to-date-container">
+                                <FormInput
+                                    value={goToDate}
+                                    placeholder="dd.mm.rrrr[ hh:mm[:ss]]"
+                                    onChange={this.handleGoToDateChange}
+                                    type="string"
+                                    label={i18n('arr.history.title.goToDate')}
+                                />
+                                <Button
+                                    variant="outline-secondary"
+                                    disabled={!goToDateValue}
+                                    onClick={this.handleGoToDate}
+                                >
+                                    {i18n('arr.history.action.goToDate')}
                                 </Button>
-                            </FormInput>
+                            </div>
+                        </Form.Group>
+                        <div className="changes-listbox-container">
+                            <div className="header-container">
+                                <div className="col col1">{i18n('arr.history.title.change.date')}</div>
+                                <div className="col col2">{i18n('arr.history.title.change.time')}</div>
+                                <div className="col col3">{i18n('arr.history.title.change.description')}</div>
+                                <div className="col col4">{i18n('arr.history.title.change.type')}</div>
+                                <div className="col col5">{i18n('arr.history.title.change.user')}</div>
+                                <div className="colScrollbar" style={{width: getScrollbarWidth()}}></div>
+                            </div>
+                            {content}
                         </div>
-                        <div className="go-to-date-container">
-                            <FormInput
-                                value={goToDate}
-                                placeholder="dd.mm.rrrr[ hh:mm[:ss]]"
-                                onChange={this.handleGoToDateChange}
-                                type="string"
-                                label={i18n('arr.history.title.goToDate')}
-                            />
-                            <Button disabled={!goToDateValue} onClick={this.handleGoToDate}>
-                                {i18n('arr.history.action.goToDate')}
+                        {!locked && this.renderSelectedItemInfo()}
+                    </Modal.Body>
+                    <Modal.Footer>
+                        {selectedIndex !== null
+                            ? i18n('arr.history.title.changesForDelete', selectedIndex + 1) + ' '
+                            : ''}
+                        {!locked && (
+                            <Button
+                                variant="outline-secondary"
+                                disabled={selectedItem === null || (showHistoryForNode && !node)}
+                                type="submit"
+                                variant="outline-secondary"
+                                onClick={this.handleDeleteChanges}
+                            >
+                                {i18n('arr.history.action.deleteChanges')}
                             </Button>
-                        </div>
-                    </Form.Group>
-                    <div className="changes-listbox-container">
-                        <div className="header-container">
-                            <div className="col col1">{i18n('arr.history.title.change.date')}</div>
-                            <div className="col col2">{i18n('arr.history.title.change.time')}</div>
-                            <div className="col col3">{i18n('arr.history.title.change.description')}</div>
-                            <div className="col col4">{i18n('arr.history.title.change.type')}</div>
-                            <div className="col col5">{i18n('arr.history.title.change.user')}</div>
-                            <div className="colScrollbar" style={{width: getScrollbarWidth()}}></div>
-                        </div>
-                        {content}
-                    </div>
-                    {!locked && this.renderSelectedItemInfo()}
-                </Modal.Body>
-                <Modal.Footer>
-                    {selectedIndex !== null ? i18n('arr.history.title.changesForDelete', selectedIndex + 1) + ' ' : ''}
-                    {!locked && (
-                        <Button
-                            disabled={selectedItem === null || (showHistoryForNode && !node)}
-                            type="submit"
-                            variant="outline-secondary"
-                            onClick={this.handleDeleteChanges}
-                        >
-                            {i18n('arr.history.action.deleteChanges')}
+                        )}
+                        <Button variant="link" onClick={onClose}>
+                            {i18n('global.action.cancel')}
                         </Button>
-                    )}
-                    <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
-                    </Button>
-                </Modal.Footer>
-            </div>
+                    </Modal.Footer>
+                </div>
             </ErrorBoundary>
         );
     }
