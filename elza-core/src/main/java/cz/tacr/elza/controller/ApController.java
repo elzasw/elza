@@ -1,5 +1,38 @@
 package cz.tacr.elza.controller;
 
+import static cz.tacr.elza.repository.ExceptionThrow.ap;
+import static cz.tacr.elza.repository.ExceptionThrow.scope;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
 import cz.tacr.cam.schema.cam.BatchUpdateXml;
@@ -24,7 +57,6 @@ import cz.tacr.elza.controller.vo.ApStateHistoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
-import cz.tacr.elza.controller.vo.ArchiveEntityVO;
 import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
@@ -60,6 +92,7 @@ import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.drools.model.ItemSpec;
 import cz.tacr.elza.drools.model.ModelAvailable;
+import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -79,37 +112,6 @@ import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.annotation.Nullable;
-import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static cz.tacr.elza.repository.ExceptionThrow.ap;
-import static cz.tacr.elza.repository.ExceptionThrow.scope;
-import static cz.tacr.elza.repository.ExceptionThrow.version;
 
 
 /**
@@ -992,7 +994,7 @@ public class ApController {
         try {
             result = camConnector.search(fromPage + 1, max, searchFilterFactory.createQueryParamsDef(filter), externalSystemCode);
         } catch (ApiException e) {
-            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.", e);
+            throw prepareSystemException(e);
         }
         return searchFilterFactory.createArchiveEntityVoListResult(result);
     }
@@ -1055,7 +1057,7 @@ public class ApController {
         try {
             entity = camConnector.getEntityById(archiveEntityId, externalSystemCode);
         } catch (ApiException e) {
-            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+            throw prepareSystemException(e);
         }
         ApState apState = accessPointService.createAccessPoint(scope, entity, externalSystemCode, null);
         return apState.getAccessPointId();
@@ -1084,7 +1086,7 @@ public class ApController {
         try {
             entity = camConnector.getEntityById(archiveEntityId, externalSystemCode);
         } catch (ApiException e) {
-            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+            throw prepareSystemException(e);
         }
         accessPointService.connectAccessPoint(state, entity, externalSystemCode);
     }
@@ -1128,7 +1130,7 @@ public class ApController {
         try {
             entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()), externalSystemCode);
         } catch (ApiException e) {
-            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+            throw prepareSystemException(e);
         }
         accessPointService.synchronizeAccessPoint(state, entity, bindingState, false);
     }
@@ -1149,17 +1151,25 @@ public class ApController {
 
         EntityXml entity;
         try {
-            entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()), externalSystemCode);
+            entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()),
+                                                          externalSystemCode);
         } catch (ApiException e) {
-            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+            throw prepareSystemException(e);
         }
         BatchUpdateXml batchUpdate = accessPointService.createUpdateEntityBatchUpdate(accessPoint, bindingState, entity);
         try {
             BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
             accessPointService.updateBindingAfterUpdate(batchUpdateResult, accessPoint, apExternalSystem);
         } catch (ApiException e) {
-            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+            throw prepareSystemException(e);
         }
+    }
+
+    private AbstractException prepareSystemException(ApiException e) {
+        return new SystemException("Došlo k chybě při komunikaci s externím systémem.", e)
+                .set("responseBody", e.getResponseBody())
+                .set("responseCode", e.getCode())
+                .set("responseHeaders", e.getResponseHeaders());
     }
 
     /**
@@ -1198,7 +1208,7 @@ public class ApController {
                 }
             }
         } catch (ApiException e) {
-            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
+            throw prepareSystemException(e);
         }
         accessPointService.createAccessPoints(state.getScope(), entities, externalSystemCode);
     }
