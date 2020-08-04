@@ -49,8 +49,6 @@ class ApField extends AbstractReactComponent {
         itemSpecId: null,
         registryParent: null,
         apTypeId: null,
-        roleTypeId: null,
-        partyId: null,
         versionId: null,
         useIdAsValue: false,
         initData: null,
@@ -65,8 +63,6 @@ class ApField extends AbstractReactComponent {
         registryParent: PropTypes.number,
         apTypeId: PropTypes.number,
         itemSpecId: PropTypes.number,
-        roleTypeId: PropTypes.number,
-        partyId: PropTypes.number,
         versionId: PropTypes.number,
         useIdAsValue: PropTypes.bool,
     };

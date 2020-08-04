@@ -49,18 +49,15 @@ class SubNodeForm extends AbstractReactComponent {
             'handleFocus',
             'handleDescItemAdd',
             'handleDescItemRemove',
-            'handleCreateParty',
             'handleDescItemTypeCopyFromPrev',
             'handleDescItemTypeLock',
             'handleDescItemTypeCopy',
-            'handleCreatedParty',
             'handleCreateRecord',
             'handleCreatedRecord',
             'trySetFocus',
             'initFocus',
             'getFlatDescItemTypes',
             'handleJsonTableDownload',
-            'handleDetailParty',
             'handleDetailRecord',
             'handleCreateFile',
             'handleFundFiles',
@@ -253,8 +250,6 @@ class SubNodeForm extends AbstractReactComponent {
                 descItemFactory={descItemFactory}
                 customActions={customActions}
                 descItemRef={this.descItemRef}
-                onCreateParty={this.handleCreateParty}
-                onDetailParty={this.handleDetailParty}
                 onCreateRecord={this.handleCreateRecord}
                 onDetailRecord={this.handleDetailRecord}
                 onCreateFile={this.handleCreateFile}
@@ -611,18 +606,6 @@ class SubNodeForm extends AbstractReactComponent {
     }
 
     /**
-     * Vytvoření nové osoby.
-     *
-     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
-     * @param descItemTypeIndex {Integer} index atributu v seznamu
-     * @param descItemIndex {Integer} index honodty atributu v seznamu
-     * @param partyTypeId {Integer} identifikátor typu osoby
-     */
-    handleCreateParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyTypeId) {
-        console.warn('%c ::party ', 'background: black; color: yellow;');
-    }
-
-    /**
      * Vytvoření souboru.
      *
      * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
@@ -712,22 +695,6 @@ class SubNodeForm extends AbstractReactComponent {
         this.props.dispatch(routerNavigate('arr'));
         this.props.dispatch(selectTab('arr-as', tab));
         this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 3, null, null));
-    }
-
-    handleCreatedParty(valueLocation, data, submitType) {
-        console.warn('%c ::party ', 'background: black; color: yellow;');
-    }
-
-    /**
-     * Zobrazení detailu osoby.
-     *
-     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
-     * @param descItemTypeIndex {Integer} index atributu v seznamu
-     * @param descItemIndex {Integer} index honodty atributu v seznamu
-     * @param partyId {Integer} identifikátor osoby
-     */
-    handleDetailParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyId) {
-        console.warn('%c ::party ', 'background: black; color: yellow;');
     }
 
     /**

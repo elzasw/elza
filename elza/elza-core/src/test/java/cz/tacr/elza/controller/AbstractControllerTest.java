@@ -261,21 +261,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FIND_DAOS = ARRANGEMENT_CONTROLLER_URL
             + "/daos/{fundVersionId}";
 
-    // Party
-    protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relation";
-    protected static final String UPDATE_RELATIONS = PARTY_CONTROLLER_URL + "/relation/{relationId}";
-    protected static final String DELETE_RELATIONS = PARTY_CONTROLLER_URL + "/relation/{relationId}";
-    protected static final String FIND_PARTY = PARTY_CONTROLLER_URL + "/";
-    protected static final String FIND_PARTY_FOR_PARTY = PARTY_CONTROLLER_URL + "/findPartyForParty";
-    protected static final String GET_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
-    protected static final String GET_PARTY_TYPES = PARTY_CONTROLLER_URL + "/partyTypes";
-    protected static final String GET_PARTY_NAME_FORM_TYPES = PARTY_CONTROLLER_URL + "/partyNameFormTypes";
-    protected static final String INSERT_PARTY = PARTY_CONTROLLER_URL + "/";
-    protected static final String UPDATE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
-    protected static final String DELETE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
-    protected static final String USAGE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}/usage";
-    protected static final String REPLACE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}/replace";
-
     protected static final String INSTITUTIONS = PARTY_CONTROLLER_URL + "/institutions";
 
     // REGISTRY
@@ -290,7 +275,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String RECORD_TYPES = AP_CONTROLLER_URL + "/recordTypes";
 
     protected static final String FIND_RECORD = AP_CONTROLLER_URL + "/search";
-    protected static final String FIND_RECORD_FOR_RELATION = AP_CONTROLLER_URL + "/findRecordForRelation";
     protected static final String GET_RECORD = AP_CONTROLLER_URL + "/{recordId}";
     protected static final String CREATE_ACCESS_POINT = AP_CONTROLLER_URL + "/";
     protected static final String UPDATE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
@@ -2120,32 +2104,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected List<ApScopeVO> faScopes() {
         return Arrays.asList(get(FA_SCOPES).getBody().as(ApScopeVO[].class));
-    }
-
-    /**
-     * Vyhledání rejstříkových hesel dle relace
-     *
-     * @param search     hledaný řetězec
-     * @param from       odkud se mají vracet výsledka
-     * @param count      počet vracených výsledků
-     * @param roleTypeId id typu vztahu
-     * @param partyId    id osoby, ze které je načtena hledaná třída rejstříku
-     * @return list rejstříkových hesel
-     */
-    protected List<ApAccessPointVO> findRecordForRelation(final String search,
-                                                          final Integer from, final Integer count,
-                                                          final Integer roleTypeId,
-                                                          final Integer partyId) {
-        HashMap<String, Object> params = new HashMap<>();
-
-        if (search != null) {
-            params.put("search", search);
-        }
-        params.put("partyId", partyId);
-        params.put("roleTypeId", roleTypeId);
-        params.put("from", from != null ? from : 0);
-        params.put("count", count != null ? count : 20);
-        return get(spec -> spec.queryParams(params), FIND_RECORD_FOR_RELATION).getBody().as(FilteredResultVO.class).getRows();
     }
 
     protected Response importXmlFile(final String transformationName,

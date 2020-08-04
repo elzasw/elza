@@ -344,7 +344,6 @@ class RegistryList extends AbstractReactComponent {
         }
 
         const {filter} = registryList;
-        console.log('dwadaw', filter);
 
         let apTypesWithAll = [...registryTypes];
         apTypesWithAll.unshift({name: this.registryTypeDefaultValue});

@@ -30,11 +30,6 @@ export enum SettingsType {
     FAVORITE_ITEM_SPECS = 'FAVORITE_ITEM_SPECS',
 
     /**
-     * Připnutí sekcí osob
-     */
-    PARTY_PIN = 'PARTY_PIN',
-
-    /**
      * Zobrazení popisků archivních souborů.
      */
     FUND_VIEW = 'FUND_VIEW',

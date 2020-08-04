@@ -6,7 +6,7 @@ import {DisplayType} from '../../../constants';
 import {getMapFromList, objectById} from '../utils2';
 import {DataTypeCode} from './itemFormInterfaces';
 import {consolidateDescItems, createItem, ItemAvailability, mergeAfterUpdate, updateFormData} from './itemFormUtils';
-import {ApFormVO} from "../../../api/ApFormVO";
+import {ApFormVO} from '../../../api/ApFormVO';
 
 export interface ILocation {
     itemType: ItemTypeExt;
@@ -401,7 +401,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                     state.formData = {...state.formData};
                     return {...state};*/
                 case types.ITEM_FORM_VALUE_CHANGE:
-                case types.ITEM_FORM_VALUE_CHANGE_PARTY:
                 case types.ITEM_FORM_VALUE_CHANGE_RECORD:
                     // TODO přepsat na immutable
                     const convertedValue = convertValue(action.value, loc.item, refType.dataType.code);
@@ -615,9 +614,6 @@ export function itemForm(state: IItemFormState = initialState, action: IAction =
                                         objectId: action.descItemResult.item.objectId,
                                         id: action.descItemResult.item.id,
                                         prevValue: action.descItemResult.item.value,
-                                        //party: action.descItemResult.item.party,
-                                        //record: action.descItemResult.item.record,
-                                        //prevDescItemSpecId: loc.itemType.useSpecification ? action.descItemResult.item.descItemSpecId : undefined,
                                         prevCalendarTypeId: action.descItemResult.item.calendarTypeId || undefined,
                                         saving: false,
                                         touched: false,

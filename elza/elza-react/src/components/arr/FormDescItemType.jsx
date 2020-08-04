@@ -174,12 +174,6 @@ class FormDescItemType extends AbstractReactComponent {
                 rulDataType={rulDataType}
                 calendarTypes={calendarTypes}
                 structureTypes={structureTypes}
-                onCreateParty={(descItemIndex, partyTypeId) =>
-                    onCreateParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyTypeId)
-                }
-                onDetailParty={(descItemIndex, partyId) =>
-                    onDetailParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyId)
-                }
                 onCreateRecord={descItemIndex => onCreateRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
                 onDetailRecord={(descItemIndex, recordId) =>
                     onDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId)

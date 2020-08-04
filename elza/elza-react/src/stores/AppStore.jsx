@@ -4,7 +4,7 @@ import thunkMiddleware from 'redux-thunk';
 import {createLogger} from 'redux-logger';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
 import {splitterResize} from 'actions/global/splitter.jsx';
-import { composeWithDevTools } from 'redux-devtools-extension';
+import {composeWithDevTools} from 'redux-devtools-extension';
 import rootReducer from './reducers.jsx';
 import reduxFormUtils from './app/form/reduxFormUtils.jsx';
 /**
@@ -474,7 +474,7 @@ if (typeof window.__DEVTOOLS__ !== 'undefined' && window.__DEVTOOLS__) {
             // promiseMiddleware,
             loggerMiddleware,
             inlineFormMiddleware,
-        )
+        ),
     )(createStore);
 } else if (loggerMiddleware) {
     createStoreWithMiddleware = compose(applyMiddleware(thunkMiddleware, loggerMiddleware, inlineFormMiddleware))(
@@ -561,5 +561,4 @@ export const save = function(store) {
  */
 inlineFormSupport.addForm('outputEditForm');
 inlineFormSupport.addForm('permissionsEditForm');
-inlineFormSupport.addForm('partyDetail');
 inlineFormSupport.addForm('requestEditForm');

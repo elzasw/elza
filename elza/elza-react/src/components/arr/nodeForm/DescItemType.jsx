@@ -401,26 +401,6 @@ class DescItemType extends AbstractReactComponent {
     }
 
     /**
-     * Vytvoření nové osoby.
-     *
-     * @param descItemIndex {number} index hodnoty atributu v seznamu
-     * @param partyTypeId {number} identifikátor typu osoby
-     */
-    handleCreateParty(descItemIndex, partyTypeId) {
-        this.props.onCreateParty(descItemIndex, partyTypeId);
-    }
-
-    /**
-     * Zobrazení detailu osoby
-     *
-     * @param descItemIndex {number} index hodnoty atributu v seznamu
-     * @param partyId {number} identifikátor osoby
-     */
-    handleDetailParty(descItemIndex, partyId) {
-        this.props.onDetailParty(descItemIndex, partyId);
-    }
-
-    /**
      * Změna hodnoty specifikace atributu.
      * @param descItemIndex {number} index hodnoty atributu v seznamu
      * @param eventOrValue {Object} event nebo hodnota od prvku
