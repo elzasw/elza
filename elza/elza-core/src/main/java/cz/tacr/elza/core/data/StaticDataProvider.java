@@ -1,17 +1,44 @@
 package cz.tacr.elza.core.data;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeSpecAssign;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructureDefinition;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApExternalIdTypeRepository;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
+import cz.tacr.elza.repository.PackageRepository;
+import cz.tacr.elza.repository.PartTypeRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.StructureDefinitionRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
+import cz.tacr.elza.repository.SysLanguageRepository;
 
 public class StaticDataProvider {
 
@@ -108,7 +135,7 @@ public class StaticDataProvider {
      * referenced entities are detached.
      */
     public ApType getApTypeById(Integer id) {
-        Validate.notNull(id);
+        Validate.notNull(id, "Parameter is null");
         return apTypeIdMap.get(id);
     }
 
@@ -418,9 +445,11 @@ public class StaticDataProvider {
             checkPackageReference(rt.getRulPackage());
 
             // switch parent reference
-            Integer parentId = rt.getParentApTypeId();
-            if (parentId != null) {
-                ApType parent = idMap.get(parentId);
+            // note: We have to use getParentApType instead of getParentApTypeId.
+            //       parent ID might be null if apType is saved in this transaction
+            ApType origParent = rt.getParentApType();
+            if (origParent != null) {
+                ApType parent = idMap.get(origParent.getApTypeId());
                 Validate.notNull(parent);
                 rt.setParentApType(parent);
             }
