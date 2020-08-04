@@ -81,7 +81,7 @@ class ArrHistoryForm extends AbstractReactComponent {
             case 'IMPORT':
                 return i18n('arr.history.change.description.' + item.type, String(item.nodeChanges));
             default:
-                console.log('default case..');
+                console.warn('Unknown item change type:', item.type, item);
         }
 
         if (item.label) {
