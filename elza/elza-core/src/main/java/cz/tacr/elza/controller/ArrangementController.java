@@ -1240,14 +1240,12 @@ public class ArrangementController {
      * Uzavře otevřenou verzi archivní pomůcky a otevře novou verzi.
      *
      * @param versionId verze, která se má uzavřít
-     * @param dateRange vysčítaná informace o časovém rozsahu fondu
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
     @Transactional
     @RequestMapping(value = "/approveVersion", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ArrFundVersionVO approveVersion(@RequestParam("versionId") final Integer versionId,
-                                           @RequestParam(value = "dateRange", required = false) final String dateRange) {
+    public ArrFundVersionVO approveVersion(@RequestParam("versionId") final Integer versionId) {
         Assert.notNull(versionId, "Nebyl vyplněn identifikátor verze AS");
 
         ArrFundVersion version = arrangementService.getFundVersion(versionId);
