@@ -27,26 +27,18 @@ public class Fund {
     private String dateRange;
 
     private Institution institution;
-    
+
     private Integer fundNumber;
 
     private String unitdate;
-    
-    private String mark;
 
-    public Fund(NodeId rootNodeId, NodeLoader nodeLoader, ArrFund arrFund) {
-        this.rootNodeId = Validate.notNull(rootNodeId);
-        this.nodeLoader = Validate.notNull(nodeLoader);
-		this.fundNumber = arrFund.getFundNumber();
-		this.unitdate = arrFund.getUnitdate();
-		this.mark = arrFund.getMark();
-	}
+    private String mark;
 
     public Fund(NodeId rootNodeId, NodeLoader nodeLoader) {
         this.rootNodeId = Validate.notNull(rootNodeId);
         this.nodeLoader = Validate.notNull(nodeLoader);
     }
-    
+
 	public NodeId getRootNodeId() {
         return rootNodeId;
     }
