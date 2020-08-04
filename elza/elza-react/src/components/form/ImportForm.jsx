@@ -87,7 +87,7 @@ class ImportForm extends AbstractReactComponent {
                 formData.append(key, data[key]);
             }
         }
-        const messageType = this.props.fund ? 'Fund' : this.props.record ? 'Record' : 'Party';
+        const messageType = this.props.fund ? 'Fund' : this.props.record ? 'Record' : 'Unknown';
         this.props.dispatch(importForm(formData, messageType));
     };
 

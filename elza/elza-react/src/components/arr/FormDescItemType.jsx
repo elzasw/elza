@@ -40,8 +40,6 @@ class FormDescItemType extends AbstractReactComponent {
         customActions: PropTypes.object,
         descItemRef: PropTypes.func.isRequired, // (key, ref) => void
 
-        onCreateParty: PropTypes.func.isRequired,
-        onDetailParty: PropTypes.func.isRequired,
         onCreateRecord: PropTypes.func.isRequired,
         onDetailRecord: PropTypes.func.isRequired,
         onCreateFile: PropTypes.func.isRequired,
@@ -104,8 +102,6 @@ class FormDescItemType extends AbstractReactComponent {
         // console.log('[FormDescItemType] RENDER', refType.name);
 
         const {
-            onCreateParty,
-            onDetailParty,
             onCreateRecord,
             onDetailRecord,
             onCreateFile,

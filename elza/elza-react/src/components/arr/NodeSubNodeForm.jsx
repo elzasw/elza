@@ -791,7 +791,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     };
 
     initFocus() {
-        this.refSubNodeForm.getWrappedInstance().initFocus();
+        this.refSubNodeForm.initFocus();
     }
 
     render() {
