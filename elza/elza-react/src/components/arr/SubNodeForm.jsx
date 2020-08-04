@@ -104,6 +104,8 @@ class SubNodeForm extends AbstractReactComponent {
             return true;
         } else {
             const log = false;
+            // return !objectEqualsDiff(this.props, nextProps, {}, '', log)
+
             return (
                 !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, SUB_NODE_FORM_CMP, '', log) ||
                 !objectEqualsDiff(
@@ -938,7 +940,7 @@ class SubNodeForm extends AbstractReactComponent {
         const {unusedItemTypeIds} = this.state;
         const formData = subNodeForm.formData;
 
-        console.info('{SubNodeForm}');
+        // console.info('{SubNodeForm}');
 
         let unusedGeneratedItems; // nepoužité vygenerované PP
         if (unusedItemTypeIds && unusedItemTypeIds.length > 0) {

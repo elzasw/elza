@@ -101,7 +101,7 @@ class FormDescItemType extends AbstractReactComponent {
             descItemRef,
         } = this.props;
 
-        console.log('[FormDescItemType] RENDER', refType.name);
+        // console.log('[FormDescItemType] RENDER', refType.name);
 
         const {
             onCreateParty,
