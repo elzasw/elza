@@ -21,6 +21,7 @@ const __emptyColWidth = 8000;
 const __minColWidth = 16;
 
 class DataGrid extends AbstractReactComponent {
+    dataGridRef = null;
     static contextTypes = {shortcuts: PropTypes.object};
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
@@ -117,7 +118,7 @@ class DataGrid extends AbstractReactComponent {
     }
 
     focus() {
-        this.refs.dataGrid.focus();
+        this.dataGridRef.focus();
     }
 
     getStateFromProps(props, currState, currProps) {
@@ -247,7 +248,7 @@ class DataGrid extends AbstractReactComponent {
         const {needComputeColumnsWidth} = this.state;
 
         if (staticColumns && needComputeColumnsWidth) {
-            const dataGrid = ReactDOM.findDOMNode(this.refs.dataGrid);
+            const dataGrid = ReactDOM.findDOMNode(this.dataGridRef);
             const rect = dataGrid.getBoundingClientRect();
             var width = rect.width - getScrollbarWidth() - 4; // konstanta 3 - kvůli padding atp.
             var colWidths = {};
@@ -666,7 +667,13 @@ class DataGrid extends AbstractReactComponent {
 
         var ret = (
             <Shortcuts name="DataGrid" handler={this.handleShortcuts} contenteditable="true" className={cls}>
-                <div ref="dataGrid" className={cls} onFocus={e => this.handleFocus(e)} tabIndex={0} onBlur={onBlur}>
+                <div
+                    ref={ref => (this.dataGridRef = ref)}
+                    className={cls}
+                    onFocus={e => this.handleFocus(e)}
+                    tabIndex={0}
+                    onBlur={onBlur}
+                >
                     <div ref="header" key="header" className="header-container">
                         <table className="header-table" style={headerStyle}>
                             <thead>

@@ -130,8 +130,6 @@ class RegistryDetail extends AbstractReactComponent {
         }
     };
 
-    handleGoToParty = () => {};
-
     handleShortcuts = action => {
         switch (action) {
             case 'editRecord':

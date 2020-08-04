@@ -16,7 +16,6 @@ import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
 
 import './RegistryField.scss';
 import RegistryListItem from './RegistryListItem';
-import ExtImportForm from '../form/ExtImportForm';
 import {refApTypesFetchIfNeeded} from '../../actions/refTables/apTypes';
 import {JAVA_ATTR_CLASS, JAVA_CLASS_AP_ACCESS_POINT_VO} from '../../constants';
 
@@ -110,14 +109,6 @@ class RegistryField extends AbstractReactComponent {
         }
     };
 
-    handleImport = () => {
-        const {versionId} = this.props;
-        this.refAutocomplete.closeMenu();
-        this.props.dispatch(
-            modalDialogShow(this, i18n('extImport.title'), <ExtImportForm versionId={versionId} />, 'dialog-lg'),
-        );
-    };
-
     handleCreateRecord = () => {
         this.refAutocomplete.closeMenu();
         this.props.onCreateRecord && this.props.onCreateRecord();
@@ -149,9 +140,6 @@ class RegistryField extends AbstractReactComponent {
                         <Button onClick={this.handleCreateRecord} type="button">
                             <Icon glyph="fa-plus" />
                             {i18n('registry.addNewRegistry')}
-                        </Button>
-                        <Button onClick={this.handleImport} type="button">
-                            <Icon glyph="fa-plus" /> {i18n('ribbon.action.registry.importExt')}
                         </Button>
                     </div>
                 )}
