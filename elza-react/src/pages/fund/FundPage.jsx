@@ -153,7 +153,7 @@ class FundPage extends AbstractReactComponent {
                     approve
                     initialValues={data}
                     onSubmitForm={data => {
-                        return this.props.dispatch(approveFund(fundDetail.versionId, data.dateRange));
+                        return this.props.dispatch(approveFund(fundDetail.versionId));
                     }}
                 />,
             ),

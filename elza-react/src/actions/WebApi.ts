@@ -1348,8 +1348,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.fundV1 + '/' + id, null, data);
     }
 
-    approveVersion(versionId, dateRange) {
-        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/approveVersion', {dateRange, versionId});
+    approveVersion(versionId) {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/approveVersion', {versionId});
     }
 
     filterNodes(versionId, filter) {
