@@ -598,6 +598,5 @@
 			WHERE v.lock_change_id IS NULL AND i.delete_change_id IS NULL AND t.code = 'ZP2015_ZNACKA_FONDU') t1
 		WHERE t1.fund_id = f.fund_id</sql>
 	</changeSet>
-	-->
 
 </databaseChangeLog>
