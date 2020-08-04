@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.controller.vo.nodes.descitems.*;
 import org.apache.commons.collections4.CollectionUtils;
@@ -78,13 +79,7 @@ public class ClientFactoryVO {
     private DaoService daoService;
 
     @Autowired
-    private ApAccessPointRepository apAccessPointRepository;
-
-    @Autowired
-    private DataApFragRefRepository dataApFragRefRepository;
-
-    @Autowired
-    private ApItemRepository apItemRepository;
+    private ScopeRepository scopeRepository;
 
     @Autowired
     private PermissionRepository permissionRepository;
@@ -136,12 +131,6 @@ public class ClientFactoryVO {
 
     @Autowired
     private DaoFileGroupRepository daoFileGroupRepository;
-
-    @Autowired
-    private ItemSpecRepository itemSpecRepository;
-
-    @Autowired
-    private ItemTypeRepository itemTypeRepository;
 
     @Autowired
     private ConfigView configView;
@@ -299,16 +288,20 @@ public class ClientFactoryVO {
         ArrFundVO fundVO = mapper.map(fund, ArrFundVO.class);
         fundVO.setInstitutionId(fund.getInstitution().getInstitutionId());
 
-        // TODO: AP scopes on fund VO object needed/used ?
-
         if (includeVersions) {
 
             List<ArrFundVersion> versions = fundVersionRepository
                     .findVersionsByFundIdOrderByCreateDateDesc(fund.getFundId());
 
             List<ArrFundVersionVO> versionVOs = new ArrayList<>(versions.size());
+            StaticDataProvider staticData = staticDataService.getData();
             for (ArrFundVersion version : versions) {
-                versionVOs.add(createFundVersion(version, user));
+                ArrFundVersionVO fundVersion = createFundVersion(version, user);
+                if (fundVersion.getLockDate() == null) {
+                    Set<ApScope> apScopes = scopeRepository.findByFund(fund);
+                    fundVO.setApScopes(FactoryUtils.transformList(apScopes, s -> ApScopeVO.newInstance(s, staticData)));
+                }
+                versionVOs.add(fundVersion);
             }
             fundVO.setVersions(versionVOs);
 
