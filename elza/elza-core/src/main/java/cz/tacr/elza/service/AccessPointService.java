@@ -858,6 +858,7 @@ public class AccessPointService {
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         createAccessPoint(scope, entity, accessPoint, apChange, sdp, externalSystemCode, apState, binding);
+        partService.validationNameUnique(apState.getScope(), accessPoint.getPreferredPart().getValue());
 
         publishAccessPointCreateEvent(accessPoint);
 
@@ -879,6 +880,7 @@ public class AccessPointService {
         stateRepository.save(stateNew);
 
         createAccessPoint(scope, entity, accessPoint, apChange, sdp, externalSystemCode, stateNew, null);
+        partService.validationNameUnique(scope, accessPoint.getPreferredPart().getValue());
 
         publishAccessPointUpdateEvent(accessPoint);
     }
@@ -1603,6 +1605,7 @@ public class AccessPointService {
             accessPoint.setPreferredPart(findPreferredPart(entity.getPrts().getList(), newBindingParts));
 
             updatePartValues(state, partList, itemMap);
+            partService.validationNameUnique(state.getScope(), accessPoint.getPreferredPart().getValue());
         }
     }
 
