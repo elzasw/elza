@@ -575,4 +575,11 @@
         <dropTable tableName="ap_rule_system" />
     </changeSet>
 
+    <changeSet id="20200803100700" author="pasek">
+        <sql>UPDATE public.arr_fund SET unitdate = (SELECT arr_fund_version.date_range FROM public.arr_fund_version WHERE
+            arr_fund_version.fund_id = arr_fund.fund_id and arr_fund_version.lock_change_id is null) WHERE unitdate is null
+        </sql>
+        <dropColumn tableName="arr_fund_version" columnName="date_range" />
+    </changeSet>
+
 </databaseChangeLog>

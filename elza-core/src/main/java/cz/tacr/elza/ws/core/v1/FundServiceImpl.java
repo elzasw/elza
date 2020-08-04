@@ -46,7 +46,7 @@ public class FundServiceImpl implements FundService {
         if (uuid == null) {
             uuid = UUID.randomUUID().toString();
         }
-        
+
         ArrChange change = arrangementService.createChange(ArrChange.Type.CREATE_AS);
 
 
@@ -66,14 +66,12 @@ public class FundServiceImpl implements FundService {
         if(StringUtils.isNotBlank(fundInfo.getId())) {
             fundNumber = Integer.valueOf(fundInfo.getId().trim());
         }
-        ArrFund fund = arrangementService.createFund(
-                                                     fundInfo.getFundName(),
+        ArrFund fund = arrangementService.createFund(fundInfo.getFundName(),
                                                      ruleset,
                                                      change,
                                                      uuid,
                                                      fundInfo.getInternalCode(),
                                                      institution,
-                                                     fundInfo.getDateRange(),
                                                      fundNumber,
                                                      null,
                                                      fundInfo.getMark());

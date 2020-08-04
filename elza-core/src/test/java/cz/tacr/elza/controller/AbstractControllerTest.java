@@ -685,7 +685,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření archivní pomůcky.
      *
-     * @param createFund parametry pro založení
+     * @param fund parametry pro založení
      * @return ap
      */
     protected Fund createFundV1(final CreateFund fund) {
@@ -736,26 +736,21 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Uzavření verze archivní pomůcky.
      *
      * @param fundVersion verze archivní pomůcky
-     * @param dateRange
      * @return nová verze ap
      */
-    protected ArrFundVersionVO approveVersion(final ArrFundVersionVO fundVersion,
-                                              final String dateRange) {
-        return approveVersion(fundVersion.getId(), dateRange);
+    protected ArrFundVersionVO approveVersion(final ArrFundVersionVO fundVersion) {
+        return approveVersion(fundVersion.getId());
     }
 
     /**
      * Uzavření verze archivní pomůcky.
      *
      * @param versionId identifikátor verze archivní pomůcky
-     * @param dateRange identifikátor výstupu
      * @return nová verze ap
      */
-    protected ArrFundVersionVO approveVersion(final Integer versionId,
-                                              final String dateRange) {
+    protected ArrFundVersionVO approveVersion(final Integer versionId) {
         Response response = put(spec -> spec
-                .queryParameter("versionId", versionId)
-                .queryParameter("dateRange", dateRange), APPROVE_VERSION);
+                .queryParameter("versionId", versionId), APPROVE_VERSION);
         return response.getBody().as(ArrFundVersionVO.class);
     }
 

@@ -373,7 +373,6 @@ public class ClientFactoryVO {
             fundVersionVO.setIssues(wfFactory.createSimpleIssues(fundVersion.getFund(), user));
             fundVersionVO.setConfig(wfFactory.createConfig(fundVersion));
         }
-        fundVersionVO.setDateRange(fundVersion.getDateRange());
         fundVersionVO.setRuleSetId(fundVersion.getRuleSet().getRuleSetId());
 
         return fundVersionVO;

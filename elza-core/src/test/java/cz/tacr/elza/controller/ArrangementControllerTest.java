@@ -942,7 +942,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      */
     private ArrFundVersionVO approvedVersion(final ArrFundVersionVO fundVersion) {
         assertNotNull(fundVersion);
-        ArrFundVersionVO newFundVersion = approveVersion(fundVersion, fundVersion.getDateRange());
+        ArrFundVersionVO newFundVersion = approveVersion(fundVersion);
 
         // "Musí být odlišné identifikátory"
         assertTrue(!fundVersion.getId().equals(newFundVersion.getId()));

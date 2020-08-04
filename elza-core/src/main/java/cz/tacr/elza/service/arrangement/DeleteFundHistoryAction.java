@@ -197,7 +197,6 @@ public class DeleteFundHistoryAction {
         em.flush();
 
         // verze AS budou vymazány všechny a založí se nová verze kopii poslední, aktuální
-        String timeRange = fundVersion.getDateRange();
         RulRuleSet ruleSet = fundVersion.getRuleSet();
 
         nodeConformityMissingRepository.deleteByNodeConformityNodeFund(fund);
@@ -212,7 +211,7 @@ public class DeleteFundHistoryAction {
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.CREATE_AS);
         // create new version
-        fundVersion = arrangementService.createVersion(change, fund, ruleSet, rootNode, timeRange);
+        fundVersion = arrangementService.createVersion(change, fund, ruleSet, rootNode);
 
         updateChanges(fund, change);
 

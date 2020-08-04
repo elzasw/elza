@@ -363,7 +363,7 @@ public class ArrangementController {
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDao dao = daoRepository.getOneCheckExist(daoId);
         final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
-        
+
         ArrDaoLink daoLink;
         // specializace dle typu DAO
         switch (dao.getDaoType()) {
@@ -1253,7 +1253,7 @@ public class ArrangementController {
         ArrFundVersion version = arrangementService.getFundVersion(versionId);
 
         UserDetail user = userService.getLoggedUserDetail();
-        ArrFundVersion nextVersion = arrangementService.approveVersion(version, dateRange);
+        ArrFundVersion nextVersion = arrangementService.approveVersion(version);
         return factoryVo.createFundVersion(nextVersion, user);
     }
 
