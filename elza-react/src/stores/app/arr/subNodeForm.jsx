@@ -64,14 +64,10 @@ function getLoc(state, valueLocation) {
         descItem = {...descItemType.descItems[valueLocation.descItemIndex]};
     }
 
-    descItemGroup.descItemTypes = [
-        ...descItemGroup.descItemTypes
-    ]
+    descItemGroup.descItemTypes = [...descItemGroup.descItemTypes];
     descItemGroup.descItemTypes[valueLocation.descItemTypeIndex] = descItemType;
 
-    descItemType.descItems = [
-        ...descItemType.descItems
-    ]
+    descItemType.descItems = [...descItemType.descItems];
     if (descItem) {
         descItemType.descItems[valueLocation.descItemIndex] = descItem;
     }
@@ -605,7 +601,6 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItem.descItemObjectId = action.descItemResult.item.descItemObjectId;
                     loc.descItem.id = action.descItemResult.item.id;
                     loc.descItem.prevValue = action.descItemResult.item.value;
-                    loc.descItem.party = action.descItemResult.item.party;
                     loc.descItem.record = action.descItemResult.item.record;
                     loc.descItem.saving = false;
                     if (loc.descItemType.useSpecification) {

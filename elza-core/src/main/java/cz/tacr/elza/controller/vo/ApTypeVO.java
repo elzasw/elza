@@ -25,10 +25,6 @@ public class ApTypeVO
      */
     private Integer parentApTypeId;
     /**
-     * Určení, zda hesla daného typu mohou být "abstraktní" osobou/původcem a jakého typu.
-     */
-    private Integer partyTypeId;
-    /**
      * Seznam potomků.
      */
     private List<ApTypeVO> children;
@@ -48,14 +44,6 @@ public class ApTypeVO
 
     public void setAddRecord(final Boolean addRecord) {
         this.addRecord = addRecord;
-    }
-
-    public Integer getPartyTypeId() {
-        return partyTypeId;
-    }
-
-    public void setPartyTypeId(final Integer partyTypeId) {
-        this.partyTypeId = partyTypeId;
     }
 
     public Integer getParentApTypeId() {

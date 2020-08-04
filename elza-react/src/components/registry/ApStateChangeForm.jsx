@@ -10,7 +10,7 @@ import {getTreeItemById} from './registryUtils';
 import Scope from '../shared/scope/Scope';
 import * as StateApproval from '../enum/StateApproval';
 import FormInputField from '../../components/shared/form/FormInputField';
-import {connect} from "react-redux";
+import {connect} from 'react-redux';
 
 class ApStateChangeForm extends AbstractReactComponent {
     static validate = (values, props) => {
@@ -25,7 +25,6 @@ class ApStateChangeForm extends AbstractReactComponent {
 
     static propTypes = {
         accessPointId: PropTypes.number.isRequired,
-        partyTypeId: PropTypes.number,
         versionId: PropTypes.number,
         hideType: PropTypes.bool,
     };
@@ -43,12 +42,14 @@ class ApStateChangeForm extends AbstractReactComponent {
         });
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-    }
+    UNSAFE_componentWillReceiveProps(nextProps) {}
 
     componentDidMount() {
         if (!this.props.scopeId) {
-            const {refTables: {scopesData}, versionId} = this.props;
+            const {
+                refTables: {scopesData},
+                versionId,
+            } = this.props;
             let index = scopesData.scopes ? indexById(scopesData.scopes, versionId, 'versionId') : false;
             if (index && scopesData.scopes[index].scopes && scopesData.scopes[index].scopes[0].id) {
                 this.props.change('scopeId', scopesData.scopes[index].scopes[0].id);
@@ -63,7 +64,7 @@ class ApStateChangeForm extends AbstractReactComponent {
             hideType,
             versionId,
             refTables: {scopesData, apTypes},
-            submitting
+            submitting,
         } = this.props;
 
         return (
@@ -75,7 +76,7 @@ class ApStateChangeForm extends AbstractReactComponent {
                             disabled={submitting}
                             versionId={versionId}
                             label={i18n('ap.state.title.scope')}
-                            name={"scopeId"}
+                            name={'scopeId'}
                         />
                         {!hideType && (
                             <Field
@@ -85,7 +86,7 @@ class ApStateChangeForm extends AbstractReactComponent {
                                 tree
                                 alwaysExpanded
                                 allowSelectItem={item => item.addRecord}
-                                name={"typeId"}
+                                name={'typeId'}
                                 useIdAsValue
                                 disabled={submitting}
                             />
@@ -97,14 +98,14 @@ class ApStateChangeForm extends AbstractReactComponent {
                             useIdAsValue
                             label={i18n('ap.state.title.state')}
                             items={this.getStateWithAll()}
-                            name={"state"}
+                            name={'state'}
                         />
                         <Field
                             component={FormInputField}
                             disabled={submitting}
                             type="text"
                             label={i18n('ap.state.title.comment')}
-                            name={"comment"}
+                            name={'comment'}
                         />
                     </Modal.Body>
                     <Modal.Footer>
@@ -121,7 +122,7 @@ class ApStateChangeForm extends AbstractReactComponent {
     }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
     const selector = formValueSelector('apStateChangeForm');
 
     return {
@@ -131,8 +132,10 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps)(reduxForm({
-    form: 'apStateChangeForm',
-    // fields: ['comment', 'typeId', 'scopeId', 'state'],
-    validate: ApStateChangeForm.validate,
-})(ApStateChangeForm));
+export default connect(mapStateToProps)(
+    reduxForm({
+        form: 'apStateChangeForm',
+        // fields: ['comment', 'typeId', 'scopeId', 'state'],
+        validate: ApStateChangeForm.validate,
+    })(ApStateChangeForm),
+);

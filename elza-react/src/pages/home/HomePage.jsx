@@ -249,14 +249,7 @@ class HomePage extends AbstractReactComponent {
 
         let centerPanel = <div className="splitter-home">{this.renderHistory()}</div>;
 
-        return (
-            <PageLayout
-                splitter={splitter}
-                className="party-page"
-                ribbon={this.buildRibbon()}
-                centerPanel={centerPanel}
-            />
-        );
+        return <PageLayout splitter={splitter} ribbon={this.buildRibbon()} centerPanel={centerPanel} />;
     }
 }
 

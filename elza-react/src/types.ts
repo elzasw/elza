@@ -2,6 +2,7 @@ import {ApTypeVO} from './api/ApTypeVO';
 import {RulDataTypeVO} from './api/RulDataTypeVO';
 import {RulDescItemTypeExtVO} from './api/RulDescItemTypeExtVO';
 import {RulPartTypeVO} from './api/RulPartTypeVO';
+import {UsrUserVO} from './api/UsrUserVO';
 
 export interface IssueListVO {
     id: number;
@@ -41,16 +42,6 @@ export interface CommentVO {
     prevStateId: number;
     nextStateId: number;
     timeCreated: string;
-}
-
-export interface UsrUserVO {
-    username: string;
-    id: string;
-    active: boolean;
-    description: string;
-    party: Object;
-    permissions: Object[];
-    groups: Object[];
 }
 
 export interface CodelistData {

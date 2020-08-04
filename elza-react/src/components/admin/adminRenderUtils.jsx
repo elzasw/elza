@@ -30,9 +30,9 @@ export function getUsername(user) {
     if (user.preferredName) {
         // if user has preferredName defined
         return user.preferredName + ' (' + user.username + ')';
-    } else if (user.party && user.party.accessPoint && user.party.accessPoint.record) {
+    } else if (user.accessPoint && user.accessPoint.name) {
         // if user has record name
-        return user.party.accessPoint.record + ' (' + user.username + ')';
+        return user.accessPoint.name + ' (' + user.username + ')';
     } else {
         return user.username;
     }

@@ -56,14 +56,7 @@ export function storeLoadData(type, data, switchView = true) {
     return (dispatch, getState) => {
         switch (type) {
             case 'APP':
-            case 'PARTY_REGION':
                 dispatch(storeLoad({store: 'app', ...data}));
-                if (switchView) {
-                    if (data.partyDetail) {
-                        dispatch(routerNavigate('/party'));
-                        dispatch(setFocus(FOCUS_KEYS.PARTY, 1, 'list'));
-                    }
-                }
                 break;
             case 'REGISTRY_REGION':
                 dispatch(storeLoad({store: 'app', ...data}));

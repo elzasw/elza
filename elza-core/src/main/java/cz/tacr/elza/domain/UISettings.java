@@ -167,7 +167,7 @@ public class UISettings {
          * Používá klient pro čtení režimu fondu (read-only vs write)
          */
         FUND_READ_MODE(true, EntityType.FUND),
-        
+
         /**
          * Používá klient pro čtení stavu pravého panelu
          */
@@ -194,11 +194,6 @@ public class UISettings {
         FAVORITE_ITEM_SPECS(false, EntityType.ITEM_TYPE),
 
         /**
-         * Připnutí sekcí osob
-         */
-        PARTY_PIN,
-
-        /**
          * Zobrazení popisků archivních souborů.
          */
         FUND_VIEW(false, EntityType.RULE),
@@ -212,13 +207,13 @@ public class UISettings {
          * Zobrazení skupin typů atributů v archivním souboru.
          */
         STRUCTURE_TYPES(false, EntityType.RULE),
-        
+
         /**
          * Settings for given structured type
-         * 
-         * Optional settings are defined for 
+         *
+         * Optional settings are defined for
          * given structured type and eventually for fund.
-         * 
+         *
          * Settings is saved as 'STRUCT_TYPE_<CODE>`
          */
         STRUCT_TYPE_(false, EntityType.FUND),
@@ -266,7 +261,7 @@ public class UISettings {
             this.global = global;
             this.entityType = entityType;
         }
-        
+
         public EntityType getEntityType() {
             return entityType;
         }

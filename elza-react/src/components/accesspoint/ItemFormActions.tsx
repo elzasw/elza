@@ -44,7 +44,6 @@ export abstract class ItemFormActions {
                 case types.ITEM_FORM_VALUE_CHANGE:
                 case types.ITEM_FORM_FORM_VALUE_CHANGE_POSITION:
                 case types.ITEM_FORM_VALUE_CHANGE_SPEC:
-                case types.ITEM_FORM_VALUE_CHANGE_PARTY:
                 case types.ITEM_FORM_VALUE_CHANGE_RECORD:
                 case types.ITEM_FORM_VALUE_VALIDATE_RESULT:
                 case types.ITEM_FORM_VALUE_BLUR:

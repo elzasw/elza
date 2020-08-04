@@ -33,8 +33,6 @@ class RegistryField extends AbstractReactComponent {
         undefined: false,
         registryParent: null,
         apTypeId: null,
-        roleTypeId: null,
-        partyId: null,
         versionId: null,
         useIdAsValue: false,
         addEmpty: false,
@@ -52,8 +50,6 @@ class RegistryField extends AbstractReactComponent {
         registryParent: PropTypes.number,
         apTypeId: PropTypes.number,
         itemSpecId: PropTypes.number,
-        roleTypeId: PropTypes.number,
-        partyId: PropTypes.number,
         versionId: PropTypes.number,
         useIdAsValue: PropTypes.bool,
         addEmpty: PropTypes.bool,
@@ -73,23 +69,17 @@ class RegistryField extends AbstractReactComponent {
     handleSearchChange = debounce(text => {
         text = text === '' ? null : text;
         this.setState({searchText: text});
-        const {roleTypeId, partyId, registryParent, apTypeId, versionId, itemSpecId, itemTypeId} = this.props;
-        let promise = null;
-        if (roleTypeId || partyId) {
-            promise = WebApi.findRecordForRelation(text, roleTypeId, partyId, 0, AUTOCOMPLETE_REGISTRY_LIST_SIZE);
-        } else {
-            promise = WebApi.findAccessPoint(
-                text,
-                registryParent,
-                apTypeId,
-                versionId,
-                itemTypeId,
-                itemSpecId,
-                0,
-                AUTOCOMPLETE_REGISTRY_LIST_SIZE,
-            );
-        }
-        promise.then(json => {
+        const {registryParent, apTypeId, versionId, itemSpecId, itemTypeId} = this.props;
+        WebApi.findAccessPoint(
+            text,
+            registryParent,
+            apTypeId,
+            versionId,
+            itemTypeId,
+            itemSpecId,
+            0,
+            AUTOCOMPLETE_REGISTRY_LIST_SIZE,
+        ).then(json => {
             this.setState({
                 registryList: json.rows,
                 count: json.count,
@@ -124,12 +114,7 @@ class RegistryField extends AbstractReactComponent {
         const {versionId} = this.props;
         this.refAutocomplete.closeMenu();
         this.props.dispatch(
-            modalDialogShow(
-                this,
-                i18n('extImport.title'),
-                <ExtImportForm versionId={versionId} />,
-                'dialog-lg',
-            ),
+            modalDialogShow(this, i18n('extImport.title'), <ExtImportForm versionId={versionId} />, 'dialog-lg'),
         );
     };
 
@@ -209,7 +194,7 @@ class RegistryField extends AbstractReactComponent {
             return obj;
         }
         // změna typu aby se objekt dal použít jako návazný
-        if (this.props.addEmpty && (obj == null || obj === "" || obj.id === -1)) {
+        if (this.props.addEmpty && (obj == null || obj === '' || obj.id === -1)) {
             return null;
         }
         const newobj = {
@@ -247,7 +232,7 @@ class RegistryField extends AbstractReactComponent {
 
         let items = this.state.registryList;
         if (addEmpty) {
-            items = [{id: -1, name: 'Prázdný'}, ...items]
+            items = [{id: -1, name: 'Prázdný'}, ...items];
         }
 
         return (

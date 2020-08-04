@@ -1020,24 +1020,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(fulltext);
     }
 
-    private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list, final boolean hasPartyType) {
-        for (ApTypeVO type : list) {
-            if (type.getAddRecord() && ((!hasPartyType && type.getPartyTypeId() == null) || (hasPartyType && type.getPartyTypeId() != null))) {
-                return type;
-            }
-        }
-
-        for (ApTypeVO type : list) {
-            if (type.getChildren() != null) {
-                ApTypeVO res = getNonHierarchicalApType(type.getChildren(), hasPartyType);
-                if (res != null) {
-                    return res;
-                }
-            }
-        }
-        return null;
-    }
-
     @Test
     public void replaceDataValuesTest() throws InterruptedException {
 

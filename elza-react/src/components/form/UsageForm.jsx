@@ -51,12 +51,7 @@ class RegistryUsageForm extends React.Component {
                 });
 
                 this.props.dispatch(
-                    usageFundTreeReceive(
-                        [
-                            ...this.formatDataForTree(data.funds, 'fund'),
-                        ],
-                        this.getDefaultExpandedIds(data),
-                    ),
+                    usageFundTreeReceive([...this.formatDataForTree(data.funds)], this.getDefaultExpandedIds(data)),
                 );
             }
         }
@@ -86,29 +81,26 @@ class RegistryUsageForm extends React.Component {
 
     countOccurencesForNode = node => node.occurrences && node.occurrences.length;
 
-    formatDataForTree(items, type) {
+    formatDataForTree(items) {
         const processedFunds = [];
         items.forEach(item => {
             processedFunds.push({
                 id: item.id + this.rootFundIdfOffset, //proti překrytí id, míchání dvou druhů dat do jedné komponenty
                 propertyId: item.id, //původní id
-                type,
-                icon: type === 'fund' ? 'fa-database' : 'fa-users',
+                type: 'fund',
+                icon: 'fa-database',
                 name: item.name,
                 depth: 1,
-                hasChildren: type === 'fund',
-                count:
-                    type === 'fund'
-                        ? item.nodes && this.countOccurencesInAS(item.nodes)
-                        : this.countOccurencesForNode(item),
-                link: type === 'party', // FIXME ?: Removing Party
+                hasChildren: true,
+                count: item.nodes && this.countOccurencesInAS(item.nodes),
+                link: false,
             });
             if (item.nodes) {
                 if (item.nodes.length < this.expandFundThreshold) {
                     processedFunds.push(
                         ...item.nodes.map(node => ({
                             name: node.title,
-                            type,
+                            type: 'fund',
                             depth: 2,
                             icon: 'fa-fw',
                             id: node.id, //proti překrytí id, míchání dvou druhů dat do jedné komponenty
@@ -135,9 +127,7 @@ class RegistryUsageForm extends React.Component {
     expandNode(node) {
         const {fundTreeUsage} = this.props;
 
-        const nodes = [
-            ...this.formatDataForTree(this.state.data.funds, 'fund')
-        ];
+        const nodes = [...this.formatDataForTree(this.state.data.funds)];
 
         const expandedNodes = nodes.filter(nodeItem => {
             if (
@@ -261,7 +251,7 @@ class RegistryUsageForm extends React.Component {
                         handleOpenCloseNode={this.handleOpenCloseNode}
                         className="fund-tree-container-fixed"
                         cutLongLabels={true}
-                        ref={ref => this.treeRef = ref}
+                        ref={ref => (this.treeRef = ref)}
                         showCountStats={true}
                         onLinkClick={this.handleLinkClick}
                         {...fundTreeUsage}
@@ -271,12 +261,13 @@ class RegistryUsageForm extends React.Component {
                     <ToggleContent withText text={this.props.replaceText}>
                         <Row>
                             <Col xs={10}>
-                                {this.props.type === 'registry' &&
-                                <RegistryField
-                                    value={this.state.selectedReplacementNode}
-                                    onChange={this.handleChoose}
-                                    onBlur={() => {}}
-                                />}
+                                {this.props.type === 'registry' && (
+                                    <RegistryField
+                                        value={this.state.selectedReplacementNode}
+                                        onChange={this.handleChoose}
+                                        onBlur={() => {}}
+                                    />
+                                )}
                             </Col>
                             <Col xs={2}>
                                 <Button
@@ -309,5 +300,5 @@ export default withRouter(
             registryList,
             userDetail: state.userDetail,
         };
-    })(RegistryUsageForm)
+    })(RegistryUsageForm),
 );

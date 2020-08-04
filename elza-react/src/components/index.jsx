@@ -10,7 +10,6 @@ export {FormUtils};
 export {default as ImportForm} from 'components/form/ImportForm';
 export {default as ExportForm} from 'components/form/ExportForm';
 export {default as ExtImportForm} from 'components/form/ExtImportForm';
-export {default as ExtMapperForm} from 'components/form/ExtMapperForm';
 export {default as FormInput} from 'components/shared/form/FormInput';
 
 export {default as Ribbon} from 'components/page/Ribbon';
