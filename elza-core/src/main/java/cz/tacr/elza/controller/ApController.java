@@ -276,6 +276,7 @@ public class ApController {
         SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
 
         ApState apState = accessPointService.createAccessPoint(scope, type, language, accessPoint.getPartForm());
+        partService.validationNameUnique(apState.getScope(), apState.getAccessPoint().getPreferredPart().getValue());
         return apFactory.createVO(apState, true);
     }
 
@@ -860,6 +861,8 @@ public class ApController {
                 .orElseThrow(ap(accessPointId));
         ApPart apPart = partService.getPart(partId);
         accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO);
+        ApState state = accessPointService.getState(apAccessPoint);
+        partService.validationNameUnique(state.getScope(), apAccessPoint.getPreferredPart().getValue());
     }
 
 
@@ -893,6 +896,8 @@ public class ApController {
                 .orElseThrow(ap(accessPointId));
         ApPart apPart = partService.getPart(partId);
         accessPointService.setPreferName(apAccessPoint, apPart);
+        ApState state = accessPointService.getState(apAccessPoint);
+        partService.validationNameUnique(state.getScope(), apAccessPoint.getPreferredPart().getValue());
     }
 
     /**

@@ -7,6 +7,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApItemRepository;
@@ -313,5 +314,33 @@ public class PartService {
             apPart.setValue(displayName);
             partRepository.save(apPart);
         }
+    }
+
+    /**
+     * Validace unikátnosti jména v daném scope.
+     *
+     * @param scope    třída
+     * @param fullName validované jméno
+     */
+    public void validationNameUnique(final ApScope scope, final String fullName) {
+        if (!isNameUnique(scope, fullName)) {
+            throw new BusinessException("Celé jméno není unikátní v rámci oblasti", RegistryCode.NOT_UNIQUE_FULL_NAME)
+                    .set("fullName", fullName)
+                    .set("scopeId", scope.getScopeId());
+        }
+    }
+
+    /**
+     * Kontrola, zdali je jméno unikátní v daném scope.
+     *
+     * @param scope    třída
+     * @param fullName validované jméno
+     * @return true pokud je
+     */
+    public boolean isNameUnique(final ApScope scope, final String fullName) {
+        Validate.notNull(scope, "Přístupový bod musí být vyplněn");
+        Validate.notNull(fullName, "Plné jméno musí být vyplněno");
+        int count = partRepository.countUniqueName(fullName, scope);
+        return count <= 1;
     }
 }
