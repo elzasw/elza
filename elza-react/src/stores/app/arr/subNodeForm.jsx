@@ -57,12 +57,26 @@ function getLoc(state, valueLocation) {
         console.warn('formData do not exist');
         return null;
     }
-    const descItemGroup = state.formData.descItemGroups[valueLocation.descItemGroupIndex];
-    const descItemType = descItemGroup.descItemTypes[valueLocation.descItemTypeIndex];
+    const descItemGroup = {...state.formData.descItemGroups[valueLocation.descItemGroupIndex]};
+    const descItemType = {...descItemGroup.descItemTypes[valueLocation.descItemTypeIndex]};
     let descItem;
     if (typeof valueLocation.descItemIndex !== 'undefined') {
-        descItem = descItemType.descItems[valueLocation.descItemIndex];
+        descItem = {...descItemType.descItems[valueLocation.descItemIndex]};
     }
+
+    descItemGroup.descItemTypes = [
+        ...descItemGroup.descItemTypes
+    ]
+    descItemGroup.descItemTypes[valueLocation.descItemTypeIndex] = descItemType;
+
+    descItemType.descItems = [
+        ...descItemType.descItems
+    ]
+    if (descItem) {
+        descItemType.descItems[valueLocation.descItemIndex] = descItem;
+    }
+
+    // descItem && console.log("$$$$$$$$$", descItem.descItemSpecId)
 
     return {
         descItemGroup: {...descItemGroup},
@@ -409,6 +423,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             var refType = state.refTypesMap[loc.descItemType.id];
 
             if (loc.descItem.descItemSpecId !== action.value) {
+                // console.log(777777777777)
                 loc.descItem.descItemSpecId = action.value;
                 loc.descItem.touched = true;
                 loc.descItem.error = validate(loc.descItem, refType);
@@ -562,6 +577,8 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItemType.descItems.forEach((descItem, index) => {
                         descItem.position = index + 1;
                     });
+                    setLoc(newState, action.valueLocation, loc, true, false);
+                    newState.formData = {...newState.formData};
                     break;
                 case 'UPDATE':
                     loc.descItem.descItemObjectId = action.descItemResult.item
@@ -581,6 +598,8 @@ export default function subNodeForm(state = initialState, action = {}) {
                         loc.descItem.prevRefTemplateId = action.descItemResult.item.refTemplateId;
                     }
                     loc.descItem.touched = false;
+                    setLoc(newState, action.valueLocation, loc, true, true);
+                    newState.formData = {...newState.formData};
                     break;
                 case 'CREATE':
                     loc.descItem.descItemObjectId = action.descItemResult.item.descItemObjectId;
@@ -606,6 +625,8 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItemType.descItems.forEach((descItem, index) => {
                         descItem.position = index + 1;
                     });
+                    setLoc(newState, action.valueLocation, loc, true, true);
+                    newState.formData = {...newState.formData};
                     break;
                 case 'DELETE_DESC_ITEM_TYPE':
                     // nic dalšího není potřeba, node se aktualizuje výše

@@ -1205,7 +1205,7 @@ class DescItemType extends AbstractReactComponent {
         } = this.props;
         const {descItemType} = this.state;
 
-        console.log('[DescItemType] RENDER', this.props.refType.name);
+        // console.log('[DescItemType] RENDER', this.props.refType.name);
 
         const label = this.renderLabel();
         const showDeleteDescItemType = this.getShowDeleteDescItemType();
