@@ -25,7 +25,6 @@ class AddOutputForm extends AbstractReactComponent {
         create: PropTypes.bool,
         initData: PropTypes.object,
         onSubmitForm: PropTypes.func.isRequired,
-        templates: PropTypes.array.isRequired,
     };
 
     /**
@@ -47,7 +46,7 @@ class AddOutputForm extends AbstractReactComponent {
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(outputTypesFetchIfNeeded());
         if (nextProps.outputTypeId) {
-            const index = indexById(nextProps.outputTypes, nextProps.outputTypeId);
+            const index = indexById(nextProps.outputTypes, parseInt(nextProps.outputTypeId));
             if (index !== null) {
                 this.props.dispatch(templatesFetchIfNeeded(nextProps.outputTypes[index].code));
             }
@@ -66,7 +65,7 @@ class AddOutputForm extends AbstractReactComponent {
 
         let templates = false;
         if (outputTypeId) {
-            const index = indexById(outputTypes, outputTypeId);
+            const index = indexById(outputTypes, parseInt(outputTypeId));
             if (index !== null) {
                 const temp = allTemplates[outputTypes[index].code];
                 if (temp && temp.fetched) {
