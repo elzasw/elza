@@ -163,6 +163,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/search";
     protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
     protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type";
+    protected static final String FIND_PART_TYPES = STRUCTURE_CONTROLLER_URL + "/part-type";
     protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
     protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
     protected static final String CREATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create";
@@ -309,6 +310,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CONFIRM_FRAGMENT = AP_CONTROLLER_URL + "/fragment/{fragmentId}/confirm";
     protected static final String CHANGE_FRAGMENT_ITEMS = AP_CONTROLLER_URL + "/fragment/{fragmentId}/items";
     protected static final String CREATE_FRAGMENT = AP_CONTROLLER_URL + "/fragment/create/{fragmentTypeCode}";
+
+    // PART
+    protected static final String CREATE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part";
+    protected static final String UPDATE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part/{partId}";
+    protected static final String DELETE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part/{partId}";
+    protected static final String SET_PREFER_NAME = AP_CONTROLLER_URL + "/{accessPointId}/part/{partId}/prefer-name";
 
     // RULE
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
@@ -3114,6 +3121,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
+     * Vyhledá možné typy partů.
+     *
+     * @return nalezené entity
+     */
+    protected List<RulPartTypeVO> findPartTypes() {
+        return Arrays.asList(get(spec -> spec, FIND_PART_TYPES)
+                .as(RulPartTypeVO[].class));
+    }
+
+    /**
      * Vyhledá dostupná a aktivovaná rozšíření k AS.
      *
      * @param fundVersionId identifikátor verze AS
@@ -3325,6 +3342,58 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected void deleteFragment(final Integer fragmentId) {
         delete(spec -> spec.pathParameter("fragmentId", fragmentId), DELETE_FRAGMENT);
+    }
+
+    /**
+     * Založení nové části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param apPartFormVO data pro vytvoření části
+     */
+    protected void createPart(final Integer accessPointId,
+                              final ApPartFormVO apPartFormVO) {
+        post(spec -> spec.pathParam("accessPointId", accessPointId)
+                .body(apPartFormVO), CREATE_PART);
+    }
+
+    /**
+     * Úprava části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor upravované části
+     * @param apPartFormVO data pro úpravu části
+     */
+    protected void updatePart(final Integer accessPointId,
+                              final Integer partId,
+                              final ApPartFormVO apPartFormVO) {
+        post(spec -> spec.pathParam("accessPointId", accessPointId)
+                .pathParam("partId", partId)
+                .body(apPartFormVO), UPDATE_PART);
+    }
+
+    /**
+     * Smazání části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor mazané části
+     */
+    public void deletePart(final Integer accessPointId,
+                           final Integer partId) {
+        delete(spec -> spec.pathParam("accessPointId", accessPointId)
+                .pathParam("partId", partId), DELETE_PART);
+    }
+
+    /**
+     * Nastavení preferovaného jména přístupového bodu.
+     * Možné pouze pro části typu Označení.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor části, kterou nastavujeme jako preferovanou
+     */
+    public void setPreferName(final Integer accessPointId,
+                              final Integer partId) {
+        put(spec -> spec.pathParam("accessPointId", accessPointId)
+                .pathParam("partId", partId), SET_PREFER_NAME);
     }
 
     protected ApAccessPointVO createStructuredAccessPoint(final ApAccessPointCreateVO accessPoint) {
