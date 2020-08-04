@@ -67,7 +67,7 @@ public class DescriptionItemStringImpl extends DescriptionItemString {
             id.setUnitId(value);
 			return id;
 		default:
-			throw new DEImportException("Unsupported data type:" + dataType);
+            throw new DEImportException("Unsupported data type:" + dataType + ", value: " + value);
 		}
 	}
 }

@@ -15,6 +15,6 @@ public interface ImportableItem {
      * @see ContextNode#addDescItem(ArrDescItem, ArrData)
      */
     default ImportableItemData createData(ImportContext context, DataType dataType) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Failed to createData, dataType: " + dataType);
     }
 }
