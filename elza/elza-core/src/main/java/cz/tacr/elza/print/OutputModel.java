@@ -380,7 +380,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.fund.setName(arrFund.getName());
         this.fund.setInternalCode(arrFund.getInternalCode());
         this.fund.setCreateDate(Date.from(arrFund.getCreateDate().atZone(ZoneId.systemDefault()).toInstant()));
-        this.fund.setDateRange(fundVersion.getDateRange());
 
         // init fund institution
         Institution inst = createInstitution(arrFund);

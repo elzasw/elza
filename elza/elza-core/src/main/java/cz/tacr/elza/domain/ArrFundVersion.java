@@ -84,9 +84,6 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
     @Column(nullable = true, updatable = false, insertable = false)
     private Integer ruleSetId;
 
-    @Column(nullable = true)
-    private String dateRange;
-
     public Integer getFundVersionId() {
         return fundVersionId;
     }
@@ -181,20 +178,6 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
 
     public Integer getRuleSetId() {
         return ruleSetId;
-    }
-
-    /**
-     * @return vysčítaná informace o časovém rozsahu fondu - sdruženo po typech kalendářů
-     */
-    public String getDateRange() {
-        return dateRange;
-    }
-
-    /**
-     * @param dateRange vysčítaná informace o časovém rozsahu fondu - sdruženo po typech kalendářů
-     */
-    public void setDateRange(final String dateRange) {
-        this.dateRange = dateRange;
     }
 
     @Override

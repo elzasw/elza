@@ -73,7 +73,7 @@ public class SectionContext {
     public StaticDataProvider getStaticData() {
         return staticData;
     }
-    
+
     public RulRuleSet getRuleSet() {
         return staticData.getRuleSetById(fundVersion.getRuleSetId());
     }
@@ -88,10 +88,6 @@ public class SectionContext {
 
     public String getFundInternalCode() {
         return fundVersion.getFund().getInternalCode();
-    }
-
-    public String getTimeRange() {
-        return fundVersion.getDateRange();
     }
 
     public void addStructObjectId(Integer structObjId) {
