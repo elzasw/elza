@@ -250,7 +250,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         Set<Integer> distinctPartyIds = new HashSet<>();
         List<Record> parties = new ArrayList<>();
 
-        for (Item item : outputItems) {
+        for (cz.tacr.elza.print.item.Item item : outputItems) {
             String tc = item.getType().getCode();
             if (!typeCodes.contains(tc)) {
                 continue;
@@ -265,7 +265,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     @Override
-    public Item getSingleItem(String typeCode) {
     public cz.tacr.elza.print.item.Item getSingleItem(String typeCode) {
         Validate.notEmpty(typeCode);
 
