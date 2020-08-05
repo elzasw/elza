@@ -46,11 +46,11 @@ public class SectionLevelProcessor implements ItemProcessor {
         processSubEntities(level, contextNode);
     }
 
-    private ArrNode createNode(Level item) {
+    private ArrNode createNode(final Level leve) {
         ArrNode node = new ArrNode();
         node.setFund(section.getFund());
         node.setLastUpdate(section.getCreateChange().getChangeDate().toLocalDateTime());
-        node.setUuid(section.generateNodeUuid());
+        node.setUuid(StringUtils.isEmpty(leve.getUuid()) ? section.generateNodeUuid() : leve.getUuid());
         return node;
     }
 
