@@ -1,25 +1,25 @@
-import {RulDataTypeCodeEnum} from "../api/RulDataTypeCodeEnum";
-import {ApItemVO} from "../api/ApItemVO";
-import {ApCreateTypeVO} from "../api/ApCreateTypeVO";
-import {RulDescItemTypeExtVO} from "../api/RulDescItemTypeExtVO";
-import {ApItemBitVO} from "../api/ApItemBitVO";
-import {ApItemCoordinatesVO} from "../api/ApItemCoordinatesVO";
-import {ApItemEnumVO} from "../api/ApItemEnumVO";
-import {ApItemIntVO} from "../api/ApItemIntVO";
-import {ApItemUriRefVO} from "../api/ApItemUriRefVO";
-import {ApItemAccessPointRefVO} from "../api/ApItemAccessPointRefVO";
-import {ApItemStringVO} from "../api/ApItemStringVO";
-import {ApItemTextVO} from "../api/ApItemTextVO";
-import {ApItemUnitdateVO} from "../api/ApItemUnitdateVO";
-import {ApItemAPFragmentRefVO} from "../api/ApItemAPFragmentRefVO";
-import {ApItemDateVO} from "../api/ApItemDateVO";
-import {ApItemFormattedTextVO} from "../api/ApItemFormattedTextVO";
-import {ApItemDecimalVO} from "../api/ApItemDecimalVO";
-import {ApItemUnitidVO} from "../api/ApItemUnitidVO";
-import {ApViewSettings, ItemType} from "../api/ApViewSettings";
-import {ApPartVO} from "../api/ApPartVO";
-import {RulPartTypeVO} from "../api/RulPartTypeVO";
-import {DetailStoreState} from "../types";
+import {RulDataTypeCodeEnum} from '../api/RulDataTypeCodeEnum';
+import {ApItemVO} from '../api/ApItemVO';
+import {ApCreateTypeVO} from '../api/ApCreateTypeVO';
+import {RulDescItemTypeExtVO} from '../api/RulDescItemTypeExtVO';
+import {ApItemBitVO} from '../api/ApItemBitVO';
+import {ApItemCoordinatesVO} from '../api/ApItemCoordinatesVO';
+import {ApItemEnumVO} from '../api/ApItemEnumVO';
+import {ApItemIntVO} from '../api/ApItemIntVO';
+import {ApItemUriRefVO} from '../api/ApItemUriRefVO';
+import {ApItemAccessPointRefVO} from '../api/ApItemAccessPointRefVO';
+import {ApItemStringVO} from '../api/ApItemStringVO';
+import {ApItemTextVO} from '../api/ApItemTextVO';
+import {ApItemUnitdateVO} from '../api/ApItemUnitdateVO';
+import {ApItemAPFragmentRefVO} from '../api/ApItemAPFragmentRefVO';
+import {ApItemDateVO} from '../api/ApItemDateVO';
+import {ApItemFormattedTextVO} from '../api/ApItemFormattedTextVO';
+import {ApItemDecimalVO} from '../api/ApItemDecimalVO';
+import {ApItemUnitidVO} from '../api/ApItemUnitidVO';
+import {ApViewSettings, ItemType} from '../api/ApViewSettings';
+import {ApPartVO} from '../api/ApPartVO';
+import {RulPartTypeVO} from '../api/RulPartTypeVO';
+import {DetailStoreState} from '../types';
 
 export const ApItemAccessPointRefClass = '.ApItemAccessPointRefVO';
 export const ApItemAPFragmentRefClass = '.ApItemAPFragmentRefVO';
@@ -31,7 +31,6 @@ export const ApItemEnumClass = '.ApItemEnumVO';
 export const ApItemFormattedTextClass = '.ApItemFormattedTextVO';
 export const ApItemIntClass = '.ApItemIntVO';
 export const ApItemJsonTableClass = '.ApItemJsonTableVO';
-export const ApItemPartyRefClass = '.ApItemPartyRefVO';
 export const ApItemStringClass = '.ApItemStringVO';
 export const ApItemTextClass = '.ApItemTextVO';
 export const ApItemUnitdateClass = '.ApItemUnitdateVO';
@@ -80,12 +79,14 @@ export function getItemClass(code: RulDataTypeCodeEnum): string {
     }
 }
 
-export function compareItems(a: ApItemVO,
-                             b: ApItemVO,
-                             partTypeId: number,
-                             refTables: any,
-                             descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-                             apViewSettings: DetailStoreState<ApViewSettings>): number {
+export function compareItems(
+    a: ApItemVO,
+    b: ApItemVO,
+    partTypeId: number,
+    refTables: any,
+    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+    apViewSettings: DetailStoreState<ApViewSettings>,
+): number {
     const part: RulPartTypeVO | undefined = refTables.partTypes.itemsMap[partTypeId];
 
     const aInfo = descItemTypesMap[a.typeId];
@@ -105,7 +106,7 @@ export function compareItems(a: ApItemVO,
             } else {
                 return 0;
             }
-        } else if(aIt) {
+        } else if (aIt) {
             return -1;
         } else {
             return 1;
@@ -119,12 +120,14 @@ export function compareItems(a: ApItemVO,
     }
 }
 
-export function compareCreateTypes(a: ApCreateTypeVO,
-                                   b: ApCreateTypeVO,
-                                   partTypeId: number,
-                                   refTables: any,
-                                   descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-                                   apViewSettings: DetailStoreState<ApViewSettings>): number {
+export function compareCreateTypes(
+    a: ApCreateTypeVO,
+    b: ApCreateTypeVO,
+    partTypeId: number,
+    refTables: any,
+    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+    apViewSettings: DetailStoreState<ApViewSettings>,
+): number {
     const part: RulPartTypeVO | undefined = refTables.partTypes.itemsMap[partTypeId];
 
     const aInfo = descItemTypesMap[a.itemTypeId];
@@ -144,7 +147,7 @@ export function compareCreateTypes(a: ApCreateTypeVO,
             } else {
                 return 0;
             }
-        } else if(aIt) {
+        } else if (aIt) {
             return -1;
         } else {
             return 1;
@@ -158,28 +161,38 @@ export function compareCreateTypes(a: ApCreateTypeVO,
     }
 }
 
-
-export function sortItems(partTypeId: number,
-                          items: ApItemVO[],
-                          refTables: any,
-                          descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-                          apViewSettings: DetailStoreState<ApViewSettings>): ApItemVO[] {
+export function sortItems(
+    partTypeId: number,
+    items: ApItemVO[],
+    refTables: any,
+    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+    apViewSettings: DetailStoreState<ApViewSettings>,
+): ApItemVO[] {
     return [...items].sort((a, b) => {
         return compareItems(a, b, partTypeId, refTables, descItemTypesMap, apViewSettings);
     });
 }
 
-export function sortOwnItems(partTypeId: number, items: ApItemVO[], refTables: any,
-                             descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-                             apViewSettings: DetailStoreState<ApViewSettings>): ApItemVO[] {
+export function sortOwnItems(
+    partTypeId: number,
+    items: ApItemVO[],
+    refTables: any,
+    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+    apViewSettings: DetailStoreState<ApViewSettings>,
+): ApItemVO[] {
     return items.sort((a, b) => {
         return compareItems(a, b, partTypeId, refTables, descItemTypesMap, apViewSettings);
     });
 }
 
-export function findItemPlacePosition(item: ApItemVO, items: ApItemVO[], partTypeId: number, refTables: any,
-                                      descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-                                      apViewSettings: DetailStoreState<ApViewSettings>): number {
+export function findItemPlacePosition(
+    item: ApItemVO,
+    items: ApItemVO[],
+    partTypeId: number,
+    refTables: any,
+    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+    apViewSettings: DetailStoreState<ApViewSettings>,
+): number {
     for (let index = items.length - 1; index >= 0; index--) {
         let i = items[index];
         let n = compareItems(item, i, partTypeId, refTables, descItemTypesMap, apViewSettings);
@@ -191,7 +204,11 @@ export function findItemPlacePosition(item: ApItemVO, items: ApItemVO[], partTyp
     return 0;
 }
 
-export function findViewItemType(itemTypeSettings: ItemType[], part: RulPartTypeVO, itemTypeCode: string): ItemType | null {
+export function findViewItemType(
+    itemTypeSettings: ItemType[],
+    part: RulPartTypeVO,
+    itemTypeCode: string,
+): ItemType | null {
     for (let i = 0; i < itemTypeSettings.length; i++) {
         const itemType = itemTypeSettings[i];
         if (itemType.partType === part.code && itemType.code === itemTypeCode) {
@@ -210,43 +227,52 @@ export function findViewItemType(itemTypeSettings: ItemType[], part: RulPartType
 export function computeAllowedItemSpecIds(
     itemTypeAttributeMap: Record<number, ApCreateTypeVO>,
     itemType: RulDescItemTypeExtVO,
-    itemSpecId?: number
+    itemSpecId?: number,
 ): number[] {
     // Dohledání seznamu povolených specifikací dle atributu, pokud není atribut, použije se prázdný seznam
     // Pokud nějaká hodnota ze specifikace již zmizela (ze seznamu povolených hodnot), "umělě" se přidá do seznamu
     const attribute = itemTypeAttributeMap[itemType.id];
     let useItemSpecIds: Array<number>;
-    if (attribute) {  // atribut existuje, vezmeme z něj seznam hodnot
+    if (attribute) {
+        // atribut existuje, vezmeme z něj seznam hodnot
         useItemSpecIds = [...(attribute.itemSpecIds || [])];
-    } else {  // seznam hodnot bude prázdný
+    } else {
+        // seznam hodnot bude prázdný
         useItemSpecIds = [];
     }
-    if (itemSpecId && useItemSpecIds.indexOf(itemSpecId) < 0) { // má hodnotu specifikace, ale není v seznamu povolených, uměle ji tam přidáme
+    if (itemSpecId && useItemSpecIds.indexOf(itemSpecId) < 0) {
+        // má hodnotu specifikace, ale není v seznamu povolených, uměle ji tam přidáme
         useItemSpecIds.push(itemSpecId);
     }
     return useItemSpecIds;
 }
 
 export function hasItemValue(item: ApItemVO): boolean {
-    switch (item["@class"]) {
+    switch (item['@class']) {
         case ApItemAccessPointRefClass:
-            return typeof (item as ApItemAccessPointRefVO).value !== "undefined" && (item as ApItemAccessPointRefVO).value !== null;
+            return (
+                typeof (item as ApItemAccessPointRefVO).value !== 'undefined' &&
+                (item as ApItemAccessPointRefVO).value !== null
+            );
         case ApItemAPFragmentRefClass:
-            return typeof (item as ApItemAPFragmentRefVO).value !== "undefined" && (item as ApItemAPFragmentRefVO).value !== null;
+            return (
+                typeof (item as ApItemAPFragmentRefVO).value !== 'undefined' &&
+                (item as ApItemAPFragmentRefVO).value !== null
+            );
         case ApItemBitClass:
-            return typeof (item as ApItemBitVO).value !== "undefined" && (item as ApItemBitVO).value !== null;
+            return typeof (item as ApItemBitVO).value !== 'undefined' && (item as ApItemBitVO).value !== null;
         case ApItemCoordinatesClass:
             return !!(item as ApItemCoordinatesVO).value;
         case ApItemDateClass:
             return !!(item as ApItemDateVO).value;
         case ApItemDecimalClass:
-            return typeof (item as ApItemDecimalVO).value !== "undefined" && (item as ApItemDecimalVO).value !== null;
+            return typeof (item as ApItemDecimalVO).value !== 'undefined' && (item as ApItemDecimalVO).value !== null;
         case ApItemEnumClass:
-            return typeof (item as ApItemEnumVO).specId !== "undefined" && (item as ApItemEnumVO).specId !== null;
+            return typeof (item as ApItemEnumVO).specId !== 'undefined' && (item as ApItemEnumVO).specId !== null;
         case ApItemFormattedTextClass:
             return !!(item as ApItemFormattedTextVO).value;
         case ApItemIntClass:
-            return typeof (item as ApItemIntVO).value !== "undefined" && (item as ApItemIntVO).value !== null;
+            return typeof (item as ApItemIntVO).value !== 'undefined' && (item as ApItemIntVO).value !== null;
         case ApItemStringClass:
             return !!(item as ApItemStringVO).value;
         case ApItemTextClass:
@@ -259,9 +285,8 @@ export function hasItemValue(item: ApItemVO): boolean {
             return !!(item as ApItemUriRefVO).value;
 
         case ApItemJsonTableClass:
-        case ApItemPartyRefClass:
         default:
-            console.error("Chybí podpora typu class", item["@class"]);
+            console.error('Chybí podpora typu class', item['@class']);
             return false;
     }
 }

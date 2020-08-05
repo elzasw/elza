@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Field, reduxForm} from 'redux-form';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {decorateFormField} from 'components/form/FormUtils.jsx';
@@ -13,9 +13,9 @@ import FormInput from 'components/shared/form/FormInput';
 import Autocomplete from '../shared/autocomplete/Autocomplete';
 import i18n from '../i18n';
 import Icon from '../shared/icon/Icon';
-import FormInputField from "../shared/form/FormInputField";
-import FF from "../shared/form/FF";
-import FileInput from "../shared/form/FileInput";
+import FormInputField from '../shared/form/FormInputField';
+import FF from '../shared/form/FF';
+import FileInput from '../shared/form/FileInput';
 
 /**
  * Formulář importu rejstříkových hesel
@@ -38,7 +38,6 @@ class ImportForm extends AbstractReactComponent {
     };
 
     static propTypes = {
-        party: PropTypes.bool,
         record: PropTypes.bool,
         fund: PropTypes.bool,
     };
@@ -88,15 +87,12 @@ class ImportForm extends AbstractReactComponent {
                 formData.append(key, data[key]);
             }
         }
-        const messageType = this.props.fund ? 'Fund' : this.props.record ? 'Record' : 'Party';
+        const messageType = this.props.fund ? 'Fund' : this.props.record ? 'Record' : 'Unknown';
         this.props.dispatch(importForm(formData, messageType));
     };
 
     render() {
-        const {
-            onClose,
-            handleSubmit,
-        } = this.props;
+        const {onClose, handleSubmit} = this.props;
 
         return (
             <div>
@@ -119,8 +115,9 @@ class ImportForm extends AbstractReactComponent {
                                             );
                                         })}
                                     </FF>
-                                    <FF field={Autocomplete}
-                                        name={"recordScope"}
+                                    <FF
+                                        field={Autocomplete}
+                                        name={'recordScope'}
                                         //{...decorateFormField(recordScope)}
                                         help={null} /// TODO odstranit z decorateFormField help
                                         label={i18n('import.registryScope')}
@@ -135,7 +132,7 @@ class ImportForm extends AbstractReactComponent {
                                     )*/}
                                 </div>
 
-                                <FF field={FileInput} label={i18n('import.file')} type="file" name={"xmlFile"} />
+                                <FF field={FileInput} label={i18n('import.file')} type="file" name={'xmlFile'} />
                             </Modal.Body>
                             <Modal.Footer>
                                 <Button variant="outline-secondary" type="submit" onClick={handleSubmit(this.save)}>
@@ -162,13 +159,14 @@ class ImportForm extends AbstractReactComponent {
     getItemId(item) {
         return item ? item.id : null;
     }
-
 }
 
 export default connect(state => ({
     defaultScopes: state.defaultScopes,
     refTables: state.refTables,
-}))(reduxForm({
+}))(
+    reduxForm({
         form: 'importForm',
         validate: ImportForm.validate,
-})(ImportForm));
+    })(ImportForm),
+);

@@ -824,7 +824,12 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
             const okDisabled = refMarkSelectedNode === null;
             okButtons.push(
-                <Button key="store" disabled={okDisabled} onClick={this.handleRefMarkSubmit}>
+                <Button
+                    key="store"
+                    variant="outline-secondary"
+                    disabled={okDisabled}
+                    onClick={this.handleRefMarkSubmit}
+                >
                     {i18n('global.action.select')}
                 </Button>,
             );

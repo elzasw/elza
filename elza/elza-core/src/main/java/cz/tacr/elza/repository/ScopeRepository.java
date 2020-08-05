@@ -49,6 +49,15 @@ public interface ScopeRepository extends ElzaJpaRepository<ApScope, Integer>, Sc
     Set<Integer> findIdsByFund(final ArrFund fund);
 
     /**
+     * Najde id tříd pro FA.
+     *
+     * @param fund archivní pomůcka
+     * @return id tříd dané fa
+     */
+    @Query("SELECT s FROM arr_fund_register_scope fs JOIN fs.scope s WHERE fs.fund = ?1")
+    Set<ApScope> findByFund(final ArrFund fund);
+
+    /**
      * Najde kódy tříd pro FA.
      *
      * @param fund archivní pomůcka

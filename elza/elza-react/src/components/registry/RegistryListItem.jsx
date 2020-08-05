@@ -4,7 +4,7 @@ import {AbstractReactComponent, Icon} from 'components/shared';
 import classNames from 'classnames';
 
 import './RegistryListItem.scss';
-import {flatRecursiveMap} from "../../stores/app/utils";
+import {flatRecursiveMap} from '../../stores/app/utils';
 
 /**
  * Komponenta item listu osob
@@ -12,7 +12,6 @@ import {flatRecursiveMap} from "../../stores/app/utils";
 class RegistryListItem extends AbstractReactComponent {
     static propTypes = {
         onClick: PropTypes.func,
-        //partyType: PropTypes.object.isRequired,
         relationTypesForClass: PropTypes.object,
         eidTypes: PropTypes.object.isRequired,
         name: PropTypes.string,
@@ -57,13 +56,17 @@ class RegistryListItem extends AbstractReactComponent {
             invalid: invalid,
         });
         if (addEmpty && id === -1) {
-            cls = cls + " empty";
-            return <div key={'record-id-' + id} className={cls}>
-                <div>
-                    <Icon glyph='fa-trash' />
-                    <span className="name" title={emptyTitle}>{emptyTitle}</span>
+            cls = cls + ' empty';
+            return (
+                <div key={'record-id-' + id} className={cls}>
+                    <div>
+                        <Icon glyph="fa-trash" />
+                        <span className="name" title={emptyTitle}>
+                            {emptyTitle}
+                        </span>
+                    </div>
                 </div>
-            </div>;
+            );
         }
 
         const typeNames = this.getApTypeNames().join(' | ');

@@ -418,8 +418,8 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
  */
 function prepareFlatData(data) {
     // Již nahrazeno před posláním akce, zatím necháno, možná se bude celé refaktorovat
-    // data.types = replaceIdsWithString(data.types, typesNumToStrMap);
-    // data.specs = replaceIdsWithString(data.specs, typesNumToStrMap);
+    data.types = replaceIdsWithString(data.types, typesNumToStrMap);
+    data.specs = replaceIdsWithString(data.specs, typesNumToStrMap);
     data.types = insertDescItemSpecsMap(data.types, data.specs);
     return data;
 }
@@ -506,8 +506,8 @@ export function mergeAfterUpdate(state, data, refTables) {
 
     flatLocalForm.update(flatForm);
 
-    console.log(8888, Object.values(flatLocalForm.types));
-    console.log(9999999999999, flatForm);
+    // console.log(8888, Object.values(flatLocalForm.types));
+    // console.log(9999999999999, flatForm);
 
     // Update info about descItemTypes
     // XXXXXXXX
@@ -518,7 +518,7 @@ export function mergeAfterUpdate(state, data, refTables) {
     });
     // state.infoTypesMap = flatLocalForm.types;
 
-    console.log(8888, Object.values(flatLocalForm.types));
+    // console.log(8888, Object.values(flatLocalForm.types));
 
     // Update form with new data
     state.formData = restoreFormDataStructure(flatLocalForm, state.refTypesMap);
@@ -530,7 +530,7 @@ export function mergeAfterUpdate(state, data, refTables) {
                 delete descItem.itemType;
             });
     });
-    console.log(8888, Object.values(flatLocalForm.types));
+    // console.log(8888, Object.values(flatLocalForm.types));
 
     return state;
 }

@@ -118,11 +118,10 @@ export function updateFund(id, data) {
 /**
  * Uzavření AS, nová aktuální AS bude mít předané ruleSetId a arrangementTypeId.
  * @param {int} versionId verze AS
- * @param {int} dateRange
  */
-export function approveFund(versionId, dateRange) {
+export function approveFund(versionId) {
     return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.approveVersion(versionId, dateRange)).then(json => {
+        return savingApiWrapper(dispatch, WebApi.approveVersion(versionId)).then(json => {
             dispatch(addToastrSuccess(i18n('arr.fund.title.approved')));
             dispatch(approveFundResult(json.versionId));
         });

@@ -179,8 +179,12 @@ class DataGridColumnsSettings extends AbstractReactComponent {
                             </div>
                             <div className="center">
                                 <div className="action-buttons">
-                                    <Button onClick={this.handleAddVisible}>&gt;</Button>
-                                    <Button onClick={this.handleRemoveVisible}>&lt;</Button>
+                                    <Button variant="outline-secondary" onClick={this.handleAddVisible}>
+                                        &gt;
+                                    </Button>
+                                    <Button variant="outline-secondary" onClick={this.handleRemoveVisible}>
+                                        &lt;
+                                    </Button>
                                 </div>
                             </div>
                             <div className="right">
@@ -200,7 +204,9 @@ class DataGridColumnsSettings extends AbstractReactComponent {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={() => onSubmitForm(this.state.visible)}>{i18n('global.action.store')}</Button>
+                    <Button variant="outline-secondary" onClick={() => onSubmitForm(this.state.visible)}>
+                        {i18n('global.action.store')}
+                    </Button>
                     <Button variant="link" onClick={onClose}>
                         {i18n('global.action.cancel')}
                     </Button>

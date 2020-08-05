@@ -236,7 +236,6 @@ public class ArrangementService {
      * @param uuid         uuid
      * @param internalCode iterní kód
      * @param institution  instituce
-     * @param dateRange    časový rozsah
      * @return vytvořený arch. soubor
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE})
@@ -246,7 +245,6 @@ public class ArrangementService {
                               final String uuid,
                               final String internalCode,
                               final ParInstitution institution,
-                              final String dateRange,
                               final Integer fundNumber,
                               final String unitdate,
                               final String mark) {
@@ -258,7 +256,7 @@ public class ArrangementService {
         //        Assert.isTrue(ruleSet.equals(arrangementType.getRuleSet()));
 
         ArrLevel rootLevel = createRootLevel(change, uuid, fund);
-        createVersion(change, fund, ruleSet, rootLevel.getNode(), dateRange);
+        createVersion(change, fund, ruleSet, rootLevel.getNode());
 
         return fund;
     }
@@ -364,7 +362,7 @@ public class ArrangementService {
             Uuid = generateUuid();
         }
 
-        ArrFund fund = createFund(name, ruleSet, change, Uuid, internalCode, institution, dateRange,fundNumber,unitdate, mark);
+        ArrFund fund = createFund(name, ruleSet, change, Uuid, internalCode, institution,fundNumber,unitdate, mark);
 
         List<ApScope> defaultScopes = accessPointService.findDefaultScopes();
         if (!defaultScopes.isEmpty()) {
@@ -420,14 +418,12 @@ public class ArrangementService {
     public ArrFundVersion createVersion(final ArrChange createChange,
                                         @AuthParam(type = Type.FUND) final ArrFund fund,
                                         final RulRuleSet ruleSet,
-                                        final ArrNode rootNode,
-                                        final String dateRange) {
+                                        final ArrNode rootNode) {
         ArrFundVersion version = new ArrFundVersion();
         version.setCreateChange(createChange);
         version.setFund(fund);
         version.setRuleSet(ruleSet);
         version.setRootNode(rootNode);
-        version.setDateRange(dateRange);
         return fundVersionRepository.save(version);
     }
 
@@ -608,13 +604,11 @@ public class ArrangementService {
      * - spustí přepočet stavů uzlů pro novou verzi
      *
      * @param version   verze, která se má uzavřít
-     * @param dateRange vysčítaná informace o časovém rozsahu fondu
      * @return nová verze archivní pomůcky
      * @throws ConcurrentUpdateException chyba při současné manipulaci s položkou více uživateli
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
-    public ArrFundVersion approveVersion(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
-                                         final String dateRange) {
+    public ArrFundVersion approveVersion(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
 
         ArrFund fund = version.getFund();
@@ -639,7 +633,7 @@ public class ArrangementService {
         version.setLockChange(change);
         fundVersionRepository.save(version);
 
-        ArrFundVersion newVersion = createVersion(change, fund, version.getRuleSet(), version.getRootNode(), dateRange);
+        ArrFundVersion newVersion = createVersion(change, fund, version.getRuleSet(), version.getRootNode());
         ruleService.conformityInfoAll(newVersion);
 
         eventNotificationService.publishEvent(
@@ -1784,12 +1778,19 @@ public class ArrangementService {
 
                 if (CollectionUtils.isNotEmpty(sourceNodeItems)) {
                     List<ArrDescItem> nodeItems = nodeItemMap.getOrDefault(refTemplateMapType.getToItemType().getItemTypeId(), new ArrayList<>());
-                    ArrChange change = createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
 
                     if (CollectionUtils.isEmpty(nodeItems)) {
+                        ArrChange change = createChange(ArrChange.Type.ADD_DESC_ITEM);
+                        List<ArrDescItem> newItems = descriptionItemService.createDescriptionItems(sourceNodeItems, refTemplateMapType);
+                        ArrFundVersion fundVersion = getOpenVersionByFundId(node.getFundId());
+                        descriptionItemService.createDescriptionItems(newItems, node, fundVersion, change);
                     } else if (sourceNodeItems.size() > 1 || nodeItems.size() > 1) {
+                        ArrChange change = createChange(ArrChange.Type.UPDATE_DESC_ITEM, node);
                         ArrFundVersion fundVersion = getOpenVersionByFundId(node.getFundId());
                         descriptionItemService.deleteDescriptionItems(nodeItems, node, fundVersion, change, true);
+
+                        List<ArrDescItem> newItems = descriptionItemService.createDescriptionItems(sourceNodeItems, refTemplateMapType);
+                        descriptionItemService.createDescriptionItems(newItems, node, fundVersion, change);
                     } else {
                         ArrDescItem sourceItem = sourceNodeItems.get(0);
                         ArrDescItem targetItem = nodeItems.get(0);

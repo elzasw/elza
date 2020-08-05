@@ -41,9 +41,8 @@ import './Layout.scss';
 import {modalDialogShow} from '../actions/global/modalDialog';
 import i18n from '../components/i18n';
 import RegistryUsageForm from '../components/form/RegistryUsageForm';
-import PartyUsageForm from '../components/form/PartyUsageForm';
 import {FOCUS_KEYS} from '../constants.tsx';
-import AdminBulkActionPage from "./admin/AdminBulkActionPage";
+import AdminBulkActionPage from './admin/AdminBulkActionPage';
 
 let _gameRunner = null;
 
@@ -114,11 +113,6 @@ class Layout extends AbstractReactComponent {
     //kvůli circular dependency
     handleRegistryShowUsage = data => {
         this.props.dispatch(modalDialogShow(this, i18n('registry.registryUsage'), <RegistryUsageForm detail={data} />));
-    };
-
-    //kvůli circular dependency
-    handlePartyShowUsage = data => {
-        this.props.dispatch(modalDialogShow(this, i18n('party.usage.button'), <PartyUsageForm detail={data} />));
     };
 
     render() {

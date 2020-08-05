@@ -47,11 +47,9 @@ class DescItemType extends AbstractReactComponent {
         onChangePosition: PropTypes.func.isRequired,
         onBlur: PropTypes.func.isRequired,
         onFocus: PropTypes.func.isRequired,
-        onCreateParty: PropTypes.func.isRequired,
         onCoordinatesDownload: PropTypes.func.isRequired,
         onJsonTableDownload: PropTypes.func.isRequired,
         onCoordinatesUpload: PropTypes.func.isRequired,
-        onDetailParty: PropTypes.func.isRequired,
         onCreateRecord: PropTypes.func.isRequired,
         onDetailRecord: PropTypes.func.isRequired,
         onCreatePacket: PropTypes.func.isRequired,
@@ -116,14 +114,12 @@ class DescItemType extends AbstractReactComponent {
             'handleChangeSpec',
             'handleCoordinatesUpload',
             'handleCoordinatesUploadButtonClick',
-            'handleCreateParty',
             'handleCreateRecord',
             'handleDescItemShortcuts',
             'handleDescItemTypeCopy',
             'handleDescItemTypeCopyFromPrev',
             'handleDescItemTypeLock',
             'handleDescItemTypeShortcuts',
-            'handleDetailParty',
             'handleDetailRecord',
             'handleDragEnd',
             'handleDragLeave',
@@ -398,26 +394,6 @@ class DescItemType extends AbstractReactComponent {
      */
     handleFundFiles(descItemIndex) {
         this.props.onFundFiles(descItemIndex);
-    }
-
-    /**
-     * Vytvoření nové osoby.
-     *
-     * @param descItemIndex {number} index hodnoty atributu v seznamu
-     * @param partyTypeId {number} identifikátor typu osoby
-     */
-    handleCreateParty(descItemIndex, partyTypeId) {
-        this.props.onCreateParty(descItemIndex, partyTypeId);
-    }
-
-    /**
-     * Zobrazení detailu osoby
-     *
-     * @param descItemIndex {number} index hodnoty atributu v seznamu
-     * @param partyId {number} identifikátor osoby
-     */
-    handleDetailParty(descItemIndex, partyId) {
-        this.props.onDetailParty(descItemIndex, partyId);
     }
 
     /**
@@ -1205,7 +1181,7 @@ class DescItemType extends AbstractReactComponent {
         } = this.props;
         const {descItemType} = this.state;
 
-        console.log('[DescItemType] RENDER', this.props.refType.name);
+        // console.log('[DescItemType] RENDER', this.props.refType.name);
 
         const label = this.renderLabel();
         const showDeleteDescItemType = this.getShowDeleteDescItemType();

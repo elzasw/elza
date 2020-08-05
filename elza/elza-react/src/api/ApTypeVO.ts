@@ -1,4 +1,4 @@
-import {BaseCodeVo} from "./BaseCodeVo";
+import {BaseCodeVo} from './BaseCodeVo';
 
 export interface ApTypeVO extends BaseCodeVo {
     /**
@@ -9,10 +9,6 @@ export interface ApTypeVO extends BaseCodeVo {
      * Odkaz na sebe sama (hierarchie typů rejstříků).
      */
     parentApTypeId: number;
-    /**
-     * Určení, zda hesla daného typu mohou být "abstraktní" osobou/původcem a jakého typu.
-     */
-    partyTypeId: number;
     /**
      * Seznam potomků.
      */

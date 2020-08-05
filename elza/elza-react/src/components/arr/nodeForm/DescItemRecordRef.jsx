@@ -50,65 +50,36 @@ class DescItemRecordRef extends AbstractReactComponent {
     handleSelectModule = ({onSelect, filterText, value}) => {
         const {hasSpecification, descItem, registryList, fundName, nodeName, itemName, specName} = this.props;
         const oldFilter = {...registryList.filter};
-        const open = (hasParty = false) => {
-            // if (hasParty) {
-            //     this.props.dispatch(
-            //         partyListFilter({
-            //             ...partyList.filter,
-            //             text: filterText,
-            //             itemSpecId: hasSpecification ? descItem.descItemSpecId : null,
-            //         }),
-            //     );
-            //     this.props.dispatch(partyDetailClear());
-            // }
-            console.warn(this.props.itemTypeId);
-            this.props.dispatch(
-                registryListFilter({
-                    ...registryList.filter,
-                    registryTypeId: null,
-                    itemTypeId: this.props.itemTypeId,
-                    text: filterText,
-                    itemSpecId: hasSpecification ? descItem.descItemSpecId : null,
-                }),
-            );
 
-            this.props.dispatch(registryDetailFetchIfNeeded(value ? value.id : null));
-            this.props.dispatch(
-                modalDialogShow(
-                    this,
-                    null,
-                    <RegistrySelectPage
-                        titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
-                        hasParty={hasParty}
-                        onSelect={data => {
-                            onSelect(data);
-                            // if (hasParty) {
-                            //     this.props.dispatch(
-                            //         partyListFilter({
-                            //             text: null,
-                            //             type: null,
-                            //             itemSpecId: null,
-                            //         }),
-                            //     );
-                            //     this.props.dispatch(partyDetailClear());
-                            // }
-                            this.props.dispatch(registryListFilter({...oldFilter}));
-                            this.props.dispatch(registryDetailClear());
-                        }}
-                    />,
-                    classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER),
-                    () => {
+        this.props.dispatch(
+            registryListFilter({
+                ...registryList.filter,
+                registryTypeId: null,
+                itemTypeId: this.props.itemTypeId,
+                text: filterText,
+                itemSpecId: hasSpecification ? descItem.descItemSpecId : null,
+            }),
+        );
+
+        this.props.dispatch(registryDetailFetchIfNeeded(value ? value.id : null));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                null,
+                <RegistrySelectPage
+                    titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
+                    onSelect={data => {
+                        onSelect(data);
                         this.props.dispatch(registryListFilter({...oldFilter}));
-                    },
-                ),
-            );
-        };
-
-        if (hasSpecification) {
-            WebApi.specificationHasParty(descItem.descItemSpecId).then(open);
-        } else {
-            open();
-        }
+                        this.props.dispatch(registryDetailClear());
+                    }}
+                />,
+                classNames(MODAL_DIALOG_VARIANT.FULLSCREEN, MODAL_DIALOG_VARIANT.NO_HEADER),
+                () => {
+                    this.props.dispatch(registryListFilter({...oldFilter}));
+                },
+            ),
+        );
     };
 
     render() {
