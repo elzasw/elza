@@ -253,15 +253,6 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "Doporučené označení fondu na kořeni a dílčím listu"
-no-loop
-when
-    $activeLevel : ActiveLevel( )
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION") ) from $activeLevel.descItems
-then
-    $itemType.setType(RulItemType.Type.RECOMMENDED);
-end
-
 // Složka musí mít uveden typ
 rule "Složka musí mít uveden typ"
 salience 100
