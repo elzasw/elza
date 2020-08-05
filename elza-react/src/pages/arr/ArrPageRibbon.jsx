@@ -39,6 +39,11 @@ class ArrPageRibbon extends AbstractReactComponent {
         });
     };
 
+    getActiveFund(props) {
+        const arrRegion = props.arrRegion;
+        return arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+    }
+
     /**
      * Zobrazení formuláře pro synchronizaci DAOS pro celé AS.
      *
@@ -248,7 +253,7 @@ class ArrPageRibbon extends AbstractReactComponent {
         let altSection;
 
         altActions.push(
-            <Button key="search-fa" onClick={this.handleFundsSearchForm}>
+            <Button key="search-fa" onClick={this.props.handleFundsSearchForm}>
                 <Icon glyph="fa-search" />
                 <div>
                     <span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span>
@@ -277,5 +282,12 @@ class ArrPageRibbon extends AbstractReactComponent {
     }
 }
 
+function mapStateToProps(state) {
+    const {splitter, arrRegion} = state;
+    return {
+        arrRegion
+    }
+}
+
 // export default ArrPageRibbon;
-export default connect(null, null, null, {forwardRef: true})(ArrPageRibbon);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(ArrPageRibbon);

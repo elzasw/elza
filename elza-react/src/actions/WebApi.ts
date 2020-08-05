@@ -14,7 +14,6 @@ import {
     IssueVO,
     RowsResponse,
     UpdateFund,
-    UsrUserVO,
 } from '../types';
 import {ApAccessPointCreateVO} from '../api/ApAccessPointCreateVO';
 import {ApAccessPointVO} from '../api/ApAccessPointVO';
@@ -34,6 +33,7 @@ import {SearchFilterVO} from 'api/SearchFilterVO';
 import {SyncsFilterVO} from '../api/SyncsFilterVO';
 import {ExtSyncsQueueResultListVO} from '../api/ExtSyncsQueueResultListVO';
 import {ApViewSettings} from '../api/ApViewSettings';
+import {UsrUserVO} from '../api/UsrUserVO';
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 
@@ -171,80 +171,12 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.adminUrl + '/' + fundId + '/nodes/byIds', null, nodeIds);
     }
 
-    createRelation(relation) {
-        return AjaxUtils.ajaxPost(WebApiCls.partyUrl + '/relation', null, relation);
-    }
-
-    updateRelation(relation) {
-        return AjaxUtils.ajaxPut(WebApiCls.partyUrl + '/relation/' + relation.id, null, relation);
-    }
-
-    deleteRelation(relationId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.partyUrl + '/relation/' + relationId);
-    }
-
     copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/copyOlderSiblingAttribute/',
             {versionId, descItemTypeId},
             {id: nodeId, version: nodeVersionId},
         );
-    }
-
-    createParty(party) {
-        return AjaxUtils.ajaxPost(WebApiCls.partyUrl + '/', null, party);
-    }
-
-    getParty(partyId) {
-        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/' + partyId);
-    }
-
-    findParty(
-        search = null,
-        versionId = null,
-        partyTypeId = null,
-        itemSpecId = null,
-        from = 0,
-        count = DEFAULT_LIST_SIZE,
-        scopeId,
-        excludeInvalid,
-        state,
-    ) {
-        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/', {
-            search,
-            from,
-            count,
-            partyTypeId,
-            versionId,
-            itemSpecId,
-            scopeId,
-            excludeInvalid,
-            state,
-        });
-    }
-
-    findPartyUsage(partyId) {
-        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/' + partyId + '/usage');
-    }
-
-    findPartyForParty(partyId, search = null, from = 0, count = DEFAULT_LIST_SIZE) {
-        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/findPartyForParty', {search, from, count, partyId});
-    }
-
-    updateParty(party) {
-        return AjaxUtils.ajaxPut(WebApiCls.partyUrl + '/' + party.id, null, party);
-    }
-
-    replaceParty(partyReplaceId, partyReplacementId) {
-        return AjaxUtils.ajaxPost(WebApiCls.partyUrl + '/' + partyReplaceId + '/replace', null, partyReplacementId);
-    }
-
-    setValidParty(partyId) {
-        return AjaxUtils.ajaxPost(WebApiCls.partyUrl + '/' + partyId + '/valid');
-    }
-
-    deleteParty(partyId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.partyUrl + '/' + partyId);
     }
 
     findChanges(versionId, nodeId, offset, maxSize, changeId) {
@@ -303,10 +235,6 @@ export class WebApiCls {
             staticNodeParent: destParent,
         };
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/moveLevelAfter', null, data);
-    }
-
-    deleteName(nameId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.partyUrl + '/deleteName', {nameId: nameId});
     }
 
     createDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem) {
@@ -787,23 +715,27 @@ export class WebApiCls {
         state = null,
         searchTypeName?: ApSearchType,
         searchTypeUsername?: ApSearchType,
-        searchFilter?: SearchFilterVO
+        searchFilter?: SearchFilterVO,
     ): Promise<FilteredResultVO<ApAccessPointVO>> {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/search', {
-            search,
-            from,
-            count,
-            itemTypeId,
-            itemSpecId,
-            parentRecordId: registryParent,
-            apTypeId,
-            versionId,
-            scopeId,
-            excludeInvalid,
-            state,
-            searchTypeName,
-            searchTypeUsername,
-        }, searchFilter);
+        return AjaxUtils.ajaxPost(
+            WebApiCls.registryUrl + '/search',
+            {
+                search,
+                from,
+                count,
+                itemTypeId,
+                itemSpecId,
+                parentRecordId: registryParent,
+                apTypeId,
+                versionId,
+                scopeId,
+                excludeInvalid,
+                state,
+                searchTypeName,
+                searchTypeUsername,
+            },
+            searchFilter,
+        );
     }
 
     /**
@@ -967,16 +899,6 @@ export class WebApiCls {
 
     findRegistryUsage(recordId) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + recordId + '/usage');
-    }
-
-    findRecordForRelation(search = null, roleTypeId = null, partyId = null, from = 0, count = DEFAULT_LIST_SIZE) {
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/findRecordForRelation', {
-            search,
-            from,
-            count,
-            roleTypeId: roleTypeId,
-            partyId: partyId,
-        });
     }
 
     getAccessPoint(accessPointId): Promise<ApAccessPointVO> {
@@ -1382,14 +1304,6 @@ export class WebApiCls {
         });
     }
 
-    getPartyNameFormTypes() {
-        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/partyNameFormTypes');
-    }
-
-    getPartyTypes() {
-        return AjaxUtils.ajaxGet(WebApiCls.partyUrl + '/partyTypes');
-    }
-
     getExternalSystemsSimple() {
         return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/externalSystems/simple');
     }
@@ -1434,8 +1348,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.fundV1 + '/' + id, null, data);
     }
 
-    approveVersion(versionId, dateRange) {
-        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/approveVersion', {dateRange, versionId});
+    approveVersion(versionId) {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/approveVersion', {versionId});
     }
 
     filterNodes(versionId, filter) {
@@ -2082,10 +1996,6 @@ export class WebApiCls {
 
     deleteExtSystem(id) {
         return AjaxUtils.ajaxDelete(WebApiCls.adminUrl + '/externalSystems/' + id, null);
-    }
-
-    specificationHasParty(itemSpecId) {
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/specificationHasParty/' + itemSpecId);
     }
 
     findFundStructureExtension(fundVersionId, structureTypeCode) {

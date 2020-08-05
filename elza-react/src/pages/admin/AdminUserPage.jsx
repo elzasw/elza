@@ -131,6 +131,7 @@ class AdminUserPage extends AbstractReactComponent {
             const authTypes = data.authTypes;
             const initData = {
                 username: data.username,
+                accessPointId: data.accessPoint ? data.accessPoint.id : null,
                 passwordCheckbox: authTypes.indexOf('PASSWORD') >= 0,
                 shibbolethCheckbox: authTypes.indexOf('SHIBBOLETH') >= 0,
             };
@@ -138,7 +139,7 @@ class AdminUserPage extends AbstractReactComponent {
                 modalDialogShow(
                     this,
                     i18n('admin.user.update.title'),
-                    <AddUserForm initialValues={initData} onSubmitForm={this.handleUpdateUser} />,
+                    <AddUserForm initialValues={initData} accessPoint={data.accessPoint} onSubmitForm={this.handleUpdateUser} />,
                 ),
             );
         }

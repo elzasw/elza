@@ -649,6 +649,7 @@ var messages = {
     "arr.fund.approveVersion.approveForce": "Uzavřít verzi AS i přes zjištěné problémy",
     "arr.fund.approveVersion.bulkActionsOk": "Není potřeba provést žádnou hromadnou akci",
     "arr.fund.approveVersion.bulkActionsNeedRun": "Je potřeba spustit následující hromadné akce",
+    "arr.fund.approveVersion.confirm": "Je potřeba spustit následující hromadné akce",
 
     "arr.fund.bulkActions.noActions": "Nejsou žádné hromadné akce",
     "arr.fund.bulkActions.err": "Chyba",
@@ -1471,8 +1472,6 @@ var messages = {
     "extImport.update": "Aktualizovat",
     "extImport.showDetail": "Přejít na detail",
     "extImport.done.title": "Hotovo",
-    "extImport.done.party.messageImport": "Osoba úspěšně naimportována",
-    "extImport.done.party.messageUpdate": "Osoba úspěšně aktualizována",
     "extImport.done.record.messageImport": "Heslo úspěšně naimportováno",
     "extImport.done.record.messageUpdate": "Heslo úspěšně aktualizováno",
 

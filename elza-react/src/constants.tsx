@@ -36,7 +36,6 @@ export enum ApState {
 export const FOCUS_KEYS = {
     NONE: null,
     ARR: 'arr',
-    PARTY: 'party',
     REGISTRY: 'registry',
     HOME: 'home',
     FUND_OUTPUT: 'fund-output',

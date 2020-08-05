@@ -40,8 +40,6 @@ class FormDescItemType extends AbstractReactComponent {
         customActions: PropTypes.object,
         descItemRef: PropTypes.func.isRequired, // (key, ref) => void
 
-        onCreateParty: PropTypes.func.isRequired,
-        onDetailParty: PropTypes.func.isRequired,
         onCreateRecord: PropTypes.func.isRequired,
         onDetailRecord: PropTypes.func.isRequired,
         onCreateFile: PropTypes.func.isRequired,
@@ -101,11 +99,9 @@ class FormDescItemType extends AbstractReactComponent {
             descItemRef,
         } = this.props;
 
-        console.log('[FormDescItemType] RENDER', refType.name);
+        // console.log('[FormDescItemType] RENDER', refType.name);
 
         const {
-            onCreateParty,
-            onDetailParty,
             onCreateRecord,
             onDetailRecord,
             onCreateFile,
@@ -174,12 +170,6 @@ class FormDescItemType extends AbstractReactComponent {
                 rulDataType={rulDataType}
                 calendarTypes={calendarTypes}
                 structureTypes={structureTypes}
-                onCreateParty={(descItemIndex, partyTypeId) =>
-                    onCreateParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyTypeId)
-                }
-                onDetailParty={(descItemIndex, partyId) =>
-                    onDetailParty(descItemGroupIndex, descItemTypeIndex, descItemIndex, partyId)
-                }
                 onCreateRecord={descItemIndex => onCreateRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
                 onDetailRecord={(descItemIndex, recordId) =>
                     onDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId)

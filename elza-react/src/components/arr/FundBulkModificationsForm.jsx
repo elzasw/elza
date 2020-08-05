@@ -1,8 +1,9 @@
 //
 import React from 'react';
-import {reduxForm} from 'redux-form';
+import {formValueSelector, Field, getFormMeta, reduxForm} from 'redux-form';
 import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
-import {Form, FormCheck, FormGroup, FormLabel, Modal} from 'react-bootstrap';
+import {connect} from 'react-redux';
+import {Col, Form, FormCheck, FormGroup, FormLabel, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
@@ -15,6 +16,9 @@ import DescItemRecordRef from './nodeForm/DescItemRecordRef';
 import DatationField from './../party/DatationField';
 import {FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx';
 import {getMapFromList} from './../../stores/app/utils.jsx';
+import FormInputField from '../shared/form/FormInputField';
+import FF from '../shared/form/FF';
+import ReduxFormFieldErrorDecorator from '../shared/form/ReduxFormFieldErrorDecorator';
 
 const getDefaultOperationType = props => {
     const {dataType} = props;
@@ -98,7 +102,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
 
                     case 'UNITDATE':
                         try {
-                            DatationField.validate(values.replaceText.value);
+                            DatationField.validate(values.replaceText);
                         } catch (err) {
                             errors.replaceText = err && err.message ? err.message : ' ';
                         }
@@ -209,30 +213,36 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             allItemsCount,
             checkedItemsCount,
             refType,
-            fields: {findText, replaceText, itemsArea, operationType, specs, replaceSpec},
             handleSubmit,
             onClose,
             dataType,
             calendarTypes,
+            meta,
+            replaceSpec,
+            replaceText,
+            operationType,
+            submitting,
         } = this.props;
         const uncheckedItemsCount = allItemsCount - checkedItemsCount;
 
         let operationInputs = [];
         let submitButtonTitle;
 
-        switch (operationType.value) {
+        switch (operationType) {
             case 'setSpecification':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.setSpecification';
                 operationInputs.push(
-                    <FormInput
-                        as="select"
+                    <Field
+                        key={'replaceSpec'}
+                        name="replaceSpec"
+                        as={'select'}
+                        component={FormInputField}
                         label={i18n(
                             this.isEnumType()
                                 ? 'arr.fund.bulkModifications.replace.replaceEnum'
                                 : 'arr.fund.bulkModifications.replace.replaceSpec',
                         )}
-                        {...replaceSpec}
-                        {...decorateFormField(replaceSpec)}
+                        disabled={submitting}
                     >
                         <option />
                         {refType.descItemSpecs.map(i => (
@@ -240,25 +250,29 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                 {i.name}
                             </option>
                         ))}
-                    </FormInput>,
+                    </Field>,
                 );
                 break;
             case 'findAndReplace':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.findAndReplace';
                 operationInputs.push(
-                    <FormInput
+                    <Field
+                        key={'findText'}
+                        name="findText"
                         type="text"
+                        component={FormInputField}
                         label={i18n('arr.fund.bulkModifications.findAndRFeplace.findText')}
-                        {...findText}
-                        {...decorateFormField(findText)}
+                        disabled={submitting}
                     />,
                 );
                 operationInputs.push(
-                    <FormInput
+                    <Field
+                        key={'replaceText'}
+                        name="replaceText"
                         type="text"
+                        component={FormInputField}
                         label={i18n('arr.fund.bulkModifications.findAndRFeplace.replaceText')}
-                        {...replaceText}
-                        {...decorateFormField(replaceText)}
+                        disabled={submitting}
                     />,
                 );
                 break;
@@ -266,15 +280,17 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 submitButtonTitle = 'arr.fund.bulkModifications.action.replace';
                 if (refType.useSpecification) {
                     operationInputs.push(
-                        <FormInput
-                            as="select"
+                        <Field
+                            key={'replaceSpec'}
+                            name="replaceSpec"
+                            as={'select'}
+                            component={FormInputField}
                             label={i18n(
                                 this.isEnumType()
                                     ? 'arr.fund.bulkModifications.replace.replaceEnum'
                                     : 'arr.fund.bulkModifications.replace.replaceSpec',
                             )}
-                            {...replaceSpec}
-                            {...decorateFormField(replaceSpec)}
+                            disabled={submitting}
                         >
                             <option />
                             {refType.descItemSpecs.map(i => (
@@ -282,7 +298,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                     {i.name}
                                 </option>
                             ))}
-                        </FormInput>,
+                        </Field>,
                     );
                 }
 
@@ -293,12 +309,6 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     readMode: false,
                     cal: false,
                     readOnly: false,
-                    onChange: data => {
-                        replaceText.onChange({value: data});
-                    },
-                    onBlur: e => {
-                        // záměrně ignorujeme
-                    },
                 };
 
                 switch (dataType.code) {
@@ -308,19 +318,19 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                 ...descItemProps,
                                 descItem: {
                                     error: {
-                                        calendarType: replaceText.error ? replaceText.error : null,
-                                        value: replaceText.error ? replaceText.error : null,
+                                        calendarType: meta.replaceText ? meta.replaceText : null,
+                                        value: meta.replaceText ? meta.replaceText : null,
                                     },
-                                    value: replaceText.value.value,
-                                    calendarTypeId: replaceText.value.calendarTypeId,
+                                    value: replaceText.value,
+                                    calendarTypeId: replaceText.calendarTypeId,
                                 },
                             };
                             operationInputs.push(
-                                <FormInput
-                                    as={DescItemUnitdate}
+                                <FF
+                                    name={'replaceText'}
+                                    field={DescItemUnitdate}
                                     label={i18n('arr.fund.bulkModifications.replace.replaceText')}
                                     calendarTypes={calendarTypes}
-                                    {...replaceText}
                                     {...data}
                                 />,
                             );
@@ -329,9 +339,9 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     case 'RECORD_REF':
                         {
                             let specName = null;
-                            if (replaceSpec.value) {
+                            if (replaceSpec) {
                                 const map = getMapFromList(refType.descItemSpecs);
-                                specName = map[replaceSpec.value].name;
+                                specName = map[replaceSpec].name;
                             }
 
                             let data = {
@@ -341,17 +351,17 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                 specName: specName,
                                 descItem: {
                                     error: {
-                                        value: replaceText.error ? replaceText.error : null,
+                                        value: meta.replaceText ? meta.replaceText : null,
                                     },
-                                    record: replaceText.value,
-                                    descItemSpecId: replaceSpec.value,
+                                    record: replaceText,
+                                    descItemSpecId: replaceSpec,
                                 },
                             };
                             operationInputs.push(
-                                <FormInput
-                                    as={DescItemRecordRef}
+                                <FF
+                                    name={'replaceText'}
+                                    field={DescItemRecordRef}
                                     label={i18n('arr.fund.bulkModifications.replace.replaceText')}
-                                    {...replaceText}
                                     {...data}
                                 />,
                             );
@@ -359,11 +369,13 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                         break;
                     default:
                         operationInputs.push(
-                            <FormInput
+                            <Field
+                                key={'replaceText'}
+                                name="replaceText"
                                 type="text"
+                                component={FormInputField}
                                 label={i18n('arr.fund.bulkModifications.replace.replaceText')}
-                                {...replaceText}
-                                {...decorateFormField(replaceText)}
+                                disabled={submitting}
                             />,
                         );
                 }
@@ -396,57 +408,65 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                         : 'arr.fund.bulkModifications.specs',
                                 )}
                             </FormLabel>
-                            <SimpleCheckListBox
+                            <FF
+                                field={SimpleCheckListBox}
                                 ref="specsListBox"
                                 items={[
                                     {id: FILTER_NULL_VALUE, name: i18n('arr.fund.filterSettings.value.empty')},
                                     ...refType.descItemSpecs,
                                 ]}
-                                {...specs}
+                                name={'specs'}
                             />
                         </FormGroup>
                     )}
 
                     <FormGroup>
                         <FormLabel>{i18n('arr.fund.bulkModifications.itemsArea')}</FormLabel>
-                        <FormCheck
-                            {...itemsArea}
-                            type={'radio'}
-                            value="page"
-                            checked={itemsArea.value === 'page'}
+                        <Field
+                            name="itemsArea"
+                            component={ReduxFormFieldErrorDecorator}
+                            renderComponent={Form.Check}
                             label={i18n('arr.fund.bulkModifications.itemsArea.page', allItemsCount)}
-                        />{' '}
+                            type="radio"
+                            value={'page'}
+                        />
                         {checkedItemsCount > 0 && checkedItemsCount < allItemsCount && (
-                            <FormCheck
-                                {...itemsArea}
-                                type={'radio'}
-                                value="selected"
-                                checked={itemsArea.value === 'selected'}
+                            <Field
+                                name="itemsArea"
+                                component={ReduxFormFieldErrorDecorator}
+                                renderComponent={Form.Check}
                                 label={i18n('arr.fund.bulkModifications.itemsArea.selected', checkedItemsCount)}
+                                type="radio"
+                                value={'selected'}
                             />
                         )}
                         {uncheckedItemsCount > 0 && checkedItemsCount > 0 && (
-                            <FormCheck
-                                {...itemsArea}
-                                type={'radio'}
-                                value="unselected"
-                                checked={itemsArea.value === 'unselected'}
-                                label={i18n('arr.fund.bulkModifications.itemsArea.unselected', uncheckedItemsCount)}
+                            <Field
+                                name="itemsArea"
+                                component={ReduxFormFieldErrorDecorator}
+                                renderComponent={Form.Check}
+                                label={i18n('arr.fund.bulkModifications.itemsArea.unselected', checkedItemsCount)}
+                                type="radio"
+                                value={'unselected'}
                             />
                         )}
-                        <FormCheck
-                            {...itemsArea}
-                            type={'radio'}
-                            value="all"
-                            checked={itemsArea.value === 'all'}
+                        <Field
+                            name="itemsArea"
+                            component={ReduxFormFieldErrorDecorator}
+                            renderComponent={Form.Check}
                             label={i18n('arr.fund.bulkModifications.itemsArea.all')}
-                        />{' '}
+                            type="radio"
+                            value={'all'}
+                        />
                     </FormGroup>
-                    <FormInput
-                        as="select"
+
+                    <Field
+                        key={'operationType'}
+                        name="operationType"
+                        as={'select'}
+                        component={FormInputField}
                         label={i18n('arr.fund.bulkModifications.operationType')}
-                        {...operationType}
-                        {...decorateFormField(operationType)}
+                        disabled={submitting}
                     >
                         {this.supportFindAndReplace() && (
                             <option key="findAndReplace" value="findAndReplace">
@@ -470,11 +490,13 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                         <option key="delete" value="delete">
                             {i18n('arr.fund.bulkModifications.operationType.delete')}
                         </option>
-                    </FormInput>
+                    </Field>
                     {operationInputs}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" variant="outline-secondary">{i18n(submitButtonTitle)}</Button>
+                    <Button type="submit" variant="outline-secondary">
+                        {i18n(submitButtonTitle)}
+                    </Button>
                     <Button variant="link" onClick={onClose}>
                         {i18n('global.action.close')}
                     </Button>
@@ -484,31 +506,36 @@ class FundBulkModificationsForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm(
-    {
-        form: 'fundBulkModificationsForm',
-        fields: ['findText', 'replaceText', 'itemsArea', 'operationType', 'specs', 'replaceSpec'],
-    },
-    (state, props) => {
-        let val = '';
+const formName = 'fundBulkModificationsForm';
 
-        if (props.dataType.code === 'UNITDATE') {
-            val = {
-                value: '',
-                calendarTypeId: 1,
-            };
-        }
+const RF = reduxForm({
+    form: formName,
+})(FundBulkModificationsForm);
 
-        return {
-            initialValues: {
-                findText: '',
-                replaceText: val,
-                itemsArea: getDefaultItemsArea(props),
-                operationType: getDefaultOperationType(props),
-                specs: {type: 'unselected'},
-            },
-            descItemTypes: state.refTables.descItemTypes,
+const formSelector = formValueSelector(formName);
+
+export default connect((state, props) => {
+    let val = '';
+
+    if (props.dataType.code === 'UNITDATE') {
+        val = {
+            value: '',
+            calendarTypeId: 1,
         };
-    },
-    {},
-)(FundBulkModificationsForm);
+    }
+
+    return {
+        initialValues: props.initialValues || {
+            findText: '',
+            replaceText: val,
+            itemsArea: getDefaultItemsArea(props),
+            operationType: getDefaultOperationType(props),
+            specs: {type: 'unselected'},
+        },
+        replaceText: formSelector(state, 'replaceText'),
+        replaceSpec: formSelector(state, 'replaceSpec'),
+        operationType: formSelector(state, 'operationType'),
+        meta: getFormMeta(formName)(state),
+        descItemTypes: state.refTables.descItemTypes,
+    };
+})(RF);

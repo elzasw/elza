@@ -29,20 +29,14 @@ export default class DescItemFactory {
         INT: DescItemInt,
         COORDINATES: DescItemCoordinates,
         DATE: DescItemDate,
-        URI_REF: DescItemLink
+        URI_REF: DescItemLink,
     };
 
     static createDescItem = (type, props) => {
-        props.ref && typeof props.ref === "string" && console.log("ref", props.ref, props);
+        props.ref && typeof props.ref === 'string' && console.log('ref', props.ref, props);
         const DescItem = DescItemFactory.typeComponentMap[type];
         if (!DescItem) {
-            if (type === DataTypeCode.PARTY_REF) {
-                alert('PARTY_REF');
-                console.warn('%c ::party ', 'background: black; color: yellow;');
-                return null;
-            } else {
-                throw new Error(`Unknown desc item data type code: ${type}`);
-            }
+            throw new Error(`Unknown desc item data type code: ${type}`);
         }
         return <DescItem {...props} />;
     };

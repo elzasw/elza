@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
-
 import javax.persistence.*;
 
 /**
@@ -13,7 +11,7 @@ import javax.persistence.*;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "ap_item")
-public class ApItem implements IntItem{
+public class ApItem implements Item {
 
     public static final String PART_ID = "partId";
     public static final String PART = "part";

@@ -942,7 +942,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      */
     private ArrFundVersionVO approvedVersion(final ArrFundVersionVO fundVersion) {
         assertNotNull(fundVersion);
-        ArrFundVersionVO newFundVersion = approveVersion(fundVersion, fundVersion.getDateRange());
+        ArrFundVersionVO newFundVersion = approveVersion(fundVersion);
 
         // "Musí být odlišné identifikátory"
         assertTrue(!fundVersion.getId().equals(newFundVersion.getId()));
@@ -1018,24 +1018,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         test.getParent();
 
         assertNotNull(fulltext);
-    }
-
-    private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list, final boolean hasPartyType) {
-        for (ApTypeVO type : list) {
-            if (type.getAddRecord() && ((!hasPartyType && type.getPartyTypeId() == null) || (hasPartyType && type.getPartyTypeId() != null))) {
-                return type;
-            }
-        }
-
-        for (ApTypeVO type : list) {
-            if (type.getChildren() != null) {
-                ApTypeVO res = getNonHierarchicalApType(type.getChildren(), hasPartyType);
-                if (res != null) {
-                    return res;
-                }
-            }
-        }
-        return null;
     }
 
     @Test

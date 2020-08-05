@@ -79,7 +79,6 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
                 break;
             case '.ArrItemRecordRefVO':
             case '.ArrItemFileRefVO':
-            case '.ArrItemPartyRefVO':
                 val = item.strValue;
                 break;
             default:

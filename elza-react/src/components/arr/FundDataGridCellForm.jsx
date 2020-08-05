@@ -16,8 +16,12 @@ import {nodeFormActions} from 'actions/arr/subNodeForm.jsx';
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx';
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 import $ from 'jquery';
+import ConfirmForm from '../shared/form/ConfirmForm';
+import {WebApiCls as WebApi} from '../../actions/WebApi';
+import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
 
 class FundDataGridCellForm extends AbstractReactComponent {
+    subNodeFormRef = null;
     constructor(props) {
         super(props);
 
@@ -49,7 +53,7 @@ class FundDataGridCellForm extends AbstractReactComponent {
             },
             () => {
                 if (loadingChanged) {
-                    this.refs.subNodeForm.getWrappedInstance().initFocus();
+                    this.subNodeFormRef.initFocus();
                 }
             },
         );
@@ -176,6 +180,29 @@ class FundDataGridCellForm extends AbstractReactComponent {
         }
     }
 
+    /**
+     * Zobrazení formuláře pro potvrzení synchronizace DAO.
+     */
+    handleDigitizationSync = () => {
+        const {node, versionId} = this.props;
+        const nodeId = node.selectedSubNodeId;
+
+        const confirmForm = (
+            <ConfirmForm
+                confirmMessage={i18n('arr.daos.node.sync.confirm-message')}
+                submittingMessage={i18n('arr.daos.node.sync.submitting-message')}
+                submitTitle={i18n('global.action.run')}
+                onSubmit={() => {
+                    return WebApi.syncDaoLink(versionId, nodeId);
+                }}
+                onSubmitSuccess={() => {
+                    this.props.dispatch(modalDialogHide());
+                }}
+            />
+        );
+        this.props.dispatch(modalDialogShow(this, i18n('arr.daos.node.sync.title'), confirmForm));
+    };
+
     render() {
         const {fundDataGrid} = this.state;
         const {versionId, fundId, closed, className, style, refTables, onClose} = this.props;
@@ -192,7 +219,7 @@ class FundDataGridCellForm extends AbstractReactComponent {
                 <NodeSubNodeForm
                     singleDescItemTypeEdit
                     singleDescItemTypeId={fundDataGrid.descItemTypeId}
-                    ref="subNodeForm"
+                    ref={ref => (this.subNodeFormRef = ref)}
                     nodeId={fundDataGrid.parentNodeId}
                     versionId={versionId}
                     selectedSubNodeId={fundDataGrid.nodeId}
@@ -209,7 +236,9 @@ class FundDataGridCellForm extends AbstractReactComponent {
                     selectedSubNode={fundDataGrid.subNodeForm.data.parent}
                     descItemCopyFromPrevEnabled={false}
                     closed={closed}
+                    onDigitizationSync={this.handleDigitizationSync}
                     onAddDescItemType={() => {}}
+                    readMode={false}
                 />
             );
         }

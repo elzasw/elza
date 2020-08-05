@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -30,5 +31,16 @@ public interface ApPartRepository extends JpaRepository<ApPart, Integer> {
 
     @Query("SELECT part FROM ApPart part WHERE part.accessPoint = :accessPoint AND part.deleteChange IS NULL AND part.createChange.changeId > :changeId")
     List<ApPart> findNewerValidPartsByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint, @Param("changeId") Integer changeId);
+
+    @Query("SELECT COUNT(p)" +
+            " FROM ApPart p" +
+            " JOIN p.accessPoint a" +
+            " JOIN ap_state s ON s.accessPoint = p.accessPoint" +
+            " WHERE s.scope = :scope" +
+            " AND s.deleteChange IS NULL" +
+            " AND a.preferredPart.partId = p.partId" +
+            " AND LOWER(p.value) = LOWER(:fullName)" +
+            " AND p.deleteChange IS NULL")
+    int countUniqueName(@Param("fullName") String fullName, @Param("scope") ApScope scope);
 
 }

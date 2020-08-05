@@ -1,10 +1,9 @@
 package cz.tacr.elza.print.item.convertors;
 
-import cz.tacr.elza.domain.IntItem;
-import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.domain.Item;
 
 public interface ItemConvertor {
 
-    Item convert(IntItem item, ItemConvertorContext context);
+    cz.tacr.elza.print.item.Item convert(Item item, ItemConvertorContext context);
 
 }

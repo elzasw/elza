@@ -1,8 +1,5 @@
-
 import ruleSet from './ruleSet.jsx';
 import institutions from './institutions.jsx';
-import partyNameFormTypes from './partyNameFormTypes.jsx';
-import partyTypes from './partyTypes.jsx';
 import recordTypes from './recordTypes.jsx';
 import rulDataTypes from './rulDataTypes.jsx';
 import calendarTypes from './calendarTypes.jsx';
@@ -15,16 +12,14 @@ import externalSystems from './externalSystems.jsx';
 import structureTypes from './structureTypes';
 import DetailReducer from '../../../shared/detail/DetailReducer';
 import processAreaStores from '../../../shared/utils/processAreaStores';
-import apTypes from "./apTypes";
-import partTypes from "./partTypes";
-import * as types from "../../../actions/constants/ActionTypes";
+import apTypes from './apTypes';
+import partTypes from './partTypes';
+import * as types from '../../../actions/constants/ActionTypes';
 
 const initialState = {
     ruleSet: ruleSet(),
     institutions: institutions(),
-    partyNameFormTypes: partyNameFormTypes(),
     partTypes: partTypes(),
-    partyTypes: partyTypes(),
     apTypes: apTypes(),
     recordTypes: recordTypes(),
     rulDataTypes: rulDataTypes(),
@@ -78,25 +73,11 @@ export default function refTables(state = initialState, action = {}) {
                 institutions: institutions(state.institutions, action),
             };
         }
-        case types.REF_PARTY_NAME_FORM_TYPES_REQUEST:
-        case types.REF_PARTY_NAME_FORM_TYPES_RECEIVE: {
-            return {
-                ...state,
-                partyNameFormTypes: partyNameFormTypes(state.partyNameFormTypes, action),
-            };
-        }
         case types.REF_PART_TYPES_REQUEST:
         case types.REF_PART_TYPES_RECEIVE: {
             return {
                 ...state,
                 partTypes: partTypes(state.partTypes, action),
-            };
-        }
-        case types.REF_PARTY_TYPES_REQUEST:
-        case types.REF_PARTY_TYPES_RECEIVE: {
-            return {
-                ...state,
-                partyTypes: partyTypes(state.partyTypes, action),
             };
         }
         case types.REF_RECORD_TYPES_REQUEST:
@@ -175,7 +156,6 @@ export default function refTables(state = initialState, action = {}) {
                 descItemTypes: descItemTypes(state.descItemTypes, action),
                 outputTypes: outputTypes(state.outputTypes, action),
                 templates: templates(state.templates, action),
-                partyTypes: partyTypes(state.partyTypes, action),
             };
         }
         default:

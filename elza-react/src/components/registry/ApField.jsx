@@ -49,10 +49,9 @@ class ApField extends AbstractReactComponent {
         itemSpecId: null,
         registryParent: null,
         apTypeId: null,
-        roleTypeId: null,
-        partyId: null,
         versionId: null,
         useIdAsValue: false,
+        initData: null,
     };
 
     static propTypes = {
@@ -64,8 +63,6 @@ class ApField extends AbstractReactComponent {
         registryParent: PropTypes.number,
         apTypeId: PropTypes.number,
         itemSpecId: PropTypes.number,
-        roleTypeId: PropTypes.number,
-        partyId: PropTypes.number,
         versionId: PropTypes.number,
         useIdAsValue: PropTypes.bool,
     };
@@ -74,7 +71,7 @@ class ApField extends AbstractReactComponent {
         super(props);
         let searchType = props.isCreate ? SEARCH_TYPES_CREATE[0] : SEARCH_TYPES[0];
         this.state = {
-            registryList: [],
+            registryList: props.initData ? props.initData : [],
             count: null,
             searchText: null,
             searchType,

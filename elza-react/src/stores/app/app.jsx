@@ -6,17 +6,6 @@ import registryDetail from 'stores/app/registry/registryDetail';
 import SharedReducer from '../../shared/shared/SharedReducer';
 
 const initialState = {
-    partyList: SimpleListReducer(undefined, undefined, {
-        filter: {
-            text: null,
-            type: null,
-            itemSpecId: null,
-            scopeId: null,
-            from: 0,
-            excludeInvalid: true,
-        },
-    }),
-    partyDetail: DetailReducer(),
     registryDetail: registryDetail(),
     apValidation: DetailReducer(),
     apViewSettings: DetailReducer(),
@@ -68,29 +57,12 @@ export default function app(state = initialState, action) {
 
     if (action.type === types.STORE_SAVE) {
         return {
-            partyList: SimpleListReducer(state.partyList, action),
-            partyDetail: DetailReducer(state.partyDetail, action),
             registryDetail: DetailReducer(state.registryDetail, action),
         };
     }
 
     if (action.type === types.STORE_LOAD && action.store === 'app') {
         const newState = {...state};
-        if (action.partyDetail) {
-            newState.partyDetail = DetailReducer(state.partyDetail, {
-                ...action.partyDetail,
-                type: types.STORE_LOAD,
-                store: 'app',
-            });
-        }
-
-        if (action.partyList) {
-            newState.partyList = SimpleListReducer(state.partyList, {
-                ...action.partyList,
-                type: types.STORE_LOAD,
-                store: 'app',
-            });
-        }
 
         if (action.registryDetail) {
             newState.registryDetail = DetailReducer(state.registryDetail, {

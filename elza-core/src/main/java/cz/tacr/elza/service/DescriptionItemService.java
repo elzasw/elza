@@ -35,6 +35,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrRefTemplateMapType;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -572,6 +573,19 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         changeContext.flush();
 
         return createdItems;
+    }
+
+    public List<ArrDescItem> createDescriptionItems(final List<ArrDescItem> sourceItems,
+                                                    final ArrRefTemplateMapType refTemplateMapType) {
+        List<ArrDescItem> newItems = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(sourceItems)) {
+            for (ArrDescItem sourceItem : sourceItems) {
+                ArrDescItem newItem = new ArrDescItem();
+                newItem.setItemType(refTemplateMapType.getToItemType());
+                newItems.add(newItem);
+            }
+        }
+        return newItems;
     }
 
     /**

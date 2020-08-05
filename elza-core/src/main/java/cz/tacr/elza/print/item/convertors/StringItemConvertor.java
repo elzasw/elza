@@ -9,7 +9,7 @@ import cz.tacr.elza.print.item.ItemType;
 public class StringItemConvertor extends AbstractItemConvertor {
 
     @Override
-    protected AbstractItem convert(IntItem item, ItemType itemType) {
+    protected AbstractItem convert(Item item, ItemType itemType) {
         String value = getDataValue(itemType.getDataType(), item.getData());
 
         return value != null ? new ItemString(value) : null;

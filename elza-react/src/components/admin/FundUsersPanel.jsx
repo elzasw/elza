@@ -86,7 +86,7 @@ class FundUsersPanel extends AbstractReactComponent {
      */
     sortPermissions(permissions) {
         permissions.sort((a, b) => {
-            return a.party.accessPoint.record.localeCompare(b.party.accessPoint.record);
+            return a.accessPoint.name.localeCompare(b.accessPoint.name);
         });
     }
 

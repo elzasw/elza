@@ -2,10 +2,12 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -35,5 +37,16 @@ public interface ItemRepository extends JpaRepository<ArrItem, Integer> {
            + "where f = ?1")
     List<ArrItem> findHistoricalByFund(ArrFund fund);
 
+    @Query("SELECT i FROM arr_item i "
+            + "JOIN i.createChange c "
+            + "JOIN c.primaryNode n "
+            + "JOIN n.fund f "
+            + "WHERE f = :fund")
+    List<ArrItem> findByFund(@Param("fund") ArrFund fund);
+
     List<ArrItem> findByData(ArrData arrData);
+
+    @Modifying
+    @Query("UPDATE arr_item SET createChange = :change WHERE itemId IN :itemIds")
+    void updateCreateChange(@Param("itemIds") Collection<Integer> itemIds, @Param("change") ArrChange change);
 }

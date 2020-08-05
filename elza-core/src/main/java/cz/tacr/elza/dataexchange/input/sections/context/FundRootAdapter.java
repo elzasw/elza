@@ -68,9 +68,9 @@ class FundRootAdapter implements SectionRootAdapter {
         ArrNodeWrapper nodeWrapper = new ArrNodeWrapper(rootNode) {
             @Override
             public void afterEntitySave(Session session) {
-                // fund version requires rootNode, 
+                // fund version requires rootNode,
                 // can be created only after persist of root node
-                fundVersion = arrangementService.createVersion(createChange, fund, ruleSet, rootNode, timeRange);
+                fundVersion = arrangementService.createVersion(createChange, fund, ruleSet, rootNode);
                 super.afterEntitySave(session);
             }
         };

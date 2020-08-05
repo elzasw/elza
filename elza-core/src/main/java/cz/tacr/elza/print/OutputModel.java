@@ -47,14 +47,13 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.IntItem;
+import cz.tacr.elza.domain.Item;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.print.item.ItemType;
 import cz.tacr.elza.print.item.convertors.ItemConvertorContext;
@@ -85,7 +84,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     /* general description */
 
-    private List<Item> outputItems;
+    private List<cz.tacr.elza.print.item.Item> outputItems;
 
     private String name;
 
@@ -220,12 +219,12 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     @Override
-    public List<Item> getItems() {
+    public List<cz.tacr.elza.print.item.Item> getItems() {
         return outputItems;
     }
 
     @Override
-    public List<Item> getItems(Collection<String> typeCodes) {
+    public List<cz.tacr.elza.print.item.Item> getItems(Collection<String> typeCodes) {
         Validate.notNull(typeCodes);
 
         return outputItems.stream().filter(item -> {
@@ -235,7 +234,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     @Override
-    public List<Item> getItemsWithout(Collection<String> typeCodes) {
+    public List<cz.tacr.elza.print.item.Item> getItemsWithout(Collection<String> typeCodes) {
         Validate.notNull(typeCodes);
 
         return outputItems.stream().filter(item -> {
@@ -267,10 +266,11 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public Item getSingleItem(String typeCode) {
+    public cz.tacr.elza.print.item.Item getSingleItem(String typeCode) {
         Validate.notEmpty(typeCode);
 
-        Item found = null;
-        for (Item item : outputItems) {
+        cz.tacr.elza.print.item.Item found = null;
+        for (cz.tacr.elza.print.item.Item item : outputItems) {
             if (typeCode.equals(item.getType().getCode())) {
                 // check if item already found
                 if (found != null) {
@@ -284,7 +284,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public String getSingleItemValue(String itemTypeCode) {
-        Item found = getSingleItem(itemTypeCode);
+        cz.tacr.elza.print.item.Item found = getSingleItem(itemTypeCode);
         if (found != null) {
             return found.getSerializedValue();
         }
@@ -320,7 +320,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         // sort collection
-
+        filteredAPs.nodesAdded();
 
         return filteredAPs;
     }
@@ -356,9 +356,9 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         return nodes;
     }
 
-    private List<Item> convertItems(List<? extends IntItem> srcItems) {
+    private List<cz.tacr.elza.print.item.Item> convertItems(List<? extends Item> srcItems) {
         OutputItemConvertor conv = new OutputItemConvertor(this);
-        List<Item> result = srcItems.stream()
+        List<cz.tacr.elza.print.item.Item> result = srcItems.stream()
                 .map(i -> conv.convert(i))
                 /*
                 // add packet reference
@@ -366,7 +366,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                     item.getValue(Structured.class).addNodeId(node.getNodeId());
                 }*/
                 .filter(Objects::nonNull)
-                .sorted(Item::compareTo)
+                .sorted(cz.tacr.elza.print.item.Item::compareTo)
                 .collect(Collectors.toList());
         return result;
     }
@@ -404,7 +404,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.fund.setName(arrFund.getName());
         this.fund.setInternalCode(arrFund.getInternalCode());
         this.fund.setCreateDate(Date.from(arrFund.getCreateDate().atZone(ZoneId.systemDefault()).toInstant()));
-        this.fund.setDateRange(fundVersion.getDateRange());
         this.fund.setFundNumber(arrFund.getFundNumber());
         this.fund.setUnitdate(arrFund.getUnitdate());
         this.fund.setMark(arrFund.getMark());
@@ -462,7 +461,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
      * Creates NodeId with all parent nodes up to root.
      */
     private NodeId createNodeIdWithParents(TreeNode treeNode, Map<Integer, NodeId> nodeIdMap, boolean published) {
-        Integer arrNodeId = new Integer(treeNode.getNodeId());
+        Integer arrNodeId = treeNode.getNodeId();
 
         NodeId nodeId = nodeIdMap.get(arrNodeId);
         if (nodeId != null) {
@@ -555,14 +554,22 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public Node getNode(ArrNode arrNode) {
-        Node node = nodeIdMap.get(arrNode.getNodeId());
+        Integer id = arrNode.getNodeId();
+        Node node = nodeIdMap.get(id);
 
         if (node != null) {
             return node;
         }
 
-        //TODO implement
-        return null;
+        NodeId nodeId = new RefNodeId(id);
+        node = new Node(nodeId);
+        OutputItemConvertor conv = new OutputItemConvertor(this);
+        RestoredNode cachedNode = nodeCacheService.getNode(id);
+        Validate.notNull(cachedNode);
+        node.load(cachedNode, conv);
+
+        nodeIdMap.put(id, node);
+        return node;
     }
 
     private RecordType getAPType(Integer apTypeId) {
@@ -686,18 +693,18 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     @Override
-    public List<Item> loadStructItems(Integer structObjId) {
+    public List<cz.tacr.elza.print.item.Item> loadStructItems(Integer structObjId) {
         List<ArrStructuredItem> items = structItemRepos.findByStructuredObjectAndDeleteChangeIsNullFetchData(
                 structObjId);
-        List<Item> result = convert(items, new OutputItemConvertor(this));
+        List<cz.tacr.elza.print.item.Item> result = convert(items, new OutputItemConvertor(this));
         return result;
     }
 
-    static public List<Item> convert(List<? extends ArrItem> items, OutputItemConvertor conv) {
+    static public List<cz.tacr.elza.print.item.Item> convert(List<? extends ArrItem> items, OutputItemConvertor conv) {
         return items.stream()
                 .map(i -> conv.convert(i))
                 .filter(Objects::nonNull)
-                .sorted(Item::compareTo)
+                .sorted(cz.tacr.elza.print.item.Item::compareTo)
                 .collect(Collectors.toList());
     }
 }

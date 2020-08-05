@@ -163,6 +163,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/search";
     protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
     protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type";
+    protected static final String FIND_PART_TYPES = STRUCTURE_CONTROLLER_URL + "/part-type";
     protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
     protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
     protected static final String CREATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create";
@@ -261,21 +262,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FIND_DAOS = ARRANGEMENT_CONTROLLER_URL
             + "/daos/{fundVersionId}";
 
-    // Party
-    protected static final String CREATE_RELATIONS = PARTY_CONTROLLER_URL + "/relation";
-    protected static final String UPDATE_RELATIONS = PARTY_CONTROLLER_URL + "/relation/{relationId}";
-    protected static final String DELETE_RELATIONS = PARTY_CONTROLLER_URL + "/relation/{relationId}";
-    protected static final String FIND_PARTY = PARTY_CONTROLLER_URL + "/";
-    protected static final String FIND_PARTY_FOR_PARTY = PARTY_CONTROLLER_URL + "/findPartyForParty";
-    protected static final String GET_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
-    protected static final String GET_PARTY_TYPES = PARTY_CONTROLLER_URL + "/partyTypes";
-    protected static final String GET_PARTY_NAME_FORM_TYPES = PARTY_CONTROLLER_URL + "/partyNameFormTypes";
-    protected static final String INSERT_PARTY = PARTY_CONTROLLER_URL + "/";
-    protected static final String UPDATE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
-    protected static final String DELETE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}";
-    protected static final String USAGE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}/usage";
-    protected static final String REPLACE_PARTY = PARTY_CONTROLLER_URL + "/{partyId}/replace";
-
     protected static final String INSTITUTIONS = PARTY_CONTROLLER_URL + "/institutions";
 
     // REGISTRY
@@ -290,7 +276,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String RECORD_TYPES = AP_CONTROLLER_URL + "/recordTypes";
 
     protected static final String FIND_RECORD = AP_CONTROLLER_URL + "/search";
-    protected static final String FIND_RECORD_FOR_RELATION = AP_CONTROLLER_URL + "/findRecordForRelation";
     protected static final String GET_RECORD = AP_CONTROLLER_URL + "/{recordId}";
     protected static final String CREATE_ACCESS_POINT = AP_CONTROLLER_URL + "/";
     protected static final String UPDATE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
@@ -325,6 +310,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String CONFIRM_FRAGMENT = AP_CONTROLLER_URL + "/fragment/{fragmentId}/confirm";
     protected static final String CHANGE_FRAGMENT_ITEMS = AP_CONTROLLER_URL + "/fragment/{fragmentId}/items";
     protected static final String CREATE_FRAGMENT = AP_CONTROLLER_URL + "/fragment/create/{fragmentTypeCode}";
+
+    // PART
+    protected static final String CREATE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part";
+    protected static final String UPDATE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part/{partId}";
+    protected static final String DELETE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part/{partId}";
+    protected static final String SET_PREFER_NAME = AP_CONTROLLER_URL + "/{accessPointId}/part/{partId}/prefer-name";
 
     // RULE
     protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
@@ -685,7 +676,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
      * Vytvoření archivní pomůcky.
      *
-     * @param createFund parametry pro založení
+     * @param fund parametry pro založení
      * @return ap
      */
     protected Fund createFundV1(final CreateFund fund) {
@@ -736,26 +727,21 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * Uzavření verze archivní pomůcky.
      *
      * @param fundVersion verze archivní pomůcky
-     * @param dateRange
      * @return nová verze ap
      */
-    protected ArrFundVersionVO approveVersion(final ArrFundVersionVO fundVersion,
-                                              final String dateRange) {
-        return approveVersion(fundVersion.getId(), dateRange);
+    protected ArrFundVersionVO approveVersion(final ArrFundVersionVO fundVersion) {
+        return approveVersion(fundVersion.getId());
     }
 
     /**
      * Uzavření verze archivní pomůcky.
      *
      * @param versionId identifikátor verze archivní pomůcky
-     * @param dateRange identifikátor výstupu
      * @return nová verze ap
      */
-    protected ArrFundVersionVO approveVersion(final Integer versionId,
-                                              final String dateRange) {
+    protected ArrFundVersionVO approveVersion(final Integer versionId) {
         Response response = put(spec -> spec
-                .queryParameter("versionId", versionId)
-                .queryParameter("dateRange", dateRange), APPROVE_VERSION);
+                .queryParameter("versionId", versionId), APPROVE_VERSION);
         return response.getBody().as(ArrFundVersionVO.class);
     }
 
@@ -2127,32 +2113,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return Arrays.asList(get(FA_SCOPES).getBody().as(ApScopeVO[].class));
     }
 
-    /**
-     * Vyhledání rejstříkových hesel dle relace
-     *
-     * @param search     hledaný řetězec
-     * @param from       odkud se mají vracet výsledka
-     * @param count      počet vracených výsledků
-     * @param roleTypeId id typu vztahu
-     * @param partyId    id osoby, ze které je načtena hledaná třída rejstříku
-     * @return list rejstříkových hesel
-     */
-    protected List<ApAccessPointVO> findRecordForRelation(final String search,
-                                                          final Integer from, final Integer count,
-                                                          final Integer roleTypeId,
-                                                          final Integer partyId) {
-        HashMap<String, Object> params = new HashMap<>();
-
-        if (search != null) {
-            params.put("search", search);
-        }
-        params.put("partyId", partyId);
-        params.put("roleTypeId", roleTypeId);
-        params.put("from", from != null ? from : 0);
-        params.put("count", count != null ? count : 20);
-        return get(spec -> spec.queryParams(params), FIND_RECORD_FOR_RELATION).getBody().as(FilteredResultVO.class).getRows();
-    }
-
     protected Response importXmlFile(final String transformationName,
                                      final Integer scopeId,
                                      final File xmlFile) {
@@ -3161,6 +3121,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
+     * Vyhledá možné typy partů.
+     *
+     * @return nalezené entity
+     */
+    protected List<RulPartTypeVO> findPartTypes() {
+        return Arrays.asList(get(spec -> spec, FIND_PART_TYPES)
+                .as(RulPartTypeVO[].class));
+    }
+
+    /**
      * Vyhledá dostupná a aktivovaná rozšíření k AS.
      *
      * @param fundVersionId identifikátor verze AS
@@ -3372,6 +3342,58 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected void deleteFragment(final Integer fragmentId) {
         delete(spec -> spec.pathParameter("fragmentId", fragmentId), DELETE_FRAGMENT);
+    }
+
+    /**
+     * Založení nové části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param apPartFormVO data pro vytvoření části
+     */
+    protected void createPart(final Integer accessPointId,
+                              final ApPartFormVO apPartFormVO) {
+        post(spec -> spec.pathParam("accessPointId", accessPointId)
+                .body(apPartFormVO), CREATE_PART);
+    }
+
+    /**
+     * Úprava části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor upravované části
+     * @param apPartFormVO data pro úpravu části
+     */
+    protected void updatePart(final Integer accessPointId,
+                              final Integer partId,
+                              final ApPartFormVO apPartFormVO) {
+        post(spec -> spec.pathParam("accessPointId", accessPointId)
+                .pathParam("partId", partId)
+                .body(apPartFormVO), UPDATE_PART);
+    }
+
+    /**
+     * Smazání části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor mazané části
+     */
+    public void deletePart(final Integer accessPointId,
+                           final Integer partId) {
+        delete(spec -> spec.pathParam("accessPointId", accessPointId)
+                .pathParam("partId", partId), DELETE_PART);
+    }
+
+    /**
+     * Nastavení preferovaného jména přístupového bodu.
+     * Možné pouze pro části typu Označení.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor části, kterou nastavujeme jako preferovanou
+     */
+    public void setPreferName(final Integer accessPointId,
+                              final Integer partId) {
+        put(spec -> spec.pathParam("accessPointId", accessPointId)
+                .pathParam("partId", partId), SET_PREFER_NAME);
     }
 
     protected ApAccessPointVO createStructuredAccessPoint(final ApAccessPointCreateVO accessPoint) {

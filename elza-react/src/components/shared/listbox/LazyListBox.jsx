@@ -49,6 +49,7 @@ class LazyListBox extends AbstractReactComponent {
             view: {from: 0, to: 0},
             scrollToIndex: {index: 0},
             selectedItem: props.selectedItem,
+            mainContainerRef: null,
         };
 
         Utils.addShortcutManager(this, defaultKeymap);
@@ -95,7 +96,7 @@ class LazyListBox extends AbstractReactComponent {
         this.tryUpdateSelectedIndex(this.state.itemsFromIndex, this.state.itemsToIndex, this.state.items);
     }
 
-    tryCallSingleCallback = (onCallbackName, itemsFrom, itemsTo, items) => {
+    tryCallSingleCallback = (onCallbackName, itemsFrom, itemsTo, items) => {
         if (
             this.callbackInfo[onCallbackName] !== null &&
             this.callbackInfo[onCallbackName] >= itemsFrom &&
@@ -109,17 +110,17 @@ class LazyListBox extends AbstractReactComponent {
             }
             this.callbackInfo[onCallbackName] = null;
         }
-    }
+    };
 
-    tryCallCallback = (itemsFrom, itemsTo, items) => {
+    tryCallCallback = (itemsFrom, itemsTo, items) => {
         this.tryCallSingleCallback('onFocus', itemsFrom, itemsTo, items);
         this.tryCallSingleCallback('onChangeSelection', itemsFrom, itemsTo, items);
         this.tryCallSingleCallback('onDoubleClick', itemsFrom, itemsTo, items);
         this.tryCallSingleCallback('onSelect', itemsFrom, itemsTo, items);
         this.tryCallSingleCallback('onCheck', itemsFrom, itemsTo, items);
-    }
+    };
 
-    callCallbackAction = (index, onCallbackName) => {
+    callCallbackAction = (index, onCallbackName) => {
         // console.log("CALLBACK", index, onCallbackName)
 
         const {items, itemsFromIndex, itemsToIndex} = this.state;
@@ -136,7 +137,7 @@ class LazyListBox extends AbstractReactComponent {
             // musíme počkat, až se data načtou a pak danou akci zavolat
             this.callbackInfo[onCallbackName] = index;
         }
-    }
+    };
 
     handleClick = (index, e) => {
         const {items} = this.props;
@@ -163,7 +164,7 @@ class LazyListBox extends AbstractReactComponent {
         } else {
             window.getSelection().removeAllRanges();
         }
-    }
+    };
 
     getSelectedIndexForUse(props, state) {
         let index;
@@ -204,7 +205,7 @@ class LazyListBox extends AbstractReactComponent {
         return index;
     }
 
-    ensureItemVisible = (index) => {
+    ensureItemVisible = index => {
         this.setState({
             scrollToIndex: {index},
         });
@@ -233,7 +234,7 @@ class LazyListBox extends AbstractReactComponent {
         }
     }
 
-    tryUpdateSelectedIndex = (itemsFrom, itemsTo, items) => {
+    tryUpdateSelectedIndex = (itemsFrom, itemsTo, items) => {
         const {selectedItem, itemIdAttrName} = this.props;
         const {selectedIndex} = this.state;
         if (selectedItem) {
@@ -248,9 +249,9 @@ class LazyListBox extends AbstractReactComponent {
                 }
             }
         }
-    }
+    };
 
-    callFetch = (fromIndex, toIndex, tryUpdateSelectedIndex) => {
+    callFetch = (fromIndex, toIndex, tryUpdateSelectedIndex) => {
         if (!this.isFetching(fromIndex, toIndex)) {
             const fetchFrom = Math.max(fromIndex - _LLB_FETCH_BOUNDARY, 0);
             const fetchTo = Math.max(toIndex + _LLB_FETCH_BOUNDARY, 0);
@@ -274,7 +275,6 @@ class LazyListBox extends AbstractReactComponent {
 
                 this.tryUpdateSelectedIndex(fetchFrom, fetchTo, data.items);
                 this.tryCallCallback(fetchFrom, fetchTo, data.items);
-                console.log("Xxxx", this.needFetch(fetchFrom, fetchTo, this.state.view.from, this.state.view.to))
                 if (!this.needFetch(fetchFrom, fetchTo, this.state.view.from, this.state.view.to)) {
                     // jen pokud daná data jsou vhodná pro aktuální view
                     this.setState({
@@ -288,9 +288,9 @@ class LazyListBox extends AbstractReactComponent {
                 this.currentFetch = [...this.currentFetch.slice(0, i), ...this.currentFetch.slice(i + 1)];
             });
         }
-    }
+    };
 
-    handleViewChange = (fromIndex, toIndex) => {
+    handleViewChange = (fromIndex, toIndex) => {
         const {items, itemsFromIndex, itemsToIndex, itemsCount} = this.state;
 
         this.setState({
@@ -303,9 +303,9 @@ class LazyListBox extends AbstractReactComponent {
             }
             this.fetchTimer = setTimeout(this.callFetch.bind(this, fromIndex, toIndex, false), _LLB_FETCH_DELAY);
         }
-    }
+    };
 
-    isFetching = (from, to) => {
+    isFetching = (from, to) => {
         for (let a = 0; a < this.currentFetch.length; a++) {
             const fetch = this.currentFetch[a];
 
@@ -314,11 +314,11 @@ class LazyListBox extends AbstractReactComponent {
             }
         }
         return false;
-    }
+    };
 
-    handleDoubleClick = (index) => {
+    handleDoubleClick = index => {
         this.callCallbackAction(index, 'onDoubleClick');
-    }
+    };
 
     /**
      * Provede kompletní reload dat, nezachovává pozice atp.
@@ -341,11 +341,11 @@ class LazyListBox extends AbstractReactComponent {
         );
     };
 
-    fetchNow = () => {
+    fetchNow = () => {
         this.callFetch(0, 1, true);
-    }
+    };
 
-    handleRenderItem = (index) => {
+    handleRenderItem = index => {
         const {className, items, itemsFromIndex, itemsToIndex, activeIndex, selectedIndex} = this.state;
         const {renderItemContent} = this.props;
 
@@ -380,7 +380,7 @@ class LazyListBox extends AbstractReactComponent {
                 {renderItemContent(data, active, index)}
             </div>
         );
-    }
+    };
 
     selectorMoveToIndex = index => {
         if (this.state.lastFocus !== index) {
@@ -479,21 +479,22 @@ class LazyListBox extends AbstractReactComponent {
             cls += ' ' + className;
         }
 
-        console.log(fetching, items)
         return (
             <Shortcuts name="LazyListBox" className="lazy-listbox-wrapper" handler={this.handleShortcuts} tabIndex={0}>
-                <div className={cls} ref={ref => this.mainContainerRef = ref}>
-                    <VirtualList
-                        ref="virtualList"
-                        tagName="div"
-                        container={this.mainContainerRef}
-                        lazyItemsCount={this.state.itemsCount}
-                        renderItem={this.handleRenderItem}
-                        itemHeight={this.props.itemHeight}
-                        onViewChange={this.handleViewChange}
-                        scrollToIndex={scrollToIndex}
-                        fetching={fetching && fetching === true}
-                    />
+                <div className={cls} ref={ref => (this.mainContainerRef = ref)}>
+                    {this.mainContainerRef && (
+                        <VirtualList
+                            ref="virtualList"
+                            tagName="div"
+                            container={this.mainContainerRef}
+                            lazyItemsCount={this.state.itemsCount}
+                            renderItem={this.handleRenderItem}
+                            itemHeight={this.props.itemHeight}
+                            onViewChange={this.handleViewChange}
+                            scrollToIndex={scrollToIndex}
+                            fetching={fetching && fetching === true}
+                        />
+                    )}
                 </div>
             </Shortcuts>
         );

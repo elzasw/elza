@@ -23,8 +23,6 @@ public class ArrFundVersionVO {
 
     private Date lockDate;
 
-    private String dateRange;
-
     private Integer ruleSetId;
 
     private Boolean strictMode;
@@ -65,14 +63,6 @@ public class ArrFundVersionVO {
 
     public void setLockDate(final Date lockDate) {
         this.lockDate = lockDate;
-    }
-
-    public String getDateRange() {
-        return dateRange;
-    }
-
-    public void setDateRange(final String dateRange) {
-        this.dateRange = dateRange;
     }
 
     public Integer getRuleSetId() {

@@ -70,6 +70,8 @@ import * as groups from '../../actions/refTables/groups';
 import {JAVA_ATTR_CLASS} from '../../constants';
 
 class FundDataGrid extends AbstractReactComponent {
+    dataGridRef = null;
+
     static propTypes = {
         fundId: PropTypes.number.isRequired,
         versionId: PropTypes.number.isRequired,
@@ -228,14 +230,14 @@ class FundDataGrid extends AbstractReactComponent {
                                 case 'B':
                                     itemValue = value.geomType + ': ' + value.value;
                                     itemValue = (
-                                        <span>
+                                        <span key={row.id + '-' + value.position}>
                                             <Button disabled>{value.geomType}</Button> {value.value}
                                         </span>
                                     );
                                     break;
                                 default:
                                     itemValue = (
-                                        <span>
+                                        <span key={row.id + '-' + value.position}>
                                             <Button disabled>{value.geomType}</Button>{' '}
                                             {i18n('subNodeForm.countOfCoordinates', value.value)}
                                         </span>
@@ -736,7 +738,7 @@ class FundDataGrid extends AbstractReactComponent {
 
         this.props.dispatch(fundDataGridPrepareEdit(versionId, row.id, parentNodeId, col.id));
 
-        const dataGridComp = this.refs.dataGrid.getWrappedInstance();
+        const dataGridComp = this.dataGridRef;
         const cellEl = dataGridComp.getCellElement(rowIndex, colIndex);
         const cellRect = cellEl.getBoundingClientRect();
 
@@ -773,7 +775,7 @@ class FundDataGrid extends AbstractReactComponent {
         this.props.dispatch(nodeFormActions.fundSubNodeFormHandleClose(versionId, 'DATA_GRID'));
 
         this.setState({}, () => {
-            ReactDOM.findDOMNode(this.refs.dataGrid).focus();
+            this.dataGridRef.focus();
         });
     }
 
@@ -964,7 +966,7 @@ class FundDataGrid extends AbstractReactComponent {
                     />
                     <div className="grid-container">
                         <DataGrid
-                            ref="dataGrid"
+                            ref={ref => (this.dataGridRef = ref)}
                             rows={fundDataGrid.items}
                             cols={cols}
                             focusRow={fundDataGrid.cellFocus.row}

@@ -45,9 +45,6 @@ export function importForm(data, messageType) {
                     case 'Record':
                         dispatch(registryListInvalidate);
                         break;
-                    case 'Party': // FIXME ?: Removing Party
-                        dispatch(registryListInvalidate);
-                        break;
                     default:
                         return;
                 }

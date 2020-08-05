@@ -5,13 +5,14 @@ import * as React from 'react';
 import {WebApi} from 'actions/index.jsx';
 import {Autocomplete, Utils} from 'components/shared';
 import {renderUserOrGroupItem} from './adminRenderUtils.jsx';
-import {RowsResponse, UsrGroupVO, UsrUserVO} from '../../types';
+import {RowsResponse, UsrGroupVO} from '../../types';
 import {ApSearchType} from '../../typings/globals';
 import {DEFAULT_LIST_SIZE} from '../../constants';
 import i18n from '../i18n';
 import {Dropdown} from 'react-bootstrap';
 
 import './UserAndGroupField.scss';
+import {UsrUserVO} from '../../api/UsrUserVO';
 
 type Props = {
     tags: boolean;

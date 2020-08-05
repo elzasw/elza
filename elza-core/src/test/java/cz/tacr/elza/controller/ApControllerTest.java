@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.domain.RulItemType;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -52,6 +54,10 @@ public class ApControllerTest extends AbstractControllerTest {
     public static final String STAT_ZASTUPCE = "STAT_ZASTUPCE";
     public static final String STRUCT_AP_TYPE = "PERSON_BEING_STRUCT";
     public static final String LANG_CZE = "cze";
+    public static final String PT_NAME = "PT_NAME";
+    public static final String PT_REL = "PT_REL";
+    public static final String NM_MAIN = "NM_MAIN";
+    public static final String NM_SUP_GEN = "NM_SUP_GEN";
 
     @Test
     public void getRecordTypesTest() {
@@ -121,120 +127,99 @@ public class ApControllerTest extends AbstractControllerTest {
     }
 
     @Test//(timeout = 60000)
-    @Ignore
-    public void testStructureAccessPoint() throws InterruptedException {
-        //TODO fantis upravit test
-        /*ApTypeVO type = getApType(STRUCT_AP_TYPE);
+    public void testAccessPoint() throws InterruptedException {
+        ApTypeVO type = getApType(STRUCT_AP_TYPE);
         assertNotNull(type);
-
-        Map<String, LanguageVO> languages = getAllLanguages();
 
         List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
+        Map<String, RulPartTypeVO> partTypes = findPartTypesMap();
+        RulPartTypeVO ptName = partTypes.get(PT_NAME);
+
+        List<ApItemVO> items = new ArrayList<>();
+        RulItemType nmMainItemType = itemTypeRepository.findOneByCode(NM_MAIN);
+        RulItemType nmSupGenItemType = itemTypeRepository.findOneByCode(NM_SUP_GEN);
+
+        items.add(buildApItem(nmMainItemType.getCode(), null, "TEST", null, null));
+        items.add(buildApItem(nmSupGenItemType.getCode(), null, "AP", null, null));
 
         ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
         ap.setTypeId(type.getId());
         ap.setScopeId(scopeId);
+        ap.setPartForm(createPartFormVO(null, ptName.getCode(), null, items));
 
-        ApAccessPointVO accessPoint = createStructuredAccessPoint(ap);
+        ApAccessPointVO accessPoint = createAccessPoint(ap);
         assertNotNull(accessPoint);
-        ApFormVO form = accessPoint.getForm();
-        assertNotNull(form);
-        List<ApAccessPointNameVO> names = new ArrayList<>(accessPoint.getNames());
-        ApAccessPointNameVO accessPointName = names.get(0);
-
-        accessPointName = getAccessPointName(accessPoint.getId(), accessPointName.getObjectId());
-
-        List<ApUpdateItemVO> items = new ArrayList<>();
-        RulDescItemTypeExtVO apNameType = findDescItemTypeByCode("AP_NAME");
-        RulDescItemTypeExtVO apComplementType = findDescItemTypeByCode("AP_COMPLEMENT");
-
-        items.add(buildApItem(UpdateOp.CREATE, apNameType.getCode(), null, "Karel", null, null));
-        items.add(buildApItem(UpdateOp.CREATE, apComplementType.getCode(), null, "IV", null, null));
-        changeNameItems(accessPoint.getId(), accessPointName.getObjectId(), items);
-
-        confirmStructuredAccessPoint(accessPoint.getId());
-
-        accessPointName = getAccessPointName(accessPoint.getId(), accessPointName.getObjectId());
+        List<ApPartVO> parts = accessPoint.getParts();
+        assertNotNull(parts);
+        ApPartVO preferredPart = findPreferredPart(accessPoint);
+        assertNotNull(preferredPart);
 
         items = new ArrayList<>();
-        form = accessPointName.getForm();
-        ApItemStringVO item = (ApItemStringVO) form.getItems().get(0);
-        item.setValue("KarelX");
-        items.add(buildApItem(UpdateOp.UPDATE, item));
-        changeNameItems(accessPoint.getId(), accessPointName.getObjectId(), items);
+        items.add(buildApItem(nmMainItemType.getCode(), null, "Karel", null, null));
+        items.add(buildApItem(nmSupGenItemType.getCode(), null, "IV", null, null));
+
+        ApPartFormVO partFormVO = createPartFormVO(null, ptName.getCode(), null, items);
+        createPart(accessPoint.getId(), partFormVO);
+
+        accessPoint = getAccessPoint(accessPoint.getId());
+        Assert.assertEquals(2, accessPoint.getParts().size());
+
+        items = new ArrayList<>(preferredPart.getItems());
+        ApItemStringVO itemNmMain = (ApItemStringVO) items.get(0);
+        itemNmMain.setValue("Karel");
+
+        ApItemStringVO itemNmSupGen = (ApItemStringVO) items.get(1);
+        itemNmSupGen.setValue("X");
+
+        partFormVO = createPartFormVO(preferredPart.getId(), ptName.getCode(), null, items);
+        updatePart(accessPoint.getId(), preferredPart.getId(), partFormVO);
 
         do {
-            accessPointName = getAccessPointName(accessPoint.getId(), accessPointName.getObjectId());
-            Assert.assertNotNull(accessPointName);
-            if (StringUtils.equals("KarelX", accessPointName.getName())) {
+            accessPoint = getAccessPoint(accessPoint.getId());
+            Assert.assertNotNull(accessPoint);
+            if (StringUtils.equals("Karel (X)", accessPoint.getName())) {
                 break;
             }
             counter("Čekání na validaci ap kvůli změně položek hlavního jména");
             Thread.sleep(100);
         } while (true);
 
-        ApAccessPointNameVO secondName = createName(accessPoint);
-
-        do {
-            secondName = getAccessPointName(accessPoint.getId(), secondName.getObjectId());
-            Assert.assertNotNull(secondName);
-            if (StringUtils.equals("Karel", secondName.getName())
-                    && StringUtils.equals("IV", secondName.getComplement())) {
-                break;
-            }
-            counter("Čekání na validaci ap kvůli založení jména");
-            Thread.sleep(100);
-        } while (true);
-
-        confirmAccessPointStructuredName(accessPoint.getId(), secondName.getObjectId());
-
-        do {
-            secondName = getAccessPointName(accessPoint.getId(), secondName.getObjectId());
-            Assert.assertNotNull(secondName);
-            if (StringUtils.equals("Karel", secondName.getName())
-                    && StringUtils.equals("IV", secondName.getComplement())
-                    && Objects.equals(ApStateVO.OK, secondName.getState())) {
-                break;
-            }
-            counter("Čekání na validaci ap kvůli změně položek jména");
-            Thread.sleep(100);
-        } while (true);
-
-        accessPoint = getAccessPoint(accessPoint.getId());
-        names = new ArrayList<>(accessPoint.getNames());
-        Assert.assertEquals(2, names.size());
-        //Assert.assertEquals(2, names.size());
-
-        addApItems(accessPoint);
+        setPreferName(accessPoint.getId(), accessPoint.getParts().get(0).getId());
 
         do {
             accessPoint = getAccessPoint(accessPoint.getId());
             Assert.assertNotNull(accessPoint);
-            form = accessPoint.getForm();
-            Assert.assertNotNull(form);
-            List<ApItemVO> formItems = form.getItems();
-            Assert.assertNotNull(formItems);
-            if (formItems.size() == 1) {
+            if (StringUtils.equals("Karel (IV)", accessPoint.getName())) {
                 break;
             }
-            counter("Čekání na validaci ap kvůli změně položek ap");
+            counter("Čekání na validaci ap kvůli změně položek hlavního jména");
             Thread.sleep(100);
         } while (true);
 
-        // změna jazyku u strukturovaného jména
-        Assert.assertNull(secondName.getLanguageCode());
-        LanguageVO langCze = languages.get(LANG_CZE);
-        secondName.setLanguageCode(langCze.getCode());
-        secondName = updateAccessPointStructuredName(accessPoint.getId(), secondName);
-        assertEquals(langCze.getCode(), secondName.getLanguageCode());*/
+        deletePart(accessPoint.getId(), accessPoint.getParts().get(1).getId());
+        accessPoint = getAccessPoint(accessPoint.getId());
+        Assert.assertEquals(1, accessPoint.getParts().size());
     }
 
-    private void addApItems(final ApAccessPointVO accessPoint) {
-        List<ApUpdateItemVO> items = new ArrayList<>();
-        RulDescItemTypeExtVO apComplementType = findDescItemTypeByCode("AP_COMPLEMENT");
-        items.add(buildApItem(UpdateOp.CREATE, apComplementType.getCode(), null, "Vlastní popis ap", null, null));
-        changeAccessPointItems(accessPoint.getId(), items);
+    private ApPartVO findPreferredPart(final ApAccessPointVO accessPoint) {
+        if (CollectionUtils.isNotEmpty(accessPoint.getParts())) {
+            for (ApPartVO part : accessPoint.getParts()) {
+                if (part.getId().equals(accessPoint.getPreferredPart())) {
+                    return part;
+                }
+            }
+        }
+        return null;
+    }
+
+    private ApPartFormVO createPartFormVO(final Integer partId, final String partTypeCode, final Integer parentPartId, final List<ApItemVO> items) {
+        ApPartFormVO apPartFormVO = new ApPartFormVO();
+        apPartFormVO.setPartId(partId);
+        apPartFormVO.setPartTypeCode(partTypeCode);
+        apPartFormVO.setParentPartId(parentPartId);
+        apPartFormVO.setItems(items);
+        return apPartFormVO;
     }
 
     /*private ApAccessPointNameVO createName(final ApAccessPointVO accessPoint) {
@@ -272,96 +257,64 @@ public class ApControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    @Ignore
-    public void testFragment() {
-        //TODO fantis nahradit novým testem pro part
-        Map<String, RulStructureTypeVO> fragmentTypes = findFragmentTypesMap();
+    public void testPart() {
+        Map<String, RulPartTypeVO> partTypes = findPartTypesMap();
 
-        RulStructureTypeVO fragmentType = fragmentTypes.get(STAT_ZASTUPCE);
-        Assert.assertNotNull(fragmentType);
+        RulPartTypeVO ptName = partTypes.get(PT_NAME);
+        Assert.assertNotNull(ptName);
+        RulPartTypeVO ptRel = partTypes.get(PT_REL);
+        Assert.assertNotNull(ptRel);
+
         List<ApTypeVO> types = getRecordTypes();
         List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
+        RulItemType nmMainItemType = itemTypeRepository.findOneByCode(NM_MAIN);
+        RulItemType nmSupGenItemType = itemTypeRepository.findOneByCode(NM_SUP_GEN);
+
+        List<ApItemVO> apItems = new ArrayList<>();
+        apItems.add(buildApItem(nmMainItemType.getCode(), null, "Petr Novák", null, null));
+        apItems.add(buildApItem(nmSupGenItemType.getCode(), null, "1920-1986", null, null));
 
         ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
-        ap.setTypeId(getNonHierarchicalApType(types, false).getId());
-//        ap.setName("Petr Novák");
-//        ap.setComplement("1920-1986");
+        ap.setTypeId(getNonHierarchicalApType(types).getId());
+        ap.setPartForm(createPartFormVO(null, ptName.getCode(), null, apItems));
         ap.setScopeId(scopeId);
         ApAccessPointVO accessPoint = createAccessPoint(ap);
+        Assert.assertNotNull(accessPoint.getId());
 
-        ApFragmentVO fragment = createFragment(fragmentType.getCode());
-
-        List<ApUpdateItemVO> items = new ArrayList<>();
+        List<ApItemVO> items = new ArrayList<>();
         RulDescItemTypeExtVO vztahTypType = findDescItemTypeByCode("VZTAH_TYP");
         RulDescItemSpecExtVO vztahTypSpec = findDescItemSpecByCode("VZTAH_TYP_PRIMATOR", vztahTypType);
         RulDescItemTypeExtVO vztahEntitaType = findDescItemTypeByCode("VZTAH_ENTITA");
 
-        items.add(buildApItem(UpdateOp.CREATE, vztahTypType.getCode(), vztahTypSpec.getCode(), null, null, null));
-        items.add(buildApItem(UpdateOp.CREATE, vztahEntitaType.getCode(), null, accessPoint, null, null));
+        items.add(buildApItem(vztahTypType.getCode(), vztahTypSpec.getCode(), null, null, null));
+        items.add(buildApItem(vztahEntitaType.getCode(), null, accessPoint, null, null));
 
-        fragment = changeFragmentItems(fragment.getId(), items);
-        Assert.assertEquals(vztahTypSpec.getName() + ": " + accessPoint.getName(), fragment.getValue());
+        createPart(accessPoint.getId(), createPartFormVO(null, ptRel.getCode(), null, items));
+        accessPoint = getAccessPoint(accessPoint.getId());
+        Assert.assertEquals(2, accessPoint.getParts().size());
 
-        confirmFragment(fragment.getId());
-
-        ApFragmentVO fragmentConfirmed = getFragment(fragment.getId());
-        Assert.assertEquals(ApStateVO.OK, fragmentConfirmed.getState());
-
-        items = new ArrayList<>();
+        ApPartVO partVO = accessPoint.getParts().get(1);
+        items = new ArrayList<>(partVO.getItems());
         RulDescItemTypeExtVO nadType = findDescItemTypeByCode("SRD_NAD");
-        items.add(buildApItem(UpdateOp.CREATE, nadType.getCode(), null, 1, null, null));
-        items.add(buildApItem(UpdateOp.CREATE, nadType.getCode(), null, 2, null, null));
-        items.add(buildApItem(UpdateOp.CREATE, nadType.getCode(), null, 3, 1, null));
-        items.add(buildApItem(UpdateOp.CREATE, nadType.getCode(), null, 4, 8, null));
-        items.add(buildApItem(UpdateOp.CREATE, nadType.getCode(), null, 5, 2, null));
-        fragment = changeFragmentItems(fragment.getId(), items);
+        items.add(buildApItem(nadType.getCode(), null, 1, null, null));
+        items.add(buildApItem(nadType.getCode(), null, 2, null, null));
+        items.add(buildApItem(nadType.getCode(), null, 3, 1, null));
+        items.add(buildApItem(nadType.getCode(), null, 4, 8, null));
+        items.add(buildApItem(nadType.getCode(), null, 5, 2, null));
 
-        ApFormVO fragmentForm = fragment.getForm();
-        List<ApItemVO> fragmentItems = fragmentForm.getItems();
-        ApItemVO itemVO = fragmentItems.get(2);
-
-        items = new ArrayList<>();
-        items.add(buildApItem(UpdateOp.DELETE, nadType.getCode(), null, null, null, itemVO.getObjectId()));
-        fragment = changeFragmentItems(fragment.getId(), items);
-
-        fragmentForm = fragment.getForm();
-        fragmentItems = fragmentForm.getItems();
-        itemVO = fragmentItems.get(5);
-
-        itemVO.setPosition(2);
-        items = new ArrayList<>();
-        items.add(buildApItem(UpdateOp.UPDATE, itemVO));
-
-        ApFragmentVO fragmentUpdated = changeFragmentItems(fragment.getId(), items);
-        ApFormVO fragmentUpdatedForm = fragmentUpdated.getForm();
-        List<ApItemVO> fragmentUpdatedItems = fragmentUpdatedForm.getItems();
-
-        Assert.assertEquals(fragmentItems.get(2).getObjectId(), fragmentUpdatedItems.get(2).getObjectId());
-        Assert.assertEquals(fragmentItems.get(3).getObjectId(), fragmentUpdatedItems.get(4).getObjectId());
-        Assert.assertEquals(fragmentItems.get(4).getObjectId(), fragmentUpdatedItems.get(5).getObjectId());
-        Assert.assertEquals(fragmentItems.get(5).getObjectId(), fragmentUpdatedItems.get(3).getObjectId());
-
-        fragmentUpdated = deleteFragmentItemsByType(fragment.getId(), nadType.getId());
-        fragmentUpdatedForm = fragmentUpdated.getForm();
-        fragmentUpdatedItems = fragmentUpdatedForm.getItems();
-        Assert.assertEquals(2, fragmentUpdatedItems.size());
-    }
-
-    @Test
-    @Ignore
-    public void testTempFragment() {
-        //TODO fantis nahradit novým testem pro part
-        Map<String, RulStructureTypeVO> fragmentTypes = findFragmentTypesMap();
-        RulStructureTypeVO fragmentType = fragmentTypes.get(STAT_ZASTUPCE);
-        Assert.assertNotNull(fragmentType);
-
-        ApFragmentVO fragment = createFragment(fragmentType.getCode());
-        deleteFragment(fragment.getId());
+        updatePart(accessPoint.getId(), partVO.getId(), createPartFormVO(partVO.getId(), ptRel.getCode(), null, items));
+        accessPoint = getAccessPoint(accessPoint.getId());
+        partVO = accessPoint.getParts().get(1);
+        Assert.assertEquals(7, partVO.getItems().size());
     }
 
     private Map<String, RulStructureTypeVO> findFragmentTypesMap() {
         return findStructureTypes().stream().collect(Collectors.toMap(RulStructureTypeVO::getCode, Function.identity()));
+    }
+
+    private Map<String, RulPartTypeVO> findPartTypesMap() {
+        return findPartTypes().stream().collect(Collectors.toMap(RulPartTypeVO::getCode, Function.identity()));
     }
 
     /**
@@ -418,10 +371,8 @@ public class ApControllerTest extends AbstractControllerTest {
         disconnectScope(id, id2);
     }
 
-    @Ignore
     @Test
     public void registerReplaceTest() {
-        //TODO fantis
         // Vytvoření fund
         ArrFundVO fund = createFund("RegisterLinks Test AP", "IC3");
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
@@ -437,22 +388,33 @@ public class ApControllerTest extends AbstractControllerTest {
         List<ApScopeVO> scopes = getAllScopes();
         Integer scopeId = scopes.iterator().next().getId();
 
+        RulItemType nmMainItemType = itemTypeRepository.findOneByCode(NM_MAIN);
+        RulItemType nmSupGenItemType = itemTypeRepository.findOneByCode(NM_SUP_GEN);
+        Map<String, RulPartTypeVO> partTypes = findPartTypesMap();
+
+        RulPartTypeVO ptName = partTypes.get(PT_NAME);
+        Assert.assertNotNull(ptName);
+
         // Vytvoření replace
+        List<ApItemVO> itemReplace = new ArrayList<>();
+        itemReplace.add(buildApItem(nmMainItemType.getCode(), null,"ApRecordA name", null, null));
+        itemReplace.add(buildApItem(nmSupGenItemType.getCode(), null, "ApRecordA complement", null, null));
+
         ApAccessPointCreateVO replacedRecord = new ApAccessPointCreateVO();
-        replacedRecord.setTypeId(getNonHierarchicalApType(types, false).getId());
-        //TODO fantis
-//        replacedRecord.setName("ApRecordA name");
-//        replacedRecord.setComplement("ApRecordA complement");
+        replacedRecord.setTypeId(getNonHierarchicalApType(types).getId());
+        replacedRecord.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemReplace));
         replacedRecord.setScopeId(scopeId);
         ApAccessPointVO replacedRecordCreated = createAccessPoint(replacedRecord);
         Assert.assertNotNull(replacedRecordCreated.getId());
 
         // Vytvoření replacement
+        List<ApItemVO> itemReplacement = new ArrayList<>();
+        itemReplacement.add(buildApItem(nmMainItemType.getCode(), null , "ApRecordB name", null, null));
+        itemReplacement.add(buildApItem(nmSupGenItemType.getCode(), null, "ApRecordB complement", null, null));
+
         ApAccessPointCreateVO replacementRecord = new ApAccessPointCreateVO();
-        replacementRecord.setTypeId(getNonHierarchicalApType(types, false).getId());
-        //TODO fantis
-//        replacementRecord.setName("ApRecordB name");
-//        replacementRecord.setComplement("ApRecordB complement");
+        replacementRecord.setTypeId(getNonHierarchicalApType(types).getId());
+        replacementRecord.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemReplacement));
         replacementRecord.setScopeId(scopeId);
 
         ApAccessPointVO replacementRecordCreated = createAccessPoint(replacementRecord);
@@ -468,16 +430,16 @@ public class ApControllerTest extends AbstractControllerTest {
         Assert.assertTrue(usageAfterReplace.getFunds() == null || usageAfterReplace.getFunds().isEmpty());
     }
 
-    private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list, final boolean hasPartyType) {
+    private ApTypeVO getNonHierarchicalApType(final List<ApTypeVO> list) {
         for (ApTypeVO type : list) {
-            if (type.getAddRecord() && ((!hasPartyType && type.getPartyTypeId() == null) || (hasPartyType && type.getPartyTypeId() != null))) {
+            if (type.getAddRecord()) {
                 return type;
             }
         }
 
         for (ApTypeVO type : list) {
             if (type.getChildren() != null) {
-                ApTypeVO res = getNonHierarchicalApType(type.getChildren(), hasPartyType);
+                ApTypeVO res = getNonHierarchicalApType(type.getChildren());
                 if (res != null) {
                     return res;
                 }

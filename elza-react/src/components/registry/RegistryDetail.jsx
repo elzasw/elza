@@ -14,7 +14,6 @@ import {
 } from '../../components/shared';
 import {Button} from '../ui';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {refPartyTypesFetchIfNeeded} from 'actions/refTables/partyTypes.jsx';
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 import {
     registryDetailFetchIfNeeded,
@@ -44,11 +43,11 @@ import {accessPointFormActions} from '../accesspoint/AccessPointFormActions';
 import TooltipTrigger from '../shared/tooltip/TooltipTrigger';
 import {structureTypesFetchIfNeeded} from '../../actions/refTables/structureTypes';
 import * as StateApproval from './../../components/enum/StateApproval';
-import {refApTypesFetch, refApTypesFetchIfNeeded} from "../../actions/refTables/apTypes";
-import {ApAccessPointVO} from "../../api/ApAccessPointVO";
-import {DetailStoreState} from "../../types";
-import storeFromArea from "../../shared/utils/storeFromArea";
-import * as registry from "../../actions/registry/registry";
+import {refApTypesFetch, refApTypesFetchIfNeeded} from '../../actions/refTables/apTypes';
+import {ApAccessPointVO} from '../../api/ApAccessPointVO';
+import {DetailStoreState} from '../../types';
+import storeFromArea from '../../shared/utils/storeFromArea';
+import * as registry from '../../actions/registry/registry';
 
 class RegistryDetail extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
@@ -71,7 +70,9 @@ class RegistryDetail extends AbstractReactComponent {
         this.trySetFocus();
         this.fetchIfNeeded();
 
-        const {registryDetail: {id, fetched, data}} = this.props;
+        const {
+            registryDetail: {id, fetched, data},
+        } = this.props;
         if ((id !== prevProps.registryDetail.id && fetched) || (!prevProps.registryDetail.fetched && fetched)) {
             if (data) {
                 this.setState({});
@@ -101,7 +102,6 @@ class RegistryDetail extends AbstractReactComponent {
             registryDetail: {id, fetched},
             dispatch,
         } = props;
-        dispatch(refPartyTypesFetchIfNeeded()); // nacteni typu osob (osoba, rod, událost, ...)
         dispatch(calendarTypesFetchIfNeeded()); // načtení typů kalendářů (gregoriánský, juliánský, ...)
         dispatch(refApTypesFetchIfNeeded());
         dispatch(descItemTypesFetchIfNeeded());
@@ -130,19 +130,11 @@ class RegistryDetail extends AbstractReactComponent {
         }
     };
 
-    handleGoToParty = () => {
-    };
-
     handleShortcuts = action => {
         switch (action) {
             case 'editRecord':
                 if (this.canEdit()) {
                     this.handleRecordUpdate();
-                }
-                break;
-            case 'goToPartyPerson':
-                if (this.props.registryDetail.data.partyId) {
-                    this.handleGoToParty();
                 }
                 break;
             default:
@@ -151,7 +143,9 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     handleRecordUpdate = () => {
-        const {registryDetail: {data}} = this.props;
+        const {
+            registryDetail: {data},
+        } = this.props;
         this.props.dispatch(
             modalDialogShow(
                 this,
@@ -167,7 +161,9 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     handleRecordUpdateCall = value => {
-        const {registryDetail: {data}} = this.props;
+        const {
+            registryDetail: {data},
+        } = this.props;
         return this.props.dispatch(
             registryUpdate(data.id, value.typeId, () => {
                 // Nastavení focus
@@ -177,10 +173,14 @@ class RegistryDetail extends AbstractReactComponent {
     };
 
     canEdit() {
-        const {userDetail, registryDetail: {data, fetched}, apTypeIdMap} = this.props;
+        const {
+            userDetail,
+            registryDetail: {data, fetched},
+            apTypeIdMap,
+        } = this.props;
 
         // Pokud je načteno && není osoba
-        if (!fetched || data.partyId) {
+        if (!fetched) {
             return false;
         }
 
@@ -369,7 +369,7 @@ class RegistryDetail extends AbstractReactComponent {
         }
     };
 
-    renderApItemsError = (data) => {
+    renderApItemsError = data => {
         const {ap} = this.props;
         const subNodeForm = ap.form;
         const {state, errorDescription} = data;
@@ -421,7 +421,7 @@ class RegistryDetail extends AbstractReactComponent {
         }
     };
 
-    renderApNameItemsError = (data) => {
+    renderApNameItemsError = data => {
         const {refTables} = this.props;
 
         const itemTypes = refTables.descItemTypes.items;
@@ -554,14 +554,6 @@ class RegistryDetail extends AbstractReactComponent {
                                         >
                                             <Icon glyph="fa-pencil" />
                                         </NoFocusButton>
-                                        {data.partyId && (
-                                            <NoFocusButton
-                                                className="registry-record-party btn-action"
-                                                onClick={this.handleGoToParty}
-                                            >
-                                                <Icon glyph="fa-user" />
-                                            </NoFocusButton>
-                                        )}
                                     </div>
                                 </div>
                                 <div>

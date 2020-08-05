@@ -4,7 +4,6 @@ import {Item} from './Item';
 import {ItemUnitdate} from './ItemUnitdate';
 import {ItemRecordRef} from './ItemRecordRef';
 import {ItemFileRef} from './ItemFileRef';
-import {ItemPartyRef} from './ItemPartyRef';
 import {ItemCoordinates} from './ItemCoordinates';
 import {ItemDecimal} from './ItemDecimal';
 import {ItemEnum} from './ItemEnum';
@@ -20,7 +19,6 @@ const itemsMap = {
     '.ArrItemUnitdateVO': ItemUnitdate,
     '.ArrItemRecordRefVO': ItemRecordRef,
     '.ArrItemFileRefVO': ItemFileRef,
-    '.ArrItemPartyRefVO': ItemPartyRef,
     '.ArrItemCoordinatesVO': ItemCoordinates,
     '.ArrItemDecimalVO': ItemDecimal,
     '.ArrItemEnumVO': ItemEnum,

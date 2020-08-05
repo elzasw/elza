@@ -34,11 +34,11 @@ import ListPager from '../shared/listPager/ListPager';
 import * as perms from '../../actions/user/Permission';
 import {FOCUS_KEYS} from '../../constants.tsx';
 import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
-import {Col, Row} from "react-bootstrap";
-import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
-import {Area} from "../../api/Area";
-import ExtFilterModal from "./modal/ExtFilterModal";
-import {Button} from "../ui";
+import {Col, Row} from 'react-bootstrap';
+import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
+import {Area} from '../../api/Area';
+import ExtFilterModal from './modal/ExtFilterModal';
+import {Button} from '../ui';
 
 class RegistryList extends AbstractReactComponent {
     static propTypes = {
@@ -107,7 +107,7 @@ class RegistryList extends AbstractReactComponent {
         let searchFilter = registryList.filter.searchFilter;
         const text = filterText && filterText.length === 0 ? null : filterText;
         if (searchFilter) {
-            searchFilter.search = text
+            searchFilter.search = text;
         }
         dispatch(
             registryListFilter({
@@ -130,22 +130,22 @@ class RegistryList extends AbstractReactComponent {
         );
     };
 
-    handleFilterRegistryScope = item => {
+    handleFilterRegistryScope = id => {
         this.props.dispatch(
             registryListFilter({
                 ...this.props.registryList.filter,
                 from: 0,
-                scopeId: item ? item.id : null,
+                scopeId: id,
             }),
         );
     };
 
-    handleFilterRegistryState = item => {
+    handleFilterRegistryState = state => {
         this.props.dispatch(
             registryListFilter({
                 ...this.props.registryList.filter,
                 from: 0,
-                state: item ? item.id : null,
+                state: state,
             }),
         );
     };
@@ -174,14 +174,16 @@ class RegistryList extends AbstractReactComponent {
         const {dispatch, registryList} = this.props;
         let searchFilter = registryList.filter.searchFilter;
         if (searchFilter) {
-            searchFilter.search = null
+            searchFilter.search = null;
         }
-        dispatch(registryListFilter({
-            ...registryList.filter,
-            from: 0,
-            text: null,
-            searchFilter: searchFilter
-        }));
+        dispatch(
+            registryListFilter({
+                ...registryList.filter,
+                from: 0,
+                text: null,
+                searchFilter: searchFilter,
+            }),
+        );
     };
 
     handleRegistryDetail = item => {
@@ -284,7 +286,7 @@ class RegistryList extends AbstractReactComponent {
                 searchFilter: null,
             }),
         );
-    }
+    };
 
     handleExtFilter = () => {
         const {dispatch, registryList} = this.props;
@@ -292,18 +294,21 @@ class RegistryList extends AbstractReactComponent {
             modalDialogShow(
                 this,
                 i18n('ap.ext-filter.title'),
-                <ExtFilterModal initialValues={{
-                    area: Area.ALLNAMES,
-                    onlyMainPart: "false",
-                    search: registryList.filter.text,
-                    ...registryList.filter.searchFilter
-                }} onSubmit={(data) => {
-                    this.handleExtFilterResult(data);
-                    dispatch(modalDialogHide());
-                }} />,
+                <ExtFilterModal
+                    initialValues={{
+                        area: Area.ALLNAMES,
+                        onlyMainPart: 'false',
+                        search: registryList.filter.text,
+                        ...registryList.filter.searchFilter,
+                    }}
+                    onSubmit={data => {
+                        this.handleExtFilterResult(data);
+                        dispatch(modalDialogHide());
+                    }}
+                />,
             ),
         );
-    }
+    };
 
     /**
      * Výchozí hodnota/placeholder pro registry type filtr
@@ -352,29 +357,27 @@ class RegistryList extends AbstractReactComponent {
             <div className="registry-list">
                 <div className="filter">
                     <Autocomplete
-                        inputProps={{
-                            placeholder: this.getScopeById(filter.scopeId, scopes) || i18n('party.recordScope'),
-                        }}
+                        placeholder={this.getScopeById(filter.scopeId, scopes) || i18n('party.recordScope')}
                         items={this.getScopesWithAll(scopes)}
                         onChange={this.handleFilterRegistryScope}
-                        value={this.getScopeById(filter.scopeId, scopes)}
+                        value={filter.scopeId}
+                        useIdAsValue
                     />
                     <Autocomplete
-                        inputProps={{
-                            placeholder: filter.state ? StateApproval.getCaption(filter.state) : i18n('party.apState'),
-                        }}
+                        placeholder={filter.state ? StateApproval.getCaption(filter.state) : i18n('party.apState')}
                         items={this.getStateWithAll()}
                         onChange={this.handleFilterRegistryState}
                         value={filter.state}
+                        useIdAsValue
                     />
                     <Autocomplete
-                        inputProps={{placeholder: !filter.registryTypeId ? this.registryTypeDefaultValue : ''}}
+                        placeholder={!filter.registryTypeId ? this.registryTypeDefaultValue : ''}
                         items={apTypesWithAll}
                         disabled={
-                            (!registryTypes ||
-                                registryList.filter.parents.length ||
-                                registryList.filter.itemSpecId ||
-                                registryList.filter.itemTypeId)
+                            !registryTypes ||
+                            registryList.filter.parents.length ||
+                            registryList.filter.itemSpecId ||
+                            registryList.filter.itemTypeId
                         }
                         tree
                         alwaysExpanded
@@ -398,16 +401,28 @@ class RegistryList extends AbstractReactComponent {
                         allItemsCount={registryList.count}
                     />
                     <Row noGutters className={filterCls}>
-                        {!registryList.filter.searchFilter && <Col>
-                            <Button variant="link" onClick={this.handleExtFilter}>{i18n('ap.ext-filter.use')}</Button>
-                        </Col>}
-                        {registryList.filter.searchFilter && <>
-                            <Col title={i18n('ap.ext-filter.used')} className="align-self-center used">{i18n('ap.ext-filter.used')}</Col>
-                            <Col xs='auto'>
-                                <Button variant="link" onClick={this.handleExtFilter}>{i18n('global.action.update')}</Button>
-                                <Button variant="link" onClick={this.handleExtFilterClear}>{i18n('global.action.cancel')}</Button>
+                        {!registryList.filter.searchFilter && (
+                            <Col>
+                                <Button variant="link" onClick={this.handleExtFilter}>
+                                    {i18n('ap.ext-filter.use')}
+                                </Button>
                             </Col>
-                        </>}
+                        )}
+                        {registryList.filter.searchFilter && (
+                            <>
+                                <Col title={i18n('ap.ext-filter.used')} className="align-self-center used">
+                                    {i18n('ap.ext-filter.used')}
+                                </Col>
+                                <Col xs="auto">
+                                    <Button variant="link" onClick={this.handleExtFilter}>
+                                        {i18n('global.action.update')}
+                                    </Button>
+                                    <Button variant="link" onClick={this.handleExtFilterClear}>
+                                        {i18n('global.action.cancel')}
+                                    </Button>
+                                </Col>
+                            </>
+                        )}
                     </Row>
                 </div>
                 <StoreHorizontalLoader store={registryList} />
