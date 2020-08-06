@@ -31,7 +31,7 @@ public class UserServiceImplTest extends AbstractControllerTest {
 
     @Test
     public void userServiceTest() {
-        List<ApAccessPointVO> aps = this.findRecord(null, 0, 1, null, null, null);
+        List<ApAccessPointVO> aps = this.findRecord(null, 0, 1, null, null);
         assertTrue(aps.size() > 0);
         Integer apId = aps.get(0).getId();
 
