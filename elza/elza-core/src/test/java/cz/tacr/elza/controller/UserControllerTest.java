@@ -43,7 +43,7 @@ public class UserControllerTest extends AbstractControllerTest {
 
         ArrFundVO fund = createFund("Test", "TST");
 
-        List<ApAccessPointVO> records = findRecord(null, null, null, null, null, null);
+        List<ApAccessPointVO> records = findRecord(null, null, null, null, null);
         ApAccessPointVO ap = records.get(0);
 
         // vytvoření uživatele

@@ -56,7 +56,7 @@ public class IssueControllerTest extends AbstractControllerTest {
 
         ArrFundVO fund = createFund();
 
-        List<ApAccessPointVO> records = findRecord(null, null, null, null, null, null);
+        List<ApAccessPointVO> records = findRecord(null, null, null, null, null);
         ApAccessPointVO ap = records.get(0);
 
         UsrUserVO adminUserVO = createAdmin("admin1", fund.getId(), ap);
