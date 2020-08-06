@@ -665,37 +665,51 @@ public class ArrangementService {
         return arrangementInternalService.getOpenVersionsByFundIds(fundIds);
     }
 
-    public ArrLevel deleteLevelCascade(final ArrLevel level, final ArrChange deleteChange) {
+    /**
+     * Kaskádově smaže všechny levely od počátečního
+     *
+     * @param baselevel počáteční level
+     * @param deleteChange záznam o provedených změnách
+     * @param allDeletedLevels list všech levelů, které se budou mazat
+     * @return
+     */
+    public ArrLevel deleteLevelCascade(final ArrLevel baselevel, final ArrChange deleteChange, List allDeletedLevels) {
+
         for (ArrLevel childLevel : levelRepository
-                .findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(level.getNode())) {
-            deleteLevelCascade(childLevel, deleteChange);
+                .findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(baselevel.getNode())) {
+            deleteLevelCascade(childLevel, deleteChange, allDeletedLevels);
         }
 
-        for (ArrDescItem descItem : descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode())) {
+        for (ArrDescItem descItem : descItemRepository.findByNodeAndDeleteChangeIsNull(baselevel.getNode())) {
             descItem.setDeleteChange(deleteChange);
             descItemRepository.save(descItem);
         }
 
-        ArrNode node = level.getNode();
-        ArrFund fund = level.getNode().getFund();
+        ArrNode node = baselevel.getNode();
+        ArrFund fund = baselevel.getNode().getFund();
         ArrFundVersion fundVersion = getOpenVersionByFundId(fund.getFundId());
 
         List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNode(node);
+
+
         arrDescItemList = arrDescItemList.stream().map(i -> {
             em.detach(i);
             return (ArrDescItem) HibernateUtils.unproxy(i);
         }).collect(Collectors.toList());
 
-        for (ArrDescItem arrDescItem : arrDescItemList) {
-            ArrDataUriRef arrDataUriRef = new ArrDataUriRef((ArrDataUriRef) arrDescItem.getData());
-            arrDataUriRef.setDataId(null);
-            arrDataUriRef.setArrNode(null);
-            arrDataUriRef.setDeletingProcess(true);
-            arrDescItem.setData(arrDataUriRef);
-        }
-        descriptionItemService.updateDescriptionItems(arrDescItemList, fundVersion, deleteChange);
 
-        return deleteLevelInner(level, deleteChange);
+        for (ArrDescItem arrDescItem : arrDescItemList) {
+            //pokud se item bude mazat, není potřeba u něj předělávat UriRef
+            if (!allDeletedLevels.contains(levelRepository.findByNodeIdAndDeleteChangeIsNull(arrDescItem.getNodeId()))) {
+                ArrDataUriRef arrDataUriRef = new ArrDataUriRef((ArrDataUriRef) arrDescItem.getData());
+                arrDataUriRef.setDataId(null);
+                arrDataUriRef.setArrNode(null);
+                arrDataUriRef.setDeletingProcess(true);
+                arrDescItem.setData(arrDataUriRef);
+                descriptionItemService.updateDescriptionItem(arrDescItem, fundVersion, deleteChange);
+            }
+        }
+        return deleteLevelInner(baselevel, deleteChange);
     }
 
     private ArrLevel deleteLevelInner(final ArrLevel level, final ArrChange deleteChange) {

@@ -14,6 +14,7 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
@@ -432,7 +433,8 @@ public class FundLevelService {
 
         shiftNodes(nodesToShift(deleteLevel), change, deleteLevel.getPosition());
 
-        ArrLevel level = arrangementService.deleteLevelCascade(deleteLevel, change);
+        ArrLevel level = arrangementService.deleteLevelCascade(deleteLevel, change,
+                levelRepository.findLevelsByDirection(deleteLevel, version, RelatedNodeDirection.DESCENDANTS));
 
         eventNotificationService.publishEvent(new EventDeleteNode(EventType.DELETE_LEVEL,
                 version.getFundVersionId(),
