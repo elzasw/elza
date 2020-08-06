@@ -1459,10 +1459,6 @@ public class ArrangementService {
         // zjištění všech uzlů, které nemají validaci
         List<ArrNode> nodes = nodeRepository.findByNodeConformityIsNull();
 
-        //pridani uzlu, u kterých byla validace chybná
-        if(onStart) {
-            nodes.addAll(nodeRepository.findNodesByConformityState(State.ERR));
-        }
 
         // roztřídění podle AF
         for (ArrNode node : nodes) {
