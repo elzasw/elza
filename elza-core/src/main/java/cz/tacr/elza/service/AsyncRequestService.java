@@ -482,6 +482,10 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             }
         }
 
+        protected boolean isFailedRequest(final ArrAsyncRequest request) {
+            return false;
+        }
+
         /**
          * Zapsání časového okna pro vytížení.
          *
@@ -567,7 +571,11 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                 do {
                     requests = asyncRequestRepository.findRequestsByPriorityWithLimit(getType(), PageRequest.of(p, MAX));
                     for (ArrAsyncRequest request : requests) {
-                        results.add(new AsyncRequest(request));
+                        if (!isFailedRequest(request)) {
+                            results.add(new AsyncRequest(request));
+                        } else {
+                            logger.debug("Byl odstraněn požadavek z fronty z důvodu jeho chybového stavu. ID: {}", request.getAsyncRequestId());
+                        }
                     }
                     p++;
                 } while (requests.size() == MAX);
@@ -904,6 +912,15 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             return AsyncBulkActionWorker.class;
         }
 
+        @Override
+        protected boolean isFailedRequest(final ArrAsyncRequest request) {
+            if (request.getBulkAction().getState().equals(ArrBulkActionRun.State.RUNNING)) {
+                request.getBulkAction().setState(ArrBulkActionRun.State.ERROR);
+                return true;
+            }
+            return false;
+        }
+
     }
 
     private static class AsyncNodeExecutor extends AsyncExecutor {
@@ -945,6 +962,16 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
         AsyncOutputExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund) {
             super(AsyncTypeEnum.OUTPUT, executor, new LinkedList<>(), txManager, asyncRequestRepository, appCtx, maxPerFund);
+        }
+
+        @Override
+        protected boolean isFailedRequest(final ArrAsyncRequest request) {
+            if (request.getOutput().getState().equals(ArrOutput.OutputState.GENERATING)) {
+                request.getOutput().setState(ArrOutput.OutputState.OPEN);
+                request.getOutput().setError("Byl proveden restart serveru");
+                return true;
+            }
+            return false;
         }
 
         @Override
