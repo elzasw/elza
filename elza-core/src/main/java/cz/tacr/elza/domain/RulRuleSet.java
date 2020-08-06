@@ -4,6 +4,8 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -11,6 +13,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
  * Pravidla tvorby AP. Primárními pravidly jsou Základní pravidla. Je možné však připravit jiná
@@ -37,6 +40,10 @@ public class RulRuleSet {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rule_type", length = StringLength.LENGTH_ENUM, nullable = false)
+    private RuleType ruleType;
 
     public Integer getRuleSetId() {
         return ruleSetId;
@@ -70,8 +77,31 @@ public class RulRuleSet {
         this.rulPackage = rulPackage;
     }
 
+    public RuleType getRuleType() {
+        return ruleType;
+    }
+
+    public void setRuleType(RuleType ruleType) {
+        this.ruleType = ruleType;
+    }
+
     @Override
     public String toString() {
         return "RulRuleSet pk=" + ruleSetId;
+    }
+
+    public enum RuleType {
+
+        ENTITY,
+
+        ARRANGEMENT;
+
+        public String value() {
+            return name();
+        }
+
+        public static RuleType fromValue(String v) {
+            return valueOf(v);
+        }
     }
 }

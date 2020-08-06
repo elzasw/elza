@@ -107,7 +107,11 @@ public class SettingsService {
 
         @Override
         public R convert(UISettings uiSettings) {
-            return mappingFunction.apply(uiSettings);
+	        try {
+                return mappingFunction.apply(uiSettings);
+            } catch (Throwable t) {
+	            return null;
+            }
         }
 
         @Override
@@ -170,13 +174,13 @@ public class SettingsService {
         settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.FAVORITE_ITEM_SPECS, 
                 c -> SettingFavoriteItemSpecs.newInstance(c, staticDataService),
                 SettingFavoriteItemSpecs.class ));
-        settingsConvertors.add(new StructTypeSettingsConvertor());
         settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.PARTS_ORDER,
                 SettingPartsOrder::newInstance,
                 SettingPartsOrder.class ));
         settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.ITEM_TYPES,
                 SettingItemTypes::newInstance,
                 SettingItemTypes.class ));
+        settingsConvertors.add(new StructTypeSettingsConvertor());
 		
 		// default convertor
 		// settingsConvertors.add(uiSettings -> SettingBase.newInstance(uiSettings));
