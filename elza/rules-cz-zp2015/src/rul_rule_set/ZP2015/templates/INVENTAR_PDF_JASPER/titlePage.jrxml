@@ -51,7 +51,7 @@
 				<textElement>
 					<font size="14" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getPartyGroup().getRecord().getPrefName().getName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getRecord().getPrefName().getName()]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="0" y="23" width="455" height="27" uuid="702942b3-54f1-49f1-adff-3ad8ae566325"/>
