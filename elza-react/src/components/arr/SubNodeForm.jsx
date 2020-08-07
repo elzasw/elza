@@ -101,7 +101,7 @@ class SubNodeForm extends AbstractReactComponent {
             return true;
         } else {
             const log = false;
-            // return !objectEqualsDiff(this.props, nextProps, {}, '', log)
+            return !objectEqualsDiff(this.props, nextProps, {}, '', log)
 
             return (
                 !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, SUB_NODE_FORM_CMP, '', log) ||

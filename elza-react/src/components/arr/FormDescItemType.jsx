@@ -6,7 +6,7 @@ import {objectEquals, objectEqualsDiff, propsEquals} from '../Utils';
 
 class FormDescItemType extends AbstractReactComponent {
     shouldComponentUpdate(nextProps, nextState) {
-        // return true;
+        return true;
         if (this.state !== nextState) {
             console.log('[FormDescItemType]#[state]##############', nextProps.refType.name);
             return true;

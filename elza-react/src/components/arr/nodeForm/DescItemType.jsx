@@ -136,22 +136,25 @@ class DescItemType extends AbstractReactComponent {
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        // this.setState({
-        //     descItemType: {...nextProps.descItemType},
-        // });
-        const log = false;
-        log && console.log(1111111111, nextProps.refType.name);
-        if (!objectEqualsDiff(this.props.descItemType, nextProps.descItemType, undefined, '', log)) {
-            // propsEquals(this.props.descItemType, nextProps.descItemType, undefined, true);
 
-            this.setState({
-                descItemType: {...nextProps.descItemType},
-            });
+        const newDescItemType = {...nextProps.descItemType};
+        const {formKey, value} = this.state;
+        if (formKey) {
+            for (let a=0; a<newDescItemType.descItems.length; a++) {
+                const di = newDescItemType.descItems[a];
+                di.value = value;
+                di.touched = true;
+                break;
+            }
         }
+
+        this.setState({
+            descItemType: newDescItemType,
+        });
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        // return true;
+        return true;
         if (this.state !== nextState) {
             console.log('[DescItemType]#[state]##############', nextProps.refType.name);
             return true;
@@ -346,6 +349,7 @@ class DescItemType extends AbstractReactComponent {
         this.setState({
             descItemType: newDescItemType,
             value,
+            formKey: descItem.formKey,
             error,
         });
     }
@@ -431,6 +435,7 @@ class DescItemType extends AbstractReactComponent {
         // resets the modified value and error
         this.setState({
             value: null,
+            formKey: null,
             error: null,
         });
 
@@ -1181,6 +1186,10 @@ class DescItemType extends AbstractReactComponent {
         } = this.props;
         const {descItemType} = this.state;
 
+        if (descItemType.id === 63) {
+            console.log("RENDER...", descItemType)
+        }
+
         // console.log('[DescItemType] RENDER', this.props.refType.name);
 
         const label = this.renderLabel();
@@ -1260,6 +1269,7 @@ class DescItemType extends AbstractReactComponent {
                 alwaysFireHandler
             >
                 {label}
+                {descItemType.id}
                 <div
                     ref={ref => (this.refDragOverContainer = ref)}
                     className="desc-item-type-desc-items"

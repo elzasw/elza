@@ -94,6 +94,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
+        return true;
         if (this.state !== nextState) {
             return true;
         } else {
