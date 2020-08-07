@@ -596,7 +596,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                     asyncRequestRepository.deleteAll(deleteRequests);
                 }
 
-                logger.info("Obnovení databázové fronty {} - obnoveno: {}", getType(), results.size());
+                logger.info("Obnovení databázové fronty {} - obnoveno: {}, odebráno: {}", getType(), results.size(), deleteRequests.size());
                 if (results.size() > 0) {
                     enqueue(results);
                 }
@@ -939,6 +939,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             if (state == ArrBulkActionRun.State.RUNNING) {
                 bulkAction.setState(ArrBulkActionRun.State.ERROR);
                 bulkActionRepository.save(bulkAction);
+                return true;
+            } else if (state == ArrBulkActionRun.State.ERROR) {
                 return true;
             }
             return false;
