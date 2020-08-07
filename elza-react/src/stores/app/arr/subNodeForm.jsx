@@ -67,7 +67,7 @@ function getLoc(state, valueLocation) {
     descItemGroup.descItemTypes = [...descItemGroup.descItemTypes];
     descItemGroup.descItemTypes[valueLocation.descItemTypeIndex] = descItemType;
 
-    descItemType.descItems = [...descItemType.descItems];
+    descItemType.descItems = descItemType.descItems ? [...descItemType.descItems] : [];
     if (descItem) {
         descItemType.descItems[valueLocation.descItemIndex] = descItem;
     }
