@@ -1,21 +1,31 @@
 package cz.tacr.elza.print;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.Validate;
+
 import cz.tacr.elza.core.data.PartType;
 import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.ap.ExternalId;
+import cz.tacr.elza.print.ap.Name;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.part.Part;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
-import org.apache.commons.lang3.Validate;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * One record from registry
@@ -90,6 +100,13 @@ public class Record {
         return type;
     }
 
+    public Name getPrefName() {
+        return null;
+    }
+
+    public List<Name> getNames() {
+        return null;
+    }
     public List<ExternalId> getEids() {
         if (eids == null) {
             List<ApBindingState> apEids = bindingStateRepository.findByAccessPoint(ap);

@@ -42,7 +42,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getPartyGroup().getName().getFullName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getRecord().getPrefName().getFullName()]]></textFieldExpression>
 			</textField>
 			<componentElement>
 				<reportElement x="48" y="225" width="200" height="20" uuid="8d7b7ea3-f582-419d-8e09-7a64d9c15c41">

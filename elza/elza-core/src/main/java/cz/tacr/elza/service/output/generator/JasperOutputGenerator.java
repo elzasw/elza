@@ -1,37 +1,5 @@
 package cz.tacr.elza.service.output.generator;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
-import cz.tacr.elza.core.ElzaLocale;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.fund.FundTreeProvider;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ProcessException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.print.AttPagePlaceHolder;
-import cz.tacr.elza.print.OutputModel;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.service.output.OutputParams;
-import cz.tacr.elza.service.output.generator.PdfAttProvider.Attachments;
-import net.sf.jasperreports.engine.*;
-import net.sf.jasperreports.engine.export.JRPdfExporter;
-import net.sf.jasperreports.export.SimpleExporterInput;
-import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
-import net.sf.jasperreports.export.SimplePdfReportConfiguration;
-import org.apache.commons.lang.Validate;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.pdfbox.io.MemoryUsageSetting;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
-import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
-import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
-import org.apache.pdfbox.text.PDFTextStripper;
-import org.springframework.context.ApplicationContext;
-
-import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,6 +11,54 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import javax.persistence.EntityManager;
+
+import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
+import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.context.ApplicationContext;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.core.ElzaLocale;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.fund.FundTreeProvider;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ProcessException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.print.AttPagePlaceHolder;
+import cz.tacr.elza.print.OutputModel;
+import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.output.OutputParams;
+import cz.tacr.elza.service.output.generator.PdfAttProvider.Attachments;
+import net.sf.jasperreports.engine.DefaultJasperReportsContext;
+import net.sf.jasperreports.engine.JREmptyDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+import net.sf.jasperreports.export.SimplePdfReportConfiguration;
 
 public class JasperOutputGenerator extends DmsOutputGenerator {
 
@@ -145,7 +161,8 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
         try (InputStream is = Files.newInputStream(templateFile, StandardOpenOption.READ)) {
             return JasperCompileManager.compileReport(is);
         } catch (IOException | JRException e) {
-            throw new ProcessException(params.getOutputId(), "Failed to parse Jasper template", e);
+            throw new ProcessException(params.getOutputId(), "Failed to parse Jasper template: " + templateFile, e)
+                    .set("template", templateFile);
         }
     }
 

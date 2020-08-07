@@ -10,17 +10,30 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.Validate;
-import javax.validation.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -258,14 +271,14 @@ public class ItemService {
             ArrData data = dataItem.getData();
             if (data != null) {
                 if (data instanceof ArrDataStructureRef) {
-                    ArrStructuredObject structureData = ((ArrDataStructureRef) data).getStructuredObject();
-                    structureMap.put(structureData.getStructuredObjectId(), (ArrDataStructureRef) data);
+                    ArrDataStructureRef structDataRef = (ArrDataStructureRef) data;
+                    structureMap.put(structDataRef.getStructuredObjectId(), structDataRef);
                 } else if (data instanceof ArrDataFileRef) {
-                    ArrFile file = ((ArrDataFileRef) data).getFile();
-                    fileMap.put(file.getFileId(), (ArrDataFileRef) data);
+                    ArrDataFileRef fileRef = (ArrDataFileRef) data;
+                    fileMap.put(fileRef.getFileId(), fileRef);
                 } else if (data instanceof ArrDataRecordRef) {
-                    ApAccessPoint record = ((ArrDataRecordRef) data).getRecord();
-                    recordMap.put(record.getAccessPointId(), (ArrDataRecordRef) data);
+                    ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
+                    recordMap.put(recordRef.getRecordId(), recordRef);
                 }
             }
         }

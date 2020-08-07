@@ -1,11 +1,11 @@
 package cz.tacr.elza.print;
 
-import cz.tacr.elza.print.item.Item;
-import net.bytebuddy.implementation.bytecode.Throw;
-
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+
+import cz.tacr.elza.print.item.Item;
+import net.bytebuddy.implementation.bytecode.Throw;
 
 /**
  * Output interface to access all output related data
@@ -54,6 +54,15 @@ public interface Output {
      * @return seznam všech items výstupu kromě hodnot typů uvedených ve vstupu metody
      */
     List<Item> getItemsWithout(final Collection<String> codes);
+
+	/**
+	 * Return list of parties from the given description items.
+	 *
+	 * Description items have to be party references.
+	 * @param codes List of description items referencing parties
+	 * @return List of referenced parties
+	 */
+    List<Record> getParties(final Collection<String> codes);
 
     /**
      * Return single item
