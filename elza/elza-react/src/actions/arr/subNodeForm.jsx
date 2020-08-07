@@ -648,7 +648,7 @@ export class ItemFormActions {
      * @param {Object} refType ref typ atributu
      */
     descItemNeedStore(descItem, refType) {
-        if (!descItem.error && !descItem.error.hasError && descItem.touched) {
+        if ((!descItem.error || descItem.error && !descItem.error.hasError) && descItem.touched) {
             if (typeof descItem.id !== 'undefined') {
                 // Jen pokud se hodnota nebo specifikace změnila
                 let needUpdate = false;
