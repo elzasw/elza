@@ -21,6 +21,7 @@ import cz.tacr.elza.domain.AsyncTypeEnum;
 import cz.tacr.elza.repository.ArrAsyncRequestRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.AsyncOutputGeneratorWorker;
@@ -106,6 +107,9 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private BulkActionRunRepository bulkActionRepository;
 
     @Autowired
+    private OutputRepository outputRepository;
+
+    @Autowired
     private IEventNotificationService eventNotificationService;
 
     @Autowired
@@ -130,8 +134,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @PostConstruct
     protected void init() {
         register(new AsyncNodeExecutor(nodeTaskExecutor, txManager, asyncRequestRepository, appCtx, nodeMaxPerFund));
-        register(new AsyncBulkExecutor(bulkActionTaskExecutor, txManager, asyncRequestRepository, appCtx, bulkMaxPerFund));
-        register(new AsyncOutputExecutor(outputTaskExecutor, txManager, asyncRequestRepository, appCtx, outputMaxPerFund));
+        register(new AsyncBulkExecutor(bulkActionTaskExecutor, txManager, asyncRequestRepository, appCtx, bulkMaxPerFund, bulkActionRepository));
+        register(new AsyncOutputExecutor(outputTaskExecutor, txManager, asyncRequestRepository, appCtx, outputMaxPerFund, outputRepository));
     }
 
     private void register(final AsyncExecutor asyncExecutor) {
@@ -482,6 +486,12 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             }
         }
 
+        /**
+         * Jedná se o selhalý request?
+         *
+         * @param request request
+         * @return je selhaný?
+         */
         protected boolean isFailedRequest(final ArrAsyncRequest request) {
             return false;
         }
@@ -568,17 +578,24 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                 int p = 0;
                 List<ArrAsyncRequest> requests;
                 int MAX = 1000;
+                List<ArrAsyncRequest> deleteRequests = new ArrayList<>();
                 do {
                     requests = asyncRequestRepository.findRequestsByPriorityWithLimit(getType(), PageRequest.of(p, MAX));
                     for (ArrAsyncRequest request : requests) {
-                        if (!isFailedRequest(request)) {
-                            results.add(new AsyncRequest(request));
+                        if (isFailedRequest(request)) {
+                            deleteRequests.add(request);
+                            logger.debug("Bude odstraněn požadavek z fronty z důvodu jeho chybového stavu. ID: {}", request.getAsyncRequestId());
                         } else {
-                            logger.debug("Byl odstraněn požadavek z fronty z důvodu jeho chybového stavu. ID: {}", request.getAsyncRequestId());
+                            results.add(new AsyncRequest(request));
                         }
                     }
                     p++;
                 } while (requests.size() == MAX);
+
+                if (deleteRequests.size() > 0) {
+                    asyncRequestRepository.deleteAll(deleteRequests);
+                }
+
                 logger.info("Obnovení databázové fronty {} - obnoveno: {}", getType(), results.size());
                 if (results.size() > 0) {
                     enqueue(results);
@@ -903,8 +920,11 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     private static class AsyncBulkExecutor extends AsyncExecutor {
 
-        AsyncBulkExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund) {
+        private final BulkActionRunRepository bulkActionRepository;
+
+        AsyncBulkExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund, final BulkActionRunRepository bulkActionRepository) {
             super(AsyncTypeEnum.BULK, executor, new LinkedList<>(), txManager, asyncRequestRepository, appCtx, maxPerFund);
+            this.bulkActionRepository = bulkActionRepository;
         }
 
         @Override
@@ -914,8 +934,11 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
         @Override
         protected boolean isFailedRequest(final ArrAsyncRequest request) {
-            if (request.getBulkAction().getState().equals(ArrBulkActionRun.State.RUNNING)) {
-                request.getBulkAction().setState(ArrBulkActionRun.State.ERROR);
+            ArrBulkActionRun bulkAction = request.getBulkAction();
+            ArrBulkActionRun.State state = bulkAction.getState();
+            if (state == ArrBulkActionRun.State.RUNNING) {
+                bulkAction.setState(ArrBulkActionRun.State.ERROR);
+                bulkActionRepository.save(bulkAction);
                 return true;
             }
             return false;
@@ -960,15 +983,21 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     private static class AsyncOutputExecutor extends AsyncExecutor {
 
-        AsyncOutputExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund) {
+        private final OutputRepository outputRepository;
+
+        AsyncOutputExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund, final OutputRepository outputRepository) {
             super(AsyncTypeEnum.OUTPUT, executor, new LinkedList<>(), txManager, asyncRequestRepository, appCtx, maxPerFund);
+            this.outputRepository = outputRepository;
         }
 
         @Override
         protected boolean isFailedRequest(final ArrAsyncRequest request) {
-            if (request.getOutput().getState().equals(ArrOutput.OutputState.GENERATING)) {
-                request.getOutput().setState(ArrOutput.OutputState.OPEN);
-                request.getOutput().setError("Byl proveden restart serveru");
+            ArrOutput output = request.getOutput();
+            ArrOutput.OutputState state = output.getState();
+            if (state == ArrOutput.OutputState.GENERATING) {
+                output.setState(ArrOutput.OutputState.OPEN);
+                output.setError("Byl proveden restart serveru");
+                outputRepository.save(output);
                 return true;
             }
             return false;
