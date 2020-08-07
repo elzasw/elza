@@ -42,10 +42,10 @@ class OutputInlineForm extends AbstractReactComponent {
             outputTypes,
         } = nextProps;
         this.props.dispatch(outputTypesFetchIfNeeded());
-        if (outputTypeId) {
-            const index = indexById(outputTypes, outputTypeId);
+        if (nextProps.outputTypeId) {
+            const index = indexById(nextProps.outputTypes, parseInt(nextProps.outputTypeId));
             if (index !== null) {
-                this.props.dispatch(templatesFetchIfNeeded(outputTypes[index].code));
+                this.props.dispatch(templatesFetchIfNeeded(nextProps.outputTypes[index].code));
             }
         }
     }
@@ -60,13 +60,13 @@ class OutputInlineForm extends AbstractReactComponent {
 
         let outputType = false;
         if (outputTypes) {
-            const index = indexById(outputTypes, this.props.initialValues.outputTypeId);
+            const index = indexById(outputTypes, parseInt(this.props.initialValues.outputTypeId));
             outputType = index !== null ? outputTypes[index].name : false;
         }
 
         let templates = false;
         if (outputTypeId) {
-            const index = indexById(outputTypes, outputTypeId);
+            const index = indexById(outputTypes, parseInt(outputTypeId));
             if (index !== null) {
                 const temp = allTemplates[outputTypes[index].code];
                 if (temp && temp.fetched) {
@@ -118,7 +118,7 @@ class OutputInlineForm extends AbstractReactComponent {
                             type="simple"
                             name={'anonymizedAp'}
                             addEmpty={true}
-                            emptyTitle={i18n("arr.output.title.anonymizedAp.remove")}
+                            emptyTitle={i18n('arr.output.title.anonymizedAp.remove')}
                             disabled={disabled}
                         />
                     </div>
