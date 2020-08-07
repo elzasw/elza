@@ -150,12 +150,19 @@ class RegistryPage extends AbstractReactComponent {
                 <CreateAccessPointModal
                     initialValues={{}}
                     onSubmit={formData => {
+                        const data = {
+                            ...formData,
+                            partForm: {
+                                ...formData.partForm,
+                                items: formData.partForm.items.filter(i => i.value != null)
+                            }
+                        }
                         const submitData = {
-                            partForm: formData.partForm,
+                            partForm: data.partForm,
                             accessPointId: null,
                             languageCode: null,
-                            scopeId: formData.scopeId,
-                            typeId: formData.apType.id,
+                            scopeId: data.scopeId,
+                            typeId: data.apType.id,
                         };
                         return WebApi.createAccessPoint(submitData);
                     }}
