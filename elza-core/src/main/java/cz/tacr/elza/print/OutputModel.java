@@ -7,11 +7,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -239,6 +241,27 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             String tc = item.getType().getCode();
             return !typeCodes.contains(tc);
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Record> getParties(Collection<String> typeCodes) {
+        Validate.notNull(typeCodes);
+
+        Set<Integer> distinctPartyIds = new HashSet<>();
+        List<Record> parties = new ArrayList<>();
+
+        for (cz.tacr.elza.print.item.Item item : outputItems) {
+            String tc = item.getType().getCode();
+            if (!typeCodes.contains(tc)) {
+                continue;
+            }
+            Record party = item.getValue(Record.class);
+            if (distinctPartyIds.add(party.getId())) {
+                parties.add(party);
+            }
+        }
+
+        return parties;
     }
 
     @Override

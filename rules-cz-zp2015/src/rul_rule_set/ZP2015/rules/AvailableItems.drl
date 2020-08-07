@@ -77,7 +77,7 @@ when
         "ZP2015_ORIENTATION", "ZP2015_ITEM_MAT", "ZP2015_PART", "ZP2015_EDITION",
         "ZP2015_EXERQUE", "ZP2015_PAINTING_CHAR", "ZP2015_CORROBORATION", "ZP2015_IMPRINT_COUNT",
         "ZP2015_IMPRINT_ORDER", "ZP2015_LEGEND", "ZP2015_MOVIE_LENGTH", "ZP2015_RECORD_LENGTH",
-        "ZP2015_COLL_EXTENT_LENGTH", "ZP2015_ZNACKA_FONDU", "ZP2015_DESCRIPTION_DATE",
+        "ZP2015_COLL_EXTENT_LENGTH", "ZP2015_DESCRIPTION_DATE",
         "ZP2015_WRITING",
         // nastaveni pro ulozeni
         "ZP2015_PACKET_TYPE", "ZP2015_PACKET_FIXED_PREFIX", "ZP2015_PACKET_PREFIX",
@@ -251,16 +251,6 @@ when
     $itemSpec : RulItemSpecExt(code == "ZP2015_LEVEL_PART" ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
-end
-
-rule "Doporučené označení fondu na kořeni a dílčím listu"
-no-loop
-when
-    $activeLevel : ActiveLevel( )
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION") ) from $activeLevel.descItems
-    $itemType : RulItemTypeExt(code == "ZP2015_ZNACKA_FONDU")
-then
-    $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
 // Složka musí mít uveden typ

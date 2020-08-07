@@ -18,18 +18,19 @@ public class OutputItemConvertor {
 
         this.convertors = Arrays
                 .asList(
-                                   new StringItemConvertor(),
-                                   new IntegerItemConvertor(),
-                                   new DecimalItemConvertor(),
-                                   new UnitDateItemConvertor(),
-                                   new CoordinatesItemConvertor(),
-                                   new EnumItemConvertor(),
-                                   new RecordRefItemConvertor(),
-                                   new StructuredObjectRefItemConvertor(),
-                                   new FileRefItemConvertor(),
-                                   new JsonTableItemConvertor(),
-                                   new DateItemConvertor(),
-                                   new UriRefItemConvertor());
+                        new StringItemConvertor(),
+                        new IntegerItemConvertor(),
+                        new DecimalItemConvertor(),
+                        new UnitDateItemConvertor(),
+                        new CoordinatesItemConvertor(),
+                        new EnumItemConvertor(),
+                        new RecordRefItemConvertor(),
+                        new StructuredObjectRefItemConvertor(),
+                        new FileRefItemConvertor(),
+                        new JsonTableItemConvertor(),
+                        new DateItemConvertor(),
+                        new UriRefItemConvertor(),
+                        new BitConvertor());
     }
 
     public cz.tacr.elza.print.item.Item convert(Item arrItem) {
