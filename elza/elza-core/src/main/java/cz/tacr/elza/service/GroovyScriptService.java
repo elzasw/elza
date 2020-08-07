@@ -48,6 +48,8 @@ public class GroovyScriptService {
 
     private Map<File, GroovyScriptFile> groovyScriptMap = new HashMap<>();
 
+    private final Object lock = new Object();
+
     @Subscribe
     public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
         if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.GROOVY)) {
@@ -101,14 +103,16 @@ public class GroovyScriptService {
         return result;
     }
 
-    public synchronized GroovyResult process(GroovyPart part, String groovyFilePath) {
+    public GroovyResult process(GroovyPart part, String groovyFilePath) {
         GroovyScriptFile groovyScriptFile;
         File groovyFile = new File(groovyFilePath);
         try {
-            groovyScriptFile = groovyScriptMap.get(groovyFile);
-            if (groovyScriptFile == null) {
-                groovyScriptFile = new GroovyScriptFile(groovyFile);
-                groovyScriptMap.put(groovyFile, groovyScriptFile);
+            synchronized (lock) {
+                groovyScriptFile = groovyScriptMap.get(groovyFile);
+                if (groovyScriptFile == null) {
+                    groovyScriptFile = new GroovyScriptFile(groovyFile);
+                    groovyScriptMap.put(groovyFile, groovyScriptFile);
+                }
             }
         } catch (Throwable t) {
             throw new SystemException("Failed to initialize groovy scripts", t);
