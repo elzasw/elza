@@ -645,7 +645,7 @@ $F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]>
 	)]]></variableExpression>
 	</variable>
 	<variable name="rootRef" class="java.lang.String">
-		<variableExpression><![CDATA[$P{fund}.getInstitution().getCode()+"/"+$F{node}.getSingleItemValue("ZP2015_NAD")]]></variableExpression>
+		<variableExpression><![CDATA[$P{fund}.getInstitution().getCode()+"/"+$P{fund}.getFundNumber()]]></variableExpression>
 	</variable>
 	<variable name="detail" class="java.lang.String">
 		<variableExpression><![CDATA[$P{detailFormatter}.format($F{node})]]></variableExpression>
