@@ -18,7 +18,7 @@
 		<![CDATA[]]>
 	</queryString>
 	<variable name="znackaFondu" class="java.lang.String">
-		<variableExpression><![CDATA[$P{fund}.getRootNode().getSingleItemValue("ZP2015_ZNACKA_FONDU")]]></variableExpression>
+		<variableExpression><![CDATA[$P{fund}.getMark()]]></variableExpression>
 	</variable>
 	<detail>
 		<band height="634">
