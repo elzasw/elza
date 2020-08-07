@@ -117,6 +117,7 @@ public class RuleController {
     public List<RulRuleSetVO> getRuleSets() {
         return factoryVo.createRuleSetList(ruleSetRepository.findAll());
     }
+
     @RequestMapping(value = "/dataTypes", method = RequestMethod.GET)
     public List<RulDataTypeVO> getDataTypes() {
         List<RulDataType> dataTypes = dataTypeRepository.findAll();
