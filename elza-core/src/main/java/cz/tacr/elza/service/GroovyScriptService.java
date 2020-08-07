@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import com.google.common.eventbus.Subscribe;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.SystemException;
@@ -7,6 +8,7 @@ import cz.tacr.elza.groovy.GroovyPart;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.ws.types.v1.Did;
 import groovy.lang.*;
 import org.apache.commons.io.FileUtils;
@@ -43,6 +45,15 @@ public class GroovyScriptService {
     private final NodeCacheService nodeCacheService;
 
     private static final String PART = "PART";
+
+    private Map<File, GroovyScriptFile> groovyScriptMap = new HashMap<>();
+
+    @Subscribe
+    public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
+        if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.GROOVY)) {
+            groovyScriptMap = new HashMap<>();
+        }
+    }
 
     @Autowired
     public GroovyScriptService(ResourcePathResolver resourcePathResolver,
@@ -90,10 +101,15 @@ public class GroovyScriptService {
         return result;
     }
 
-    public GroovyResult process(GroovyPart part, String groovyFilePath) {
+    public synchronized GroovyResult process(GroovyPart part, String groovyFilePath) {
         GroovyScriptFile groovyScriptFile;
+        File groovyFile = new File(groovyFilePath);
         try {
-            groovyScriptFile = new GroovyScriptFile(new File(groovyFilePath));
+            groovyScriptFile = groovyScriptMap.get(groovyFile);
+            if (groovyScriptFile == null) {
+                groovyScriptFile = new GroovyScriptFile(groovyFile);
+                groovyScriptMap.put(groovyFile, groovyScriptFile);
+            }
         } catch (Throwable t) {
             throw new SystemException("Failed to initialize groovy scripts", t);
         }
