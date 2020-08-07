@@ -7,7 +7,7 @@ import {
     createDescItemFromDb,
     mergeAfterUpdate,
     updateFormData,
-    checkFormData,
+    checkFormData, isType,
 } from './subNodeFormUtils.jsx';
 import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from 'components/validate.jsx';
 import {valuesEquals} from 'components/Utils.jsx';
@@ -758,7 +758,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 };
 
                 // Odebereme pouze pokud je pole jiné než: REQUIRED nebo RECOMMENDED
-                if (infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED') {
+                if (isType(infoType.type, 'REQUIRED') || isType(infoType.type, 'RECOMMENDED')) {
                     // ponecháme, pouze odebereme hodnoty
                     // Hodnoty odebereme
                     loc.descItemType.descItems = [];
