@@ -23,7 +23,7 @@ public class ApFulltextProviderImpl implements ApFulltextProvider {
             return null;
         }
 
-        return null;
+        return accessPoint.getPreferredPart().getValue();
     }
 
 }

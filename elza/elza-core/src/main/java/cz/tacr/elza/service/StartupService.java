@@ -120,7 +120,6 @@ public class StartupService implements SmartLifecycle {
 
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
-        ArrDataUriRef.setFulltextProvider(fulltextProvider);
         startInTransaction();
 
         running = true;
