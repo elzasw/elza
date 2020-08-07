@@ -77,6 +77,18 @@ function createDataMap(formData: IFormData) {
     };
 }
 
+const blankRefTypeExt: Partial<RefTypeExt> = {
+    cal: 0,
+    calSt: 0,
+    descItemSpecsMap: {},
+    favoriteSpecIds: [],
+    ind: 0,
+    rep: 0,
+    specs: [],
+    type: ItemAvailability.IMPOSSIBLE,
+    width: 1,
+};
+
 export function createImplicitItem(
     descItemType: ItemTypeLiteVO,
     refType: RefType,
@@ -1048,7 +1060,7 @@ export function updateFormData(
                   const dataItemType = ((dataItemTypeMap.get(itemType.id) || {}) as any) as ItemTypeLiteVO;
                   const dataItemSpecs = dataItemType.specs || [];
 
-                  const finalItemSpecs = Array.from(itemSpecs.values()).map(spec => {
+                  const finalItemSpecs = Array.from(Object.values(itemSpecs)).map(spec => {
                       const specIndex = indexById(dataItemSpecs, spec.id);
                       if (specIndex == null) {
                           return {
@@ -1075,16 +1087,9 @@ export function updateFormData(
                   } as any) as RefTypeExt;
 
                   const resultItemType: RefTypeExt = {
-                      cal: 0,
-                      calSt: 0,
-                      descItemSpecsMap: {},
-                      favoriteSpecIds: [],
+                      // @ts-ignore
                       id: itemType.id,
-                      ind: 0,
-                      rep: 0,
-                      specs: [],
-                      type: ItemAvailability.IMPOSSIBLE,
-                      width: 1,
+                      ...blankRefTypeExt,
                       ...finalItemType,
                   };
                   newState.infoTypesMap.set(resultItemType.id, resultItemType);

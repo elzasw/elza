@@ -20,7 +20,7 @@ import {COL_REFERENCE_MARK} from './FundDataGridConst';
 import FundNodesSelect from './FundNodesSelect';
 import SimpleCheckListBox from './SimpleCheckListBox';
 import FundFilterCondition from './FundFilterCondition';
-import DateTimePicker from 'react-widgets/lib/DateTimePicker';
+import {DateTimePicker} from 'react-widgets';
 import {formatDate} from '../validate';
 
 /**
