@@ -1269,7 +1269,6 @@ class DescItemType extends AbstractReactComponent {
                 alwaysFireHandler
             >
                 {label}
-                {descItemType.id}
                 <div
                     ref={ref => (this.refDragOverContainer = ref)}
                     className="desc-item-type-desc-items"
