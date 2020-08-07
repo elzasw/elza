@@ -50,7 +50,7 @@ public class DbChangeset20200807100100 extends BaseTaskChange {
                 ps.setString(2, map.getKey());
                 ps.execute();
                 int updateCount = ps.getUpdateCount();
-                Validate.isTrue(updateCount == 1, "Unexpected update count: %i", updateCount);
+                Validate.isTrue(updateCount <= 1, "Unexpected update count: ", updateCount);
                 numChanged++;
         	}
 
