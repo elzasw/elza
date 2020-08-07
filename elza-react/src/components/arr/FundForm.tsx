@@ -148,7 +148,7 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<{}, IFundForm>> = memo((p
                         label={i18n('arr.fund.ruleSet')}
                     >
                         <option key="-ruleSetCode"/>
-                        {ruleSets.map(i => {
+                        {ruleSets.filter(rs => rs.ruleType === 'ARRANGEMENT').map(i => {
                             return <option value={i.code}>{i.name}</option>;
                         })}
                     </Field>

@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.RulRuleSet;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -20,6 +21,8 @@ public class RulRuleSetVO {
     private String code;
 
     private String name;
+
+    private RulRuleSet.RuleType ruleType;
 
     /** Kódy atributů pro zobrazení v gridu hromadných úprav */
     private List<GridView> gridViews;
@@ -46,6 +49,14 @@ public class RulRuleSetVO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public RulRuleSet.RuleType getRuleType() {
+        return ruleType;
+    }
+
+    public void setRuleType(final RulRuleSet.RuleType ruleType) {
+        this.ruleType = ruleType;
     }
 
     @Override
