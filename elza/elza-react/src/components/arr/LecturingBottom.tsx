@@ -101,6 +101,7 @@ class LecturingBottom extends React.Component {
                 this,
                 i18n('arr.issues.update.title'),
                 <IssueForm
+                    // @ts-ignore
                     update
                     initialValues={issueDetail.data}
                     onSubmit={this.updateIssue}
