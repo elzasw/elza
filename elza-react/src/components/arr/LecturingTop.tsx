@@ -97,11 +97,11 @@ class LecturingTop extends React.Component {
                 this,
                 i18n('arr.issues.add.arr.title'),
                 <IssueForm
-                    onSubmit={data =>
+                    onSubmit={(data: IssueVO) =>
                         WebApi.addIssue({
                             ...data,
                             issueListId: this.state.issueListId,
-                            nodeId: null,
+                            nodeId: undefined,
                         })
                     }
                     onSubmitSuccess={this.afterAdd}
@@ -119,7 +119,7 @@ class LecturingTop extends React.Component {
                 this,
                 i18n('arr.issues.add.node.title'),
                 <IssueForm
-                    onSubmit={data =>
+                    onSubmit={(data: IssueVO) =>
                         WebApi.addIssue({
                             ...data,
                             issueListId: this.state.issueListId,
