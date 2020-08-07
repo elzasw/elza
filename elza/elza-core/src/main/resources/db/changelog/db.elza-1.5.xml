@@ -606,4 +606,8 @@
         <dropColumn tableName="arr_fund_version" columnName="date_range" />
     </changeSet>
 
+    <changeSet id="20200807100100" author="sergey.iryupin">
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20200807100100" />
+    </changeSet>
+
 </databaseChangeLog>
