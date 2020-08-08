@@ -12,7 +12,6 @@ import javax.transaction.Transactional.TxType;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.ApItemRepository;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -54,24 +53,25 @@ public class TypeUpdateTest extends AbstractServiceTest {
     private ApItemRepository apItemRepository;
 
     // drop all types and specs
-    //@Test TODO: gotzy vratit zpatky
+    @Test
     @Transactional(TxType.REQUIRES_NEW)
     public void updateTypeTest1() {
         authorizeAsAdmin();
 
-        List<RulRuleSet> rulesets = rulesetRepos.findAll();
-        RulRuleSet ruleset = rulesets.get(0);
-        RulPackage srcPackage = ruleset.getPackage();
-
-        PackageContext puc = new PackageContext(resPathResolver);
-        puc.setPackage(srcPackage);
-
         // drop foreign keys
         itemTypeActionRepository.deleteAll();
+        apItemRepository.deleteAll();
 
-        // remove all types
-        ItemTypeUpdater itu = appCtx.getBean(ItemTypeUpdater.class);
-        itu.update(null, null, puc);
+        for (RulRuleSet rulRuleSet : rulesetRepos.findAll()) {
+            RulPackage rulPackage = rulRuleSet.getPackage();
+
+            PackageContext puc = new PackageContext(resPathResolver);
+            puc.setPackage(rulPackage);
+
+            // remove all types
+            ItemTypeUpdater itu = appCtx.getBean(ItemTypeUpdater.class);
+            itu.update(null, null, puc);
+        }
 
         long cnt = this.itemTypeRepository.count();
         Assert.assertEquals(0, cnt);

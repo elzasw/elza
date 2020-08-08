@@ -24,7 +24,7 @@ export interface IssueStateVO {
 export interface IssueVO {
     id: number;
     issueListId: number;
-    nodeId: number;
+    nodeId?: number;
     number: number;
     issueTypeId: number;
     issueStateId: number;

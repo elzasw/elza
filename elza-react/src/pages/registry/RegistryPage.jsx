@@ -1,6 +1,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {AbstractReactComponent, i18n, Icon, RibbonGroup, Utils} from '../../components/shared';
+import {DetailActions} from '../../shared/detail';
 import Ribbon from '../../components/page/Ribbon';
 import ImportForm from '../../components/form/ImportForm';
 import RegistryList from '../../components/registry/RegistryList';
@@ -16,7 +17,7 @@ import {PropTypes} from 'prop-types';
 import './RegistryPage.scss';
 import PageLayout from '../shared/layout/PageLayout';
 import defaultKeymap from './RegistryPageKeymap.jsx';
-import {FOCUS_KEYS} from '../../constants.tsx';
+import {AP_VIEW_SETTINGS, FOCUS_KEYS} from '../../constants.tsx';
 import * as eidTypes from '../../actions/refTables/eidTypes';
 import ScopeLists from '../../components/arr/ScopeLists';
 import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
@@ -85,6 +86,7 @@ class RegistryPage extends AbstractReactComponent {
         dispatch(refPartTypesFetchIfNeeded());
         dispatch(descItemTypesFetchIfNeeded());
         dispatch(refRulDataTypesFetchIfNeeded());
+        dispatch(DetailActions.fetchIfNeeded(AP_VIEW_SETTINGS, '', WebApi.getApTypeViewSettings));
 
         if (props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
             dispatch(apExtSystemListFetchIfNeeded());
@@ -148,12 +150,19 @@ class RegistryPage extends AbstractReactComponent {
                 <CreateAccessPointModal
                     initialValues={{}}
                     onSubmit={formData => {
+                        const data = {
+                            ...formData,
+                            partForm: {
+                                ...formData.partForm,
+                                items: formData.partForm.items.filter(i => i.value != null)
+                            }
+                        }
                         const submitData = {
-                            partForm: formData.partForm,
+                            partForm: data.partForm,
                             accessPointId: null,
                             languageCode: null,
-                            scopeId: formData.scopeId,
-                            typeId: formData.apType.id,
+                            scopeId: data.scopeId,
+                            typeId: data.apType.id,
                         };
                         return WebApi.createAccessPoint(submitData);
                     }}

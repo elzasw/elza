@@ -11,7 +11,7 @@ import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import './DescItemDate.scss';
 
 import Moment from 'moment';
-import DateTimePicker from 'react-widgets/lib/DateTimePicker';
+import {DateTimePicker} from 'react-widgets';
 import {formatDate} from '../../validate';
 
 class DescItemDate extends AbstractReactComponent {
@@ -50,7 +50,7 @@ class DescItemDate extends AbstractReactComponent {
             <div className="desc-item-value">
                 <ItemTooltipWrapper tooltipTitle="dataType.date.format">
                     <DateTimePicker
-                        ref={ref => this.focusEl = ref}
+                        ref={ref => (this.focusEl = ref)}
                         {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                         time={false}
                         value={value == null ? null : new Date(value)}
@@ -60,6 +60,6 @@ class DescItemDate extends AbstractReactComponent {
             </div>
         );
     }
-};
+}
 
 export default DescItemDate;

@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
@@ -120,7 +121,6 @@ public class StartupService implements SmartLifecycle {
 
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
-        ArrDataUriRef.setFulltextProvider(fulltextProvider);
         startInTransaction();
 
         running = true;
@@ -174,8 +174,16 @@ public class StartupService implements SmartLifecycle {
         syncNodeCacheService();
         structureDataService.startGenerator();
         indexWorkProcessor.startIndexing();
-        asyncRequestService.start();
-        arrangementService.startNodeValidation(true);
+
+        // je třeba volat mimo současnou transakci
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                asyncRequestService.start();
+                arrangementService.startNodeValidation(true);
+            }
+        });
+
         runQueuedRequests();
         runQueuedAccessPoints();
     }

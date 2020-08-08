@@ -90,7 +90,7 @@ import ma.glasnost.orika.impl.DefaultMapperFactory;
 public class DescItemFactory implements InitializingBean {
 
     private final String PROPERTY_FORMAT = "format";
-    private final static String ELZA_NODE = "elza-node";
+    public final static String ELZA_NODE = "elza-node";
 
     /**
      * Povolenoné zkratky

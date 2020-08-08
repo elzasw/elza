@@ -1,5 +1,6 @@
 <rule-sets>
     <rule-set code="SIMPLE-DEV">
         <name>Simple Rules for Developers</name>
+        <rule-type>ARRANGEMENT</rule-type>
     </rule-set>
 </rule-sets>

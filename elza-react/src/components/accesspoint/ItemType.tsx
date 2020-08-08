@@ -548,7 +548,7 @@ class ItemTypeClass extends React.Component<DispatchProps & Props, ItemFormClass
             typePrefix,
         } = this.props;
 
-        let specName = null;
+        let specName: string | null = null;
         if (descItem.descItemSpecId) {
             specName = refType.descItemSpecsMap[descItem.descItemSpecId].name;
         }

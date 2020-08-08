@@ -648,7 +648,7 @@ export class ItemFormActions {
      * @param {Object} refType ref typ atributu
      */
     descItemNeedStore(descItem, refType) {
-        if (!descItem.error.hasError && descItem.touched) {
+        if ((!descItem.error || descItem.error && !descItem.error.hasError) && descItem.touched) {
             if (typeof descItem.id !== 'undefined') {
                 // Jen pokud se hodnota nebo specifikace změnila
                 let needUpdate = false;
@@ -1005,6 +1005,7 @@ export class ItemFormActions {
      * @param {bool} needClean má se formulář reinicializovat a vymazat cšechna editace? - jako nové načtení formuláře
      */
     fundSubNodeFormReceive(versionId, nodeId, routingKey, json, rulDataTypes, descItemTypes, groups, needClean) {
+        // console.log("(((((((((((((((((((((", JSON.parse(JSON.stringify(json)));
         return {
             type: types.FUND_SUB_NODE_FORM_RECEIVE,
             area: this.area,

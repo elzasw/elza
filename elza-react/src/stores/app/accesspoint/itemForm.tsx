@@ -79,6 +79,8 @@ export interface ApItemExt<V> extends ApItemVO<V> {
 
 export interface ItemSpec {
     id: number;
+    name: string;
+    type: string;
 }
 
 export interface DataType {
@@ -90,7 +92,7 @@ export interface RefType {
     id: number;
     name: string;
     dataType: DataType;
-    descItemSpecsMap: Map<number, ItemSpec>;
+    descItemSpecsMap: {[key: number]: ItemSpec};
     useSpecification: boolean;
     viewDefinition: string;
 

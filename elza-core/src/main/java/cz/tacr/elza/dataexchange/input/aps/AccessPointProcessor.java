@@ -10,10 +10,10 @@ import cz.tacr.elza.schema.v2.AccessPoint;
 /**
  * Processing access points. Implementation is not thread-safe.
  */
-public class AccessPointProcessor extends FragmentsProcessor {
+public class AccessPointProcessor extends AccessPointEntryProcessor {
 
     public AccessPointProcessor(ImportContext context) {
-        super(context);
+        super(context, false);
     }
 
     @Override

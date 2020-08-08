@@ -606,6 +606,15 @@
         <dropColumn tableName="arr_fund_version" columnName="date_range" />
     </changeSet>
 
+    <changeSet id="20200731102400" author="fantis">
+        <addColumn tableName="rul_rule_set">
+            <column name="rule_type" type="nvarchar(50)"/>
+        </addColumn>
+        <sql>UPDATE rul_rule_set rs SET rule_type = 'ARRANGEMENT' WHERE rs.code != 'CAM'</sql>
+        <sql>UPDATE rul_rule_set rs SET rule_type = 'ENTITY' WHERE rs.code = 'CAM'</sql>
+        <addNotNullConstraint tableName="rul_rule_set" columnName="rule_type"/>
+    </changeSet>
+
     <changeSet id="20200807100100" author="sergey.iryupin">
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20200807100100" />
     </changeSet>
