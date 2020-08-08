@@ -2023,14 +2023,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param from
      * @param count
      * @param apTypeId
-     * @param parentRecordId
      * @param versionId
      * @return List nalezených záznamů
      */
     protected List<ApAccessPointVO> findRecord(final String search,
                                                final Integer from, final Integer count,
                                                final Integer apTypeId,
-                                               final Integer parentRecordId,
                                                final Integer versionId) {
         HashMap<String, Object> params = new HashMap<>();
 
@@ -2039,9 +2037,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
         if (versionId != null) {
             params.put("versionId", versionId);
-        }
-        if (parentRecordId != null) {
-            params.put("parentRecordId", parentRecordId);
         }
         if (apTypeId != null) {
             params.put("apTypeId", apTypeId);
@@ -2060,14 +2055,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param from
      * @param count
      * @param apTypeId
-     * @param parentRecordId
      * @param versionId
      * @return List nalezených záznamů
      */
     protected List<ApAccessPointVO> findRecord(final String search,
                                                final Integer from, final Integer count,
                                                final Integer apTypeId,
-                                               final Integer parentRecordId,
                                                final Integer versionId,
                                                final SearchType searchType) {
         HashMap<String, Object> params = new HashMap<>();
@@ -2077,9 +2070,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
         }
         if (versionId != null) {
             params.put("versionId", versionId);
-        }
-        if (parentRecordId != null) {
-            params.put("parentRecordId", parentRecordId);
         }
         if (apTypeId != null) {
             params.put("apTypeId", apTypeId);

@@ -1851,6 +1851,7 @@ public class PackageService {
     private void convertRuleSet(final RulPackage rulPackage, final RuleSetXml ruleSet, final RulRuleSet rulRuleSet) {
         rulRuleSet.setCode(ruleSet.getCode());
         rulRuleSet.setName(ruleSet.getName());
+        rulRuleSet.setRuleType(RulRuleSet.RuleType.fromValue(ruleSet.getRuleType()));
         rulRuleSet.setPackage(rulPackage);
     }
 
@@ -2751,6 +2752,7 @@ public class PackageService {
     private void covertRuleSet(final RulRuleSet rulRuleSet, final RuleSetXml ruleSet) {
         ruleSet.setCode(rulRuleSet.getCode());
         ruleSet.setName(rulRuleSet.getName());
+        ruleSet.setRuleType(rulRuleSet.getRuleType().value());
     }
 
     /**

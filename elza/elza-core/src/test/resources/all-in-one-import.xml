@@ -16,6 +16,8 @@
 			<lvls>
 				<lvl id="1" uuid="44a39a98-79c5-48c2-8515-af93758fad15">
 					<de s="SRD_LANGUAGE_3" t="SRD_LANGUAGE" />
+					<dl schm="https" t="ODKAZ_OBECNY" uri="https://www.google.com/" />
+					<dl schm="elza-node" t="ODKAZ_OBECNY" uri="elza-node://f4b883cd-b140-4282-9d42-5a080a7a8333" />
 				</lvl>
 				<lvl id="2" pid="1" uuid="f4b883cd-b140-4282-9d42-5a080a7a8333">
 					<de s="SRD_LANGUAGE_3" t="SRD_LANGUAGE" />

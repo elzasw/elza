@@ -84,7 +84,7 @@ public class ApControllerTest extends AbstractControllerTest {
 
     @Test
     public void findAccessPoint() {
-        List<ApAccessPointVO> records = findRecord(null, 0, 10, null, null, null, SearchType.FULLTEXT);
+        List<ApAccessPointVO> records = findRecord(null, 0, 10, null, null, SearchType.FULLTEXT);
         assertNotNull(records);
     }
 

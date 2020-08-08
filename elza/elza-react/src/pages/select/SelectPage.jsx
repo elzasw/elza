@@ -22,7 +22,7 @@ class SelectPage extends AbstractReactComponent {
         let itemss = [];
         titles.forEach((i, index, self) => {
             itemss.push(<div key={index}>{i}</div>);
-            index + 1 < self.length && itemss.push(<span key={index + '-spacer'}>&nbsp;>&nbsp;</span>);
+            index + 1 < self.length && itemss.push(<span key={index + '-spacer'}>&nbsp;{'>'}&nbsp;</span>);
         });
         return <div className="titles-header">{itemss}</div>;
     };

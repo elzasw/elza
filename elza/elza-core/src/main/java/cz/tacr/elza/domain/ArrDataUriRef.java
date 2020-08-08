@@ -45,8 +45,6 @@ public class ArrDataUriRef extends ArrData {
     @Transient
     private boolean deletingProcess = false;
 
-    private static ApFulltextProvider fulltextProvider;
-
     public ArrDataUriRef() {
 
     }
@@ -152,10 +150,6 @@ public class ArrDataUriRef extends ArrData {
     protected void mergeInternal(ArrData srcData) {
         ArrDataUriRef src = (ArrDataUriRef) srcData;
         copyValue(src);
-    }
-
-    public static void setFulltextProvider(ApFulltextProvider fullTextProvider) {
-        ArrDataUriRef.fulltextProvider = fullTextProvider;
     }
 
     @Override

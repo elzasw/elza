@@ -2,11 +2,16 @@ package cz.tacr.elza.dataexchange.input;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,12 +22,16 @@ import javax.xml.stream.XMLStreamException;
 
 import cz.tacr.elza.dataexchange.input.parts.context.PartsContext;
 import cz.tacr.elza.dataexchange.input.reader.handlers.PartElementHandler;
+import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.*;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.xml.sax.SAXException;
 
@@ -55,6 +64,7 @@ import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
+import static cz.tacr.elza.core.db.HibernateConfiguration.MAX_IN_SIZE;
 import static cz.tacr.elza.repository.ExceptionThrow.scope;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 
@@ -86,6 +96,10 @@ public class DEImportService {
 
     private final ResourcePathResolver resourcePathResolver;
 
+    private final DataUriRefRepository dataUriRefRepository;
+
+    private final NodeRepository nodeRepository;
+
     @Autowired
     public DEImportService(EntityManager em,
                            ApAccessPointRepository apRepository,
@@ -111,7 +125,9 @@ public class DEImportService {
                            ApPartRepository apPartRepository,
                            AccessPointItemService apItemService,
                            ApItemRepository apItemRepository,
-                           ApBindingStateRepository bindingStateRepository) {
+                           ApBindingStateRepository bindingStateRepository,
+                           DataUriRefRepository dataUriRefRepository,
+                           NodeRepository nodeRepository) {
         this.initHelper = new ImportInitHelper(groovyScriptService, institutionRepository, institutionTypeRepository,
                 arrangementService, levelRepository, apRepository, bindingRepository,
                 structObjService, accessPointService,
@@ -126,6 +142,8 @@ public class DEImportService {
         this.apDataService = apDataService;
         this.resourcePathResolver = resourcePathResolver;
         this.apItemService = apItemService;
+        this.dataUriRefRepository = dataUriRefRepository;
+        this.nodeRepository = nodeRepository;
     }
 
     public List<String> getTransformationNames() throws IOException {
@@ -172,6 +190,9 @@ public class DEImportService {
             // finish import
             context.finish();
 
+            // restore all uri refs
+            restoreNodeUriRefs();
+
             // sync node cache with all new nodes
             nodeCacheService.syncCache();
 
@@ -185,6 +206,60 @@ public class DEImportService {
         } finally {
             restoreSessionConfiguration(session, origFlushMode);
         }
+    }
+
+    /**
+     * Vyhledá všechny nepropojené odkazy na JP (typu {@value cz.tacr.elza.domain.factory.DescItemFactory#ELZA_NODE},
+     * které nemají vazbu na node a pokusí je podle UUID dohledat a propojit je.
+     *
+     * Je třeba dohledávat všechny napříč celou DB, protože může nastat případ, kdy se importují po sobě dvě AS,
+     * které mají navzájem provazbené JP.
+     */
+    private void restoreNodeUriRefs() {
+        int page = 0;
+        Page<ArrDataUriRef> dataPage;
+        do {
+            dataPage = dataUriRefRepository.findByUnresolvedNodeRefs(PageRequest.of(page, MAX_IN_SIZE));
+            List<ArrDataUriRef> uriRefs = dataPage.getContent();
+            if (uriRefs.size() == 0) {
+                break;
+            }
+            Map<String, List<ArrDataUriRef>> uuidDataUriRefMap = createUuidDataUriRefMap(uriRefs);
+            connectNodes(uuidDataUriRefMap);
+            dataUriRefRepository.saveAll(uriRefs);
+            page++;
+        } while (page < dataPage.getTotalPages());
+    }
+
+    /**
+     * Dohledá JP podle uuid a propojí je v uri refs.
+     *
+     * @param uuidDataUriRefMap mapa uuid -> list uri refs
+     */
+    private void connectNodes(final Map<String, List<ArrDataUriRef>> uuidDataUriRefMap) {
+        Set<String> uuids = uuidDataUriRefMap.keySet();
+        List<ArrNode> nodes = nodeRepository.findAllByUuidIn(uuids);
+        for (ArrNode node : nodes) {
+            List<ArrDataUriRef> refs = uuidDataUriRefMap.get(node.getUuid());
+            refs.forEach(r -> r.setArrNode(node));
+        }
+    }
+
+    /**
+     * Sestavení mapy pro napojení JP (podle UUID) na konkrétní záznamy
+     *
+     * @param uriRefs seznam odkazů na JP
+     * @return sestavená mapa uuid -> list uri refs
+     */
+    private Map<String, List<ArrDataUriRef>> createUuidDataUriRefMap(final List<ArrDataUriRef> uriRefs) {
+        Map<String, List<ArrDataUriRef>> uuidDataUriRefMap = new HashMap<>();
+        for (ArrDataUriRef uriRef : uriRefs) {
+            URI tempUri = URI.create(uriRef.getValue()).normalize();
+            String uuid = tempUri.getAuthority();
+            List<ArrDataUriRef> dataUriRefs = uuidDataUriRefMap.computeIfAbsent(uuid, k -> new ArrayList<>());
+            dataUriRefs.add(uriRef);
+        }
+        return uuidDataUriRefMap;
     }
 
     private void checkScopePermissions(int importScopeId) {

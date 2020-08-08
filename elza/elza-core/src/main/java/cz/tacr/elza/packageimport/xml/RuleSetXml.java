@@ -22,6 +22,9 @@ public class RuleSetXml {
     @XmlElement(name = "name", required = true)
     private String name;
 
+    @XmlElement(name = "rule-type", required = true)
+    private String ruleType;
+
     public String getCode() {
         return code;
     }
@@ -36,5 +39,13 @@ public class RuleSetXml {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public String getRuleType() {
+        return ruleType;
+    }
+
+    public void setRuleType(String ruleType) {
+        this.ruleType = ruleType;
     }
 }

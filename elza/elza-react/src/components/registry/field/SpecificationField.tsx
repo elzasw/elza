@@ -16,7 +16,7 @@ const SpecificationField: FC<Props> = ({refTables, itemTypeId, itemSpecIds, ...r
         .sort((a, b) => a.name.localeCompare(b.name));
 
     if (itemSpecIds) {
-        itemSpecsList.filter(x => itemSpecIds.includes(x.id));
+        itemSpecsList = itemSpecsList.filter(x => itemSpecIds.includes(x.id));
     }
 
     return (
