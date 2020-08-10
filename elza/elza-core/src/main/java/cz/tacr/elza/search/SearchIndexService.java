@@ -24,6 +24,7 @@ import org.hibernate.search.indexes.spi.IndexManager;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.spi.IndexedTypeIdentifier;
+import org.hibernate.search.spi.impl.PojoIndexedTypeIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +102,7 @@ public class SearchIndexService {
             entityIdSet.removeAll(entityMap.keySet());
 
             for (Integer id : entityIdSet) {
-                plan.addWork(new Work(entityClass, id, WorkType.DELETE));
+                plan.addWork(new Work(new PojoIndexedTypeIdentifier(entityClass), id, WorkType.DELETE));
             }
 
             for (Map.Entry<Integer, Object> entry : entityMap.entrySet()) {
