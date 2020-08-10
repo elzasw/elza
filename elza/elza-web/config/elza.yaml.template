@@ -8,6 +8,9 @@ elza:
 #      user-header: X-SSO-User
       #allowDefaultUser:false
   #workingDir: C:/Elza/work
+  # Zakázat kontrolu odstranění
+  scope:
+    deleteWithEntities: false
 
 #  attachment:
 #      mimeDefs:
