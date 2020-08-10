@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,13 +25,15 @@ import liquibase.exception.DatabaseException;
 public class DbChangeset20200807100100 extends BaseTaskChange {
 
 	private final String ARCHIVY_CSV = "db/csv/archivy.csv";
+
+	private final String GET_DATA_LIST = "SELECT pi.access_point_id, pi.internal_code, ap.uuid "
+			+ "FROM par_institution pi " 
+			+ "JOIN ap_access_point ap ON pi.access_point_id = ap.access_point_id";
 	
 	private final String UPDATE_POSTGRE_SQL = "UPDATE ap_access_point SET uuid = ?" 
 			+ "FROM par_institution " 
 			+ "WHERE par_institution.access_point_id = ap_access_point.access_point_id " 
 			+ "AND par_institution.internal_code = ?";
-
-    private JdbcConnection dc;
 
     private int numChanged = 0;
 
@@ -40,20 +44,27 @@ public class DbChangeset20200807100100 extends BaseTaskChange {
 
     @Override
 	public void execute(Database database) throws CustomChangeException {
-        dc = (JdbcConnection) database.getConnection();
+    	JdbcConnection dc = (JdbcConnection) database.getConnection();
         Map<String, String> archyMap = getMapFromCsv(ARCHIVY_CSV);
 
-        try (PreparedStatement ps = dc.prepareStatement(UPDATE_POSTGRE_SQL)) {
+        try (PreparedStatement ps = dc.prepareStatement(UPDATE_POSTGRE_SQL);
+                Statement stmt = dc.createStatement()) {
 
-        	for (Map.Entry<String, String> map : archyMap.entrySet()) {
-                ps.setString(1, map.getValue());
-                ps.setString(2, map.getKey());
-                ps.execute();
-                int updateCount = ps.getUpdateCount();
-                Validate.isTrue(updateCount <= 1, "Unexpected update count: ", updateCount);
-                numChanged++;
+        	ResultSet resultSet = stmt.executeQuery(GET_DATA_LIST);
+
+        	while (resultSet.next()) {
+        		String internalCode = resultSet.getString("internal_code");
+        		String uuid = resultSet.getString("uuid");
+        		String mapUuid = archyMap.get(internalCode);
+        		if (mapUuid != null && !mapUuid.equals(uuid)) {
+                  ps.setString(1, mapUuid);
+                  ps.setString(2, internalCode);
+                  ps.execute();
+                  int updateCount = ps.getUpdateCount();
+                  Validate.isTrue(updateCount == 1, "Unexpected update count: ", updateCount);
+                  numChanged++;
+        		}
         	}
-
         } catch (DatabaseException | SQLException e) {
             throw new CustomChangeException("Chyba při vykonávání sql příkazu " + e.getLocalizedMessage(), e);
 		}
