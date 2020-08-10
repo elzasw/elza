@@ -18,6 +18,7 @@ import {showAsyncWaiting} from '../../../actions/global/modalDialog';
 import {WebApi} from '../../../actions/WebApi';
 import ValidationResultIcon from '../../ValidationResultIcon';
 import * as perms from '../../../actions/user/Permission';
+import {FundScope} from '../../../types';
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     item: ApAccessPointVO;
@@ -211,6 +212,11 @@ const DetailHeader: FC<Props> = ({
         }
     };
 
+    let scope: FundScope | null = null;
+    if (item.scopeId) {
+        scope = objectById(scopes, item.scopeId);
+    }
+
     return (
         <div className={'detail-header-wrapper'}>
             <Row className={collapsed ? 'ml-3 mt-1 mr-3 pb-1' : 'ml-3 mt-3 mr-3 pb-3 space-between middle'}>
@@ -241,10 +247,10 @@ const DetailHeader: FC<Props> = ({
                                         <DetailState state={item.stateApproval} />
                                     </DetailDescriptionsItem>
                                 )}
-                                {item.scopeId && scopes[item.scopeId] && (
+                                {scope && (
                                     <DetailDescriptionsItem>
                                         <Icon glyph={'fa-globe'} className={'mr-1'} />
-                                        {scopes[item.scopeId].name}
+                                        {scope.name}
                                     </DetailDescriptionsItem>
                                 )}
                                 {item.lastChange && item.lastChange.user && (
