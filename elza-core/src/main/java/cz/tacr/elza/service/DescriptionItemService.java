@@ -585,14 +585,47 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             for (ArrDescItem sourceItem : sourceItems) {
                 ArrDescItem newItem = new ArrDescItem();
                 newItem.setItemType(refTemplateMapType.getToItemType());
-//                newItem.setItemSpec();
 
+                setSpecification(sourceItem, newItem, refTemplateMapType, refTemplateMapSpecs);
                 updateDescriptionItemData(sourceItem, newItem, refTemplateMapType.getRefTemplate().getRefTemplateId());
 
                 newItems.add(newItem);
             }
         }
         return newItems;
+    }
+
+    private void setSpecification(final ArrDescItem sourceItem,
+                                  final ArrDescItem newItem,
+                                  final ArrRefTemplateMapType refTemplateMapType,
+                                  final List<ArrRefTemplateMapSpec> refTemplateMapSpecs) {
+        if (sourceItem.getItemType().getItemTypeId().equals(newItem.getItemType().getItemTypeId()) && refTemplateMapType.getMapAllSpec()) {
+            newItem.setItemSpec(sourceItem.getItemSpec());
+        } else {
+            if (CollectionUtils.isNotEmpty(refTemplateMapSpecs)) {
+                if (sourceItem.getItemSpec() != null) {
+                    ArrRefTemplateMapSpec refTemplateMapSpec = findRefTemplateMapSpec(sourceItem.getItemSpec(), refTemplateMapSpecs);
+                    if (refTemplateMapSpec != null && refTemplateMapSpec.getToItemSpec() != null) {
+                        newItem.setItemSpec(refTemplateMapSpec.getToItemSpec());
+                    }
+                } else {
+                    ArrRefTemplateMapSpec refTemplateMapSpec = refTemplateMapSpecs.get(0);
+                    newItem.setItemSpec(refTemplateMapSpec.getToItemSpec());
+                }
+            }
+        }
+    }
+
+    @Nullable
+    private ArrRefTemplateMapSpec findRefTemplateMapSpec(final RulItemSpec itemSpec, final List<ArrRefTemplateMapSpec> refTemplateMapSpecs) {
+        if (CollectionUtils.isNotEmpty(refTemplateMapSpecs)) {
+            for (ArrRefTemplateMapSpec refTemplateMapSpec : refTemplateMapSpecs) {
+                if (refTemplateMapSpec.getFromItemSpec().getItemSpecId().equals(itemSpec.getItemSpecId())) {
+                    return refTemplateMapSpec;
+                }
+            }
+        }
+        return null;
     }
 
     public void updateDescriptionItemData(final ArrDescItem sourceItem, final ArrDescItem targetItem, final Integer templateId) {
@@ -636,6 +669,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 case UNITID:
                 case INT:
                 case DECIMAL:
+                case UNITDATE:
                     ArrData sourceData = sourceItem.getData();
                     if (toDataType == DataType.STRING) {
                         ArrDataString dataString = new ArrDataString();

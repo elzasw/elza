@@ -1864,6 +1864,7 @@ public class ArrangementService {
             boolean error = false;
             switch (fromDataType) {
                 case UNITID:
+                case UNITDATE:
                 case DATE:
                 case INT:
                 case DECIMAL:
