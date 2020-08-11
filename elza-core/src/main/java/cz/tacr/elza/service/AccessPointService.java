@@ -378,7 +378,11 @@ public class AccessPointService {
         Assert.notNull(scope.getScopeId(), "Identifikátor scope musí být vyplněn");
 
         List<ApState> apStates = apStateRepository.findByScope(scope);
-        ExceptionUtils.isEmptyElseBusiness(apStates, "Nelze smazat třídu rejstříku, která je nastavena na rejstříku.", RegistryCode.USING_SCOPE_CANT_DELETE);
+        if (!deleteWithEntities) {
+        	ExceptionUtils.isEmptyElseBusiness(apStates, "Nelze smazat třídu rejstříku, která je nastavena na rejstříku.", RegistryCode.USING_SCOPE_CANT_DELETE);
+        } else {
+            apStateRepository.deleteAllByScope(scope);
+        }
         final List<ApScope> apScopes = scopeRepository.findConnectedByScope(scope);
         ExceptionUtils.isEmptyElseBusiness(apScopes, "Nelze smazat oblast obsahující návazné oblasti.", RegistryCode.CANT_DELETE_SCOPE_WITH_CONNECTED);
         final List<ApScopeRelation> apScopeRelations = scopeRelationRepository.findByConnectedScope(scope);
