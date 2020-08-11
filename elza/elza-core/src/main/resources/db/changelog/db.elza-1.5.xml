@@ -619,4 +619,26 @@
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20200807100100" />
     </changeSet>
 
+    <changeSet id="20200811130500" author="sergey.iryupin">
+        <createTable tableName="arr_output_template">
+            <column name="output_template_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_arr_output_template"/>
+            </column>
+			<column name="output_id" type="int">
+				<constraints foreignKeyName="fk_arr_output_template_output_id" 
+							 referencedTableName="arr_output"
+							 referencedColumnNames="output_id" />
+			</column>
+            <column name="template_id" type="int">
+				<constraints foreignKeyName="fk_arr_output_template_template_id" 
+							 referencedTableName="rul_template"
+							 referencedColumnNames="template_id" />
+            </column>
+        </createTable>
+        <sql>INSERT INTO arr_output_template (output_id, template_id)
+			 SELECT o.output_id, o.template_id FROM arr_output o</sql>
+        <sql>INSERT INTO db_hibernate_sequences (sequence_name, next_val)
+        	SELECT 'arr_output_template|output_template_id', COALESCE(MAX(output_template_id),0)+1 FROM arr_output_template</sql>
+    </changeSet>
+
 </databaseChangeLog>
