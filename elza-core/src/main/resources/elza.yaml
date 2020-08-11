@@ -22,6 +22,12 @@ elza:
       threadCount: 4
       maxPerFund: 1
 
+  # Scope obsahující entity nelze standardně smazat
+  # Povolením této volby je možné odstranit scope 
+  # a navázané ApState
+  scope:
+    deleteWithEntities: false
+
 #  hibernate:
 #    index:
 #      enabled: true
