@@ -30,6 +30,8 @@ placeholder.className = 'placeholder';
 
 /**
  * Atribut - desc item type.
+ *
+ * TODO @randak výcenásobný attr nefunguje kvůli lokálnímu state!!! takže OHACKY které jedou do store a zapisují tu jsou kvůli @randak
  */
 class DescItemType extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
@@ -136,13 +138,15 @@ class DescItemType extends AbstractReactComponent {
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-
         const newDescItemType = {...nextProps.descItemType};
         const {formKey, value} = this.state;
         if (formKey) {
-            for (let a=0; a<newDescItemType.descItems.length; a++) {
+            for (let a = 0; a < newDescItemType.descItems.length; a++) {
                 const di = newDescItemType.descItems[a];
-                di.value = value;
+                // Nutno nasetovat všechny klíče reálné hodnoty do DescItemu
+                for (let key of Object.keys(value)) {
+                    di[key] = value[key];
+                }
                 di.touched = true;
                 break;
             }
@@ -348,7 +352,7 @@ class DescItemType extends AbstractReactComponent {
 
         this.setState({
             descItemType: newDescItemType,
-            value,
+            value: convertedValue,
             formKey: descItem.formKey,
             error,
         });
@@ -1187,7 +1191,7 @@ class DescItemType extends AbstractReactComponent {
         const {descItemType} = this.state;
 
         if (descItemType.id === 63) {
-            console.log("RENDER...", descItemType)
+            console.log('RENDER...', descItemType);
         }
 
         // console.log('[DescItemType] RENDER', this.props.refType.name);
