@@ -7,7 +7,8 @@ import {
     createDescItemFromDb,
     mergeAfterUpdate,
     updateFormData,
-    checkFormData, isType,
+    checkFormData,
+    isType,
 } from './subNodeFormUtils.jsx';
 import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from 'components/validate.jsx';
 import {valuesEquals} from 'components/Utils.jsx';
