@@ -1818,7 +1818,11 @@ public class ArrangementService {
                         descriptionItemService.createDescriptionItems(newItems, node, fundVersion, change);
                     } else if (sourceNodeItems.size() > 1 || nodeItems.size() > 1) {
                         // smazání a vytvoření
-                        descriptionItemService.deleteDescriptionItems(nodeItems, node, fundVersion, change, true);
+                        try {
+                            descriptionItemService.deleteDescriptionItems(nodeItems, node, fundVersion, change, true);
+                        } catch (ObjectNotFoundException e) {
+                            //TODO fantiš zítra dořešit chybu
+                        }
 
                         List<ArrDescItem> newItems = descriptionItemService.createDescriptionItems(sourceNodeItems, refTemplateMapType, refTemplateMapSpecs);
                         descriptionItemService.createDescriptionItems(newItems, node, fundVersion, change);
