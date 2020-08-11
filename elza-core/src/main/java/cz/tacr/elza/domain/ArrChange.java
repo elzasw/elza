@@ -311,6 +311,11 @@ public class ArrChange {
         /**
          * Generate output
          */
-        GENERATE_OUTPUT
+        GENERATE_OUTPUT,
+
+        /**
+         * Synchronizace JP
+         */
+        SYNCHRONIZE_JP
     }
 }
