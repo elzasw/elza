@@ -130,10 +130,10 @@ const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSy
         });
     };
 
-    const handleItemConnect = (ae: ArchiveEntityVO) => {
+    const handleItemConnect = (ae: ArchiveEntityVO, replace: boolean) => {
         if (accessPointId != null) {
             setCalling(true);
-            return WebApi.connectArchiveEntity(ae.id, accessPointId, data.externalSystemCode).then(() => {
+            return WebApi.connectArchiveEntity(ae.id, accessPointId, data.externalSystemCode, replace).then(() => {
                 onConnected && onConnected();
                 onClose && onClose();
             }).finally(() => {
@@ -198,7 +198,13 @@ const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSy
     const renderAction = (item: ArchiveEntityVO, index: number) => {
         switch (itemType) {
             case TypeModal.CONNECT:
-                return <Button disabled={calling} onClick={() => handleItemConnect(item)} type="button" variant="outline-secondary">{i18n('global.action.choose')}</Button>
+                return <>
+                    {taked.indexOf(data.externalSystemCode + item.id) === -1 &&
+                    <DropdownButton disabled={calling} variant="default" id={"b" + index} title={i18n('ap.ext-search.label.action')}>
+                        <Dropdown.Item onClick={() => handleItemConnect(item, false)}>{i18n('global.action.merge')}</Dropdown.Item>
+                        <Dropdown.Item onClick={() => handleItemConnect(item, true)}>{i18n('global.action.replace')}</Dropdown.Item>
+                    </DropdownButton>}
+                </>
             case TypeModal.SEARCH:
                 return <>
                     {taked.indexOf(data.externalSystemCode + item.id) === -1 &&

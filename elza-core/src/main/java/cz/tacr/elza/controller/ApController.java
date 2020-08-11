@@ -1079,8 +1079,11 @@ public class ApController {
     @RequestMapping(value = "/external/{archiveEntityId}/connect/{accessPointId}", method = RequestMethod.POST)
     public void connectArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
                                      @PathVariable("accessPointId") final Integer accessPointId,
-                                     @RequestParam final String externalSystemCode) {
+                                     @RequestParam("externalSystemCode") final String externalSystemCode,
+                                     @RequestParam("replace") final Boolean replace) {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu není vyplněn");
+        // TODO fantiš: ELZA-1876 - replace (true = je potřeba smazat původní data AP)
+
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getState(accessPoint);
         ApScope scope = state.getScope();
