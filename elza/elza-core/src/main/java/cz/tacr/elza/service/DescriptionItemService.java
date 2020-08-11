@@ -7,6 +7,7 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.core.data.CalendarType;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -35,6 +36,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrRefTemplateMapSpec;
 import cz.tacr.elza.domain.ArrRefTemplateMapType;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -576,16 +578,120 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     }
 
     public List<ArrDescItem> createDescriptionItems(final List<ArrDescItem> sourceItems,
-                                                    final ArrRefTemplateMapType refTemplateMapType) {
+                                                    final ArrRefTemplateMapType refTemplateMapType,
+                                                    final List<ArrRefTemplateMapSpec> refTemplateMapSpecs) {
         List<ArrDescItem> newItems = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(sourceItems)) {
             for (ArrDescItem sourceItem : sourceItems) {
                 ArrDescItem newItem = new ArrDescItem();
                 newItem.setItemType(refTemplateMapType.getToItemType());
+//                newItem.setItemSpec();
+
+                updateDescriptionItemData(sourceItem, newItem, refTemplateMapType.getRefTemplate().getRefTemplateId());
+
                 newItems.add(newItem);
             }
         }
         return newItems;
+    }
+
+    public void updateDescriptionItemData(final ArrDescItem sourceItem, final ArrDescItem targetItem, final Integer templateId) {
+        DataType fromDataType = DataType.fromCode(sourceItem.getItemType().getDataType().getCode());
+        DataType toDataType = DataType.fromCode(targetItem.getItemType().getDataType().getCode());
+
+        if (fromDataType == null) {
+            throw new IllegalArgumentException("Neznámý kód datového typu " + sourceItem.getItemType().getDataType().getCode()
+                    + " u item typu id " + sourceItem.getItemType().getItemTypeId());
+        }
+
+        if (toDataType == null) {
+            throw new IllegalArgumentException("Neznámý kód datového typu " + targetItem.getItemType().getDataType().getCode()
+                    + " u item typu id " + targetItem.getItemType().getItemTypeId());
+        }
+
+        ArrData data = null;
+
+        if (fromDataType == toDataType) {
+            data = ArrData.makeCopyWithoutId(sourceItem.getData());
+        } else {
+            boolean error = false;
+
+            switch (fromDataType) {
+                case DATE:
+                    ArrDataDate sourceDataDate = (ArrDataDate) sourceItem.getData();
+                    if (toDataType == DataType.STRING) {
+                        ArrDataString dataString = new ArrDataString();
+                        dataString.setDataType(DataType.STRING.getEntity());
+                        dataString.setValue(sourceDataDate.getValue().toString());
+                        data = dataString;
+                    } else if (toDataType == DataType.TEXT) {
+                        ArrDataText dataText = new ArrDataText();
+                        dataText.setDataType(DataType.TEXT.getEntity());
+                        dataText.setValue(sourceDataDate.getValue().toString());
+                        data = dataText;
+                    } else {
+                        error = true;
+                    }
+                    break;
+                case UNITID:
+                case INT:
+                case DECIMAL:
+                    ArrData sourceData = sourceItem.getData();
+                    if (toDataType == DataType.STRING) {
+                        ArrDataString dataString = new ArrDataString();
+                        dataString.setDataType(DataType.STRING.getEntity());
+                        dataString.setValue(sourceData.getFulltextValue());
+                        data = dataString;
+                    } else if (toDataType == DataType.TEXT) {
+                        ArrDataText dataText = new ArrDataText();
+                        dataText.setDataType(DataType.TEXT.getEntity());
+                        dataText.setValue(sourceData.getFulltextValue());
+                        data = dataText;
+                    } else {
+                        error = true;
+                    }
+                    break;
+                case ENUM:
+                    if (toDataType == DataType.STRING) {
+                        ArrDataString dataString = new ArrDataString();
+                        dataString.setDataType(DataType.STRING.getEntity());
+                        dataString.setValue(sourceItem.getItemSpec().getName());
+                        data = dataString;
+                    } else if (toDataType == DataType.TEXT) {
+                        ArrDataText dataText = new ArrDataText();
+                        dataText.setDataType(DataType.TEXT.getEntity());
+                        dataText.setValue(sourceItem.getItemSpec().getName());
+                        data = dataText;
+                    } else {
+                        error = true;
+                    }
+                    break;
+                case STRING:
+                    ArrDataString sourceDataString = (ArrDataString) sourceItem.getData();
+                    if (toDataType == DataType.TEXT) {
+                        ArrDataText dataText = new ArrDataText();
+                        dataText.setDataType(DataType.TEXT.getEntity());
+                        dataText.setValue(sourceDataString.getValue());
+                        data = dataText;
+                    } else {
+                        error = true;
+                    }
+                    break;
+                default:
+                    error = true;
+                    break;
+            }
+
+            if (error) {
+                throw new IllegalArgumentException("Nekompatibilní datové typy " + fromDataType.getName() + "->" +
+                        toDataType.getName() + " pro synchronizaci přes šablonu id " + templateId);
+            }
+        }
+
+        targetItem.setData(data);
+        if (data != null) {
+            dataRepository.save(data);
+        }
     }
 
     /**
