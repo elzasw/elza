@@ -50,8 +50,6 @@ elza:
     output:
       threadCount: 4
       maxPerFund: 1
-  scope:
-    deleteWithEntities: false
 
 logging:
   level:
