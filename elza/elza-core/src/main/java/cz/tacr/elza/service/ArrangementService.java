@@ -1819,7 +1819,7 @@ public class ArrangementService {
                     } else if (sourceNodeItems.size() > 1 || nodeItems.size() > 1) {
                         // smazání a vytvoření
                         try {
-                            descriptionItemService.deleteDescriptionItems(nodeItems, node, fundVersion, change, true);
+                            descriptionItemService.deleteDescriptionItems(nodeItems, node, fundVersion, change, false);
                         } catch (ObjectNotFoundException e) {
                             //TODO fantiš zítra dořešit chybu
                         }
