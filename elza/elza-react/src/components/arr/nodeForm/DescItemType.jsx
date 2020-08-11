@@ -432,7 +432,7 @@ class DescItemType extends AbstractReactComponent {
         const {value, error} = this.state;
 
         // Calls the onChange in handleBlur to prevent too frequent re-renders
-        value && onChange(descItemIndex, value, error);
+        value && onChange(descItemIndex, value && Object.keys(value).length === 1 && value.value ? value.value : value, error);
 
         onBlur(descItemIndex);
 
