@@ -1734,7 +1734,7 @@ public class ArrangementService {
         refTemplateMapTypeRepository.delete(refTemplateMapType);
     }
 
-    public void synchronizeNodes(final Integer nodeId, final Integer nodeVersion, final Integer templateId, final Boolean childrenNodes) {
+    public void synchronizeNodes(final Integer nodeId, final Integer nodeVersion, final Boolean childrenNodes) {
         ArrNode node = getNode(nodeId);
         if (node != null) {
             List<ArrDescItem> nodeItems = descItemRepository.findByNodeAndDeleteChangeIsNull(node);

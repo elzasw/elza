@@ -1469,9 +1469,9 @@ export class WebApiCls {
         );
     }
 
-    synchronizeNodes(nodeId: number, nodeVersion: number, templateId: number, childrenNodes: boolean): Promise<void> {
+    synchronizeNodes(nodeId: number, nodeVersion: number, childrenNodes: boolean): Promise<void> {
         return AjaxUtils.ajaxGet(
-            WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + nodeVersion + '/sync/' + templateId,
+            WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + nodeVersion + '/sync/',
             {childrenNodes},
         );
     }
