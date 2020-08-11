@@ -8,7 +8,7 @@
     <structure-type code="ZP2015_ACCESS_COND" validValueFromVersion="162" anonymous="true">
         <name>Zvláštní omezení přístupnosti</name>
     </structure-type>
-    <structure-type code="ZP2015_TEST_TYP" validValueFromVersion="149" anonymous="true">
+    <structure-type code="ZP2015_ORIGINATOR_STRUCT" validValueFromVersion="149" anonymous="true">
         <name>Agregace původce</name>
     </structure-type>
 </structure-types>

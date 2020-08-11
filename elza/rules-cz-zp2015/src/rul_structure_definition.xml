@@ -27,11 +27,11 @@
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
-    <structure-definition structure-type="ZP2015_TEST_TYP" filename="Testtyp.drl">
+    <structure-definition structure-type="ZP2015_ORIGINATOR_STRUCT" filename="OrigStruct.drl">
         <def-type>ATTRIBUTE_TYPES</def-type>
         <priority>100</priority>
     </structure-definition>
-   <structure-definition structure-type="ZP2015_TEST_TYP" filename="Testtyp.groovy">
+   <structure-definition structure-type="ZP2015_ORIGINATOR_STRUCT" filename="OrigStruct.groovy">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>

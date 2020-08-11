@@ -3,9 +3,7 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 import java.util.List;
 
 public class ApAggregationItemsConfig {
-    String type;
-
-    boolean fromPrefferedName;
+    boolean fromPrefferedName = false;
 
     List<String> fromPart;
 
@@ -13,19 +11,9 @@ public class ApAggregationItemsConfig {
 
     String toItem;
 
-    String groupSeparator;
+    String groupSeparator = "";
 
     public ApAggregationItemsConfig() {
-        fromPrefferedName = false;
-        groupSeparator = "";
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public boolean isFromPrefferedName() {

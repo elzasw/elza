@@ -65,7 +65,7 @@
                 <type code="ZP2015_AIP_ID" width="1"/>
                 <type code="ZP2015_EXTRA_UNITS" width="2"/>
                 <type code="ZP2015_UNIT_EXT_TYPE" width="1"/>
-                <type code="ZP2015_CONNECTED_RECORD" width="2"/>                
+                <type code="ZP2015_CONNECTED_RECORD" width="2"/>
             </group>
             <group code="03_OUTPUT_ITEMS">
               <name>Prvky popisu výstupu</name>
@@ -110,6 +110,7 @@
                 <name>Společné prvky popisu</name>
                 <!-- 4.3.1 Odkaz na původce -->
                 <type code="ZP2015_ORIGINATOR" width="0"/>
+                <type code="ZP2015_ORIGINATOR_SIMPLE" width="0"/>
                 <!-- 4.3.2 Dějiny jednotky popisu -->
                 <type code="ZP2015_UNIT_HIST" width="0"/>
                 <!-- 4.3.3 Způsob uspořádání jednotky popisu -->
@@ -188,6 +189,20 @@
                 <type code="ZP2015_NOTE" width="0"/>
                 <type code="ZP2015_ATTACHMENT" width="2"/>
                 <type code="ZP2015_ITEM_LINK" width="0"/>
+            </group>
+            <!-- Items from CAM -->
+            <group code="09_CAM">
+                <name>CAM</name>
+                <type code="CORP_PURPOSE" width="0"/>
+                <type code="CORP_STRUCTURE" width="0"/>
+                <type code="FOUNDING_NORMS" width="0"/>
+                <type code="SCOPE_NORMS" width="0"/>
+                <type code="NOTE_INTERNAL" width="0"/>
+                <type code="HISTORY" width="0"/>
+                <type code="GENEALOGY" width="0"/>
+                <type code="SOURCE_INFO" width="0"/>
+                <type code="SOURCE_LINK" width="0"/>
+                <type code="BIOGRAPHY" width="0"/>
             </group>
         </ns3:default>
     </type-groups>

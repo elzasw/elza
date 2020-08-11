@@ -1,4 +1,4 @@
-package ZP2015;
+package ZP2015.origstruct;
 
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemTypeExt;
@@ -12,9 +12,12 @@ import java.util.Arrays;
 import java.util.Set;
 import cz.tacr.elza.domain.RulItemType;
 
-rule "Test vše možné"
+rule "Mozne v ramci zjednoduseneho puvodce"
 when
-  $itemType : RulItemTypeExt()
+  $itemType : RulItemTypeExt(code in ( 
+               "HISTORY", "GENEALOGY", "BIOGRAPHY",
+               "CORP_PURPOSE", "FOUNDING_NORMS", "SCOPE_NORMS", "CORP_STRUCTURE"
+              ) )
 then
   $itemType.setRepeatable(false);
   $itemType.setType(RulItemType.Type.POSSIBLE);

@@ -39,10 +39,10 @@
             <action-item-type item-type="ZP2015_DATE_RANGE" />
             <action-item-type item-type="ZP2015_ARRANGER" />
             <action-item-type item-type="ZP2015_ARRANGEMENT_INFO" />
-            <action-item-type item-type="ZP2015_ORIGINATOR" />
             <action-item-type item-type="ZP2015_LANGUAGE" />
             <action-item-type item-type="ZP2015_UNIT_COUNT_SUM" />
             <action-item-type item-type="ZP2015_UNIT_COUNT_TABLE" />
+            <action-item-type item-type="ZP2015_ORIGINATOR_SIMPLE" />
         </action-item-types>
         <action-recommendeds>
             <action-recommended output-type="STARSI_POMUCKA_1958" />
@@ -60,10 +60,4 @@
     <!-- Generování ukládacích jednotek -->
     <package-action filename="GENEROVANI_UKL_JEDNOTEK.yaml" />
     <package-action filename="MAZANI_UKL_JEDNOTEK.yaml" />
-    <!-- Test AP -->
-    <package-action filename="ZP2015_AP_TEST.yaml">
-        <action-item-types>
-            <action-item-type item-type="ZP2015_TEST_STRUCT" />
-        </action-item-types>
-    </package-action>
 </package-actions>
