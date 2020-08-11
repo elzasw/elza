@@ -1008,7 +1008,7 @@ public class AccessPointService {
 
             if (apAccessPoint.getPreferredPart().getPartId().equals(apPart.getPartId())) {
                 apAccessPoint.setPreferredPart(newPart);
-                apAccessPointRepository.save(apAccessPoint);
+                saveWithLock(apAccessPoint);
             }
             updatePartValue(newPart);
 //        }
@@ -2423,6 +2423,10 @@ public class AccessPointService {
         }
         apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
 
+        if (newApScope != null) {
+            partService.validationNameUnique(newApScope, accessPoint.getPreferredPart().getValue());
+        }
+
         publishAccessPointUpdateEvent(accessPoint);
         reindexDescItem(accessPoint);
 
@@ -2494,7 +2498,7 @@ public class AccessPointService {
         }
 
         accessPoint.setPreferredPart(apPart);
-        apAccessPointRepository.save(accessPoint);
+        saveWithLock(accessPoint);
         updatePartValue(apPart);
     }
 
