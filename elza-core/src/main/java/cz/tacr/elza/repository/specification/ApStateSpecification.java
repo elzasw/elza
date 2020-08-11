@@ -2,10 +2,12 @@ package cz.tacr.elza.repository.specification;
 
 import cz.tacr.elza.controller.vo.Area;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.repository.specification.search.Ctx;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -67,17 +69,19 @@ public class ApStateSpecification implements Specification<ApState> {
                 List<String> keyWords = getKeyWordsFromSearch(search);
 
                 Predicate and = cb.conjunction();
+                StaticDataProvider sdp = StaticDataProvider.getInstance();
+                RulPartType defaultPartType = sdp.getDefaultPartType();
                 for (String keyWord : keyWords) {
                     Predicate cond = processValueCondDef(ctx, keyWord);
                     switch (area) {
                         case PREFER_NAMES:
-                            and = cb.and(and, processPartCondDef(ctx, cond, "PT_NAME", true));
+                            and = cb.and(and, processPartCondDef(ctx, cond, defaultPartType.getCode(), true));
                             break;
                         case ALL_PARTS:
                             and = cb.and(and, cond);
                             break;
                         case ALL_NAMES:
-                            and = cb.and(and, processPartCondDef(ctx, cond, "PT_NAME", false));
+                            and = cb.and(and, processPartCondDef(ctx, cond, defaultPartType.getCode(), false));
                             break;
                         default:
                             throw new NotImplementedException("Neimplementovaný stav oblasti: " + area);

@@ -774,8 +774,10 @@ public class AccessPointService {
             throw new IllegalArgumentException("Část nesmí být podřízená.");
         }
         RulPartType partType = structObjService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
-        if (!partType.getCode().equals("PT_NAME")) {
-            throw new IllegalArgumentException("Část musí být typu PT_NAME");
+        StaticDataProvider sdp = staticDataService.getData();
+        RulPartType defaultPartType = sdp.getDefaultPartType();
+        if (!partType.getCode().equals(defaultPartType.getCode())) {
+            throw new IllegalArgumentException("Část musí být typu " + defaultPartType.getCode());
         }
 
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
@@ -1016,8 +1018,10 @@ public class AccessPointService {
     }
 
     private ApPart findPreferredPart(final List<ApPart> partList) {
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        RulPartType defaultPartType = sdp.getDefaultPartType();
         for (ApPart part : partList) {
-            if (part.getPartType().getCode().equals("PT_NAME")) {
+            if (part.getPartType().getCode().equals(defaultPartType.getCode())) {
                 return part;
             }
         }
@@ -1623,8 +1627,10 @@ public class AccessPointService {
     }
 
     private ApPart findPreferredPart(List<PartXml> partList, List<ApBindingItem> bindingParts) {
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        RulPartType defaultPartType = sdp.getDefaultPartType();
         for (PartXml part : partList) {
-            if (part.getT().value().equals("PT_NAME")) {
+            if (part.getT().value().equals(defaultPartType.getCode())) {
                 ApBindingItem bindingPart = findBindingItemByUuid(bindingParts, part.getPid().getValue());
                 if (bindingPart != null) {
                     return bindingPart.getPart();
@@ -2481,8 +2487,11 @@ public class AccessPointService {
      * @param apPart část
      */
     public void setPreferName(final ApAccessPoint accessPoint, final ApPart apPart) {
-        if (!apPart.getPartType().getCode().equals("PT_NAME")) {
-            throw new IllegalArgumentException("Preferované jméno musí být typu PT_NAME");
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        RulPartType defaultPartType = sdp.getDefaultPartType();
+
+        if (!apPart.getPartType().getCode().equals(defaultPartType.getCode())) {
+            throw new IllegalArgumentException("Preferované jméno musí být typu " + defaultPartType.getCode());
         }
 
         if (apPart.getParentPart() != null) {
