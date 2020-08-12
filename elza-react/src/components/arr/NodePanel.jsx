@@ -40,6 +40,7 @@ import {FOCUS_KEYS} from '../../constants.tsx';
 import ConfirmForm from '../shared/form/ConfirmForm';
 import getMapFromList from 'shared/utils/getMapFromList';
 import SyncNodes from './SyncNodes';
+import objectById from "../../shared/utils/objectById";
 // Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
 const PARENT_CHILD_MAX_LENGTH = 250;
 
@@ -405,11 +406,21 @@ class NodePanel extends AbstractReactComponent {
         const {node, fundId} = this.props;
         const nodeId = node.selectedSubNodeId;
 
+        let nodeVersion = node.version;
+        if (!nodeVersion) {
+            const subNode = objectById(node.childNodes, nodeId);
+            if (subNode == null) {
+                console.error("Nedohledána verze pro JP", nodeId);
+            } else {
+                nodeVersion = subNode.version;
+            }
+        }
+
         this.props.dispatch(
             modalDialogShow(
                 this,
                 i18n('arr.syncNodes.title'),
-                <SyncNodes nodeId={nodeId} nodeVersion={node.version} fundId={fundId} />,
+                <SyncNodes nodeId={nodeId} nodeVersion={nodeVersion} fundId={fundId} />,
             ),
         );
     };
