@@ -867,7 +867,7 @@ public class AccessPointService {
         return apState;
     }
 
-    public void connectAccessPoint(final ApState state, final EntityXml entity, final String externalSystemCode) {
+    public void connectAccessPoint(final ApState state, final EntityXml entity, final String externalSystemCode, final boolean replace) {
         StaticDataProvider sdp = staticDataService.getData();
         ApScope scope = state.getScope();
         ApAccessPoint accessPoint = state.getAccessPoint();
@@ -880,6 +880,10 @@ public class AccessPointService {
         stateNew.setApType(type);
         stateNew.setStateApproval(StateApproval.NEW);
         stateRepository.save(stateNew);
+
+        if (replace) {
+            partService.deleteParts(accessPoint, apChange);
+        }
 
         createAccessPoint(scope, entity, accessPoint, apChange, sdp, externalSystemCode, stateNew, null);
         partService.validationNameUnique(scope, accessPoint.getPreferredPart().getValue());

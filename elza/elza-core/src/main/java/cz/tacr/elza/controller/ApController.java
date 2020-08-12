@@ -1082,7 +1082,6 @@ public class ApController {
                                      @RequestParam("externalSystemCode") final String externalSystemCode,
                                      @RequestParam("replace") final Boolean replace) {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu není vyplněn");
-        // TODO fantiš: ELZA-1876 - replace (true = je potřeba smazat původní data AP)
 
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getState(accessPoint);
@@ -1096,7 +1095,7 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        accessPointService.connectAccessPoint(state, entity, externalSystemCode);
+        accessPointService.connectAccessPoint(state, entity, externalSystemCode, replace);
     }
 
     /**
