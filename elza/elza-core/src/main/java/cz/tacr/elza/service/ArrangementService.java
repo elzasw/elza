@@ -1818,11 +1818,7 @@ public class ArrangementService {
                         descriptionItemService.createDescriptionItems(newItems, node, fundVersion, change);
                     } else if (sourceNodeItems.size() > 1 || nodeItems.size() > 1) {
                         // smazání a vytvoření
-                        try {
-                            descriptionItemService.deleteDescriptionItems(nodeItems, node, fundVersion, change, false);
-                        } catch (ObjectNotFoundException e) {
-                            //TODO fantiš zítra dořešit chybu
-                        }
+                        descriptionItemService.deleteDescriptionItems(nodeItems, node, fundVersion, change, false);
 
                         List<ArrDescItem> newItems = descriptionItemService.createDescriptionItems(sourceNodeItems, refTemplateMapType, refTemplateMapSpecs);
                         descriptionItemService.createDescriptionItems(newItems, node, fundVersion, change);
@@ -1830,6 +1826,7 @@ public class ArrangementService {
                         // update
                         ArrDescItem sourceItem = sourceNodeItems.get(0);
                         ArrDescItem targetItem = nodeItems.get(0);
+                        descriptionItemService.setSpecification(sourceItem, targetItem, refTemplateMapType, refTemplateMapSpecs);
                         descriptionItemService.updateDescriptionItemData(sourceItem, targetItem, refTemplate.getRefTemplateId());
                         descriptionItemService.updateDescriptionItem(targetItem, fundVersion, change);
                     }

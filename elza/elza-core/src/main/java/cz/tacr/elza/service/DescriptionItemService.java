@@ -595,10 +595,10 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         return newItems;
     }
 
-    private void setSpecification(final ArrDescItem sourceItem,
-                                  final ArrDescItem newItem,
-                                  final ArrRefTemplateMapType refTemplateMapType,
-                                  final List<ArrRefTemplateMapSpec> refTemplateMapSpecs) {
+    public void setSpecification(final ArrDescItem sourceItem,
+                                 final ArrDescItem newItem,
+                                 final ArrRefTemplateMapType refTemplateMapType,
+                                 final List<ArrRefTemplateMapSpec> refTemplateMapSpecs) {
         if (sourceItem.getItemType().getItemTypeId().equals(newItem.getItemType().getItemTypeId()) && refTemplateMapType.getMapAllSpec()) {
             newItem.setItemSpec(sourceItem.getItemSpec());
         } else {
