@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,6 +62,7 @@ import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
+import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.SearchType;
@@ -73,12 +75,15 @@ import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.vo.DataRef;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -118,6 +123,8 @@ import cz.tacr.elza.repository.SysLanguageRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.ImportAccessPoint;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import static cz.tacr.elza.domain.ApState.StateApproval;
 
@@ -2583,6 +2590,75 @@ public class AccessPointService {
 //        Page<ApState> pageResult = stateRepository.findAll(stateSpecification, pageRequest);
 
         return searchFilterFactory.createArchiveEntityResultListVO(stateList, stateList.size());
+    }
+
+    public Resource exportCoordinates(FileType fileType, Integer itemId) {
+        ApItem item = itemRepository.findById(itemId).orElseThrow(() ->
+                new ObjectNotFoundException("ApItem nenalezen", BaseCode.ID_NOT_EXIST));
+        String coordinates;
+
+        if (fileType.equals(FileType.WKT)) {
+            coordinates = item.getData().getFulltextValue();
+        } else {
+            coordinates = convertCoordinates(fileType, item.getData().getDataId());
+        }
+        return new ByteArrayResource(coordinates.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private String convertCoordinates(FileType fileType, Integer dataId) {
+        switch (fileType) {
+            case KML:
+                return apDataService.convertCoordinatesToKml(dataId);
+            case GML:
+                return apDataService.convertCoordinatesToGml(dataId);
+            default:
+                throw new IllegalStateException("Nepovolený typ souboru pro export souřadnic");
+        }
+    }
+
+    public String importCoordinates(FileType fileType, Resource body) {
+        try {
+            String content = IOUtils.toString(body.getInputStream(), StandardCharsets.UTF_8);
+            switch (fileType) {
+                case KML:
+                    return apDataService.convertCoordinatesFromKml(content);
+                case GML:
+                    return apDataService.convertCoordinatesFromGml(content);
+                case WKT:
+                    return content;
+                default:
+                    throw new IllegalStateException("Nepovolený typ souboru pro import souřadnic");
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Chyba při importu souřadnic ze souboru");
+        }
+    }
+
+    public MultiValueMap<String, String> createCoordinatesHeaders(FileType fileType) {
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        String extension;
+        String contentType;
+
+        switch (fileType) {
+            case WKT:
+                extension = "wkt";
+                contentType = "application/octet-stream";
+                break;
+            case GML:
+                extension = "gml";
+                contentType = "application/gml+xml";
+                break;
+            case KML:
+                extension = "kml";
+                contentType = "application/vnd.google-earth.kml+xml";
+                break;
+            default:
+                throw new IllegalStateException("Nepovolený typ souboru pro export souřadnic");
+        }
+
+        headers.add("Content-type",  contentType + "; charset=utf-8");
+        headers.add("Content-disposition", "attachment; filename=file." + extension);
+        return headers;
     }
 
     /**

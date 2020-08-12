@@ -18,13 +18,17 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.FileType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -1228,6 +1232,34 @@ public class ApController {
         List<UISettings> itemTypesSettings = settingsService.getGlobalSettings(itemTypes.toString(), itemTypes.getEntityType());
         List<UISettings> partsOrderSettings = settingsService.getGlobalSettings(partsOrder.toString(), partsOrder.getEntityType());
         return apFactory.createApTypeViewSettings(itemTypesSettings, partsOrderSettings);
+    }
+
+    /**
+     * Export souřadnic do formátu KML/GML
+     *
+     * @param fileType Typ souboru
+     * @param itemId Identifikátor itemu
+     * @return Soubor se souřadnicemi
+     */
+    @Transactional
+    @RequestMapping(value = "/export/coordinates/{itemId}", method = RequestMethod.POST)
+    public ResponseEntity<Resource> exportCoordinates(@RequestParam final FileType fileType,
+                                                      @PathVariable("itemId") final Integer itemId) {
+        return new ResponseEntity<>(accessPointService.exportCoordinates(fileType, itemId), accessPointService.createCoordinatesHeaders(fileType), HttpStatus.OK);
+    }
+
+    /**
+     * Import souřadnic ve formátu KML/GML
+     *
+     * @param fileType Typ souboru
+     * @param body Soubor se souřadnicemi
+     * @return Souřadnice převedené do řetězce
+     */
+    @Transactional
+    @RequestMapping(value = "/import/coordinates", method = RequestMethod.POST)
+    public String importCoordinates(@RequestParam final FileType fileType,
+                                    @RequestBody(required = false) Resource body) {
+        return accessPointService.importCoordinates(fileType, body);
     }
 
 }
