@@ -65,6 +65,17 @@ public interface Output {
     List<Record> getParties(final Collection<String> codes);
 
     /**
+     * Return list of structured objects.
+     *
+     * Description items have to be structured object references.
+     * 
+     * @param codes
+     *            List of description items referencing structured objects
+     * @return List of referenced objects
+     */
+    List<Structured> getStructured(final Collection<String> codes);
+
+    /**
      * Return single item
      * @param itemTypeCode Code of item
      * @return Return single item if exists. Return null if item does not exists.
