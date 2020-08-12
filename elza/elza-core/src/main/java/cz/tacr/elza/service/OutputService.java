@@ -54,6 +54,7 @@ import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.ArrOutputTemplate;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -61,6 +62,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.BusinessException;
@@ -80,6 +82,7 @@ import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -104,6 +107,9 @@ public class OutputService {
 
     @Autowired
     private OutputRepository outputRepository;
+
+    @Autowired
+    private OutputTemplateRepository outputTemplateRepository;
 
     @Autowired
     private OutputItemRepository outputItemRepository;
@@ -349,10 +355,16 @@ public class OutputService {
                 .orElseThrow(outputType(outputTypeId));
         output.setOutputType(type);
 
+        ArrOutputTemplate templates = new ArrOutputTemplate();
+        templates.setOutput(output);
+
         if (templateId != null) {
-            output.setTemplate(templateRepository.findById(templateId).orElseThrow(template(templateId)));
+        	RulTemplate template = templateRepository.findById(templateId).orElseThrow(template(templateId));
+        	templates.setTemplate(template);
+        	output.setTemplate(template);
         } else {
-            output.setTemplate(null);
+        	templates.setTemplate(null);
+        	output.setTemplate(null);
         }
 
         ArrChange change = arrangementService.createChange(null);
@@ -360,6 +372,7 @@ public class OutputService {
         output.setDeleteChange(null);
 
         outputRepository.save(output);
+        outputTemplateRepository.save(templates);
 
         EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, output.getOutputId());
         eventNotificationService.publishEvent(event);
@@ -481,9 +494,9 @@ public class OutputService {
         output.setName(name);
         output.setInternalCode(internalCode);
         if (templateId != null) {
-            output.setTemplate(templateRepository.findById(templateId).orElseThrow(template(templateId)));
+            //output.setTemplate(templateRepository.findById(templateId).orElseThrow(template(templateId)));
         } else {
-            output.setTemplate(null);
+            //output.setTemplate(null);
         }
 
         if (anonymizedAp != null) {
