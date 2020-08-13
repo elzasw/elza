@@ -1,21 +1,12 @@
 package cz.tacr.elza.dbchangelog;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang.Validate;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.io.ClassPathResource;
 
 import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
@@ -169,7 +160,8 @@ public class DbChangeset20200807100100 extends BaseTaskChange {
 	private final String UPDATE_POSTGRE_SQL = "UPDATE ap_access_point SET uuid = ?" 
 			+ "FROM par_institution " 
 			+ "WHERE par_institution.access_point_id = ap_access_point.access_point_id " 
-			+ "AND par_institution.internal_code = ?";
+            + "AND par_institution.internal_code = ?"
+            + "AND NOT EXISTS( SELECT 1 FROM ap_access_point WHERE uuid = ? )";
 
     private int numChanged = 0;
 
@@ -186,40 +178,24 @@ public class DbChangeset20200807100100 extends BaseTaskChange {
         	if (resultSet.next()) {
         		try (PreparedStatement ps = dc.prepareStatement(UPDATE_POSTGRE_SQL)) {
 		        	do {
-		        		String internalCode = resultSet.getString("internal_code");
-		        		String uuid = resultSet.getString("uuid");
-		        		String mapUuid = archyMap.get(internalCode);
-		        		if (mapUuid != null && !mapUuid.equals(uuid)) {
-		                  ps.setString(1, mapUuid);
-		                  ps.setString(2, internalCode);
-		                  ps.execute();
-		                  int updateCount = ps.getUpdateCount();
-		                  Validate.isTrue(updateCount == 1, "Unexpected update count: ", updateCount);
-		                  numChanged++;
-		        		}
+                        String internalCode = resultSet.getString("internal_code");
+                        String currUuid = resultSet.getString("uuid");
+                        String newUuid = archyMap.get(internalCode);
+                        if (newUuid != null && !newUuid.equals(currUuid)) {
+                            ps.setString(1, newUuid);
+                            ps.setString(2, internalCode);
+                            ps.setString(3, newUuid);
+                            ps.execute();
+                            int updateCount = ps.getUpdateCount();
+                            Validate.isTrue(updateCount >= 0 && updateCount <= 1,
+                                            "Unexpected update count: ", updateCount);
+                            numChanged += updateCount;
+                        }
 		        	} while (resultSet.next());
         		}
         	}
         } catch (DatabaseException | SQLException e) {
-            throw new CustomChangeException("Chyba při vykonávání sql příkazu " + e.getLocalizedMessage(), e);
+            throw new CustomChangeException("Chyba při vykonávání sql příkazu: " + e.getLocalizedMessage(), e);
 		}
-
     }
-    
-    private Map<String, String> getMapFromCsv(String csvFile) throws CustomChangeException {
-    	Map<String, String> result = new HashMap<>();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new ClassPathResource(csvFile)
-                .getInputStream(), "UTF-8"))) {
-            String s = br.readLine();
-            while ((s = br.readLine()) != null) {
-            	String[] fields = s.split(",");
-            	result.put(fields[1], fields[0]);
-            }
-        } catch (IOException e) {
-            throw new CustomChangeException("Chyba při čtení souboru " + csvFile, e);
-        }
-
-        return result;
-    }
-
 }
