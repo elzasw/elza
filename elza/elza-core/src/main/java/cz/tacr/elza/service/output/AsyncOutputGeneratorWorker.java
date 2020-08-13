@@ -125,18 +125,20 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         ArrOutput output = outputServiceInternal.getOutputForGenerator(outputId);
         List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(output);
 
-        Engine engine = templates.get(0).getTemplate().getEngine();
-        try (OutputGenerator generator = outputGeneratorFactory.createOutputGenerator(engine);) {
-            OutputParams params = createOutputParams(output);
-            generator.init(params);
-            generator.generate();
-
-            // reset error
-            output.setError(null);
-            OutputState state = resolveEndState(params);
-            output.setState(state); // saved by commit
-        } catch (IOException e) {
-            throw new SystemException("Failed to generate output", e, BaseCode.INVALID_STATE);
+        for (ArrOutputTemplate template : templates) {
+	        Engine engine = template.getTemplate().getEngine();
+	        try (OutputGenerator generator = outputGeneratorFactory.createOutputGenerator(engine)) {
+	            OutputParams params = createOutputParams(output, template);
+	            generator.init(params);
+	            generator.generate();
+	
+	            // reset error
+	            output.setError(null);
+	            OutputState state = resolveEndState(params);
+	            output.setState(state); // saved by commit
+	        } catch (IOException e) {
+	            throw new SystemException("Failed to generate output", e, BaseCode.INVALID_STATE);
+	        }
         }
 
         outputServiceInternal.publishOutputStateChanged(output, request.getFundVersionId());
@@ -153,7 +155,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         return OutputState.FINISHED;
     }
 
-    private OutputParams createOutputParams(ArrOutput output) {
+    private OutputParams createOutputParams(ArrOutput output, ArrOutputTemplate outputTemplate) {
         ArrFundVersion fundVersion = em.find(ArrFundVersion.class, request.getFundVersionId());
         if (fundVersion == null) {
             throw new SystemException("Fund version for output not found", BaseCode.ID_NOT_EXIST).set("fundVersionId",
@@ -169,9 +171,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         //omezení
         List<ArrOutputItem> restrictedItems = outputServiceInternal.restrictItemsByScopes(output, outputItems);
 
-        List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(output);
-
-        RulTemplate template = templates.get(0).getTemplate();
+        RulTemplate template = outputTemplate.getTemplate();
 
         Path templateDir = resourcePathResolver.getTemplateDir(template).toAbsolutePath();
 
