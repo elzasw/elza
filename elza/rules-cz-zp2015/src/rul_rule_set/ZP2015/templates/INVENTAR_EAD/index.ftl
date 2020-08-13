@@ -2,7 +2,7 @@
 <ead:control>
   <ead:recordid><#if output.internalCode?has_content>${output.internalCode}<#else>${output.name}</#if></ead:recordid>
   <!-- Archivní soubor, encodinganalog obsahuje identifikátor archivního souboru  -->
-  <ead:filedesc encodinganalog="${output.fund.rootNode.getSingleItemValue("ZP2015_NAD")}">
+  <ead:filedesc encodinganalog="${output.fund.fundNumber}">
     <ead:titlestmt>
      <!-- Povinný název archivního souboru -->
      <ead:titleproper>${output.fund.name}</ead:titleproper>

@@ -81,7 +81,8 @@ no-loop
 when
     $itemType : RulItemTypeExt( code in (
         "ZP2015_ARRANGER",
-        "ZP2015_ORIGINATOR", 
+        //"ZP2015_ORIGINATOR", 
+        "ZP2015_ORIGINATOR_SIMPLE",
         "ZP2015_LANGUAGE" ) )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
