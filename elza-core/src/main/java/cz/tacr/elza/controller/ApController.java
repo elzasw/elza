@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.FileType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -64,6 +63,7 @@ import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
+import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.RequiredType;
@@ -79,6 +79,7 @@ import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
@@ -1068,7 +1069,11 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        ApState apState = accessPointService.createAccessPoint(scope, entity, externalSystemCode, null);
+        // TODO: move to separate method
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ApBinding binding = externalSystemService.createApBinding(scope, entity.getEid().getValue(), apExternalSystem);
+
+        ApState apState = accessPointService.createAccessPoint(scope, entity, binding);
         return apState.getAccessPointId();
     }
 

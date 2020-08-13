@@ -1,6 +1,5 @@
 package cz.tacr.elza.service;
 
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -23,6 +22,23 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import cz.tacr.cam.schema.cam.BatchEntityRecordRevXml;
 import cz.tacr.cam.schema.cam.BatchInfoXml;
@@ -64,70 +80,93 @@ import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
-import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
-import cz.tacr.elza.exception.Level;
-import cz.tacr.elza.exception.codes.ExternalCode;
-import cz.tacr.elza.groovy.GroovyResult;
-import cz.tacr.elza.repository.ItemAptypeRepository;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.vo.DataRef;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
-import cz.tacr.elza.controller.vo.usage.*;
+import cz.tacr.elza.controller.vo.usage.FundVO;
+import cz.tacr.elza.controller.vo.usage.NodeVO;
+import cz.tacr.elza.controller.vo.usage.OccurrenceType;
+import cz.tacr.elza.controller.vo.usage.OccurrenceVO;
+import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
+import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingItem;
+import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApScopeRelation;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApState.StateApproval;
+import cz.tacr.elza.domain.ApStateEnum;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataBit;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemAptype;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionUtils;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
+import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApChangeRepository;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.vo.DataRef;
 import cz.tacr.elza.service.vo.ImportAccessPoint;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
-import static cz.tacr.elza.domain.ApState.StateApproval;
 
 
 /**
@@ -819,7 +858,14 @@ public class AccessPointService {
             List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByBindingIn(bindingList);
             for (EntityXml entity : entities) {
                 ApBinding binding = findBindingByValue(bindingList, String.valueOf(entity.getEid().getValue()));
-                ApState state = createAccessPoint(scope, entity, externalSystemCode, binding);
+                if (binding == null) {
+                    // TODO: move to separate method
+                    ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(
+                                                                                                         externalSystemCode);
+                    binding = externalSystemService.createApBinding(scope, entity.getEid().getValue(),
+                                                                    apExternalSystem);
+                }
+                ApState state = createAccessPoint(scope, entity, binding);
                 states.add(state);
                 setAccessPointInDataRecordRefs(state.getAccessPoint(), dataRecordRefList, binding);
             }
@@ -865,7 +911,7 @@ public class AccessPointService {
         return values;
     }
 
-    public ApState createAccessPoint(final ApScope scope, final EntityXml entity, final String externalSystemCode, final ApBinding binding) {
+    public ApState createAccessPoint(final ApScope scope, final EntityXml entity, ApBinding binding) {
         Assert.notNull(scope, "Třída musí být vyplněna");
         StaticDataProvider sdp = staticDataService.getData();
 
@@ -874,7 +920,7 @@ public class AccessPointService {
         ApState apState = createAccessPoint(scope, type, apChange);
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
-        createAccessPoint(scope, entity, accessPoint, apChange, sdp, externalSystemCode, apState, binding);
+        createAccessPoint(scope, entity, accessPoint, apChange, sdp, apState, binding);
         partService.validationNameUnique(apState.getScope(), accessPoint.getPreferredPart().getValue());
 
         publishAccessPointCreateEvent(accessPoint);
@@ -900,7 +946,12 @@ public class AccessPointService {
             partService.deleteParts(accessPoint, apChange);
         }
 
-        createAccessPoint(scope, entity, accessPoint, apChange, sdp, externalSystemCode, stateNew, null);
+        // prepare binding
+        // TODO: move to separate method
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ApBinding binding = externalSystemService.createApBinding(scope, entity.getEid().getValue(), apExternalSystem);
+
+        createAccessPoint(scope, entity, accessPoint, apChange, sdp, stateNew, binding);
         partService.validationNameUnique(scope, accessPoint.getPreferredPart().getValue());
 
         publishAccessPointUpdateEvent(accessPoint);
@@ -911,17 +962,14 @@ public class AccessPointService {
                                    final ApAccessPoint accessPoint,
                                    final ApChange apChange,
                                    final StaticDataProvider sdp,
-                                   final String externalSystemCode,
                                    final ApState apState,
-                                   final ApBinding apBinding) {
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        ApBinding binding = apBinding;
-        if (binding == null) {
-            binding = externalSystemService.createApBinding(scope, entity.getEid().getValue(), apExternalSystem);
+                                   final ApBinding binding) {
+        if (binding != null) {
+            externalSystemService.createApBindingState(binding, accessPoint, apChange,
+                                                       entity.getEns().value(), entity.getRevi().getRid().getValue(),
+                                                       entity.getRevi().getUsr().getValue(),
+                                                       entity.getReid() != null ? entity.getReid().getValue() : null);
         }
-        externalSystemService.createApBindingState(binding, accessPoint, apChange,
-                entity.getEns().value(), entity.getRevi().getRid().getValue(),  entity.getRevi().getUsr().getValue(),
-                entity.getReid() != null ? entity.getReid().getValue() : null);
 
         List<ApPart> partList = new ArrayList<>();
         Map<Integer, List<ApItem>> itemMap = new HashMap<>();
@@ -933,28 +981,34 @@ public class AccessPointService {
             ApPart parentPart = part.getPrnt() != null ? findParentPart(binding, part.getPrnt().getValue()) : null;
 
             ApPart apPart = partService.createPart(partType, accessPoint, apChange, parentPart);
-            externalSystemService.createApBindingItem(binding, part.getPid().getValue(), apPart, null);
+            if (binding != null) {
+                externalSystemService.createApBindingItem(binding, part.getPid().getValue(), apPart, null);
+            }
             List<ApItem> itemList = partService.createPartItems(apChange, apPart, part.getItms().getItems(), binding, dataRefList);
 
             itemMap.put(apPart.getPartId(), itemList);
             partList.add(apPart);
         }
-        createBindingForRel(dataRefList, binding, scope, apExternalSystem);
+        if (binding != null) {
+            createBindingForRel(dataRefList, binding, scope);
+        }
 
         accessPoint.setPreferredPart(findPreferredPart(partList));
 
         updatePartValues(apState, partList, itemMap);
     }
 
-    private void createBindingForRel(final List<DataRef> dataRefList, final ApBinding binding, final ApScope scope, final ApExternalSystem apExternalSystem) {
+    private void createBindingForRel(final List<DataRef> dataRefList, final ApBinding binding, final ApScope scope) {
         //TODO fantiš optimalizovat
         for (DataRef dataRef : dataRefList) {
             ApBindingItem apBindingItem = externalSystemService.findByBindingAndUuid(binding, dataRef.getUuid());
             if (apBindingItem.getItem() != null) {
                 ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) apBindingItem.getItem().getData();
-                ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, dataRef.getValue().intValue(), apExternalSystem.getCode());
+                ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, dataRef
+                        .getValue().intValue(), binding.getApExternalSystem().getCode());
                 if (refBinding == null) {
-                    dataRecordRef.setBinding(externalSystemService.createApBinding(scope, dataRef.getValue(), apExternalSystem));
+                    dataRecordRef.setBinding(externalSystemService.createApBinding(scope, dataRef.getValue(), binding
+                            .getApExternalSystem()));
                 } else {
                     dataRecordRef.setBinding(refBinding);
 
@@ -1623,7 +1677,7 @@ public class AccessPointService {
             }
             deleteParts(bindingParts, apChange);
 
-            createBindingForRel(dataRefList, binding, state.getScope(), binding.getApExternalSystem());
+            createBindingForRel(dataRefList, binding, state.getScope());
 
             accessPoint.setPreferredPart(findPreferredPart(entity.getPrts().getList(), newBindingParts));
 
