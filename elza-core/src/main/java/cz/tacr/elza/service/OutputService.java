@@ -297,11 +297,13 @@ public class OutputService {
             newName = newNameWithNum;
         }
 
+        List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(originalOutput);
+
         final ArrOutput newOutput = createOutput(fundVersion,
                 newName,
                 originalOutput.getInternalCode(),
                 originalOutput.getOutputType().getOutputTypeId(),
-                originalOutput.getTemplate() != null ? originalOutput.getTemplate().getTemplateId() : null
+                templates.size() > 0 ? templates.get(0).getTemplate().getTemplateId() : null
         );
 
         final ArrChange change = newOutput.getCreateChange();
@@ -361,10 +363,8 @@ public class OutputService {
         if (templateId != null) {
         	RulTemplate template = templateRepository.findById(templateId).orElseThrow(template(templateId));
         	templates.setTemplate(template);
-        	output.setTemplate(template);
         } else {
         	templates.setTemplate(null);
-        	output.setTemplate(null);
         }
 
         ArrChange change = arrangementService.createChange(null);

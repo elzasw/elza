@@ -54,10 +54,6 @@ public class ArrOutput extends AbstractVersionableEntity {
     @JoinColumn(name = "outputTypeId", nullable = false)
     private RulOutputType outputType;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulTemplate.class)
-    @JoinColumn(name = "templateId")
-    private RulTemplate template;
-
     @Column(length = 250)
     private String internalCode;
 
@@ -201,20 +197,6 @@ public class ArrOutput extends AbstractVersionableEntity {
      */
     public void setOutputType(final RulOutputType outputType) {
         this.outputType = outputType;
-    }
-
-    /**
-     * @return šablona outputu
-     */
-    public RulTemplate getTemplate() {
-        return template;
-    }
-
-    /**
-     * @param template šablona outputu
-     */
-    public void setTemplate(final RulTemplate template) {
-        this.template = template;
     }
 
     /**
