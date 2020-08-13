@@ -210,7 +210,7 @@ public class OutputServiceInternal {
      */
     @Transactional
     public ArrOutput getOutputForGenerator(int outputId) {
-        ArrOutput output = outputRepository.findOneFetchTypeAndTemplateAndFund(outputId);
+        ArrOutput output = outputRepository.findOneFetchTypeAndFund(outputId);
         if (output == null) {
             throw new SystemException("Output not found", BaseCode.ID_NOT_EXIST).set("outputId", outputId);
         }

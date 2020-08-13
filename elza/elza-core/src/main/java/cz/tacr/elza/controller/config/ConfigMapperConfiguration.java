@@ -89,6 +89,8 @@ public class ConfigMapperConfiguration {
     private PartTypeRepository partTypeRepository;
     @Autowired
     private ArrRefTemplateRepository refTemplateRepository;
+    @Autowired
+    private OutputTemplateRepository outputTemplateRepository; 
 
     /**
      * @return Tovární třída.
@@ -429,8 +431,9 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final ArrOutput output,
                                         final ArrOutputVO outputVO,
                                         final MappingContext context) {
+                        List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(output);
                         outputVO.setOutputTypeId(output.getOutputType().getOutputTypeId());
-                        outputVO.setTemplateId(output.getTemplate() != null ? output.getTemplate().getTemplateId() : null);
+                        outputVO.setTemplateId(templates.size() > 0 ? templates.get(0).getTemplate().getTemplateId() : null);
                         if (output.getOutputResult() != null) {
                             outputVO.setOutputResultId(output.getOutputResult().getOutputResultId());
                         }

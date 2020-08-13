@@ -12,6 +12,7 @@ import cz.tacr.elza.exception.ExceptionResponse;
 import cz.tacr.elza.exception.ExceptionResponseBuilder;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelServiceInternal;
 import cz.tacr.elza.service.OutputServiceInternal;
@@ -65,6 +66,9 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 
     @Autowired
     private ArrangementService arrangementService;
+    
+    @Autowired
+    private OutputTemplateRepository outputTemplateRepository; 
 
     private final AtomicBoolean running = new AtomicBoolean(false);
 
@@ -119,8 +123,9 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
      */
     private void generateOutput(Integer outputId) {
         ArrOutput output = outputServiceInternal.getOutputForGenerator(outputId);
+        List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(output);
 
-        Engine engine = output.getTemplate().getEngine();
+        Engine engine = templates.get(0).getTemplate().getEngine();
         try (OutputGenerator generator = outputGeneratorFactory.createOutputGenerator(engine);) {
             OutputParams params = createOutputParams(output);
             generator.init(params);
@@ -164,9 +169,13 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         //omezení
         List<ArrOutputItem> restrictedItems = outputServiceInternal.restrictItemsByScopes(output, outputItems);
 
-        Path templateDir = resourcePathResolver.getTemplateDir(output.getTemplate()).toAbsolutePath();
+        List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(output);
 
-        return new OutputParams(output, change, fundVersion, nodeIds, restrictedItems, templateDir);
+        RulTemplate template = templates.get(0).getTemplate();
+
+        Path templateDir = resourcePathResolver.getTemplateDir(template).toAbsolutePath();
+
+        return new OutputParams(output, change, fundVersion, nodeIds, restrictedItems, template, templateDir);
     }
 
     /**
