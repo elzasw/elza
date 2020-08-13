@@ -250,7 +250,7 @@ public class AccessPointService {
     @Autowired
     private SearchFilterFactory searchFilterFactory;
 
-    @Value("${elza.scope.deleteWithEntities}")
+    @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
 
     /**
