@@ -1,13 +1,13 @@
 package cz.tacr.elza.ws.core.v1;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.activation.DataHandler;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +15,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.cam.schema.cam.EntitiesXml;
+import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.ObjectFactory;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.ws.types.v1.EntityConflictResolution;
 import cz.tacr.elza.ws.types.v1.ImportDisposition;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
 import cz.tacr.elza.ws.types.v1.RequestStatusInfo;
@@ -34,6 +39,12 @@ public class ImportServiceImpl implements ImportService {
 
     @Autowired
     private ScopeRepository scopeRepository;
+
+    @Autowired
+    private ApAccessPointRepository accessPointRepository;
+
+    @Autowired
+    private AccessPointService accessPointService;
 
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(EntitiesXml.class);
 
@@ -52,14 +63,14 @@ public class ImportServiceImpl implements ImportService {
             }
         } catch (Exception e) {
             logger.error("Failed to import", e);
+            if (e instanceof CoreServiceException) {
+                throw (CoreServiceException) e;
+            }
             throw WSHelper.prepareException("Failed to import data", e);
         }
     }
 
     private void importCamSchema(ImportDisposition disposition, DataHandler binData) throws JAXBException, IOException {
-        String scopeCode = disposition.getPrimaryScope();
-        ApScope scope = scopeRepository.findByCode(scopeCode);
-        Validate.notNull(scope);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
         // read CAM xml
@@ -73,12 +84,31 @@ public class ImportServiceImpl implements ImportService {
     }
 
     private void importCam(ImportDisposition disposition, EntitiesXml ents) {
-        throw new IllegalStateException("Not implemented");
+        String scopeCode = disposition.getPrimaryScope();
+        ApScope scope = scopeRepository.findByCode(scopeCode);
+        if (scope == null) {
+            throw WSHelper.prepareException("Scope not found: " + scopeCode, null);
+        }
+
+        List<EntityXml> entityList = ents.getList();
+        for (EntityXml entityXml : entityList) {
+            importCamEntity(scope, entityXml, disposition.getConflictResolution());
+        }
+    }
+
+    private void importCamEntity(ApScope scope, EntityXml entityXml,
+                                 EntityConflictResolution conflictResolution) {
+        // check if entity exists
+        ApAccessPoint accessPoint = accessPointRepository.findApAccessPointByUuid(entityXml.getEuid().getValue());
+        if (accessPoint == null) {
+            accessPointService.createAccessPoint(scope, entityXml, null);
+        } else {
+            throw new IllegalStateException("Update not implemented");
+        }
     }
 
     @Override
     public RequestStatusInfo getImportStatus(String requestId) {
-        // TODO Auto-generated method stub
         return null;
     }
 }
