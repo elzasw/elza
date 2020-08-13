@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.repository.DataCoordinatesRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -40,16 +41,19 @@ public class AccessPointDataService {
     private final UserService userService;
     private final ApChangeRepository apChangeRepository;
     private final PartyService partyService;
+    private final DataCoordinatesRepository dataCoordinatesRepository;
 
     @Autowired
     public AccessPointDataService(final EntityManager em,
                                   final UserService userService,
                                   final ApChangeRepository apChangeRepository,
-                                  final PartyService partyService) {
+                                  final PartyService partyService,
+                                  final DataCoordinatesRepository dataCoordinatesRepository) {
         this.em = em;
         this.userService = userService;
         this.apChangeRepository = apChangeRepository;
         this.partyService = partyService;
+        this.dataCoordinatesRepository = dataCoordinatesRepository;
     }
 
     /**
@@ -137,6 +141,22 @@ public class AccessPointDataService {
                     .set("accessPointId", state.getAccessPointId())
                     .set("uuid", state.getAccessPoint().getUuid());
         }
+    }
+
+    public String convertCoordinatesFromKml(String coordinates) {
+        return dataCoordinatesRepository.convertCoordinatesFromKml(coordinates);
+    }
+
+    public String convertCoordinatesFromGml(String coordinates) {
+        return dataCoordinatesRepository.convertCoordinatesFromGml(coordinates);
+    }
+
+    public String convertCoordinatesToKml(Integer dataId) {
+        return dataCoordinatesRepository.convertCoordinatesToKml(dataId);
+    }
+
+    public String convertCoordinatesToGml(Integer dataId) {
+        return dataCoordinatesRepository.convertCoordinatesToGml(dataId);
     }
 
 }

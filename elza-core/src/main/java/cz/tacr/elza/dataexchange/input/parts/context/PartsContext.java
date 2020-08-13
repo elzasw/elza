@@ -89,7 +89,8 @@ public class PartsContext {
             storeParts(true);
         }
 
-        if (!prefferedPartApInfos.contains(apInfo) && info.getRulPartType().getCode().equals("PT_NAME")) {
+        RulPartType defaultPartType = staticData.getDefaultPartType();
+        if (!prefferedPartApInfos.contains(apInfo) && info.getRulPartType().getCode().equals(defaultPartType.getCode())) {
             PrefferedPartWrapper prefferedPartWrapper = new PrefferedPartWrapper(apInfo, info);
             prefferedPartQueue.add(prefferedPartWrapper);
             prefferedPartApInfos.add(apInfo);

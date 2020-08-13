@@ -103,7 +103,6 @@ class DescItemLink extends AbstractReactComponent {
         let value =
             cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : inputValue(descItem.value);
 
-
         const hasNodeLink = descItem.value && (descItem.value.startsWith(ELZA_SCHEME_NODE) || descItem.nodeId);
 
         if (readMode) {
@@ -139,9 +138,11 @@ class DescItemLink extends AbstractReactComponent {
                     <Button onClick={this.search}>
                         <Icon glyph={'fa-search'} />
                     </Button>
-                    {hasNodeLink && <Button onClick={this.handleNavigate}>
-                        <Icon glyph={'fa-external-link'} />
-                    </Button>}
+                    {hasNodeLink && (
+                        <Button onClick={this.handleNavigate}>
+                            <Icon glyph={'fa-external-link'} />
+                        </Button>
+                    )}
                 </div>
                 <div className="desc-item-value">
                     <input
