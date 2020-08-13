@@ -1688,8 +1688,8 @@ public class ArrangementService {
         refTemplateMapType.setRefTemplate(refTemplate);
         refTemplateMapType.setFormItemType(sdp.getItemType(refTemplateMapTypeFormVO.getFromItemTypeId()));
         refTemplateMapType.setToItemType(sdp.getItemType(refTemplateMapTypeFormVO.getToItemTypeId()));
-        refTemplateMapType.setFromParentLevel(refTemplateMapTypeFormVO.getFromParentLevel());
-        refTemplateMapType.setMapAllSpec(refTemplateMapTypeFormVO.getMapAllSpec());
+        refTemplateMapType.setFromParentLevel(refTemplateMapTypeFormVO.getFromParentLevel() != null ? refTemplateMapTypeFormVO.getFromParentLevel() : false);
+        refTemplateMapType.setMapAllSpec(refTemplateMapTypeFormVO.getMapAllSpec() != null ? refTemplateMapTypeFormVO.getMapAllSpec() : false);
         refTemplateMapTypeRepository.save(refTemplateMapType);
 
         List<ArrRefTemplateMapSpec> refTemplateMapSpecs = createRefTemplateMapSpecs(refTemplateMapType, refTemplateMapTypeFormVO.getRefTemplateMapSpecVOList(), sdp);
@@ -1703,8 +1703,12 @@ public class ArrangementService {
 
                 ArrRefTemplateMapSpec refTemplateMapSpec = new ArrRefTemplateMapSpec();
                 refTemplateMapSpec.setRefTemplateMapType(refTemplateMapType);
-                refTemplateMapSpec.setFromItemSpec(sdp.getItemSpecById(refTemplateMapSpecVO.getFromItemSpecId()));
-                refTemplateMapSpec.setToItemSpec(sdp.getItemSpecById(refTemplateMapSpecVO.getToItemSpecId()));
+                if (refTemplateMapSpecVO.getFromItemSpecId() != null) {
+                    refTemplateMapSpec.setFromItemSpec(sdp.getItemSpecById(refTemplateMapSpecVO.getFromItemSpecId()));
+                }
+                if (refTemplateMapSpecVO.getToItemSpecId() != null) {
+                    refTemplateMapSpec.setToItemSpec(sdp.getItemSpecById(refTemplateMapSpecVO.getToItemSpecId()));
+                }
                 refTemplateMapSpecs.add(refTemplateMapSpec);
             }
             refTemplateMapSpecRepository.saveAll(refTemplateMapSpecs);
@@ -1720,8 +1724,8 @@ public class ArrangementService {
 
         refTemplateMapType.setFormItemType(sdp.getItemType(refTemplateMapTypeFormVO.getFromItemTypeId()));
         refTemplateMapType.setToItemType(sdp.getItemType(refTemplateMapTypeFormVO.getToItemTypeId()));
-        refTemplateMapType.setFromParentLevel(refTemplateMapTypeFormVO.getFromParentLevel());
-        refTemplateMapType.setMapAllSpec(refTemplateMapTypeFormVO.getMapAllSpec());
+        refTemplateMapType.setFromParentLevel(refTemplateMapTypeFormVO.getFromParentLevel() != null ? refTemplateMapTypeFormVO.getFromParentLevel() : false);
+        refTemplateMapType.setMapAllSpec(refTemplateMapTypeFormVO.getMapAllSpec() != null ? refTemplateMapTypeFormVO.getMapAllSpec() : false);
 
         List<ArrRefTemplateMapSpec> refTemplateMapSpecs = createRefTemplateMapSpecs(refTemplateMapType, refTemplateMapTypeFormVO.getRefTemplateMapSpecVOList(), sdp);
         return createRefTemplateMapTypeVO(refTemplateMapType, refTemplateMapSpecs);
@@ -1734,25 +1738,36 @@ public class ArrangementService {
         refTemplateMapTypeRepository.delete(refTemplateMapType);
     }
 
-    public void synchronizeNodes(final Integer nodeId, final Integer nodeVersion, final Integer templateId, final Boolean childrenNodes) {
+    public void synchronizeNodes(final Integer nodeId,
+                                 final Integer nodeVersion,
+                                 final Boolean childrenNodes,
+                                 final ArrChange change) {
         ArrNode node = getNode(nodeId);
         if (node != null) {
             List<ArrDescItem> nodeItems = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
             if (CollectionUtils.isNotEmpty(nodeItems)) {
                 for (ArrDescItem descItem : nodeItems) {
-                    synchronizeNodes(descItem, nodeId, nodeVersion);
+                    synchronizeNodes(descItem, nodeId, nodeVersion, change);
                 }
             }
-            //TODO fantiš childrenNodes
+            if (childrenNodes) {
+                List<ArrLevel> childrenLevels = levelRepository.findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(node);
+                if (CollectionUtils.isNotEmpty(childrenLevels)) {
+                    for (ArrLevel childrenLevel : childrenLevels) {
+                        ArrNode childrenNode = childrenLevel.getNode();
+                        synchronizeNodes(childrenNode.getNodeId(), childrenNode.getVersion(), true, change);
+                    }
+                }
+            }
         }
     }
 
-    public void synchronizeNodes(final ArrDescItem descItem, final Integer nodeId, final Integer nodeVersion) {
+    public void synchronizeNodes(final ArrDescItem descItem, final Integer nodeId, final Integer nodeVersion, ArrChange change) {
         if (descItem.getData().getDataType().getCode().equals(DataType.URI_REF.getCode())) {
-            //TODO fantiš check template itemType
             ArrDataUriRef dataUriRef = (ArrDataUriRef) descItem.getData();
 
-            if (dataUriRef.getRefTemplate() != null && dataUriRef.getArrNode() != null) {
+            if (dataUriRef.getRefTemplate() != null && dataUriRef.getArrNode() != null &&
+                    dataUriRef.getRefTemplate().getItemNodeRef().getItemTypeId().equals(descItem.getItemType().getItemTypeId())) {
                 ArrNode node = getNode(nodeId);
                 Map<Integer, List<ArrDescItem>> nodeItemMap = descItemRepository.findByNodeAndDeleteChangeIsNull(node).stream()
                         .collect(Collectors.groupingBy(ArrItem::getItemTypeId));
@@ -1761,7 +1776,11 @@ public class ArrangementService {
                 Map<Integer, List<ArrDescItem>> sourceNodeItemMap = descItemRepository.findByNodeAndDeleteChangeIsNull(sourceNode).stream()
                         .collect(Collectors.groupingBy(ArrItem::getItemTypeId));
 
-                synchronizeNodes(node, nodeVersion, nodeItemMap, sourceNode, sourceNodeItemMap, dataUriRef.getRefTemplate());
+                if (change == null) {
+                    change = createChange(ArrChange.Type.SYNCHRONIZE_JP);
+                }
+
+                synchronizeNodes(node, nodeVersion, nodeItemMap, sourceNode, sourceNodeItemMap, dataUriRef.getRefTemplate(), change);
             }
         }
     }
@@ -1771,13 +1790,16 @@ public class ArrangementService {
                                   final Map<Integer, List<ArrDescItem>> nodeItemMap,
                                   final ArrNode sourceNode,
                                   final Map<Integer, List<ArrDescItem>> sourceNodeItemMap,
-                                  final ArrRefTemplate refTemplate) {
+                                  final ArrRefTemplate refTemplate,
+                                  final ArrChange change) {
         List<ArrRefTemplateMapType> refTemplateMapTypes = refTemplateMapTypeRepository.findByRefTemplate(refTemplate);
         Map<Integer, List<ArrRefTemplateMapSpec>> refTemplateMapSpecMap = refTemplateMapSpecRepository.findByRefTemplate(refTemplate).stream()
                 .collect(Collectors.groupingBy(s -> s.getRefTemplateMapType().getRefTemplateMapTypeId()));
 
         if (CollectionUtils.isNotEmpty(refTemplateMapTypes)) {
             for (ArrRefTemplateMapType refTemplateMapType : refTemplateMapTypes) {
+                List<ArrRefTemplateMapSpec> refTemplateMapSpecs = refTemplateMapSpecMap.getOrDefault(refTemplateMapType.getRefTemplateMapTypeId(), new ArrayList<>());
+
                 checkMapTypesDataType(refTemplateMapType.getFormItemType(), refTemplateMapType.getToItemType(), refTemplate.getRefTemplateId());
 
                 List<ArrDescItem> sourceNodeItems = sourceNodeItemMap.getOrDefault(refTemplateMapType.getFormItemType().getItemTypeId(), new ArrayList<>());
@@ -1788,25 +1810,25 @@ public class ArrangementService {
 
                 if (CollectionUtils.isNotEmpty(sourceNodeItems)) {
                     List<ArrDescItem> nodeItems = nodeItemMap.getOrDefault(refTemplateMapType.getToItemType().getItemTypeId(), new ArrayList<>());
+                    ArrFundVersion fundVersion = getOpenVersionByFundId(node.getFundId());
 
                     if (CollectionUtils.isEmpty(nodeItems)) {
-                        ArrChange change = createChange(ArrChange.Type.ADD_DESC_ITEM);
-                        List<ArrDescItem> newItems = descriptionItemService.createDescriptionItems(sourceNodeItems, refTemplateMapType);
-                        ArrFundVersion fundVersion = getOpenVersionByFundId(node.getFundId());
+                        // vytvoření nových itemů
+                        List<ArrDescItem> newItems = descriptionItemService.createDescriptionItems(sourceNodeItems, refTemplateMapType, refTemplateMapSpecs);
                         descriptionItemService.createDescriptionItems(newItems, node, fundVersion, change);
                     } else if (sourceNodeItems.size() > 1 || nodeItems.size() > 1) {
-                        ArrChange change = createChange(ArrChange.Type.UPDATE_DESC_ITEM, node);
-                        ArrFundVersion fundVersion = getOpenVersionByFundId(node.getFundId());
-                        descriptionItemService.deleteDescriptionItems(nodeItems, node, fundVersion, change, true);
+                        // smazání a vytvoření
+                        descriptionItemService.deleteDescriptionItems(nodeItems, node, fundVersion, change, false);
 
-                        List<ArrDescItem> newItems = descriptionItemService.createDescriptionItems(sourceNodeItems, refTemplateMapType);
+                        List<ArrDescItem> newItems = descriptionItemService.createDescriptionItems(sourceNodeItems, refTemplateMapType, refTemplateMapSpecs);
                         descriptionItemService.createDescriptionItems(newItems, node, fundVersion, change);
                     } else {
+                        // update
                         ArrDescItem sourceItem = sourceNodeItems.get(0);
                         ArrDescItem targetItem = nodeItems.get(0);
-                        ArrData oldData = targetItem.getData();
-                        ArrData newData = sourceItem.getData().makeCopy();
-                        targetItem.setData(newData);
+                        descriptionItemService.setSpecification(sourceItem, targetItem, refTemplateMapType, refTemplateMapSpecs);
+                        descriptionItemService.updateDescriptionItemData(sourceItem, targetItem, refTemplate.getRefTemplateId());
+                        descriptionItemService.updateDescriptionItem(targetItem, fundVersion, change);
                     }
                 }
             }
@@ -1814,7 +1836,16 @@ public class ArrangementService {
     }
 
     private List<ArrDescItem> findDescItemsFromParentLevelByItemType(ArrNode sourceNode, RulItemType formItemType) {
-        //TODO fantiš formParentLevel
+        ArrLevel sourceLevel = levelRepository.findByNodeAndDeleteChangeIsNull(sourceNode);
+        ArrNode parentNode = sourceLevel.getNodeParent();
+        if (parentNode != null) {
+            List<ArrDescItem> parentItems = descItemRepository.findByNodeAndDeleteChangeIsNullAndItemTypeId(parentNode, formItemType.getItemTypeId());
+            if (CollectionUtils.isNotEmpty(parentItems)) {
+                return parentItems;
+            } else {
+                return findDescItemsFromParentLevelByItemType(parentNode, formItemType);
+            }
+        }
         return null;
     }
 
@@ -1834,6 +1865,7 @@ public class ArrangementService {
             boolean error = false;
             switch (fromDataType) {
                 case UNITID:
+                case UNITDATE:
                 case DATE:
                 case INT:
                 case DECIMAL:
@@ -1842,6 +1874,9 @@ public class ArrangementService {
                     break;
                 case STRING:
                     error = toDataType != DataType.TEXT;
+                    break;
+                default:
+                    error = true;
                     break;
             }
 

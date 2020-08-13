@@ -87,9 +87,9 @@ class DescItemUnitdate extends AbstractReactComponent {
                             locked || descItem.undefined,
                             cls,
                         )}
-                        ref={ref => this.focusEl = ref}
+                        ref={ref => (this.focusEl = ref)}
                         type="text"
-                        value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}
+                        value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value || ''}
                         onChange={this.handleValueChange}
                     />
                 </ItemTooltipWrapper>

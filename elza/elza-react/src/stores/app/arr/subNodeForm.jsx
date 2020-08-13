@@ -7,7 +7,8 @@ import {
     createDescItemFromDb,
     mergeAfterUpdate,
     updateFormData,
-    checkFormData, isType,
+    checkFormData,
+    isType,
 } from './subNodeFormUtils.jsx';
 import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from 'components/validate.jsx';
 import {valuesEquals} from 'components/Utils.jsx';
@@ -209,18 +210,36 @@ export function convertValue(value, descItem, type) {
             };
         },
         FILE_REF: value => {
+            if (value.value) {
+                return {
+                    value: value.value,
+                    file: value.file,
+                };
+            }
             return {
                 value: value.id,
                 file: value,
             };
         },
         STRUCTURED: value => {
+            if (value.value) {
+                return {
+                    value: value.value,
+                    structureData: value.structureData,
+                };
+            }
             return {
                 value: value.id,
                 structureData: value,
             };
         },
         RECORD_REF: value => {
+            if (value.value) {
+                return {
+                    value: value.value,
+                    record: value.record,
+                };
+            }
             return {
                 value: value.id,
                 record: value,

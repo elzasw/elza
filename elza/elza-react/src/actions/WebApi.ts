@@ -828,8 +828,9 @@ export class WebApiCls {
      * @param archiveEntityId identifikátor entity v externím systému
      * @param accessPointId identifikátor přístupového bodu
      * @param externalSystemCode kód externího systému
+     * @param replace nahradit původní data přístupového bod (převezme se kompletně z ext. systému)
      */
-    connectArchiveEntity(archiveEntityId: number, accessPointId: number, externalSystemCode: string): Promise<void> {
+    connectArchiveEntity(archiveEntityId: number, accessPointId: number, externalSystemCode: string, replace: boolean): Promise<void> {
         const url = UrlBuilder.bindParams(
             WebApiCls.registryUrl + '/external/{archiveEntityId}/connect/{accessPointId}',
             {
@@ -837,7 +838,7 @@ export class WebApiCls {
                 accessPointId,
             },
         );
-        return AjaxUtils.ajaxPost(url, {externalSystemCode});
+        return AjaxUtils.ajaxPost(url, {externalSystemCode, replace});
     }
 
     /**
@@ -1468,9 +1469,9 @@ export class WebApiCls {
         );
     }
 
-    synchronizeNodes(nodeId: number, nodeVersion: number, templateId: number, childrenNodes: boolean): Promise<void> {
+    synchronizeNodes(nodeId: number, nodeVersion: number, childrenNodes: boolean): Promise<void> {
         return AjaxUtils.ajaxGet(
-            WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + nodeVersion + '/sync/' + templateId,
+            WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + nodeVersion + '/sync/',
             {childrenNodes},
         );
     }

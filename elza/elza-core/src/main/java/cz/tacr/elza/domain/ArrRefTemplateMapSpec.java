@@ -22,11 +22,11 @@ public class ArrRefTemplateMapSpec {
     private ArrRefTemplateMapType refTemplateMapType;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemSpec.class)
-    @JoinColumn(name = "fromItemSpecId", nullable = false)
+    @JoinColumn(name = "fromItemSpecId")
     private RulItemSpec fromItemSpec;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemSpec.class)
-    @JoinColumn(name = "toItemSpecId", nullable = false)
+    @JoinColumn(name = "toItemSpecId")
     private RulItemSpec toItemSpec;
 
     public Integer getRefTemplateMapSpecId() {

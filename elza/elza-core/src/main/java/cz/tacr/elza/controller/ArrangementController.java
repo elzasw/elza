@@ -858,7 +858,7 @@ public class ArrangementController {
         descItemResult.setItem(factoryVo.createItem(descItemCreated));
         descItemResult.setParent(ArrNodeVO.valueOf(descItemCreated.getNode()));
 
-        arrangementService.synchronizeNodes(descItemCreated, nodeId, nodeVersion);
+        arrangementService.synchronizeNodes(descItemCreated, nodeId, nodeVersion, null);
 
         return descItemResult;
     }
@@ -2643,13 +2643,13 @@ public class ArrangementController {
         arrangementService.deleteRefTemplateMapType(templateId, mapTypeId);
     }
 
-    @RequestMapping(value = "/nodes/{nodeId}/{nodeVersion}/sync/{templateId}")
+    @RequestMapping(value = "/nodes/{nodeId}/{nodeVersion}/sync")
     @Transactional
     public void synchronizeNodes(@PathVariable (value = "nodeId") final Integer nodeId,
                                  @PathVariable (value = "nodeVersion") final Integer nodeVersion,
-                                 @PathVariable (value = "templateId") final Integer templateId,
                                  @RequestParam (value = "childrenNodes") final Boolean childrenNodes) {
-        arrangementService.synchronizeNodes(nodeId, nodeVersion, templateId, childrenNodes);
+        ArrChange change = arrangementService.createChange(ArrChange.Type.SYNCHRONIZE_JP);
+        arrangementService.synchronizeNodes(nodeId, nodeVersion, childrenNodes, change);
     }
 
     /**
