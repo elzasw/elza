@@ -81,6 +81,7 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -249,6 +250,9 @@ public class AccessPointService {
     @Autowired
     private SearchFilterFactory searchFilterFactory;
 
+    @Value("${elza.scope.deleteWithEntities}")
+    private boolean deleteWithEntities;
+
     /**
      * Kody tříd rejstříků nastavené v konfiguraci elzy.
      */
@@ -381,7 +385,11 @@ public class AccessPointService {
         Assert.notNull(scope.getScopeId(), "Identifikátor scope musí být vyplněn");
 
         List<ApState> apStates = apStateRepository.findByScope(scope);
-        ExceptionUtils.isEmptyElseBusiness(apStates, "Nelze smazat třídu rejstříku, která je nastavena na rejstříku.", RegistryCode.USING_SCOPE_CANT_DELETE);
+        if (!deleteWithEntities) {
+        	ExceptionUtils.isEmptyElseBusiness(apStates, "Nelze smazat třídu rejstříku, která je nastavena na rejstříku.", RegistryCode.USING_SCOPE_CANT_DELETE);
+        } else {
+            apStateRepository.deleteAllByScope(scope);
+        }
         final List<ApScope> apScopes = scopeRepository.findConnectedByScope(scope);
         ExceptionUtils.isEmptyElseBusiness(apScopes, "Nelze smazat oblast obsahující návazné oblasti.", RegistryCode.CANT_DELETE_SCOPE_WITH_CONNECTED);
         final List<ApScopeRelation> apScopeRelations = scopeRelationRepository.findByConnectedScope(scope);

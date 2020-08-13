@@ -620,4 +620,8 @@
         <dropNotNullConstraint tableName="arr_ref_template_map_spec" columnName="to_item_spec_id"/>
     </changeSet>
 
+    <changeSet id="20200807100100" author="sergey.iryupin">
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20200807100100" />
+    </changeSet>
+
 </databaseChangeLog>

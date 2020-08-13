@@ -22,7 +22,7 @@
 		<![CDATA[]]>
 	</queryString>
 	<variable name="znackaFondu" class="java.lang.String">
-		<variableExpression><![CDATA[$P{fund}.getRootNode().getSingleItemValue("ZP2015_ZNACKA_FONDU")]]></variableExpression>
+		<variableExpression><![CDATA[$P{fund}.getMark()]]></variableExpression>
 	</variable>
 	<detail>
 		<band height="682">
@@ -79,7 +79,7 @@
 				<textElement>
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["NAD č. "+$P{fund}.getRootNode().getSingleItemValue("ZP2015_NAD")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["NAD č. "+$P{fund}.getFundNumber()]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="0" y="61" width="455" height="20" uuid="23d30e4b-4b64-42af-bd93-1e68ba43e2ba">
