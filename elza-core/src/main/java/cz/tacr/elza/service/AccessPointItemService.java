@@ -516,7 +516,8 @@ public class AccessPointItemService {
                     data = dataCoordinates;
                     break;
                 default:
-                    throw new IllegalStateException("Neznámý datový typ " + code);
+                    throw new IllegalStateException("Nepodporovaný datový typ uložen jako řetězec: " + code +
+                            ", itemType:" + itemString.getT().getValue());
             }
 
         } else if (createItem instanceof ItemUnitDateXml) {
