@@ -251,8 +251,8 @@ public class OutputService {
         // reset previous error
         output.setError(null);
 
-        ArrOutputResult outputResult = output.getOutputResult();
-        if (outputResult != null) {
+        List<ArrOutputResult> outputResults = output.getOutputResults();
+        for (ArrOutputResult outputResult : outputResults) {
             List<ArrOutputFile> outputFiles = outputResult.getOutputFiles();
             if (outputFiles != null && !outputFiles.isEmpty()) {
                 outputFileRepository.deleteAll(outputFiles);

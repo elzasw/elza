@@ -73,8 +73,8 @@ public class ArrOutput extends AbstractVersionableEntity {
     @OneToMany(mappedBy = "output", fetch = FetchType.LAZY)
     private List<ArrNodeOutput> outputNodes;
 
-    @OneToOne(mappedBy = "output", fetch = FetchType.LAZY)
-    private ArrOutputResult outputResult;
+    @OneToMany(mappedBy = "output", fetch = FetchType.LAZY)
+    private List<ArrOutputResult> outputResults;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = FIELD_CREATE_CHANGE_ID, nullable = false)
@@ -202,15 +202,15 @@ public class ArrOutput extends AbstractVersionableEntity {
     /**
      * @return Výsledek outputu
      */
-    public ArrOutputResult getOutputResult() {
-        return outputResult;
+    public List<ArrOutputResult> getOutputResults() {
+        return outputResults;
     }
 
     /**
      * @param outputResult Výsledek outputu
      */
-    public void setOutputResult(final ArrOutputResult outputResult) {
-        this.outputResult = outputResult;
+    public void setOutputResults(final List<ArrOutputResult> outputResults) {
+        this.outputResults = outputResults;
     }
 
     /**

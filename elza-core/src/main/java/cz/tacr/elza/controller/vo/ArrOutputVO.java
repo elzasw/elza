@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -35,6 +36,10 @@ public class ArrOutputVO {
     private Integer templateId;
 
     private Integer outputResultId;
+
+    private List<Integer> templateIds;
+
+    private List<Integer> outputResultIds;
 
     private Date generatedDate;
 
@@ -122,20 +127,40 @@ public class ArrOutputVO {
         this.version = version;
     }
 
+    public List<Integer> getTemplateIds() {
+    	if (templateIds == null) {
+    		templateIds = new ArrayList<>();
+    	}
+    	return templateIds;
+    }
+
     public Integer getTemplateId() {
-        return templateId;
+    	if (templateIds == null) {
+    		return null;
+    	}
+   		return templateIds.get(0);
     }
 
     public void setTemplateId(final Integer templateId) {
-        this.templateId = templateId;
+    	getTemplateIds().set(0, templateId);
+    }
+
+    public List<Integer> getOutputResultIds() {
+    	if (outputResultIds == null) {
+    		outputResultIds = new ArrayList<>();
+    	}
+    	return outputResultIds;
     }
 
     public Integer getOutputResultId() {
-        return outputResultId;
+    	if (outputResultIds == null) {
+    		return null;
+    	}
+        return outputResultIds.get(0);
     }
 
     public void setOutputResultId(final Integer outputResultId) {
-        this.outputResultId = outputResultId;
+    	getOutputResultIds().set(0, outputResultId);
     }
 
     public Date getGeneratedDate() {

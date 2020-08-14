@@ -66,7 +66,7 @@ public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer>,
     @Query("SELECT o FROM arr_output o" +
             " JOIN o.fund f" +
             " JOIN f.versions v" +
-            " LEFT JOIN o.outputResult res" +
+            " LEFT JOIN o.outputResults res" +
             " WHERE v = :fundVersion" +
             " AND o.deleteChange IS NULL" +
             " ORDER BY res.change.changeId desc, o.name ASC")
@@ -75,7 +75,7 @@ public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer>,
     @Query("SELECT o FROM arr_output o" +
             " JOIN o.fund f" +
             " JOIN f.versions v" +
-            " LEFT JOIN o.outputResult res" +
+            " LEFT JOIN o.outputResults res" +
             " WHERE v = :fundVersion" +
             " AND o.deleteChange IS NULL" +
             " AND o.state = :state" +
