@@ -624,4 +624,12 @@
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20200807100100" />
     </changeSet>
 
+    <changeSet id="20200814152829" author="ppyt">
+        <createIndex indexName="ap_binding_value_system_scope_idx" tableName="ap_binding" unique="true">
+            <column name="value" type="char(50)"/>
+            <column name="external_system_id" type="int"/>
+            <column name="scope_id" type="int"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
