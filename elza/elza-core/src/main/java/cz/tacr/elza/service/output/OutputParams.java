@@ -24,17 +24,15 @@ public class OutputParams {
 
     private final List<ArrOutputItem> outputItems;
 
-    private final RulTemplate template;
+    private RulTemplate template;
 
-    private final Path templateDir;
+    private Path templateDir;
 
     public OutputParams(ArrOutput output,
                         ArrChange change,
                         ArrFundVersion fundVersion,
                         List<Integer> nodeIds,
-                        List<ArrOutputItem> outputItems,
-                        RulTemplate template,
-                        Path templateDir) {
+                        List<ArrOutputItem> outputItems) {
         // sanity check
         Validate.isTrue(output.getFundId().equals(fundVersion.getFundId()));
 
@@ -43,8 +41,6 @@ public class OutputParams {
         this.fundVersion = fundVersion;
         this.outputNodeIds = nodeIds;
         this.outputItems = outputItems;
-        this.template = template;
-        this.templateDir = templateDir;
     }
 
     /**
@@ -59,6 +55,10 @@ public class OutputParams {
      */
     public RulTemplate getTemplate() {
         return template;
+    }
+
+    public void setTemplate(RulTemplate template) {
+        this.template = template;
     }
 
     public ArrOutput getOutput() {
@@ -90,5 +90,9 @@ public class OutputParams {
 
     public Path getTemplateDir() {
         return templateDir;
+    }
+
+    public void setTemplateDir(Path templateDir) {
+        this.templateDir = templateDir;
     }
 }

@@ -431,15 +431,20 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final ArrOutput output,
                                         final ArrOutputVO outputVO,
                                         final MappingContext context) {
-                        List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(output);
                         outputVO.setOutputTypeId(output.getOutputType().getOutputTypeId());
-                        outputVO.setTemplateId(templates.size() > 0 ? templates.get(0).getTemplate().getTemplateId() : null);
-                        if (output.getOutputResult() != null) {
-                            outputVO.setOutputResultId(output.getOutputResult().getOutputResultId());
+                        List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(output);
+                        for (ArrOutputTemplate template : templates) {
+                        	outputVO.getTemplateIds().add(template.getTemplate().getTemplateId());
+                        }
+                        List<ArrOutputResult> outputResults = output.getOutputResults();
+                        if (outputResults != null) {
+                        	for (ArrOutputResult outputResult : outputResults) {
+                        		outputVO.getOutputResultIds().add(outputResult.getOutputResultId());
+                        	}
                         }
                         outputVO.setCreateDate(Date.from(output.getCreateChange().getChangeDate().toInstant()));
                         outputVO.setDeleteDate(output.getDeleteChange() != null ? Date.from(output.getDeleteChange().getChangeDate().toInstant()) : null);
-                        outputVO.setGeneratedDate(output.getOutputResult() != null ? Date.from(output.getOutputResult().getChange().getChangeDate().toInstant()) : null);
+                        outputVO.setGeneratedDate(outputResults != null && outputResults.size() > 0 ? Date.from(outputResults.get(0).getChange().getChangeDate().toInstant()) : null);
                     }
 
                     @Override
@@ -451,9 +456,13 @@ public class ConfigMapperConfiguration {
                         output.setOutputType(rulOutputType);
 
                         if (outputVO.getOutputResultId() != null) {
-                            ArrOutputResult outputResult = new ArrOutputResult();
-                            outputResult.setOutputResultId(outputVO.getOutputResultId());
-                            output.setOutputResult(outputResult);
+                        	List<ArrOutputResult> outputResults = new ArrayList<>();
+                        	for (Integer outputResultId : outputVO.getOutputResultIds()) {
+                        		ArrOutputResult outputResult = new ArrOutputResult();
+                        		outputResult.setOutputResultId(outputResultId);
+                        		outputResults.add(outputResult);
+                        	}
+                            output.setOutputResults(outputResults);
                         }
                     }
                 }).register();

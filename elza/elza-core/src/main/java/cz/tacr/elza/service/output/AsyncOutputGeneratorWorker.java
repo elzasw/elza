@@ -125,21 +125,22 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         ArrOutput output = outputServiceInternal.getOutputForGenerator(outputId);
         List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(output);
 
+        OutputParams params = createOutputParams(output);
+
         for (ArrOutputTemplate template : templates) {
+        	setOutputParamsTemplate(params, template);
 	        Engine engine = template.getTemplate().getEngine();
 	        try (OutputGenerator generator = outputGeneratorFactory.createOutputGenerator(engine)) {
-	            OutputParams params = createOutputParams(output, template);
 	            generator.init(params);
 	            generator.generate();
-	
-	            // reset error
-	            output.setError(null);
-	            OutputState state = resolveEndState(params);
-	            output.setState(state); // saved by commit
 	        } catch (IOException e) {
 	            throw new SystemException("Failed to generate output", e, BaseCode.INVALID_STATE);
 	        }
         }
+        // reset error
+        output.setError(null);
+        OutputState state = resolveEndState(params);
+        output.setState(state); // saved by commit
 
         outputServiceInternal.publishOutputStateChanged(output, request.getFundVersionId());
         eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
@@ -155,7 +156,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         return OutputState.FINISHED;
     }
 
-    private OutputParams createOutputParams(ArrOutput output, ArrOutputTemplate outputTemplate) {
+    private OutputParams createOutputParams(ArrOutput output) {
         ArrFundVersion fundVersion = em.find(ArrFundVersion.class, request.getFundVersionId());
         if (fundVersion == null) {
             throw new SystemException("Fund version for output not found", BaseCode.ID_NOT_EXIST).set("fundVersionId",
@@ -171,13 +172,16 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         //omezení
         List<ArrOutputItem> restrictedItems = outputServiceInternal.restrictItemsByScopes(output, outputItems);
 
-        RulTemplate template = outputTemplate.getTemplate();
-
-        Path templateDir = resourcePathResolver.getTemplateDir(template).toAbsolutePath();
-
-        return new OutputParams(output, change, fundVersion, nodeIds, restrictedItems, template, templateDir);
+        return new OutputParams(output, change, fundVersion, nodeIds, restrictedItems);
     }
 
+    private void setOutputParamsTemplate(OutputParams outputParams, ArrOutputTemplate outputTemplate) {
+        RulTemplate template = outputTemplate.getTemplate();
+        Path templateDir = resourcePathResolver.getTemplateDir(template).toAbsolutePath();
+        outputParams.setTemplate(template);
+        outputParams.setTemplateDir(templateDir);
+    }
+    
     /**
      * Handle exception raised during output processing. Must be called in transaction.
      */
