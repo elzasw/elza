@@ -1061,7 +1061,7 @@ public class ApController {
                                      @RequestParam final Integer scopeId,
                                      @RequestParam final String externalSystemCode) {
         ApScope scope = accessPointService.getScope(scopeId);
-        accessPointService.checkUniqueBinding(scope, archiveEntityId, externalSystemCode);
+        accessPointService.checkUniqueBinding(scope, archiveEntityId.toString(), externalSystemCode);
 
         EntityXml entity;
         try {
@@ -1069,9 +1069,9 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        // TODO: move to separate method
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        ApBinding binding = externalSystemService.createApBinding(scope, entity.getEid().getValue(), apExternalSystem);
+
+        ApBinding binding = externalSystemService.createBinding(scope, Long.toString(entity.getEid().getValue()),
+                                                                externalSystemCode);
 
         ApState apState = accessPointService.createAccessPoint(scope, entity, binding);
         return apState.getAccessPointId();
@@ -1095,7 +1095,7 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getState(accessPoint);
         ApScope scope = state.getScope();
-        accessPointService.checkUniqueBinding(scope, archiveEntityId, externalSystemCode);
+        accessPointService.checkUniqueBinding(scope, archiveEntityId.toString(), externalSystemCode);
         accessPointService.checkUniqueExtSystem(accessPoint, externalSystemCode);
 
         EntityXml entity;

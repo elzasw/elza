@@ -859,11 +859,8 @@ public class AccessPointService {
             for (EntityXml entity : entities) {
                 ApBinding binding = findBindingByValue(bindingList, String.valueOf(entity.getEid().getValue()));
                 if (binding == null) {
-                    // TODO: move to separate method
-                    ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(
-                                                                                                         externalSystemCode);
-                    binding = externalSystemService.createApBinding(scope, entity.getEid().getValue(),
-                                                                    apExternalSystem);
+                    binding = externalSystemService.createBinding(scope, Long.toString(entity.getEid().getValue()),
+                                                                  externalSystemCode);
                 }
                 ApState state = createAccessPoint(scope, entity, binding);
                 states.add(state);
@@ -912,7 +909,9 @@ public class AccessPointService {
     }
 
     public ApState createAccessPoint(final ApScope scope, final EntityXml entity, ApBinding binding) {
-        Assert.notNull(scope, "Třída musí být vyplněna");
+        Validate.notNull(scope, "Třída musí být vyplněna");
+        Validate.notNull(binding, "Binding must be not null");
+
         StaticDataProvider sdp = staticDataService.getData();
 
         ApType type = sdp.getApTypeByCode(entity.getEnt().getValue());
@@ -946,10 +945,9 @@ public class AccessPointService {
             partService.deleteParts(accessPoint, apChange);
         }
 
-        // prepare binding
-        // TODO: move to separate method
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        ApBinding binding = externalSystemService.createApBinding(scope, entity.getEid().getValue(), apExternalSystem);
+
+        ApBinding binding = externalSystemService.createBinding(scope, Long.toString(entity.getEid().getValue()),
+                                                                externalSystemCode);
 
         createAccessPoint(scope, entity, accessPoint, apChange, sdp, stateNew, binding);
         partService.validationNameUnique(scope, accessPoint.getPreferredPart().getValue());
@@ -1005,7 +1003,7 @@ public class AccessPointService {
             if (apBindingItem.getItem() != null) {
                 ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) apBindingItem.getItem().getData();
                 ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, dataRef
-                        .getValue().intValue(), binding.getApExternalSystem().getCode());
+                        .getValue(), binding.getApExternalSystem().getCode());
                 if (refBinding == null) {
                     dataRecordRef.setBinding(externalSystemService.createApBinding(scope, dataRef.getValue(), binding
                             .getApExternalSystem()));
@@ -1031,7 +1029,10 @@ public class AccessPointService {
                 ApBinding currentEntity = apBindingItem.getBinding();
                 ApScope scope = currentEntity.getScope();
                 ApExternalSystem apExternalSystem = currentEntity.getApExternalSystem();
-                ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, dataRef.getValue().intValue(), apExternalSystem.getCode());
+                ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope,
+                                                                                                    dataRef.getValue(),
+                                                                                                    apExternalSystem
+                                                                                                            .getCode());
                 if (refBinding == null) {
                     dataRecordRef.setBinding(externalSystemService.createApBinding(scope, dataRef.getValue(), apExternalSystem));
                 } else {
@@ -2576,7 +2577,7 @@ public class AccessPointService {
         updatePartValue(apPart);
     }
 
-    public void checkUniqueBinding(ApScope scope, Integer archiveEntityId, String externalSystemCode) {
+    public void checkUniqueBinding(ApScope scope, String archiveEntityId, String externalSystemCode) {
         ApBinding apBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId, externalSystemCode);
         if (apBinding != null) {
             throw new IllegalArgumentException("Tato archivní entita již je v tomto scope.");
@@ -2750,6 +2751,21 @@ public class AccessPointService {
                 change = apDataService.createChange(type);
             }
             return change;
+        }
+    }
+
+    public void updateDataRefs(ApAccessPoint accessPoint, ApBinding binding) {
+        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByBindingIn(Collections.singletonList(
+                                                                                                                     binding));
+        setAccessPointInDataRecordRefs(accessPoint, dataRecordRefList, binding);
+
+        dataRecordRefRepository.saveAll(dataRecordRefList);
+
+        List<ApPart> partList = itemRepository.findPartsByDataRecordRefList(dataRecordRefList);
+        if (CollectionUtils.isNotEmpty(partList)) {
+            for (ApPart part : partList) {
+                updatePartValue(part);
+            }
         }
     }
 }

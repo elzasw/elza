@@ -6,17 +6,36 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingItem;
+import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
+import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.domain.SysExternalSystem;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApBindingItemRepository;
+import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.repository.DigitalRepositoryRepository;
+import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
+import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
@@ -233,12 +252,33 @@ public class ExternalSystemService {
         return digitalRepositoryRepository.findAllById(ids);
     }
 
+    /**
+     * Create binding based on external system code
+     * 
+     * @param scope
+     * @param eid
+     * @param externalSystemCode
+     * @return
+     */
+    public ApBinding createBinding(final ApScope scope,
+                                   final String eid,
+                                   final String externalSystemCode) {
+        ApExternalSystem apExternalSystem = apExternalSystemRepository.findByCode(externalSystemCode);
+        if (apExternalSystem == null) {
+            throw new BusinessException("External system not exists, code: " + externalSystemCode,
+                    BaseCode.INVALID_STATE)
+                            .set("code", externalSystemCode);
+        }
+
+        return createApBinding(scope, eid, apExternalSystem);
+    }
+
     public ApBinding createApBinding(final ApScope scope,
-                                     final Long eid,
+                                     final String eid,
                                      final ApExternalSystem apExternalSystem) {
         ApBinding apBinding = new ApBinding();
         apBinding.setScope(scope);
-        apBinding.setValue(eid == null ? null : String.valueOf(eid));
+        apBinding.setValue(eid);
         apBinding.setApExternalSystem(apExternalSystem);
         return bindingRepository.save(apBinding);
     }
@@ -317,8 +357,14 @@ public class ExternalSystemService {
         return bindingItemRepository.save(apBindingItem);
     }
 
-    public ApBinding findByScopeAndValueAndApExternalSystem(final ApScope scope, final Integer archiveEntityId, final String externalSystemCode) {
-        return bindingRepository.findByScopeAndValueAndApExternalSystem(scope, String.valueOf(archiveEntityId), externalSystemCode);
+    public ApBinding findByScopeAndValueAndApExternalSystem(final ApScope scope, final String archiveEntityId,
+                                                            final String externalSystemCode) {
+        return bindingRepository.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId, externalSystemCode);
+    }
+
+    public ApBinding findByScopeAndValueAndApExternalSystem(final ApScope scope, final String archiveEntityId,
+                                                            final ApExternalSystem externalSystem) {
+        return bindingRepository.findByScopeAndValueAndExternalSystem(scope, archiveEntityId, externalSystem);
     }
 
     public ApBindingState findByBinding(final ApBinding binding) {
