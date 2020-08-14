@@ -718,6 +718,7 @@ Supported data formats:
 		</xs:annotation>
 		<xs:sequence>
 			<xs:element name="requestId" type="eat:Uuid" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="externalSystem" type="eat:String250" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="dataFormat" type="eat:String250" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="disposition" type="eat:ImportDisposition" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="binData" type="eat:BinaryData" xmime:expectedContentTypes="application/octet-stream" minOccurs="1" maxOccurs="1"/>
