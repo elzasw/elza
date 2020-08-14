@@ -20,12 +20,15 @@ import cz.tacr.cam.schema.cam.ObjectFactory;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.ws.types.v1.EntityConflictResolution;
-import cz.tacr.elza.ws.types.v1.ImportDisposition;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
 import cz.tacr.elza.ws.types.v1.RequestStatusInfo;
 
@@ -46,6 +49,9 @@ public class ImportServiceImpl implements ImportService {
     @Autowired
     private AccessPointService accessPointService;
 
+    @Autowired
+    private ExternalSystemService externalSystemService;
+
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(EntitiesXml.class);
 
     final protected static ObjectFactory objectcFactory = CamUtils.getObjectFactory();
@@ -54,9 +60,13 @@ public class ImportServiceImpl implements ImportService {
     @Transactional
     public void importData(ImportRequest request) throws CoreServiceException {
         try {
+            logger.info("Received import request, code: {}, requestId: {}",
+                        request.getExternalSystem(),
+                        request.getRequestId());
+
             switch (request.getDataFormat()) {
             case CamUtils.CAM_SCHEMA:
-                importCamSchema(request.getDisposition(), request.getBinData());
+                importCamSchema(request);
                 break;
             default:
                 throw new IllegalStateException("Unrecognized import format");
@@ -70,38 +80,61 @@ public class ImportServiceImpl implements ImportService {
         }
     }
 
-    private void importCamSchema(ImportDisposition disposition, DataHandler binData) throws JAXBException, IOException {
+    private void importCamSchema(ImportRequest request) throws JAXBException, IOException {
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
+        DataHandler binData = request.getBinData();
         // read CAM xml
         Object obj = unmarshaller.unmarshal(binData.getInputStream());
         if (obj instanceof EntitiesXml) {
             EntitiesXml ents = (EntitiesXml) obj;
-            importCam(disposition, ents);
+            importCam(request, ents);
         } else {
             throw new IllegalStateException("Unrecognized object type: " + obj);
         }
     }
 
-    private void importCam(ImportDisposition disposition, EntitiesXml ents) {
-        String scopeCode = disposition.getPrimaryScope();
+    private void importCam(ImportRequest request, EntitiesXml ents) {
+        String scopeCode = request.getDisposition().getPrimaryScope();
         ApScope scope = scopeRepository.findByCode(scopeCode);
         if (scope == null) {
             throw WSHelper.prepareException("Scope not found: " + scopeCode, null);
         }
+        ApExternalSystem externalSystem = externalSystemService.findApExternalSystemByCode(request.getExternalSystem());
+        if (externalSystem == null) {
+            throw WSHelper.prepareException("External system not found: " + request.getExternalSystem(), null);
+        }
 
         List<EntityXml> entityList = ents.getList();
         for (EntityXml entityXml : entityList) {
-            importCamEntity(scope, entityXml, disposition.getConflictResolution());
+            importCamEntity(scope, externalSystem, entityXml, request.getDisposition().getConflictResolution());
         }
+
+        logger.info("Imported entities in CAM format, count: {}", entityList.size());
     }
 
-    private void importCamEntity(ApScope scope, EntityXml entityXml,
+    private ApState importCamEntity(ApScope scope, ApExternalSystem externalSystem, EntityXml entityXml,
                                  EntityConflictResolution conflictResolution) {
+        String externalEntityId = entityXml.getEuid().getValue();
         // check if entity exists
-        ApAccessPoint accessPoint = accessPointRepository.findApAccessPointByUuid(entityXml.getEuid().getValue());
+        ApAccessPoint accessPoint = accessPointRepository.findApAccessPointByUuid(externalEntityId);
         if (accessPoint == null) {
-            accessPointService.createAccessPoint(scope, entityXml, null);
+            // check if binding not exists
+            boolean refreshReferences = false;
+            ApBinding binding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, externalEntityId,
+                                                                                             externalSystem);
+            if (binding == null) {
+                // prepare new binding
+                binding = externalSystemService.createApBinding(scope, externalEntityId, externalSystem);
+            } else {
+                refreshReferences = true;
+            }
+
+            ApState ap = accessPointService.createAccessPoint(scope, entityXml, binding);
+            if (refreshReferences) {
+                accessPointService.updateDataRefs(ap.getAccessPoint(), binding);
+            }
+            return ap;
         } else {
             throw new IllegalStateException("Update not implemented");
         }

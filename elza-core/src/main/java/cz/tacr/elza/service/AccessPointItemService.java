@@ -351,7 +351,7 @@ public class AccessPointItemService {
             for (ApBindingItem bindingItem : bindingItemList) {
                 if (bindingItem.getItem() != null && createItem.getId() != null && apItemAccessPointRefVO.getExternalName() != null &&
                         bindingItem.getItem().getItemId() != null && bindingItem.getItem().getItemId().equals(createItem.getId())) {
-                    dataRefList.add(new DataRef(bindingItem.getValue(), Long.parseLong(apItemAccessPointRefVO.getExternalName())));
+                    dataRefList.add(new DataRef(bindingItem.getValue(), apItemAccessPointRefVO.getExternalName()));
                     break;
                 }
             }
@@ -440,8 +440,10 @@ public class AccessPointItemService {
             uuid = CamHelper.getUuid(itemEntityRef.getUuid());
 
             ArrDataRecordRef dataRecordRef = new ArrDataRecordRef();
-            EntityRecordRefXml entityRecordRef = (EntityRecordRefXml) itemEntityRef.getRef();
-            DataRef dataRef = new DataRef(uuid, entityRecordRef.getEid().getValue());
+
+            String extIdent = CamHelper.getEntityIdorUuid(itemEntityRef);
+
+            DataRef dataRef = new DataRef(uuid, extIdent);
             dataRefList.add(dataRef);
 
             dataRecordRef.setDataType(DataType.RECORD_REF.getEntity());
@@ -528,9 +530,15 @@ public class AccessPointItemService {
             ArrDataUnitdate dataUnitDate = new ArrDataUnitdate();
             dataUnitDate.setValueFrom(itemUnitDate.getF().trim());
             dataUnitDate.setValueFromEstimated(itemUnitDate.isFe());
+            if (dataUnitDate.getValueFromEstimated() == null) {
+                dataUnitDate.setValueFromEstimated(false);
+            }
             dataUnitDate.setFormat(itemUnitDate.getFmt());
             dataUnitDate.setValueTo(itemUnitDate.getTo().trim());
             dataUnitDate.setValueToEstimated(itemUnitDate.isToe());
+            if (dataUnitDate.getValueToEstimated() == null) {
+                dataUnitDate.setValueToEstimated(false);
+            }
             if (itemUnitDate.getF() != null) {
                 dataUnitDate.setNormalizedFrom(CalendarConverter.toSeconds(calType, LocalDateTime.parse(itemUnitDate.getF().trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
             } else {
