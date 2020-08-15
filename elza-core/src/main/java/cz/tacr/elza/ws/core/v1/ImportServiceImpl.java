@@ -2,12 +2,14 @@ package cz.tacr.elza.ws.core.v1;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,15 +22,13 @@ import cz.tacr.cam.schema.cam.ObjectFactory;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
-import cz.tacr.elza.ws.types.v1.EntityConflictResolution;
+import cz.tacr.elza.service.cam.CamHelper;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
 import cz.tacr.elza.ws.types.v1.RequestStatusInfo;
 
@@ -101,43 +101,24 @@ public class ImportServiceImpl implements ImportService {
             throw WSHelper.prepareException("Scope not found: " + scopeCode, null);
         }
         ApExternalSystem externalSystem = externalSystemService.findApExternalSystemByCode(request.getExternalSystem());
-        if (externalSystem == null) {
-            throw WSHelper.prepareException("External system not found: " + request.getExternalSystem(), null);
-        }
 
-        List<EntityXml> entityList = ents.getList();
-        for (EntityXml entityXml : entityList) {
-            importCamEntity(scope, externalSystem, entityXml, request.getDisposition().getConflictResolution());
-        }
-
-        logger.info("Imported entities in CAM format, count: {}", entityList.size());
+        importCam(request, scope, externalSystem, ents);
     }
 
-    private ApState importCamEntity(ApScope scope, ApExternalSystem externalSystem, EntityXml entityXml,
-                                 EntityConflictResolution conflictResolution) {
-        String externalEntityId = entityXml.getEuid().getValue();
-        // check if entity exists
-        ApAccessPoint accessPoint = accessPointRepository.findApAccessPointByUuid(externalEntityId);
-        if (accessPoint == null) {
-            // check if binding not exists
-            boolean refreshReferences = false;
-            ApBinding binding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, externalEntityId,
-                                                                                             externalSystem);
-            if (binding == null) {
-                // prepare new binding
-                binding = externalSystemService.createApBinding(scope, externalEntityId, externalSystem);
-            } else {
-                refreshReferences = true;
-            }
+    private void importCam(ImportRequest request, ApScope scope, ApExternalSystem externalSystem, EntitiesXml ents) {
+        List<EntityXml> entities = ents.getList();
 
-            ApState ap = accessPointService.createAccessPoint(scope, entityXml, binding);
-            if (refreshReferences) {
-                accessPointService.updateDataRefs(ap.getAccessPoint(), binding);
-            }
-            return ap;
+        Map<String, EntityXml> uuids = CamHelper.getEntitiesByUuid(entities);
+
+        // check if some entities exists
+        List<ApAccessPoint> existingAps = accessPointRepository.findApAccessPointsByUuids(uuids.keySet());
+        if (CollectionUtils.isEmpty(existingAps)) {
+            accessPointService.createAccessPoints(scope, entities, externalSystem);
         } else {
             throw new IllegalStateException("Update not implemented");
         }
+
+        logger.info("Imported entities in CAM format, count: {}", entities.size());
     }
 
     @Override

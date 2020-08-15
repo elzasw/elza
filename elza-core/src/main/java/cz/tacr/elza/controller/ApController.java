@@ -117,6 +117,7 @@ import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.cam.ProcessingContext;
 
 
 /**
@@ -1070,10 +1071,14 @@ public class ApController {
             throw prepareSystemException(e);
         }
 
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem);
+
         ApBinding binding = externalSystemService.createBinding(scope, Long.toString(entity.getEid().getValue()),
                                                                 externalSystemCode);
+        procCtx.addBinding(binding);
 
-        ApState apState = accessPointService.createAccessPoint(scope, entity, binding);
+        ApState apState = accessPointService.createAccessPoint(procCtx, entity, binding, null);
         return apState.getAccessPointId();
     }
 
@@ -1098,13 +1103,16 @@ public class ApController {
         accessPointService.checkUniqueBinding(scope, archiveEntityId.toString(), externalSystemCode);
         accessPointService.checkUniqueExtSystem(accessPoint, externalSystemCode);
 
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem);
+
         EntityXml entity;
         try {
             entity = camConnector.getEntityById(archiveEntityId, externalSystemCode);
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        accessPointService.connectAccessPoint(state, entity, externalSystemCode, replace);
+        accessPointService.connectAccessPoint(state, entity, procCtx, replace);
     }
 
     /**
@@ -1148,7 +1156,8 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        accessPointService.synchronizeAccessPoint(state, entity, bindingState, false);
+        ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem);
+        accessPointService.synchronizeAccessPoint(procCtx, state, entity, bindingState, false);
     }
 
     /**

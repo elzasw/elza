@@ -110,7 +110,12 @@ public class ExternalSystemService {
      * @return nalezený externí systém
      */
     public ApExternalSystem findApExternalSystemByCode(final String code) {
-        return apExternalSystemRepository.findByCode(code);
+        ApExternalSystem extSystem = apExternalSystemRepository.findByCode(code);
+        if (extSystem == null) {
+            throw new BusinessException("External system not found, code: " + code, BaseCode.ID_NOT_EXIST)
+                    .set("code", code);
+        }
+        return extSystem;
     }
 
     /**
