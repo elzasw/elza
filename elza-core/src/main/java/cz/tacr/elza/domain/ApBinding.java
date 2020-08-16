@@ -15,9 +15,6 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Entity(name = "ap_binding")
 public class ApBinding {
 
-    public static final String ACCESS_POINT_ID = "accessPointId";
-    public static final String DELETE_CHANGE_ID = "deleteChangeId";
-
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
@@ -65,34 +62,4 @@ public class ApBinding {
     public void setScope(ApScope scope) {
         this.scope = scope;
     }
-
-//    public ApAccessPoint getAccessPoint() {
-//        return accessPoint;
-//    }
-//
-//    public void setAccessPoint(ApAccessPoint accessPoint) {
-//        this.accessPoint = accessPoint;
-//        this.accessPointId = accessPoint != null ? accessPoint.getAccessPointId() : null;
-//    }
-//
-//    public Integer getAccessPointId() {
-//        return accessPointId;
-//    }
-//
-//    public ApExternalIdType getExternalIdType() {
-//        return externalIdType;
-//    }
-//
-//    public void setExternalIdType(ApExternalIdType externalIdType) {
-//        this.externalIdType = externalIdType;
-//        this.externalIdTypeId = externalIdType != null ? externalIdType.getExternalIdTypeId() : null;
-//    }
-//
-//    public Integer getExternalIdTypeId() {
-//        return externalIdTypeId;
-//    }
-//
-//    public void setCreateChange(ApChange createChange) {
-//        this.createChange = createChange;
-//    }
 }
