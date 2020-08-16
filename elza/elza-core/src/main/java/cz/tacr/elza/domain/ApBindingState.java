@@ -7,6 +7,9 @@ import javax.persistence.*;
 @Entity(name = "ap_binding_state")
 public class ApBindingState {
 
+    public static final String ACCESS_POINT_ID = "accessPointId";
+    public static final String DELETE_CHANGE_ID = "deleteChangeId";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
