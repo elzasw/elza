@@ -40,19 +40,16 @@ public class AccessPointDataService {
     private final EntityManager em;
     private final UserService userService;
     private final ApChangeRepository apChangeRepository;
-    private final PartyService partyService;
     private final DataCoordinatesRepository dataCoordinatesRepository;
 
     @Autowired
     public AccessPointDataService(final EntityManager em,
                                   final UserService userService,
                                   final ApChangeRepository apChangeRepository,
-                                  final PartyService partyService,
                                   final DataCoordinatesRepository dataCoordinatesRepository) {
         this.em = em;
         this.userService = userService;
         this.apChangeRepository = apChangeRepository;
-        this.partyService = partyService;
         this.dataCoordinatesRepository = dataCoordinatesRepository;
     }
 

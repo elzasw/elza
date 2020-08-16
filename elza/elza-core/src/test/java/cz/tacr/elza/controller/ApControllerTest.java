@@ -16,29 +16,21 @@ import cz.tacr.elza.domain.RulItemType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.ap.ApFormVO;
-import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
-import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
-import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 
 
@@ -48,12 +40,7 @@ import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
  */
 public class ApControllerTest extends AbstractControllerTest {
 
-    /**
-     * Kód typu fragmentu pro testování.
-     */
-    public static final String STAT_ZASTUPCE = "STAT_ZASTUPCE";
     public static final String STRUCT_AP_TYPE = "PERSON_BEING_STRUCT";
-    public static final String LANG_CZE = "cze";
     public static final String PT_NAME = "PT_NAME";
     public static final String PT_REL = "PT_REL";
     public static final String NM_MAIN = "NM_MAIN";
@@ -307,10 +294,6 @@ public class ApControllerTest extends AbstractControllerTest {
         accessPoint = getAccessPoint(accessPoint.getId());
         partVO = accessPoint.getParts().get(1);
         Assert.assertEquals(7, partVO.getItems().size());
-    }
-
-    private Map<String, RulStructureTypeVO> findFragmentTypesMap() {
-        return findStructureTypes().stream().collect(Collectors.toMap(RulStructureTypeVO::getCode, Function.identity()));
     }
 
     private Map<String, RulPartTypeVO> findPartTypesMap() {

@@ -236,7 +236,7 @@ public class AccessPointService {
     private PartService partService;
 
     @Autowired
-    private StructObjService structObjService;
+    private StructObjInternalService structObjInternalService;
 
     @Autowired
     private GroovyService groovyService;
@@ -788,7 +788,7 @@ public class AccessPointService {
         if (apPartFormVO.getParentPartId() != null) {
             throw new IllegalArgumentException("Část nesmí být podřízená.");
         }
-        RulPartType partType = structObjService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
+        RulPartType partType = structObjInternalService.getPartTypeByCode(apPartFormVO.getPartTypeCode());
         StaticDataProvider sdp = staticDataService.getData();
         RulPartType defaultPartType = sdp.getDefaultPartType();
         if (!partType.getCode().equals(defaultPartType.getCode())) {
@@ -1809,55 +1809,6 @@ public class AccessPointService {
     }
 
     /**
-     * Změna popisu přístupového bodu.
-     * Podle vstupních a aktuálních dat se rozhodne, zda-li se bude popis mazat, vytvářet nebo jen upravovat - verzovaně.
-     *
-     * @param apState přístupový bod
-     * @param description popis přístupového bodu
-     * @return přístupový bod
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public ApAccessPoint changeDescription(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState,
-                                           @Nullable final String description) {
-        Validate.notNull(apState, "Přístupový bod musí být vyplněn");
-
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-        apDataService.validationNotDeleted(apState);
-
-        apDataService.changeDescription(apState, description, null);
-        publishAccessPointUpdateEvent(accessPoint);
-        return accessPoint;
-    }
-
-    /**
-     * Změna atributů jména přístupového bodu.
-     *
-     * @param apState přístupový bod
-     * @param itemType typ atributu
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void deleteNameItemsByType(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState,
-                                      final RulItemType itemType) {
-        Validate.notNull(apState, "Přístupový bod musí být vyplněn");
-        Validate.notNull(itemType, "Typ musí být vyplněn");
-
-        apDataService.validationNotDeleted(apState);
-
-
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-
-        ApChange change;
-        if (accessPoint.getState() == ApStateEnum.TEMP) {
-            change = apState.getCreateChange();
-        } else {
-            change = apDataService.createChange(ApChange.Type.AP_UPDATE);
-        }
-
-        //apGeneratorService.generateAndSetResult(accessPoint, change);
-        apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
-    }
-
-    /**
      * Změna atributů přístupového bodu.
      *
      * @param apState přístupový bod
@@ -2226,89 +2177,6 @@ public class AccessPointService {
         item.setObjectId(objectId);
         item.setPosition(position);
         return item;
-    }
-
-    /**
-     * Import přístupového bodu z externího systému.
-     *
-     * @param externalId identifikátor přístupového bodu v externím systému
-     * @param externalIdTypeCode kód typu externího systému
-     * @param externalSystem externí systém
-     * @param data data pro založení/aktualizaci přístupového bodu
-     * @return přístupový bod
-     */
-    @Transactional
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public ApState importAccessPoint(final String externalId,
-                                     final String externalIdTypeCode,
-                                     final ApExternalSystem externalSystem,
-                                     @AuthParam(type = AuthParam.Type.SCOPE) final ImportAccessPoint data) {
-        Assert.notNull(externalId, "Identifikátor z externího systému musí být vyplněn");
-        Assert.notNull(externalIdTypeCode, "Kód typu externího identifikátoru musí být vyplněn");
-        Assert.notNull(externalSystem, "Externí systém, ze kterého importujeme přístupový bod musí být vyplněn");
-        Assert.notNull(data, "Importní data musí být vyplněny");
-
-        ApScope scope = data.getScope();
-        ApType type = data.getType();
-        ImportAccessPoint.Name preferredName = data.getPreferredName();
-        List<ImportAccessPoint.Name> names = data.getNames();
-        String description = data.getDescription();
-
-        ApChange change = apDataService.createChange(ApChange.Type.AP_IMPORT, externalSystem);
-
-        //TODO fantiš smazat nebo upravit
-        ApExternalIdType externalIdType = staticDataService.getData().getApEidTypeByCode(externalIdTypeCode);
-        ApState apStateExists = null;
-//        ApState apStateExists = apStateRepository.getActiveByExternalIdAndScope(externalId, externalIdType, scope);
-
-        ApState apState;
-        ApAccessPoint accessPoint;
-        if (apStateExists == null) {
-            apState = createAccessPoint(scope, type, change);
-            accessPoint = apState.getAccessPoint();
-            if (StringUtils.isNotEmpty(description)) {
-                //TODO : smazáno - vytvořit popis AP
-            }
-//            createExternalId(accessPoint, externalIdType, externalId, change);
-            publishAccessPointCreateEvent(accessPoint);
-        } else {
-            apState = changeApType(apStateExists.getAccessPointId(), type.getApTypeId());
-            accessPoint = apState.getAccessPoint();
-            apDataService.changeDescription(apState, description, change);
-            publishAccessPointUpdateEvent(accessPoint);
-        }
-
-        // kolekce pro kontrolu jmen vlastního přístupového bodu
-        Set<String> uniqueNames = new HashSet<>();
-
-        // TODO : smazáno - založení preferovaného jména
-
-        // TODO : smazáné - chybí založení další jmen
-
-        reindexDescItem(accessPoint);
-
-        return apState;
-    }
-
-    /**
-     * Založení externího identifikátoru přístupového bodu.
-     *
-     * @param accessPoint přístupový bod
-     * @param externalIdType typ externího systému
-     * @param externalId identifikátor v externím systému
-     * @param change změna ve které se identifikátor zakládá
-     */
-    private void createExternalId(final ApAccessPoint accessPoint,
-                                  final ApExternalIdType externalIdType,
-                                  final String externalId,
-                                  final ApChange change) {
-        //TODO fantiš upravit
-        ApBinding apBinding = new ApBinding();
-//        apBinding.setValue(externalId);
-//        apBinding.setAccessPoint(accessPoint);
-//        apBinding.setCreateChange(change);
-//        apBinding.setExternalIdType(externalIdType);
-        bindingRepository.save(apBinding);
     }
 
     private void publishAccessPointCreateEvent(final ApAccessPoint accessPoint) {

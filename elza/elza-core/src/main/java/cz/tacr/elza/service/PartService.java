@@ -31,8 +31,6 @@ public class PartService {
     private final ApPartRepository partRepository;
     private final PartTypeRepository partTypeRepository;
     private final ApItemRepository itemRepository;
-    private final ApChangeRepository changeRepository;
-    private final AccessPointGeneratorService apGeneratorService;
     private final AccessPointItemService apItemService;
     private final AccessPointDataService apDataService;
 
@@ -40,34 +38,20 @@ public class PartService {
     public PartService(final ApPartRepository partRepository,
                        final PartTypeRepository partTypeRepository,
                        final ApItemRepository itemRepository,
-                       final ApChangeRepository changeRepository,
-                       final AccessPointGeneratorService apGeneratorService,
                        final AccessPointItemService apItemService,
                        final AccessPointDataService apDataService) {
         this.partRepository = partRepository;
         this.partTypeRepository = partTypeRepository;
         this.itemRepository = itemRepository;
-        this.changeRepository = changeRepository;
-        this.apGeneratorService = apGeneratorService;
         this.apItemService = apItemService;
         this.apDataService = apDataService;
-    }
-
-    public ApPart createPart(final RulPartType partType) {
-        Validate.notNull(partType, "Typ fragmentu musí být vyplněn");
-
-        ApPart part = new ApPart();
-        part.setPartType(partType);
-        part.setState(ApStateEnum.TEMP);
-
-        return partRepository.save(part);
     }
 
     public ApPart createPart(final RulPartType partType,
                              final ApAccessPoint accessPoint,
                              final ApChange createChange,
                              final ApPart parentPart) {
-        Validate.notNull(partType, "Typ fragmentu musí být vyplněn");
+        Validate.notNull(partType, "Typ partu musí být vyplněn");
 
         ApPart part = new ApPart();
         part.setPartType(partType);
@@ -138,35 +122,6 @@ public class PartService {
         Validate.notNull(partId);
         return partRepository.findById(partId)
                 .orElseThrow(part(partId));
-    }
-
-    public void changeFragmentItems(final ApPart part, final List<ApUpdateItemVO> items) {
-        Validate.notNull(part, "Fragment musí být vyplněn");
-        Validate.notEmpty(items, "Musí být alespoň jedna položka ke změně");
-
-        List<ApItem> itemsDb = itemRepository.findValidItemsByPart(part);
-
-        ApChange change = apDataService.createChange(ApChange.Type.FRAGMENT_CHANGE);
-        apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
-                -> createPartItem(part, it, is, c, objectId, position));
-
-        apGeneratorService.generateAndSetResult(part);
-    }
-
-    /**
-     * Smazání hodnot fragmentu podle typu.
-     *
-     * @param fragment fragment
-     * @param itemType typu atributu
-     */
-    public void deleteFragmentItemsByType(final ApPart fragment, final RulItemType itemType) {
-        Validate.notNull(fragment, "Fragment musí být vyplněn");
-        Validate.notNull(itemType, "Typ musí být vyplněn");
-        ApChange change = apDataService.createChange(ApChange.Type.FRAGMENT_CHANGE);
-
-        //TODO fantis
-        //apItemService.deleteItemsByType(itemRepository, fragment, itemType, change);
-        apGeneratorService.generateAndSetResult(fragment);
     }
 
     /**
@@ -262,32 +217,6 @@ public class PartService {
         apItemService.deletePartItems(apPart, apChange);
         apPart.setDeleteChange(apChange);
         partRepository.save(apPart);
-    }
-
-    public void deleteFragment(final ApPart part) {
-        if (part.getState() == ApStateEnum.TEMP) {
-            List<ApItem> items = itemRepository.findValidItemsByPart(part);
-            Set<ApChange> changes = new HashSet<>();
-            for (ApItem item : items) {
-                changes.add(item.getCreateChange());
-            }
-            changeRepository.deleteAll(changes);
-            itemRepository.deleteAll(items);
-            partRepository.delete(part);
-        } else {
-            throw new NotImplementedException("Mazání platného fragmentu není k dispozici");
-            // zde bude potřeba zkontrolovat návazné entity (z ap_fragment_item a arr_data_apfrag_ref)
-        }
-    }
-
-    public void confirmFragment(final ApPart fragment) {
-        if (fragment.getState() == ApStateEnum.TEMP) {
-            fragment.setState(ApStateEnum.INIT);
-            apGeneratorService.generateAndSetResult(fragment);
-            partRepository.save(fragment);
-        } else {
-            throw new BusinessException("Nelze potvrdit fragment, který není dočasný", BaseCode.INVALID_STATE);
-        }
     }
 
     public List<ApPart> findPartsByAccessPoint(ApAccessPoint accessPoint) {

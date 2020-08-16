@@ -10,14 +10,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -53,9 +51,6 @@ public class RulesExecutor {
 
     @Autowired
     private ScenarioOfNewLevelRules scenarioOfNewLevelRules;
-
-    @Autowired
-    private FragmentItemTypesRules fragmentItemTypesRules;
 
     /**
      * Spustí pravidla nad typy atributů a jejich specifikacema.
@@ -122,17 +117,6 @@ public class RulesExecutor {
                                                    structureItems);
         } catch (IOException e) {
             throw wrapIOException(e);
-        }
-    }
-
-    public List<RulItemTypeExt> executeFragmentItemTypesRules(final RulStructuredType fragmentType, final List<RulItemTypeExt> rulDescItemTypeExtList, final List<ApItem> items) {
-        try {
-            return fragmentItemTypesRules.execute(fragmentType, rulDescItemTypeExtList, items);
-        } catch (NoSuchFileException e) {
-            logger.warn("Neexistuje soubor pro spuštění scriptu." + e.getMessage(), e);
-            return rulDescItemTypeExtList;
-        } catch (Exception e) {
-            throw new SystemException(e);
         }
     }
 

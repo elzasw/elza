@@ -69,7 +69,6 @@ import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.RequiredType;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
-import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
@@ -156,9 +155,6 @@ public class ApController {
 
     @Autowired
     private PartService partService;
-
-    @Autowired
-    private StructObjService structObjService;
 
     @Autowired
     private UserService userService;
@@ -388,99 +384,6 @@ public class ApController {
         StaticDataProvider data = staticDataService.getData();
         ItemType type = data.getItemTypeById(itemTypeId);
         accessPointService.deleteApItemsByType(apState, type.getEntity());
-    }
-
-    /**
-     * Vytvoření nového dočasného fragmentu. Pro potvrzení je třeba použít {@link #confirmFragment}
-     *
-     * @param fragmentTypeCode kód typu fragmentu
-     * @return založený fragment
-     */
-    @Transactional
-    @RequestMapping(value = "/fragment/create/{fragmentTypeCode}", method = RequestMethod.POST)
-    public ApFragmentVO createFragment(@PathVariable final String fragmentTypeCode) {
-        Validate.notNull(fragmentTypeCode, "Kód typu fragmentu musí být vyplněn");
-
-        RulPartType partType = structObjService.getPartTypeByCode(fragmentTypeCode);
-        ApPart part = partService.createPart(partType);
-        return apFactory.createVO(part, true);
-    }
-
-    /**
-     * Úprava hodnot fragmentu. Přidání/upravení/smazání.
-     *
-     * @param fragmentId identifikátor fragmentu
-     * @param items      položky ke změně
-     * @return upravený fragment
-     */
-    @Transactional
-    @RequestMapping(value = "/fragment/{fragmentId}/items", method = RequestMethod.PUT)
-    public ApFragmentVO changeFragmentItems(@PathVariable final Integer fragmentId,
-                                            @RequestBody final List<ApUpdateItemVO> items) {
-        Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-
-        ApPart fragment = partService.getPart(fragmentId);
-        partService.changeFragmentItems(fragment, items);
-        return apFactory.createVO(fragment, true);
-    }
-
-    /**
-     * Smazání hodnot fragmentu podle typu.
-     *
-     * @param fragmentId identifikátor fragmentu
-     * @param itemTypeId identifikátor typu atributu
-     */
-    @Transactional
-    @RequestMapping(value = "/fragment/{fragmentId}/type/{itemTypeId}", method = RequestMethod.DELETE)
-    public ApFragmentVO deleteFragmentItemsByType(@PathVariable final Integer fragmentId,
-                                          @PathVariable final Integer itemTypeId) {
-        Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        Validate.notNull(itemTypeId, "Identifikátor typu musí být vyplněn");
-
-        ApPart fragment = partService.getPart(fragmentId);
-        StaticDataProvider data = staticDataService.getData();
-        ItemType type = data.getItemTypeById(itemTypeId);
-        partService.deleteFragmentItemsByType(fragment, type.getEntity());
-        return apFactory.createVO(fragment, true);
-    }
-
-    /**
-     * Potvrzení fragmentu.
-     *
-     * @param fragmentId identifikátor fragmentu
-     */
-    @Transactional
-    @RequestMapping(value = "/fragment/{fragmentId}/confirm", method = RequestMethod.POST)
-    public void confirmFragment(@PathVariable final Integer fragmentId) {
-        Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        ApPart fragment = partService.getPart(fragmentId);
-        partService.confirmFragment(fragment);
-    }
-
-    /**
-     * Získání fragmentu.
-     *
-     * @param fragmentId identifikátor fragmentu
-     */
-    @Transactional
-    @RequestMapping(value = "/fragment/{fragmentId}", method = RequestMethod.GET)
-    public ApFragmentVO getFragment(@PathVariable final Integer fragmentId) {
-        Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        ApPart fragment = partService.getPart(fragmentId);
-        return apFactory.createVO(fragment, true);
-    }
-
-    /**
-     * Smazání fragmentu.
-     *
-     * @param fragmentId identifikátor fragmentu
-     */
-    @Transactional
-    @RequestMapping(value = "/fragment/{fragmentId}", method = RequestMethod.DELETE)
-    public void deleteFragment(@PathVariable final Integer fragmentId) {
-        Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        ApPart fragment = partService.getPart(fragmentId);
-        partService.deleteFragment(fragment);
     }
 
     /**

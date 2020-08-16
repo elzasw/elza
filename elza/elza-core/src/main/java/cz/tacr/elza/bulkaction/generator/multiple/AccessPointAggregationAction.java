@@ -367,7 +367,6 @@ public class AccessPointAggregationAction extends Action {
             case UNITDATE:
             case JSON_TABLE:
             case FILE_REF:
-            case APFRAG_REF:
             case STRUCTURED:
                 throw new NotImplementedException("Data nejsou podporovány: " + dataType);
             default:
