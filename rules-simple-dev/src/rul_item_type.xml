@@ -407,14 +407,6 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="VZTAH_STAT_ZASTUPCE" data-type="APFRAG_REF" fragment-type="STAT_ZASTUPCE">
-        <name>Vztah - Statutární zástupce</name>
-        <shortcut>St. zást.</shortcut>
-        <description>Vztah pro statutárního zástupce</description>
-        <is-value-unique>false</is-value-unique>
-        <can-be-ordered>true</can-be-ordered>
-        <use-specification>false</use-specification>
-    </item-type>
     <item-type code="VZTAH_TYP" data-type="ENUM">
         <name>Typ vztahu</name>
         <shortcut>Vztah</shortcut>

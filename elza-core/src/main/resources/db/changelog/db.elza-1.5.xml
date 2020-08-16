@@ -624,4 +624,11 @@
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20200807100100" />
     </changeSet>
 
+    <changeSet id="20200813155300" author="fantis">
+        <dropTable tableName="arr_data_apfrag_ref"/>
+        <delete tableName="rul_data_type">
+            <where>code='APFRAG_REF'</where>
+        </delete>
+    </changeSet>
+
 </databaseChangeLog>

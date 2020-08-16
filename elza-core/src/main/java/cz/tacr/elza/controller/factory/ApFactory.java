@@ -21,15 +21,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.FactoryUtils;
-import cz.tacr.elza.controller.vo.ap.ApFormVO;
-import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.service.RuleService;
 
 import static cz.tacr.elza.repository.ExceptionThrow.ap;
 import static cz.tacr.elza.repository.ExceptionThrow.scope;
@@ -53,8 +50,6 @@ public class ApFactory {
 
     private final ApItemRepository itemRepository;
 
-    private final RuleService ruleService;
-
     private final RuleFactory ruleFactory;
 
     private final CamConnector camConnector;
@@ -68,7 +63,6 @@ public class ApFactory {
                      final ApItemRepository itemRepository,
                      final ApBindingStateRepository bindingStateRepository,
                      final ApBindingItemRepository bindingItemRepository,
-                     final RuleService ruleService,
                      final RuleFactory ruleFactory,
                      final CamConnector camConnector) {
         this.apRepository = apRepository;
@@ -79,7 +73,6 @@ public class ApFactory {
         this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.bindingItemRepository = bindingItemRepository;
-        this.ruleService = ruleService;
         this.ruleFactory = ruleFactory;
         this.camConnector = camConnector;
     }
@@ -375,35 +368,6 @@ public class ApFactory {
         return result;
     }
 
-    public ApFragmentVO createVO(final ApPart fragment, final boolean fillForm) {
-        ApFragmentVO fragmentVO = createVO(fragment);
-        if (fillForm) {
-            //TODO fantis: smazat nebo prepsat
-//            fragmentVO.setForm(createFormVO(fragment));
-        }
-        return fragmentVO;
-    }
-
-    public ApFragmentVO createVO(final ApPart fragment) {
-        return ApFragmentVO.newInstance(fragment);
-    }
-
-    //TODO fantis: smazat nebo prepsat
-    /*private ApFormVO createFormVO(final ApPart fragment) {
-        List<ApItem> fragmentItems = new ArrayList<>(fragmentItemRepository.findValidItemsByFragment(fragment));
-        List<RulItemTypeExt> rulItemTypes = ruleService.getFragmentItemTypesInternal(fragment.getFragmentType(), fragmentItems);
-
-        ApFormVO form = new ApFormVO();
-        form.setItemTypes(createItemTypesVO(rulItemTypes));
-        form.setItems(createItemsVO(fragmentItems));
-        return form;
-    }*/
-
-    private ApFormVO createFormVO(ApType type) {
-        ApFormVO form = new ApFormVO();
-        return form;
-    }
-
     public List<ApItemVO> createItemsVO(final List<ApItem> apItems) {
         List<ApItemVO> items = new ArrayList<>(apItems.size());
         for (ApItem item : apItems) {
@@ -425,7 +389,6 @@ public class ApFactory {
 
     private void fillRefEntities(final List<ApItemVO> items) {
         Map<Integer, List<ApItemAccessPointRefVO>> accessPointsMap = new HashMap<>();
-        Map<Integer, List<ApItemAPFragmentRefVO>> fragmentMap = new HashMap<>();
 
         for (ApItemVO item : items) {
             if (item instanceof ApItemAccessPointRefVO) {
@@ -433,12 +396,6 @@ public class ApFactory {
                 if (accessPointId != null) {
                     List<ApItemAccessPointRefVO> list = accessPointsMap.computeIfAbsent(accessPointId, k -> new ArrayList<>());
                     list.add((ApItemAccessPointRefVO) item);
-                }
-            } else if (item instanceof ApItemAPFragmentRefVO) {
-                Integer fragmentId = ((ApItemAPFragmentRefVO) item).getValue();
-                if (fragmentId != null) {
-                    List<ApItemAPFragmentRefVO> list = fragmentMap.computeIfAbsent(fragmentId, k -> new ArrayList<>());
-                    list.add((ApItemAPFragmentRefVO) item);
                 }
             }
         }
@@ -451,18 +408,6 @@ public class ApFactory {
                 List<ApItemAccessPointRefVO> accessPointRefVOS = accessPointsMap.get(accessPointVO.getId());
                 for (ApItemAccessPointRefVO accessPointRefVO : accessPointRefVOS) {
                     accessPointRefVO.setAccessPoint(accessPointVO);
-                }
-            }
-        }
-
-        Set<Integer> fragmentIds = fragmentMap.keySet();
-        if (!fragmentIds.isEmpty()) {
-            List<ApPart> fragments = partRepository.findAllById(fragmentIds);
-            List<ApFragmentVO> fragmentVOList = FactoryUtils.transformList(fragments, this::createVO);
-            for (ApFragmentVO fragmentVO : fragmentVOList) {
-                List<ApItemAPFragmentRefVO> fragmentRefVOS = fragmentMap.get(fragmentVO.getId());
-                for (ApItemAPFragmentRefVO fragmentRefVO : fragmentRefVOS) {
-                    fragmentRefVO.setFragment(fragmentVO);
                 }
             }
         }
