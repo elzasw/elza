@@ -252,7 +252,9 @@ public class GroovyService {
     }
 
     public String getGroovyFilePath(GroovyPart part) {
-        RulStructuredType structureType = structuredTypeRepository.findByCode(part.getPartTypeCode());
+        StaticDataProvider sdp = staticDataService.getData();
+
+        RulStructuredType structureType = sdp.getStructuredTypeByCode(part.getPartTypeCode()).getStructuredType();
         List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
                 .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE);
 

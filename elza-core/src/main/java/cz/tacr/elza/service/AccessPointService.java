@@ -2831,4 +2831,17 @@ public class AccessPointService {
             }
         }
     }
+
+    /**
+     * Find access point by multiple items in one part
+     * 
+     * @param entity
+     * @param itemSpec
+     * @param value
+     * @return
+     */
+    public List<ApAccessPoint> findAccessPointsBySinglePartValues(List<Object> criterias) {
+
+        return apAccessPointRepository.findAccessPointsBySinglePartValues(criterias);
+    }
 }
