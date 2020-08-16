@@ -682,5 +682,27 @@
             <column name="item_id" type="int"/>
         </createIndex>
     </changeSet>
+    <changeSet id="20200814152830" author="ppyt">
+        <createIndex indexName="arr_data_record_ref_record_idx" tableName="arr_data_record_ref" unique="false">
+            <column name="record_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="arr_data_record_ref_binding_idx" tableName="arr_data_record_ref" unique="false">
+            <column name="binding_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_binding_state_access_point_idx" tableName="ap_binding_state" unique="false">
+            <column name="access_point_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_binding_state_binding_idx" tableName="ap_binding_state" unique="false">
+            <column name="binding_id" type="int"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="20200814152831" author="ppyt">
+        <createIndex indexName="ap_part_value_idx" tableName="ap_part" unique="false">
+            <column name="value" type="${type.text}"/>
+        </createIndex>
+        <createIndex indexName="ap_access_point_pref_part_idx" tableName="ap_access_point" unique="true">
+            <column name="preferred_part_id" type="int"/>
+        </createIndex>
+    </changeSet>
 
 </databaseChangeLog>

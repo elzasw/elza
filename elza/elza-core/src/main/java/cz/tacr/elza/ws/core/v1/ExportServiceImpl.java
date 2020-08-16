@@ -14,6 +14,7 @@ import javax.activation.DataSource;
 import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
@@ -22,10 +23,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.common.io.FilterInputStreamWithException;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
@@ -33,14 +36,21 @@ import cz.tacr.elza.dataexchange.output.writer.cam.CamExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlNameConsts;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker.ErrorHandler;
+import cz.tacr.elza.ws.types.v1.EntityInfo;
+import cz.tacr.elza.ws.types.v1.ErrorDescription;
 import cz.tacr.elza.ws.types.v1.ExportRequest;
 import cz.tacr.elza.ws.types.v1.ExportResponseData;
 import cz.tacr.elza.ws.types.v1.IdentifierList;
+import cz.tacr.elza.ws.types.v1.Items;
+import cz.tacr.elza.ws.types.v1.SearchEntity;
+import cz.tacr.elza.ws.types.v1.SearchEntityResult;
 
 @Component
 @javax.jws.WebService(serviceName = "CoreService", portName = "ExportService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
@@ -58,10 +68,17 @@ public class ExportServiceImpl implements ExportService {
     @Autowired
     ApAccessPointRepository accessPointRepository;
 
+    @Autowired
+    AccessPointService accessPointService;
+
+    @Autowired
+    StaticDataService staticDataService;
+
     public ExportServiceImpl() {
 
     }
 
+    // TODO: run this method in transaction
     private DEExportParams createExportParams(ExportRequest request) {
         DEExportParams params = new DEExportParams();
 
@@ -177,5 +194,30 @@ public class ExportServiceImpl implements ExportService {
         return erd;
     }
 
+    @Transactional
+    @Override
+    public SearchEntityResult searchEntity(SearchEntity request) throws SearchEntityException {
+        Items items = request.getItems();
+        Validate.notNull(items);
+        List<Object> itemList = items.getStrOrLongOrEnm();
+
+        List<ApAccessPoint> aps = accessPointService.findAccessPointsBySinglePartValues(itemList);
+
+        if (aps.size() > 1) {
+            ErrorDescription ed = WSHelper.prepareErrorDescription("Too many results: " + aps.size(), String.valueOf(aps
+                    .size()));
+            throw new SearchEntityException(ed.getUserMessage(), ed);
+        }
+
+        SearchEntityResult result = new SearchEntityResult();
+        if (aps.size() == 1) {
+            ApAccessPoint ap = aps.get(0);
+            EntityInfo entityInfo = new EntityInfo();
+            entityInfo.setEntityId(ap.getAccessPointId().toString());
+            entityInfo.setUuid(ap.getUuid());
+            result.setEntityInfo(entityInfo);
+        }
+        return result;
+    }
 }
 

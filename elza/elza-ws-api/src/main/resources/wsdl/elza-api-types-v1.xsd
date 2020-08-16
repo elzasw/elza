@@ -75,6 +75,9 @@
 			<xs:documentation>Remove permissions</xs:documentation>
 		</xs:annotation>
 	</xs:element>
+	<xs:element name="searchEntityException" type="eat:ErrorDescription"/>
+	<xs:element name="searchEntityResult" type="eat:SearchEntityResult"/>
+	<xs:element name="searchSingleEntity" type="eat:SearchEntity"/>
 	<xs:element name="setUserState" type="eat:SetUserState">
 		<xs:annotation>
 			<xs:documentation>Element to set user state</xs:documentation>
@@ -581,6 +584,15 @@ Source: EAD3</xs:documentation>
 			<xs:element name="identifiers" type="eat:IdentifierList" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="EntityInfo">
+		<xs:annotation>
+			<xs:documentation>Brief info about access point / archival entity</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="entityId" type="eat:Identifier" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="uuid" type="eat:Uuid" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="ErrorDescription">
 		<xs:annotation>
 			<xs:documentation>Type for failure description</xs:documentation>
@@ -834,6 +846,16 @@ Supported data formats:
 		<xs:sequence>
 			<xs:element name="status" type="eat:RequestStatus" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="errorDetail" type="eat:StringLong" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SearchEntity">
+		<xs:sequence>
+			<xs:element name="items" type="eat:Items" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SearchEntityResult">
+		<xs:sequence>
+			<xs:element name="entityInfo" type="eat:EntityInfo" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="SetUserState">
