@@ -25,6 +25,7 @@ import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.service.ExternalSystemService;
 
 @Service
@@ -32,6 +33,9 @@ public class CamConnector {
 
     @Autowired
     private ExternalSystemService externalSystemService;
+
+    @Autowired
+    private ApExternalSystemRepository apExternalSystemRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(CamConnector.class);
 
@@ -66,8 +70,14 @@ public class CamConnector {
         return JaxbUtils.unmarshal(BatchUpdateResultXml.class, fileApiResponse.getData());
     }
 
+    /**
+     * Invalidate external
+     * 
+     * @param code
+     *            Might be code of none existing system
+     */
     public void invalidate(String code) {
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(code);
+        ApExternalSystem apExternalSystem = apExternalSystemRepository.findByCode(code);
         if (apExternalSystem != null &&
                 (apExternalSystem.getType() == ApExternalSystemType.CAM ||
                         apExternalSystem.getType() == ApExternalSystemType.CAM_UUID)) {
