@@ -1,8 +1,21 @@
 package cz.tacr.elza.connector;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.client.ApiResponse;
-import cz.tacr.cam.client.controller.*;
+import cz.tacr.cam.client.controller.BatchUpdatesApi;
+import cz.tacr.cam.client.controller.EntityApi;
+import cz.tacr.cam.client.controller.ExportApi;
+import cz.tacr.cam.client.controller.SearchApi;
+import cz.tacr.cam.client.controller.UpdatesApi;
 import cz.tacr.cam.client.controller.vo.QueryParamsDef;
 import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
 import cz.tacr.cam.schema.cam.BatchUpdateXml;
@@ -12,21 +25,17 @@ import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.service.ExternalSystemService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class CamConnector {
 
     @Autowired
     private ExternalSystemService externalSystemService;
+
+    @Autowired
+    private ApExternalSystemRepository apExternalSystemRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(CamConnector.class);
 
@@ -61,9 +70,17 @@ public class CamConnector {
         return JaxbUtils.unmarshal(BatchUpdateResultXml.class, fileApiResponse.getData());
     }
 
+    /**
+     * Invalidate external
+     * 
+     * @param code
+     *            Might be code of none existing system
+     */
     public void invalidate(String code) {
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(code);
-        if (apExternalSystem != null && apExternalSystem.getType() == ApExternalSystemType.CAM) {
+        ApExternalSystem apExternalSystem = apExternalSystemRepository.findByCode(code);
+        if (apExternalSystem != null &&
+                (apExternalSystem.getType() == ApExternalSystemType.CAM ||
+                        apExternalSystem.getType() == ApExternalSystemType.CAM_UUID)) {
             instanceMap.remove(code);
         }
     }
@@ -71,7 +88,8 @@ public class CamConnector {
     public CamInstance getByCode(String code) {
         try {
             ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(code);
-            if (apExternalSystem.getType() == ApExternalSystemType.CAM) {
+            if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
+                    apExternalSystem.getType() == ApExternalSystemType.CAM_UUID) {
                 CamInstance camInstance = instanceMap.get(apExternalSystem.getCode());
                 if (camInstance == null) {
                     camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue());
@@ -92,7 +110,8 @@ public class CamConnector {
             return camInstance;
         }
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(code);
-        if (apExternalSystem.getType() == ApExternalSystemType.CAM) {
+        if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
+                apExternalSystem.getType() == ApExternalSystemType.CAM_UUID) {
             camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue());
             instanceMap.put(apExternalSystem.getCode(), camInstance);
             return camInstance;

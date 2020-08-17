@@ -1,13 +1,14 @@
 package cz.tacr.elza.connector;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cz.tacr.cam.client.controller.BatchUpdatesApi;
 import cz.tacr.cam.client.controller.EntityApi;
 import cz.tacr.cam.client.controller.ExportApi;
 import cz.tacr.cam.client.controller.SearchApi;
 import cz.tacr.cam.client.controller.UpdatesApi;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class CamInstance {
 
@@ -47,7 +48,7 @@ public class CamInstance {
         return url + API_URL;
     }
 
-    public String getEntityDetailUrl(int entityCode) {
+    public String getEntityDetailUrl(String entityCode) {
         return url + DETAIL_URL + entityCode;
     }
 

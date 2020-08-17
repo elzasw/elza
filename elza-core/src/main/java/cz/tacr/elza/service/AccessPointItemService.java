@@ -1,5 +1,24 @@
 package cz.tacr.elza.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.Validate;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.cam.schema.cam.CodeXml;
 import cz.tacr.cam.schema.cam.EntityRecordRefXml;
 import cz.tacr.cam.schema.cam.ItemBooleanXml;
@@ -18,7 +37,25 @@ import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingItem;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataBit;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -26,19 +63,8 @@ import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.service.cam.CamHelper;
 import cz.tacr.elza.service.vo.DataRef;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.Validate;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 public class AccessPointItemService {
@@ -325,7 +351,7 @@ public class AccessPointItemService {
             for (ApBindingItem bindingItem : bindingItemList) {
                 if (bindingItem.getItem() != null && createItem.getId() != null && apItemAccessPointRefVO.getExternalName() != null &&
                         bindingItem.getItem().getItemId() != null && bindingItem.getItem().getItemId().equals(createItem.getId())) {
-                    dataRefList.add(new DataRef(bindingItem.getValue(), Long.parseLong(apItemAccessPointRefVO.getExternalName())));
+                    dataRefList.add(new DataRef(bindingItem.getValue(), apItemAccessPointRefVO.getExternalName()));
                     break;
                 }
             }
@@ -400,7 +426,7 @@ public class AccessPointItemService {
 
             itemType = sdp.getItemType(itemBoolean.getT().getValue());
             itemSpec = itemBoolean.getS() == null ? null : sdp.getItemSpec(itemBoolean.getS().getValue());
-            uuid = itemBoolean.getUuid().getValue();
+            uuid = CamHelper.getUuid(itemBoolean.getUuid());
 
             ArrDataBit dataBit = new ArrDataBit();
             dataBit.setValue(itemBoolean.getValue().isValue());
@@ -411,11 +437,13 @@ public class AccessPointItemService {
 
             itemType = sdp.getItemType(itemEntityRef.getT().getValue());
             itemSpec = itemEntityRef.getS() == null ? null : sdp.getItemSpec(itemEntityRef.getS().getValue());
-            uuid = itemEntityRef.getUuid().getValue();
+            uuid = CamHelper.getUuid(itemEntityRef.getUuid());
 
             ArrDataRecordRef dataRecordRef = new ArrDataRecordRef();
-            EntityRecordRefXml entityRecordRef = (EntityRecordRefXml) itemEntityRef.getRef();
-            DataRef dataRef = new DataRef(uuid, entityRecordRef.getEid().getValue());
+
+            String extIdent = CamHelper.getEntityIdorUuid(itemEntityRef);
+
+            DataRef dataRef = new DataRef(uuid, extIdent);
             dataRefList.add(dataRef);
 
             dataRecordRef.setDataType(DataType.RECORD_REF.getEntity());
@@ -425,7 +453,7 @@ public class AccessPointItemService {
 
             itemType = sdp.getItemType(itemEnum.getT().getValue());
             itemSpec = itemEnum.getS() == null ? null : sdp.getItemSpec(itemEnum.getS().getValue());
-            uuid = itemEnum.getUuid().getValue();
+            uuid = CamHelper.getUuid(itemEnum.getUuid());
 
             ArrDataNull dataNull = new ArrDataNull();
             dataNull.setDataType(DataType.ENUM.getEntity());
@@ -435,7 +463,7 @@ public class AccessPointItemService {
 
             itemType = sdp.getItemType(itemInteger.getT().getValue());
             itemSpec = itemInteger.getS() == null ? null : sdp.getItemSpec(itemInteger.getS().getValue());
-            uuid = itemInteger.getUuid().getValue();
+            uuid = CamHelper.getUuid(itemInteger.getUuid());
 
             ArrDataInteger dataInteger = new ArrDataInteger();
             dataInteger.setValue(itemInteger.getValue().getValue().intValue());
@@ -446,7 +474,7 @@ public class AccessPointItemService {
 
             itemType = sdp.getItemType(itemLink.getT().getValue());
             itemSpec = itemLink.getS() == null ? null : sdp.getItemSpec(itemLink.getS().getValue());
-            uuid = itemLink.getUuid().getValue();
+            uuid = CamHelper.getUuid(itemLink.getUuid());
 
             ArrDataUriRef dataUriRef = new ArrDataUriRef();
             dataUriRef.setValue(itemLink.getUrl().getValue());
@@ -460,7 +488,7 @@ public class AccessPointItemService {
 
             itemType = sdp.getItemType(itemString.getT().getValue());
             itemSpec = itemString.getS() == null ? null : sdp.getItemSpec(itemString.getS().getValue());
-            uuid = itemString.getUuid().getValue();
+            uuid = CamHelper.getUuid(itemString.getUuid());
 
             RulDataType dataType = itemType.getDataType();
             String code = dataType.getCode();
@@ -488,7 +516,8 @@ public class AccessPointItemService {
                     data = dataCoordinates;
                     break;
                 default:
-                    throw new IllegalStateException("Neznámý datový typ " + code);
+                    throw new IllegalStateException("Nepodporovaný datový typ uložen jako řetězec: " + code +
+                            ", itemType:" + itemString.getT().getValue());
             }
 
         } else if (createItem instanceof ItemUnitDateXml) {
@@ -496,15 +525,21 @@ public class AccessPointItemService {
 
             itemType = sdp.getItemType(itemUnitDate.getT().getValue());
             itemSpec = itemUnitDate.getS() == null ? null : sdp.getItemSpec(itemUnitDate.getS().getValue());
-            uuid = itemUnitDate.getUuid().getValue();
+            uuid = CamHelper.getUuid(itemUnitDate.getUuid());
 
             CalendarType calType = CalendarType.GREGORIAN;
             ArrDataUnitdate dataUnitDate = new ArrDataUnitdate();
             dataUnitDate.setValueFrom(itemUnitDate.getF().trim());
             dataUnitDate.setValueFromEstimated(itemUnitDate.isFe());
+            if (dataUnitDate.getValueFromEstimated() == null) {
+                dataUnitDate.setValueFromEstimated(false);
+            }
             dataUnitDate.setFormat(itemUnitDate.getFmt());
             dataUnitDate.setValueTo(itemUnitDate.getTo().trim());
             dataUnitDate.setValueToEstimated(itemUnitDate.isToe());
+            if (dataUnitDate.getValueToEstimated() == null) {
+                dataUnitDate.setValueToEstimated(false);
+            }
             if (itemUnitDate.getF() != null) {
                 dataUnitDate.setNormalizedFrom(CalendarConverter.toSeconds(calType, LocalDateTime.parse(itemUnitDate.getF().trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
             } else {
@@ -532,7 +567,9 @@ public class AccessPointItemService {
         ApItem itemCreated = create.apply(itemType, itemSpec, change, nextItemObjectId(), position);
         itemCreated.setData(data);
 
-        externalSystemService.createApBindingItem(binding, uuid, null, itemCreated);
+        if (binding != null) {
+            externalSystemService.createApBindingItem(binding, uuid, null, itemCreated);
+        }
 
         dataToSave.add(data);
         existsItems.add(itemCreated);
