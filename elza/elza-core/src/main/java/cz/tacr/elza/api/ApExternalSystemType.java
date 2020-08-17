@@ -3,11 +3,14 @@ package cz.tacr.elza.api;
 /**
  * Výčet externích systémů pro rejstříky/osoby.
  *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 23. 11. 2016
  */
 public enum ApExternalSystemType {
 
-    CAM
+    CAM,
+    /**
+     * Same as CAM except UUID is preferred as ID
+     */
+    CAM_UUID
 
 }

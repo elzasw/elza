@@ -1,12 +1,20 @@
 package cz.tacr.elza.service.vo;
 
+import org.apache.commons.lang3.Validate;
+
 public class DataRef {
 
     private String uuid;
 
-    private Long value;
+    /**
+     * Value of identifier in another system
+     */
+    private String value;
 
-    public DataRef(String uuid, Long value) {
+    public DataRef(String uuid, String value) {
+        Validate.notNull(uuid);
+        Validate.notNull(value);
+
         this.uuid = uuid;
         this.value = value;
     }
@@ -19,11 +27,11 @@ public class DataRef {
         this.uuid = uuid;
     }
 
-    public Long getValue() {
+    public String getValue() {
         return value;
     }
 
-    public void setValue(Long value) {
+    public void setValue(String value) {
         this.value = value;
     }
 }
