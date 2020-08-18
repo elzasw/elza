@@ -24,7 +24,10 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -60,12 +63,12 @@ import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
+import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.RequiredType;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
-import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
@@ -75,6 +78,7 @@ import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
@@ -112,6 +116,7 @@ import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.cam.ProcessingContext;
 
 
 /**
@@ -152,9 +157,6 @@ public class ApController {
 
     @Autowired
     private PartService partService;
-
-    @Autowired
-    private StructObjService structObjService;
 
     @Autowired
     private UserService userService;
@@ -384,99 +386,6 @@ public class ApController {
         StaticDataProvider data = staticDataService.getData();
         ItemType type = data.getItemTypeById(itemTypeId);
         accessPointService.deleteApItemsByType(apState, type.getEntity());
-    }
-
-    /**
-     * Vytvoření nového dočasného fragmentu. Pro potvrzení je třeba použít {@link #confirmFragment}
-     *
-     * @param fragmentTypeCode kód typu fragmentu
-     * @return založený fragment
-     */
-    @Transactional
-    @RequestMapping(value = "/fragment/create/{fragmentTypeCode}", method = RequestMethod.POST)
-    public ApFragmentVO createFragment(@PathVariable final String fragmentTypeCode) {
-        Validate.notNull(fragmentTypeCode, "Kód typu fragmentu musí být vyplněn");
-
-        RulPartType partType = structObjService.getPartTypeByCode(fragmentTypeCode);
-        ApPart part = partService.createPart(partType);
-        return apFactory.createVO(part, true);
-    }
-
-    /**
-     * Úprava hodnot fragmentu. Přidání/upravení/smazání.
-     *
-     * @param fragmentId identifikátor fragmentu
-     * @param items      položky ke změně
-     * @return upravený fragment
-     */
-    @Transactional
-    @RequestMapping(value = "/fragment/{fragmentId}/items", method = RequestMethod.PUT)
-    public ApFragmentVO changeFragmentItems(@PathVariable final Integer fragmentId,
-                                            @RequestBody final List<ApUpdateItemVO> items) {
-        Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-
-        ApPart fragment = partService.getPart(fragmentId);
-        partService.changeFragmentItems(fragment, items);
-        return apFactory.createVO(fragment, true);
-    }
-
-    /**
-     * Smazání hodnot fragmentu podle typu.
-     *
-     * @param fragmentId identifikátor fragmentu
-     * @param itemTypeId identifikátor typu atributu
-     */
-    @Transactional
-    @RequestMapping(value = "/fragment/{fragmentId}/type/{itemTypeId}", method = RequestMethod.DELETE)
-    public ApFragmentVO deleteFragmentItemsByType(@PathVariable final Integer fragmentId,
-                                          @PathVariable final Integer itemTypeId) {
-        Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        Validate.notNull(itemTypeId, "Identifikátor typu musí být vyplněn");
-
-        ApPart fragment = partService.getPart(fragmentId);
-        StaticDataProvider data = staticDataService.getData();
-        ItemType type = data.getItemTypeById(itemTypeId);
-        partService.deleteFragmentItemsByType(fragment, type.getEntity());
-        return apFactory.createVO(fragment, true);
-    }
-
-    /**
-     * Potvrzení fragmentu.
-     *
-     * @param fragmentId identifikátor fragmentu
-     */
-    @Transactional
-    @RequestMapping(value = "/fragment/{fragmentId}/confirm", method = RequestMethod.POST)
-    public void confirmFragment(@PathVariable final Integer fragmentId) {
-        Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        ApPart fragment = partService.getPart(fragmentId);
-        partService.confirmFragment(fragment);
-    }
-
-    /**
-     * Získání fragmentu.
-     *
-     * @param fragmentId identifikátor fragmentu
-     */
-    @Transactional
-    @RequestMapping(value = "/fragment/{fragmentId}", method = RequestMethod.GET)
-    public ApFragmentVO getFragment(@PathVariable final Integer fragmentId) {
-        Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        ApPart fragment = partService.getPart(fragmentId);
-        return apFactory.createVO(fragment, true);
-    }
-
-    /**
-     * Smazání fragmentu.
-     *
-     * @param fragmentId identifikátor fragmentu
-     */
-    @Transactional
-    @RequestMapping(value = "/fragment/{fragmentId}", method = RequestMethod.DELETE)
-    public void deleteFragment(@PathVariable final Integer fragmentId) {
-        Validate.notNull(fragmentId, "Identifikátor fragmentu musí být vyplněn");
-        ApPart fragment = partService.getPart(fragmentId);
-        partService.deleteFragment(fragment);
     }
 
     /**
@@ -1056,7 +965,7 @@ public class ApController {
                                      @RequestParam final Integer scopeId,
                                      @RequestParam final String externalSystemCode) {
         ApScope scope = accessPointService.getScope(scopeId);
-        accessPointService.checkUniqueBinding(scope, archiveEntityId, externalSystemCode);
+        accessPointService.checkUniqueBinding(scope, archiveEntityId.toString(), externalSystemCode);
 
         EntityXml entity;
         try {
@@ -1064,7 +973,15 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        ApState apState = accessPointService.createAccessPoint(scope, entity, externalSystemCode, null);
+
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem);
+
+        ApBinding binding = externalSystemService.createBinding(scope, Long.toString(entity.getEid().getValue()),
+                                                                externalSystemCode);
+        procCtx.addBinding(binding);
+
+        ApState apState = accessPointService.createAccessPoint(procCtx, entity, binding, null);
         return apState.getAccessPointId();
     }
 
@@ -1079,13 +996,18 @@ public class ApController {
     @RequestMapping(value = "/external/{archiveEntityId}/connect/{accessPointId}", method = RequestMethod.POST)
     public void connectArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
                                      @PathVariable("accessPointId") final Integer accessPointId,
-                                     @RequestParam final String externalSystemCode) {
+                                     @RequestParam("externalSystemCode") final String externalSystemCode,
+                                     @RequestParam("replace") final Boolean replace) {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu není vyplněn");
+
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getState(accessPoint);
         ApScope scope = state.getScope();
-        accessPointService.checkUniqueBinding(scope, archiveEntityId, externalSystemCode);
+        accessPointService.checkUniqueBinding(scope, archiveEntityId.toString(), externalSystemCode);
         accessPointService.checkUniqueExtSystem(accessPoint, externalSystemCode);
+
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem);
 
         EntityXml entity;
         try {
@@ -1093,7 +1015,7 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        accessPointService.connectAccessPoint(state, entity, externalSystemCode);
+        accessPointService.connectAccessPoint(state, entity, procCtx, replace);
     }
 
     /**
@@ -1137,7 +1059,8 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        accessPointService.synchronizeAccessPoint(state, entity, bindingState, false);
+        ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem);
+        accessPointService.synchronizeAccessPoint(procCtx, state, entity, bindingState, false);
     }
 
     /**
@@ -1226,6 +1149,34 @@ public class ApController {
         List<UISettings> itemTypesSettings = settingsService.getGlobalSettings(itemTypes.toString(), itemTypes.getEntityType());
         List<UISettings> partsOrderSettings = settingsService.getGlobalSettings(partsOrder.toString(), partsOrder.getEntityType());
         return apFactory.createApTypeViewSettings(itemTypesSettings, partsOrderSettings);
+    }
+
+    /**
+     * Export souřadnic do formátu KML/GML
+     *
+     * @param fileType Typ souboru
+     * @param itemId Identifikátor itemu
+     * @return Soubor se souřadnicemi
+     */
+    @Transactional
+    @RequestMapping(value = "/export/coordinates/{itemId}", method = RequestMethod.POST)
+    public ResponseEntity<Resource> exportCoordinates(@RequestParam final FileType fileType,
+                                                      @PathVariable("itemId") final Integer itemId) {
+        return new ResponseEntity<>(accessPointService.exportCoordinates(fileType, itemId), accessPointService.createCoordinatesHeaders(fileType), HttpStatus.OK);
+    }
+
+    /**
+     * Import souřadnic ve formátu KML/GML
+     *
+     * @param fileType Typ souboru
+     * @param body Soubor se souřadnicemi
+     * @return Souřadnice převedené do řetězce
+     */
+    @Transactional
+    @RequestMapping(value = "/import/coordinates", method = RequestMethod.POST)
+    public String importCoordinates(@RequestParam final FileType fileType,
+                                    @RequestBody(required = false) Resource body) {
+        return accessPointService.importCoordinates(fileType, body);
     }
 
 }

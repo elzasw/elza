@@ -40,7 +40,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 
 
 	//TODO: Consider to remove this method
-    @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL")
+    @Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.node = ?1 AND i.deleteChange IS NULL")
     List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node);
 
 	/*static final String FETCH_NODES_WITH_DATA = "SELECT i, d, dp, par FROM arr_desc_item i"

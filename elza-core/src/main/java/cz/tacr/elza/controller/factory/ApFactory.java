@@ -1,18 +1,20 @@
 package cz.tacr.elza.controller.factory;
 
-import java.util.*;
+import static cz.tacr.elza.repository.ExceptionThrow.ap;
+import static cz.tacr.elza.repository.ExceptionThrow.scope;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.connector.CamConnector;
-import cz.tacr.elza.connector.CamInstance;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.ap.ApViewSettings;
-import cz.tacr.elza.controller.vo.ap.item.*;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.packageimport.xml.SettingItemTypes;
-import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -21,18 +23,66 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.FactoryUtils;
-import cz.tacr.elza.controller.vo.ap.ApFormVO;
-import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
+import cz.tacr.elza.connector.CamConnector;
+import cz.tacr.elza.connector.CamInstance;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApBindingItemVO;
+import cz.tacr.elza.controller.vo.ApBindingVO;
+import cz.tacr.elza.controller.vo.ApChangeVO;
+import cz.tacr.elza.controller.vo.ApEidTypeVO;
+import cz.tacr.elza.controller.vo.ApPartVO;
+import cz.tacr.elza.controller.vo.ApRecordSimple;
+import cz.tacr.elza.controller.vo.ApStateHistoryVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.LanguageVO;
+import cz.tacr.elza.controller.vo.UserVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
+import cz.tacr.elza.controller.vo.ap.ApViewSettings;
+import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemBitVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemDateVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemDecimalVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemEnumVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemIntVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemJsonTableVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemTextVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemUnitdateVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemUnitidVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemUriRefVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.service.RuleService;
-
-import static cz.tacr.elza.repository.ExceptionThrow.ap;
-import static cz.tacr.elza.repository.ExceptionThrow.scope;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingItem;
+import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.packageimport.xml.SettingItemTypes;
+import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingItemRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 
 @Service
 public class ApFactory {
@@ -53,8 +103,6 @@ public class ApFactory {
 
     private final ApItemRepository itemRepository;
 
-    private final RuleService ruleService;
-
     private final RuleFactory ruleFactory;
 
     private final CamConnector camConnector;
@@ -68,7 +116,6 @@ public class ApFactory {
                      final ApItemRepository itemRepository,
                      final ApBindingStateRepository bindingStateRepository,
                      final ApBindingItemRepository bindingItemRepository,
-                     final RuleService ruleService,
                      final RuleFactory ruleFactory,
                      final CamConnector camConnector) {
         this.apRepository = apRepository;
@@ -79,7 +126,6 @@ public class ApFactory {
         this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.bindingItemRepository = bindingItemRepository;
-        this.ruleService = ruleService;
         this.ruleFactory = ruleFactory;
         this.camConnector = camConnector;
     }
@@ -244,12 +290,12 @@ public class ApFactory {
                 if (camInstance != null) {
                     String value = binding.getValue();
                     if (StringUtils.isNotEmpty(value)) {
-                        String url = camInstance.getEntityDetailUrl(Integer.parseInt(value));
+                        String url = camInstance.getEntityDetailUrl(value);
                         binding.setDetailUrl(url);
                     }
                     String extReplacedBy = binding.getExtReplacedBy();
                     if (StringUtils.isNotEmpty(extReplacedBy)) {
-                        String url = camInstance.getEntityDetailUrl(Integer.parseInt(extReplacedBy));
+                        String url = camInstance.getEntityDetailUrl(extReplacedBy);
                         binding.setDetailUrlExtReplacedBy(url);
                     }
                 }
@@ -375,35 +421,6 @@ public class ApFactory {
         return result;
     }
 
-    public ApFragmentVO createVO(final ApPart fragment, final boolean fillForm) {
-        ApFragmentVO fragmentVO = createVO(fragment);
-        if (fillForm) {
-            //TODO fantis: smazat nebo prepsat
-//            fragmentVO.setForm(createFormVO(fragment));
-        }
-        return fragmentVO;
-    }
-
-    public ApFragmentVO createVO(final ApPart fragment) {
-        return ApFragmentVO.newInstance(fragment);
-    }
-
-    //TODO fantis: smazat nebo prepsat
-    /*private ApFormVO createFormVO(final ApPart fragment) {
-        List<ApItem> fragmentItems = new ArrayList<>(fragmentItemRepository.findValidItemsByFragment(fragment));
-        List<RulItemTypeExt> rulItemTypes = ruleService.getFragmentItemTypesInternal(fragment.getFragmentType(), fragmentItems);
-
-        ApFormVO form = new ApFormVO();
-        form.setItemTypes(createItemTypesVO(rulItemTypes));
-        form.setItems(createItemsVO(fragmentItems));
-        return form;
-    }*/
-
-    private ApFormVO createFormVO(ApType type) {
-        ApFormVO form = new ApFormVO();
-        return form;
-    }
-
     public List<ApItemVO> createItemsVO(final List<ApItem> apItems) {
         List<ApItemVO> items = new ArrayList<>(apItems.size());
         for (ApItem item : apItems) {
@@ -425,7 +442,6 @@ public class ApFactory {
 
     private void fillRefEntities(final List<ApItemVO> items) {
         Map<Integer, List<ApItemAccessPointRefVO>> accessPointsMap = new HashMap<>();
-        Map<Integer, List<ApItemAPFragmentRefVO>> fragmentMap = new HashMap<>();
 
         for (ApItemVO item : items) {
             if (item instanceof ApItemAccessPointRefVO) {
@@ -433,12 +449,6 @@ public class ApFactory {
                 if (accessPointId != null) {
                     List<ApItemAccessPointRefVO> list = accessPointsMap.computeIfAbsent(accessPointId, k -> new ArrayList<>());
                     list.add((ApItemAccessPointRefVO) item);
-                }
-            } else if (item instanceof ApItemAPFragmentRefVO) {
-                Integer fragmentId = ((ApItemAPFragmentRefVO) item).getValue();
-                if (fragmentId != null) {
-                    List<ApItemAPFragmentRefVO> list = fragmentMap.computeIfAbsent(fragmentId, k -> new ArrayList<>());
-                    list.add((ApItemAPFragmentRefVO) item);
                 }
             }
         }
@@ -451,18 +461,6 @@ public class ApFactory {
                 List<ApItemAccessPointRefVO> accessPointRefVOS = accessPointsMap.get(accessPointVO.getId());
                 for (ApItemAccessPointRefVO accessPointRefVO : accessPointRefVOS) {
                     accessPointRefVO.setAccessPoint(accessPointVO);
-                }
-            }
-        }
-
-        Set<Integer> fragmentIds = fragmentMap.keySet();
-        if (!fragmentIds.isEmpty()) {
-            List<ApPart> fragments = partRepository.findAllById(fragmentIds);
-            List<ApFragmentVO> fragmentVOList = FactoryUtils.transformList(fragments, this::createVO);
-            for (ApFragmentVO fragmentVO : fragmentVOList) {
-                List<ApItemAPFragmentRefVO> fragmentRefVOS = fragmentMap.get(fragmentVO.getId());
-                for (ApItemAPFragmentRefVO fragmentRefVO : fragmentRefVOS) {
-                    fragmentRefVO.setFragment(fragmentVO);
                 }
             }
         }
@@ -499,7 +497,7 @@ public class ApFactory {
             case RECORD_REF:
                 item = new ApItemAccessPointRefVO(apItem, ((externalSystem, value) -> {
                     CamInstance camInstance = camConnector.getByCode(externalSystem.getCode());
-                    return camInstance.getEntityDetailUrl(Integer.parseInt(value));
+                    return camInstance.getEntityDetailUrl(value);
                 }));
                 break;
             case DECIMAL:

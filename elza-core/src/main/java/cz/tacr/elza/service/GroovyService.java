@@ -1,30 +1,54 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.groovy.*;
-import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.repository.StructureDefinitionRepository;
-import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
-import cz.tacr.elza.repository.StructuredTypeRepository;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataBit;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulStructureDefinition;
+import cz.tacr.elza.domain.RulStructureExtensionDefinition;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.groovy.GroovyAe;
+import cz.tacr.elza.groovy.GroovyItem;
+import cz.tacr.elza.groovy.GroovyItems;
+import cz.tacr.elza.groovy.GroovyPart;
+import cz.tacr.elza.groovy.GroovyResult;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.StructureDefinitionRepository;
+import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
 
 @Service
 public class GroovyService {
@@ -153,10 +177,16 @@ public class GroovyService {
                             intValue = dataTmp.getRecordId();
                         } else {
                             value = dataTmp.getBinding().getValue();
-                            intValue = Integer.parseInt(value);
+                            // pokud se jedna o referenci na vnejsi zaznam, tak
+                            // hodnota je libovolneho typu 
+                            intValue = null;
                         }
 
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, value, intValue);
+                        if (intValue != null) {
+                            groovyItem = new GroovyItem(itemTypeCode, spec, specCode, value, intValue);
+                        } else {
+                            groovyItem = new GroovyItem(itemTypeCode, spec, specCode, value, 0);
+                        }
                         break;
                     }
                     case ENUM: {
@@ -222,7 +252,9 @@ public class GroovyService {
     }
 
     public String getGroovyFilePath(GroovyPart part) {
-        RulStructuredType structureType = structuredTypeRepository.findByCode(part.getPartTypeCode());
+        StaticDataProvider sdp = staticDataService.getData();
+
+        RulStructuredType structureType = sdp.getStructuredTypeByCode(part.getPartTypeCode()).getStructuredType();
         List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
                 .findByStructureTypeAndDefTypeOrderByPriority(structureType, RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE);
 

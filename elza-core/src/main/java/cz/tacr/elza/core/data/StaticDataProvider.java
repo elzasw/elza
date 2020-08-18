@@ -42,6 +42,11 @@ import cz.tacr.elza.repository.SysLanguageRepository;
 
 public class StaticDataProvider {
 
+    /**
+     * Výchozí kód typu pártu.
+     */
+    public static final String DEFAULT_PART_TYPE = "PT_NAME";
+
     private List<RulPackage> packages;
 
     private List<ApType> apTypes;
@@ -190,6 +195,12 @@ public class StaticDataProvider {
     public RulPartType getPartTypeByCode(String code) {
         Validate.notEmpty(code);
         return partTypeCodeMap.get(code);
+    }
+
+    public RulPartType getDefaultPartType() {
+        RulPartType partType = partTypeCodeMap.get(DEFAULT_PART_TYPE);
+        Validate.notNull(partType);
+        return partType;
     }
 
     public List<ItemType> getItemTypes() {

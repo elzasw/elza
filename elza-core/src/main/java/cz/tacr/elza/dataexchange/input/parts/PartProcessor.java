@@ -14,16 +14,13 @@ import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.schema.v2.*;
 import cz.tacr.elza.service.AccessPointDataService;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class PartProcessor<P extends Party, E extends ApPart> implements ItemProcessor {
@@ -73,7 +70,7 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
     }
 
     private void processNames(PartyNames names, AccessPointInfo apInfo) {
-        RulPartType type = staticData.getPartTypeByCode("PT_NAME");
+        RulPartType type = staticData.getDefaultPartType();
         for (PartyName name : names.getNm()) {
             E partEntity = createPart(type, apInfo);
             List<ItemWrapper> itemWrapperList = processName(name, partEntity);
@@ -295,10 +292,5 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
         entity.setState(ApStateEnum.OK);
         return entity;
     }
-
-    private RulPartType resolvePartType(String type) {
-        return staticData.getPartTypeByCode("PT_NAME");
-    }
-
 
 }

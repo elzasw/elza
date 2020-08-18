@@ -5,7 +5,6 @@ package cz.tacr.elza.domain;
  *
  * Používané pro entity:
  *  - {@link ApAccessPoint}
- *  - {@link ApName}
  *  - {@link ApPart}
  */
 public enum ApStateEnum {

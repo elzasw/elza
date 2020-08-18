@@ -7,7 +7,6 @@ import cz.tacr.elza.controller.vo.ApAccessPointVO;
  *
  * Používané pro entity:
  *  - {@link ApAccessPointVO}
- *  - {@link ApFragmentVO}
  */
 public enum ApStateVO {
 

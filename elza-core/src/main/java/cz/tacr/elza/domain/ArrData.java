@@ -47,6 +47,7 @@ public abstract class ArrData implements NodeCacheSerializable {
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer dataId;
 
+    @JsonIgnore
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = RulDataType.class)
     @JoinColumn(name = "dataTypeId", nullable = false)
     private RulDataType dataType;
@@ -87,6 +88,9 @@ public abstract class ArrData implements NodeCacheSerializable {
     }
 
     public RulDataType getDataType() {
+	    if (dataType == null && dataTypeId != null) {
+	        dataType = DataType.fromId(dataTypeId).getEntity();
+        }
         return dataType;
     }
 

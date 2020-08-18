@@ -22,16 +22,16 @@ void generate() {
     StringBuilder valueBuilder = new StringBuilder();
     StringBuilder sortValueBuilder = new StringBuilder();
 
-    appendValue(valueBuilder, "BRIEF_DESC");
-    appendValue(sortValueBuilder, "BRIEF_DESC");
+    appendValue(valueBuilder, "ZP2015_ORIGINATOR");
+    appendValue(sortValueBuilder, "ZP2015_ORIGINATOR");
 
-    appendValue(valueBuilder, "NM_MAIN");
-    appendValue(sortValueBuilder, "NM_MAIN");
+    //appendValue(valueBuilder, "NM_MAIN");
+    //appendValue(sortValueBuilder, "NM_MAIN");
 
     // store result
     result.setValue(valueBuilder.toString().trim());
     result.setSortValue(sortValueBuilder.toString().trim());
-    result.setComplement("doplněk test");
+    result.setComplement("");
 }
 
 void appendValue(StringBuilder sb, String itemTypeCode) {

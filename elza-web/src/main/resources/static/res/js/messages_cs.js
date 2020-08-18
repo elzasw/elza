@@ -36,6 +36,7 @@ var messages = {
     "global.action.write": "Zapsat",
     "global.action.delete": "Odstranit",
     "global.action.replace": "Nahradit",
+    "global.action.merge": "Sloučit",
     "global.action.add": "Přidat",
     "global.action.choose": "Vybrat",
     "global.action.use": "Použít",
@@ -1079,6 +1080,7 @@ var messages = {
     "ap.ext-search.label.params": "Zvolte parametry hledání",
     "ap.ext-search.label.no-entities": "Nebyly dohledány žádné entity",
     "ap.ext-search.label.take-to-scope": "Převzít do oblasti",
+    "ap.ext-search.label.action": "Propojit",
 
     "ap.ext-search.ext-system": "Externí systém",
     "ap.ext-search.search": "Vyhledávání",

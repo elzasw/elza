@@ -18,6 +18,14 @@ typesNumToStrMap[2] = availability.RECOMMENDED;
 typesNumToStrMap[1] = availability.POSSIBLE;
 typesNumToStrMap[0] = availability.IMPOSSIBLE;
 
+export function isType(maybeType/*: number || string*/, checkType/*: string*/) {
+    if (typeof maybeType === 'number') {
+        return typesNumToStrMap[maybeType] == checkType;
+    } else {
+        return maybeType == checkType;
+    }
+}
+
 function getDbItemTypesMap(data) {
     // Mapa id descItemType na descItemType
     var typesMap = {};
@@ -173,7 +181,7 @@ function initFormKey(descItemType, descItem) {
 // 2. Pokud atribut nemá žádnou hodnotu, přidá první implicitní
 //
 export function consolidateDescItems(resultDescItemType, infoType, refType, addedByUser, emptySystemSpecToKeyMap = {}) {
-    var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED';
+    // var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED';
 
     // Vynucené hodnoty se specifikací, pokud je potřeba
     addForcedSpecifications(resultDescItemType, infoType, refType, emptySystemSpecToKeyMap);
@@ -222,7 +230,7 @@ export function addForcedSpecifications(resultDescItemType, infoType, refType, e
 
     infoType.specs.forEach(spec => {
         const infoSpec = infoType.descItemSpecsMap[spec.id];
-        var forceVisibility = infoSpec.type == 'REQUIRED' || infoSpec.type == 'RECOMMENDED';
+        var forceVisibility = isType(infoSpec.type, 'REQUIRED') || isType(infoSpec.type, 'RECOMMENDED');
         if (forceVisibility && !existingSpecIds[spec.id]) {
             // přidáme ji na formulář, pokud má být vidět a ještě na formuláři není
             var descItem = createImplicitDescItem(resultDescItemType, refType, false);
@@ -252,7 +260,8 @@ export function addForcedSpecifications(resultDescItemType, infoType, refType, e
 function mergeDescItems(state, resultDescItemType, prevType, newType) {
     var infoType = state.infoTypesMap[resultDescItemType.id];
     var refType = state.refTypesMap[resultDescItemType.id];
-    var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED';
+    // var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED';
+    var forceVisibility = isType(infoType.type, 'REQUIRED') || isType(infoType.type, 'RECOMMENDED');
 
     if (!prevType) {
         // ještě ji na formuláři nemáme
@@ -786,7 +795,7 @@ class FlatFormData {
         for (let t = 0; t < types.ids.length; t++) {
             let typeId = types.ids[t];
             let type = types[typeId];
-            let forceVisible = type.type === availability.REQUIRED || type.type === availability.RECOMMENDED;
+            let forceVisible = isType(type.type, availability.REQUIRED) || isType(type.type, availability.RECOMMENDED);
             let typeItems = itemTypesMap[typeId] && itemTypesMap[typeId].items;
 
             if (forceVisible) {
@@ -879,7 +888,7 @@ class FlatFormData {
             let item = specs[itemId];
             let typeId = item.itemType;
 
-            if (item.type === availability.RECOMMENDED || item.type === availability.REQUIRED) {
+            if (isType(item.type, availability.RECOMMENDED) || isType(item.type, availability.REQUIRED)) {
                 if (!types[typeId]) {
                     types[typeId] = {
                         specs: [],
@@ -1282,6 +1291,7 @@ export function createDescItem(descItemType, refType, addedByUser) {
         addedByUser,
     };
 
+    prepareNextFormKey(descItemType)
     initFormKey(descItemType, result);
 
     if (refType.useSpecification) {
