@@ -25,7 +25,6 @@ public enum DataType {
     FILE_REF(ArrDataFileRef.class),
     JSON_TABLE(ArrDataJsonTable.class, Integer.MAX_VALUE),
     DATE(ArrDataDate.class),
-    APFRAG_REF(ArrDataApFragRef.class),
     URI_REF(ArrDataUriRef.class),
     BIT(ArrDataBit.class);
 

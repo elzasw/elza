@@ -265,6 +265,27 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     @Override
+    public List<Structured> getStructured(Collection<String> typeCodes) {
+        Validate.notNull(typeCodes);
+
+        Set<Integer> distinctIds = new HashSet<>();
+        List<Structured> objs = new ArrayList<>();
+
+        for (cz.tacr.elza.print.item.Item item : outputItems) {
+            String tc = item.getType().getCode();
+            if (!typeCodes.contains(tc)) {
+                continue;
+            }
+            Structured sobj = item.getValue(Structured.class);
+            if (distinctIds.add(sobj.getId())) {
+                objs.add(sobj);
+            }
+        }
+
+        return objs;
+    }
+
+    @Override
     public cz.tacr.elza.print.item.Item getSingleItem(String typeCode) {
         Validate.notEmpty(typeCode);
 

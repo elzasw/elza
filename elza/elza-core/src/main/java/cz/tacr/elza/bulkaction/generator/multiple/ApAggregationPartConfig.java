@@ -1,11 +1,7 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
-import java.util.List;
-
 public class ApAggregationPartConfig {
-    String type;
-
-    boolean fromPrefferedName;
+    boolean fromPrefferedName = false;
 
     String fromPart;
 
@@ -13,22 +9,11 @@ public class ApAggregationPartConfig {
 
     String toItem;
 
-    boolean group;
+    boolean group = false;
 
-    String groupSeparator;
+    String groupSeparator = "";
 
     public ApAggregationPartConfig() {
-        fromPrefferedName = false;
-        group = false;
-        groupSeparator = "";
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public boolean isFromPrefferedName() {

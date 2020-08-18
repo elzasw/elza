@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
@@ -74,6 +73,9 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
     @Query("UPDATE ap_state  s SET s.apType = :value WHERE s.apType = :key")
     void updateApTypeByApType(@Param("key") ApType key, @Param("value") ApType value);
 
+    @Modifying
+    void deleteAllByScope(ApScope scope);
+
 //    @Query("select s" +
 //            " from ap_state s" +
 //            " join ap_external_id eid on eid.accessPoint = s.accessPoint" +
@@ -112,4 +114,5 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
             " WHERE s1.accessPoint = :accessPoint" +
             " AND s1.createChangeId = (SELECT min(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
     ApState findFirstByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
+
 }

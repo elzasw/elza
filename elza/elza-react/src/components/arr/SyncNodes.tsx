@@ -23,17 +23,10 @@ type Props = OwnProps & InjectedFormProps<FormData, OwnProps, FormErrors<FormDat
 
 class SyncNodes extends React.Component<Props> {
     render() {
-        const {handleSubmit, pristine, submitting, fundId} = this.props;
+        const {handleSubmit, submitting, fundId} = this.props;
         return (
             <Form onSubmit={handleSubmit}>
                 <Modal.Body>
-                    <FF
-                        name="templateId"
-                        field={RefTemplateField}
-                        label={i18n('arr.syncNodes.templateId')}
-                        fundId={fundId}
-                        useIdAsValue
-                    />
                     <Field
                         name="childrenNodes"
                         type="checkbox"
@@ -43,7 +36,7 @@ class SyncNodes extends React.Component<Props> {
                     />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>
+                    <Button type="submit" variant="outline-secondary" disabled={submitting}>
                         {i18n('global.action.run')}
                     </Button>
                 </Modal.Footer>
@@ -59,17 +52,13 @@ export default reduxForm<FormData, OwnProps, FormErrors<FormData>>({
         props: DecoratedFormProps<FormData, OwnProps, FormErrors<FormData>>,
     ): FormErrors<FormData, FormErrors<FormData>> {
         const errors: FormErrors<FormData, FormErrors<FormData>> = {};
-        if (!values.templateId) {
-            errors.templateId = i18n('global.validation.required');
-        }
         return errors;
     },
     initialValues: {
-        templateId: undefined,
         childrenNodes: false,
     },
     onSubmit: (data, dispatch, props) => {
-        return WebApi.synchronizeNodes(props.nodeId, props.nodeVersion, data.templateId, data.childrenNodes);
+        return WebApi.synchronizeNodes(props.nodeId, props.nodeVersion, data.childrenNodes);
     },
     onSubmitSuccess(
         result: any,

@@ -1,11 +1,24 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
-import javax.persistence.*;
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 @Entity(name = "ap_binding_state")
 public class ApBindingState {
+
+    public static final String ACCESS_POINT_ID = "accessPointId";
+    public static final String DELETE_CHANGE_ID = "deleteChangeId";
 
     @Id
     @GeneratedValue

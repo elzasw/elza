@@ -104,7 +104,6 @@ import cz.tacr.elza.controller.vo.WfIssueListVO;
 import cz.tacr.elza.controller.vo.WfIssueStateVO;
 import cz.tacr.elza.controller.vo.WfIssueTypeVO;
 import cz.tacr.elza.controller.vo.WfIssueVO;
-import cz.tacr.elza.controller.vo.ap.ApFragmentVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.DataType;
@@ -301,15 +300,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DELETE_VARIANT_RECORD = AP_CONTROLLER_URL + "/variantRecord/{variantRecordId}";
 
     protected static final String RECORD_TYPES_FOR_PARTY_TYPE = AP_CONTROLLER_URL + "/recordTypesForPartyType";
-
-    // FRAGMENT
-    protected static final String FRAGMENT_TYPES = AP_CONTROLLER_URL + "/fragment/types";
-    protected static final String GET_FRAGMENT = AP_CONTROLLER_URL + "/fragment/{fragmentId}";
-    protected static final String DELETE_FRAGMENT = AP_CONTROLLER_URL + "/fragment/{fragmentId}";
-    protected static final String DELETE_FRAGMENT_ITEMS_BY_TYPE = AP_CONTROLLER_URL + "/fragment/{fragmentId}/type/{itemTypeId}";
-    protected static final String CONFIRM_FRAGMENT = AP_CONTROLLER_URL + "/fragment/{fragmentId}/confirm";
-    protected static final String CHANGE_FRAGMENT_ITEMS = AP_CONTROLLER_URL + "/fragment/{fragmentId}/items";
-    protected static final String CREATE_FRAGMENT = AP_CONTROLLER_URL + "/fragment/create/{fragmentTypeCode}";
 
     // PART
     protected static final String CREATE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part";
@@ -3290,51 +3280,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Vytvoření nového dočasného fragmentu. Pro potvrzení je třeba použít {@link #confirmFragment}
-     *
-     * @param fragmentTypeCode kód typu fragmentu
-     * @return založený fragment
-     */
-    protected ApFragmentVO createFragment(final String fragmentTypeCode) {
-        return post(spec -> spec.pathParameter("fragmentTypeCode", fragmentTypeCode), CREATE_FRAGMENT)
-                .as(ApFragmentVO.class);
-    }
-
-    protected ApFragmentVO changeFragmentItems(final Integer fragmentId,
-                                               final List<ApUpdateItemVO> items) {
-        return put(spec -> spec.pathParameter("fragmentId", fragmentId)
-                .body(items), CHANGE_FRAGMENT_ITEMS)
-                .as(ApFragmentVO.class);
-    }
-
-    /**
-     * Potvrzení fragmentu.
-     *
-     * @param fragmentId identifikátor fragmentu
-     */
-    protected void confirmFragment(final Integer fragmentId) {
-        post(spec -> spec.pathParameter("fragmentId", fragmentId), CONFIRM_FRAGMENT);
-    }
-
-    /**
-     * Získání fragmentu.
-     *
-     * @param fragmentId identifikátor fragmentu
-     */
-    protected ApFragmentVO getFragment(final Integer fragmentId) {
-        return get(spec -> spec.pathParameter("fragmentId", fragmentId), GET_FRAGMENT).as(ApFragmentVO.class);
-    }
-
-    /**
-     * Smazání fragmentu.
-     *
-     * @param fragmentId identifikátor fragmentu
-     */
-    protected void deleteFragment(final Integer fragmentId) {
-        delete(spec -> spec.pathParameter("fragmentId", fragmentId), DELETE_FRAGMENT);
-    }
-
-    /**
      * Založení nové části přístupového bodu.
      *
      * @param accessPointId identifikátor přístupového bodu (PK)
@@ -3488,19 +3433,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
         delete(spec -> spec.pathParameter("accessPointId", accessPointId)
                 .pathParameter("objectId", objectId)
                 .pathParameter("itemTypeId", itemTypeId), DELETE_NAME_ITEMS_BY_TYPE);
-    }
-
-    /**
-     * Smazání hodnot fragmentu podle typu.
-     *
-     * @param fragmentId identifikátor fragmentu
-     * @param itemTypeId identifikátor typu atributu
-     */
-    public ApFragmentVO deleteFragmentItemsByType(final Integer fragmentId,
-                                                  final Integer itemTypeId) {
-        return delete(spec -> spec.pathParameter("fragmentId", fragmentId)
-                .pathParameter("itemTypeId", itemTypeId), DELETE_FRAGMENT_ITEMS_BY_TYPE)
-                .as(ApFragmentVO.class);
     }
 
     // --- Issues ---

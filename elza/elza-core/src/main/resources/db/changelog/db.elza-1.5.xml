@@ -615,8 +615,100 @@
         <addNotNullConstraint tableName="rul_rule_set" columnName="rule_type"/>
     </changeSet>
 
+    <changeSet id="20200811171000" author="fantis">
+        <dropNotNullConstraint tableName="arr_ref_template_map_spec" columnName="from_item_spec_id"/>
+        <dropNotNullConstraint tableName="arr_ref_template_map_spec" columnName="to_item_spec_id"/>
+    </changeSet>
+
     <changeSet id="20200807100100" author="sergey.iryupin">
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20200807100100" />
+    </changeSet>
+
+    <changeSet id="20200813155300" author="fantis">
+        <dropTable tableName="arr_data_apfrag_ref"/>
+        <delete tableName="rul_data_type">
+            <where>code='APFRAG_REF'</where>
+        </delete>
+    </changeSet>
+
+    <changeSet id="20200814152829" author="ppyt">
+        <createIndex indexName="ap_access_point_uuid_idx" tableName="ap_access_point" unique="true">
+            <column name="uuid" type="char(36)"/>
+        </createIndex>
+        <createIndex indexName="ap_state_access_point_idx" tableName="ap_state" unique="false">
+            <column name="access_point_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_state_access_point_create_change_idx" tableName="ap_state" unique="false">
+            <column name="access_point_id" type="int"/>
+            <column name="create_change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_state_access_point_delete_change_idx" tableName="ap_state" unique="true">
+            <column name="access_point_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_state_type_idx" tableName="ap_state" unique="false">
+            <column name="ap_type_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_state_scope_idx" tableName="ap_state" unique="false">
+            <column name="scope_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_part_access_point_idx" tableName="ap_part" unique="false">
+            <column name="access_point_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_part_access_point_delete_idx" tableName="ap_part" unique="false">
+            <column name="access_point_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_part_parent_part_delete_idx" tableName="ap_part" unique="false">
+            <column name="parent_part_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_item_part_idx" tableName="ap_item" unique="false">
+            <column name="part_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_item_part_delete_idx" tableName="ap_item" unique="false">
+            <column name="part_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_item_type_idx" tableName="ap_item" unique="false">
+            <column name="item_type_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_binding_value_system_scope_idx" tableName="ap_binding" unique="true">
+            <column name="value" type="char(50)"/>
+            <column name="external_system_id" type="int"/>
+            <column name="scope_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_binding_item_value_idx" tableName="ap_binding_item" unique="true">
+            <column name="value" type="char(50)"/>
+            <column name="binding_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_binding_item_part_idx" tableName="ap_binding_item" unique="false">
+            <column name="part_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_binding_item_item_idx" tableName="ap_binding_item" unique="false">
+            <column name="item_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_access_point_pref_part_idx" tableName="ap_access_point" unique="true">
+            <column name="preferred_part_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="arr_data_record_ref_record_idx" tableName="arr_data_record_ref" unique="false">
+            <column name="record_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="arr_data_record_ref_binding_idx" tableName="arr_data_record_ref" unique="false">
+            <column name="binding_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_binding_state_access_point_idx" tableName="ap_binding_state" unique="false">
+            <column name="access_point_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_binding_state_binding_idx" tableName="ap_binding_state" unique="false">
+            <column name="binding_id" type="int"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="20200814152831" author="ppyt" dbms="postgresql">
+        <!-- H2 does not support indexes on text/CLOB column -->
+        <createIndex indexName="ap_part_value_idx" tableName="ap_part" unique="false" >
+            <column name="value" type="${type.text}"/>
+        </createIndex>
     </changeSet>
 
     <changeSet id="20200811130500" author="sergey.iryupin">

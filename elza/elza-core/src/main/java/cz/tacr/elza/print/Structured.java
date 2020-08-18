@@ -82,4 +82,8 @@ public class Structured {
         result.setValue(structObj.getValue());
         return result;
     }
+
+    public Integer getId() {
+        return id;
+    }
 }

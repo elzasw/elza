@@ -224,11 +224,6 @@ public class PackageService {
     public static final String EXTERNAL_ID_TYPE_XML = "ap_external_id_type.xml";
 
     /**
-     * typy fragmentů
-     */
-    public static final String FRAGMENT_TYPE_XML = "ap_fragment_type.xml";
-
-    /**
      * stavy připomínek
      */
     public static final String ISSUE_STATE_XML = "wf_issue_state.xml";

@@ -925,10 +925,10 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_TEST_STRUCT" data-type="STRUCTURED" structure-type="ZP2015_TEST_TYP">
-        <name>Test. strukt.</name>
-        <shortcut>t. strukt.</shortcut>
-        <description>Stukturovaný typ</description>
+    <item-type code="ZP2015_ORIGINATOR_SIMPLE" data-type="STRUCTURED" structure-type="ZP2015_ORIGINATOR_STRUCT">
+        <name>Zjednodušený původce</name>
+        <shortcut>Původce</shortcut>
+        <description>Zjednodušený původce pro výstupy</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>

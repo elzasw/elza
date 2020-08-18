@@ -1,5 +1,25 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
+import static cz.tacr.elza.repository.ExceptionThrow.ap;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.AccessPointAggregationResult;
@@ -32,26 +52,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static cz.tacr.elza.repository.ExceptionThrow.ap;
 
 @Component
 @Scope("prototype")
@@ -111,9 +111,13 @@ public class AccessPointAggregationAction extends Action {
         outputItemTypeApRef = sdp.getItemTypeByCode(outputTypeApRef);
         checkValidDataType(outputItemTypeApRef, DataType.RECORD_REF);
 
-        for (ApAggregationPartConfig partConfig : config.getMappingPartValue()) {
-            Assert.notNull(ruleSystem.getPartTypeByCode(partConfig.getFromPart()), "Neexistujíci typ Partu pro mapování: " + partConfig.getFromPart());
-            Assert.notNull(sdp.getItemTypeByCode(partConfig.getToItem()), "Neexistující typ Itemu pro mapování: " + partConfig.getToItem());
+        if (config.getMappingPartValue() != null) {
+            for (ApAggregationPartConfig partConfig : config.getMappingPartValue()) {
+                Assert.notNull(ruleSystem.getPartTypeByCode(partConfig.getFromPart()),
+                               "Neexistujíci typ Partu pro mapování: " + partConfig.getFromPart());
+                Assert.notNull(sdp.getItemTypeByCode(partConfig.getToItem()), "Neexistující typ Itemu pro mapování: "
+                        + partConfig.getToItem());
+            }
         }
 
     }
@@ -166,6 +170,9 @@ public class AccessPointAggregationAction extends Action {
     }
 
     private void createPartValueResults(final ApResult apResult, ApAccessPoint ap, List<ApPart> parts) {
+        if (config.getMappingPartValue() == null) {
+            return;
+        }
         for (ApAggregationPartConfig partConfig : config.getMappingPartValue()) {
             RulPartType fromPart = ruleSystem.getPartTypeByCode(partConfig.getFromPart());
             // pro value jen z fromPrefferedName
@@ -190,6 +197,9 @@ public class AccessPointAggregationAction extends Action {
     }
 
     private void createPartItemResults(final ApResult apResult, ApAccessPoint ap, List<ApItem> items) {
+        if (config.getMappingPartItem() == null) {
+            return;
+        }
         for (ApAggregationItemConfig itemConfig : config.getMappingPartItem()) {
             // pro value jen z fromPrefferedName
             if (itemConfig.fromPrefferedName) {
@@ -217,6 +227,10 @@ public class AccessPointAggregationAction extends Action {
     }
 
     private void createPartItemsResults(final ApResult apResult, ApAccessPoint ap, List<ApItem> items) {
+        if (config.getMappingPartItems() == null) {
+            return;
+        }
+
         for (ApAggregationItemsConfig itemsConfig : config.getMappingPartItems()) {
             // pro value jen z fromPrefferedName
             if (itemsConfig.fromPrefferedName) {
@@ -353,7 +367,6 @@ public class AccessPointAggregationAction extends Action {
             case UNITDATE:
             case JSON_TABLE:
             case FILE_REF:
-            case APFRAG_REF:
             case STRUCTURED:
                 throw new NotImplementedException("Data nejsou podporovány: " + dataType);
             default:

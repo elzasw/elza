@@ -1,21 +1,46 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.SystemException;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Component;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
-import java.util.*;
-import java.util.function.Consumer;
+import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.From;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Order;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApStateEnum;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.ws.types.v1.ItemEnum;
+import cz.tacr.elza.ws.types.v1.ItemString;
 
 /**
  * Implementace respozitory pro aprecord.
@@ -27,6 +52,9 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private StaticDataService staticDataService;
 
     @Override
     public List<ApState> findApAccessPointByTextAndType(
@@ -229,5 +257,70 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         }
 
         return cb.and(conjunctions.toArray(new Predicate[0]));
+    }
+
+    public List<ApAccessPoint> findAccessPointsBySinglePartValues(List<Object> criterias) {
+        StaticDataProvider sdp = staticDataService.getData();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("select ap.* from ap_access_point ap" + 
+                " join ap_state aps ON aps.access_point_id = ap.access_point_id" +
+                " where aps.delete_change_id is null and ap.access_point_id in (");
+        sb.append("select p.access_point_id from ap_part p");
+        // add conditions
+        int counter = 1;
+        for (Object criteria : criterias) {
+            addCriteriasForPart(sdp, sb, counter, criteria);
+            counter++;
+        }
+        sb.append(" where p.delete_change_id is null");
+        sb.append(")");
+        Query q = this.entityManager.createNativeQuery(sb.toString(), ApAccessPoint.class);
+
+        return q.getResultList();
+    }
+
+    private void addCriteriasForPart(StaticDataProvider sdp, StringBuilder sb, int index, Object criteria) {
+        if (criteria instanceof ItemString) {
+            ItemString item = (ItemString) criteria;
+            ItemType itemType = sdp.getItemTypeByCode(item.getType());
+            Validate.isTrue(itemType.getDataType() == DataType.STRING);
+            RulItemSpec itemSpec = null;
+            if (itemType.hasSpecifications()) {
+                if (item.getSpec() != null) {
+                    itemSpec = itemType.getItemSpecByCode(item.getSpec());
+                }
+            }
+
+            addJoinItem(sb, index, itemType, itemSpec);
+
+            sb.append(" join arr_data_string d").append(index)
+                    .append(" on d").append(index).append(".data_id = i").append(index).append(".data_id")
+                    .append(" and d").append(index).append(".value='").append(item.getValue()).append("'");
+
+        } else if (criteria instanceof ItemEnum) {
+            ItemEnum item = (ItemEnum) criteria;
+            ItemType itemType = sdp.getItemTypeByCode(item.getType());
+            Validate.isTrue(itemType.getDataType() == DataType.ENUM);
+            RulItemSpec itemSpec = itemType.getItemSpecByCode(item.getSpec());
+
+            addJoinItem(sb, index, itemType, itemSpec);
+        } else {
+            throw new IllegalStateException("Unrecognized object: " + criteria);
+        }
+
+    }
+
+    private void addJoinItem(StringBuilder sb, int index, ItemType itemType, RulItemSpec itemSpec) {
+
+        sb.append(" join ap_item i").append(index)
+                .append(" on i").append(index).append(".part_id = p.part_id ")
+                .append(" and i").append(index).append(".delete_change_id is null")
+                .append(" and i").append(index).append(".item_type_id = ").append(itemType.getItemTypeId());
+
+        if (itemSpec != null) {
+            sb.append(" and i").append(index).append(".item_spec_id = ").append(itemSpec.getItemSpecId());
+        }
+
     }
 }

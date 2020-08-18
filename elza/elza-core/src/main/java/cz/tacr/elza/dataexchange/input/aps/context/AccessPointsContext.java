@@ -188,8 +188,8 @@ public class AccessPointsContext {
         if (partQueue.size() >= batchSize) {
             storeParts(true);
         }
-
-        if(!prefferedPartApInfos.contains(apInfo) && partWrapper.getPartInfo().getRulPartType().getCode().equals("PT_NAME")) {
+        RulPartType defaultPartType = staticData.getDefaultPartType();
+        if(!prefferedPartApInfos.contains(apInfo) && partWrapper.getPartInfo().getRulPartType().getCode().equals(defaultPartType.getCode())) {
             PrefferedPartWrapper prefferedPartWrapper = new PrefferedPartWrapper(apInfo, partWrapper.getPartInfo());
             prefferedPartQueue.add(prefferedPartWrapper);
             prefferedPartApInfos.add(apInfo);

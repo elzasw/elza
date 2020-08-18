@@ -1,5 +1,10 @@
-<settings>
+<settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types" 
+          xmlns:ns5="fund-issues" xmlns:ns6="grid-view" xmlns:ns7="structure-type-settings"
+          xmlns:ns8="parts-order" xmlns:ns9="item-types">
     <record>
         <scope-code>GLOBAL</scope-code>
     </record>
+
+
+
 </settings>

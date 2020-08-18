@@ -1,24 +1,33 @@
 package cz.tacr.elza.dataexchange.input.parts.context;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.hibernate.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.ObjectIdHolder;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
-import cz.tacr.elza.dataexchange.input.context.*;
+import cz.tacr.elza.dataexchange.input.context.ImportContext;
+import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
+import cz.tacr.elza.dataexchange.input.context.ImportPhase;
+import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
+import cz.tacr.elza.dataexchange.input.context.ObservableImport;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.RulPartType;
-import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.service.GroovyScriptService;
-import cz.tacr.elza.service.party.ApConvResult;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
 
 public class PartsContext {
 
@@ -89,7 +98,8 @@ public class PartsContext {
             storeParts(true);
         }
 
-        if (!prefferedPartApInfos.contains(apInfo) && info.getRulPartType().getCode().equals("PT_NAME")) {
+        RulPartType defaultPartType = staticData.getDefaultPartType();
+        if (!prefferedPartApInfos.contains(apInfo) && info.getRulPartType().getCode().equals(defaultPartType.getCode())) {
             PrefferedPartWrapper prefferedPartWrapper = new PrefferedPartWrapper(apInfo, info);
             prefferedPartQueue.add(prefferedPartWrapper);
             prefferedPartApInfos.add(apInfo);

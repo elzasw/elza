@@ -28,6 +28,9 @@ public interface ApAccessPointRepository
      */
     ApAccessPoint findApAccessPointByUuid(String uuid);
 
+    @Query("SELECT ap FROM ap_access_point ap WHERE ap.uuid IN :uuids")
+    List<ApAccessPoint> findApAccessPointsByUuids(@Param("uuids") Collection<String> uuids);
+
     /**
      * Searches not deleted APs by UUIDs.
      *

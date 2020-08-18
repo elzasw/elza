@@ -134,7 +134,7 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
         marshaller.marshal(jaxbElement, sw);
     }
 
-    public static AccessPointEntry createEntry(ApState apState, Collection<ApBinding> eids) {
+    public static AccessPointEntry createEntry(ApState apState, Collection<ApBindingState> eids) {
         ApAccessPoint ap = apState.getAccessPoint();
 
         AccessPointEntry entry = new AccessPointEntry();
@@ -145,10 +145,10 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
         // prepare external id
         if (CollectionUtils.isNotEmpty(eids)) {
             List<ExternalId> elementList = entry.getEid();
-            for (ApBinding eid : eids) {
+            for (ApBindingState eid : eids) {
                 ExternalId element = new ExternalId();
-                element.setV(eid.getValue());
-                element.setT(eid.getApExternalSystem().getCode());
+                element.setV(eid.getBinding().getValue());
+                element.setT(eid.getBinding().getApExternalSystem().getCode());
                 elementList.add(element);
             }
         }

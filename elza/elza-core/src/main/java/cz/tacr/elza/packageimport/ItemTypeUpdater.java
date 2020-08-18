@@ -1,5 +1,7 @@
 package cz.tacr.elza.packageimport;
 
+import static java.util.stream.Collectors.toMap;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -17,9 +19,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.packageimport.xml.*;
-import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -27,22 +26,47 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.datetime.MultiFormatParser;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.RulItemAptype;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeSpecAssign;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPackageDependency;
+import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.table.ElzaColumn;
-import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.packageimport.xml.Category;
+import cz.tacr.elza.packageimport.xml.Column;
+import cz.tacr.elza.packageimport.xml.DisplayType;
+import cz.tacr.elza.packageimport.xml.ItemAptype;
+import cz.tacr.elza.packageimport.xml.ItemSpec;
+import cz.tacr.elza.packageimport.xml.ItemSpecs;
+import cz.tacr.elza.packageimport.xml.ItemType;
+import cz.tacr.elza.packageimport.xml.ItemTypeAssign;
+import cz.tacr.elza.packageimport.xml.ItemTypes;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.CachedNodeRepository;
+import cz.tacr.elza.repository.DataDateRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataStringRepository.OnlyValues;
-
-import static cz.tacr.elza.packageimport.PackageService.ITEM_TYPE_XML;
-import static java.util.stream.Collectors.toMap;
+import cz.tacr.elza.repository.ItemAptypeRepository;
+import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
+import cz.tacr.elza.repository.PackageDependencyRepository;
+import cz.tacr.elza.repository.PackageRepository;
 
 /**
  * Class to update item types in DB
@@ -258,7 +282,7 @@ public class ItemTypeUpdater {
 
         prepareForUpdate(puc.getPackage());
         List<ApType> typeList = apTypeRepository.findAll();
-        Map<String, ApType> apTypeCache = apTypeRepository.findAll().stream()
+        Map<String, ApType> apTypeCache = typeList.stream()
                 .collect(toMap(apType -> apType.getCode(), apType -> apType));
 
         processItemTypes(itemTypes, itemSpecs, puc, apTypeCache);

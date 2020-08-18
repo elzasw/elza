@@ -56,4 +56,6 @@ public interface ApAccessPointRepositoryCustom {
             @Nullable Collection<ApState.StateApproval> approvalStates,
             @Nullable SearchType searchTypeName,
             @Nullable SearchType searchTypeUsername);
+
+    List<ApAccessPoint> findAccessPointsBySinglePartValues(List<Object> criterias);
 }

@@ -2,6 +2,41 @@
 name: Agregace úvodu
 
 actions:
+  # úprava dějin původce
+    - !AccessPointAggregation
+      inputTypes:
+       - ZP2015_ORIGINATOR
+      outputType: ZP2015_ORIGINATOR_SIMPLE
+      outputTypeApRef: ZP2015_ORIGINATOR # určuje typ atrubutu ve strukturovaném typu, do kterého se ukládá odkaz na zdrojový AP
+      mappingPartItem:
+        - fromPart:
+            - PT_BODY
+          fromType: HISTORY
+          toItem: HISTORY
+        - fromPart:
+            - PT_BODY
+          fromType: GENEALOGY
+          toItem: GENEALOGY
+        - fromPart:
+            - PT_BODY
+          fromType: BIOGRAPHY
+          toItem: BIOGRAPHY
+        - fromPart:
+            - PT_BODY
+          fromType: CORP_PURPOSE
+          toItem: CORP_PURPOSE
+        - fromPart:
+            - PT_BODY
+          fromType: FOUNDING_NORMS
+          toItem: FOUNDING_NORMS
+        - fromPart:
+            - PT_BODY
+          fromType: SCOPE_NORMS
+          toItem: SCOPE_NORMS
+        - fromPart:
+            - PT_BODY
+          fromType: CORP_STRUCTURE
+          toItem: CORP_STRUCTURE
     - !DateRange
       # Extra EJ - kdekoliv
       excludeWhen:
@@ -78,9 +113,9 @@ actions:
         outputType: ZP2015_DESCRIPTION_DATE
 
    # Agregace původce
-    - !Copy
-        inputType: ZP2015_ORIGINATOR
-        distinct: true
+   # - !Copy
+   #     inputType: ZP2015_ORIGINATOR
+   #     distinct: true
 
     # Agregace jazyků
     - !Copy
