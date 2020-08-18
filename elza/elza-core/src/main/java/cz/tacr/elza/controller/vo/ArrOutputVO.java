@@ -128,39 +128,47 @@ public class ArrOutputVO {
     }
 
     public List<Integer> getTemplateIds() {
-    	if (templateIds == null) {
-    		templateIds = new ArrayList<>();
-    	}
-    	return templateIds;
+        if (templateIds == null) {
+            templateIds = new ArrayList<>();
+        }
+        return templateIds;
     }
 
     public Integer getTemplateId() {
-    	if (templateIds == null) {
-    		return null;
-    	}
-   		return templateIds.get(0);
+        if (templateIds == null || templateIds.size() == 0) {
+            return null;
+        }
+        return templateIds.get(0);
     }
 
     public void setTemplateId(final Integer templateId) {
-    	getTemplateIds().set(0, templateId);
+        if (getTemplateIds().size() == 0) {
+            getTemplateIds().add(-1);
+        }
+        getTemplateIds().set(0, templateId);
+        this.templateId = templateId; // dočasně
     }
 
     public List<Integer> getOutputResultIds() {
-    	if (outputResultIds == null) {
-    		outputResultIds = new ArrayList<>();
-    	}
-    	return outputResultIds;
+        if (outputResultIds == null) {
+        outputResultIds = new ArrayList<>();
+        }
+        return outputResultIds;
     }
 
     public Integer getOutputResultId() {
-    	if (outputResultIds == null) {
-    		return null;
-    	}
+        if (outputResultIds == null || outputResultIds.size() == 0) {
+            return null;
+        }
         return outputResultIds.get(0);
     }
 
     public void setOutputResultId(final Integer outputResultId) {
+    	if (getOutputResultIds().size() == 0) {
+    		getOutputResultIds().add(-1);
+    	}
     	getOutputResultIds().set(0, outputResultId);
+    	this.outputResultId = outputResultId; // dočasně
     }
 
     public Date getGeneratedDate() {
