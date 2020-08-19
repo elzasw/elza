@@ -55,6 +55,7 @@ public class AccessPointsReader implements ExportReader {
     }
 
     private void readAccessPoints(ApOutputStream os) {
+        // TODO: refactor to user proper batch loading
         ApInfoLoader loader = new ApInfoLoader(context, em, userService);
         for (Integer apId : context.getApIds()) {
             ApInfoDispatcher dispatcher = new ApInfoDispatcher(context.getStaticData()) {
@@ -65,21 +66,20 @@ public class AccessPointsReader implements ExportReader {
                     	throw new SystemException("Entity not found.", BaseCode.ID_NOT_EXIST)
                     		.set("ID", apId);
                     }
-                    if (!apInfo.isPartyAp()) {
-                        ItemDispatcher itd = new ItemDispatcher(context.getStaticData()) {
-                            @Override
-                            protected void onCompleted() {
-                                apInfo.setItems(this.getPartItemsMap());
-                            }
-                        };
-                        ItemLoader itemLoader = new ItemLoader(context, em, 1000);
-                        List<ApPart> parts = new ArrayList<>(apInfo.getParts());
-                        for(ApPart part : parts) {
-                            itemLoader.addRequest(part.getPartId(), itd);
+
+                    ItemDispatcher itd = new ItemDispatcher(context.getStaticData()) {
+                        @Override
+                        protected void onCompleted() {
+                            apInfo.setItems(this.getPartItemsMap());
                         }
-                        itemLoader.flushItem();
-                        os.addAccessPoint(apInfo);
+                    };
+                    ItemLoader itemLoader = new ItemLoader(context, em, 1000);
+                    List<ApPart> parts = new ArrayList<>(apInfo.getParts());
+                    for (ApPart part : parts) {
+                        itemLoader.addRequest(part.getPartId(), itd);
                     }
+                    itemLoader.flushItem();
+                    os.addAccessPoint(apInfo);
                 }
             };
             loader.addRequest(apId, dispatcher);
