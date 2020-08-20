@@ -177,16 +177,13 @@ public class GroovyService {
                             intValue = dataTmp.getRecordId();
                         } else {
                             value = dataTmp.getBinding().getValue();
-                            // pokud se jedna o referenci na vnejsi zaznam, tak
-                            // hodnota je libovolneho typu 
-                            intValue = null;
+                            // pokud se jedná o pouhý odkaz do externího systému (bez lokálního AP)
+                            // nastavuje se id z bindingu jako záporný idnetifikátor pro odlišení
+                            // identifikátorů z lokálních AP
+                            intValue = dataTmp.getBinding().getBindingId() * -1;
                         }
 
-                        if (intValue != null) {
-                            groovyItem = new GroovyItem(itemTypeCode, spec, specCode, value, intValue);
-                        } else {
-                            groovyItem = new GroovyItem(itemTypeCode, spec, specCode, value, 0);
-                        }
+                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, value, intValue);
                         break;
                     }
                     case ENUM: {
