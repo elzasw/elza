@@ -222,6 +222,7 @@ public class ItemTypeUpdater {
             for (RulItemSpec rulItemSpec : rulItemSpecOrig.values()) {
                 itemAptypeRepository.deleteByItemSpec(rulItemSpec);
             }
+            itemTypeSpecAssignRepository.deleteByItemSpecIn(rulItemSpecOrig.values());
             itemSpecRepository.deleteAll(rulItemSpecOrig.values());
         }
     }
@@ -828,6 +829,8 @@ public class ItemTypeUpdater {
         logger.info("Odebírám všechny vazby specifikace na typ");
         List<RulItemType> rulItemTypeList = itemTypeRepository.findByRulPackage(rulPackage);
         itemTypeSpecAssignRepository.deleteByItemTypeIn(rulItemTypeList);
+        List<RulItemSpec> rulItemSpecList = itemSpecRepository.findByRulPackage(rulPackage);
+        itemTypeSpecAssignRepository.deleteByItemSpecIn(rulItemSpecList);
 
     }
 
