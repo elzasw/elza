@@ -2125,6 +2125,12 @@ public class ArrangementController {
         return generateOutputResult;
     }
 
+    @RequestMapping(value = "/output/send/{outputId}", method = RequestMethod.GET)
+    @Transactional
+    public void sendOutput(@PathVariable(value = "outputId") int outputId) {
+        throw new BusinessException("Not implemented", BaseCode.INVALID_STATE);
+    }
+
     /**
      * Vytvoření nového pojmenovaného výstupu.
      *
