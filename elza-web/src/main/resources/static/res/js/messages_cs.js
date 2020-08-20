@@ -258,10 +258,13 @@ var messages = {
     "ribbon.action.arr.movements": "Přesuny",
     "ribbon.action.arr.output.add": "Nový výstup",
     "ribbon.action.arr.output.generate": "Generovat výstup",
+    "ribbon.action.arr.output.send": "Odeslat výstup",
     "ribbon.action.arr.output.generate.detectChange":
         "Byly zjištěny změny v archivním popisu. Některé hodnoty spočtené funkcemi nemusí být aktuální",
     "ribbon.action.arr.output.generate.recommendedAction": "Nebyly spuštěny všechny doporučené akce",
     "ribbon.action.arr.output.generate.continue": "{0}, chcete i přesto pokračovat?",
+    "ribbon.action.arr.output.send.confirm": "Provést odeslání výstupu?",
+    "ribbon.action.arr.output.send.success": "Výstup odeslán",
     "ribbon.action.arr.output.edit": "Upravit výstup",
     "ribbon.action.arr.output.item.add": "Přidat volitelný prvek",
     "ribbon.action.arr.output.usageEnd": "Ukončit používání",
