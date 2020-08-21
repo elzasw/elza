@@ -167,6 +167,9 @@ import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.importnodes.ImportFromFund;
 import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
@@ -310,6 +313,9 @@ public class ArrangementController {
 
     @Autowired
     private OutputTemplateRepository outputTemplateRepository;
+    
+    @Autowired
+    private EventNotificationService eventNotificationService;
 
     /**
      * Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
@@ -2416,6 +2422,9 @@ public class ArrangementController {
     	ot.setTemplate(template);
     	outputTemplateRepository.save(ot);
 
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(output.getFundId());
+        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, outputId));
+
     	ArrOutputTemplateVO aot = new ArrOutputTemplateVO();
     	aot.setId(ot.getOutputTemplateId());
     	aot.setOutputId(outputId);
@@ -2435,7 +2444,11 @@ public class ArrangementController {
     public void deleteOutputTemplate(@PathVariable(value = "outputId") final Integer outputId,
                                      @PathVariable(value = "templateId") final Integer templateId) {
     	// TODO vložit do servisu?
-    	outputTemplateRepository.deleteByOutputIdAndTemplateId(outputId, templateId);
+    	ArrOutput output = outputRepository.findByOutputId(outputId);
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(output.getFundId());
+        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, outputId));
+
+        outputTemplateRepository.deleteByOutputIdAndTemplateId(outputId, templateId);
     }
 
     /**
