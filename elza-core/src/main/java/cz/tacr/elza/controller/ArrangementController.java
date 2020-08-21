@@ -2383,6 +2383,29 @@ public class ArrangementController {
     }
 
     /**
+     * Přidání šablony k výstupu
+     *
+     * @param outputId identifikátor výstupu
+     * @param templateId identifikátor šablony
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.PUT)
+    public void addOutputTemplate(@PathVariable(value = "outputId") final Integer outputId,
+                                                          @PathVariable(value = "templateId") final Integer templateId) {
+    }
+
+    /**
+     * Odebrání šablony z výstupu
+     *
+     * @param outputId identifikátor výstupu
+     * @param templateId identifikátor šablony
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.DELETE)
+    public void deleteOutputTemplate(@PathVariable(value = "templateId") final Integer outputId,
+                                      @PathVariable(value = "templateId") final Integer templateId) {
+    }
+    /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
      *
      * @param fundVersionId identfikátor verze AS
