@@ -40,6 +40,11 @@ public class ElzaWebController {
         return allowDefaultUser;
     }
 
+    @ModelAttribute("isSendOutputEnabled")
+    public Boolean isSetOutputEnabled() {
+        return true;
+    }
+
     @Value("${elza.security.displayUserInfo:true}")
     private Boolean displayUserInfo;
 
