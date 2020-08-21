@@ -2,12 +2,13 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
 import {formValueSelector, Field, reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {AbstractReactComponent, Autocomplete, FormInput, i18n} from 'components/shared';
 import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx';
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx';
 import {indexById} from 'stores/app/utils.jsx';
 import RegistryField from '../registry/RegistryField';
 import {FormInputField} from '../shared';
+import {WebApi} from "actions/index";
 
 /**
  * Formulář inline editace výstupu.
@@ -56,7 +57,7 @@ class OutputInlineForm extends AbstractReactComponent {
     }
 
     render() {
-        const {outputTypeId, disabled, outputTypes, allTemplates} = this.props;
+        const {outputTypeId, disabled, outputTypes, allTemplates, initialValues} = this.props;
 
         let outputType = false;
         if (outputTypes) {
@@ -64,7 +65,7 @@ class OutputInlineForm extends AbstractReactComponent {
             outputType = index !== null ? outputTypes[index].name : false;
         }
 
-        let templates = false;
+        let templates = [];
         if (outputTypeId) {
             const index = indexById(outputTypes, parseInt(outputTypeId));
             if (index !== null) {
@@ -92,23 +93,29 @@ class OutputInlineForm extends AbstractReactComponent {
                         disabled={disabled}
                         name={'internalCode'}
                     />
-                    <div className="row-layout">
+                    <div>
                         <FormInput type="text" label={i18n('arr.output.outputType')} disabled value={outputType} />
-                        <Field
-                            component={FormInputField}
-                            as="select"
-                            label={i18n('arr.output.template')}
-                            disabled={disabled || !outputTypeId || !templates}
-                            name={'templateId'}
-                        >
-                            <option key="-templateId" />
-                            {templates &&
-                                templates.map(i => (
-                                    <option key={i.id} value={i.id}>
-                                        {i.name}
-                                    </option>
-                                ))}
-                        </Field>
+                    </div>
+                    <div>
+                        <label className="control-label">{i18n('arr.output.template')}</label>
+                        <Autocomplete
+                            ref="template-select"
+                            className="form-group"
+                            value={null}
+                            items={templates}
+                            disabled={!templates}
+                            onChange={this.handleChangeTemplate}
+                        />
+                        <div>
+                            {templates.length > 0 && initialValues.templateIds.map((templateId)=>{
+                                console.log(templates);
+                                const template = templates.find((item)=>item.id===templateId);
+                                return <div>
+                                    {template && template.name}
+                                    <button type="button" onClick={()=>this.handleRemoveTemplate(templateId)}>X</button>
+                                    </div>
+                            })}
+                        </div>
                     </div>
                     <div>
                         <label className="control-label">{i18n('arr.output.title.anonymizedAp')}</label>
@@ -125,6 +132,26 @@ class OutputInlineForm extends AbstractReactComponent {
                 </form>
             </div>
         );
+    }
+
+    handleRemoveTemplate = (templateId) => {
+        const {initialValues} = this.props;
+
+        if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
+            WebApi.deleteOutputTemplate(initialValues.id, templateId);
+        }
+    };
+
+
+    handleAddTemplate = (templateId) => {
+        const {initialValues} = this.props;
+
+        WebApi.addOutputTemplate(initialValues.id, templateId);
+        // Zbytek zařídí websocket
+    };
+
+    handleChangeTemplate = (template) => {
+        this.handleAddTemplate(template.id);
     }
 }
 
