@@ -275,6 +275,16 @@ export function fundOutputGenerate(outputId) {
     };
 }
 
+export function fundOutputSend(outputId) {
+    return (dispatch) => {
+        if (window.confirm(i18n('ribbon.action.arr.output.send.confirm'))) {
+            WebApi.outputSend(outputId).then(() => { 
+                dispatch(addToastrSuccess(i18n('ribbon.action.arr.output.send.success')));
+            });
+        }
+    };
+}
+
 export function fundOutputFilterByState(versionId, state) {
     return {
         type: types.FUND_OUTPUT_FILTER_STATE,
