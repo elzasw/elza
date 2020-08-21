@@ -136,7 +136,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
     }
 
     private void getCurrentPackage() throws DatabaseException, SQLException {
-        PreparedStatement ps = conn.prepareStatement("SELECT package_id, code, version FROM rul_package WHERE code = 'ZP2015'");
+        PreparedStatement ps = conn.prepareStatement("SELECT package_id, code, version FROM rul_package WHERE code = 'CZ_BASE'");
         ps.execute();
         try (ResultSet rs = ps.getResultSet();) {
             while (rs.next()) {

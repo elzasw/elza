@@ -25,7 +25,6 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,36 +45,13 @@ import cz.tacr.cam.schema.cam.BatchUpdateErrorXml;
 import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
 import cz.tacr.cam.schema.cam.BatchUpdateSavedXml;
 import cz.tacr.cam.schema.cam.BatchUpdateXml;
-import cz.tacr.cam.schema.cam.BooleanXml;
-import cz.tacr.cam.schema.cam.CodeXml;
-import cz.tacr.cam.schema.cam.CreateEntityXml;
-import cz.tacr.cam.schema.cam.DeletePartXml;
-import cz.tacr.cam.schema.cam.EntityIdXml;
-import cz.tacr.cam.schema.cam.EntityRecordRefXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.ErrorMessageXml;
-import cz.tacr.cam.schema.cam.IntegerXml;
-import cz.tacr.cam.schema.cam.ItemBooleanXml;
-import cz.tacr.cam.schema.cam.ItemEntityRefXml;
-import cz.tacr.cam.schema.cam.ItemEnumXml;
-import cz.tacr.cam.schema.cam.ItemIntegerXml;
-import cz.tacr.cam.schema.cam.ItemLinkXml;
-import cz.tacr.cam.schema.cam.ItemStringXml;
-import cz.tacr.cam.schema.cam.ItemUnitDateXml;
-import cz.tacr.cam.schema.cam.ItemsXml;
 import cz.tacr.cam.schema.cam.LongStringXml;
-import cz.tacr.cam.schema.cam.NewItemsXml;
-import cz.tacr.cam.schema.cam.PartTypeXml;
 import cz.tacr.cam.schema.cam.PartXml;
-import cz.tacr.cam.schema.cam.PartsXml;
-import cz.tacr.cam.schema.cam.SetRecordStateXml;
-import cz.tacr.cam.schema.cam.StringXml;
-import cz.tacr.cam.schema.cam.UpdateEntityXml;
-import cz.tacr.cam.schema.cam.UpdateItemsXml;
 import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.api.ApExternalSystemType;
-import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
@@ -88,7 +64,6 @@ import cz.tacr.elza.controller.vo.usage.NodeVO;
 import cz.tacr.elza.controller.vo.usage.OccurrenceType;
 import cz.tacr.elza.controller.vo.usage.OccurrenceVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -101,7 +76,6 @@ import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
-import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
@@ -113,14 +87,7 @@ import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataBit;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -165,11 +132,12 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.cam.CamHelper;
+import cz.tacr.elza.service.cam.CreateEntityBuilder;
 import cz.tacr.elza.service.cam.ProcessingContext;
+import cz.tacr.elza.service.cam.UpdateEntityBuilder;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.DataRef;
-import cz.tacr.elza.service.vo.ImportAccessPoint;
 
 
 /**
@@ -1336,7 +1304,10 @@ public class AccessPointService {
 
         BatchUpdateXml batchUpdate = new BatchUpdateXml();
         batchUpdate.setInf(createBatchInfo(userDetail));
-        batchUpdate.getChanges().add(createCreateEntity(state, partList, itemMap, binding));
+        CreateEntityBuilder ceb = new CreateEntityBuilder(this.externalSystemService,
+                this.staticDataService.getData(),
+                accessPoint, binding, state);
+        batchUpdate.getChanges().add(ceb.build(partList, itemMap));
         return batchUpdate;
     }
 
@@ -1351,135 +1322,17 @@ public class AccessPointService {
                 .collect(Collectors.groupingBy(i -> i.getPartId()));
         List<ApBindingItem> bindingParts = bindingItemRepository.findPartsByBinding(bindingState.getBinding());
 
-        List<Object> changes = createUpdateEntityChanges(partList, itemMap, bindingState, bindingParts);
-
-        if (!entityXml.getEnt().getValue().equals(state.getApType().getCode())) {
-            changes.add(new CodeXml(state.getApType().getCode()));
-        }
-
-        if (state.getStateApproval() == StateApproval.APPROVED && entityXml.getEns() != EntityRecordStateXml.ERS_APPROVED) {
-            changes.add(new SetRecordStateXml(EntityRecordStateXml.ERS_APPROVED, null));
-        }
-
-        //TODO dodělat změnu preferovaného partu
-        ApBindingItem preferPart = findBindingItemById(bindingParts, accessPoint.getPreferredPart().getPartId());
-
         BatchUpdateXml batchUpdate = new BatchUpdateXml();
         batchUpdate.setInf(createBatchInfo(userDetail));
-        for (Object c : changes) {
-            batchUpdate.getChanges().add(new UpdateEntityXml(createBatchEntityRecordRef(bindingState, accessPoint), c));
-        }
+
+        UpdateEntityBuilder ueb = new UpdateEntityBuilder(this.externalSystemService,
+                this.bindingItemRepository,
+                this.staticDataService.getData(),
+                state,
+                bindingState);
+
+        ueb.build(batchUpdate.getChanges(), entityXml, partList, itemMap, bindingParts);
         return batchUpdate;
-    }
-
-    private List<Object> createUpdateEntityChanges(List<ApPart> partList,
-                                                   Map<Integer, List<ApItem>> itemMap,
-                                                   ApBindingState bindingState,
-                                                   List<ApBindingItem> bindingParts) {
-        List<Object> changes = new ArrayList<>();
-        List<ApBindingItem> deletedParts = new ArrayList<>();
-        List<ApBindingItem> changedParts = new ArrayList<>();
-
-        if (CollectionUtils.isNotEmpty(bindingParts)) {
-            for (ApBindingItem bindingPart : bindingParts) {
-                if (bindingPart.getPart().getDeleteChange() != null) {
-                    deletedParts.add(bindingPart);
-                } else if (bindingPart.getPart().getCreateChange().getChangeId() > bindingState.getSyncChange().getChangeId()){
-                    changedParts.add(bindingPart);
-                }
-                partList.remove(bindingPart.getPart());
-            }
-        }
-
-        changes.addAll(createPartList(partList, itemMap, bindingState, bindingParts));
-        changes.addAll(createDeletePartList(deletedParts));
-        changes.addAll(createChangedPartList(changedParts, itemMap, bindingState));
-
-        return changes;
-    }
-
-    private List<Object> createChangedPartList(List<ApBindingItem> changedParts, Map<Integer, List<ApItem>> itemMap, ApBindingState bindingState) {
-        List<Object> changes = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(changedParts)) {
-            Map<Integer, List<ApBindingItem>> bindingItemMap = bindingItemRepository.findItemsByBinding(bindingState.getBinding()).stream()
-                    .collect(Collectors.groupingBy(i -> i.getItem().getPartId()));
-            for (ApBindingItem changedPart : changedParts) {
-                List<ApItem> itemList = itemMap.getOrDefault(changedPart.getPart().getPartId(), new ArrayList<>());
-                List<ApBindingItem> bindingItemList = bindingItemMap.getOrDefault(changedPart.getPart().getPartId(), new ArrayList<>());
-                changes.addAll(createChangedPartList(changedPart, itemList, bindingItemList, bindingState));
-            }
-        }
-        return changes;
-    }
-
-    private List<Object> createChangedPartList(ApBindingItem changedPart, List<ApItem> itemList, List<ApBindingItem> bindingItemList, ApBindingState bindingState) {
-        List<Object> changes = new ArrayList<>();
-        List<ApBindingItem> changedItems = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(bindingItemList)) {
-            for (ApBindingItem bindingItem : bindingItemList) {
-                if (bindingItem.getItem().getCreateChange().getChangeId() > bindingState.getSyncChange().getChangeId()) {
-                    changedItems.add(bindingItem);
-                    itemList.remove(bindingItem.getItem());
-                }
-            }
-        }
-
-        if (CollectionUtils.isNotEmpty(itemList)) {
-            changes.add(createNewItems(changedPart, itemList, bindingState.getBinding()));
-        }
-        if (CollectionUtils.isNotEmpty(changedItems)) {
-            changes.add(createUpdateItems(changedPart, changedItems, bindingState.getBinding()));
-        }
-
-        return changes;
-    }
-
-    private NewItemsXml createNewItems(ApBindingItem changedPart, List<ApItem> itemList, ApBinding binding) {
-        NewItemsXml newItems = new NewItemsXml();
-        newItems.setPid(new UuidXml(changedPart.getValue()));
-        newItems.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
-
-        for (ApItem item : itemList) {
-            String uuid = UUID.randomUUID().toString();
-            Object i = createItem(item, binding, uuid);
-            if (i != null) {
-                externalSystemService.createApBindingItem(binding, uuid, null, item);
-                newItems.getItems().add(i);
-            }
-        }
-        return newItems;
-    }
-
-    private UpdateItemsXml createUpdateItems(ApBindingItem changedPart, List<ApBindingItem> changedItems, ApBinding binding) {
-        UpdateItemsXml updateItemsXml = new UpdateItemsXml();
-        updateItemsXml.setPid(new UuidXml(changedPart.getValue()));
-        updateItemsXml.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
-
-        for (ApBindingItem bindingItem : changedItems) {
-            Object i = createItem(bindingItem.getItem(), binding, bindingItem.getValue());
-            if (i != null) {
-                updateItemsXml.getItems().add(i);
-            }
-        }
-        return updateItemsXml;
-    }
-
-    private List<DeletePartXml> createDeletePartList(List<ApBindingItem> deletedParts) {
-        List<DeletePartXml> deletePartXmls = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(deletedParts)) {
-            for (ApBindingItem deletedPart : deletedParts) {
-                deletePartXmls.add(new DeletePartXml(new UuidXml(deletedPart.getValue()), PartTypeXml.fromValue(deletedPart.getPart().getPartType().getCode())));
-            }
-        }
-        return deletePartXmls;
-    }
-
-    private BatchEntityRecordRevXml createBatchEntityRecordRef(final ApBindingState bindingState, final ApAccessPoint accessPoint) {
-        BatchEntityRecordRevXml batchEntityRecordRevXml = new BatchEntityRecordRevXml();
-        batchEntityRecordRevXml.setEid(new EntityIdXml(Long.parseLong(bindingState.getBinding().getValue())));
-        batchEntityRecordRevXml.setRev(new UuidXml(bindingState.getExtRevision()));
-        batchEntityRecordRevXml.setLid("LID" + UUID.randomUUID().toString());
-        return batchEntityRecordRevXml;
     }
 
     private BatchInfoXml createBatchInfo(UserDetail userDetail) {
@@ -1487,178 +1340,6 @@ public class AccessPointService {
         batchInfo.setBatchUserInfo(new LongStringXml(userDetail.getUsername()));
         batchInfo.setBid(new UuidXml(UUID.randomUUID().toString()));
         return batchInfo;
-    }
-
-    private CreateEntityXml createCreateEntity(ApState state, List<ApPart> partList, Map<Integer, List<ApItem>> itemMap, ApBinding binding) {
-        CreateEntityXml createEntity = new CreateEntityXml();
-        createEntity.setLid("LID" + state.getAccessPointId());
-        createEntity.setEt(new CodeXml(state.getApType().getCode()));
-        createEntity.setEuid(new UuidXml(state.getAccessPoint().getUuid()));
-        createEntity.setPrts(createParts(state.getAccessPoint(), partList, itemMap, binding));
-        return createEntity;
-    }
-
-    private PartsXml createParts(ApAccessPoint accessPoint, List<ApPart> partList, Map<Integer, List<ApItem>> itemMap, ApBinding binding) {
-        List<ApBindingItem> bindingItems = new ArrayList<>();
-        PartsXml parts = new PartsXml();
-
-        ApPart preferPart = accessPoint.getPreferredPart();
-        if (preferPart != null) {
-            parts.getList().add(createPart(preferPart, itemMap, binding, bindingItems));
-            if (CollectionUtils.isNotEmpty(partList)) {
-                for (ApPart part : partList) {
-                    if (!part.getPartId().equals(preferPart.getPartId())) {
-                        parts.getList().add(createPart(part, itemMap, binding, bindingItems));
-                    }
-                }
-            }
-        }
-        return parts;
-    }
-
-    private List<PartXml> createPartList(List<ApPart> partList, Map<Integer, List<ApItem>> itemMap, ApBindingState bindingState, List<ApBindingItem> bindingParts) {
-        List<PartXml> partXmlList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(partList)) {
-            for (ApPart part : partList) {
-                partXmlList.add(createPart(part, itemMap, bindingState.getBinding(), bindingParts));
-            }
-        }
-        return partXmlList;
-    }
-
-    private PartXml createPart(ApPart apPart, Map<Integer, List<ApItem>> itemMap, ApBinding binding, List<ApBindingItem> bindingItems) {
-        String uuid = UUID.randomUUID().toString();
-        ApBindingItem bindingItem = externalSystemService.createApBindingItem(binding, uuid, apPart, null);
-        bindingItems.add(bindingItem);
-
-        ApBindingItem parentBindingItem = apPart.getParentPart() != null ? findBindingItemById(bindingItems, apPart.getParentPart().getPartId()) : null;
-
-        PartXml part = new PartXml();
-        part.setT(PartTypeXml.fromValue(apPart.getPartType().getCode()));
-        part.setPid(new UuidXml(uuid));
-        part.setPrnt(parentBindingItem != null ? new UuidXml(parentBindingItem.getValue()) : null);
-        part.setItms(createItems(apPart, itemMap, binding));
-        return part;
-    }
-
-    private ApBindingItem findBindingItemById(List<ApBindingItem> bindingItems, Integer partId) {
-        if (CollectionUtils.isNotEmpty(bindingItems)) {
-            for (ApBindingItem bindingItem : bindingItems) {
-                if (bindingItem.getPart() != null && bindingItem.getPart().getPartId().equals(partId)) {
-                    return bindingItem;
-                }
-            }
-        }
-        return null;
-    }
-
-    private ItemsXml createItems(ApPart apPart, Map<Integer, List<ApItem>> itemMap, ApBinding binding) {
-        List<ApItem> itemList = itemMap.getOrDefault(apPart.getPartId(), new ArrayList<>());
-
-        ItemsXml items = new ItemsXml();
-        if (CollectionUtils.isNotEmpty(itemList)) {
-            for (ApItem item : itemList) {
-                String uuid = UUID.randomUUID().toString();
-                Object i = createItem(item, binding, uuid);
-                if (i != null) {
-                    externalSystemService.createApBindingItem(binding, uuid, null, item);
-                    items.getItems().add(i);
-                }
-            }
-        }
-        return items;
-    }
-
-    private Object createItem(ApItem item, ApBinding binding, String uuid) {
-        CodeXml itemTypeCode = new CodeXml(item.getItemType().getCode());
-        CodeXml itemSpecCode = item.getItemSpec() != null ? new CodeXml(item.getItemSpec().getCode()) : null;
-        UuidXml uuidXml = new UuidXml(uuid);
-
-        DataType dataType = DataType.fromCode(item.getItemType().getDataType().getCode());
-        switch (dataType) {
-            case BIT:
-                ArrDataBit dataBit = (ArrDataBit) item.getData();
-                ItemBooleanXml itemBoolean = new ItemBooleanXml();
-                itemBoolean.setValue(new BooleanXml(dataBit.isValue()));
-                itemBoolean.setT(itemTypeCode);
-                itemBoolean.setS(itemSpecCode);
-                itemBoolean.setUuid(uuidXml);
-                return itemBoolean;
-            case URI_REF:
-                ArrDataUriRef dataUriRef = (ArrDataUriRef) item.getData();
-                ItemLinkXml itemLink = new ItemLinkXml();
-                itemLink.setUrl(new StringXml(dataUriRef.getValue()));
-                itemLink.setNm(new StringXml(dataUriRef.getDescription()));
-                itemLink.setT(itemTypeCode);
-                itemLink.setS(itemSpecCode);
-                itemLink.setUuid(uuidXml);
-                return itemLink;
-            case TEXT:
-                ArrDataText dataText = (ArrDataText) item.getData();
-                ItemStringXml itemText = new ItemStringXml();
-                itemText.setValue(new StringXml(dataText.getValue()));
-                itemText.setT(itemTypeCode);
-                itemText.setS(itemSpecCode);
-                itemText.setUuid(uuidXml);
-                return itemText;
-            case STRING:
-                ArrDataString dataString = (ArrDataString) item.getData();
-                ItemStringXml itemString = new ItemStringXml();
-                itemString.setValue(new StringXml(dataString.getValue()));
-                itemString.setT(itemTypeCode);
-                itemString.setS(itemSpecCode);
-                itemString.setUuid(uuidXml);
-                return itemString;
-            case INT:
-                ArrDataInteger dataInteger = (ArrDataInteger) item.getData();
-                ItemIntegerXml itemInteger = new ItemIntegerXml();
-                itemInteger.setValue(new IntegerXml(dataInteger.getValueInt().longValue()));
-                itemInteger.setT(itemTypeCode);
-                itemInteger.setS(itemSpecCode);
-                itemInteger.setUuid(uuidXml);
-                return itemInteger;
-            case UNITDATE:
-                ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) item.getData();
-                ItemUnitDateXml itemUnitDate = new ItemUnitDateXml();
-                itemUnitDate.setF(dataUnitdate.getValueFrom());
-                itemUnitDate.setFe(dataUnitdate.getValueFromEstimated());
-                itemUnitDate.setFmt(dataUnitdate.getFormat());
-                itemUnitDate.setTo(dataUnitdate.getValueTo());
-                itemUnitDate.setToe(dataUnitdate.getValueToEstimated());
-                itemUnitDate.setT(itemTypeCode);
-                itemUnitDate.setS(itemSpecCode);
-                itemUnitDate.setUuid(uuidXml);
-                return itemUnitDate;
-            case ENUM:
-                ItemEnumXml itemEnum = new ItemEnumXml();
-                itemEnum.setT(itemTypeCode);
-                itemEnum.setS(itemSpecCode);
-                itemEnum.setUuid(uuidXml);
-                return itemEnum;
-            case RECORD_REF:
-                ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) item.getData();
-                if (dataRecordRef.getBinding() == null || !dataRecordRef.getBinding().getApExternalSystem().getExternalSystemId().equals(binding.getApExternalSystem().getExternalSystemId())) {
-                    return null;
-                }
-                EntityRecordRefXml entityRecordRef = new EntityRecordRefXml();
-                entityRecordRef.setEid(new EntityIdXml(Long.parseLong(dataRecordRef.getBinding().getValue())));
-
-                ItemEntityRefXml itemEntityRef = new ItemEntityRefXml();
-                itemEntityRef.setRef(entityRecordRef);
-                itemEntityRef.setT(itemTypeCode);
-                itemEntityRef.setS(itemSpecCode);
-                itemEntityRef.setUuid(uuidXml);
-                return itemEntityRef;
-            case COORDINATES:
-                ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) item.getData();
-                ItemStringXml itemCoordinates = new ItemStringXml();
-                itemCoordinates.setValue(new StringXml(GeometryConvertor.convert(dataCoordinates.getValue())));
-                itemCoordinates.setT(itemTypeCode);
-                itemCoordinates.setS(itemSpecCode);
-                itemCoordinates.setUuid(uuidXml);
-                return itemCoordinates;
-        }
-        return null;
     }
 
     public void synchronizeAccessPoint(ProcessingContext procCtx, ApState state, EntityXml entity,

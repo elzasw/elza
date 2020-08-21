@@ -1,6 +1,8 @@
 /**
  * Vstupní soubor pro UI - inicializace a zobrazení VIEW.
  */
+import './public_entry';
+
 // Import css Bootstrapu
 import './elza-styles.scss';
 import 'font-awesome/css/font-awesome.css';

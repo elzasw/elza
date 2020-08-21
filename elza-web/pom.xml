@@ -13,17 +13,6 @@
     <properties>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <!-- Spring boot dependencies -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-thymeleaf</artifactId>
-                <version>1.2.3.RELEASE</version>
-            </dependency>
-            <!-- END - Spring boot dependencies -->
-        </dependencies>
-    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>cz.tacr.elza</groupId>

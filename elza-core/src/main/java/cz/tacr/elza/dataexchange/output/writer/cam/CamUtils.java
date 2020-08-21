@@ -1,9 +1,10 @@
 package cz.tacr.elza.dataexchange.output.writer.cam;
 
-import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
+import org.drools.core.util.StringUtils;
 
 import cz.tacr.cam.schema.cam.CodeXml;
 import cz.tacr.cam.schema.cam.IntegerXml;
@@ -14,9 +15,7 @@ import cz.tacr.cam.schema.cam.ItemsXml;
 import cz.tacr.cam.schema.cam.ObjectFactory;
 import cz.tacr.cam.schema.cam.PartXml;
 import cz.tacr.cam.schema.cam.StringXml;
-import org.apache.commons.lang3.Validate;
-import org.drools.core.util.StringUtils;
-
+import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.SystemException;
 
@@ -166,6 +165,17 @@ public class CamUtils {
         itemString.setValue(new StringXml(value));
 
         addItemToPart(part, itemString);
+    }
+
+    public static ApBindingItem findBindingItemById(List<ApBindingItem> bindingParts, Integer partId) {
+        if (CollectionUtils.isNotEmpty(bindingParts)) {
+            for (ApBindingItem bindingItem : bindingParts) {
+                if (bindingItem.getPart() != null && bindingItem.getPart().getPartId().equals(partId)) {
+                    return bindingItem;
+                }
+            }
+        }
+        return null;
     }
 
 }

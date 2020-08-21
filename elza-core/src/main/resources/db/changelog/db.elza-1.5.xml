@@ -600,6 +600,9 @@
 	</changeSet>
 
     <changeSet id="20200803100700" author="pasek">
+        <validCheckSum>ANY</validCheckSum>
+        <sql>UPDATE arr_fund_version SET date_range = LEFT(date_range, 50)</sql>
+        <modifyDataType tableName="arr_fund_version" columnName="date_range" newDataType="char(50)" />
         <sql>UPDATE arr_fund as a SET unitdate = (SELECT date_range FROM arr_fund_version as b WHERE
             a.fund_id = b.fund_id and b.lock_change_id is null) WHERE unitdate is null
         </sql>
