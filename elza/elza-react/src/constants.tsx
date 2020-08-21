@@ -112,3 +112,9 @@ export enum MODAL_DIALOG_SIZE {
     XL = 'dialog-xl',
     SM = 'dialog-sm',
 }
+
+export enum CoordinateFileType {
+    KML = 'KML',
+    GML = 'GML',
+    WKT = 'WKT',
+}
