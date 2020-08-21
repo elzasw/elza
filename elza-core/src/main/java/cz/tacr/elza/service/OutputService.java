@@ -1,5 +1,14 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.domain.RulItemType.Type.RECOMMENDED;
+import static cz.tacr.elza.domain.RulItemType.Type.REQUIRED;
+import static cz.tacr.elza.repository.ExceptionThrow.ap;
+import static cz.tacr.elza.repository.ExceptionThrow.output;
+import static cz.tacr.elza.repository.ExceptionThrow.outputType;
+import static cz.tacr.elza.repository.ExceptionThrow.scope;
+import static cz.tacr.elza.repository.ExceptionThrow.template;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,20 +22,13 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ArrOutputRestrictionScope;
-import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
+import org.drools.core.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -36,6 +38,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -43,6 +47,8 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -53,6 +59,7 @@ import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrOutputRestrictionScope;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
@@ -64,13 +71,13 @@ import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
@@ -79,23 +86,17 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.OutputRequestStatus;
-
-import static cz.tacr.elza.domain.RulItemType.Type.RECOMMENDED;
-import static cz.tacr.elza.domain.RulItemType.Type.REQUIRED;
-import static cz.tacr.elza.repository.ExceptionThrow.ap;
-import static cz.tacr.elza.repository.ExceptionThrow.output;
-import static cz.tacr.elza.repository.ExceptionThrow.outputType;
-import static cz.tacr.elza.repository.ExceptionThrow.scope;
-import static cz.tacr.elza.repository.ExceptionThrow.template;
-import static cz.tacr.elza.repository.ExceptionThrow.version;
+import cz.tacr.elza.service.output.OutputSender;
 
 @Service
 public class OutputService {
@@ -164,6 +165,17 @@ public class OutputService {
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
+
+    private OutputSender outputSender;
+
+    /**
+     * Name of beand used as outputSender
+     */
+    @Value("${elza.output.senderName:null}")
+    private String outputSenderName;
+
+    @Autowired
+    private ApplicationContext appCtx;
 
     public ArrOutput getOutput(int outputId) {
         return outputServiceInternal.getOutput(outputId);
@@ -1505,6 +1517,23 @@ public class OutputService {
         outputRestrictionScopeRepository.deleteByOutputAndScope(outputId, scopeId);
         eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, outputId));
 
+    }
+
+    /**
+     * Send output to connected system
+     * 
+     * @param output
+     */
+    @Transactional
+    public void sendOutput(ArrOutput output) {
+        if (this.outputSender == null) {
+            if (StringUtils.isEmpty(outputSenderName)) {
+                throw new BusinessException("Sender is not configured", BaseCode.INVALID_STATE);
+            }
+            outputSender = appCtx.getBean(outputSenderName, OutputSender.class);
+        }
+
+        outputSender.send(output);
     }
 
 }

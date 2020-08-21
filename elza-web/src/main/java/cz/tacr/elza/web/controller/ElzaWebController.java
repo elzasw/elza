@@ -40,9 +40,15 @@ public class ElzaWebController {
         return allowDefaultUser;
     }
 
+    /**
+     * Flag if output can be send to other system
+     */
+    @Value("${elza.output.allowSend:false}")
+    private Boolean allowSendOutput;
+
     @ModelAttribute("isSendOutputEnabled")
     public Boolean isSetOutputEnabled() {
-        return true;
+        return allowSendOutput;
     }
 
     @Value("${elza.security.displayUserInfo:true}")
