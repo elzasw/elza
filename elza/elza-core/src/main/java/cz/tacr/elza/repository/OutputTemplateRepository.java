@@ -21,4 +21,7 @@ public interface OutputTemplateRepository extends ElzaJpaRepository<ArrOutputTem
     @Query("DELETE FROM arr_output_template t WHERE t.outputId IN (SELECT o.outputId FROM arr_output o WHERE o.fund=?1)")
     void deleteByFund(ArrFund fund);
 
+    @Modifying
+    void deleteByOutputIdAndTemplateId(int outputId, int templateId);
+
 }
