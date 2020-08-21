@@ -41,6 +41,8 @@ import {ApViewSettings, ItemType} from '../../../api/ApViewSettings';
 import storeFromArea from '../../../shared/utils/storeFromArea';
 import {AP_VIEW_SETTINGS} from '../../../constants';
 import {DetailStoreState} from '../../../types';
+import ImportCoordinateModal from '../Detail/coordinate/ImportCoordinateModal';
+import i18n from '../../i18n';
 
 type OwnProps = {
     partTypeId: number;
@@ -124,16 +126,15 @@ const renderItem = (
             customFieldRender = true;
 
             let displayValue;
+            const apItem = item as ApItemAccessPointRefVO;
             if (itemType.useSpecification) {
-                //@ts-ignore
-                displayValue = item.specId
-                    ? `${objectById(itemType.descItemSpecs, item.specId).shortcut}: ${
-                          item.accessPoint && item.accessPoint.name
+                displayValue = apItem.specId
+                    ? `${objectById(itemType.descItemSpecs, apItem.specId).shortcut}: ${
+                          apItem.accessPoint && apItem.accessPoint.name
                       }`
-                    : item.accessPoint && item.accessPoint.name;
+                    : apItem.accessPoint && apItem.accessPoint.name;
             } else {
-                //@ts-ignore
-                displayValue = item.accessPoint && item.accessPoint.name;
+                displayValue = apItem.accessPoint && apItem.accessPoint.name;
             }
             valueField = (
                 <Row className={'d-flex'}>
@@ -211,8 +212,7 @@ const renderItem = (
                             className={classNames('side-container-button', 'm-1')}
                             title={'Importovat'}
                             onClick={() => {
-                                alert('Neni implementovano');
-                                //showImportDialog(`${name}.value`);
+                                showImportDialog(`${name}.value`);
                             }}
                         >
                             <Icon glyph={'fa-download'} />
@@ -740,30 +740,30 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
             ),
         );
     },
-    showImportDialog: (field: string) => {},
-    //todo: az bude na serveru
-
-    // dispatch(
-    //     modalDialogShow(
-    //         this,
-    //         'Importovat souřadnice',
-    //         <ImportCoordinateModal
-    //             onSubmit={async (formData: any) => {
-    //                 const reader = new FileReader();
-    //                 reader.onload = async () => {
-    //                     const data = reader.result;
-    //                     try {
-    //                         const fieldValue = await EntitiesClientApiCall.standardApi.importCoordinates(formData.type, data).then(x => x.data);
-    //                         dispatch(change(props.formInfo.formName, field, fieldValue));
-    //                     } catch (e) {
-    //                         notification.error({message: "Nepodařilo se importovat souřadnice"});
-    //                     }
-    //                 };
-    //                 reader.readAsBinaryString(formData.fileList[0].originFileObj);
-    //             }}
-    //         />
-    //     )
-    // ),
+    showImportDialog: (field: string) =>
+        dispatch(
+            modalDialogShow(
+                this,
+                i18n('ap.coordinate.import.title'),
+                <ImportCoordinateModal
+                    onSubmit={async formData => {
+                        const reader = new FileReader();
+                        reader.onload = async () => {
+                            const data = reader.result;
+                            try {
+                                const fieldValue = await WebApi.importApCoordinates(data!, formData.format).then(
+                                    x => x.data,
+                                );
+                                dispatch(change(props.formInfo.formName, field, fieldValue));
+                            } catch (e) {
+                                //notification.error({message: 'Nepodařilo se importovat souřadnice'});
+                            }
+                        };
+                        reader.readAsBinaryString(formData.file);
+                    }}
+                />,
+            ),
+        ),
 });
 
 const mapStateToProps = (state: any) => {

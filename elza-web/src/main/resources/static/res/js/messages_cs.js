@@ -1120,6 +1120,12 @@ var messages = {
     "ap.ext-filter.use": "Použít rozšířený filtr",
     "ap.ext-filter.used": "Je použitý rozšířený filtr",
 
+    "ap.coordinate.import.title": "Importovat souřadnice",
+    "ap.coordinate.import.select": "Vyberte soubor",
+    "ap.coordinate.export.title": "Export souřadnic",
+    "ap.coordinate.export.info": "Zvolte požadovaný formát exportovaných souřadnic:",
+    "ap.coordinate.format": "Formát {0}",
+
     "party.noSelection.title": "Není vybrána osoba",
     "party.noSelection.message": "Prosím vyberte osobu ze seznamu nebo vytvořte novou.",
     "party.detail.ui.unknownRelation": "Neznámý typ relace",
@@ -1614,5 +1620,5 @@ var messages = {
     "accesspoint.scope.relatedScopes": "Návazné oblasti",
     "accesspoint.scope.invalid.warning": "Zobrazená třída restříku je neplatná",
 
-    ____: ""
+    ____: "",
 };

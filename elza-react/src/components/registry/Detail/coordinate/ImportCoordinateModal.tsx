@@ -1,115 +1,67 @@
 import React, {useState} from 'react';
-/*
-import {Button, Col, Form, Radio, Row, Upload} from 'react-bootstrap';
-import {ModalFormProps} from "../../../shared/reducers/modal/ModalActions";
-import ModalFormBody from "../../modal/ModalFormBody";
-import ModalFormFooter from "../../modal/ModalFormFooter";
-import {connect} from "react-redux";
-import {ConfigProps, InjectedFormProps, reduxForm, SubmitHandler} from "redux-form";
-import {UploadFile} from "antd/lib/upload/interface";
-import {RadioChangeEvent} from "antd/lib/radio";
-import {ApikeyVO, FileType} from "../../../../api/generated/model";
+import {Button, Col, Form, Modal, Row} from 'react-bootstrap';
+import {connect} from 'react-redux';
+import {ConfigProps, InjectedFormProps, reduxForm, Form as ReduxForm, SubmitHandler, Field} from 'redux-form';
+import {CoordinateFileType} from '../../../../constants';
+import i18n from '../../../i18n';
+import FF from '../../../shared/form/FF';
+import FileInput from '../../../shared/form/FileInput';
+import FormInputField from '../../../shared/form/FormInputField';
 
 const FORM_NAME = 'importCoordinatesForm';
 
-
-const formConfig: ConfigProps<ApikeyVO, ModalFormProps> = {
-  form: FORM_NAME
+export type FormData = {
+    format: CoordinateFileType;
+    file: File;
 };
 
 type Props = {
-  message: string,
-  confirmLabel: string,
-  comment: boolean,
-  onClose: () => void,
-  handleSubmit: SubmitHandler<FormData, any, any>;
-  onSubmit: (data: any) => void;
-} & ModalFormProps & InjectedFormProps;
+    message: string;
+    onClose: () => void;
+    handleSubmit: SubmitHandler<FormData, any, any>;
+    onSubmit: (data: any) => void;
+} & InjectedFormProps;
 
-const ImportCoordinateModal = ({
-                                 message,
-                                 confirmLabel,
-                                 handleSubmit,
-                                 comment,
-                                 onClose,
-                                 submitting,
-                                 onSubmit
-                               }: Props) => {
+const ImportCoordinateModal = ({handleSubmit, onClose, submitting}: Props) => {
+    return (
+        <ReduxForm onSubmit={handleSubmit}>
+            <Modal.Body>
+                <Row>
+                    <Col>
+                        <FF field={FileInput} label={i18n('ap.coordinate.import.select')} name={'file'} />
+                    </Col>
+                </Row>
+                <Row className="pt-2">
+                    <Col>
+                        {Object.keys(CoordinateFileType).map(x => (
+                            <Field
+                                component={FormInputField}
+                                type="radio"
+                                name="format"
+                                value={x}
+                                label={i18n('ap.coordinate.format', x.toUpperCase())}
+                            />
+                        ))}
+                    </Col>
+                </Row>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button type="submit" variant="outline-secondary" disabled={submitting}>
+                    {i18n('global.action.store')}
+                </Button>
 
-
-  const [fileList, setFileList] = useState<Array<UploadFile>>([]);
-
-  const uploadProps = {
-    onRemove: (file: UploadFile) => {
-      setFileList([]);
-    },
-    beforeUpload: () => {
-      return false;
-    },
-    fileList,
-  };
-
-  const [format, setFormat] = useState(1);
-
-  const onChange = (e: RadioChangeEvent) => {
-    setFormat(parseInt(e.target.value));
-  };
-
-  const customHandleSubmit = (e: any) => {
-    let type: FileType;
-    switch (format) {
-      case 1:
-        type = FileType.WKT;
-        break;
-      case 2:
-        type = FileType.KML;
-        break;
-      case 3:
-        type = FileType.GML;
-        break;
-      default:
-        type = FileType.WKT;
-    }
-
-    handleSubmit(data => {
-      return onSubmit({fileList, type});
-    })(e);
-  };
-
-  return <Form layout="vertical" onSubmit={customHandleSubmit}>
-    <ModalFormBody>
-      <Row>
-        <Col>
-          <Upload {...uploadProps} onChange={data => {setFileList([data.fileList[data.fileList.length-1]]);}}>
-            <Button>
-              Vyberte soubor
-            </Button>
-          </Upload>
-        </Col>
-      </Row>
-      <Row className="pt-2">
-        <Col>
-          <Radio.Group onChange={onChange} value={format} buttonStyle="solid">
-            <Radio.Button value={1}>
-              Formát WKT
-            </Radio.Button>
-            <Radio.Button value={2}>
-              Formát KML
-            </Radio.Button>
-            <Radio.Button value={3}>
-              Formát GML
-            </Radio.Button>
-          </Radio.Group>
-        </Col>
-      </Row>
-    </ModalFormBody>
-    <ModalFormFooter
-      disabled={submitting}
-      onClose={onClose}
-      okText={confirmLabel}
-    />
-  </Form>;
+                <Button variant="link" onClick={onClose} disabled={submitting}>
+                    {i18n('global.action.cancel')}
+                </Button>
+            </Modal.Footer>
+        </ReduxForm>
+    );
 };
 
-export default connect()(reduxForm<any, any>(formConfig)(ImportCoordinateModal));
-*/
+export default reduxForm<FormData, {}>({
+    form: FORM_NAME,
+    initialValues: {
+        format: CoordinateFileType.KML,
+        file: undefined,
+    },
+})(ImportCoordinateModal);

@@ -63,7 +63,7 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
 
         case RulDataTypeCodeEnum.COORDINATES:
             customFieldRender = true;
-            valueField = <DetailCoordinateItem item={item as ApItemCoordinatesVO} globalEntity={globalEntity} />;
+            valueField = <DetailCoordinateItem item={item as ApItemCoordinatesVO} />;
             break;
 
         case RulDataTypeCodeEnum.RECORD_REF:

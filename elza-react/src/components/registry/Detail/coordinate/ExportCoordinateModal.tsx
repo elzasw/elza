@@ -1,95 +1,67 @@
-import React, {useState} from 'react';
-/*
-import {Button, Col, Radio, Row} from 'react-bootstrap';
-import {ModalFormProps} from "../../../shared/reducers/modal/ModalActions";
-import ModalFormBody from "../../modal/ModalFormBody";
-import ModalFormFooter from "../../modal/ModalFormFooter";
-import {AeItemCoordinatesVO, FileType} from "../../../../api/generated/model";
-import {CodelistState} from "../../../shared/reducers/codelist/CodelistReducer";
-import {connect} from "react-redux";
-import * as EntitiesClientApiCall from "../../../api/call/EntitiesClientApiCall";
-import DownloadButton from "../../DownloadButton";
-import classNames from "classnames";
-import {RadioChangeEvent} from "antd/lib/radio";
+import React, {ChangeEvent, useState} from 'react';
+import {connect} from 'react-redux';
+import {Button, Col, Form, Modal, Row} from 'react-bootstrap';
+import {downloadFileInFrame} from '../../../../actions/global/download';
+import {ApItemCoordinatesVO} from '../../../../api/ApItemCoordinatesVO';
+import i18n from '../../../i18n';
+import {UrlFactory} from '../../../../actions/WebApi';
+import {CoordinateFileType} from '../../../../constants';
+import {Action, Dispatch} from 'redux';
 
 type Props = {
-  item: AeItemCoordinatesVO,
-  onClose: () => void,
-  globalEntity: boolean,
-} & ModalFormProps & ReturnType<typeof mapStateToProps>;
+    item: ApItemCoordinatesVO;
+    onClose: () => void;
+} & ReturnType<typeof mapDispatchToProps>;
 
-const ExportCoordinateModal = ({
-                                 item,
-                                 onClose,
-                                 globalEntity,
-                                 codelist
-                               }: Props) => {
-  const itemType = codelist.itemTypesMap[item.itemTypeId];
+const ExportCoordinateModal = ({item, onClose, handleExport}: Props) => {
+    const [format, setFormat] = useState(CoordinateFileType.KML);
 
-  const [format, setFormat] = useState(1);
+    const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setFormat(e.target.value as CoordinateFileType);
+    };
 
-  const handleExport = async (item: AeItemCoordinatesVO) => {
-    let type;
-    switch (format) {
-      case 1:
-        type = FileType.WKT;
-        break;
-      case 2:
-        type = FileType.KML;
-        break;
-      case 3:
-        type = FileType.GML;
-        break;
-      default:
-        type = FileType.WKT;
-    }
-
-
-    if (globalEntity) {
-      return EntitiesClientApiCall.pureApi.globalExportCoordinates(type, item.uuid as string);
-    } else {
-      return EntitiesClientApiCall.pureApi
-        .exportCoordinates(type, item.id as number);
-    }
-  };
-
-  const onChange = (e: RadioChangeEvent) => {
-    setFormat(parseInt(e.target.value));
-  };
-
-  return <><ModalFormBody>
-    <Row>
-      <Col>Zvolte požadovaný formát exportovaných souřadnic:</Col>
-    </Row>
-    <Row className="pt-2">
-      <Col>
-        <Radio.Group onChange={onChange} value={format} buttonStyle="solid">
-          <Radio.Button value={1}>
-            Formát WKT
-          </Radio.Button>
-          <Radio.Button value={2}>
-            Formát KML
-          </Radio.Button>
-          <Radio.Button value={3}>
-            Formát GML
-          </Radio.Button>
-        </Radio.Group>
-      </Col>
-    </Row>
-  </ModalFormBody>
-    <ModalFormFooter onClose={onClose} customButtons={true}>
-      <DownloadButton className={classNames("side-container-button", "mb-1")} title={"Exportovat"}
-                      onDownload={() => handleExport(item)} type="primary" htmlType={"submit"}>
-        Exportovat
-      </DownloadButton>
-      <Button key="main-cancel" onClick={onClose}>Zavřít</Button>
-    </ModalFormFooter>
-  </>;
+    return (
+        <>
+            <Modal.Body>
+                <Row>
+                    <Col>{i18n('ap.coordinate.export.info')}</Col>
+                </Row>
+                <Row className="pt-2">
+                    <Col>
+                        {Object.keys(CoordinateFileType).map(x => (
+                            <Form.Check
+                                type="radio"
+                                name={'format'}
+                                checked={format === x}
+                                value={x}
+                                onChange={onChange}
+                                label={i18n('ap.coordinate.format', x.toUpperCase())}
+                            />
+                        ))}
+                    </Col>
+                </Row>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="outline-secondary" onClick={() => handleExport(item, format, onClose)}>
+                    {i18n('global.action.export')}
+                </Button>
+                <Button variant="link" onClick={onClose}>
+                    {i18n('global.action.cancel')}
+                </Button>
+            </Modal.Footer>
+        </>
+    );
 };
-
-const mapStateToProps = (state: { codelist: CodelistState }) => ({
-  codelist: state.codelist.data
+const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
+    handleExport: (item: ApItemCoordinatesVO, format: CoordinateFileType, onClose: () => void) => {
+        dispatch(
+            downloadFileInFrame(
+                UrlFactory.exportApCoordinate(item.id as number, format),
+                item.id + '-' + format,
+            ) as any,
+        );
+        onClose();
+    },
 });
 
-export default connect(mapStateToProps)(ExportCoordinateModal);
-*/
+export default connect(null, mapDispatchToProps)(ExportCoordinateModal);

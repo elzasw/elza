@@ -1159,7 +1159,7 @@ public class ApController {
      * @return Soubor se souřadnicemi
      */
     @Transactional
-    @RequestMapping(value = "/export/coordinates/{itemId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/export/coordinates/{itemId}", method = RequestMethod.GET)
     public ResponseEntity<Resource> exportCoordinates(@RequestParam final FileType fileType,
                                                       @PathVariable("itemId") final Integer itemId) {
         return new ResponseEntity<>(accessPointService.exportCoordinates(fileType, itemId), accessPointService.createCoordinatesHeaders(fileType), HttpStatus.OK);

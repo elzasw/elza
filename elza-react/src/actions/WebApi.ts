@@ -1,6 +1,6 @@
 // @ts-ignore
 import AjaxUtils from '../components/AjaxUtils';
-import {DEFAULT_LIST_SIZE, JAVA_ATTR_CLASS} from '../constants';
+import {CoordinateFileType, DEFAULT_LIST_SIZE, JAVA_ATTR_CLASS} from '../constants';
 import {
     ArrRefTemplateEditVO,
     ArrRefTemplateMapTypeVO,
@@ -38,8 +38,8 @@ import {UsrUserVO} from '../api/UsrUserVO';
 const serverContextPath = window.serverContextPath;
 
 function getData(data, timeout = 1000) {
-    return new Promise(function(resolve, reject) {
-        setTimeout(function() {
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
             resolve(data);
         }, timeout);
     });
@@ -86,6 +86,7 @@ export class WebApiCls {
     static arrangementUrl = WebApiCls.baseUrl + '/arrangement';
     static issueUrl = WebApiCls.baseUrl + '/issue';
     static registryUrl = WebApiCls.baseUrl + '/registry';
+    static apUrl = WebApiCls.registryUrl;
     static partyUrl = WebApiCls.baseUrl + '/party';
     static importUrl = WebApiCls.baseUrl + '/import';
     static exportUrl = WebApiCls.baseUrl + '/export';
@@ -830,7 +831,12 @@ export class WebApiCls {
      * @param externalSystemCode kód externího systému
      * @param replace nahradit původní data přístupového bod (převezme se kompletně z ext. systému)
      */
-    connectArchiveEntity(archiveEntityId: number, accessPointId: number, externalSystemCode: string, replace: boolean): Promise<void> {
+    connectArchiveEntity(
+        archiveEntityId: number,
+        accessPointId: number,
+        externalSystemCode: string,
+        replace: boolean,
+    ): Promise<void> {
         const url = UrlBuilder.bindParams(
             WebApiCls.registryUrl + '/external/{archiveEntityId}/connect/{accessPointId}',
             {
@@ -1470,10 +1476,9 @@ export class WebApiCls {
     }
 
     synchronizeNodes(nodeId: number, nodeVersion: number, childrenNodes: boolean): Promise<void> {
-        return AjaxUtils.ajaxGet(
-            WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + nodeVersion + '/sync/',
-            {childrenNodes},
-        );
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + nodeVersion + '/sync/', {
+            childrenNodes,
+        });
     }
 
     importPackage(data) {
@@ -2285,6 +2290,16 @@ export class WebApiCls {
             direction,
         });
     }
+
+    importApCoordinates(body: ArrayBuffer | Blob | string, fileType: CoordinateFileType = CoordinateFileType.KML) {
+        return AjaxUtils.ajaxPost(
+            WebApiCls.apUrl + '/import/coordinates',
+            {
+                fileType,
+            },
+            body,
+        );
+    }
 }
 
 /**
@@ -2320,6 +2335,16 @@ export class UrlFactory {
 
     static exportArrCoordinate(objectId, versionId) {
         return serverContextPath + WebApiCls.kmlUrl + '/export/descCoordinates/' + versionId + '/' + objectId;
+    }
+
+    static exportApCoordinate(itemId, fileType: CoordinateFileType = CoordinateFileType.KML) {
+        return (
+            UrlBuilder.bindParams(WebApiCls.apUrl + '/export/coordinates/{itemId}', {
+                itemId,
+            }) +
+            '?fileType=' +
+            fileType
+        );
     }
 
     static exportItemCsvExport(objectId, versionId, typePrefix) {
