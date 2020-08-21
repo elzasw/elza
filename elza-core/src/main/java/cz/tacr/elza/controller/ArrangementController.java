@@ -57,6 +57,7 @@ import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
+import cz.tacr.elza.controller.vo.ArrOutputTemplateVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
@@ -2404,9 +2405,9 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.PUT)
-    public void addOutputTemplate(@PathVariable(value = "outputId") final Integer outputId, 
+    public ArrOutputTemplateVO addOutputTemplate(@PathVariable(value = "outputId") final Integer outputId, 
     							  @PathVariable(value = "templateId") final Integer templateId) {
-    	// TODO
+    	// TODO vložit do servisu
     	ArrOutput output = outputRepository.findByOutputId(outputId);
     	RulTemplate template = templateRepository.findById(templateId).orElse(null);
 
@@ -2414,6 +2415,13 @@ public class ArrangementController {
     	ot.setOutput(output);
     	ot.setTemplate(template);
     	outputTemplateRepository.save(ot);
+
+    	ArrOutputTemplateVO aot = new ArrOutputTemplateVO();
+    	aot.setId(ot.getOutputTemplateId());
+    	aot.setOutputId(outputId);
+    	aot.setTemplateId(templateId);
+
+    	return aot;
     }
 
     /**
@@ -2426,7 +2434,7 @@ public class ArrangementController {
     @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.DELETE)
     public void deleteOutputTemplate(@PathVariable(value = "outputId") final Integer outputId,
                                      @PathVariable(value = "templateId") final Integer templateId) {
-    	// TODO
+    	// TODO vložit do servisu?
     	outputTemplateRepository.deleteByOutputIdAndTemplateId(outputId, templateId);
     }
 
