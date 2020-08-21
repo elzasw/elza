@@ -168,12 +168,7 @@ export default class Autocomplete extends AbstractReactComponent {
             shouldItemRender = nextProps.shouldItemRender;
         } else {
             shouldItemRender = (item, value) => {
-                return (
-                    nextProps
-                        .getItemName(item)
-                        .toLowerCase()
-                        .indexOf(value.toLowerCase()) !== -1
-                );
+                return nextProps.getItemName(item).toLowerCase().indexOf(value.toLowerCase()) !== -1;
             };
         }
 
@@ -224,7 +219,12 @@ export default class Autocomplete extends AbstractReactComponent {
             return value;
         }
 
-        const {getItemId} = props;
+        const {getItemId, tree} = props;
+        if (tree) {
+            const flaten = this.flattenItems(props);
+            return flaten[value] || null;
+        }
+
         for (let a = 0; a < props.items.length; a++) {
             const i = props.items[a];
             if (getItemId(i) === value) {
