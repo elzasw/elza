@@ -475,6 +475,30 @@ export class WebApiCls {
      * Přidání omezujícího rejstříku k výstupu
      *
      * @param outputId identifikátor výstupu
+     * @param templateId identifikátor rejstříku
+     */
+    addOutputTemplate(outputId:number, templateId:number):Promise<void> {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/output/' + outputId + '/template/' + templateId, null, null);
+    }
+
+    /**
+     * Odebrání omezujícího rejstříku z výstupu
+     *
+     * @param outputId identifikátor výstupu
+     * @param templateId identifikátor rejstříku
+     */
+    deleteOutputTemplate(outputId:number, templateId:number):Promise<void> {
+        return AjaxUtils.ajaxDelete(
+            WebApiCls.arrangementUrl + '/output/' + outputId + '/template/' + templateId,
+            null,
+            null,
+        );
+    }
+
+    /**
+     * Přidání omezujícího rejstříku k výstupu
+     *
+     * @param outputId identifikátor výstupu
      * @param scopeId identifikátor rejstříku
      */
     addRestrictedScope(outputId, scopeId) {

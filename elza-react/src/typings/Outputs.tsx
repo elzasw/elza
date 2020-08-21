@@ -7,6 +7,7 @@ export interface ArrOutputVO {
     nodes: TreeNodeVO[];
     outputTypeId: number;
     templateId: number;
+    templateIds: number[];
     outputResultId: any;
     generatedDate: any;
     version: number;
