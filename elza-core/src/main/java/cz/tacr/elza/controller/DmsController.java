@@ -345,6 +345,19 @@ public class DmsController {
      * @param outputResultId id souboru
      * @throws IOException
      */
+    @RequestMapping(value = "/api/outputResults/{outputId}", method = RequestMethod.GET)
+    @Transactional
+    public void getOutputResultsZip(HttpServletResponse response,
+                                   @PathVariable(value = "outputId") Integer outputId) {
+    	
+    }
+    
+    /**
+     * Stažení souboru
+     * @param response http odpověd
+     * @param outputResultId id souboru
+     * @throws IOException
+     */
     @RequestMapping(value = "/api/outputResult/{outputResultId}", method = RequestMethod.GET)
     @Transactional
     public void getOutputResultZip(HttpServletResponse response,
