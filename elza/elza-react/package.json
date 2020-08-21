@@ -17,6 +17,7 @@
     "format": "prettier --write src/**/*.ts --write src/**/*.tsx --write src/**/*.js --write src/**/*.jsx && git add .",
     "format:zsh": "prettier --write 'src/**/*.ts' --write 'src/**/*.tsx' --write 'src/**/*.js' --write 'src/**/*.jsx' && git add ."
   },
+  "homepage": ".",
   "author": "",
   "license": "",
   "dependencies": {

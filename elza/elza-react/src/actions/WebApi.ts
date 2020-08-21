@@ -1963,6 +1963,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/output/generate/' + outputId, {forced});
     }
 
+    outputSend(outputId: number):Promise<void> {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/output/send/' + outputId.toString());
+    }
+
     outputRevert(versionId, outputId) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/output/' + versionId + '/' + outputId + '/revert');
     }

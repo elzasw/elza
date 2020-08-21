@@ -1,16 +1,19 @@
 package cz.tacr.elza.dataexchange.output.aps;
 
+import java.util.Collection;
+import java.util.Map;
+
+import org.apache.commons.lang3.Validate;
+
 import cz.tacr.elza.dataexchange.output.writer.BaseApInfo;
 import cz.tacr.elza.dataexchange.output.writer.ExternalIdApInfo;
 import cz.tacr.elza.dataexchange.output.writer.ItemApInfo;
 import cz.tacr.elza.dataexchange.output.writer.PartApInfo;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
-
-import java.util.Collection;
-import java.util.Map;
 
 public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartApInfo, ItemApInfo {
 
@@ -28,6 +31,11 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartApInfo, ItemApI
 
     // --- getters/setters ---
 
+    public ApAccessPoint getAccessPoint() {
+        Validate.notNull(apState);
+        return apState.getAccessPoint();
+    }
+
     @Override
     public ApState getApState() {
         return apState;
@@ -41,14 +49,6 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartApInfo, ItemApI
     @Override
     public void setExternalIds(Collection<ApBindingState> externalIds) {
         this.externalIds = externalIds;
-    }
-
-    public boolean isPartyAp() {
-        return partyAp;
-    }
-
-    public void setPartyAp(boolean partyAp) {
-        this.partyAp = partyAp;
     }
 
     // --- constructor ---
@@ -80,5 +80,11 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartApInfo, ItemApI
 
     public void addItemsMap(Integer partId, Collection<ApItem> items) {
 
+    }
+
+    public Collection<ApItem> getItemsForPart(Integer partId) {
+        Collection<ApItem> items = partItemsMap.get(partId);
+        Validate.notNull(items, "Items for part not found, partId: %i", partId);
+        return items;
     }
 }
