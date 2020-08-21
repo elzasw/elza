@@ -287,7 +287,7 @@ class ArrOutputDetail extends AbstractReactComponent {
                         // pridan outputDetail navic k initialValues, protoze 
                         // zmena initialValues nezpusobi render kvuli redux-form
                         outputDetail={fundOutputDetail} 
-                    />;
+                    />
                     {fundOutputDetail.error && (
                         <div>
                             <FormInput
