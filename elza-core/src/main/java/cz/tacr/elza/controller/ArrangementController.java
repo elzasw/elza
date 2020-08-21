@@ -109,6 +109,7 @@ import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrOutputTemplate;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.ParInstitution;
@@ -117,6 +118,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
@@ -140,7 +142,10 @@ import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
+import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrangementFormService;
@@ -295,6 +300,15 @@ public class ArrangementController {
 
     @Autowired
     private FundLevelService fundLevelService;
+
+    @Autowired
+    private OutputRepository outputRepository;
+
+    @Autowired
+    private TemplateRepository templateRepository;
+
+    @Autowired
+    private OutputTemplateRepository outputTemplateRepository;
 
     /**
      * Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
@@ -2390,8 +2404,16 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.PUT)
-    public void addOutputTemplate(@PathVariable(value = "outputId") final Integer outputId,
-                                                          @PathVariable(value = "templateId") final Integer templateId) {
+    public void addOutputTemplate(@PathVariable(value = "outputId") final Integer outputId, 
+    							  @PathVariable(value = "templateId") final Integer templateId) {
+    	// TODO
+    	ArrOutput output = outputRepository.findByOutputId(outputId);
+    	RulTemplate template = templateRepository.findById(templateId).orElse(null);
+
+    	ArrOutputTemplate ot = new ArrOutputTemplate();
+    	ot.setOutput(output);
+    	ot.setTemplate(template);
+    	outputTemplateRepository.save(ot);
     }
 
     /**
@@ -2402,9 +2424,12 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.DELETE)
-    public void deleteOutputTemplate(@PathVariable(value = "templateId") final Integer outputId,
-                                      @PathVariable(value = "templateId") final Integer templateId) {
+    public void deleteOutputTemplate(@PathVariable(value = "outputId") final Integer outputId,
+                                     @PathVariable(value = "templateId") final Integer templateId) {
+    	// TODO
+    	outputTemplateRepository.deleteByOutputIdAndTemplateId(outputId, templateId);
     }
+
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
      *

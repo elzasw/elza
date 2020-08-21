@@ -37,6 +37,9 @@ public class ArrOutputTemplate {
     @JoinColumn(name = "templateId")
     private RulTemplate template;
 
+	@Column(nullable = false, insertable = false, updatable = false)
+	private Integer templateId;
+
 	public Integer getOutputTemplateId() {
 		return outputTemplateId;
 	}
@@ -64,6 +67,10 @@ public class ArrOutputTemplate {
 
 	public void setTemplate(RulTemplate template) {
 		this.template = template;
+	}
+
+	public Integer getTemplateId() {
+		return templateId;
 	}
 
 }
