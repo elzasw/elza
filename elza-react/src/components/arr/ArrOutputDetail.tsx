@@ -271,9 +271,6 @@ class ArrOutputDetail extends AbstractReactComponent {
         const existingScopes = (fundOutputDetail.scopes || []).map(i => i.id);
         const connectableScopes = scopeList.rows && scopeList.rows.filter(s => existingScopes.indexOf(s.id) === -1);
 
-        // @ts-ignore
-        const outForm = <OutputInlineForm  disabled={readonly} initialValues={fundOutputDetail} onSave={this.handleSaveOutput}/>;
-
         return (
             <Shortcuts
                 name="ArrOutputDetail"
@@ -282,7 +279,15 @@ class ArrOutputDetail extends AbstractReactComponent {
                 handler={this.handleShortcuts}
             >
                 <div className="output-definition-commons">
-                    {outForm}
+                    <OutputInlineForm  
+                        // @ts-ignore
+                        disabled={readonly} 
+                        initialValues={fundOutputDetail} 
+                        onSave={this.handleSaveOutput}
+                        // pridan outputDetail navic k initialValues, protoze 
+                        // zmena initialValues nezpusobi render kvuli redux-form
+                        outputDetail={fundOutputDetail} 
+                    />;
                     {fundOutputDetail.error && (
                         <div>
                             <FormInput
