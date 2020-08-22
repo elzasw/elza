@@ -466,9 +466,10 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     isOutputGeneratingAllowed(output) {
         return (
             output &&
-            output.outputResultId == null &&
+            output.outputResultIds == null &&
             output.state === OutputState.OPEN &&
-            output.templateId != null &&
+            output.templateIds != null &&
+            output.templateIds.length > 0 &&
             output.nodes.length > 0
         );
     }

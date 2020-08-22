@@ -203,7 +203,7 @@ class ArrOutputDetail extends AbstractReactComponent {
             fundOutput: {fundOutputFiles},
         } = fund;
 
-        if (fundOutputDetail.outputResultId === null) {
+        if (fundOutputDetail.outputResultIds === null) {
             return null;
         }
 
@@ -211,7 +211,7 @@ class ArrOutputDetail extends AbstractReactComponent {
             <FundOutputFiles
                 ref="fundOutputFiles"
                 versionId={versionId}
-                outputResultId={fundOutputDetail.outputResultId}
+                outputResultId={fundOutputDetail.outputResultIds[0]}
                 fundOutputFiles={fundOutputFiles}
             />
         );
