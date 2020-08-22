@@ -212,7 +212,7 @@ class ArrOutputDetail extends AbstractReactComponent {
             <FundOutputFiles
                 ref="fundOutputFiles"
                 versionId={versionId}
-                outputResultId={fundOutputDetail.outputResultIds[0]}
+                outputResultId={fundOutputDetail.id}
                 fundOutputFiles={fundOutputFiles}
             />
         );

@@ -1975,8 +1975,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxDelete(WebApiCls.dmsUrl + '/fund/' + fileId, null, null);
     }
 
-    findFundOutputFiles(resultId, searchText, count = 20) {
-        return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/output/' + resultId, {count: count, search: searchText});
+    findFundOutputFiles(outputId) {
+        return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/output/' + outputId);
     }
 
     getFundOutputFunctions(outputId, getRecommended) {
