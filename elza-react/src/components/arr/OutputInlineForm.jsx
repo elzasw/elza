@@ -81,7 +81,11 @@ class OutputInlineForm extends AbstractReactComponent {
 
     getOutputAvailableTemplates = (templates) => {
         const { outputDetail } = this.props;
-        return templates.filter((item) => outputDetail.templateIds.findIndex((id)=>item.id === id) < 0)
+        if(!outputDetail.templateIds) {
+            return templates;
+        } else {
+            return templates.filter((item) => outputDetail.templateIds.findIndex((id)=>item.id === id) < 0);
+        }
     }
 
     render() {
@@ -125,7 +129,7 @@ class OutputInlineForm extends AbstractReactComponent {
                                 onChange={this.handleChangeTemplate}
                             />
                         }
-                            <Tags disabled={disabled} items={outputDetail.templateIds} onRemove={(item)=>this.handleRemoveTemplate(item)} renderItem={({item})=>{
+                            <Tags disabled={disabled} items={outputDetail.templateIds||[]} onRemove={(item)=>this.handleRemoveTemplate(item)} renderItem={({item})=>{
                                 const templateId = item;
                                 const template = templates.find((temp)=>temp.id===templateId);
                                 return template ? template.name : "Unknown template";
