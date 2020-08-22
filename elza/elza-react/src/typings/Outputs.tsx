@@ -6,9 +6,8 @@ export interface ArrOutputVO {
     error: any;
     nodes: TreeNodeVO[];
     outputTypeId: number;
-    templateId: number;
     templateIds: number[];
-    outputResultId: any;
+    outputResultIds: number[];
     generatedDate: any;
     version: number;
     outputSettings: any;
