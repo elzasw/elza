@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
@@ -45,6 +46,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.attachment.AttachmentService;
@@ -64,6 +66,9 @@ public class DmsController {
 
     @Autowired
     private OutputResultRepository outputResultRepository;
+    
+    @Autowired
+    private OutputRepository outputRepository;
 
     @Autowired
     private AttachmentService attachmentService;
@@ -495,20 +500,23 @@ public class DmsController {
 
     /**
      * Vyhledávání
-     * @param search vyhledávaný text
-     * @param from od záznamu
-     * @param count  počet záznamů
+     * @param outputId ID output
      * @return list záznamů
      */
-    @RequestMapping(value = "/api/dms/output/{outputResultId}", method = RequestMethod.GET)
-    public FilteredResultVO<ArrOutputFileVO> findOutputFiles(@PathVariable final Integer outputResultId,
-                                                     @RequestParam(required = false) @Nullable final String search,
-                                                    @RequestParam(required = false, defaultValue = "0") final Integer from,
-                                                    @RequestParam(required = false, defaultValue = "20") final Integer count) {
-        FilteredResult<ArrOutputFile> files = dmsService.findOutputFiles(search, outputResultId, from, count);
-        return new FilteredResultVO<>(files.getList(),
+    @RequestMapping(value = "/api/dms/output/{outputId}", method = RequestMethod.GET)
+    @Transactional
+    public FilteredResultVO<ArrOutputFileVO> findOutputFiles(@PathVariable final Integer outputId) {
+    	ArrOutput output = outputRepository.findByOutputId(outputId);
+    	List<ArrOutputResult> outputResults = outputResultRepository.findByOutput(output);
+    	
+    	List<ArrOutputFile> result = new ArrayList<>();
+		for(ArrOutputResult outputResult: outputResults) {
+    		FilteredResult<ArrOutputFile> files = dmsService.findOutputFiles(null, outputResult.getOutputResultId(), 0, 20);
+    		result.addAll(files.getList());
+    	}
+        return new FilteredResultVO<>(result,
                 (entity) -> ArrOutputFileVO.newInstance(entity),
-                files.getTotalCount());
+                result.size());
     }
 
     /**
