@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.drools.core.util.StringUtils;
 import org.slf4j.Logger;
@@ -40,6 +41,7 @@ import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
+import cz.tacr.elza.controller.vo.ArrOutputTemplateVO;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -98,6 +100,7 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.output.OutputData;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.output.OutputSender;
 
@@ -287,7 +290,7 @@ public class OutputService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public ArrOutput cloneOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+    public OutputData cloneOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                  final ArrOutput originalOutput) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(originalOutput, "Výstup musí být vyplněn");
@@ -308,31 +311,42 @@ public class OutputService {
             } while (outputRepository.existsByName(newNameWithNum));
             newName = newNameWithNum;
         }
-
+        
+        // read current templates
         List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(originalOutput);
+        List<Integer> templateIds;
+        if(CollectionUtils.isNotEmpty(templates)) {
+        	templateIds = new ArrayList<>(templates.size());
+        	for(ArrOutputTemplate outputTemplate: templates) {
+        		templateIds.add(outputTemplate.getTemplateId());
+        	}
+        } else {
+        	templateIds = null;
+        }
 
-        final ArrOutput newOutput = createOutput(fundVersion,
+        // create output
+        final OutputData createdOutput = createOutput(fundVersion,
                 newName,
                 originalOutput.getInternalCode(),
                 originalOutput.getOutputType().getOutputTypeId(),
-                templates.size() > 0 ? templates.get(0).getTemplate().getTemplateId() : null
+                templateIds
         );
 
-        final ArrChange change = newOutput.getCreateChange();
+        final ArrChange change = createdOutput.getCreateChange();
         final ArrayList<ArrNodeOutput> newNodes = new ArrayList<>();
         originalOutput.getOutputNodes().forEach(node -> {
             if (node.getDeleteChange() == null) {
                 ArrNodeOutput newNode = new ArrNodeOutput();
                 newNode.setCreateChange(change);
                 newNode.setNode(node.getNode());
-                newNode.setOutput(newOutput);
+                newNode.setOutput(createdOutput.getOutput());
                 newNodes.add(newNode);
             }
         });
 
         nodeOutputRepository.saveAll(newNodes);
 
-        return newOutput;
+        return createdOutput;
     }
 
     /**
@@ -346,11 +360,11 @@ public class OutputService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
             UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public ArrOutput createOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+    public OutputData createOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                   final String name,
                                   final String internalCode,
                                   final Integer outputTypeId,
-                                  final Integer templateId) {
+                                  final Collection<Integer> templateIds) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(name, "Název musí být vyplněn");
         Assert.notNull(outputTypeId, "Identifikátor typu vystupu musí být vyplněn");
@@ -359,6 +373,7 @@ public class OutputService {
             throw new BusinessException("Nelze vytvořit výstup v uzavřené verzi AS", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
+        // save output
         ArrOutput output = new ArrOutput();
         output.setFund(fundVersion.getFund());
         output.setName(name);
@@ -368,28 +383,26 @@ public class OutputService {
         RulOutputType type = outputTypeRepository.findById(outputTypeId)
                 .orElseThrow(outputType(outputTypeId));
         output.setOutputType(type);
-
-        ArrOutputTemplate templates = new ArrOutputTemplate();
-        templates.setOutput(output);
-
-        if (templateId != null) {
-        	RulTemplate template = templateRepository.findById(templateId).orElseThrow(template(templateId));
-        	templates.setTemplate(template);
-        } else {
-        	templates.setTemplate(null);
-        }
-
+        
         ArrChange change = arrangementService.createChange(null);
         output.setCreateChange(change);
         output.setDeleteChange(null);
 
-        outputRepository.save(output);
-        outputTemplateRepository.save(templates);
+        ArrOutput savedOutput = outputRepository.save(output);
 
-        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, output.getOutputId());
+        // save output templates
+        List<ArrOutputTemplate> outputTemplates;
+		if (CollectionUtils.isNotEmpty(templateIds)) {
+			outputTemplates = outputServiceInternal.createOutputTemplates(savedOutput, templateIds);			
+        } else {
+        	outputTemplates = null;
+        }
+		OutputData result = new OutputData(savedOutput, outputTemplates);
+
+        EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, savedOutput.getOutputId());
         eventNotificationService.publishEvent(event);
 
-        return output;
+        return result;
     }
 
     /**
@@ -1548,5 +1561,54 @@ public class OutputService {
 
         outputSender.send(output);
     }
+
+    /**
+     * Add template to output
+     * 
+     * @param fundId
+     * @param output
+     * @param templateId
+     * @return
+     */
+    @AuthMethod(permission = {Permission.FUND_OUTPUT_WR, Permission.FUND_OUTPUT_WR_ALL, Permission.FUND_ADMIN})
+	public ArrOutputTemplateVO addOutputTemplate(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
+			ArrOutput output, Integer templateId) {
+		
+    	RulTemplate template = templateRepository.findById(templateId).orElseThrow(template(templateId));
+
+    	ArrOutputTemplate ot = new ArrOutputTemplate();
+    	ot.setOutput(output);
+    	ot.setTemplate(template);
+    	outputTemplateRepository.save(ot);
+
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(output.getFundId());
+        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, output.getOutputId()));
+
+    	ArrOutputTemplateVO aot = new ArrOutputTemplateVO();
+    	aot.setId(ot.getOutputTemplateId());
+    	aot.setOutputId(output.getOutputId());
+    	aot.setTemplateId(templateId);
+
+    	return aot;
+	}
+
+    /**
+     * Delete template from given output
+     * @param fundId
+     * @param outputId
+     * @param templateId
+     * @return
+     */
+	@AuthMethod(permission = {Permission.FUND_OUTPUT_WR, Permission.FUND_OUTPUT_WR_ALL, Permission.FUND_ADMIN})
+	public void deleteOutputTemplate(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
+			ArrOutput output, Integer templateId) {
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(output.getFundId());        
+
+        outputTemplateRepository.deleteByOutputIdAndTemplateId(output.getOutputId(), templateId);
+        
+        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, 
+        		fundVersion, output.getOutputId()));
+        
+	}
 
 }

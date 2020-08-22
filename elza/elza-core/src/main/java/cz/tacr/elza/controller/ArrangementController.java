@@ -47,6 +47,7 @@ import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
@@ -110,7 +111,6 @@ import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
-import cz.tacr.elza.domain.ArrOutputTemplate;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.ParInstitution;
@@ -119,7 +119,6 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
@@ -143,10 +142,7 @@ import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrangementFormService;
@@ -167,15 +163,13 @@ import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.importnodes.ImportFromFund;
 import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
 import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ValidateResult;
+import cz.tacr.elza.service.output.OutputData;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.service.vo.UpdateDescItemsParam;
@@ -183,14 +177,13 @@ import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 /**
  * Kontroler pro pořádání.
  *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 7. 1. 2016
  */
 @RestController
 @RequestMapping("/api/arrangement")
 public class ArrangementController {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ArrangementController.class);
 
     /**
      * Formát popisu atributu - krátká verze.
@@ -304,19 +297,7 @@ public class ArrangementController {
 
     @Autowired
     private FundLevelService fundLevelService;
-
-    @Autowired
-    private OutputRepository outputRepository;
-
-    @Autowired
-    private TemplateRepository templateRepository;
-
-    @Autowired
-    private OutputTemplateRepository outputTemplateRepository;
     
-    @Autowired
-    private EventNotificationService eventNotificationService;
-
     /**
      * Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
      *
@@ -1194,6 +1175,7 @@ public class ArrangementController {
         String ruleCode = fundVersion.getRuleSet().getCode();
 
         ArrOutputVO outputVO = factoryVo.createOutput(output);
+        //ArrOutputVO outputVO = factoryVo.createOutputExt(output, fundVersion);
         List<ArrItemVO> descItems = factoryVo.createItems(outputItems);
         List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
         return new OutputFormDataNewVO(outputVO, descItems, itemTypeLites,
@@ -2274,9 +2256,17 @@ public class ArrangementController {
                                          @RequestBody final OutputNameParam param) {
         Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrOutput output = outputService.createOutput(fundVersion, param.getName(), param.getInternalCode(),
-                param.getOutputTypeId(), param.getTemplateId());
-        return factoryVo.createOutput(output);
+        
+        Set<Integer> templateIds = new HashSet<>();
+        if(param.getTemplateId()!=null) {
+        	templateIds.add(param.getTemplateId()); 
+        }
+        if(param.getTemplateIds()!=null) {
+        	templateIds.addAll(param.getTemplateIds());
+        }
+        OutputData outputData = outputService.createOutput(fundVersion, param.getName(), param.getInternalCode(),
+                param.getOutputTypeId(), templateIds);
+        return factoryVo.createOutputExt(outputData.getOutput(), fundVersion);
     }
 
     /**
@@ -2356,7 +2346,10 @@ public class ArrangementController {
                                    @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        return factoryVo.createOutput(outputService.cloneOutput(fundVersion, output));
+        
+        OutputData outputData = outputService.cloneOutput(fundVersion, output);
+        
+        return factoryVo.createOutputExt(outputData.getOutput(), fundVersion);
     }
 
     /**
@@ -2413,24 +2406,8 @@ public class ArrangementController {
     @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.PUT)
     public ArrOutputTemplateVO addOutputTemplate(@PathVariable(value = "outputId") final Integer outputId, 
     							  @PathVariable(value = "templateId") final Integer templateId) {
-    	// TODO vložit do servisu
-    	ArrOutput output = outputRepository.findByOutputId(outputId);
-    	RulTemplate template = templateRepository.findById(templateId).orElse(null);
-
-    	ArrOutputTemplate ot = new ArrOutputTemplate();
-    	ot.setOutput(output);
-    	ot.setTemplate(template);
-    	outputTemplateRepository.save(ot);
-
-        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(output.getFundId());
-        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, outputId));
-
-    	ArrOutputTemplateVO aot = new ArrOutputTemplateVO();
-    	aot.setId(ot.getOutputTemplateId());
-    	aot.setOutputId(outputId);
-    	aot.setTemplateId(templateId);
-
-    	return aot;
+        ArrOutput output = outputService.getOutput(outputId);
+    	return outputService.addOutputTemplate(output.getFundId(), output, templateId);
     }
 
     /**
@@ -2443,12 +2420,8 @@ public class ArrangementController {
     @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.DELETE)
     public void deleteOutputTemplate(@PathVariable(value = "outputId") final Integer outputId,
                                      @PathVariable(value = "templateId") final Integer templateId) {
-    	// TODO vložit do servisu?
-    	ArrOutput output = outputRepository.findByOutputId(outputId);
-        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(output.getFundId());
-        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, outputId));
-
-        outputTemplateRepository.deleteByOutputIdAndTemplateId(outputId, templateId);
+    	ArrOutput output = outputService.getOutput(outputId);
+    	outputService.deleteOutputTemplate(output.getFundId(), output, templateId);
     }
 
     /**
@@ -3674,6 +3647,11 @@ public class ArrangementController {
          * Template id.
          */
         private Integer templateId;
+        
+        /**
+         * List of templates
+         */
+        private List<Integer> templateIds;
 
         private ApAccessPointVO anonymizedAp;
 
@@ -3708,8 +3686,16 @@ public class ArrangementController {
         public void setTemplateId(final Integer templateId) {
             this.templateId = templateId;
         }
+        
+        public List<Integer> getTemplateIds() {
+			return templateIds;
+		}
 
-        public ApAccessPointVO getAnonymizedAp() {
+		public void setTemplateIds(List<Integer> templateIds) {
+			this.templateIds = templateIds;
+		}
+
+		public ApAccessPointVO getAnonymizedAp() {
             return anonymizedAp;
         }
 

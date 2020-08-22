@@ -45,9 +45,11 @@ import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrOutputRestrictionScope;
 import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.ArrOutputTemplate;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -63,10 +65,13 @@ import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.repository.OutputTemplateRepository;
+import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.output.OutputData;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
 
@@ -82,6 +87,8 @@ public class OutputServiceInternal {
     private final PlatformTransactionManager transactionManager;
 
     private final OutputGeneratorFactory outputGeneratorFactory;
+    
+    private final OutputTemplateRepository outputTemplateRepository;
 
     private final IEventNotificationService eventNotificationService;
 
@@ -115,7 +122,9 @@ public class OutputServiceInternal {
 
     private final RevertingChangesService revertingChangesService;
 
-    private OutputRestrictionScopeRepository outputRestrictionScopeRepository;
+    private final OutputRestrictionScopeRepository outputRestrictionScopeRepository;
+    
+    private final TemplateRepository templateRepository;
 
     private final ApStateRepository stateRepository;
     private final StructObjService structObjService;
@@ -125,27 +134,29 @@ public class OutputServiceInternal {
     private AsyncRequestService asyncRequestService;
 
     @Autowired
-    public OutputServiceInternal(PlatformTransactionManager transactionManager,
-                                 OutputGeneratorFactory outputGeneratorFactory,
-                                 IEventNotificationService eventNotificationService,
-                                 FundLevelServiceInternal fundLevelServiceInternal,
-                                 OutputRepository outputRepository,
-                                 OutputResultRepository outputResultRepository,
-                                 NodeOutputRepository nodeOutputRepository,
-                                 OutputItemRepository outputItemRepository,
-                                 EntityManager em,
-                                 ResourcePathResolver resourcePathResolver,
-                                 ItemService itemService,
-                                 ArrangementService arrangementService,
-                                 StaticDataService staticDataService,
-                                 ItemSettingsRepository itemSettingsRepository,
-                                 RuleService ruleService,
-                                 ActionRepository actionRepository,
-                                 BulkActionRunRepository bulkActionRunRepository,
-                                 RevertingChangesService revertingChangesService,
-                                 OutputRestrictionScopeRepository outputRestrictionScopeRepository,
-                                 ApStateRepository stateRepository,
-                                 StructObjService structObjService) {
+    public OutputServiceInternal(final PlatformTransactionManager transactionManager,
+    		final OutputGeneratorFactory outputGeneratorFactory,
+    		final IEventNotificationService eventNotificationService,
+    		final FundLevelServiceInternal fundLevelServiceInternal,
+    		final OutputRepository outputRepository,
+    		final OutputResultRepository outputResultRepository,
+    		final NodeOutputRepository nodeOutputRepository,
+    		final OutputItemRepository outputItemRepository,
+    		final EntityManager em,
+    		final ResourcePathResolver resourcePathResolver,
+    		final ItemService itemService,
+    		final ArrangementService arrangementService,
+    		final StaticDataService staticDataService,
+    		final ItemSettingsRepository itemSettingsRepository,
+    		final RuleService ruleService,
+    		final ActionRepository actionRepository,
+    		final BulkActionRunRepository bulkActionRunRepository,
+    		final RevertingChangesService revertingChangesService,
+    		final OutputRestrictionScopeRepository outputRestrictionScopeRepository,
+    		final ApStateRepository stateRepository,
+    		final StructObjService structObjService,
+    		final OutputTemplateRepository outputTemplateRepository,
+    		final TemplateRepository templateRepository) {
         this.transactionManager = transactionManager;
         this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
@@ -167,6 +178,8 @@ public class OutputServiceInternal {
         this.outputRestrictionScopeRepository = outputRestrictionScopeRepository;
         this.stateRepository = stateRepository;
         this.structObjService = structObjService;
+        this.outputTemplateRepository = outputTemplateRepository;
+        this.templateRepository = templateRepository;
     }
 
     /**
@@ -589,4 +602,39 @@ public class OutputServiceInternal {
         }
         return false;
     }
+
+    /**
+     * Create output templates
+     * @param outputContext
+     * @param templateIds
+     * @return 
+     */
+	public List<ArrOutputTemplate> createOutputTemplates(ArrOutput output, Collection<Integer> templateIds) {
+		List<RulTemplate> templates = templateRepository.findAllById(templateIds);
+    	
+    	Validate.isTrue(templateIds.size()==templates.size(), "Incorrect templateId");
+    	
+    	List<ArrOutputTemplate> outputTemplates = new ArrayList<>();
+    	
+    	for(RulTemplate template: templates) {
+
+        	ArrOutputTemplate outputTemplate = new ArrOutputTemplate();
+        	outputTemplate.setOutput(output);
+        	outputTemplate.setTemplate(template);
+                        
+            outputTemplates.add(outputTemplate);
+    	}
+    	List<ArrOutputTemplate> saved = outputTemplateRepository.saveAll(outputTemplates);
+		
+    	return saved;
+	}
+
+	/**
+	 * Return list of templates
+	 * @param output
+	 * @return
+	 */
+	public List<ArrOutputTemplate> getOutputTemplates(ArrOutput output) {
+		return outputTemplateRepository.findAllByOutputFetchTemplate(output);
+	}
 }

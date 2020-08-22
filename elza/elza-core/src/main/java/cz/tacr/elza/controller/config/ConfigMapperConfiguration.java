@@ -76,21 +76,11 @@ public class ConfigMapperConfiguration {
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
     @Autowired
-    private ApStateRepository apStateRepository;
-    @Autowired
-    private NodeRepository nodeRepository;
-    @Autowired
     private RuleService ruleService;
-    @Autowired
-    private ApFactory apFactory;
-    @Autowired
-    private StaticDataService staticDataService;
     @Autowired
     private PartTypeRepository partTypeRepository;
     @Autowired
     private ArrRefTemplateRepository refTemplateRepository;
-    @Autowired
-    private OutputTemplateRepository outputTemplateRepository; 
 
     /**
      * @return Tovární třída.
@@ -420,52 +410,6 @@ public class ConfigMapperConfiguration {
                     }
                 })
                 .register();
-        mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class)
-                .exclude("nodes")
-                .exclude("scopes")
-                .exclude("anonymizedAp")
-                .byDefault()
-                .field("outputId", "id")
-                .customize(new CustomMapper<ArrOutput, ArrOutputVO>() {
-                    @Override
-                    public void mapAtoB(final ArrOutput output,
-                                        final ArrOutputVO outputVO,
-                                        final MappingContext context) {
-                        outputVO.setOutputTypeId(output.getOutputType().getOutputTypeId());
-                        List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(output);
-                        for (ArrOutputTemplate template : templates) {
-                        	outputVO.getTemplateIds().add(template.getTemplate().getTemplateId());
-                        }
-                        List<ArrOutputResult> outputResults = output.getOutputResults();
-                        if (outputResults != null) {
-                        	for (ArrOutputResult outputResult : outputResults) {
-                        		outputVO.getOutputResultIds().add(outputResult.getOutputResultId());
-                        	}
-                        }
-                        outputVO.setCreateDate(Date.from(output.getCreateChange().getChangeDate().toInstant()));
-                        outputVO.setDeleteDate(output.getDeleteChange() != null ? Date.from(output.getDeleteChange().getChangeDate().toInstant()) : null);
-                        outputVO.setGeneratedDate(outputResults != null && outputResults.size() > 0 ? Date.from(outputResults.get(0).getChange().getChangeDate().toInstant()) : null);
-                    }
-
-                    @Override
-                    public void mapBtoA(final ArrOutputVO outputVO,
-                                        final ArrOutput output,
-                                        final MappingContext context) {
-                        RulOutputType rulOutputType = new RulOutputType();
-                        rulOutputType.setOutputTypeId(outputVO.getOutputTypeId());
-                        output.setOutputType(rulOutputType);
-
-                        if (outputVO.getOutputResultId() != null) {
-                        	List<ArrOutputResult> outputResults = new ArrayList<>();
-                        	for (Integer outputResultId : outputVO.getOutputResultIds()) {
-                        		ArrOutputResult outputResult = new ArrOutputResult();
-                        		outputResult.setOutputResultId(outputResultId);
-                        		outputResults.add(outputResult);
-                        	}
-                            output.setOutputResults(outputResults);
-                        }
-                    }
-                }).register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
 
         mapperFactory.classMap(UsrUser.class, UsrUserVO.class)
