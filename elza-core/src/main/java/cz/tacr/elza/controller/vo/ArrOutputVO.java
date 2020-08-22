@@ -1,15 +1,14 @@
 package cz.tacr.elza.controller.vo;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
 
 /**
  * VO výstup z archivního souboru.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 14.04.2016
  */
 public class ArrOutputVO {
@@ -33,14 +32,15 @@ public class ArrOutputVO {
 
     private Integer outputTypeId;
 
-    private Integer templateId;
-
-    private Integer outputResultId;
-
     private List<Integer> templateIds;
 
     private List<Integer> outputResultIds;
 
+    /**
+     * Datum generovani vystupu
+     * 
+     * Prevezme se z prvniho vystupu
+     */
     private Date generatedDate;
 
     private Integer version;
@@ -60,8 +60,26 @@ public class ArrOutputVO {
     private List<ApScopeVO> scopes;
 
     private ApAccessPointVO anonymizedAp;
+    
+    public ArrOutputVO() {
+    	
+    }
 
-    // --- getters/setters ---
+    public ArrOutputVO(ArrOutput output) {
+		id = output.getOutputId();
+		internalCode = output.getInternalCode();
+		name = output.getName();
+		state = output.getState();
+		error = output.getError();
+		outputTypeId = output.getOutputType().getOutputTypeId();
+		createDate = (Date.from(output.getCreateChange().getChangeDate().toInstant()));
+		version = output.getVersion();
+		if(output.getDeleteChange()!=null) {
+          deleteDate = Date.from(output.getDeleteChange().getChangeDate().toInstant());
+		}
+	}
+
+	// --- getters/setters ---
 
     public Integer getId() {
         return id;
@@ -128,47 +146,19 @@ public class ArrOutputVO {
     }
 
     public List<Integer> getTemplateIds() {
-        if (templateIds == null) {
-            templateIds = new ArrayList<>();
-        }
         return templateIds;
     }
-
-    public Integer getTemplateId() {
-        if (templateIds == null || templateIds.size() == 0) {
-            return null;
-        }
-        return templateIds.get(0);
-    }
-
-    public void setTemplateId(final Integer templateId) {
-        if (getTemplateIds().size() == 0) {
-            getTemplateIds().add(-1);
-        }
-        getTemplateIds().set(0, templateId);
-        this.templateId = templateId; // dočasně
+    
+    public void setTemplateIds(final List<Integer> templateIds) {
+    	this.templateIds = templateIds;
     }
 
     public List<Integer> getOutputResultIds() {
-        if (outputResultIds == null) {
-        outputResultIds = new ArrayList<>();
-        }
         return outputResultIds;
     }
 
-    public Integer getOutputResultId() {
-        if (outputResultIds == null || outputResultIds.size() == 0) {
-            return null;
-        }
-        return outputResultIds.get(0);
-    }
-
-    public void setOutputResultId(final Integer outputResultId) {
-    	if (getOutputResultIds().size() == 0) {
-    		getOutputResultIds().add(-1);
-    	}
-    	getOutputResultIds().set(0, outputResultId);
-    	this.outputResultId = outputResultId; // dočasně
+    public void setOutputResultIds(final List<Integer> outputResultIds) {
+        this.outputResultIds = outputResultIds;
     }
 
     public Date getGeneratedDate() {
@@ -218,4 +208,15 @@ public class ArrOutputVO {
     public void setAnonymizedAp(ApAccessPointVO anonymizedAp) {
         this.anonymizedAp = anonymizedAp;
     }
+    
+    /**
+     * Create basic vo object
+     * @param outputData
+     * @return
+     */
+    public static ArrOutputVO newInstance(ArrOutput output) {
+		ArrOutputVO outputVo = new ArrOutputVO(output);
+		return outputVo;
+    }
+
 }
