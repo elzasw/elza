@@ -507,16 +507,13 @@ public class DmsController {
     @Transactional
     public FilteredResultVO<ArrOutputFileVO> findOutputFiles(@PathVariable final Integer outputId) {
     	ArrOutput output = outputRepository.findByOutputId(outputId);
-    	List<ArrOutputResult> outputResults = outputResultRepository.findByOutput(output);
+    	// List<ArrOutputResult> outputResults = outputResultRepository.findByOutput(output);
     	
-    	List<ArrOutputFile> result = new ArrayList<>();
-		for(ArrOutputResult outputResult: outputResults) {
-    		FilteredResult<ArrOutputFile> files = dmsService.findOutputFiles(null, outputResult.getOutputResultId(), 0, 20);
-    		result.addAll(files.getList());
-    	}
-        return new FilteredResultVO<>(result,
+    	List<ArrOutputFile> outputFiles = dmsService.findOutputFiles(output.getFundId(), output);
+    	
+        return new FilteredResultVO<>(outputFiles,
                 (entity) -> ArrOutputFileVO.newInstance(entity),
-                result.size());
+                outputFiles.size());
     }
 
     /**
