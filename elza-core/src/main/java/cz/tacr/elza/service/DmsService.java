@@ -16,6 +16,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -418,29 +419,18 @@ public class DmsService {
     }
 
 
-    /**
-     * Vyhledávání Arr file
-     *
-     * @param search text
-     * @param from   od záznamu
-     * @param count  počet
-     * @return filtrovaný list
-     */
-	@Transactional
-    public FilteredResult<ArrOutputFile> findOutputFiles(final String search, final Integer outputResultId, final Integer from, final Integer count) {
-		Assert.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
-		
-		// get output result to check permissions
-		ArrOutputResult outputResult = outputResultRepository.findOneByOutputResultId(outputResultId);
-		ArrOutput output = outputResult.getOutput();
-		
-		// check permissions
-		AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_RD_ALL)
-		    .or(UsrPermission.Permission.FUND_RD, output.getFundId());
-		userService.authorizeRequest(authRequest);
-		
-        return outputFileRepository.findByTextAndResult(search, outputResult, from, count);
-    }
+	/**
+	 * Return list of files for given output
+	 * @param fundId
+	 * @param output
+	 * @return
+	 */
+	@Transactional(value = TxType.MANDATORY)
+	@AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
+	public List<ArrOutputFile> findOutputFiles(@AuthParam(type = AuthParam.Type.FUND) Integer fundId, 
+			ArrOutput output) {
+		return outputFileRepository.findByOutputResultOutput(output);
+	}
 
     public Path getOutputFilesZip(final ArrOutputResult result) throws IOException {
         Path ret;
