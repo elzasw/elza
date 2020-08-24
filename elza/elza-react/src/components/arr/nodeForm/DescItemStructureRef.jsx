@@ -239,7 +239,7 @@ class DescItemStructureRef extends React.Component {
                         <StructureSubNodeForm
                             id={structureNodeForm.id}
                             versionId={versionId}
-                            readMode={false}
+                            readMode={cal}
                             fundId={fundId}
                             selectedSubNodeId={structureNodeForm.id}
                             descItemFactory={descItemFactory}
