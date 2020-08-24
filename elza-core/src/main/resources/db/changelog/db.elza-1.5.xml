@@ -738,4 +738,16 @@
         <dropColumn tableName="arr_output" columnName="template_id" />
     </changeSet>
 
+    <changeSet id="20200824121000" author="sergey.iryupin">
+        <createIndex indexName="arr_output_template_output_idx" tableName="arr_output_template" unique="false">
+            <column name="output_id" type="int" />
+        </createIndex>
+        <createIndex indexName="arr_output_restriction_scope_output_idx" tableName="arr_output_restriction_scope" unique="false">
+            <column name="output_id" type="int" />
+        </createIndex>
+        <createIndex indexName="arr_node_output_output_idx" tableName="arr_node_output" unique="false">
+            <column name="output_id" type="int" />
+        </createIndex>
+	</changeSet>
+
 </databaseChangeLog>
