@@ -31,9 +31,7 @@ import {
 } from 'actions/registry/registry.jsx';
 import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems';
 import {structureTypeInvalidate} from '../arr/structureType';
-import {AccessPointFormActions} from '../../components/accesspoint/AccessPointFormActions';
-import {ApNameFormActions} from '../../components/accesspoint/ApNameFormActions';
-import {FragmentItemFormActions} from '../../components/accesspoint/FragmentItemFormActions';
+import {DetailActions} from '../../shared/detail';
 
 export function isFundChangeAction(action) {
     switch (action.type) {
@@ -433,36 +431,9 @@ export function structureChange(data) {
 export function changeAccessPoint(ids) {
     return (dispatch, getState) => {
         const store = getState();
-        const parentAp = store.ap.form.parent;
+        const parentAp = storeFromArea(store, AREA_REGISTRY_DETAIL);
         if (parentAp && ids.indexOf(parentAp.id) !== -1) {
-            dispatch({
-                type: 'CHANGE_ACCESS_POINT',
-                id: parentAp.id,
-                area: AccessPointFormActions.AREA,
-            });
-        }
-
-        const parentName = store.ap.nameItemForm.parent;
-        if (parentName && ids.indexOf(parentName.accessPointId) !== -1) {
-            dispatch({
-                type: 'CHANGE_ACCESS_POINT',
-                id: parentName.id,
-                area: ApNameFormActions.AREA,
-            });
-        }
-    };
-}
-
-export function changeFragment(ids) {
-    return (dispatch, getState) => {
-        const store = getState();
-        const parentFragment = store.ap.fragmentItemForm.parent;
-        if (parentFragment && ids.indexOf(parentFragment.id) !== -1) {
-            dispatch({
-                type: 'CHANGE_ACCESS_POINT',
-                id: parentFragment.id,
-                area: FragmentItemFormActions.AREA,
-            });
+            dispatch(DetailActions.invalidate(AREA_REGISTRY_DETAIL, null));
         }
     };
 }

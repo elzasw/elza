@@ -11,7 +11,6 @@ import {ApItemAccessPointRefVO} from '../api/ApItemAccessPointRefVO';
 import {ApItemStringVO} from '../api/ApItemStringVO';
 import {ApItemTextVO} from '../api/ApItemTextVO';
 import {ApItemUnitdateVO} from '../api/ApItemUnitdateVO';
-import {ApItemAPFragmentRefVO} from '../api/ApItemAPFragmentRefVO';
 import {ApItemDateVO} from '../api/ApItemDateVO';
 import {ApItemFormattedTextVO} from '../api/ApItemFormattedTextVO';
 import {ApItemDecimalVO} from '../api/ApItemDecimalVO';
@@ -22,7 +21,6 @@ import {RulPartTypeVO} from '../api/RulPartTypeVO';
 import {DetailStoreState} from '../types';
 
 export const ApItemAccessPointRefClass = '.ApItemAccessPointRefVO';
-export const ApItemAPFragmentRefClass = '.ApItemAPFragmentRefVO';
 export const ApItemBitClass = '.ApItemBitVO';
 export const ApItemCoordinatesClass = '.ApItemCoordinatesVO';
 export const ApItemDateClass = '.ApItemDateVO';
@@ -41,8 +39,6 @@ export function getItemClass(code: RulDataTypeCodeEnum): string {
     switch (code) {
         case RulDataTypeCodeEnum.RECORD_REF:
             return ApItemAccessPointRefClass;
-        case RulDataTypeCodeEnum.APFRAG_REF:
-            return ApItemAPFragmentRefClass;
         case RulDataTypeCodeEnum.BIT:
             return ApItemBitClass;
         case RulDataTypeCodeEnum.COORDINATES:
@@ -253,11 +249,6 @@ export function hasItemValue(item: ApItemVO): boolean {
             return (
                 typeof (item as ApItemAccessPointRefVO).value !== 'undefined' &&
                 (item as ApItemAccessPointRefVO).value !== null
-            );
-        case ApItemAPFragmentRefClass:
-            return (
-                typeof (item as ApItemAPFragmentRefVO).value !== 'undefined' &&
-                (item as ApItemAPFragmentRefVO).value !== null
             );
         case ApItemBitClass:
             return typeof (item as ApItemBitVO).value !== 'undefined' && (item as ApItemBitVO).value !== null;
