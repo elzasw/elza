@@ -52,6 +52,9 @@ export default function detail(state = initialState, action = {}, config = null)
             };
         }
         case INVALIDATE: {
+            if (action.id && action.id !== state.id) {
+                return state;
+            }
             return {
                 ...state,
                 currentDataKey: '',

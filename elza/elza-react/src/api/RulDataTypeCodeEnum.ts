@@ -13,7 +13,6 @@ export enum RulDataTypeCodeEnum {
     JSON_TABLE = 'JSON_TABLE',
     STRUCTURED = 'STRUCTURED',
     DATE = 'DATE',
-    APFRAG_REF = 'APFRAG_REF',
     URI_REF = 'URI_REF',
     BIT = 'BIT',
 }

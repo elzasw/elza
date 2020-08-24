@@ -13,13 +13,9 @@ export {default as FormInput} from 'components/shared/form/FormInput';
 
 export {default as Ribbon} from 'components/page/Ribbon';
 
-export {default as RegistryDetail} from 'components/registry/RegistryDetail';
 export {default as RegistryList} from 'components/registry/RegistryList';
 export {default as RegistryListItem} from 'components/registry/RegistryListItem';
 
-export {default as AddRegistryForm} from 'components/registry/AddRegistryForm';
-export {default as EditRegistryForm} from 'components/registry/EditRegistryForm';
-export {default as RegistryLabel} from 'components/registry/RegistryLabel';
 export {default as RegistryField} from 'components/registry/RegistryField';
 
 export {default as FundDetail} from 'components/fund/FundDetail';

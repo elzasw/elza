@@ -15,7 +15,6 @@ import {
     changeConformityInfo,
     changeDeleteLevel,
     changeFiles,
-    changeFragment,
     changeFund,
     changeFundAction,
     changeFundRecord,
@@ -249,7 +248,6 @@ let eventMap = {
     FUND_EXTENSION_CHANGE: fundExtensionChange,
     STRUCTURE_DATA_CHANGE: structureDataChange,
     ACCESS_POINT_UPDATE: accessPointUpdate,
-    FRAGMENT_UPDATE: fragmentUpdate,
     ISSUE_LIST_UPDATE: issueListUpdate,
     ISSUE_LIST_CREATE: issueListCreate,
     ISSUE_UPDATE: issueUpdate,
@@ -510,10 +508,6 @@ function extSystemDelete(value) {
 
 function accessPointUpdate(value) {
     store.dispatch(changeAccessPoint(value.ids));
-}
-
-function fragmentUpdate(value) {
-    store.dispatch(changeFragment(value.ids));
 }
 
 function issueListUpdate({id}) {

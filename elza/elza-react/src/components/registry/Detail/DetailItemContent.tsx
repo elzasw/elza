@@ -134,7 +134,6 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
         //todo: Dodelat zobrazeni pro tyto typy
         case RulDataTypeCodeEnum.JSON_TABLE:
         case RulDataTypeCodeEnum.FILE_REF:
-        case RulDataTypeCodeEnum.APFRAG_REF:
         case RulDataTypeCodeEnum.UNITID:
         case RulDataTypeCodeEnum.STRUCTURED:
         default:
