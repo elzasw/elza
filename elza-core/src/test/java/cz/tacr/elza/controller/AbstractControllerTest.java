@@ -108,7 +108,6 @@ import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
@@ -282,16 +281,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String USAGES_RECORD = AP_CONTROLLER_URL + "/{recordId}/usage";
     protected static final String REPLACE_RECORD = AP_CONTROLLER_URL + "/{recordId}/replace";
 
-    protected static final String CREATE_STRUCTURED_ACCESS_POINT = AP_CONTROLLER_URL + "/structured";
-    protected static final String CONFIRM_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/confirm";
-    protected static final String CREATE_STRUCTURED_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/structured";
-    protected static final String UPDATE_STRUCTURED_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/structured";
-    protected static final String CONFIRM_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/confirm";
-    protected static final String CHANGE_ACCESS_POINT_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/items";
-    protected static final String DELETE_ACCESS_POINT_ITEMS_BY_TYPE = AP_CONTROLLER_URL + "/{accessPointId}/type/{itemTypeId}";
-    protected static final String CHANGE_NAME_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/items";
-    protected static final String DELETE_NAME_ITEMS_BY_TYPE = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/type/{itemTypeId}";
-    protected static final String GET_NAME = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}";
     protected static final String GET_LANGUAGES = AP_CONTROLLER_URL + "/languages";
     protected static final String GET_EXTERNAL_ID_TYPES = AP_CONTROLLER_URL + "/eidTypes";
 
@@ -3331,67 +3320,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParam("partId", partId), SET_PREFER_NAME);
     }
 
-    protected ApAccessPointVO createStructuredAccessPoint(final ApAccessPointCreateVO accessPoint) {
-        return post(spec -> spec.body(accessPoint), CREATE_STRUCTURED_ACCESS_POINT).as(ApAccessPointVO.class);
-    }
-
-    protected void confirmStructuredAccessPoint(final Integer accessPointId) {
-        post(spec -> spec.pathParameter("accessPointId", accessPointId), CONFIRM_ACCESS_POINT);
-    }
-
-    /*protected ApAccessPointNameVO createAccessPointStructuredName(final Integer accessPointId) {
-        return post(spec -> spec.pathParameter("accessPointId", accessPointId),
-                CREATE_STRUCTURED_NAME_ACCESS_POINT).as(ApAccessPointNameVO.class);
-    }*/
-
-    protected void confirmAccessPointStructuredName(final Integer accessPointId,
-                                                    final Integer objectId) {
-        post(spec -> spec.pathParameter("accessPointId", accessPointId)
-                        .pathParameter("objectId", objectId),
-                CONFIRM_NAME_ACCESS_POINT);
-    }
-
-    /**
-     * Úprava hodnot těla přístupového bodu. Přidání/upravení/smazání.
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     * @param items         položky ke změně
-     */
-    protected void changeAccessPointItems(final Integer accessPointId,
-                                          final List<ApUpdateItemVO> items) {
-        put(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .body(items), CHANGE_ACCESS_POINT_ITEMS);
-    }
-
-    /**
-     * Úprava hodnot jména přístupového bodu. Přidání/upravení/smazání.
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     * @param objectId      identifikátor objektu jména
-     * @param items         položky ke změně
-     */
-    protected void changeNameItems(final Integer accessPointId,
-                                   final Integer objectId,
-                                   final List<ApUpdateItemVO> items) {
-        put(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .pathParameter("objectId", objectId)
-                .body(items), CHANGE_NAME_ITEMS);
-    }
-
-
-    /**
-     * Upravení jazyk strukturovaného jména přístupového bodu.
-     *
-     * @param accessPointId   identifikátor přístupového bodu
-     * @param accessPointName data jména
-     * @return upravené jméno
-     */
-   /* public ApAccessPointNameVO updateAccessPointStructuredName(final Integer accessPointId,
-                                                               final ApAccessPointNameVO accessPointName) {
-        return put(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .body(accessPointName), UPDATE_STRUCTURED_NAME_ACCESS_POINT).as(ApAccessPointNameVO.class);
-    }*/
-
     /**
      * Vrací všechny jazyky.
      */
@@ -3406,33 +3334,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     public Map<String, ApEidTypeVO> getAllExternalIdTypes() {
         return Arrays.stream(get(GET_EXTERNAL_ID_TYPES).getBody().as(ApEidTypeVO[].class))
                 .collect(Collectors.toMap(ApEidTypeVO::getCode, Function.identity()));
-    }
-
-    /**
-     * Smazání hodnot fragmentu podle typu.
-     *
-     * @param accessPointId identifikátor identifikátor přístupového bodu
-     * @param itemTypeId    identifikátor typu atributu
-     */
-    public void deleteAccessPointItemsByType(final Integer accessPointId,
-                                             final Integer itemTypeId) {
-        delete(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .pathParameter("itemTypeId", itemTypeId), DELETE_ACCESS_POINT_ITEMS_BY_TYPE);
-    }
-
-    /**
-     * Smazání hodnot jména podle typu.
-     *
-     * @param accessPointId identifikátor identifikátor přístupového bodu
-     * @param objectId      identifikátor objektu jména
-     * @param itemTypeId    identifikátor typu atributu
-     */
-    public void deleteNameItemsByType(final Integer accessPointId,
-                                      final Integer objectId,
-                                      final Integer itemTypeId) {
-        delete(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .pathParameter("objectId", objectId)
-                .pathParameter("itemTypeId", itemTypeId), DELETE_NAME_ITEMS_BY_TYPE);
     }
 
     // --- Issues ---
