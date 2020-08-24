@@ -1,11 +1,11 @@
 import React, {FC} from 'react';
 // import {CodelistState} from '../../shared/reducers/codelist/CodelistReducer';
 import {connect} from 'react-redux';
-import DetailItemContent from "./DetailItemContent";
-import "./DetailItem.scss";
-import {MOCK_CODE_DATA} from './mock';
-import {ApItemVO} from "../../../api/ApItemVO";
-import {Bindings} from "../../../types";
+import DetailItemContent from './DetailItemContent';
+import './DetailItem.scss';
+import {ApItemVO} from '../../../api/ApItemVO';
+import {Bindings} from '../../../types';
+import {RulDescItemTypeExtVO} from '../../../api/RulDescItemTypeExtVO';
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     bindings?: Bindings;
@@ -13,9 +13,9 @@ interface Props extends ReturnType<typeof mapStateToProps> {
     globalEntity: boolean;
 }
 
-const DetailMultipleItem: FC<Props> = ({items, globalEntity, codelist, bindings}) => {
+const DetailMultipleItem: FC<Props> = ({items, globalEntity, descItemTypesMap, bindings}) => {
     let firstItem = items[0];
-    const itemType = codelist.itemTypesMap[firstItem.typeId];
+    const itemType = descItemTypesMap[firstItem.typeId];
 
     return (
         <div className="detail-item detail-item-multiple">
@@ -24,18 +24,17 @@ const DetailMultipleItem: FC<Props> = ({items, globalEntity, codelist, bindings}
             </div>
             <div className="detail-item-content">
                 {items.map((item, index) => (
-                        <div key={index} className="detail-item-partvalue">
-                            <DetailItemContent item={item} bindings={bindings} globalEntity={globalEntity}/>
-                        </div>
-                    )
-                )}
+                    <div key={index} className="detail-item-partvalue">
+                        <DetailItemContent item={item} bindings={bindings} globalEntity={globalEntity} />
+                    </div>
+                ))}
             </div>
         </div>
     );
 };
 
-const mapStateToProps = (state: { codelist: any }) => ({
-    codelist: MOCK_CODE_DATA
+const mapStateToProps = state => ({
+    descItemTypesMap: state.refTables.descItemTypes.itemsMap as RulDescItemTypeExtVO[],
 });
 
 export default connect(mapStateToProps)(DetailMultipleItem);
