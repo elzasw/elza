@@ -12,7 +12,6 @@ import io.restassured.RestAssured;
 
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.StructureController.StructureDataFormDataVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
@@ -42,7 +41,7 @@ public class StructuredObjectServiceTest extends AbstractControllerTest {
 
         FundIdentifiers fundIdents = fundServiceClient.createFund(fundCreate);
         
-        ArrFundVO fundVO = new ArrFundVO();
+        cz.tacr.elza.controller.vo.Fund fundVO = new cz.tacr.elza.controller.vo.Fund();
         fundVO.setId(Integer.valueOf(fundIdents.getId()));
         ArrFundVersionVO fundVersionVO = getOpenVersion(fundVO);
 

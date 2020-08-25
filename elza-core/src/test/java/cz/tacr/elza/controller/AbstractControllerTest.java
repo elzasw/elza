@@ -69,7 +69,6 @@ import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.controller.vo.CreateFundVO;
 import cz.tacr.elza.controller.vo.CreateUserVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
@@ -173,8 +172,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String UPDATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/batchUpdate";
 
     // ARRANGEMENT
-    protected static final String CREATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/funds";
-    protected static final String UPDATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/updateFund";
     protected static final String FUND = ARRANGEMENT_CONTROLLER_URL + "/getFund/{fundId}";
     protected static final String FUNDS = ARRANGEMENT_CONTROLLER_URL + "/getFunds";
     protected static final String APPROVE_VERSION = ARRANGEMENT_CONTROLLER_URL + "/approveVersion";
@@ -620,39 +617,34 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Vytvoření archivní pomůcky.
-     *
-     * @param createFund parametry pro založení
-     * @return ap
-     */
-    protected ArrFundVO createFund(final CreateFundVO createFund) {
-        Response response = post(spec -> spec
-                .body(createFund), CREATE_FUND);
-        return response.getBody().as(ArrFundVO.class);
-    }
-
-    /**
      * Vytvoření výchozí archivní pomůcky.
      *
      * @param name název AP
      * @return ap
      */
-    protected ArrFundVO createFund(final String name, final String internalCode) {
+    protected Fund createFund(final String name, final String internalCode) {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(1);
         ParInstitutionVO institution = getInstitutions().get(0);
 
-        CreateFundVO createFund = new CreateFundVO();
+        CreateFund createFund = new CreateFund();
         createFund.setName(name);
-        createFund.setRuleSetId(ruleSet.getId());
-        createFund.setInstitutionId(institution.getId());
+        createFund.setRuleSetCode(ruleSet.getCode());
+        createFund.setInstitutionIdentifier(institution.getCode());
         createFund.setInternalCode(internalCode);
-        createFund.setDateRange(null);
 
-        return createFund(createFund);
+        List<String> scopes = new ArrayList<>();
+        scopes.add("GLOBAL");
+        createFund.setScopes(scopes);
+
+        return createFundV1(createFund);
     }
 
     /**
+     * Vytvoření archivní pomůcky.
+     *
+
+     /**
      * Vytvoření archivní pomůcky.
      *
      * @param fund parametry pro založení
@@ -684,22 +676,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
                         .queryParameter("max", max)
                         .queryParameter("from", from), FUNDS_V1);
         return response.getBody().as(FindFundsResult.class);
-    }
-
-
-
-    /**
-     * Úprava archivní pomůcky.
-     *
-     * @param fund      ap k úpravě
-     * @param ruleSetId id pravidel otevřené verze
-     * @return ap
-     */
-    protected ArrFundVO fundAid(final ArrFundVO fund, final Integer ruleSetId) {
-        Response response = post(spec ->
-                spec.queryParameter("ruleSetId", ruleSetId)
-                        .body(fund), UPDATE_FUND);
-        return response.getBody().as(ArrFundVO.class);
     }
 
     /**
@@ -1589,13 +1565,25 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param fund archivní pomůcka
      * @return otevřená verze AP
      */
-    protected ArrFundVersionVO getOpenVersion(final ArrFundVO fund) {
+    protected ArrFundVersionVO getOpenVersion(final Fund fund) {
         Assert.assertNotNull(fund);
+
+        return getOpenVersion(fund.getId());
+    }
+
+    /**
+     * Nalezení otevřené verze AP.
+     *
+     * @param fundId archivní pomůcka
+     * @return otevřená verze AP
+     */
+    protected ArrFundVersionVO getOpenVersion(final Integer fundId) {
+        Assert.assertNotNull(fundId);
 
         List<ArrFundVO> funds = getFunds();
 
         for (ArrFundVO fundFound : funds) {
-            if (fundFound.getId().equals(fund.getId())) {
+            if (fundFound.getId().equals(fundId)) {
                 for (ArrFundVersionVO fundVersion : fundFound.getVersions()) {
                     if (fundVersion.getLockDate() == null) {
                         return fundVersion;

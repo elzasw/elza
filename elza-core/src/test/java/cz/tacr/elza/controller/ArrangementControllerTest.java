@@ -23,6 +23,10 @@ import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
+import cz.tacr.elza.controller.vo.Fund;
+import cz.tacr.elza.controller.vo.FundDetail;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.UpdateFund;
 import cz.tacr.elza.controller.vo.nodes.*;
 import cz.tacr.elza.domain.RulItemSpec;
 import org.apache.commons.collections4.CollectionUtils;
@@ -96,11 +100,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     public void arrangementTest() throws IOException, InterruptedException {
 
         // vytvoření
-        ArrFundVO fund = createdFund();
+        Fund fund = createdFund();
 
         // přejmenování
         helperTestService.waitForWorkers();
-        fund = updatedFund(fund);
+        updatedFund(fund);
 
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
@@ -150,7 +154,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         final String value = "aaa";
         final int count = 2;
 
-        List<ArrFundVO> funds = new ArrayList<>();
+        List<Fund> funds = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             helperTestService.waitForWorkers();
             funds.add(createFundFulltext(i, count, value));
@@ -184,16 +188,16 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             //smazání fondu
 
             helperTestService.waitForWorkers();
-            for (ArrFundVO fund : funds) {
+            for (Fund fund : funds) {
                 helperTestService.waitForWorkers();
                 deleteFund(fund.getId());
             }
         }
     }
 
-    private ArrFundVO createFundFulltext(int i, int count, String value) throws InterruptedException {
+    private Fund createFundFulltext(int i, int count, String value) throws InterruptedException {
 
-        ArrFundVO fund = createFund("Test fulltext " + i, "TST" + 1);
+        Fund fund = createFund("Test fulltext " + i, "TST" + 1);
 
 
         RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
@@ -212,7 +216,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     @Test
     public void revertingChangeTest() throws IOException, InterruptedException {
 
-        ArrFundVO fund = createdFund();
+        Fund fund = createdFund();
 
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
@@ -955,38 +959,38 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      *
      * @param fund archivní pomůcka
      */
-    private ArrFundVO updatedFund(final ArrFundVO fund) {
-        fund.setName(RENAME_AP);
-        Integer ruleSetId = null;
-        for (ArrFundVersionVO versionVO : fund.getVersions()) {
-            if (versionVO.getLockDate() == null) {
-                ruleSetId = versionVO.getRuleSetId();
-            }
-        }
-
-        ArrFundVO updatedFund = fundAid(fund, ruleSetId);
+    private FundDetail updatedFund(final Fund fund) {
+        UpdateFund updateFund = new UpdateFund();
+        updateFund.setFundNumber(fund.getFundNumber());
+        updateFund.setInstitutionIdentifier(fund.getInstitutionIdentifier());
+        updateFund.setInternalCode(fund.getInternalCode());
+        updateFund.setMark(fund.getMark());
+        updateFund.setName(RENAME_AP);
+        // fixme: na openapi nemáme nikde kód pravidel u fundu...
+        List<RulRuleSetVO> ruleSets = getRuleSets();
+        RulRuleSetVO ruleSet = ruleSets.get(1);
+        updateFund.setRuleSetCode(ruleSet.getCode());
+        updateFund.setUnitdate(fund.getUnitdate());
+        FundDetail updatedFund = updateFundV1(fund.getId(), updateFund);
         // "Jméno AP musí být stejné"
-        assertTrue(RENAME_AP.equals(updatedFund.getName()));
+        assertEquals(RENAME_AP, updatedFund.getName());
         return updatedFund;
     }
 
-    private void deleteFund(final ArrFundVO fund) {
+    private void deleteFund(final Fund fund) {
         deleteFund(fund.getId());
 
         this.helperTestService.getFundRepository().findAll().forEach(f -> {
             //není nalezen fond se smazaným id = je smazán
-            assertTrue(!f.getFundId().equals(fund.getId()));
+            assertFalse(f.getFundId().equals(fund.getId()));
         });
     }
 
     /**
      * Vytvoření AP.
      */
-    private ArrFundVO createdFund() {
-        ArrFundVO fund = createFund(NAME_AP, "IC1");
-        assertNotNull(fund);
-
-        fund = getFund(fund.getId());
+    private Fund createdFund() {
+        Fund fund = createFund(NAME_AP, "IC1");
         assertNotNull(fund);
 
         return fund;
@@ -1140,7 +1144,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      */
     @Test
     public void copyOlderSiblingAttribute() throws InterruptedException {
-        ArrFundVO fundSource = createdFund();
+        Fund fundSource = createdFund();
         ArrFundVersionVO fundVersion = getOpenVersion(fundSource);
 
         List<ArrNodeVO> nodesSource = createLevels(fundVersion);
@@ -1176,11 +1180,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     @Test
     public void copyLevelsTest() throws InterruptedException {
-        ArrFundVO fundSource = createdFund();
+        Fund fundSource = createdFund();
         ArrFundVersionVO fundVersionSource = getOpenVersion(fundSource);
         List<ArrNodeVO> nodesSource = createLevels(fundVersionSource);
 
-        ArrFundVO fundTarget = createdFund();
+        Fund fundTarget = createdFund();
         ArrFundVersionVO fundVersionTarget = getOpenVersion(fundTarget);
         List<ArrNodeVO> nodesTarget = createLevels(fundVersionTarget);
 
@@ -1215,7 +1219,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     @Test
     public void refTemplatesTest() {
-        ArrFundVO fund = createdFund();
+        Fund fund = createdFund();
         ArrRefTemplateVO refTemplateVO = createRefTemplate(fund.getId());
 
         RulItemType itemType = itemTypeRepository.findOneByCode("SOURCE_LINK");

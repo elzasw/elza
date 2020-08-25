@@ -87,7 +87,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
     }
 
     private File downloadExport(final ArrFundVO fund) throws IOException, FileNotFoundException {
-        ArrFundVersionVO version = getOpenVersion(fund);
+        ArrFundVersionVO version = getOpenVersion(fund.getId());
 
         Path path = Files.createTempFile("elza-test-export", ".xml");
 
@@ -113,7 +113,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
 
         // get last fund version and rule system
         ArrFundVO fund = funds.iterator().next();
-        ArrFundVersionVO fVersion = getOpenVersion(fund);
+        ArrFundVersionVO fVersion = getOpenVersion(fund.getId());
 
         // check node count
         FaTreeParam treeParam = new FaTreeParam();

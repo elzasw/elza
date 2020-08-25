@@ -342,7 +342,7 @@ public class ApControllerTest extends AbstractControllerTest {
     @Test
     public void registerReplaceTest() {
         // Vytvoření fund
-        ArrFundVO fund = createFund("RegisterLinks Test AP", "IC3");
+        Fund fund = createFund("RegisterLinks Test AP", "IC3");
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();

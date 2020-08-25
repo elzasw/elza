@@ -164,8 +164,9 @@ class FundPage extends AbstractReactComponent {
      * Zobrazení dualogu uzavření verze AS.
      */
     handleRuleSetUpdateFundVersion() {
-        const {fundRegion} = this.props;
+        const {fundRegion, ruleSet, institutionsAll} = this.props;
         const fundDetail = fundRegion.fundDetail;
+        const institution = objectById(institutionsAll.items, fundDetail.institutionId);
 
         const initData = {
             ruleSetId: fundDetail.activeVersion.ruleSetId,
@@ -181,8 +182,11 @@ class FundPage extends AbstractReactComponent {
                         this.handleCallEditFundVersion({
                             ...data,
                             name: fundDetail.name,
-                            institutionIdentifier: fundDetail.institutionIdentifier,
+                            institutionIdentifier: institution.code,
                             internalCode: fundDetail.internalCode,
+                            fundNumber: fundDetail.fundNumber,
+                            unitdate: fundDetail.unitdate,
+                            mark: fundDetail.mark,
                         })
                     }
                 />,
@@ -208,6 +212,9 @@ class FundPage extends AbstractReactComponent {
                     name: fundDetail.name,
                     institutionIdentifier: institution.code,
                     internalCode: fundDetail.internalCode,
+                    fundNumber: fundDetail.fundNumber,
+                    unitdate: fundDetail.unitdate,
+                    mark: fundDetail.mark,
                     ruleSetCode: rules.code,
                     scopes: (fundDetail.apScopes || []).map(i => i.code),
                 };
@@ -238,6 +245,9 @@ class FundPage extends AbstractReactComponent {
                 internalCode: data.internalCode,
                 name: data.name,
                 ruleSetCode: data.ruleSetCode,
+                fundNumber: data.fundNumber,
+                unitdate: data.unitdate,
+                mark: data.mark,
             }),
         );
     }

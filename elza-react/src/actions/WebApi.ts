@@ -7,7 +7,6 @@ import {
     ArrRefTemplateVO,
     CommentVO,
     CreateFund,
-    CreateFundVO,
     FindFundsResult,
     IssueListVO,
     IssueStateVO,
@@ -1195,24 +1194,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/getRuleSets');
     }
 
-    /**
-     * @deprecated use {WebApiCls.createFund2}
-     * @param createFund
-     */
-    createFund(createFund: CreateFundVO) {
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/funds', null, createFund);
-    }
-
     createFund2(createFund: CreateFund) {
         return AjaxUtils.ajaxPost(WebApiCls.fundV1, null, createFund);
-    }
-
-    /**
-     * @deprecated use {WebApiCls.updateFund2}
-     * @param updateFund
-     */
-    updateFund(data) {
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/updateFund', {ruleSetId: data.ruleSetId}, data);
     }
 
     updateFund2(id, data: UpdateFund) {
