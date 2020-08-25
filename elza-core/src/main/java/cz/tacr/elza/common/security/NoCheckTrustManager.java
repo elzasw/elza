@@ -12,7 +12,7 @@ import javax.net.ssl.X509TrustManager;
  */
 public class NoCheckTrustManager implements X509TrustManager {
 
-    public NoCheckTrustManager(final X509TrustManager tm) {
+    public NoCheckTrustManager() {
     }
 
     @Override

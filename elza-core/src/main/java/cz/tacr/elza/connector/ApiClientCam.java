@@ -1,22 +1,31 @@
 package cz.tacr.elza.connector;
 
-import cz.tacr.cam.client.ApiClient;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.validation.constraints.NotNull;
+
+import org.apache.commons.lang3.StringUtils;
+
+import cz.tacr.cam.client.ApiClient;
+import cz.tacr.elza.common.security.NoCheckTrustManager;
+import cz.tacr.elza.exception.SystemException;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class ApiClientCam extends ApiClient {
 
@@ -33,13 +42,27 @@ public class ApiClientCam extends ApiClient {
                         @NotNull final String apiKey,
                         @NotNull final String apiValue) {
         super();
-        camInit(url, apiKey, apiValue);
+        try {
+            camInit(url, apiKey, apiValue);
+        } catch (GeneralSecurityException gse) {
+            throw new SystemException("Failed to initialize SSL client", gse);
+        }
     }
 
-    protected void camInit(final String url, final String apiKey, final String apiValue) {
+    protected void camInit(final String url, final String apiKey, final String apiValue)
+            throws GeneralSecurityException {
         setBasePath(url);
 
-        OkHttpClient.Builder builder = new OkHttpClient.Builder().addInterceptor(new Interceptor() {
+        X509TrustManager trustManager = new NoCheckTrustManager();
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null,
+                        new TrustManager[] { trustManager },
+                        null);
+        SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .sslSocketFactory(sslSocketFactory, trustManager)
+                .addInterceptor(new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 chain = chain
