@@ -584,11 +584,9 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
     private void migrateParPartyName(Integer accessPointId, Integer partyId, Integer preferredNameId) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT party_name_id, valid_from_unitdate_id, valid_to_unitdate_id, " +
-                "code, main_part, other_part, note, degree_before, degree_after " +
+                "name_form_type_id, main_part, other_part, note, degree_before, degree_after " +
                 "FROM par_party_name " +
-                "CROSS JOIN par_party_name_form_type " +
-                "WHERE par_party_name.name_form_type_id = par_party_name_form_type.name_form_type_id " +
-                "AND party_id = " + partyId);
+                "WHERE party_id = " + partyId);
         ps.execute();
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
@@ -647,12 +645,9 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
                     storeStringValue(dataId, dataTypeId, text); //TEXT
                 }
-                //zpracování name_form_type_id
-                itemTypeCode = ItemTypeCode.NM_TYPE.code;
-                Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                Integer dataId = createArrData(dataTypeId);
-                createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), rulItemSpecMap.get(convertItemSpecMap.get(rs.getString("code"))));
-                storeNullValue(dataId, dataTypeId);
+
+                Integer dataTypeId;
+                Integer dataId;
 
                 //zpracování valid_from_unitdate_id
                 int validFromUnitdateId = rs.getInt("valid_from_unitdate_id");
@@ -673,7 +668,29 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     storeUnitdateValue(dataId, dataTypeId, validToUnitdateId);
                 }
 
+                Integer nameFormTypeId = rs.getInt("name_form_type_id");
+                if (nameFormTypeId > 0) {
+                    migrateParPartyNameFormType(partId, nameFormTypeId);
+                }
+
                 migrateParPartyNameComplement(accessPointId, partyNameId, nmMainDataId, nmMainDataTypeId);
+            }
+        }
+    }
+
+    private void migrateParPartyNameFormType(Integer partId, Integer nameFormTypeId) throws DatabaseException, SQLException {
+        PreparedStatement ps = conn.prepareStatement("SELECT code " +
+                "FROM par_party_name_form_type " +
+                "WHERE par_party_name_form_type.name_form_type_id = " + nameFormTypeId);
+        ps.execute();
+        try (ResultSet rs = ps.getResultSet()) {
+            while (rs.next()) {
+                //zpracování name_form_type_id
+                String itemTypeCode = ItemTypeCode.NM_TYPE.code;
+                Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                Integer dataId = createArrData(dataTypeId);
+                createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), rulItemSpecMap.get(convertItemSpecMap.get(rs.getString("code"))));
+                storeNullValue(dataId, dataTypeId);
             }
         }
     }
