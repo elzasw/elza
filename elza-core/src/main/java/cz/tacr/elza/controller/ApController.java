@@ -90,7 +90,6 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
@@ -114,7 +113,6 @@ import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
-import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cam.ProcessingContext;
 
@@ -1138,7 +1136,9 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        accessPointService.createAccessPoints(state.getScope(), entities, externalSystemCode);
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem);
+        accessPointService.createAccessPoints(procCtx, entities);
     }
 
     @Transactional
