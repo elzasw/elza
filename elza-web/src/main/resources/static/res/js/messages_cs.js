@@ -50,6 +50,7 @@ var messages = {
     "global.action.import": "Importovat",
     "global.action.export": "Exportovat",
     "global.action.download": "Stáhnout",
+    "global.action.download.file": "Stáhnout soubor '{0}'",
     "global.action.downloadAll": "Stáhnout vše",
     "global.action.run": "Spustit",
     "global.action.back": "Zpět",

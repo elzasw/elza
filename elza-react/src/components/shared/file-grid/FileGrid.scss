@@ -1,0 +1,85 @@
+.file-grid {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+
+    .file-grid-item {
+        padding: 10px 15px;
+        margin: 5px;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        position: relative;
+        width: 200px;
+        overflow: hidden;
+
+        .file-description-container {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+
+            .file-name {
+                font-size: 1.2em;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                flex: 1;
+            }
+
+            .file-file-name {
+                font-size: 0.9em;
+                color: #888;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                flex: 1;
+            }
+        }
+
+        .file-actions-overlay {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            flex-wrap: wrap;
+
+            .file-actions-container {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+        }
+
+        &:hover .file-actions-overlay {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .file-action-button {
+            width: 100%;
+            height: 100%;
+            padding: 5px;
+            padding-bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: none;
+            flex: 1;
+            background: rgba(#fff,0.8);
+
+            &:hover {
+                background: rgba(#eee,0.8);
+            }
+        }
+
+    }
+}
