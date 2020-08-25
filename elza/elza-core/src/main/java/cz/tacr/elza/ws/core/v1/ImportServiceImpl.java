@@ -26,13 +26,19 @@ import cz.tacr.cam.schema.cam.ObjectFactory;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.cam.CamHelper;
+import cz.tacr.elza.service.cam.ProcessingContext;
+import cz.tacr.elza.service.cam.SyncEntityRequest;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
 import cz.tacr.elza.ws.types.v1.RequestStatus;
 import cz.tacr.elza.ws.types.v1.RequestStatusInfo;
@@ -50,6 +56,12 @@ public class ImportServiceImpl implements ImportService {
 
     @Autowired
     private ApAccessPointRepository accessPointRepository;
+
+    @Autowired
+    private ApStateRepository stateRepository;
+
+    @Autowired
+    private ApBindingStateRepository bindingStateRepository;
 
     @Autowired
     private AccessPointService accessPointService;
@@ -118,28 +130,56 @@ public class ImportServiceImpl implements ImportService {
         // check if some entities exists
         List<ApAccessPoint> existingAps = accessPointRepository.findApAccessPointsByUuids(uuids.keySet());
         List<EntityXml> newEntities;
-        Map<EntityXml, ApAccessPoint> updateEntities;
+        List<SyncEntityRequest> updateEntities;
         if (CollectionUtils.isEmpty(existingAps)) {
             newEntities = entities;
             updateEntities = null;
         } else {
+            Map<Integer, SyncEntityRequest> updateEntitiesLookup = new HashMap<>();
+            List<ApAccessPoint> updateAps = new ArrayList<>();
+            updateEntities = new ArrayList<>();
+
             Map<String, ApAccessPoint> existingApMap = existingAps.stream().collect(Collectors.toMap(ApAccessPoint::getUuid, Function.identity()));
             
-            newEntities = new ArrayList<>(entities.size()-existingAps.size());
-            updateEntities = new HashMap<>();
+            newEntities = new ArrayList<>(entities.size() - existingAps.size());
             for (EntityXml entityXml : entities) {
                 String uuid = CamHelper.getEntityUuid(entityXml);
                 ApAccessPoint existingAp = existingApMap.get(uuid);
                 if (existingAp == null) {
                     newEntities.add(entityXml);
                 } else {
-                    updateEntities.put(entityXml, existingAp);
+                    SyncEntityRequest syncReq = new SyncEntityRequest(existingAp, entityXml);
+                    updateEntities.add(syncReq);
+                    updateAps.add(existingAp);
+                    updateEntitiesLookup.put(existingAp.getAccessPointId(), syncReq);
                 }
             }
+
+            // prepare ap states
+            List<ApState> apStates = stateRepository.findLastByAccessPoints(updateAps);
+            if (apStates.size() != updateAps.size()) {
+                throw new IllegalStateException("Missing state for some synchronized access point");
+            }
+            for (ApState state : apStates) {
+                SyncEntityRequest syncRequest = updateEntitiesLookup.get(state.getAccessPointId());
+                syncRequest.setState(state);
+            }
+
+            // prepare binding
+            List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoints(updateAps);
+            if (apStates.size() != updateAps.size()) {
+                throw new IllegalStateException("Missing state for some synchronized access point");
+            }
+            for (ApBindingState bindingState : bindingStates) {
+                SyncEntityRequest syncRequest = updateEntitiesLookup.get(bindingState.getAccessPointId());
+                syncRequest.setBindingState(bindingState);
+            }
+
         }
         
-        accessPointService.createAccessPoints(scope, newEntities, externalSystem);
-        //TODO: update //accessPointService.up
+        ProcessingContext procCtx = new ProcessingContext(scope, externalSystem);
+        accessPointService.createAccessPoints(procCtx, newEntities);
+        accessPointService.updateAccessPoints(procCtx, updateEntities);
 
         logger.info("Imported entities in CAM format, count: {}", entities.size());
     }

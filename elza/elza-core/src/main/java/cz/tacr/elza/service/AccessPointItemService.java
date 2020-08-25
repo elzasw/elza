@@ -588,7 +588,8 @@ public class AccessPointItemService {
         return null;
     }
 
-    public List<Object> findNewOrChangedItems(List<Object> items, List<ApBindingItem> bindingItems, List<ApBindingItem> notChangeItems) {
+    public List<Object> findNewOrChangedItems(List<Object> items, List<ApBindingItem> bindingItems,
+                                              List<ApBindingItem> notChangeItems) {
         List<Object> changedItems = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(items)) {
             for (Object item : items) {
@@ -620,9 +621,10 @@ public class AccessPointItemService {
                         ApItem ier = bindingItem.getItem();
                         ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) ier.getData();
                         EntityRecordRefXml entityRecordRef = (EntityRecordRefXml) itemEntityRef.getRef();
+                        String entityRefId = CamHelper.getEntityIdorUuid(entityRecordRef);
                         if (!(ier.getItemType().getCode().equals(itemEntityRef.getT().getValue()) &&
                                 compareItemSpec(ier.getItemSpec(), itemEntityRef.getS()) &&
-                                dataRecordRef.getBinding().getValue().equals(String.valueOf(entityRecordRef.getEid().getValue())))) {
+                                dataRecordRef.getBinding().getValue().equals(entityRefId))) {
 
                             changedItems.add(itemEntityRef);
                         } else {
