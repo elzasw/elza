@@ -377,6 +377,12 @@
         <delete tableName="ap_external_id"/>
     </changeSet>
 
+    <changeSet id="20200825182900" author="fantis">
+        <delete tableName="usr_permission">
+            <where>permission = 'INTERPI_MAPPING_WR'</where>
+        </delete>
+    </changeSet>
+
     <changeSet id="20200622141100" author="fantis">
         <renameTable oldTableName="ap_external_id" newTableName="ap_binding"/>
         <renameColumn tableName="ap_binding" oldColumnName="external_id" newColumnName="binding_id"/>
