@@ -353,7 +353,48 @@ public class DmsController {
     @RequestMapping(value = "/api/outputResults/{outputId}", method = RequestMethod.GET)
     @Transactional
     public void getOutputResultsZip(HttpServletResponse response,
-                                   @PathVariable(value = "outputId") Integer outputId) {
+                                   @PathVariable(value = "outputId") Integer outputId) throws IOException {
+        Validate.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
+        ArrOutput output = outputRepository.findByOutputId(outputId);
+		List<ArrOutputResult> outputResults = outputResultRepository.findByOutput(output);
+        
+        // check number of files
+        List<ArrOutputFile> outputFiles = new ArrayList<>();
+        
+		for(ArrOutputResult outputResult: outputResults) {
+        	outputFiles.addAll(outputResult.getOutputFiles());
+        }
+        
+        ServletOutputStream out = response.getOutputStream();
+
+        File fileForDownload = null;
+        String fileName;
+
+        InputStream in = null;
+        try {
+            if (outputFiles.size() == 1) {
+                // single file download directly
+                ArrOutputFile singleFile = outputFiles.get(0);
+                in = dmsService.downloadFile(singleFile);
+                fileName = singleFile.getFileName();
+
+            } else {
+                // multiple files have to be zipped
+                fileForDownload = dmsService.getOutputFilesZip(outputFiles).toFile();
+                fileName = output.getName() + ".zip";
+                in = new BufferedInputStream(new FileInputStream(fileForDownload));
+            }
+            FileDownload.addContentDispositionAsAttachment(response, fileName);
+
+            IOUtils.copy(in, out);
+        } finally {
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
+            if (fileForDownload != null) {
+                fileForDownload.delete();
+            }
+
+        }
     	
     }
     
@@ -390,7 +431,7 @@ public class DmsController {
 
             } else {
                 // multiple files have to be zipped
-                fileForDownload = dmsService.getOutputFilesZip(result).toFile();
+                fileForDownload = dmsService.getOutputFilesZip(result.getOutputFiles()).toFile();
                 fileName = output.getName() + ".zip";
                 in = new BufferedInputStream(new FileInputStream(fileForDownload));
             }

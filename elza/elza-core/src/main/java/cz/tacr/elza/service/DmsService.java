@@ -432,14 +432,14 @@ public class DmsService {
 		return outputFileRepository.findByOutputResultOutput(output);
 	}
 
-    public Path getOutputFilesZip(final ArrOutputResult result) throws IOException {
+    public Path getOutputFilesZip(final List<ArrOutputFile> files) throws IOException {
         Path ret;
 
         try (AutoDeletingTempFile tempFile = AutoDeletingTempFile.createTempFile("ElzaOutput", ".zip");
                 FileOutputStream fos = new FileOutputStream(tempFile.getPath().toFile());
                 ZipOutputStream zos = new ZipOutputStream(fos);) {
 
-            for (ArrOutputFile outputFile : result.getOutputFiles()) {
+            for (ArrOutputFile outputFile : files) {
                 File dmsFile = getFilePath(outputFile).toFile();
                 if (dmsFile.exists()) {
                     addToZipFile(outputFile.getFileName(), dmsFile, zos);
