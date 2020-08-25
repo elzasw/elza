@@ -1425,12 +1425,16 @@ public class RuleService {
         List<ApItem> idnValueItemList = itemsList.stream().filter(i -> i.getItemType().getItemTypeId().equals(idnValue.getItemTypeId())).collect(Collectors.toList());
 
         if (CollectionUtils.isNotEmpty(idnTypeItemList)) {
-            ApItem idnTypeItem = idnTypeItemList.get(0);
-            RulItemSpec itemSpec = sdp.getItemSpecById(idnTypeItem.getItemSpec().getItemSpecId());
-            if (itemSpec.getCode().equals("ISO3166_2") || itemSpec.getCode().equals("ISO3166_3")) {
-                if (CollectionUtils.isNotEmpty(idnValueItemList)) {
-                    ApItem aeItem = idnValueItemList.get(0);
-                    return aeItem.getData().getFulltextValue();
+            for (ApItem idnTypeItem : idnTypeItemList) {
+                RulItemSpec itemSpec = sdp.getItemSpecById(idnTypeItem.getItemSpec().getItemSpecId());
+                if (itemSpec.getCode().equals("ISO3166_2") || itemSpec.getCode().equals("ISO3166_3")) {
+                    if (CollectionUtils.isNotEmpty(idnValueItemList)) {
+                        for (ApItem aeItem : idnValueItemList) {
+                            if (aeItem.getPartId().equals(idnTypeItem.getPartId())) {
+                                return aeItem.getData().getFulltextValue();
+                            }
+                        }
+                    }
                 }
             }
         }
