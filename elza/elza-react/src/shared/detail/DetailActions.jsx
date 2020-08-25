@@ -10,14 +10,14 @@ export const RESET = 'detail.reset';
 /**
  * Zneplatnění dat.
  * @param area oblast
- * @param data podrobnosti
+ * @param id pokud je poskytnuto ID pokus o invalidaci pouze pokud je ID stejné
  * @returns {{type: string, area: *, data: *}}
  */
-export function invalidate(area, data) {
+export function invalidate(area, id = null) {
     return {
         type: INVALIDATE,
         area,
-        data,
+        id,
     };
 }
 

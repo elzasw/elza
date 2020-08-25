@@ -432,7 +432,12 @@ class DescItemType extends AbstractReactComponent {
         const {value, error} = this.state;
 
         // Calls the onChange in handleBlur to prevent too frequent re-renders
-        value && onChange(descItemIndex, value && Object.keys(value).length === 1 && value.value ? value.value : value, error);
+        value &&
+            onChange(
+                descItemIndex,
+                value && Object.keys(value).length === 1 && value.value ? value.value : value,
+                error,
+            );
 
         onBlur(descItemIndex);
 
@@ -1010,7 +1015,7 @@ class DescItemType extends AbstractReactComponent {
             );
         }
 
-        if (infoType.cal === 1) {
+        if (infoType.cal === 1 && !readMode) {
             const title = infoType.calSt ? i18n('subNodeForm.calculate-user') : i18n('subNodeForm.calculate-auto');
             actions.push(
                 <NoFocusButton

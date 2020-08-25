@@ -266,7 +266,6 @@ public class ClientFactoryDO {
 
     public ArrFund createFund(final UpdateFund fund, ParInstitution institution, String id) {
         Assert.notNull(fund, "AS musí být vyplněno");
-        //TODO : mozna pouzit MapperFacade mapper = mapperFactory.getMapperFacade();
         ArrFund arrFund = new ArrFund();
         arrFund.setFundId(Integer.valueOf(id));
         arrFund.setUnitdate(fund.getUnitdate());

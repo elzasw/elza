@@ -280,6 +280,9 @@ public class ArrangementService {
         originalFund.setName(fund.getName());
         originalFund.setInternalCode(fund.getInternalCode());
         originalFund.setInstitution(fund.getInstitution());
+        originalFund.setFundNumber(fund.getFundNumber());
+        originalFund.setUnitdate(fund.getUnitdate());
+        originalFund.setMark(fund.getMark());
 
         fundRepository.save(originalFund);
 
@@ -342,7 +345,6 @@ public class ArrangementService {
      *
      * @param name         název archivní pomůcky
      * @param ruleSet      id pravidel podle kterých se vytváří popis
-     * @param dateRange    vysčítaná informace o časovém rozsahu fondu
      * @param internalCode interní označení
      * @return nová archivní pomůcka
      */
@@ -351,7 +353,6 @@ public class ArrangementService {
                                           final RulRuleSet ruleSet,
                                           final String internalCode,
                                           final ParInstitution institution,
-                                          final String dateRange,
                                           final Integer fundNumber,
                                           final String unitdate,
                                           final String mark,

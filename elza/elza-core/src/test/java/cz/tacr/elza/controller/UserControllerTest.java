@@ -41,7 +41,7 @@ public class UserControllerTest extends AbstractControllerTest {
     @Test
     public void usersTest() {
 
-        ArrFundVO fund = createFund("Test", "TST");
+        Fund fund = createFund("Test", "TST");
 
         List<ApAccessPointVO> records = findRecord(null, null, null, null, null);
         ApAccessPointVO ap = records.get(0);
@@ -123,7 +123,7 @@ public class UserControllerTest extends AbstractControllerTest {
         permissionVOs.add(permissionVO);
 
         permissionVO = new UsrPermissionVO();
-        permissionVO.setFund(fund);
+        permissionVO.setFund(ArrFundBaseVO.newInstance(fund));
         permissionVO.setPermission(UsrPermission.Permission.FUND_ARR);
         permissionVOs.add(permissionVO);
 
@@ -167,7 +167,7 @@ public class UserControllerTest extends AbstractControllerTest {
         permissionVOs.clear();
 
         permissionVO = new UsrPermissionVO();
-        permissionVO.setFund(fund);
+        permissionVO.setFund(ArrFundBaseVO.newInstance(fund));
         permissionVO.setPermission(UsrPermission.Permission.FUND_RD);
         permissionVOs.add(permissionVO);
 

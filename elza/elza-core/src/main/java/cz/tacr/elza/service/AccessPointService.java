@@ -58,7 +58,6 @@ import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.usage.FundVO;
 import cz.tacr.elza.controller.vo.usage.NodeVO;
 import cz.tacr.elza.controller.vo.usage.OccurrenceType;
@@ -1511,28 +1510,6 @@ public class AccessPointService {
     }
 
     /**
-     * Založení strukturovaného přístupového bodu.
-     *
-     * @param scope třída
-     * @param type typ přístupového bodu
-     * @param language jazyk hlavního jména
-     * @return založený strukturovaný přístupový bod
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public ApState createStructuredAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApScope scope, final ApType type, final SysLanguage language) {
-        Assert.notNull(scope, "Třída musí být vyplněna");
-        Assert.notNull(type, "Typ musí být vyplněn");
-
-        ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
-        ApState apState = createStrucuredAccessPoint(scope, type, change, null);
-
-        // založení strukturovaného hlavního jména
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-        reindexDescItem(accessPoint);
-        return apState;
-    }
-
-    /**
      * Aktualizace přístupového bodu - není verzované!
      *
      * @param accessPointId ID přístupového bodu
@@ -1584,90 +1561,6 @@ public class AccessPointService {
         reindexDescItem(result);
 
         return newState;
-    }
-
-    /**
-     * Změna atributů přístupového bodu.
-     *
-     * @param apState přístupový bod
-     * @param items položky změny
-     * @return nové položky, které ze vytvořili při změně
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public List<ApItem> changeApItems(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState,
-                                      final List<ApUpdateItemVO> items) {
-        Validate.notNull(apState, "Přístupový bod musí být vyplněn");
-        Validate.notEmpty(items, "Musí být alespoň jedna položka ke změně");
-
-        apDataService.validationNotDeleted(apState);
-
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-        List<ApItem> itemsDb = itemRepository.findValidItemsByAccessPoint(accessPoint);
-
-        ApChange change;
-        if (accessPoint.getState() == ApStateEnum.TEMP) {
-            change = apState.getCreateChange();
-        } else {
-            change = apDataService.createChange(ApChange.Type.AP_UPDATE);
-        }
-        List<ApItem> itemsCreated = apItemService.changeItems(items, new ArrayList<>(itemsDb), change, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
-                -> createApItem(accessPoint, it, is, c, objectId, position));
-
-        //apGeneratorService.generateAndSetResult(accessPoint, change);
-        apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
-
-        return itemsCreated;
-    }
-
-    /**
-     * Smazání hodnot ap podle typu.
-     *
-     * @param apState přístupový bod
-     * @param itemType typ atributu
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void deleteApItemsByType(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState,
-                                    final RulItemType itemType) {
-        Validate.notNull(apState, "Přístupový bod musí být vyplněn");
-        Validate.notNull(itemType, "Typ musí být vyplněn");
-        apDataService.validationNotDeleted(apState);
-
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-
-        ApChange change;
-        if (accessPoint.getState() == ApStateEnum.TEMP) {
-            change = apState.getCreateChange();
-        } else {
-            change = apDataService.createChange(ApChange.Type.AP_UPDATE);
-        }
-        //TODO fantis
-//        apItemService.deleteItemsByType(itemRepository, accessPoint, itemType, change);
-
-        //apGeneratorService.generateAndSetResult(accessPoint, change);
-        apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
-    }
-
-    /**
-     * Potvrzení dočasného přístupového bodu a jeho převalidování.
-     *
-     * @param apState přístupový bod
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void confirmAccessPoint(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState) {
-
-        Validate.notNull(apState);
-        apDataService.validationNotDeleted(apState);
-
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-        if (accessPoint.getState() == ApStateEnum.TEMP) {
-            accessPoint.setState(ApStateEnum.INIT);
-            saveWithLock(accessPoint);
-
-            //apGeneratorService.generateAndSetResult(accessPoint, accessPoint.getCreateChange());
-            apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), apState.getCreateChangeId());
-        } else {
-            throw new BusinessException("Nelze potvrdit přístupový bod, který není dočasný", BaseCode.INVALID_STATE);
-        }
     }
 
     /**
@@ -1883,21 +1776,6 @@ public class AccessPointService {
                                       final String uuid) {
         ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change, uuid);
         accessPoint.setState(ApStateEnum.OK);
-        return createAccessPointState(saveWithLock(accessPoint), scope, type, change);
-    }
-
-    /**
-     * Založení dočasného strukturovaného přístupového bodu.
-     *
-     * @param scope třída
-     * @param type typ přístupového bodu
-     * @param change změna
-     * @return založený a uložený AP
-     */
-    private ApState createStrucuredAccessPoint(final ApScope scope, final ApType type, final ApChange change,
-                                               final String uuid) {
-        ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change, uuid);
-        accessPoint.setState(ApStateEnum.TEMP);
         return createAccessPointState(saveWithLock(accessPoint), scope, type, change);
     }
 

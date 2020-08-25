@@ -3,29 +3,29 @@ import {ThunkDispatch} from 'redux-thunk';
 import {Action} from 'redux';
 import {connect} from 'react-redux';
 import {PartType} from '../../api/generated/model';
-import * as PartTypeInfo from "../../api/old/PartTypeInfo";
-import DetailMultiSection from "./Detail/DetailMultiSection";
+import * as PartTypeInfo from '../../api/old/PartTypeInfo';
+import DetailMultiSection from './Detail/DetailMultiSection';
 import Loading from '../shared/loading/Loading';
-import {globalFundTreeInvalidate} from "../../actions/arr/globalFundTree";
-import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
-import {WebApi} from "../../actions/WebApi";
-import {DetailActions} from "../../shared/detail";
-import {AP_VALIDATION, AP_VIEW_SETTINGS} from "../../constants";
-import storeFromArea from "../../shared/utils/storeFromArea";
+import {globalFundTreeInvalidate} from '../../actions/arr/globalFundTree';
+import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
+import {WebApi} from '../../actions/WebApi';
+import {DetailActions} from '../../shared/detail';
+import {AP_VALIDATION, AP_VIEW_SETTINGS} from '../../constants';
+import storeFromArea from '../../shared/utils/storeFromArea';
 import * as registry from '../../actions/registry/registry';
-import {ApAccessPointVO} from "../../api/ApAccessPointVO";
-import {ApValidationErrorsVO} from "../../api/ApValidationErrorsVO";
-import {ApPartVO} from "../../api/ApPartVO";
-import {DetailStoreState} from "../../types";
-import DetailHeader from "./Detail/DetailHeader";
-import {ApPartFormVO} from "../../api/ApPartFormVO";
-import PartEditModal from "./modal/PartEditModal";
-import {sortItems} from "../../utils/ItemInfo";
-import {RulPartTypeVO} from "../../api/RulPartTypeVO";
-import {registryDetailFetchIfNeeded} from "../../actions/registry/registry";
-import {ApViewSettings} from "../../api/ApViewSettings";
-import {indexById, objectById} from "../../shared/utils";
-import {RulDescItemTypeExtVO} from "../../api/RulDescItemTypeExtVO";
+import {ApAccessPointVO} from '../../api/ApAccessPointVO';
+import {ApValidationErrorsVO} from '../../api/ApValidationErrorsVO';
+import {ApPartVO} from '../../api/ApPartVO';
+import {DetailStoreState} from '../../types';
+import DetailHeader from './Detail/DetailHeader';
+import {ApPartFormVO} from '../../api/ApPartFormVO';
+import PartEditModal from './modal/PartEditModal';
+import {sortItems} from '../../utils/ItemInfo';
+import {RulPartTypeVO} from '../../api/RulPartTypeVO';
+import {registryDetailFetchIfNeeded} from '../../actions/registry/registry';
+import {ApViewSettings} from '../../api/ApViewSettings';
+import {indexById, objectById} from '../../shared/utils';
+import {RulDescItemTypeExtVO} from '../../api/RulDescItemTypeExtVO';
 
 type OwnProps = {
     id: number; // ap id
@@ -35,7 +35,7 @@ type OwnProps = {
     apValidation: DetailStoreState<ApValidationErrorsVO>;
     apViewSettings: DetailStoreState<ApViewSettings>;
     globalEntity: boolean;
-}
+};
 
 type Props = OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps>;
 
@@ -43,7 +43,7 @@ function createBindings(accessPoint: ApAccessPointVO | undefined) {
     let bindings: any = {
         itemsMap: {},
         partsMap: {},
-    }
+    };
 
     bindings.addItem = (id, sync) => {
         const state = bindings.itemsMap[id] || true;
@@ -53,7 +53,7 @@ function createBindings(accessPoint: ApAccessPointVO | undefined) {
     bindings.addPart = (id, sync) => {
         const state = bindings.partsMap[id] || true;
         bindings.partsMap[id] = state && sync;
-    }
+    };
 
     if (accessPoint) {
         const externalIds = accessPoint.externalIds;
@@ -94,7 +94,7 @@ function sortPrefer(parts: ApPartVO[], preferredPart?: number) {
             } else {
                 return 0;
             }
-        })
+        });
     }
     return parts;
 }
@@ -111,7 +111,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
     useEffect(() => {
         props.fetchViewSettings();
         props.refreshValidation(props.id);
-    }, [props.id])
+    }, [props.id]);
 
     const handleSetPreferred = (part: ApPartVO) => {
         if (part.id) {
@@ -131,7 +131,18 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         const partType = refTables.partTypes.itemsMap[part.typeId].code;
         const detail = props.detail.data!;
 
-        part.id && props.showPartEditModal(part, partType, props.id, apTypeId, detail.scopeId, props.refTables, props.descItemTypesMap, props.apViewSettings, part.partParentId);
+        part.id &&
+            props.showPartEditModal(
+                part,
+                partType,
+                props.id,
+                apTypeId,
+                detail.scopeId,
+                props.refTables,
+                props.descItemTypesMap,
+                props.apViewSettings,
+                part.partParentId,
+            );
         props.refreshValidation(props.id);
     };
 
@@ -147,10 +158,11 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         props.refreshValidation(props.id);
     };
 
-    const groupBy = (data, key) => data.reduce((rv, x) => {
-        (rv[x[key]] = rv[x[key]] || []).push(x);
-        return rv;
-    }, {});
+    const groupBy = (data, key) =>
+        data.reduce((rv, x) => {
+            (rv[x[key]] = rv[x[key]] || []).push(x);
+            return rv;
+        }, {});
 
     const getRelatedPartSections = (parentParts: ApPartVO[], parentPartType): ApPartVO[] => {
         if (parentParts.length === 0) {
@@ -158,8 +170,10 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         }
 
         const parentIds = parentParts.filter(value => value.id).map(value => value.id);
-        const allParts = props.detail.data ? props.detail.data.parts as ApPartVO[] : [];
-        return allParts.filter(value => value.partParentId).filter(value => value.partParentId && parentIds.includes(value.partParentId));
+        const allParts = props.detail.data ? (props.detail.data.parts as ApPartVO[]) : [];
+        return allParts
+            .filter(value => value.partParentId)
+            .filter(value => value.partParentId && parentIds.includes(value.partParentId));
     };
 
     const isFetchingPartyTypes = !props.refTables.partTypes.fetched && props.refTables.partTypes.isFetching;
@@ -169,89 +183,116 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
     const isFetchingViewSettings = props.apViewSettings.isFetching;
 
     if (isFetchingPartyTypes || isFetching || isFetchingViewSettings) {
-        return <div className={'detail-page-wrapper'}>
-            <Loading/>
-        </div>;
+        return (
+            <div className={'detail-page-wrapper'}>
+                <Loading />
+            </div>
+        );
     }
 
     if (!isFetching && (!props.detail.id || !props.detail.data)) {
-        return <div className={'detail-page-wrapper'}/>;
+        return <div className={'detail-page-wrapper'} />;
     }
 
     const accessPoint = props.detail.data;
 
     const bindings = createBindings(accessPoint);
 
-    const allParts = accessPoint ? accessPoint.parts as ApPartVO[] : [];
-    const typedParts = groupBy(sortPrefer(allParts, accessPoint?.preferredPart), 'typeId');
+    const allParts = accessPoint ? (accessPoint.parts as ApPartVO[]) : [];
+    const typedParts = groupBy(
+        sortPrefer(
+            allParts.filter(part => !part.partParentId),
+            accessPoint?.preferredPart,
+        ),
+        'typeId',
+    );
 
     const validationResult = props.apValidation.data;
 
     const sortedParts = sortPart(props.refTables.partTypes.items, props.apViewSettings.data);
 
-    return <div className={'detail-page-wrapper'}>
-        <div key="1" className="layout-scroll">
-            <DetailHeader
-                item={props.detail.data!}
-                id={props.detail.data!.id}
-                collapsed={collapsed}
-                onToggleCollapsed={() => {
-                    setCollapsed(!collapsed)
-                }}
-                validationErrors={validationResult && validationResult.errors}
-                onInvalidateDetail={() => props.refreshDetail(props.detail.data!.id)}
-            />
+    return (
+        <div className={'detail-page-wrapper'}>
+            <div key="1" className="layout-scroll">
+                <DetailHeader
+                    item={props.detail.data!}
+                    id={props.detail.data!.id}
+                    collapsed={collapsed}
+                    onToggleCollapsed={() => {
+                        setCollapsed(!collapsed);
+                    }}
+                    validationErrors={validationResult && validationResult.errors}
+                    onInvalidateDetail={() => props.refreshDetail(props.detail.data!.id)}
+                />
 
-            {allParts && <div key="part-sections">
-                {sortedParts.map((partType: RulPartTypeVO, index) => {
+                {allParts && (
+                    <div key="part-sections">
+                        {sortedParts.map((partType: RulPartTypeVO, index) => {
+                            const onAddRelated = partType.childPartId
+                                ? parentPartId => {
+                                      const childPartType = objectById(
+                                          props.refTables.partTypes.items,
+                                          partType.childPartId,
+                                      );
+                                      if (childPartType !== null) {
+                                          handleAdd(childPartType, parentPartId);
+                                      } else {
+                                          console.error('childPartType ' + partType.childPartId + ' not found');
+                                      }
+                                  }
+                                : undefined;
 
-                    const onAddRelated = partType.childPartId ? (parentPartId) => {
-                        const childPartType = objectById(props.refTables.partTypes.items, partType.childPartId);
-                        if (childPartType !== null) {
-                            handleAdd(childPartType, parentPartId);
-                        } else {
-                            console.error("childPartType " + partType.childPartId + " not found");
-                        }
-                    } : undefined;
-
-                    return <DetailMultiSection
-                            key={partType.code}
-                            label={partType.name}
-                            editMode={props.editMode}
-                            parts={typedParts[partType.id] ? typedParts[partType.id] : []}
-                            relatedParts={getRelatedPartSections(typedParts[partType.id] ? typedParts[partType.id] : [], partType.id)}
-                            preferred={props.detail.data ? props.detail.data.preferredPart : undefined}
-                            globalCollapsed={props.globalCollapsed}
-                            onSetPreferred={handleSetPreferred}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                            bindings={bindings}
-                            onAdd={() => handleAdd(partType)}
-                            onDeleteParts={handleDeletePart}
-                            onAddRelated={onAddRelated}
-                            partValidationErrors={validationResult && validationResult.partErrors}
-                            itemTypeSettings={props.apViewSettings.data!.itemTypes}
-                            globalEntity={props.globalEntity}
-                        />;
-                    }
+                            return (
+                                <DetailMultiSection
+                                    key={partType.code}
+                                    label={partType.name}
+                                    editMode={props.editMode}
+                                    parts={typedParts[partType.id] ? typedParts[partType.id] : []}
+                                    relatedParts={getRelatedPartSections(
+                                        typedParts[partType.id] ? typedParts[partType.id] : [],
+                                        partType.id,
+                                    )}
+                                    preferred={props.detail.data ? props.detail.data.preferredPart : undefined}
+                                    globalCollapsed={props.globalCollapsed}
+                                    onSetPreferred={handleSetPreferred}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                    bindings={bindings}
+                                    onAdd={() => handleAdd(partType)}
+                                    onDeleteParts={handleDeletePart}
+                                    onAddRelated={onAddRelated}
+                                    partValidationErrors={validationResult && validationResult.partErrors}
+                                    itemTypeSettings={props.apViewSettings.data!.itemTypes}
+                                    globalEntity={props.globalEntity}
+                                />
+                            );
+                        })}
+                    </div>
                 )}
-            </div>}
+            </div>
         </div>
-    </div>
+    );
 };
 
-const mapDispatchToProps = (
-    dispatch: ThunkDispatch<{}, {}, Action<string>>
-) => ({
-    showPartEditModal: (part: ApPartVO, partType, apId: number, apTypeId: number, scopeId: number, refTables, descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-                        apViewSettings: DetailStoreState<ApViewSettings>, parentPartId?: number) => {
+const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => ({
+    showPartEditModal: (
+        part: ApPartVO,
+        partType,
+        apId: number,
+        apTypeId: number,
+        scopeId: number,
+        refTables,
+        descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+        apViewSettings: DetailStoreState<ApViewSettings>,
+        parentPartId?: number,
+    ) => {
         dispatch(
             modalDialogShow(
                 this,
                 PartTypeInfo.getPartEditDialogLabel(partType, false),
                 <PartEditModal
                     partTypeId={objectById(refTables.partTypes.items, partType, 'code').id}
-                    onSubmit={(data) => {
+                    onSubmit={data => {
                         if (!part.id) {
                             return;
                         }
@@ -276,14 +317,16 @@ const mapDispatchToProps = (
                     initialValues={{
                         partForm: {
                             items: sortItems(partType, part.items, refTables, descItemTypesMap, apViewSettings),
-                        }
+                        },
                     }}
-                    formData={{
-                        partId: part.id,
-                        parentPartId: part.partParentId,
-                        partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
-                        items: sortItems(partType, part.items, refTables, descItemTypesMap, apViewSettings),
-                    } as ApPartFormVO}
+                    formData={
+                        {
+                            partId: part.id,
+                            parentPartId: part.partParentId,
+                            partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
+                            items: sortItems(partType, part.items, refTables, descItemTypesMap, apViewSettings),
+                        } as ApPartFormVO
+                    }
                     parentPartId={part.partParentId}
                     apId={apId}
                     partId={part.id}
@@ -291,11 +334,17 @@ const mapDispatchToProps = (
                         dispatch(modalDialogHide());
                     }}
                 />,
-                'dialog-lg'
-            )
+                'dialog-lg',
+            ),
         );
     },
-    showPartCreateModal: (partType: RulPartTypeVO, apId: number, apTypeId: number, scopeId: number, parentPartId?: number) => {
+    showPartCreateModal: (
+        partType: RulPartTypeVO,
+        apId: number,
+        apTypeId: number,
+        scopeId: number,
+        parentPartId?: number,
+    ) => {
         dispatch(
             modalDialogShow(
                 this,
@@ -321,10 +370,12 @@ const mapDispatchToProps = (
                     }}
                     apTypeId={apTypeId}
                     scopeId={scopeId}
-                    formData={{
-                        partTypeCode: partType.code,
-                        items: [],
-                    } as ApPartFormVO}
+                    formData={
+                        {
+                            partTypeCode: partType.code,
+                            items: [],
+                        } as ApPartFormVO
+                    }
                     parentPartId={parentPartId}
                     initialValues={{}}
                     apId={apId}
@@ -334,7 +385,7 @@ const mapDispatchToProps = (
                 />,
                 'dialog-lg',
                 dispatch(globalFundTreeInvalidate()),
-            )
+            ),
         );
     },
     setPreferred: async (apId: number, partId: number) => {
@@ -355,17 +406,26 @@ const mapDispatchToProps = (
         dispatch(registryDetailFetchIfNeeded(apId, true));
     },
     refreshValidation: (apId: number) => {
-        dispatch(DetailActions.fetchIfNeeded(AP_VALIDATION, apId, (id) => {
-            return WebApi.validateAccessPoint(id)
-        }, true));
+        dispatch(
+            DetailActions.fetchIfNeeded(
+                AP_VALIDATION,
+                apId,
+                id => {
+                    return WebApi.validateAccessPoint(id);
+                },
+                true,
+            ),
+        );
     },
     refreshDetail: (apId: number) => {
         dispatch(registryDetailFetchIfNeeded(apId, true));
     },
     fetchViewSettings: () => {
-        dispatch(DetailActions.fetchIfNeeded(AP_VIEW_SETTINGS, '', () => {
-            return WebApi.getApTypeViewSettings();
-        }));
+        dispatch(
+            DetailActions.fetchIfNeeded(AP_VIEW_SETTINGS, '', () => {
+                return WebApi.getApTypeViewSettings();
+            }),
+        );
     },
 });
 
@@ -377,7 +437,7 @@ const mapStateToProps = (state: any, props: OwnProps) => {
         descItemTypesMap: state.refTables.descItemTypes.itemsMap,
         refTables: state.refTables,
         editMode: true,
-    }
+    };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ApDetailPageWrapper);

@@ -76,7 +76,7 @@ public class FundController implements FundsApi {
         Assert.notNull(institution, "Nebyla nalezena instituce s identifikátorem " + createFund.getInstitutionIdentifier());
 
         ArrFund newFund = arrangementService
-                .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getDateRange(), createFund.getFundNumber(), createFund.getUnitdate(), createFund.getMark(), createFund.getUuid());
+                .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getFundNumber(), createFund.getUnitdate(), createFund.getMark(), createFund.getUuid());
 
         // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
         UserDetail userDetail = userService.getLoggedUserDetail();

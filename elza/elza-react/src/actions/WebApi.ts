@@ -1,13 +1,12 @@
 // @ts-ignore
 import AjaxUtils from '../components/AjaxUtils';
-import {DEFAULT_LIST_SIZE, JAVA_ATTR_CLASS} from '../constants';
+import {CoordinateFileType, DEFAULT_LIST_SIZE, JAVA_ATTR_CLASS} from '../constants';
 import {
     ArrRefTemplateEditVO,
     ArrRefTemplateMapTypeVO,
     ArrRefTemplateVO,
     CommentVO,
     CreateFund,
-    CreateFundVO,
     FindFundsResult,
     IssueListVO,
     IssueStateVO,
@@ -38,8 +37,8 @@ import {UsrUserVO} from '../api/UsrUserVO';
 const serverContextPath = window.serverContextPath;
 
 function getData(data, timeout = 1000) {
-    return new Promise(function(resolve, reject) {
-        setTimeout(function() {
+    return new Promise(function (resolve, reject) {
+        setTimeout(function () {
             resolve(data);
         }, timeout);
     });
@@ -86,6 +85,7 @@ export class WebApiCls {
     static arrangementUrl = WebApiCls.baseUrl + '/arrangement';
     static issueUrl = WebApiCls.baseUrl + '/issue';
     static registryUrl = WebApiCls.baseUrl + '/registry';
+    static apUrl = WebApiCls.registryUrl;
     static partyUrl = WebApiCls.baseUrl + '/party';
     static importUrl = WebApiCls.baseUrl + '/import';
     static exportUrl = WebApiCls.baseUrl + '/export';
@@ -665,60 +665,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/', null, accessPoint);
     }
 
-    createStructuredAccessPoint(
-        name,
-        complement,
-        languageCode,
-        description,
-        typeId,
-        scopeId,
-    ): Promise<ApAccessPointCreateVO> {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/structured', null, {
-            [JAVA_ATTR_CLASS]: 'cz.tacr.elza.controller.vo.ApAccessPointCreateVO',
-            name,
-            description,
-            complement,
-            languageCode,
-            // local: false,
-            scopeId,
-            typeId,
-        });
-    }
-
-    confirmStructuredAccessPoint(accessPointId) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/confirm', null, null);
-    }
-
-    changeAccessPointItems(accessPointId, items) {
-        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId + '/items', null, items);
-    }
-
-    deleteAccessPointItemsByType(accessPointId, itemTypeId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId + '/type/' + itemTypeId, null, null);
-    }
-
     deleteAccessPoint(accessPointId) {
         return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId);
-    }
-
-    createAccessPointStructuredName(accessPointId) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name/structured', null);
-    }
-
-    changeNameItems(accessPointId, objectId, items) {
-        return AjaxUtils.ajaxPut(
-            WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId + '/items',
-            null,
-            items,
-        );
-    }
-
-    deleteNameItemsByType(accessPointId, objectId, itemTypeId) {
-        return AjaxUtils.ajaxDelete(
-            WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId + '/type/' + itemTypeId,
-            null,
-            null,
-        );
     }
 
     getAccessPointName(accessPointId, objectId) {
@@ -854,7 +802,12 @@ export class WebApiCls {
      * @param externalSystemCode kód externího systému
      * @param replace nahradit původní data přístupového bod (převezme se kompletně z ext. systému)
      */
-    connectArchiveEntity(archiveEntityId: number, accessPointId: number, externalSystemCode: string, replace: boolean): Promise<void> {
+    connectArchiveEntity(
+        archiveEntityId: number,
+        accessPointId: number,
+        externalSystemCode: string,
+        replace: boolean,
+    ): Promise<void> {
         const url = UrlBuilder.bindParams(
             WebApiCls.registryUrl + '/external/{archiveEntityId}/connect/{accessPointId}',
             {
@@ -954,10 +907,6 @@ export class WebApiCls {
         );
     }
 
-    setValidRegistry(registryId) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + registryId + '/valid', null);
-    }
-
     getScopes(versionId = null) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/fundScopes', {versionId});
     }
@@ -992,58 +941,6 @@ export class WebApiCls {
 
     getAllLanguages() {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/languages', null);
-    }
-
-    createAccessPointName(accessPointId, data) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name', null, data);
-    }
-
-    updateAccessPointName(accessPointId, data) {
-        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId + '/name', null, data);
-    }
-
-    deleteAccessPointName(accessPointId, objectId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId);
-    }
-
-    confirmAccessPointStructuredName(accessPointId, objectId) {
-        return AjaxUtils.ajaxPost(
-            WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId + '/confirm',
-            null,
-            null,
-        );
-    }
-
-    setPreferredAccessPointName(accessPointId, objectId) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId + '/preferred');
-    }
-
-    getFragment(fragmentId) {
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/fragment/' + fragmentId);
-    }
-
-    createFragment(fragmentTypeCode) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/fragment/create/' + fragmentTypeCode);
-    }
-
-    deleteFragment(fragmentId) {
-        return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/fragment/' + fragmentId, null, null);
-    }
-
-    confirmFragment(fragmentId) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/fragment/' + fragmentId + '/confirm', null, null);
-    }
-
-    changeFragmentItems(fragmentId, items) {
-        return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/fragment/' + fragmentId + '/items', null, items);
-    }
-
-    deleteFragmentItemsByType(fragmentId, itemTypeId) {
-        return AjaxUtils.ajaxDelete(
-            WebApiCls.registryUrl + '/fragment/' + fragmentId + '/type/' + itemTypeId,
-            null,
-            null,
-        );
     }
 
     getRecordTypes() {
@@ -1176,30 +1073,6 @@ export class WebApiCls {
         });
     }
 
-    deleteFundNodeRegister(versionId, nodeId, data) {
-        return AjaxUtils.ajaxPost(
-            WebApiCls.arrangementUrl + '/registerLinks/' + nodeId + '/' + versionId + '/delete',
-            null,
-            data,
-        );
-    }
-
-    createFundNodeRegister(versionId, nodeId, data) {
-        return AjaxUtils.ajaxPut(
-            WebApiCls.arrangementUrl + '/registerLinks/' + nodeId + '/' + versionId + '/create',
-            null,
-            data,
-        );
-    }
-
-    updateFundNodeRegister(versionId, nodeId, data) {
-        return AjaxUtils.ajaxPost(
-            WebApiCls.arrangementUrl + '/registerLinks/' + nodeId + '/' + versionId + '/update',
-            null,
-            data,
-        );
-    }
-
     getRulDataTypes(): Promise<RulDataTypeVO[]> {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/dataTypes');
     }
@@ -1222,10 +1095,6 @@ export class WebApiCls {
 
     getRequestsInQueue() {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/requests/queued');
-    }
-
-    deleteRequestFromQueue(id) {
-        return getData({}, 100);
     }
 
     findRequests(versionId, type, state, description, fromDate, toDate, subType) {
@@ -1349,24 +1218,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/getRuleSets');
     }
 
-    /**
-     * @deprecated use {WebApiCls.createFund2}
-     * @param createFund
-     */
-    createFund(createFund: CreateFundVO) {
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/funds', null, createFund);
-    }
-
     createFund2(createFund: CreateFund) {
         return AjaxUtils.ajaxPost(WebApiCls.fundV1, null, createFund);
-    }
-
-    /**
-     * @deprecated use {WebApiCls.updateFund2}
-     * @param updateFund
-     */
-    updateFund(data) {
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/updateFund', {ruleSetId: data.ruleSetId}, data);
     }
 
     updateFund2(id, data: UpdateFund) {
@@ -1494,10 +1347,9 @@ export class WebApiCls {
     }
 
     synchronizeNodes(nodeId: number, nodeVersion: number, childrenNodes: boolean): Promise<void> {
-        return AjaxUtils.ajaxGet(
-            WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + nodeVersion + '/sync/',
-            {childrenNodes},
-        );
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + nodeVersion + '/sync/', {
+            childrenNodes,
+        });
     }
 
     importPackage(data) {
@@ -2313,6 +2165,16 @@ export class WebApiCls {
             direction,
         });
     }
+
+    importApCoordinates(body: ArrayBuffer | Blob | string, fileType: CoordinateFileType = CoordinateFileType.KML) {
+        return AjaxUtils.ajaxPost(
+            WebApiCls.apUrl + '/import/coordinates',
+            {
+                fileType,
+            },
+            body,
+        );
+    }
 }
 
 /**
@@ -2348,6 +2210,16 @@ export class UrlFactory {
 
     static exportArrCoordinate(objectId, versionId) {
         return serverContextPath + WebApiCls.kmlUrl + '/export/descCoordinates/' + versionId + '/' + objectId;
+    }
+
+    static exportApCoordinate(itemId, fileType: CoordinateFileType = CoordinateFileType.KML) {
+        return (
+            UrlBuilder.bindParams(WebApiCls.apUrl + '/export/coordinates/{itemId}', {
+                itemId,
+            }) +
+            '?fileType=' +
+            fileType
+        );
     }
 
     static exportItemCsvExport(objectId, versionId, typePrefix) {

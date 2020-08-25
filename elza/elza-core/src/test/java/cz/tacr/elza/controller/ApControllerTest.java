@@ -1,12 +1,10 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -24,7 +22,6 @@ import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
@@ -209,18 +206,6 @@ public class ApControllerTest extends AbstractControllerTest {
         return apPartFormVO;
     }
 
-    /*private ApAccessPointNameVO createName(final ApAccessPointVO accessPoint) {
-        ApAccessPointNameVO accessPointName = createAccessPointStructuredName(accessPoint.getId());
-        List<ApUpdateItemVO> items = new ArrayList<>();
-        RulDescItemTypeExtVO apNameType = findDescItemTypeByCode("AP_NAME");
-        RulDescItemTypeExtVO apComplementType = findDescItemTypeByCode("AP_COMPLEMENT");
-
-        items.add(buildApItem(UpdateOp.CREATE, apNameType.getCode(), null, "Karel", null, null));
-        items.add(buildApItem(UpdateOp.CREATE, apComplementType.getCode(), null, "IV", null, null));
-        changeNameItems(accessPoint.getId(), accessPointName.getObjectId(), items);
-        return accessPointName;
-    }*/
-
     private ApTypeVO getApType(final String structApType) {
         List<ApTypeVO> recordTypes = getRecordTypes();
         return findApTypeRecursive(structApType, recordTypes);
@@ -357,7 +342,7 @@ public class ApControllerTest extends AbstractControllerTest {
     @Test
     public void registerReplaceTest() {
         // Vytvoření fund
-        ArrFundVO fund = createFund("RegisterLinks Test AP", "IC3");
+        Fund fund = createFund("RegisterLinks Test AP", "IC3");
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();

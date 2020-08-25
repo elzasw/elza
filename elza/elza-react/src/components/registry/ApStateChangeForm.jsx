@@ -11,6 +11,7 @@ import Scope from '../shared/scope/Scope';
 import * as StateApproval from '../enum/StateApproval';
 import FormInputField from '../../components/shared/form/FormInputField';
 import {connect} from 'react-redux';
+import FF from '../shared/form/FF';
 
 class ApStateChangeForm extends AbstractReactComponent {
     static validate = (values, props) => {
@@ -71,16 +72,16 @@ class ApStateChangeForm extends AbstractReactComponent {
             <div key={this.props.key}>
                 <Form onSubmit={handleSubmit}>
                     <Modal.Body>
-                        <Field
-                            component={Scope}
+                        <FF
+                            field={Scope}
                             disabled={submitting}
                             versionId={versionId}
                             label={i18n('ap.state.title.scope')}
                             name={'scopeId'}
                         />
                         {!hideType && (
-                            <Field
-                                component={Autocomplete}
+                            <FF
+                                field={Autocomplete}
                                 label={i18n('ap.state.title.type')}
                                 items={apTypes.items ? apTypes.items : []}
                                 tree
@@ -89,6 +90,10 @@ class ApStateChangeForm extends AbstractReactComponent {
                                 name={'typeId'}
                                 useIdAsValue
                                 disabled={submitting}
+                                onBlur={event => {
+                                    event.stopPropagation && event.stopPropagation();
+                                    event.preventDefault && event.preventDefault();
+                                }}
                             />
                         )}
                         <Field

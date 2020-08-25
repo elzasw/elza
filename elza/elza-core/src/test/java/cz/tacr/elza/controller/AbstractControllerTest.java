@@ -70,7 +70,6 @@ import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.controller.vo.CreateFundVO;
 import cz.tacr.elza.controller.vo.CreateUserVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
@@ -109,7 +108,6 @@ import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
@@ -175,8 +173,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String UPDATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/batchUpdate";
 
     // ARRANGEMENT
-    protected static final String CREATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/funds";
-    protected static final String UPDATE_FUND = ARRANGEMENT_CONTROLLER_URL + "/updateFund";
     protected static final String FUND = ARRANGEMENT_CONTROLLER_URL + "/getFund/{fundId}";
     protected static final String FUNDS = ARRANGEMENT_CONTROLLER_URL + "/getFunds";
     protected static final String APPROVE_VERSION = ARRANGEMENT_CONTROLLER_URL + "/approveVersion";
@@ -283,16 +279,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String USAGES_RECORD = AP_CONTROLLER_URL + "/{recordId}/usage";
     protected static final String REPLACE_RECORD = AP_CONTROLLER_URL + "/{recordId}/replace";
 
-    protected static final String CREATE_STRUCTURED_ACCESS_POINT = AP_CONTROLLER_URL + "/structured";
-    protected static final String CONFIRM_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/confirm";
-    protected static final String CREATE_STRUCTURED_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/structured";
-    protected static final String UPDATE_STRUCTURED_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/structured";
-    protected static final String CONFIRM_NAME_ACCESS_POINT = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/confirm";
-    protected static final String CHANGE_ACCESS_POINT_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/items";
-    protected static final String DELETE_ACCESS_POINT_ITEMS_BY_TYPE = AP_CONTROLLER_URL + "/{accessPointId}/type/{itemTypeId}";
-    protected static final String CHANGE_NAME_ITEMS = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/items";
-    protected static final String DELETE_NAME_ITEMS_BY_TYPE = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}/type/{itemTypeId}";
-    protected static final String GET_NAME = AP_CONTROLLER_URL + "/{accessPointId}/name/{objectId}";
     protected static final String GET_LANGUAGES = AP_CONTROLLER_URL + "/languages";
     protected static final String GET_EXTERNAL_ID_TYPES = AP_CONTROLLER_URL + "/eidTypes";
 
@@ -632,39 +618,34 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
-     * Vytvoření archivní pomůcky.
-     *
-     * @param createFund parametry pro založení
-     * @return ap
-     */
-    protected ArrFundVO createFund(final CreateFundVO createFund) {
-        Response response = post(spec -> spec
-                .body(createFund), CREATE_FUND);
-        return response.getBody().as(ArrFundVO.class);
-    }
-
-    /**
      * Vytvoření výchozí archivní pomůcky.
      *
      * @param name název AP
      * @return ap
      */
-    protected ArrFundVO createFund(final String name, final String internalCode) {
+    protected Fund createFund(final String name, final String internalCode) {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(1);
         ParInstitutionVO institution = getInstitutions().get(0);
 
-        CreateFundVO createFund = new CreateFundVO();
+        CreateFund createFund = new CreateFund();
         createFund.setName(name);
-        createFund.setRuleSetId(ruleSet.getId());
-        createFund.setInstitutionId(institution.getId());
+        createFund.setRuleSetCode(ruleSet.getCode());
+        createFund.setInstitutionIdentifier(institution.getCode());
         createFund.setInternalCode(internalCode);
-        createFund.setDateRange(null);
 
-        return createFund(createFund);
+        List<String> scopes = new ArrayList<>();
+        scopes.add("GLOBAL");
+        createFund.setScopes(scopes);
+
+        return createFundV1(createFund);
     }
 
     /**
+     * Vytvoření archivní pomůcky.
+     *
+
+     /**
      * Vytvoření archivní pomůcky.
      *
      * @param fund parametry pro založení
@@ -696,22 +677,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
                         .queryParameter("max", max)
                         .queryParameter("from", from), FUNDS_V1);
         return response.getBody().as(FindFundsResult.class);
-    }
-
-
-
-    /**
-     * Úprava archivní pomůcky.
-     *
-     * @param fund      ap k úpravě
-     * @param ruleSetId id pravidel otevřené verze
-     * @return ap
-     */
-    protected ArrFundVO fundAid(final ArrFundVO fund, final Integer ruleSetId) {
-        Response response = post(spec ->
-                spec.queryParameter("ruleSetId", ruleSetId)
-                        .body(fund), UPDATE_FUND);
-        return response.getBody().as(ArrFundVO.class);
     }
 
     /**
@@ -1607,13 +1572,25 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param fund archivní pomůcka
      * @return otevřená verze AP
      */
-    protected ArrFundVersionVO getOpenVersion(final ArrFundVO fund) {
+    protected ArrFundVersionVO getOpenVersion(final Fund fund) {
         Assert.assertNotNull(fund);
+
+        return getOpenVersion(fund.getId());
+    }
+
+    /**
+     * Nalezení otevřené verze AP.
+     *
+     * @param fundId archivní pomůcka
+     * @return otevřená verze AP
+     */
+    protected ArrFundVersionVO getOpenVersion(final Integer fundId) {
+        Assert.assertNotNull(fundId);
 
         List<ArrFundVO> funds = getFunds();
 
         for (ArrFundVO fundFound : funds) {
-            if (fundFound.getId().equals(fund.getId())) {
+            if (fundFound.getId().equals(fundId)) {
                 for (ArrFundVersionVO fundVersion : fundFound.getVersions()) {
                     if (fundVersion.getLockDate() == null) {
                         return fundVersion;
@@ -3338,67 +3315,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
                 .pathParam("partId", partId), SET_PREFER_NAME);
     }
 
-    protected ApAccessPointVO createStructuredAccessPoint(final ApAccessPointCreateVO accessPoint) {
-        return post(spec -> spec.body(accessPoint), CREATE_STRUCTURED_ACCESS_POINT).as(ApAccessPointVO.class);
-    }
-
-    protected void confirmStructuredAccessPoint(final Integer accessPointId) {
-        post(spec -> spec.pathParameter("accessPointId", accessPointId), CONFIRM_ACCESS_POINT);
-    }
-
-    /*protected ApAccessPointNameVO createAccessPointStructuredName(final Integer accessPointId) {
-        return post(spec -> spec.pathParameter("accessPointId", accessPointId),
-                CREATE_STRUCTURED_NAME_ACCESS_POINT).as(ApAccessPointNameVO.class);
-    }*/
-
-    protected void confirmAccessPointStructuredName(final Integer accessPointId,
-                                                    final Integer objectId) {
-        post(spec -> spec.pathParameter("accessPointId", accessPointId)
-                        .pathParameter("objectId", objectId),
-                CONFIRM_NAME_ACCESS_POINT);
-    }
-
-    /**
-     * Úprava hodnot těla přístupového bodu. Přidání/upravení/smazání.
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     * @param items         položky ke změně
-     */
-    protected void changeAccessPointItems(final Integer accessPointId,
-                                          final List<ApUpdateItemVO> items) {
-        put(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .body(items), CHANGE_ACCESS_POINT_ITEMS);
-    }
-
-    /**
-     * Úprava hodnot jména přístupového bodu. Přidání/upravení/smazání.
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     * @param objectId      identifikátor objektu jména
-     * @param items         položky ke změně
-     */
-    protected void changeNameItems(final Integer accessPointId,
-                                   final Integer objectId,
-                                   final List<ApUpdateItemVO> items) {
-        put(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .pathParameter("objectId", objectId)
-                .body(items), CHANGE_NAME_ITEMS);
-    }
-
-
-    /**
-     * Upravení jazyk strukturovaného jména přístupového bodu.
-     *
-     * @param accessPointId   identifikátor přístupového bodu
-     * @param accessPointName data jména
-     * @return upravené jméno
-     */
-   /* public ApAccessPointNameVO updateAccessPointStructuredName(final Integer accessPointId,
-                                                               final ApAccessPointNameVO accessPointName) {
-        return put(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .body(accessPointName), UPDATE_STRUCTURED_NAME_ACCESS_POINT).as(ApAccessPointNameVO.class);
-    }*/
-
     /**
      * Vrací všechny jazyky.
      */
@@ -3413,33 +3329,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     public Map<String, ApEidTypeVO> getAllExternalIdTypes() {
         return Arrays.stream(get(GET_EXTERNAL_ID_TYPES).getBody().as(ApEidTypeVO[].class))
                 .collect(Collectors.toMap(ApEidTypeVO::getCode, Function.identity()));
-    }
-
-    /**
-     * Smazání hodnot fragmentu podle typu.
-     *
-     * @param accessPointId identifikátor identifikátor přístupového bodu
-     * @param itemTypeId    identifikátor typu atributu
-     */
-    public void deleteAccessPointItemsByType(final Integer accessPointId,
-                                             final Integer itemTypeId) {
-        delete(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .pathParameter("itemTypeId", itemTypeId), DELETE_ACCESS_POINT_ITEMS_BY_TYPE);
-    }
-
-    /**
-     * Smazání hodnot jména podle typu.
-     *
-     * @param accessPointId identifikátor identifikátor přístupového bodu
-     * @param objectId      identifikátor objektu jména
-     * @param itemTypeId    identifikátor typu atributu
-     */
-    public void deleteNameItemsByType(final Integer accessPointId,
-                                      final Integer objectId,
-                                      final Integer itemTypeId) {
-        delete(spec -> spec.pathParameter("accessPointId", accessPointId)
-                .pathParameter("objectId", objectId)
-                .pathParameter("itemTypeId", itemTypeId), DELETE_NAME_ITEMS_BY_TYPE);
     }
 
     // --- Issues ---
