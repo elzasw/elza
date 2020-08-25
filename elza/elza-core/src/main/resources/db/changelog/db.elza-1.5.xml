@@ -372,6 +372,10 @@
                                  constraintName="fk_sys_external_system" referencedColumnNames="external_system_id"
                                  referencedTableName="sys_external_system"/>
     </changeSet>
+    
+    <changeSet id="20200825163900" author="fantis">
+        <delete tableName="ap_external_id"/>
+    </changeSet>
 
     <changeSet id="20200622141100" author="fantis">
         <renameTable oldTableName="ap_external_id" newTableName="ap_binding"/>
