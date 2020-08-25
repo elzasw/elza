@@ -26,7 +26,7 @@ static GroovyResult generate(final GroovyPart part) {
 
     def addIdent = false
     for (GroovyItem item : part.getItems("IDN_TYPE")) {
-        if (item.spec != null && ( item.spec.equals("Kód CZ_RETRO") || item.spec.equals("NUTS/LAU") || item.spec.equals("ISO 3166-1 numeric") || item.spec.equals("ISO 3166-1 alpha-3") || item.spec.equals("ISO 3166-1 alpha-2") || item.spec.equals("číslo archivu")  || item.spec.equals("ORCID")  || item.spec.equals("Kód archivní taxonomické kategorie")) ) {
+        if (item.spec != null && ( item.spec.equals("ISO 3166-2") ||  item.spec.equals("Kód CZ_RETRO") || item.spec.equals("NUTS/LAU") || item.spec.equals("ISO 3166-1 numeric") || item.spec.equals("ISO 3166-1 alpha-3") || item.spec.equals("ISO 3166-1 alpha-2") || item.spec.equals("číslo archivu")  || item.spec.equals("ORCID")  || item.spec.equals("Kód archivní taxonomické kategorie")) ) {
             addIdent = true
             break
         }
