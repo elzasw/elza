@@ -2,12 +2,14 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
 import {formValueSelector, Field, reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {AbstractReactComponent, Autocomplete, FormInput, i18n} from 'components/shared';
 import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx';
 import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx';
 import {indexById} from 'stores/app/utils.jsx';
 import RegistryField from '../registry/RegistryField';
 import {FormInputField} from '../shared';
+import {WebApi} from "actions/index";
+import Tags from "components/form/Tags";
 
 /**
  * Formulář inline editace výstupu.
@@ -55,25 +57,44 @@ class OutputInlineForm extends AbstractReactComponent {
         this.props.dispatch(templatesFetchIfNeeded());
     }
 
-    render() {
-        const {outputTypeId, disabled, outputTypes, allTemplates} = this.props;
+    getOutputType = (id) => {
+        const { outputTypes } = this.props;
 
-        let outputType = false;
         if (outputTypes) {
-            const index = indexById(outputTypes, parseInt(this.props.initialValues.outputTypeId));
-            outputType = index !== null ? outputTypes[index].name : false;
+            const index = indexById(outputTypes, parseInt(id));
+            return index !== null ? outputTypes[index] : null;
         }
+        return null;
+    }
 
-        let templates = false;
-        if (outputTypeId) {
-            const index = indexById(outputTypes, parseInt(outputTypeId));
-            if (index !== null) {
-                const temp = allTemplates[outputTypes[index].code];
-                if (temp && temp.fetched) {
-                    templates = temp.items;
-                }
+    getOutputTemplates = (outputType) => {
+        const { allTemplates } = this.props;
+        const templates = [];
+        if (outputType) {
+            const template = allTemplates[outputType.code];
+            if (template && template.fetched) {
+                templates.push(...template.items);
             }
         }
+        return templates;
+    }
+
+    getOutputAvailableTemplates = (templates) => {
+        const { outputDetail } = this.props;
+        if(!outputDetail.templateIds) {
+            return templates;
+        } else {
+            return templates.filter((item) => outputDetail.templateIds.findIndex((id)=>item.id === id) < 0);
+        }
+    }
+
+    render() {
+        const {outputTypeId, disabled, outputDetail} = this.props;
+
+        const outputType = this.getOutputType(outputTypeId);
+        const outputTypeName = outputType ? outputType.name : "Unknown";
+        const templates = this.getOutputTemplates(outputType);
+        const availableTemplates = this.getOutputAvailableTemplates(templates);
 
         return (
             <div className="edit-output-form-container">
@@ -92,23 +113,28 @@ class OutputInlineForm extends AbstractReactComponent {
                         disabled={disabled}
                         name={'internalCode'}
                     />
-                    <div className="row-layout">
-                        <FormInput type="text" label={i18n('arr.output.outputType')} disabled value={outputType} />
-                        <Field
-                            component={FormInputField}
-                            as="select"
-                            label={i18n('arr.output.template')}
-                            disabled={disabled || !outputTypeId || !templates}
-                            name={'templateId'}
-                        >
-                            <option key="-templateId" />
-                            {templates &&
-                                templates.map(i => (
-                                    <option key={i.id} value={i.id}>
-                                        {i.name}
-                                    </option>
-                                ))}
-                        </Field>
+                    <div>
+                        <FormInput type="text" label={i18n('arr.output.outputType')} disabled value={outputTypeName} />
+                    </div>
+                    <div>
+                        <label className="control-label">{i18n('arr.output.template')}</label>
+                        <div>
+                        {!disabled &&
+                            <Autocomplete
+                                ref="template-select"
+                                className="form-group"
+                                value={null}
+                                items={availableTemplates}
+                                disabled={disabled}
+                                onChange={this.handleChangeTemplate}
+                            />
+                        }
+                            <Tags disabled={disabled} items={outputDetail.templateIds||[]} onRemove={(item)=>this.handleRemoveTemplate(item)} renderItem={({item})=>{
+                                const templateId = item;
+                                const template = templates.find((temp)=>temp.id===templateId);
+                                return template ? template.name : "Unknown template";
+                            }}/>
+                        </div>
                     </div>
                     <div>
                         <label className="control-label">{i18n('arr.output.title.anonymizedAp')}</label>
@@ -125,6 +151,22 @@ class OutputInlineForm extends AbstractReactComponent {
                 </form>
             </div>
         );
+    }
+
+    handleRemoveTemplate = (templateId) => {
+        const {outputDetail} = this.props;
+        WebApi.deleteOutputTemplate(outputDetail.id, templateId);
+    };
+
+
+    handleAddTemplate = (templateId) => {
+        const {outputDetail} = this.props;
+        WebApi.addOutputTemplate(outputDetail.id, templateId);
+        // Zbytek zařídí websocket
+    };
+
+    handleChangeTemplate = (template) => {
+        this.handleAddTemplate(template.id);
     }
 }
 

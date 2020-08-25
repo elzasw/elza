@@ -107,6 +107,8 @@ public class DeleteFundAction {
     @Autowired
     private OutputRepository outputRepository;
     @Autowired
+    private OutputTemplateRepository outputTemplateRepository;
+    @Autowired
     private ChangeRepository changeRepository;
 
     @Autowired
@@ -325,6 +327,7 @@ public class DeleteFundAction {
         itemSettingsRepository.deleteByOutputFund(fund);
         outputItemRepository.deleteByOutputFund(fund);
         nodeOutputRepository.deleteByOutputFund(fund);
+        outputTemplateRepository.deleteByFund(fund);
         outputRepository.deleteByFund(fund);
 
         em.flush();

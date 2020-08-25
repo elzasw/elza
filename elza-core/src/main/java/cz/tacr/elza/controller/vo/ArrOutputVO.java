@@ -3,12 +3,12 @@ package cz.tacr.elza.controller.vo;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
 
 /**
  * VO výstup z archivního souboru.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 14.04.2016
  */
 public class ArrOutputVO {
@@ -32,10 +32,15 @@ public class ArrOutputVO {
 
     private Integer outputTypeId;
 
-    private Integer templateId;
+    private List<Integer> templateIds;
 
-    private Integer outputResultId;
+    private List<Integer> outputResultIds;
 
+    /**
+     * Datum generovani vystupu
+     * 
+     * Prevezme se z prvniho vystupu
+     */
     private Date generatedDate;
 
     private Integer version;
@@ -55,8 +60,26 @@ public class ArrOutputVO {
     private List<ApScopeVO> scopes;
 
     private ApAccessPointVO anonymizedAp;
+    
+    public ArrOutputVO() {
+    	
+    }
 
-    // --- getters/setters ---
+    public ArrOutputVO(ArrOutput output) {
+		id = output.getOutputId();
+		internalCode = output.getInternalCode();
+		name = output.getName();
+		state = output.getState();
+		error = output.getError();
+		outputTypeId = output.getOutputType().getOutputTypeId();
+		createDate = (Date.from(output.getCreateChange().getChangeDate().toInstant()));
+		version = output.getVersion();
+		if(output.getDeleteChange()!=null) {
+          deleteDate = Date.from(output.getDeleteChange().getChangeDate().toInstant());
+		}
+	}
+
+	// --- getters/setters ---
 
     public Integer getId() {
         return id;
@@ -122,20 +145,20 @@ public class ArrOutputVO {
         this.version = version;
     }
 
-    public Integer getTemplateId() {
-        return templateId;
+    public List<Integer> getTemplateIds() {
+        return templateIds;
+    }
+    
+    public void setTemplateIds(final List<Integer> templateIds) {
+    	this.templateIds = templateIds;
     }
 
-    public void setTemplateId(final Integer templateId) {
-        this.templateId = templateId;
+    public List<Integer> getOutputResultIds() {
+        return outputResultIds;
     }
 
-    public Integer getOutputResultId() {
-        return outputResultId;
-    }
-
-    public void setOutputResultId(final Integer outputResultId) {
-        this.outputResultId = outputResultId;
+    public void setOutputResultIds(final List<Integer> outputResultIds) {
+        this.outputResultIds = outputResultIds;
     }
 
     public Date getGeneratedDate() {
@@ -185,4 +208,15 @@ public class ArrOutputVO {
     public void setAnonymizedAp(ApAccessPointVO anonymizedAp) {
         this.anonymizedAp = anonymizedAp;
     }
+    
+    /**
+     * Create basic vo object
+     * @param outputData
+     * @return
+     */
+    public static ArrOutputVO newInstance(ArrOutput output) {
+		ArrOutputVO outputVo = new ArrOutputVO(output);
+		return outputVo;
+    }
+
 }
