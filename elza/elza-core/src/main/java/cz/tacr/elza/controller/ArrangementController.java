@@ -47,6 +47,7 @@ import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
@@ -57,6 +58,7 @@ import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
+import cz.tacr.elza.controller.vo.ArrOutputTemplateVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
@@ -167,6 +169,7 @@ import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
 import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
 import cz.tacr.elza.service.importnodes.vo.ImportParams;
 import cz.tacr.elza.service.importnodes.vo.ValidateResult;
+import cz.tacr.elza.service.output.OutputData;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.service.vo.UpdateDescItemsParam;
@@ -174,14 +177,13 @@ import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 /**
  * Kontroler pro pořádání.
  *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 7. 1. 2016
  */
 @RestController
 @RequestMapping("/api/arrangement")
 public class ArrangementController {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ArrangementController.class);
 
     /**
      * Formát popisu atributu - krátká verze.
@@ -295,7 +297,7 @@ public class ArrangementController {
 
     @Autowired
     private FundLevelService fundLevelService;
-
+    
     /**
      * Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
      *
@@ -1173,6 +1175,7 @@ public class ArrangementController {
         String ruleCode = fundVersion.getRuleSet().getCode();
 
         ArrOutputVO outputVO = factoryVo.createOutput(output);
+        //ArrOutputVO outputVO = factoryVo.createOutputExt(output, fundVersion);
         List<ArrItemVO> descItems = factoryVo.createItems(outputItems);
         List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
         return new OutputFormDataNewVO(outputVO, descItems, itemTypeLites,
@@ -2253,9 +2256,17 @@ public class ArrangementController {
                                          @RequestBody final OutputNameParam param) {
         Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrOutput output = outputService.createOutput(fundVersion, param.getName(), param.getInternalCode(),
-                param.getOutputTypeId(), param.getTemplateId());
-        return factoryVo.createOutput(output);
+        
+        Set<Integer> templateIds = new HashSet<>();
+        if(param.getTemplateId()!=null) {
+        	templateIds.add(param.getTemplateId()); 
+        }
+        if(param.getTemplateIds()!=null) {
+        	templateIds.addAll(param.getTemplateIds());
+        }
+        OutputData outputData = outputService.createOutput(fundVersion, param.getName(), param.getInternalCode(),
+                param.getOutputTypeId(), templateIds);
+        return factoryVo.createOutputExt(outputData.getOutput(), fundVersion);
     }
 
     /**
@@ -2335,7 +2346,10 @@ public class ArrangementController {
                                    @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        return factoryVo.createOutput(outputService.cloneOutput(fundVersion, output));
+        
+        OutputData outputData = outputService.cloneOutput(fundVersion, output);
+        
+        return factoryVo.createOutputExt(outputData.getOutput(), fundVersion);
     }
 
     /**
@@ -2380,6 +2394,34 @@ public class ArrangementController {
     public void deleteRestrictedScope(@PathVariable(value = "outputId") final Integer outputId,
                                       @PathVariable(value = "scopeId") final Integer scopeId) {
         outputService.deleteRestrictedScope(outputId, scopeId);
+    }
+
+    /**
+     * Přidání šablony k výstupu
+     *
+     * @param outputId identifikátor výstupu
+     * @param templateId identifikátor šablony
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.PUT)
+    public ArrOutputTemplateVO addOutputTemplate(@PathVariable(value = "outputId") final Integer outputId, 
+    							  @PathVariable(value = "templateId") final Integer templateId) {
+        ArrOutput output = outputService.getOutput(outputId);
+    	return outputService.addOutputTemplate(output.getFundId(), output, templateId);
+    }
+
+    /**
+     * Odebrání šablony z výstupu
+     *
+     * @param outputId identifikátor výstupu
+     * @param templateId identifikátor šablony
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.DELETE)
+    public void deleteOutputTemplate(@PathVariable(value = "outputId") final Integer outputId,
+                                     @PathVariable(value = "templateId") final Integer templateId) {
+    	ArrOutput output = outputService.getOutput(outputId);
+    	outputService.deleteOutputTemplate(output.getFundId(), output, templateId);
     }
 
     /**
@@ -3605,6 +3647,11 @@ public class ArrangementController {
          * Template id.
          */
         private Integer templateId;
+        
+        /**
+         * List of templates
+         */
+        private List<Integer> templateIds;
 
         private ApAccessPointVO anonymizedAp;
 
@@ -3639,8 +3686,16 @@ public class ArrangementController {
         public void setTemplateId(final Integer templateId) {
             this.templateId = templateId;
         }
+        
+        public List<Integer> getTemplateIds() {
+			return templateIds;
+		}
 
-        public ApAccessPointVO getAnonymizedAp() {
+		public void setTemplateIds(List<Integer> templateIds) {
+			this.templateIds = templateIds;
+		}
+
+		public ApAccessPointVO getAnonymizedAp() {
             return anonymizedAp;
         }
 

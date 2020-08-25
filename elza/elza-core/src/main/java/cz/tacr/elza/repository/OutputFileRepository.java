@@ -1,15 +1,18 @@
 package cz.tacr.elza.repository;
 
+import java.util.List;
+
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
 
 /**
  * OutputFile repository
  */
 @Repository
-public interface OutputFileRepository extends ElzaJpaRepository<ArrOutputFile, Integer>, OutputFileRepositoryCustom {
+public interface OutputFileRepository extends ElzaJpaRepository<ArrOutputFile, Integer> {
 
     /*
      * @Modifying
@@ -18,4 +21,6 @@ public interface OutputFileRepository extends ElzaJpaRepository<ArrOutputFile, I
      */
 
     void deleteByOutputResultOutputFund(ArrFund fund);
+
+	List<ArrOutputFile> findByOutputResultOutput(ArrOutput output);
 }
