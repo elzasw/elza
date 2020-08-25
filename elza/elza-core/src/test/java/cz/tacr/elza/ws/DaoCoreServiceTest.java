@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.Fund;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -68,7 +69,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         DaoService daoServiceClient = DaoServiceClientFactory.createDaoService(address, "admin", "admin");
 
         // create AS
-        ArrFundVO fundInfo = this.createFund(FUND_NAME, FUND_CODE);
+        Fund fundInfo = this.createFund(FUND_NAME, FUND_CODE);
         ArrFundVersionVO fundVersion = getOpenVersion(fundInfo);
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());

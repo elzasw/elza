@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import java.util.Collection;
 
+import cz.tacr.elza.controller.vo.Fund;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -28,7 +29,7 @@ public class ClientEventTest extends AbstractControllerTest {
         SimpleClientEventDispatcher testDispatcher = (SimpleClientEventDispatcher) clientEventDispatcher;
         testDispatcher.clearFiredEvents();
 
-        ArrFundVO test_publish = createFund("test_publish", "IC4");
+        Fund test_publish = createFund("test_publish", "IC4");
 
         Collection<AbstractEventSimple> firedEvents = testDispatcher.getFiredEvents();
 

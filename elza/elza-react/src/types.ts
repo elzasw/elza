@@ -99,19 +99,6 @@ export interface UsrGroupVO {
     users: UsrUserVO[];
 }
 
-/**
- * @deprecated use {CreateFund}
- */
-export interface CreateFundVO {
-    name: string;
-    ruleSetId: number;
-    internalCode: string;
-    institutionId: number;
-    dateRange: string;
-    adminUsers: UsrUserVO[];
-    adminGroups: UsrGroupVO[];
-}
-
 export interface CreateFund {
     name: string;
     ruleSetCode: string;

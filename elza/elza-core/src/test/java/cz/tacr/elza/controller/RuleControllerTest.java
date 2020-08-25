@@ -3,6 +3,7 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
@@ -65,7 +66,7 @@ public class RuleControllerTest extends AbstractControllerTest {
 
     @Test
     public void visiblePolicy() {
-        ArrFundVO test = createFund("Test", null);
+        Fund test = createFund("Test", null);
         ArrFundVersionVO fundVersion = getOpenVersion(test);
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();

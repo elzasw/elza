@@ -54,7 +54,7 @@ public class IssueControllerTest extends AbstractControllerTest {
 
         loginAsAdmin();
 
-        ArrFundVO fund = createFund();
+        Fund fund = createFund();
 
         List<ApAccessPointVO> records = findRecord(null, null, null, null, null);
         ApAccessPointVO ap = records.get(0);
@@ -276,8 +276,8 @@ public class IssueControllerTest extends AbstractControllerTest {
     /**
      * Zalozeni testovaciho AS
      */
-    private ArrFundVO createFund() {
-        ArrFundVO fund = createFund("Test issue", "TST1");
+    private Fund createFund() {
+        Fund fund = createFund("Test issue", "TST1");
         RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
         return fund;
     }

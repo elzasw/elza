@@ -1,5 +1,8 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
+import javax.persistence.Column;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,6 +27,12 @@ public class ArrFundVO extends ArrFundBaseVO {
     private List<ArrOutputVO> validNamedOutputs;
 
     private List<ArrOutputVO> historicalNamedOutputs;
+
+    private Integer fundNumber;
+
+    private String unitdate;
+
+    private String mark;
 
     public ArrFundVO() {
 
@@ -85,4 +94,27 @@ public class ArrFundVO extends ArrFundBaseVO {
         this.historicalNamedOutputs = historicalNamedOutputs;
     }
 
+    public Integer getFundNumber() {
+        return fundNumber;
+    }
+
+    public void setFundNumber(final Integer fundNumber) {
+        this.fundNumber = fundNumber;
+    }
+
+    public String getUnitdate() {
+        return unitdate;
+    }
+
+    public void setUnitdate(final String unitdate) {
+        this.unitdate = unitdate;
+    }
+
+    public String getMark() {
+        return mark;
+    }
+
+    public void setMark(final String mark) {
+        this.mark = mark;
+    }
 }
