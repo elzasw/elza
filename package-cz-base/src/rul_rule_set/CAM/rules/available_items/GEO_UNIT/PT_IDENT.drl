@@ -9,7 +9,7 @@ import cz.tacr.elza.drools.model.PartType;
 
 rule "R_IDN_003 Použití typu identifikátoru dle třídy/podtřídy"
 when $it: ItemType(code == "IDN_TYPE")
-     $is : ItemSpec(code in ("NUTSLAU","CZ_RETRO","RUIAN","ISO3166_2","ISO3166_3","ISO3166_NUM")) from $it.specs
+     $is : ItemSpec(code in ("NUTSLAU","CZ_RETRO","RUIAN","ISO3166_2","ISO3166_3","ISO3166_NUM","ISO3166_PART2")) from $it.specs
 then
     $is.setPossible();
 end

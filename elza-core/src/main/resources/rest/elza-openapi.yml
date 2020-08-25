@@ -147,9 +147,6 @@ components:
         internalCode:
           description: Interní kód
           type: string
-        dateRange:
-          description: Vysčítaná informace o časovém rozsahu fondu - sdruženo po typech kalendářů
-          type: string
         uuid:
           description: UUID - identifikátor AS (pokud není vyplněno, bude vygenerováno)
           type: string
@@ -196,9 +193,6 @@ components:
           type: string
         internalCode:
           description: Interní kód
-          type: string
-        dateRange:
-          description: Vysčítaná informace o časovém rozsahu fondu - sdruženo po typech kalendářů
           type: string
         fundNumber:
           description: Číslo archivního souboru

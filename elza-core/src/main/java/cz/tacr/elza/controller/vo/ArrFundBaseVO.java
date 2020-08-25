@@ -21,6 +21,11 @@ public class ArrFundBaseVO {
         this.name = fund.getName();
     }
 
+    public ArrFundBaseVO(Fund fund) {
+        this.id = fund.getId();
+        this.name = fund.getName();
+    }
+
     public Integer getId() {
         return id;
     }
@@ -45,7 +50,11 @@ public class ArrFundBaseVO {
     }
 
     public static ArrFundBaseVO newInstance(ArrFund fund) {
-        ArrFundBaseVO fundBaseVO = new ArrFundBaseVO(fund);
-        return fundBaseVO;
+        return new ArrFundBaseVO(fund);
     }
+
+    public static ArrFundBaseVO newInstance(Fund fund) {
+        return new ArrFundBaseVO(fund);
+    }
+
 }

@@ -3,7 +3,6 @@ import {reducer as formReducer} from 'redux-form';
 /**
  * Sestavení reducerů.
  */
-import ap from './app/accesspoint/accessPoint.jsx';
 import arrRegion from './app/arr/arrRegion.jsx';
 import refTables from './app/refTables/refTables.jsx';
 import toastr from '../components/shared/toastr/ToastrStore.jsx';
@@ -32,7 +31,6 @@ import addUserForm from './app/admin/addUserForm.jsx';
 import structures from './app/structures/structures';
 
 const rootReducer = combineReducers({
-    ap,
     app,
     arrRegion,
     refTables,

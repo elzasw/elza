@@ -11,7 +11,6 @@ import DescItemFileRef from './DescItemFileRef';
 import DescItemRecordRef from './DescItemRecordRef';
 import DescItemJsonTable from './DescItemJsonTable';
 import DescItemDate from './DescItemDate';
-import {DataTypeCode} from 'stores/app/accesspoint/itemFormInterfaces';
 import DescItemLink from './DescItemLink';
 
 export default class DescItemFactory {

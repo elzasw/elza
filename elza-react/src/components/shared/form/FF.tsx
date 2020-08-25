@@ -17,8 +17,9 @@ const Base: React.FC<IFFProps & WrappedFieldProps> = memo(props => {
     return <ComponentClass {...rest} {...input} {...meta} {...(decorator !== false ? decorateFormField(props) : {})} />;
 });
 
-const FF: React.FC<IFFProps &
-    Partial<Omit<BaseFieldProps<{[key: string]: any}>, 'component'>> & {[key: string]: any}> = props => {
+const FF: React.FC<
+    IFFProps & Partial<Omit<BaseFieldProps<{[key: string]: any}>, 'component'>> & {[key: string]: any}
+> = props => {
     return <Field component={Base} {...props} />;
 };
 

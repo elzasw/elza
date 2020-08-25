@@ -71,7 +71,6 @@ import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
-import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.SearchType;
@@ -82,7 +81,6 @@ import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
@@ -281,40 +279,6 @@ public class ApController {
     }
 
     /**
-     * Založení strukturovaného přístupového bodu.
-     *
-     * @param accessPoint zakládaný přístupový bod
-     * @return založený strukturovaný přístupový bod
-     */
-    @Transactional
-    @RequestMapping(value = "/structured", method = RequestMethod.POST)
-    public ApAccessPointVO createStructuredAccessPoint(@RequestBody final ApAccessPointCreateVO accessPoint) {
-        Integer typeId = accessPoint.getTypeId();
-        Integer scopeId = accessPoint.getScopeId();
-
-        ApScope scope = accessPointService.getScope(scopeId);
-        ApType type = accessPointService.getType(typeId);
-        SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
-
-        ApState apState = accessPointService.createStructuredAccessPoint(scope, type, language);
-        return apFactory.createVO(apState, true);
-    }
-
-    /**
-     * Potvrzení dočasného přístupového bodu a jeho převalidování.
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     */
-    @Transactional
-    @RequestMapping(value = "/{accessPointId}/confirm", method = RequestMethod.POST)
-    public void confirmStructuredAccessPoint(@PathVariable final Integer accessPointId) {
-        Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState apState = accessPointService.getState(accessPoint);
-        accessPointService.confirmAccessPoint(apState);
-    }
-
-    /**
      * Nastaví pravidla přístupovému bodu podle typu.
      *
      * @param accessPointId identifikátor přístupového bodu
@@ -326,64 +290,6 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState apState = accessPointService.getState(accessPoint);
         accessPointService.setRuleAccessPoint(apState);
-    }
-
-    /**
-     * Potvrzení dočasného jména a převalidování celého AP.
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     * @param objectId      identifikátor objektu jména
-     */
-    @Transactional
-    @RequestMapping(value = "/{accessPointId}/name/{objectId}/confirm", method = RequestMethod.POST)
-    public void confirmAccessPointStructuredName(@PathVariable final Integer accessPointId,
-                                                 @PathVariable final Integer objectId) {
-        Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
-        Validate.notNull(objectId, "Identifikátor objektu jména musí být vyplněn");
-
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState apState = accessPointService.getState(accessPoint);
-        //TODO : smazána převalidace
-    }
-
-    /**
-     * Úprava hodnot těla přístupového bodu. Přidání/upravení/smazání.
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     * @param items         položky ke změně
-     * @return změněné jméno
-     */
-    @Transactional
-    @RequestMapping(value = "/{accessPointId}/items", method = RequestMethod.PUT)
-    public List<ApItemVO> changeAccessPointItems(@PathVariable final Integer accessPointId,
-                                                 @RequestBody final List<ApUpdateItemVO> items) {
-        Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
-        Validate.notEmpty(items, "Musí být alespoň jedna položka ke změně");
-
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState apState = accessPointService.getState(accessPoint);
-        List<ApItem> itemsCreated = accessPointService.changeApItems(apState, items);
-        return apFactory.createItemsVO(itemsCreated);
-    }
-
-    /**
-     * Smazání hodnot fragmentu podle typu.
-     *
-     * @param accessPointId identifikátor identifikátor přístupového bodu
-     * @param itemTypeId    identifikátor typu atributu
-     */
-    @Transactional
-    @RequestMapping(value = "/{accessPointId}/type/{itemTypeId}", method = RequestMethod.DELETE)
-    public void deleteAccessPointItemsByType(@PathVariable final Integer accessPointId,
-                                             @PathVariable final Integer itemTypeId) {
-        Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
-        Validate.notNull(itemTypeId, "Identifikátor typu musí být vyplněn");
-
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState apState = accessPointService.getState(accessPoint);
-        StaticDataProvider data = staticDataService.getData();
-        ItemType type = data.getItemTypeById(itemTypeId);
-        accessPointService.deleteApItemsByType(apState, type.getEntity());
     }
 
     /**
@@ -1159,7 +1065,7 @@ public class ApController {
      * @return Soubor se souřadnicemi
      */
     @Transactional
-    @RequestMapping(value = "/export/coordinates/{itemId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/export/coordinates/{itemId}", method = RequestMethod.GET)
     public ResponseEntity<Resource> exportCoordinates(@RequestParam final FileType fileType,
                                                       @PathVariable("itemId") final Integer itemId) {
         return new ResponseEntity<>(accessPointService.exportCoordinates(fileType, itemId), accessPointService.createCoordinatesHeaders(fileType), HttpStatus.OK);

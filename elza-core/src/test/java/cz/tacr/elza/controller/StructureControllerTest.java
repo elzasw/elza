@@ -48,7 +48,7 @@ public class StructureControllerTest extends AbstractControllerTest {
 
     @Test
     public void structureTest() {
-        ArrFundVO fund = createFund(NAME_AS, CODE_AS);
+        Fund fund = createFund(NAME_AS, CODE_AS);
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
         structureTypesAndExtensions(fundVersion);
@@ -66,7 +66,7 @@ public class StructureControllerTest extends AbstractControllerTest {
 
     @Test
     public void structureBatchTest() {
-        ArrFundVO fund = createFund(NAME_AS, CODE_AS);
+        Fund fund = createFund(NAME_AS, CODE_AS);
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
         ArrStructureDataVO structureData = createStructureData(fundVersion);

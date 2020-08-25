@@ -44,7 +44,6 @@ class Ribbon extends AbstractReactComponent {
         this.ribbonDefaultFocusRef = React.createRef();
     }
 
-
     state = {};
 
     componentDidMount() {
@@ -148,7 +147,7 @@ class Ribbon extends AbstractReactComponent {
                         </LinkContainer>,
                         <LinkContainer key="ribbon-btn-admin-bulkActions" to="/admin/backgroundProcesses">
                             <Button>
-                                <Icon glyph="fa-list-alt"/>
+                                <Icon glyph="fa-list-alt" />
                                 <span className="btnText">{i18n('ribbon.action.admin.backgroundProcesses')}</span>
                             </Button>
                         </LinkContainer>,
@@ -330,33 +329,39 @@ class Ribbon extends AbstractReactComponent {
         return (
             <RibbonMenu>
                 {partsWithSplit}
-                {displayUserInfo && <RibbonGroup className="small" right>
-                    <Dropdown className="user-menu">
-                        <Dropdown.Toggle key="user-menu" id="user-menu">
-                            {userDetail.username} <Icon glyph="fa-user" />
-                        </Dropdown.Toggle>
+                {displayUserInfo && (
+                    <RibbonGroup className="small" right>
+                        <Dropdown className="user-menu" id={'user-menu'} alignRight>
+                            <Dropdown.Toggle key="user-menu" id="user-menu">
+                                {userDetail.username} <Icon glyph="fa-user" />
+                            </Dropdown.Toggle>
 
-                        <Dropdown.Menu>
-                            {userDetail.authTypes.indexOf('PASSWORD') >= 0 && [
-                                <Dropdown.Item key="pass-change" eventKey="1" onClick={this.handlePasswordChangeForm}>
-                                    {i18n('ribbon.action.admin.user.passwordChange')}
-                                </Dropdown.Item>,
-                                <Dropdown.Divider key="divired" />,
-                            ]}
-                            <Dropdown.Item eventKey="2" onClick={this.handleLogout}>
-                                {i18n('ribbon.action.logout')}
-                            </Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
-                    {saveCounter > 0 && (
-                        <div className="save-msg-container">
-                            <span className="save-msg">
-                                <Icon glyph="fa-spinner fa-spin" />
-                                {i18n('ribbon.saving')}
-                            </span>
-                        </div>
-                    )}
-                </RibbonGroup>}
+                            <Dropdown.Menu popperConfig={{strategy: 'fixed'}}>
+                                {userDetail.authTypes.indexOf('PASSWORD') >= 0 && [
+                                    <Dropdown.Item
+                                        key="pass-change"
+                                        eventKey="1"
+                                        onClick={this.handlePasswordChangeForm}
+                                    >
+                                        {i18n('ribbon.action.admin.user.passwordChange')}
+                                    </Dropdown.Item>,
+                                    <Dropdown.Divider key="divired" />,
+                                ]}
+                                <Dropdown.Item eventKey="2" onClick={this.handleLogout}>
+                                    {i18n('ribbon.action.logout')}
+                                </Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
+                        {saveCounter > 0 && (
+                            <div className="save-msg-container">
+                                <span className="save-msg">
+                                    <Icon glyph="fa-spinner fa-spin" />
+                                    {i18n('ribbon.saving')}
+                                </span>
+                            </div>
+                        )}
+                    </RibbonGroup>
+                )}
             </RibbonMenu>
         );
     }

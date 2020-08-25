@@ -196,7 +196,8 @@ $ribbon-splitter-col: #ddd;
             }
             .user-menu.dropdown{
                 .dropdown-menu{
-                        min-width: 100%;
+                    right: 0 !important;
+                    left: auto !important;
                 }
                 .btn{
                     background: $ribbon-user-btn-bg;

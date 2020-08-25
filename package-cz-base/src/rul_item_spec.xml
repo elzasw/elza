@@ -863,6 +863,12 @@
         <description>Kód země (ISO 3166-1, číslo)</description>
         <item-type-assign code="IDN_TYPE"/>
     </item-spec>
+    <item-spec code="ISO3166_PART2">
+        <name>ISO 3166-2</name>
+        <shortcut>ISO 3166-2</shortcut>
+        <description>Kód územní jednotky (ISO 3166-2)</description>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
     <item-spec code="CZ_RETRO">
         <name>Kód CZ_RETRO</name>
         <shortcut>Kód CZ_RETRO</shortcut>
