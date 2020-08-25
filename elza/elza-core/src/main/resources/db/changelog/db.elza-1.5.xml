@@ -374,6 +374,9 @@
     </changeSet>
     
     <changeSet id="20200825163900" author="fantis">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="ap_external_id"/>
+        </preConditions>
         <delete tableName="ap_external_id"/>
     </changeSet>
 
