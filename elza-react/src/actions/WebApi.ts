@@ -2375,6 +2375,10 @@ export class UrlFactory {
         return serverContextPath + '/api/outputResult/' + id;
     }
 
+    static downloadOutputResults(outputId:number) {
+        return `${serverContextPath}'/api/outputResults/'${outputId}`;
+    }
+
     static exportIssueList(issueListId) {
         return serverContextPath + WebApiCls.issueUrl + `/issue_lists/${issueListId}/export`;
     }
