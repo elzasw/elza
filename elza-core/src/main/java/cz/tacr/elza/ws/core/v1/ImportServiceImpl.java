@@ -1,8 +1,12 @@
 package cz.tacr.elza.ws.core.v1;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.activation.DataHandler;
 import javax.xml.bind.JAXBContext;
@@ -30,6 +34,7 @@ import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.cam.CamHelper;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
+import cz.tacr.elza.ws.types.v1.RequestStatus;
 import cz.tacr.elza.ws.types.v1.RequestStatusInfo;
 
 @Component
@@ -112,17 +117,37 @@ public class ImportServiceImpl implements ImportService {
 
         // check if some entities exists
         List<ApAccessPoint> existingAps = accessPointRepository.findApAccessPointsByUuids(uuids.keySet());
+        List<EntityXml> newEntities;
+        Map<EntityXml, ApAccessPoint> updateEntities;
         if (CollectionUtils.isEmpty(existingAps)) {
-            accessPointService.createAccessPoints(scope, entities, externalSystem);
+            newEntities = entities;
+            updateEntities = null;
         } else {
-            throw new IllegalStateException("Update not implemented");
+            Map<String, ApAccessPoint> existingApMap = existingAps.stream().collect(Collectors.toMap(ApAccessPoint::getUuid, Function.identity()));
+            
+            newEntities = new ArrayList<>(entities.size()-existingAps.size());
+            updateEntities = new HashMap<>();
+            for (EntityXml entityXml : entities) {
+                String uuid = CamHelper.getEntityUuid(entityXml);
+                ApAccessPoint existingAp = existingApMap.get(uuid);
+                if (existingAp == null) {
+                    newEntities.add(entityXml);
+                } else {
+                    updateEntities.put(entityXml, existingAp);
+                }
+            }
         }
+        
+        accessPointService.createAccessPoints(scope, newEntities, externalSystem);
+        //TODO: update //accessPointService.up
 
         logger.info("Imported entities in CAM format, count: {}", entities.size());
     }
 
     @Override
     public RequestStatusInfo getImportStatus(String requestId) {
-        return null;
+        RequestStatusInfo rsi = new RequestStatusInfo();
+        rsi.setStatus(RequestStatus.NOT_EXISTS);
+        return rsi;
     }
 }
