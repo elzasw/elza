@@ -47,7 +47,7 @@ class AddStructureDataForm extends AbstractReactComponent {
             const checked = index !== -1;*/
 
             return (
-                <Field
+                <FF
                     key={'increment'}
                     type="checkbox"
                     name={'incrementedTypeIds'}
@@ -104,12 +104,6 @@ class AddStructureDataForm extends AbstractReactComponent {
 
 const form = reduxForm({
     form: 'AddStructureData',
-    fields: [
-        // count of created items
-        'count',
-        //  IDs of item types which will be inceremented
-        'incrementedTypeIds',
-    ],
     initialValues: {
         count: '',
         incrementedTypeIds: [],
