@@ -148,7 +148,7 @@ public class UserDetail {
 					if (nodePermChecker.checkPermissionInTree(entityId)) {
 						return true;
 					}
-					return true;
+					break;
 				default:
 					throw new IllegalStateException(permission.getType().toString());
 				}
