@@ -1,7 +1,11 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.repository.vo.ItemChange;
+import cz.tacr.elza.service.arrangement.DeleteFundHistory;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,7 +22,7 @@ import cz.tacr.elza.domain.RulTemplate;
  * Respozitory pro výstup z archivního souboru.
  */
 @Repository
-public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer>, OutputRepositoryCustom {
+public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer>, OutputRepositoryCustom, DeleteFundHistory {
 
     /**
      * Najde platné AP (není deleted), pro které existuje otevřená verze.
@@ -81,4 +85,16 @@ public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer>,
             " AND o.state = :state" +
             " ORDER BY res.change.changeId desc, o.name ASC")
     List<ArrOutput> findByFundVersionAndStateSorted(@Param("fundVersion") ArrFundVersion fundVersion, @Param("state") OutputState state);
+
+    @Override
+    @Query("SELECT new cz.tacr.elza.repository.vo.ItemChange(o.outputId, o.createChange.changeId) FROM arr_output o "
+            + "WHERE o.fund = :fund")
+    List<ItemChange> findByFund(@Param("fund") ArrFund fund);
+
+    @Override
+    @Modifying
+    @Query("UPDATE arr_output SET createChange = :change WHERE outputId IN :ids")
+    void updateCreateChange(@Param("ids") Collection<Integer> ids, @Param("change") ArrChange change);
+
+    void deleteByFundAndDeleteChangeIsNotNull(ArrFund fund);
 }

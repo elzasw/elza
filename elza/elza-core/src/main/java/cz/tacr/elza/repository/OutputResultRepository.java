@@ -1,7 +1,11 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.repository.vo.ItemChange;
+import cz.tacr.elza.service.arrangement.DeleteFundHistory;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,7 +21,7 @@ import cz.tacr.elza.domain.RulTemplate;
  * OutputResult repository
  */
 @Repository
-public interface OutputResultRepository extends ElzaJpaRepository<ArrOutputResult, Integer> {
+public interface OutputResultRepository extends ElzaJpaRepository<ArrOutputResult, Integer>, DeleteFundHistory {
 
     List<ArrOutputResult> findByOutput(final ArrOutput output);
 
@@ -35,4 +39,15 @@ public interface OutputResultRepository extends ElzaJpaRepository<ArrOutputResul
     @Query("UPDATE arr_output_result r SET r.template = :value WHERE r.template = :key")
     void updateTemplateByTemplate(@Param(value = "key") RulTemplate key,
                                   @Param(value = "value") RulTemplate value);
+
+    @Override
+    @Query("SELECT new cz.tacr.elza.repository.vo.ItemChange(aor.outputResultId, aor.change.changeId) FROM arr_output_result aor " +
+            "JOIN aor.output o " +
+            "WHERE o.fund = :fund")
+    List<ItemChange> findByFund(@Param("fund") ArrFund fund);
+
+    @Override
+    @Modifying
+    @Query("UPDATE arr_output_result SET change = :change WHERE outputResultId IN :ids")
+    void updateCreateChange(@Param("ids") Collection<Integer> ids, @Param("change") ArrChange change);
 }

@@ -3,6 +3,8 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
+import cz.tacr.elza.repository.vo.ItemChange;
+import cz.tacr.elza.service.arrangement.DeleteFundHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -21,7 +23,7 @@ import cz.tacr.elza.domain.RulStructuredTypeExtension;
  * @since 27.10.2017
  */
 @Repository
-public interface StructuredObjectRepository extends JpaRepository<ArrStructuredObject, Integer>, StructuredObjectRepositoryCustom {
+public interface StructuredObjectRepository extends JpaRepository<ArrStructuredObject, Integer>, StructuredObjectRepositoryCustom, DeleteFundHistory {
 
     List<ArrStructuredObject> findByStructuredTypeAndFundAndDeleteChangeIsNull(RulStructuredType structuredType, ArrFund fund);
 
@@ -67,8 +69,6 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
     ArrChange findTempChangeByStructuredObject(@Param("structuredObject") ArrStructuredObject structuredObject);
 
     List<ArrStructuredObject> findByFundAndDeleteChangeIsNull(ArrFund fund);
-
-    List<ArrStructuredObject> findByFund(ArrFund fund);
 
     @Modifying
     @Query("DELETE FROM arr_structured_object so WHERE so.fund = ?1")
@@ -143,4 +143,14 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
     List<MaximalItemValues> countMaximalItemValues(@Param("fundId") Integer fundId,
                                                @Param("prefixItemTypeId") Integer prefixItemTypeId,
                                                @Param("numberItemTypeId") Integer numberItemTypeId);
+
+    @Override
+    @Query("SELECT new cz.tacr.elza.repository.vo.ItemChange(so.structuredObjectId, so.createChangeId) FROM arr_structured_object so "
+            + "WHERE so.fund = :fund")
+    List<ItemChange> findByFund(@Param("fund") ArrFund fund);
+
+    @Override
+    @Modifying
+    @Query("UPDATE arr_structured_object SET createChange = :change WHERE structuredObjectId IN :ids")
+    void updateCreateChange(@Param("ids") Collection<Integer> ids, @Param("change") ArrChange change);
 }

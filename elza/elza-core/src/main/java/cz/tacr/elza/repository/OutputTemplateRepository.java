@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputTemplate;
+import org.springframework.data.repository.query.Param;
 
 /**
  * Respozitory pro pro výstupní šablonu.
@@ -24,4 +25,9 @@ public interface OutputTemplateRepository extends ElzaJpaRepository<ArrOutputTem
     @Modifying
     void deleteByOutputIdAndTemplateId(int outputId, int templateId);
 
+    @Modifying
+    @Query("DELETE FROM arr_output_template WHERE outputTemplateId IN (SELECT ot.outputTemplateId FROM arr_output_template ot " +
+            "JOIN ot.output o " +
+            "WHERE o.deleteChange IS NOT NULL AND o.fund = :fund)")
+    void deleteByFundAndDeleteChangeIsNotNull(@Param("fund") ArrFund fund);
 }
