@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
@@ -45,6 +46,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.attachment.AttachmentService;
@@ -64,6 +66,9 @@ public class DmsController {
 
     @Autowired
     private OutputResultRepository outputResultRepository;
+    
+    @Autowired
+    private OutputRepository outputRepository;
 
     @Autowired
     private AttachmentService attachmentService;
@@ -345,6 +350,60 @@ public class DmsController {
      * @param outputResultId id souboru
      * @throws IOException
      */
+    @RequestMapping(value = "/api/outputResults/{outputId}", method = RequestMethod.GET)
+    @Transactional
+    public void getOutputResultsZip(HttpServletResponse response,
+                                   @PathVariable(value = "outputId") Integer outputId) throws IOException {
+        Validate.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
+        ArrOutput output = outputRepository.findByOutputId(outputId);
+		List<ArrOutputResult> outputResults = outputResultRepository.findByOutput(output);
+        
+        // check number of files
+        List<ArrOutputFile> outputFiles = new ArrayList<>();
+        
+		for(ArrOutputResult outputResult: outputResults) {
+        	outputFiles.addAll(outputResult.getOutputFiles());
+        }
+        
+        ServletOutputStream out = response.getOutputStream();
+
+        File fileForDownload = null;
+        String fileName;
+
+        InputStream in = null;
+        try {
+            if (outputFiles.size() == 1) {
+                // single file download directly
+                ArrOutputFile singleFile = outputFiles.get(0);
+                in = dmsService.downloadFile(singleFile);
+                fileName = singleFile.getFileName();
+
+            } else {
+                // multiple files have to be zipped
+                fileForDownload = dmsService.getOutputFilesZip(outputFiles).toFile();
+                fileName = output.getName() + ".zip";
+                in = new BufferedInputStream(new FileInputStream(fileForDownload));
+            }
+            FileDownload.addContentDispositionAsAttachment(response, fileName);
+
+            IOUtils.copy(in, out);
+        } finally {
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
+            if (fileForDownload != null) {
+                fileForDownload.delete();
+            }
+
+        }
+    	
+    }
+    
+    /**
+     * Stažení souboru
+     * @param response http odpověd
+     * @param outputResultId id souboru
+     * @throws IOException
+     */
     @RequestMapping(value = "/api/outputResult/{outputResultId}", method = RequestMethod.GET)
     @Transactional
     public void getOutputResultZip(HttpServletResponse response,
@@ -372,7 +431,7 @@ public class DmsController {
 
             } else {
                 // multiple files have to be zipped
-                fileForDownload = dmsService.getOutputFilesZip(result).toFile();
+                fileForDownload = dmsService.getOutputFilesZip(result.getOutputFiles()).toFile();
                 fileName = output.getName() + ".zip";
                 in = new BufferedInputStream(new FileInputStream(fileForDownload));
             }
@@ -482,20 +541,20 @@ public class DmsController {
 
     /**
      * Vyhledávání
-     * @param search vyhledávaný text
-     * @param from od záznamu
-     * @param count  počet záznamů
+     * @param outputId ID output
      * @return list záznamů
      */
-    @RequestMapping(value = "/api/dms/output/{outputResultId}", method = RequestMethod.GET)
-    public FilteredResultVO<ArrOutputFileVO> findOutputFiles(@PathVariable final Integer outputResultId,
-                                                     @RequestParam(required = false) @Nullable final String search,
-                                                    @RequestParam(required = false, defaultValue = "0") final Integer from,
-                                                    @RequestParam(required = false, defaultValue = "20") final Integer count) {
-        FilteredResult<ArrOutputFile> files = dmsService.findOutputFiles(search, outputResultId, from, count);
-        return new FilteredResultVO<>(files.getList(),
+    @RequestMapping(value = "/api/dms/output/{outputId}", method = RequestMethod.GET)
+    @Transactional
+    public FilteredResultVO<ArrOutputFileVO> findOutputFiles(@PathVariable final Integer outputId) {
+    	ArrOutput output = outputRepository.findByOutputId(outputId);
+    	// List<ArrOutputResult> outputResults = outputResultRepository.findByOutput(output);
+    	
+    	List<ArrOutputFile> outputFiles = dmsService.findOutputFiles(output.getFundId(), output);
+    	
+        return new FilteredResultVO<>(outputFiles,
                 (entity) -> ArrOutputFileVO.newInstance(entity),
-                files.getTotalCount());
+                outputFiles.size());
     }
 
     /**

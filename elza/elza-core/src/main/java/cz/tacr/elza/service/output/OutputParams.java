@@ -9,6 +9,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrOutputTemplate;
 import cz.tacr.elza.domain.RulTemplate;
 
 public class OutputParams {
@@ -23,14 +24,15 @@ public class OutputParams {
 
     private final List<ArrOutputItem> outputItems;
 
-    private final Path templateDir;
+    private RulTemplate template;
+
+    private Path templateDir;
 
     public OutputParams(ArrOutput output,
                         ArrChange change,
                         ArrFundVersion fundVersion,
                         List<Integer> nodeIds,
-                        List<ArrOutputItem> outputItems,
-                        Path templateDir) {
+                        List<ArrOutputItem> outputItems) {
         // sanity check
         Validate.isTrue(output.getFundId().equals(fundVersion.getFundId()));
 
@@ -39,7 +41,6 @@ public class OutputParams {
         this.fundVersion = fundVersion;
         this.outputNodeIds = nodeIds;
         this.outputItems = outputItems;
-        this.templateDir = templateDir;
     }
 
     /**
@@ -53,7 +54,11 @@ public class OutputParams {
      * Shortcut method for output definition template.
      */
     public RulTemplate getTemplate() {
-        return output.getTemplate();
+        return template;
+    }
+
+    public void setTemplate(RulTemplate template) {
+        this.template = template;
     }
 
     public ArrOutput getOutput() {
@@ -85,5 +90,9 @@ public class OutputParams {
 
     public Path getTemplateDir() {
         return templateDir;
+    }
+
+    public void setTemplateDir(Path templateDir) {
+        this.templateDir = templateDir;
     }
 }
