@@ -1,6 +1,10 @@
 package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.domain.ApBindingItem;
+import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
+import org.springframework.lang.Nullable;
 
 public class ApBindingItemVO {
 
@@ -47,12 +51,28 @@ public class ApBindingItemVO {
     /**
      * Creates value object from AP external id.
      */
-    public static ApBindingItemVO newInstance(ApBindingItem src) {
+    public static ApBindingItemVO newInstance(@Nullable ApBindingState state, ApBindingItem src) {
         ApBindingItemVO vo = new ApBindingItemVO();
         vo.setValue(src.getValue());
-        vo.setSync(src.getCamIdentifier());
-        vo.setItemId(src.getItem() != null ? src.getItem().getItemId() : null);
-        vo.setPartId(src.getPart() != null ? src.getPart().getPartId() : null);
+        ApItem item = src.getItem();
+        ApPart part = src.getPart();
+        vo.setItemId(item != null ? item.getItemId() : null);
+        vo.setPartId(part != null ? part.getPartId() : null);
+        Integer changeId;
+        if (item != null) {
+            changeId = item.getCreateChange().getChangeId();
+        } else if (part != null) {
+            changeId = part.getCreateChange().getChangeId();
+        } else {
+            throw new IllegalStateException();
+        }
+        if (state == null || state.getSyncChange() == null) {
+            vo.setSync(false);
+        } else {
+            Integer stateChangeId = state.getSyncChange().getChangeId();
+            vo.setSync(stateChangeId >= changeId);
+        }
+
         return vo;
     }
 }

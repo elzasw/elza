@@ -358,7 +358,6 @@ public class ExternalSystemService {
         apBindingItem.setValue(uuid);
         apBindingItem.setPart(part);
         apBindingItem.setItem(item);
-        apBindingItem.setCamIdentifier(true);
         return bindingItemRepository.save(apBindingItem);
     }
 
