@@ -1,9 +1,9 @@
 package cz.tacr.elza.bulkaction;
 
-import cz.tacr.elza.asynchactions.AsyncRequestEvent;
-import cz.tacr.elza.asynchactions.AsyncRequest;
-import cz.tacr.elza.asynchactions.IAsyncWorker;
-import cz.tacr.elza.domain.ArrBulkActionRun;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +16,11 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import cz.tacr.elza.asynchactions.AsyncRequest;
+import cz.tacr.elza.asynchactions.AsyncRequestEvent;
+import cz.tacr.elza.asynchactions.IAsyncWorker;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.service.UserService;
 
 @Component
 @Scope("prototype")
@@ -33,6 +35,9 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
 
     @Autowired
     private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private UserService userService;
 
     /**
      * Hromadná akce
@@ -93,7 +98,7 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
         // prepare sec context
         SecurityContext originalSecCtx = SecurityContextHolder.getContext();
         ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
-        SecurityContext ctx = bulkActionHelperService.createSecurityContext(bulkActionRun);
+        SecurityContext ctx = userService.createSecurityContext(bulkActionRun.getUserId());
         SecurityContextHolder.setContext(ctx);
 
         try {

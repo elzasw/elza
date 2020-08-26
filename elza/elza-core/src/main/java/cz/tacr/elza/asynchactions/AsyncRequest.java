@@ -1,8 +1,9 @@
 package cz.tacr.elza.asynchactions;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import cz.tacr.elza.domain.ArrAsyncRequest;
 import cz.tacr.elza.domain.AsyncTypeEnum;
-import org.apache.commons.lang3.NotImplementedException;
 
 public class AsyncRequest {
 
@@ -13,6 +14,7 @@ public class AsyncRequest {
     private Integer nodeId;
     private Integer bulkActionId;
     private Integer outputId;
+    private Integer userId;
 
     public AsyncRequest(ArrAsyncRequest request) {
         this.requestId = request.getAsyncRequestId();
@@ -28,6 +30,7 @@ public class AsyncRequest {
                 break;
             case OUTPUT:
                 this.outputId = request.getOutput().getOutputId();
+                this.userId = request.getUserId();
                 break;
             default:
                 throw new NotImplementedException("Neimplmentovaný typ: " + type);
@@ -73,6 +76,10 @@ public class AsyncRequest {
 
     public AsyncTypeEnum getType() {
         return type;
+    }
+
+    public Integer getUserId() {
+        return userId;
     }
 
     @Override

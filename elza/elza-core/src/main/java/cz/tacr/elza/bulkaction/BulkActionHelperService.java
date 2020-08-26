@@ -1,32 +1,38 @@
 package cz.tacr.elza.bulkaction;
 
-import cz.tacr.elza.bulkaction.generator.result.ActionResult;
-import cz.tacr.elza.bulkaction.generator.result.Result;
-import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.repository.BulkActionNodeRepository;
-import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.*;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
+import static cz.tacr.elza.repository.ExceptionThrow.bulkAction;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
 
-import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static cz.tacr.elza.repository.ExceptionThrow.bulkAction;
-import static cz.tacr.elza.repository.ExceptionThrow.version;
+import javax.transaction.Transactional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cz.tacr.elza.bulkaction.generator.result.ActionResult;
+import cz.tacr.elza.bulkaction.generator.result.Result;
+import cz.tacr.elza.domain.ArrBulkActionNode;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.repository.BulkActionNodeRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.AsyncRequestService;
+import cz.tacr.elza.service.IEventNotificationService;
+import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.OutputItemConnector;
+import cz.tacr.elza.service.OutputServiceInternal;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
  * Pomocá třída pro zpracovávání požadavků při vykonávání hromadných akcí
@@ -51,9 +57,6 @@ public class BulkActionHelperService {
 
     @Autowired
     private OutputServiceInternal outputServiceInternal;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private BulkActionNodeRepository bulkActionNodeRepository;
@@ -171,23 +174,6 @@ public class BulkActionHelperService {
             outputServiceInternal.publishOutputStateChanged(output, bulkActionRunReload.getFundVersionId());
         }
         logger.debug("Result dispatched to outputs");
-    }
-
-    public SecurityContext createSecurityContext(ArrBulkActionRun bulkActionRun) {
-
-        SecurityContext ctx = SecurityContextHolder.createEmptyContext();
-
-        // read user from db
-        String username = null, encodePassword = null;
-
-        UserDetail userDetail = userService.createUserDetail(bulkActionRun.getUserId());
-
-        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword,
-                null);
-        auth.setDetails(userDetail);
-        ctx.setAuthentication(auth);
-
-        return ctx;
     }
 
     public ArrBulkActionRun getArrBulkActionRun(Integer bulkActionRunId) {

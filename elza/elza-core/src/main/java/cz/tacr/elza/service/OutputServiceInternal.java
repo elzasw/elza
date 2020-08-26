@@ -1,5 +1,7 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.repository.ExceptionThrow.output;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,11 +73,8 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.output.OutputData;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
-
-import static cz.tacr.elza.repository.ExceptionThrow.output;
 
 @Service
 public class OutputServiceInternal {
@@ -318,11 +317,14 @@ public class OutputServiceInternal {
 
     /**
      * Add request for output generation.
+     * 
+     * @param userId
      */
     @Transactional(TxType.MANDATORY)
     public OutputRequestStatus addRequest(int outputId,
                                           ArrFundVersion fundVersion,
-                                          boolean checkBulkActions) {
+                                          boolean checkBulkActions,
+                                          Integer userId) {
         // find open output
         ArrOutput output = getOutput(outputId);
         if (output.getState() != OutputState.OPEN) {
@@ -341,7 +343,7 @@ public class OutputServiceInternal {
         // save generating state only when caller transaction is committed
         output.setState(OutputState.GENERATING);
 
-        asyncRequestService.enqueue(fundVersion, output, null);
+        asyncRequestService.enqueue(fundVersion, output, userId);
 
         return OutputRequestStatus.OK;
     }
