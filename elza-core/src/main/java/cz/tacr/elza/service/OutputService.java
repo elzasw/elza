@@ -190,8 +190,9 @@ public class OutputService {
         return outputServiceInternal.getOutput(outputId);
     }
 
-    public OutputRequestStatus addRequest(int outputId, ArrFundVersion fundVersion, boolean checkBulkActions) {
-        return outputServiceInternal.addRequest(outputId, fundVersion, checkBulkActions);
+    public OutputRequestStatus addRequest(int outputId, ArrFundVersion fundVersion,
+                                          boolean checkBulkActions, Integer userId) {
+        return outputServiceInternal.addRequest(outputId, fundVersion, checkBulkActions, userId);
     }
 
     /**

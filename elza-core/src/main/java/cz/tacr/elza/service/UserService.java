@@ -18,20 +18,19 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.security.Sha256Support;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import javax.validation.constraints.NotEmpty;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -49,6 +48,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
@@ -84,6 +84,7 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
+import cz.tacr.elza.security.Sha256Support;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.eventnotification.events.EventId;
@@ -1848,5 +1849,22 @@ public class UserService {
                 .or(UsrPermission.Permission.FUND_ARR_ALL)
                 .or(UsrPermission.Permission.FUND_ARR, fundId);
         return authRequest.matches(userDetail);
+    }
+
+    public SecurityContext createSecurityContext(Integer userId) {
+
+        SecurityContext ctx = SecurityContextHolder.createEmptyContext();
+
+        // read user from db
+        String username = null, encodePassword = null;
+
+        UserDetail userDetail = createUserDetail(userId);
+
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, encodePassword,
+                null);
+        auth.setDetails(userDetail);
+        ctx.setAuthentication(auth);
+
+        return ctx;
     }
 }
