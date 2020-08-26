@@ -43,7 +43,7 @@ export function importForm(data, messageType) {
                     case 'Fund':
                         break;
                     case 'Record':
-                        dispatch(registryListInvalidate);
+                        dispatch(registryListInvalidate());
                         break;
                     default:
                         return;
