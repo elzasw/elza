@@ -372,6 +372,19 @@
                                  constraintName="fk_sys_external_system" referencedColumnNames="external_system_id"
                                  referencedTableName="sys_external_system"/>
     </changeSet>
+    
+    <changeSet id="20200825163900" author="fantis">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="ap_external_id"/>
+        </preConditions>
+        <delete tableName="ap_external_id"/>
+    </changeSet>
+
+    <changeSet id="20200825182900" author="fantis">
+        <delete tableName="usr_permission">
+            <where>permission = 'INTERPI_MAPPING_WR'</where>
+        </delete>
+    </changeSet>
 
     <changeSet id="20200622141100" author="fantis">
         <renameTable oldTableName="ap_external_id" newTableName="ap_binding"/>
