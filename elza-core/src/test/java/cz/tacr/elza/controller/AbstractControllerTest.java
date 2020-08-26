@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.InputStream;
@@ -1040,10 +1041,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                   final Integer nodeVersion) {
         Response response = put(spec -> spec
                 .body(descItem)
-                .pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("descItemTypeId", descItemTypeId)
-                .pathParameter("nodeId", nodeId)
-                .pathParameter("nodeVersion", nodeVersion), CREATE_DESC_ITEM);
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("descItemTypeId", descItemTypeId)
+                .pathParam("nodeId", nodeId)
+                .pathParam("nodeVersion", nodeVersion), CREATE_DESC_ITEM);
         return response.getBody().as(ArrangementController.DescItemResult.class);
     }
 
@@ -1052,12 +1053,18 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                       final Integer itemTypeId,
                                                                       final Integer outputId,
                                                                       final Integer outputVersion) {
+    	assertNotNull(outputItemVO);
+    	assertNotNull(fundVersionId);
+    	assertNotNull(itemTypeId);
+    	assertNotNull(outputId);
+    	assertNotNull(outputVersion);
+    	
         Response response = put(spec -> spec
                 .body(outputItemVO)
-                .pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("itemTypeId", itemTypeId)
-                .pathParameter("outputId", outputId)
-                .pathParameter("outputVersion", outputVersion), CREATE_OUTPUT_ITEM);
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("itemTypeId", itemTypeId)
+                .pathParam("outputId", outputId)
+                .pathParam("outputVersion", outputVersion), CREATE_OUTPUT_ITEM);
         return response.getBody().as(ArrangementController.OutputItemResult.class);
     }
 
@@ -1067,9 +1074,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                       final Boolean createNewVersion) {
         Response response = put(spec -> spec
                 .body(outputItemVO)
-                .pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("createNewVersion", createNewVersion)
-                .pathParameter("outputVersion", outputVersion), UPDATE_OUTPUT_ITEM);
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("createNewVersion", createNewVersion)
+                .pathParam("outputVersion", outputVersion), UPDATE_OUTPUT_ITEM);
         return response.getBody().as(ArrangementController.OutputItemResult.class);
     }
 
@@ -1078,8 +1085,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                    final Integer outputVersion) {
         Response response = post(spec -> spec
                 .body(outputItemVO)
-                .pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("outputVersion", outputVersion), DELETE_OUTPUT_ITEM);
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("outputVersion", outputVersion), DELETE_OUTPUT_ITEM);
         return response.getBody().as(ArrangementController.OutputItemResult.class);
     }
 
@@ -1089,7 +1096,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         Response response = get(spec ->
                         spec
-                                .pathParameter("fundVersionId", fundVersionId)
+                                .pathParam("fundVersionId", fundVersionId)
                                 .param("descItemObjectId", descItemObjectId)
                 , DESC_ITEM_CSV_EXPORT);
 
@@ -1151,10 +1158,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                   final Boolean createNewVersion) {
         Response response = put(spec -> spec
                 .body(descItem)
-                .pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("nodeVersion", nodeVersion)
-                .pathParameter("nodeId", nodeId)
-                .pathParameter("createNewVersion", createNewVersion), UPDATE_DESC_ITEM);
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("nodeVersion", nodeVersion)
+                .pathParam("nodeId", nodeId)
+                .pathParam("createNewVersion", createNewVersion), UPDATE_DESC_ITEM);
         return response.getBody().as(ArrangementController.DescItemResult.class);
     }
 
@@ -1187,9 +1194,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
                                                                   final Integer nodeVersion) {
         Response response = post(spec -> spec
                 .body(descItem)
-                .pathParameter("fundVersionId", fundVersionId)
-                .pathParameter("nodeId", nodeId)
-                .pathParameter("nodeVersion", nodeVersion), DELETE_DESC_ITEM);
+                .pathParam("fundVersionId", fundVersionId)
+                .pathParam("nodeId", nodeId)
+                .pathParam("nodeVersion", nodeVersion), DELETE_DESC_ITEM);
         return response.getBody().as(ArrangementController.DescItemResult.class);
     }
 
@@ -2406,7 +2413,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @return VO
      */
     protected UsrGroupVO getGroup(final Integer groupId) {
-        return get(spec -> spec.pathParameter("groupId", groupId), GET_GROUP).as(UsrGroupVO.class);
+        return get(spec -> spec.pathParam("groupId", groupId), GET_GROUP).as(UsrGroupVO.class);
     }
 
     /**

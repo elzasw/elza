@@ -157,8 +157,8 @@ public class OutputModelTest extends AbstractServiceTest {
         assertNotNull(change);
         OutputParams params = new OutputParams(output, change, fi.getFundVersion(),
                 Collections.singletonList(level1.getNodeId()),
-                Collections.emptyList(),
-                Paths.get("test"));
+                Collections.emptyList());
+                //Paths.get("test"));
         outputModel.init(params);
 
         List<Structured> sos = outputModel.createStructObjList(structureType.getCode());

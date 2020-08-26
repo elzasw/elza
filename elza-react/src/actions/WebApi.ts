@@ -475,6 +475,30 @@ export class WebApiCls {
      * Přidání omezujícího rejstříku k výstupu
      *
      * @param outputId identifikátor výstupu
+     * @param templateId identifikátor rejstříku
+     */
+    addOutputTemplate(outputId:number, templateId:number):Promise<void> {
+        return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/output/' + outputId + '/template/' + templateId, null, null);
+    }
+
+    /**
+     * Odebrání omezujícího rejstříku z výstupu
+     *
+     * @param outputId identifikátor výstupu
+     * @param templateId identifikátor rejstříku
+     */
+    deleteOutputTemplate(outputId:number, templateId:number):Promise<void> {
+        return AjaxUtils.ajaxDelete(
+            WebApiCls.arrangementUrl + '/output/' + outputId + '/template/' + templateId,
+            null,
+            null,
+        );
+    }
+
+    /**
+     * Přidání omezujícího rejstříku k výstupu
+     *
+     * @param outputId identifikátor výstupu
      * @param scopeId identifikátor rejstříku
      */
     addRestrictedScope(outputId, scopeId) {
@@ -1803,8 +1827,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxDelete(WebApiCls.dmsUrl + '/fund/' + fileId, null, null);
     }
 
-    findFundOutputFiles(resultId, searchText, count = 20) {
-        return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/output/' + resultId, {count: count, search: searchText});
+    findFundOutputFiles(outputId) {
+        return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/output/' + outputId);
     }
 
     getFundOutputFunctions(outputId, getRecommended) {
@@ -1813,6 +1837,10 @@ export class WebApiCls {
 
     outputGenerate(outputId, forced = false) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/output/generate/' + outputId, {forced});
+    }
+
+    outputSend(outputId: number):Promise<void> {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/output/send/' + outputId.toString());
     }
 
     outputRevert(versionId, outputId) {
@@ -2217,6 +2245,10 @@ export class UrlFactory {
 
     static downloadOutputResult(id) {
         return serverContextPath + '/api/outputResult/' + id;
+    }
+
+    static downloadOutputResults(outputId:number) {
+        return `${serverContextPath}'/api/outputResults/'${outputId}`;
     }
 
     static exportIssueList(issueListId) {

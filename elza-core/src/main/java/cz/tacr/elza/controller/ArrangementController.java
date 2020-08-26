@@ -1,43 +1,27 @@
 package cz.tacr.elza.controller;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import cz.tacr.elza.common.FactoryUtils;
-import cz.tacr.elza.common.FileDownload;
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.filter.Filters;
-import cz.tacr.elza.controller.vo.filter.SearchParam;
-import cz.tacr.elza.controller.vo.nodes.*;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.ArrOutput.OutputState;
-import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ConcurrentUpdateException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.*;
-import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
-import cz.tacr.elza.service.arrangement.DesctItemProvider;
-import cz.tacr.elza.service.exception.DeleteFailedException;
-import cz.tacr.elza.service.importnodes.ImportFromFund;
-import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
-import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
-import cz.tacr.elza.service.importnodes.vo.ImportParams;
-import cz.tacr.elza.service.importnodes.vo.ValidateResult;
-import cz.tacr.elza.service.output.OutputRequestStatus;
-import cz.tacr.elza.service.vo.ChangesResult;
-import cz.tacr.elza.service.vo.UpdateDescItemsParam;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -46,35 +30,151 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.*;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
+import cz.tacr.elza.common.FileDownload;
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.AddLevelParam;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
+import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
+import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
+import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
+import cz.tacr.elza.controller.vo.ArrOutputTemplateVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
+import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.DataGridExportType;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FulltextFundRequest;
+import cz.tacr.elza.controller.vo.FundListCountResult;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.SelectNodeResult;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.filter.SearchParam;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
+import cz.tacr.elza.controller.vo.nodes.NodeData;
+import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrCalendarType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDaoPackage;
+import cz.tacr.elza.domain.ArrDaoRequest;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutput.OutputState;
+import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ConcurrentUpdateException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.filter.DescItemTypeFilter;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoPackageRepository;
+import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputItemRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.ArrIOService;
+import cz.tacr.elza.service.ArrangementFormService;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DaoService;
+import cz.tacr.elza.service.DaoSyncService;
+import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.FilterTreeService;
+import cz.tacr.elza.service.FundLevelService;
+import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
+import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.OutputService;
+import cz.tacr.elza.service.PolicyService;
+import cz.tacr.elza.service.RequestQueueService;
+import cz.tacr.elza.service.RequestService;
+import cz.tacr.elza.service.RevertingChangesService;
+import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.arrangement.DesctItemProvider;
+import cz.tacr.elza.service.exception.DeleteFailedException;
+import cz.tacr.elza.service.importnodes.ImportFromFund;
+import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
+import cz.tacr.elza.service.importnodes.vo.ConflictResolve;
+import cz.tacr.elza.service.importnodes.vo.ImportParams;
+import cz.tacr.elza.service.importnodes.vo.ValidateResult;
+import cz.tacr.elza.service.output.OutputData;
+import cz.tacr.elza.service.output.OutputRequestStatus;
+import cz.tacr.elza.service.vo.ChangesResult;
+import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 
 /**
  * Kontroler pro pořádání.
  *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 7. 1. 2016
  */
 @RestController
 @RequestMapping("/api/arrangement")
 public class ArrangementController {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ArrangementController.class);
 
     /**
      * Formát popisu atributu - krátká verze.
@@ -188,7 +288,7 @@ public class ArrangementController {
 
     @Autowired
     private FundLevelService fundLevelService;
-
+    
     /**
      * Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
      *
@@ -1066,6 +1166,7 @@ public class ArrangementController {
         String ruleCode = fundVersion.getRuleSet().getCode();
 
         ArrOutputVO outputVO = factoryVo.createOutput(output);
+        //ArrOutputVO outputVO = factoryVo.createOutputExt(output, fundVersion);
         List<ArrItemVO> descItems = factoryVo.createItems(outputItems);
         List<ItemTypeLiteVO> itemTypeLites = factoryVo.createItemTypes(ruleCode, fundId, itemTypes);
         return new OutputFormDataNewVO(outputVO, descItems, itemTypeLites,
@@ -2024,6 +2125,14 @@ public class ArrangementController {
         return generateOutputResult;
     }
 
+    @RequestMapping(value = "/output/send/{outputId}", method = RequestMethod.GET)
+    @Transactional
+    public void sendOutput(@PathVariable(value = "outputId") int outputId) {
+
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.sendOutput(output);
+    }
+
     /**
      * Vytvoření nového pojmenovaného výstupu.
      *
@@ -2037,9 +2146,17 @@ public class ArrangementController {
                                          @RequestBody final OutputNameParam param) {
         Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        ArrOutput output = outputService.createOutput(fundVersion, param.getName(), param.getInternalCode(),
-                param.getOutputTypeId(), param.getTemplateId());
-        return factoryVo.createOutput(output);
+        
+        Set<Integer> templateIds = new HashSet<>();
+        if(param.getTemplateId()!=null) {
+        	templateIds.add(param.getTemplateId()); 
+        }
+        if(param.getTemplateIds()!=null) {
+        	templateIds.addAll(param.getTemplateIds());
+        }
+        OutputData outputData = outputService.createOutput(fundVersion, param.getName(), param.getInternalCode(),
+                param.getOutputTypeId(), templateIds);
+        return factoryVo.createOutputExt(outputData.getOutput(), fundVersion);
     }
 
     /**
@@ -2119,7 +2236,10 @@ public class ArrangementController {
                                    @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        return factoryVo.createOutput(outputService.cloneOutput(fundVersion, output));
+        
+        OutputData outputData = outputService.cloneOutput(fundVersion, output);
+        
+        return factoryVo.createOutputExt(outputData.getOutput(), fundVersion);
     }
 
     /**
@@ -2164,6 +2284,34 @@ public class ArrangementController {
     public void deleteRestrictedScope(@PathVariable(value = "outputId") final Integer outputId,
                                       @PathVariable(value = "scopeId") final Integer scopeId) {
         outputService.deleteRestrictedScope(outputId, scopeId);
+    }
+
+    /**
+     * Přidání šablony k výstupu
+     *
+     * @param outputId identifikátor výstupu
+     * @param templateId identifikátor šablony
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.PUT)
+    public ArrOutputTemplateVO addOutputTemplate(@PathVariable(value = "outputId") final Integer outputId, 
+    							  @PathVariable(value = "templateId") final Integer templateId) {
+        ArrOutput output = outputService.getOutput(outputId);
+    	return outputService.addOutputTemplate(output.getFundId(), output, templateId);
+    }
+
+    /**
+     * Odebrání šablony z výstupu
+     *
+     * @param outputId identifikátor výstupu
+     * @param templateId identifikátor šablony
+     */
+    @Transactional
+    @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.DELETE)
+    public void deleteOutputTemplate(@PathVariable(value = "outputId") final Integer outputId,
+                                     @PathVariable(value = "templateId") final Integer templateId) {
+    	ArrOutput output = outputService.getOutput(outputId);
+    	outputService.deleteOutputTemplate(output.getFundId(), output, templateId);
     }
 
     /**
@@ -3389,6 +3537,11 @@ public class ArrangementController {
          * Template id.
          */
         private Integer templateId;
+        
+        /**
+         * List of templates
+         */
+        private List<Integer> templateIds;
 
         private ApAccessPointVO anonymizedAp;
 
@@ -3423,8 +3576,16 @@ public class ArrangementController {
         public void setTemplateId(final Integer templateId) {
             this.templateId = templateId;
         }
+        
+        public List<Integer> getTemplateIds() {
+			return templateIds;
+		}
 
-        public ApAccessPointVO getAnonymizedAp() {
+		public void setTemplateIds(List<Integer> templateIds) {
+			this.templateIds = templateIds;
+		}
+
+		public ApAccessPointVO getAnonymizedAp() {
             return anonymizedAp;
         }
 

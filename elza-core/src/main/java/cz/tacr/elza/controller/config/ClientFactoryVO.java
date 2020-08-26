@@ -23,6 +23,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -61,6 +62,7 @@ import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.attachment.AttachmentService;
+import cz.tacr.elza.service.output.OutputData;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
@@ -389,7 +391,7 @@ public class ClientFactoryVO {
         MapperFacade mapper = mapperFactory.getMapperFacade();
         List<ArrOutputVO> result = new ArrayList<>(outputs.size());
         for (ArrOutput output : outputs) {
-            result.add(mapper.map(output, ArrOutputVO.class));
+            result.add(createOutput(output));
         }
         return result;
     }
@@ -397,13 +399,13 @@ public class ClientFactoryVO {
     /**
      * Vytvoří třídy výstupů archivního souboru.
      *
-     * @param output DO
+     * @param outputData DO
      * @return VO
      */
     public ArrOutputVO createOutput(final ArrOutput output) {
-        Assert.notNull(output, "Výstup musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        ArrOutputVO outputVO = mapper.map(output, ArrOutputVO.class);
+        Validate.notNull(output, "Výstup musí být vyplněn");
+
+        ArrOutputVO outputVO = ArrOutputVO.newInstance(output);
         return outputVO;
     }
 
@@ -1125,8 +1127,32 @@ public class ClientFactoryVO {
      * @param fundVersion
      * @return VO výstup
      */
-    public ArrOutputVO createOutputExt(final ArrOutput output, final ArrFundVersion fundVersion) {
+    public ArrOutputVO createOutputExt(final ArrOutput output, final ArrFundVersion fundVersion) {    	
         ArrOutputVO outputExt = createOutput(output);
+        
+        // prepare template list
+    	List<ArrOutputTemplate> outputTemplates = outputServiceInternal.getOutputTemplates(output);
+    	if(CollectionUtils.isNotEmpty(outputTemplates)) {
+    		List<Integer> templateIds = new ArrayList<>(outputTemplates.size());
+    		for(ArrOutputTemplate outputTemplate: outputTemplates) {
+    			templateIds.add(outputTemplate.getTemplateId());
+    		}
+    		outputExt.setTemplateIds(templateIds);
+    	}
+    	
+    	// prepare result list
+    	List<ArrOutputResult> outputResults = output.getOutputResults();
+    	if(CollectionUtils.isNotEmpty(outputResults)) {
+    		// prepare date of generation
+    		outputExt.setGeneratedDate(Date.from(outputResults.get(0).getChange().getChangeDate().toInstant()));
+    		
+    		List<Integer> outputResultIds = new ArrayList<>(outputResults.size());
+    		for(ArrOutputResult outputResult: outputResults) {
+    			outputResultIds.add(outputResult.getOutputResultId());
+    		}
+    		outputExt.setOutputResultIds(outputResultIds);
+    	}
+        
         List<ArrNodeOutput> nodes = outputServiceInternal.getOutputNodes(output, fundVersion.getLockChange());
         List<Integer> nodeIds = nodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
         outputExt.setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
@@ -1164,8 +1190,6 @@ public class ClientFactoryVO {
      */
     public UsrUserVO createUser(final UsrUser user, final boolean initPermissions, final boolean initGroups) {
         // Hlavní objekt
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        // UsrUserVO result = mapper.map(user, UsrUserVO.class);
 
         ApAccessPointVO accessPointVO = new ApAccessPointVO();
         if (user.getAccessPoint() != null) {

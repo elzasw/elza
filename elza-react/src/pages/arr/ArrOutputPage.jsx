@@ -30,6 +30,7 @@ import {
     fundOutputGenerate,
     fundOutputRevert,
     fundOutputSelectOutput,
+    fundOutputSend,
     fundOutputUsageEnd,
 } from '../../actions/arr/fundOutput.jsx';
 import {fundOutputActionRun} from 'actions/arr/fundOutputFunctions.jsx';
@@ -60,6 +61,8 @@ const OutputState = {
     OUTDATED: 'OUTDATED',
     ERROR: 'ERROR', /// Pomocný stav websocketu
 };
+
+const allowSendOutput = window.allowSendOutput !== undefined && window.allowSendOutput;
 
 const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     static contextTypes = {shortcuts: PropTypes.object};
@@ -302,6 +305,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             const outputDetail = fund.fundOutput.fundOutputDetail;
             const isDetailIdNotNull = outputDetail.id !== null;
             const isDetailLoaded = outputDetail.fetched && !outputDetail.isFetching;
+            const isOutputGenerated = outputDetail.state === OutputState.FINISHED;
 
             const hasPersmission = userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_OUTPUT_WR_ALL, {
                 type: perms.FUND_OUTPUT_WR,
@@ -329,6 +333,22 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                             <Icon glyph="fa-youtube-play" />
                             <div>
                                 <span className="btnText">{i18n('ribbon.action.arr.output.generate')}</span>
+                            </div>
+                        </Button>,
+                    );
+                }
+                if (isDetailIdNotNull && !closed && allowSendOutput) {
+                    altActions.push(
+                        <Button
+                            key="generate-output"
+                            onClick={() => {
+                                this.handleSendOutput(outputDetail.id);
+                            }}
+                            disabled={!isDetailLoaded || !isOutputGenerated}
+                        >
+                            <Icon glyph="fa-send" />
+                            <div>
+                                <span className="btnText">{i18n('ribbon.action.arr.output.send')}</span>
                             </div>
                         </Button>,
                     );
@@ -446,9 +466,10 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     isOutputGeneratingAllowed(output) {
         return (
             output &&
-            output.outputResultId == null &&
+            output.outputResultIds == null &&
             output.state === OutputState.OPEN &&
-            output.templateId != null &&
+            output.templateIds != null &&
+            output.templateIds.length > 0 &&
             output.nodes.length > 0
         );
     }
@@ -663,6 +684,10 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
     handleGenerateOutput(outputId) {
         this.props.dispatch(fundOutputGenerate(outputId));
+    }
+
+    handleSendOutput(outputId) {
+        this.props.dispatch(fundOutputSend(outputId));
     }
 
     handleRevertToOpen() {

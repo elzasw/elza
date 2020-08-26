@@ -133,6 +133,7 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.cam.CamHelper;
 import cz.tacr.elza.service.cam.CreateEntityBuilder;
 import cz.tacr.elza.service.cam.ProcessingContext;
+import cz.tacr.elza.service.cam.SyncEntityRequest;
 import cz.tacr.elza.service.cam.UpdateEntityBuilder;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -819,23 +820,12 @@ public class AccessPointService {
         return apState;
     }
 
-    public List<ApState> createAccessPoints(final ApScope scope,
-                                            final List<EntityXml> entities,
-                                            final String externalSystemCode) {
-
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-
-        return createAccessPoints(scope, entities, apExternalSystem);
-    }
-
-    public List<ApState> createAccessPoints(final ApScope scope,
-                                            final List<EntityXml> entities,
-                                            final ApExternalSystem apExternalSystem) {
+    public List<ApState> createAccessPoints(final ProcessingContext procCtx,
+                                            final List<EntityXml> entities) {
         if (CollectionUtils.isEmpty(entities)) {
             return Collections.emptyList();
         }
-
-        ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem);
+        ApExternalSystem apExternalSystem = procCtx.getApExternalSystem();
 
         List<ApState> states = new ArrayList<>();
 
@@ -857,7 +847,8 @@ public class AccessPointService {
         } else {
             throw new IllegalStateException("Unkonw external system type: " + apExternalSystem.getType());
         }
-        List<ApBinding> bindingList = bindingRepository.findByScopeAndValuesAndExternalSystem(scope, values,
+        List<ApBinding> bindingList = bindingRepository.findByScopeAndValuesAndExternalSystem(procCtx.getScope(),
+                                                                                              values,
                                                                                               apExternalSystem);
         procCtx.addBindings(bindingList);
 
@@ -869,7 +860,7 @@ public class AccessPointService {
 
             ApBinding binding = procCtx.getBindingByValue(bindingValue);
             if (binding == null) {
-                binding = externalSystemService.createApBinding(scope, bindingValue, apExternalSystem);
+                binding = externalSystemService.createApBinding(procCtx.getScope(), bindingValue, apExternalSystem);
                 procCtx.addBinding(binding);
             }
 
@@ -2270,5 +2261,17 @@ public class AccessPointService {
     public List<ApAccessPoint> findAccessPointsBySinglePartValues(List<Object> criterias) {
 
         return apAccessPointRepository.findAccessPointsBySinglePartValues(criterias);
+    }
+
+    public void updateAccessPoints(final ProcessingContext procCtx,
+                                   final List<SyncEntityRequest> syncRequests) {
+        if (syncRequests == null || syncRequests.isEmpty()) {
+            return;
+        }
+
+        for (SyncEntityRequest syncReq : syncRequests) {
+            synchronizeAccessPoint(procCtx, syncReq.getState(),
+                                   syncReq.getEntityXml(), syncReq.getBindingState(), false);
+        }
     }
 }

@@ -1042,7 +1042,9 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        accessPointService.createAccessPoints(state.getScope(), entities, externalSystemCode);
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem);
+        accessPointService.createAccessPoints(procCtx, entities);
     }
 
     @Transactional

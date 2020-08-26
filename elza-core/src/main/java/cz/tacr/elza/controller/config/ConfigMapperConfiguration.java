@@ -76,15 +76,7 @@ public class ConfigMapperConfiguration {
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
     @Autowired
-    private ApStateRepository apStateRepository;
-    @Autowired
-    private NodeRepository nodeRepository;
-    @Autowired
     private RuleService ruleService;
-    @Autowired
-    private ApFactory apFactory;
-    @Autowired
-    private StaticDataService staticDataService;
     @Autowired
     private PartTypeRepository partTypeRepository;
     @Autowired
@@ -418,42 +410,6 @@ public class ConfigMapperConfiguration {
                     }
                 })
                 .register();
-        mapperFactory.classMap(ArrOutput.class, ArrOutputVO.class)
-                .exclude("nodes")
-                .exclude("scopes")
-                .exclude("anonymizedAp")
-                .byDefault()
-                .field("outputId", "id")
-                .customize(new CustomMapper<ArrOutput, ArrOutputVO>() {
-                    @Override
-                    public void mapAtoB(final ArrOutput output,
-                                        final ArrOutputVO outputVO,
-                                        final MappingContext context) {
-                        outputVO.setOutputTypeId(output.getOutputType().getOutputTypeId());
-                        outputVO.setTemplateId(output.getTemplate() != null ? output.getTemplate().getTemplateId() : null);
-                        if (output.getOutputResult() != null) {
-                            outputVO.setOutputResultId(output.getOutputResult().getOutputResultId());
-                        }
-                        outputVO.setCreateDate(Date.from(output.getCreateChange().getChangeDate().toInstant()));
-                        outputVO.setDeleteDate(output.getDeleteChange() != null ? Date.from(output.getDeleteChange().getChangeDate().toInstant()) : null);
-                        outputVO.setGeneratedDate(output.getOutputResult() != null ? Date.from(output.getOutputResult().getChange().getChangeDate().toInstant()) : null);
-                    }
-
-                    @Override
-                    public void mapBtoA(final ArrOutputVO outputVO,
-                                        final ArrOutput output,
-                                        final MappingContext context) {
-                        RulOutputType rulOutputType = new RulOutputType();
-                        rulOutputType.setOutputTypeId(outputVO.getOutputTypeId());
-                        output.setOutputType(rulOutputType);
-
-                        if (outputVO.getOutputResultId() != null) {
-                            ArrOutputResult outputResult = new ArrOutputResult();
-                            outputResult.setOutputResultId(outputVO.getOutputResultId());
-                            output.setOutputResult(outputResult);
-                        }
-                    }
-                }).register();
         mapperFactory.getConverterFactory().registerConverter(new PassThroughConverter(LocalDateTime.class));
 
         mapperFactory.classMap(UsrUser.class, UsrUserVO.class)

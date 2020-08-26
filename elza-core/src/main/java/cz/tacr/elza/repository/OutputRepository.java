@@ -41,14 +41,14 @@ public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer>,
     @Query("SELECT o FROM arr_output o WHERE o.outputId=?1")
     ArrOutput findByOutputId(Integer outputId);
 
-    @Query("SELECT o FROM arr_output o JOIN FETCH o.outputType ot JOIN FETCH o.template t JOIN FETCH o.fund f WHERE o.outputId=?1")
-    ArrOutput findOneFetchTypeAndTemplateAndFund(int outputId);
+    @Query("SELECT o FROM arr_output o JOIN FETCH o.outputType ot JOIN FETCH o.fund f WHERE o.outputId=?1")
+    ArrOutput findOneFetchTypeAndFund(int outputId);
 
     @Modifying
     @Query("UPDATE arr_output o SET o.state = ?2, o.error = ?3 WHERE o.state IN ?1")
     int updateStateFromStateWithError(List<OutputState> statesToFind, OutputState stateToSet, String errorMessage);
 
-    @Query("SELECT o FROM arr_output o WHERE o.template IN ?1 AND o.state IN ?2 AND o.deleteChange IS NULL")
+    @Query("SELECT o FROM arr_output o JOIN arr_output_template ot WHERE ot.template IN ?1 AND o.state IN ?2 AND o.deleteChange IS NULL")
     List<ArrOutput> findNonDeletedByTemplatesAndStates(List<RulTemplate> rulTemplateToDelete, List<OutputState> states);
 
     @Query("SELECT o FROM arr_output o WHERE o.outputType IN ?1")
@@ -60,13 +60,13 @@ public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer>,
     void deleteByFund(ArrFund fund);
 
     @Modifying
-    @Query("UPDATE arr_output o SET o.template = :value WHERE o.template = :key")
+    @Query("UPDATE arr_output_template o SET o.template = :value WHERE o.template = :key")
     void updateTemplateByTemplate(@Param(value = "key") RulTemplate key, @Param(value = "value") RulTemplate value);
 
     @Query("SELECT o FROM arr_output o" +
             " JOIN o.fund f" +
             " JOIN f.versions v" +
-            " LEFT JOIN o.outputResult res" +
+            " LEFT JOIN o.outputResults res" +
             " WHERE v = :fundVersion" +
             " AND o.deleteChange IS NULL" +
             " ORDER BY res.change.changeId desc, o.name ASC")
@@ -75,7 +75,7 @@ public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer>,
     @Query("SELECT o FROM arr_output o" +
             " JOIN o.fund f" +
             " JOIN f.versions v" +
-            " LEFT JOIN o.outputResult res" +
+            " LEFT JOIN o.outputResults res" +
             " WHERE v = :fundVersion" +
             " AND o.deleteChange IS NULL" +
             " AND o.state = :state" +
