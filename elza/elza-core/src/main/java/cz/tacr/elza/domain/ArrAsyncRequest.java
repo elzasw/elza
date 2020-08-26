@@ -46,6 +46,9 @@ public class ArrAsyncRequest {
     @JoinColumn(name="structured_object_id", nullable = true)
     private ArrStructuredObject structuredObject;
 
+    @Column(name="user_id")
+    private Integer userId;
+
     protected ArrAsyncRequest() {
     }
 
@@ -69,11 +72,12 @@ public class ArrAsyncRequest {
 
     public static ArrAsyncRequest create(final ArrFundVersion fundVersion,
                                          final ArrOutput output,
-                                         final Integer priority) {
+                                         final Integer priority,
+                                         final Integer userId) {
         Validate.notNull(fundVersion);
         Validate.notNull(output);
         Validate.notNull(priority);
-        return new ArrAsyncRequest(fundVersion, output, priority);
+        return new ArrAsyncRequest(fundVersion, output, priority, userId);
     }
 
     protected ArrAsyncRequest(final ArrFundVersion fundVersion,
@@ -96,11 +100,13 @@ public class ArrAsyncRequest {
 
     protected ArrAsyncRequest(final ArrFundVersion fundVersion,
                               final ArrOutput output,
-                              final Integer priority) {
+                              final Integer priority,
+                              final Integer userId) {
         this.type = AsyncTypeEnum.OUTPUT;
         this.priority = priority;
         this.fundVersion = fundVersion;
         this.output = output;
+        this.userId = userId;
     }
 
     public Long getAsyncRequestId() {
@@ -166,4 +172,12 @@ public class ArrAsyncRequest {
     public void setStructuredObject(ArrStructuredObject structuredObject) {
         this.structuredObject = structuredObject;
     }
+
+	public Integer getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
 }

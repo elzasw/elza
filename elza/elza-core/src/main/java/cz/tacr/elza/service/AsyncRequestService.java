@@ -146,8 +146,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
      * Přídání výstupu do fronty na zpracování
      */
     @Transactional
-    public void enqueue(ArrFundVersion fundVersion, ArrOutput output) {
-        ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, output, 1);
+    public void enqueue(ArrFundVersion fundVersion, ArrOutput output, Integer userId) {
+        ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, output, 1, userId);
         asyncRequestRepository.save(request);
         getExecutor(request.getType()).enqueue(new AsyncRequest(request));
     }
