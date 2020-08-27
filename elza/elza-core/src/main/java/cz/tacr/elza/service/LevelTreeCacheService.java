@@ -30,6 +30,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -43,14 +44,33 @@ import cz.tacr.elza.config.view.LevelConfig;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.controller.vo.AccordionNodeVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
+import cz.tacr.elza.controller.vo.NodeConformityVO;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.TreeNodeWithFundVO;
+import cz.tacr.elza.controller.vo.WfSimpleIssueVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
 import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.SystemException;
@@ -63,7 +83,13 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventChangeMessage;
-import cz.tacr.elza.service.eventnotification.events.*;
+import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
+import cz.tacr.elza.service.eventnotification.events.EventAddNode;
+import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
+import cz.tacr.elza.service.eventnotification.events.EventIdInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventNodeMove;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.eventnotification.events.EventVersion;
 import cz.tacr.elza.service.vo.TitleItemsByType;
 
 
@@ -79,7 +105,8 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     /**
      * Maximální počet verzí stromů ukládaných současně v paměti.
      */
-    private static final int MAX_CACHE_SIZE = 30;
+    @Value("${elza.levelTreeCache.size:30}")
+    private int maxCacheSize = 30;
 
     private static final Logger logger = LoggerFactory.getLogger(LevelTreeCacheService.class);
 
@@ -127,7 +154,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
     /**
      * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel).
-     * Maximální počet záznamů v cache {@link #MAX_CACHE_SIZE}.
+     * Maximální počet záznamů v cache {@link #maxCacheSize}.
      */
     private CapacityMap<Integer, Map<Integer, TreeNode>> versionCache = new CapacityMap<Integer, Map<Integer, TreeNode>>();
 
@@ -601,10 +628,14 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     /**
      * Invalidace verze AS v cache.
      *
-     * @param fundVersion verze archivního souboru
+     * @param fundVersionId
+     *            verze archivního souboru
      */
-    synchronized public void refreshFundVersion(final ArrFundVersion fundVersion) {
-        Assert.notNull(fundVersion, "Verze AS není vyplněna");
+    synchronized public void refreshFundVersion(final Integer fundVersionId) {
+        Assert.notNull(fundVersionId, "Verze AS není vyplněna");
+
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+
         invalidateFundVersion(fundVersion);
         getVersionTreeCache(fundVersion);
     }
@@ -615,10 +646,8 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         List<AbstractEventSimple> events = changeMessage.getEvents();
         for (AbstractEventSimple event : events) {
             logger.debug("Zpracování události "+event.getEventType());
-            //projdeme všechny změny, které jsou změny ve stromu uzlů verze a smažeme cache verzí
+            //projdeme všechny změny, které jsou změny ve stromu uzlů verze a aktualizujeme cache verzí
             if (EventVersion.class.isAssignableFrom(event.getClass())) {
-                Integer changedVersionId = ((EventVersion) event).getVersionId();
-                ArrFundVersion version = arrangementService.getFundVersion(changedVersionId);
 
                 switch (event.getEventType()) {
                     case NODE_DELETE:
@@ -628,7 +657,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
                     case ADD_LEVEL_UNDER:
                         EventAddNode eventAddNode = (EventAddNode) event;
                         actionAddLevel(eventAddNode.getNode().getNodeId(), eventAddNode.getStaticNode().getNodeId(),
-                                version, event.getEventType());
+                                       eventAddNode.getVersionId(), event.getEventType());
                         break;
                     case MOVE_LEVEL_AFTER:
                     case MOVE_LEVEL_BEFORE:
@@ -637,18 +666,18 @@ public class LevelTreeCacheService implements NodePermissionChecker {
                         List<Integer> transportIds = eventNodeMove.getTransportLevels().stream()
                                 .map(n -> n.getNodeId()).collect(Collectors.toList());
                         actionMoveLevel(eventNodeMove.getStaticLevel().getNodeId(), transportIds,
-                                version, event.getEventType());
+                                        eventNodeMove.getVersionId(), event.getEventType());
 
                         break;
                     case DELETE_LEVEL:
                         EventDeleteNode eventIdInVersion = (EventDeleteNode) event;
-                        actionDeleteLevel(eventIdInVersion.getNodeId(), version);
+                        actionDeleteLevel(eventIdInVersion.getNodeId(), eventIdInVersion.getVersionId());
                         break;
                     case BULK_ACTION_STATE_CHANGE:
                         EventIdInVersion bulkActionStateChangeEvent = (EventIdInVersion) event;
                         if (bulkActionStateChangeEvent.getState().equals(ArrBulkActionRun.State.FINISHED.toString())) {
                             if (bulkActionStateChangeEvent.getCode().equals("PERZISTENTNI_RAZENI")) {
-                                refreshFundVersion(version);
+                                refreshFundVersion(bulkActionStateChangeEvent.getVersionId());
                             }
                         }
                         break;
@@ -892,11 +921,14 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
     /**
      * Aktualizace cache po smazání uzlu.
+     * 
      * @param nodeId
-     * @param version
+     * @param fundVersionId
      */
-    synchronized private void actionDeleteLevel(final Integer nodeId, final ArrFundVersion version) {
-        Map<Integer, TreeNode> versionTreeMap = getVersionTreeCache(version);
+    synchronized private void actionDeleteLevel(final Integer nodeId, final Integer fundVersionId) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+
+        Map<Integer, TreeNode> versionTreeMap = getVersionTreeCache(fundVersion);
 
 
         if (versionTreeMap != null) {
@@ -932,16 +964,22 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     /**
      * Aktualizace cache po přidání uzlu do cache
      *
-     * @param newNodeId    id přidaného uzlu
-     * @param staticId     id statického uzlu
-     * @param version      verzes tromu
-     * @param addLevelType typ akce
+     * @param newNodeId
+     *            id přidaného uzlu
+     * @param staticId
+     *            id statického uzlu
+     * @param versionId
+     *            verzes tromu
+     * @param addLevelType
+     *            typ akce
      */
     synchronized private void actionAddLevel(final Integer newNodeId,
                                              final Integer staticId,
-                                             final ArrFundVersion version,
+                                             final Integer fundVersionId,
                                              final EventType addLevelType) {
-        Map<Integer, TreeNode> versionTreeMap = getVersionTreeCache(version);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+
+        Map<Integer, TreeNode> versionTreeMap = getVersionTreeCache(fundVersion);
         if (versionTreeMap != null) {
             TreeNode staticNode = versionTreeMap.get(staticId);
             TreeNode newNode;
@@ -984,20 +1022,25 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     /**
      * Aktualizace cache pro přesunutí uzlu.
      *
-     * @param staticId      id statického nodu
-     * @param nodeIds       seznam id nodů k přesunutí
-     * @param version       verze stromu
-     * @param moveLevelType typ události
+     * @param staticId
+     *            id statického nodu
+     * @param nodeIds
+     *            seznam id nodů k přesunutí
+     * @param fundVersionId
+     *            verze stromu
+     * @param moveLevelType
+     *            typ události
      */
     synchronized private void actionMoveLevel(final Integer staticId,
                                               final List<Integer> nodeIds,
-                                              final ArrFundVersion version,
+                                              final Integer fundVersionId,
                                               final EventType moveLevelType) {
         if (CollectionUtils.isEmpty(nodeIds)) {
             return;
         }
 
-        Map<Integer, TreeNode> versionTreeMap = getVersionTreeCache(version);
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        Map<Integer, TreeNode> versionTreeMap = getVersionTreeCache(fundVersion);
         if (versionTreeMap != null) {
             TreeNode staticNode = versionTreeMap.get(staticId);
             TreeNode staticParent = moveLevelType == EventType.MOVE_LEVEL_UNDER ? staticNode : staticNode.getParent();
@@ -2020,7 +2063,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
         @Override
         protected boolean removeEldestEntry(final Map.Entry<K, V> eldest) {
-            if (size() > MAX_CACHE_SIZE) {
+            if (size() > maxCacheSize) {
                 logger.debug("Překročena kapacita cache. Bude odpojena cache verze s id " + eldest.getKey());
                 return true;
             }
