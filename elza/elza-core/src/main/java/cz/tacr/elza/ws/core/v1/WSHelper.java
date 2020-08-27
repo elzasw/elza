@@ -214,8 +214,15 @@ public class WSHelper {
     }
 
     static public CoreServiceException prepareException(String msg, Exception e) {
+        
+        String detail;
+        if(e!=null) {
+            detail = e.toString() + ": " + e.getMessage();
+        } else {
+            detail = null;
+        }
 
-        return prepareException(msg, (e != null) ? e.toString() : null, e);
+        return prepareException(msg, detail, e);
     }
 
     /**

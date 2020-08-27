@@ -42,7 +42,7 @@ public class DaoCoreServiceImpl implements DaoService {
             logger.info("Finished operation daoImport");
         } catch (Exception e) {
             logger.error("Fail operation daoImport", e);
-            throw new CoreServiceException(e.getMessage(), e);
+            throw WSHelper.prepareException("DAO import failed", e);
         }
     }
 
@@ -58,7 +58,7 @@ public class DaoCoreServiceImpl implements DaoService {
             return result;
         } catch (Exception e) {
             logger.error("Fail operation addPackage", e);
-            throw new CoreServiceException(e.getMessage(), e);
+            throw WSHelper.prepareException("addPackage failed", e);
         }
     }
 
@@ -76,7 +76,7 @@ public class DaoCoreServiceImpl implements DaoService {
             logger.info("Ending operation removePackage");
         } catch (Exception e) {
             logger.error("Fail operation removePackage", e);
-            throw new CoreServiceException(e.getMessage(), e);
+            throw WSHelper.prepareException("removePackage failed", e);
         }
     }
 
@@ -93,7 +93,7 @@ public class DaoCoreServiceImpl implements DaoService {
             logger.info("Ending operation link");
         } catch (Exception e) {
             logger.error("Fail operation link", e);
-            throw new CoreServiceException(e.getMessage(), e);
+            throw WSHelper.prepareException("link failed", e);
         }
     }
 
@@ -110,7 +110,7 @@ public class DaoCoreServiceImpl implements DaoService {
             logger.info("Ending operation removeDao");
         } catch (Exception e) {
             logger.error("Fail operation removeDao", e);
-            throw new CoreServiceException(e.getMessage(), e);
+            throw WSHelper.prepareException("RemoveDao failed", e);
         }
     }
 
@@ -127,7 +127,7 @@ public class DaoCoreServiceImpl implements DaoService {
             return result;
         } catch (Exception e) {
             logger.error("Fail operation getDid", e);
-            throw new CoreServiceException(e.getMessage(), e);
+            throw WSHelper.prepareException("getDid failed", e);
         }
     }
 

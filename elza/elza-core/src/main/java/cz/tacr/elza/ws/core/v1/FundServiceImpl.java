@@ -39,7 +39,7 @@ public class FundServiceImpl implements FundService {
             return result;
         } catch (Exception e) {
             logger.debug("Failed to create fund", e);
-            throw WSHelper.prepareException("Failed to create fund", e.toString(), e);
+            throw WSHelper.prepareException("Failed to create fund", e);
         }
     }
 
@@ -53,7 +53,7 @@ public class FundServiceImpl implements FundService {
             logger.debug("Finished deleteFund");
         } catch (Exception e) {
             logger.debug("Failed to delete fund", e);
-            throw WSHelper.prepareException("Failed to delete fund", e.toString(), e);
+            throw WSHelper.prepareException("Failed to delete fund", e);
         }
     }
 
@@ -67,7 +67,7 @@ public class FundServiceImpl implements FundService {
             logger.debug("Finished updateFund");
         } catch (Exception e) {
             logger.debug("Failed to delete fund", e);
-            throw WSHelper.prepareException("Failed to delete fund", e.toString(), e);
+            throw WSHelper.prepareException("Failed to delete fund", e);
         }
 
     }
