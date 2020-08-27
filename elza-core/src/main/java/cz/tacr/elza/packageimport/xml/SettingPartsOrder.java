@@ -31,7 +31,7 @@ public class SettingPartsOrder extends Setting {
 
     public SettingPartsOrder() {
         super(UISettings.SettingsType.PARTS_ORDER.toString(),
-                null);
+                UISettings.EntityType.RULE);
     }
 
     @Override
