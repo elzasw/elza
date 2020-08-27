@@ -25,7 +25,7 @@ class FormDescItemGroup extends AbstractReactComponent {
         calendarTypes: PropTypes.object.isRequired,
         structureTypes: PropTypes.object.isRequired,
         descItemFactory: PropTypes.func.isRequired,
-        customActions: PropTypes.object,
+        customActions: PropTypes.func,
         descItemRef: PropTypes.func.isRequired, // (key, ref) => void
 
         onCreateRecord: PropTypes.func.isRequired,

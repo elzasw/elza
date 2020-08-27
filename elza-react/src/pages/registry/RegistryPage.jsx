@@ -150,6 +150,9 @@ class RegistryPage extends AbstractReactComponent {
                 <CreateAccessPointModal
                     initialValues={{}}
                     onSubmit={formData => {
+                        if (!formData.partForm) {
+                            return Promise.reject("");
+                        }
                         const data = {
                             ...formData,
                             partForm: {

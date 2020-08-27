@@ -1,9 +1,12 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.repository.vo.ItemChange;
+import cz.tacr.elza.service.arrangement.DeleteFundHistory;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,7 +21,7 @@ import java.util.List;
  */
 
 @Repository
-public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer> {
+public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer>, DeleteFundHistory {
 
     List<ArrDaoLink> findByDaoAndNodeAndDeleteChangeIsNull(ArrDao dao, ArrNode node);
 
@@ -48,4 +51,15 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
             " WHERE dl.dao in :daos" +
             " AND dl.deleteChange is null")
     List<ArrDaoLink> findActiveByDaos(@Param(value = "daos") Collection<ArrDao> daos);
+
+    @Override
+    @Query("SELECT new cz.tacr.elza.repository.vo.ItemChange(dl.daoLinkId, dl.createChangeId) FROM arr_dao_link dl "
+            + "JOIN dl.node n "
+            + "WHERE n.fund = :fund")
+    List<ItemChange> findByFund(@Param("fund") ArrFund fund);
+
+    @Override
+    @Modifying
+    @Query("UPDATE arr_dao_link SET createChange = :change WHERE daoLinkId IN :ids")
+    void updateCreateChange(@Param("ids") Collection<Integer> ids, @Param("change") ArrChange change);
 }

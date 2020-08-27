@@ -1,11 +1,60 @@
 package cz.tacr.elza.service.arrangement;
 
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundStructureExtension;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrLockedValue;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeExtension;
+import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.*;
+import cz.tacr.elza.repository.BulkActionNodeRepository;
+import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.CachedNodeRepository;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DataUriRefRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundStructureExtensionRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.LockedValueRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeExtensionRepository;
+import cz.tacr.elza.repository.NodeOutputRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.repository.OutputTemplateRepository;
+import cz.tacr.elza.repository.RequestQueueItemRepository;
+import cz.tacr.elza.repository.RequestRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.VisiblePolicyRepository;
+import cz.tacr.elza.repository.vo.ItemChange;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.AsyncRequestService;
+import cz.tacr.elza.service.IEventNotificationService;
+import cz.tacr.elza.service.RevertingChangesService;
+import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.collections4.CollectionUtils;
@@ -77,6 +126,22 @@ public class DeleteFundHistoryAction {
     private LevelRepository levelRepository;
     @Autowired
     private NodeRepository nodeRepository;
+    @Autowired
+    private OutputResultRepository outputResultRepository;
+    @Autowired
+    private RequestRepository requestRepository;
+    @Autowired
+    private RequestQueueItemRepository requestQueueItemRepository;
+    @Autowired
+    private FundStructureExtensionRepository fundStructureExtensionRepository;
+    @Autowired
+    private StructuredObjectRepository structuredObjectRepository;
+    @Autowired
+    private LockedValueRepository lockedValueRepository;
+    @Autowired
+    private OutputRepository outputRepository;
+    @Autowired
+    private OutputTemplateRepository outputTemplateRepository;
 
     @Autowired
     private NodeOutputRepository nodeOutputRepository;
@@ -179,6 +244,11 @@ public class DeleteFundHistoryAction {
         iterateAction(arrLevelList, levelRepository::deleteAll);
         em.flush();
 
+        // výstupy
+        nodeOutputRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
+        outputTemplateRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
+        outputRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
+
         // arr_node se také smazají, pokud se na ně neodkazuje žádný level a musí se smazat i návazné entity jako výstupy, a podobně
         final List<Integer> unusedNodeIdsByFund = nodeRepository.findUnusedNodeIdsByFund(fund);
         if (!unusedNodeIdsByFund.isEmpty()) {
@@ -210,6 +280,8 @@ public class DeleteFundHistoryAction {
         fundVersionRepository.deleteByFund(fund);
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.CREATE_AS);
+        em.flush();
+
         // create new version
         fundVersion = arrangementService.createVersion(change, fund, ruleSet, rootNode);
 
@@ -226,26 +298,56 @@ public class DeleteFundHistoryAction {
 
     }
 
-    private void updateChanges(final ArrFund fund, final ArrChange change) {
-        Set<ArrChange> changes = new HashSet<>();
+    /**
+     * Aktualizuje change (createChange) u položek:
+     * - {@link ArrItem}
+     * - {@link ArrLevel}
+     * - {@link ArrNodeExtension}
+     * - {@link ArrNodeOutput}
+     * - {@link ArrOutputResult}
+     * - {@link ArrDaoLink}
+     * - {@link ArrRequest}
+     * - {@link ArrRequestQueueItem}
+     * - {@link ArrFundStructureExtension}
+     * - {@link ArrStructuredObject}
+     * - {@link ArrLockedValue}
+     * - {@link ArrOutput}
+     *
+     * @param fund   archivní soubor, u kterého upravujeme všechny change
+     * @param newChange nastavovaná change
+     */
+    private void updateChanges(final ArrFund fund, final ArrChange newChange) {
+        // seznam change, který nahrazujeme
+        Set<Integer> changes = new HashSet<>();
 
-        List<ArrItem> items = itemRepository.findByFund(fund);
-        Set<Integer> itemIds = new HashSet<>(items.size());
-        for (ArrItem item : items) {
-            changes.add(item.getCreateChange());
-            itemIds.add(item.getItemId());
+        processUpdateChanges(changes, newChange, fund, itemRepository);
+        processUpdateChanges(changes, newChange, fund, levelRepository);
+        processUpdateChanges(changes, newChange, fund, nodeExtensionRepository);
+        processUpdateChanges(changes, newChange, fund, nodeOutputRepository);
+        processUpdateChanges(changes, newChange, fund, outputResultRepository);
+        processUpdateChanges(changes, newChange, fund, daoLinkRepository);
+        processUpdateChanges(changes, newChange, fund, requestRepository);
+        processUpdateChanges(changes, newChange, fund, requestQueueItemRepository);
+        processUpdateChanges(changes, newChange, fund, fundStructureExtensionRepository);
+        processUpdateChanges(changes, newChange, fund, structuredObjectRepository);
+        processUpdateChanges(changes, newChange, fund, lockedValueRepository);
+        processUpdateChanges(changes, newChange, fund, outputRepository);
+
+        // smazání všech nepotřebaných change
+        iterateAction(changes, changeRepository::deleteAllByIds);
+    }
+
+    private void processUpdateChanges(final Set<Integer> changes,
+                                      final ArrChange newChange,
+                                      final ArrFund fund,
+                                      final DeleteFundHistory repository) {
+        List<ItemChange> items = repository.findByFund(fund);
+        Set<Integer> ids = new HashSet<>(items.size());
+        for (ItemChange item : items) {
+            changes.add(item.getChangeId());
+            ids.add(item.getId());
         }
-        iterateAction(itemIds, ids -> itemRepository.updateCreateChange(ids, change));
-
-        List<ArrLevel> levels = levelRepository.findByFund(fund);
-        Set<Integer> levelIds = new HashSet<>();
-        for (ArrLevel level : levels) {
-            changes.add(level.getCreateChange());
-            levelIds.add(level.getLevelId());
-        }
-        iterateAction(levelIds, ids -> levelRepository.updateCreateChange(ids, change));
-
-        iterateAction(changes, changeRepository::deleteAll);
+        iterateAction(ids, partIds -> repository.updateCreateChange(partIds, newChange));
     }
 
     /**

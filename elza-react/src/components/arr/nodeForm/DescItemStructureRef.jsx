@@ -270,7 +270,10 @@ class DescItemStructureRef extends React.Component {
                         disabled={locked}
                         items={this.state.data}
                         onSearchChange={this.handleSearchChange}
-                        onChange={onChange}
+                        onChange={(...x) => {
+                            console.log(x);
+                            onChange(...x);
+                        }}
                         renderItem={
                             descItem.undefined
                                 ? {name: i18n('subNodeForm.descItemType.notIdentified')}

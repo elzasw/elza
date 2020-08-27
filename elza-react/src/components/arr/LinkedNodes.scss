@@ -1,0 +1,31 @@
+@import "../../variables.scss";
+
+.linked-nodes {
+    border-top: 1px solid $node-form-group-active-border;
+    background-color: $node-form-dao;
+
+    .linked-nodes-title {
+        padding: 5px;
+        display: block;
+        font-weight: bolder;
+    }
+
+    .node {
+        padding: 2px 5px;
+        cursor: pointer;
+        &:hover {
+            background-color: $node-form-actions-hover;
+        }
+
+        .fund {
+            padding-left: 5px;
+            &:before {
+                content: '(';
+            }
+            &:after {
+                content: ')';
+            }
+        }
+    }
+
+}

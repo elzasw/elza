@@ -524,10 +524,10 @@ public class FundLevelService {
      *                          (jeho mladší sourozenec).
      */
     @Transactional(value = TxType.MANDATORY)
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public ArrLevel addNewLevel(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                 final ArrNode staticNode,
-                                @Nullable final ArrNode staticNodeParent,
+                                @AuthParam(type = AuthParam.Type.NODE) final ArrNode staticNodeParent,
                                 final AddLevelDirection direction,
                                 @Nullable final String scenarionName,
                                 final Set<RulItemType> descItemCopyTypes,

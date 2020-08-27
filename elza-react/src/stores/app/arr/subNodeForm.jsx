@@ -222,7 +222,7 @@ export function convertValue(value, descItem, type) {
             };
         },
         STRUCTURED: value => {
-            if (value.value) {
+            if (value.structureData) {
                 return {
                     value: value.value,
                     structureData: value.structureData,
