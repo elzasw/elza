@@ -1,12 +1,38 @@
 package cz.tacr.elza.service.output;
 
-import cz.tacr.elza.asynchactions.AsyncRequestEvent;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Scope;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
 import cz.tacr.elza.asynchactions.AsyncRequest;
+import cz.tacr.elza.asynchactions.AsyncRequestEvent;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrChange.Type;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
+import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrOutputTemplate;
+import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.RulTemplate.Engine;
 import cz.tacr.elza.exception.ExceptionResponse;
 import cz.tacr.elza.exception.ExceptionResponseBuilder;
@@ -16,24 +42,9 @@ import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelServiceInternal;
 import cz.tacr.elza.service.OutputServiceInternal;
+import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.output.generator.OutputGenerator;
 import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
-
-import javax.persistence.EntityManager;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 @Component
 @Scope("prototype")
@@ -70,6 +81,9 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     @Autowired
     private OutputTemplateRepository outputTemplateRepository; 
 
+    @Autowired
+    private UserService userService;
+
     private final AtomicBoolean running = new AtomicBoolean(false);
 
     private final AsyncRequest request;
@@ -84,7 +98,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         beginTime = System.currentTimeMillis();
         try {
             new TransactionTemplate(transactionManager).execute(status -> {
-                generateOutput(request.getOutputId());
+                generateOutput(request.getOutputId(), request.getUserId());
                 return null;
             });
         } catch (Throwable t) {
@@ -117,13 +131,17 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     }
 
     /**
+     * @param userId
      * Process output. Must be called in transaction.
      *
      * @throws
      */
-    private void generateOutput(Integer outputId) {
+    private void generateOutput(Integer outputId, Integer userId) {
         ArrOutput output = outputServiceInternal.getOutputForGenerator(outputId);
         List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(output);
+
+        SecurityContext secCtx = userService.createSecurityContext(userId);
+        SecurityContextHolder.setContext(secCtx);
 
         OutputParams params = createOutputParams(output);
 
