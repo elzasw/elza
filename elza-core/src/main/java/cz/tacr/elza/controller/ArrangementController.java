@@ -85,7 +85,6 @@ import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
@@ -129,12 +128,10 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrangementFormService;
@@ -213,9 +210,6 @@ public class ArrangementController {
     private RuleService ruleService;
 
     @Autowired
-    private RuleSetRepository ruleSetRepository;
-
-    @Autowired
     private ItemTypeRepository itemTypeRepository;
 
     @Autowired
@@ -228,7 +222,7 @@ public class ArrangementController {
     private DescriptionItemService descriptionItemService;
 
     @Autowired
-    private FundLevelService moveLevelService;
+    private FundLevelService fundLevelService;
 
     @Autowired
     private DaoService daoService;
@@ -241,9 +235,6 @@ public class ArrangementController {
 
     @Autowired
     private FilterTreeService filterTreeService;
-
-    @Autowired
-    private InstitutionRepository institutionRepository;
 
     @Autowired
     private ItemSpecRepository itemSpecRepository;
@@ -283,12 +274,6 @@ public class ArrangementController {
 
     @Autowired
     private ArrangementFormService formService;
-
-    @Autowired
-    private StaticDataService staticDataService;
-
-    @Autowired
-    private FundLevelService fundLevelService;
     
     /**
      * Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
@@ -347,7 +332,7 @@ public class ArrangementController {
                     .setId(fund.getId());
         }
 
-        ArrLevel level = moveLevelService.findLevelByNode(node);
+        ArrLevel level = fundLevelService.findLevelByNode(node);
         if (level == null) {
             throw new ObjectNotFoundException("JP nebylo dohledáno zařazení v hierarchii AS", BaseCode.ID_NOT_EXIST)
                     .setId(fund.getId());
@@ -1470,7 +1455,7 @@ public class ArrangementController {
         transportNodes.forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getNodeId(), node.getVersion()));
         */
 
-        moveLevelService.moveLevelsBefore(fundVersion, staticNode, staticNodeParent,
+        fundLevelService.moveLevelsBefore(fundVersion, staticNode, staticNodeParent,
                 transportNodes, transportNodeParent);
     }
 
@@ -1500,7 +1485,7 @@ public class ArrangementController {
         transportNodes.forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getNodeId(), node.getVersion()));
         */
 
-        moveLevelService.moveLevelsAfter(fundVersion, staticNode, staticNodeParent,
+        fundLevelService.moveLevelsAfter(fundVersion, staticNode, staticNodeParent,
                 transportNodes, transportNodeParent);
     }
 
@@ -1528,7 +1513,7 @@ public class ArrangementController {
         transportNodes.forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getNodeId(), node.getVersion()));
         */
 
-        moveLevelService.moveLevelsUnder(fundVersion, staticNode,
+        fundLevelService.moveLevelsUnder(fundVersion, staticNode,
                 transportNodes, transportNodeParent);
     }
 
@@ -1605,7 +1590,7 @@ public class ArrangementController {
         }
 
 
-        ArrLevel newLevel = moveLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
+        ArrLevel newLevel = fundLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
                 addLevelParam.getDirection(), addLevelParam.getScenarioName(),
                                                          descItemCopyTypes, null);
 
@@ -1641,7 +1626,7 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(nodeParam.getVersionId());
 
-        ArrLevel deleteLevel = moveLevelService.deleteLevel(fundVersion, deleteNode, deleteParent);
+        ArrLevel deleteLevel = fundLevelService.deleteLevel(fundVersion, deleteNode, deleteParent);
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
