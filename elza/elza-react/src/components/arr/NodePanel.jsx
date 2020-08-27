@@ -41,6 +41,7 @@ import ConfirmForm from '../shared/form/ConfirmForm';
 import getMapFromList from 'shared/utils/getMapFromList';
 import SyncNodes from './SyncNodes';
 import objectById from "../../shared/utils/objectById";
+import LinkedNodes from "./LinkedNodes";
 // Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
 const PARENT_CHILD_MAX_LENGTH = 250;
 
@@ -899,9 +900,12 @@ class NodePanel extends AbstractReactComponent {
      * Renderování Accordion.
      * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
      * @param daos digitální entity k JP
+     * @param linkedNodes seznam JP odkazujícíh na tuto JP
+     * @param readMode pouze čtení
+     * @param arrPerm oprávnění pořádání
      * @return {Object} view
      */
-    renderAccordion(form, daos, readMode, arrPerm) {
+    renderAccordion(form, daos, linkedNodes, readMode, arrPerm) {
         const {node, versionId, userDetail, fund, fundId, closed, displayAccordion} = this.props;
         const {focusItemIndex} = this.state;
         var rows = [];
@@ -990,6 +994,7 @@ class NodePanel extends AbstractReactComponent {
                             </div>
                             <div key="body" className="accordion-body">
                                 {form}
+                                {linkedNodes}
                                 {daos}
                             </div>
                         </div>,
@@ -1164,6 +1169,8 @@ class NodePanel extends AbstractReactComponent {
             />
         );
 
+        const linkedNodes = <LinkedNodes nodeId={node.selectedSubNodeId} versionId={versionId} />
+
         var cls = classNames({
             'node-panel-container': true,
         });
@@ -1180,7 +1187,7 @@ class NodePanel extends AbstractReactComponent {
             >
                 <div key="main" className="main">
                     {settings.showParents && this.renderParents()}
-                    {this.renderAccordion(form, daos, readMode, arrPerm)}
+                    {this.renderAccordion(form, daos, linkedNodes, readMode, arrPerm)}
                     {settings.showChildren && this.renderChildren()}
                 </div>
             </Shortcuts>

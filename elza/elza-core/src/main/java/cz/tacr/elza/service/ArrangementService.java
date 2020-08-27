@@ -1888,6 +1888,12 @@ public class ArrangementService {
         }
     }
 
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
+    public Set<Integer> findLinkedNodes(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                        final Integer nodeId) {
+        return nodeRepository.findLinkedNodes(nodeId);
+    }
+
     public static class Holder<T> {
 
         private T object;

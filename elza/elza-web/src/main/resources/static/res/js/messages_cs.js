@@ -717,6 +717,8 @@ var messages = {
     "arr.movements.move.before": "Přesunout před",
     "arr.movements.move.after": "Přesunout za",
 
+    "arr.linked-nodes.title": "Odkazující JP",
+
     "arr.daos.fund.sync.title": "Synchronizovat všechny DAO v archivním souboru",
     "arr.daos.fund.sync.confirm-message":
         "Opravdu chcete synchronizovat digitální entity nad celým archivním souborem?",

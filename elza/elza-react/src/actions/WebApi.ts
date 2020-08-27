@@ -1302,6 +1302,21 @@ export class WebApiCls {
         return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/daolinks/' + versionId + '/' + daoLinkId, null, null);
     }
 
+    /**
+     * Získání odkazovaných JP.
+     *
+     * @param fundVersionId verze AS
+     * @param nodeId        JP pro kterou zjišťujeme odkazované JP
+     * @return seznam JP
+     */
+    findLinkedNodes(fundVersionId, nodeId) {
+        const url = UrlBuilder.bindParams(WebApiCls.arrangementUrl + '/nodes/{nodeId}/{fundVersionId}/links', {
+            fundVersionId, nodeId
+        });
+
+        return AjaxUtils.ajaxGet(url);
+    }
+
     createRefTemplate(fundId: number): Promise<ArrRefTemplateVO> {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/nodes/' + fundId + '/template/create');
     }
