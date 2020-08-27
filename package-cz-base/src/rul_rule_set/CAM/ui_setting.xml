@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types" xmlns:ns5="fund-issues"
           xmlns:ns8="parts-order" xmlns:ns9="item-types">
-    <parts-order>
+    <parts-order entity-type="RULE">
         <ns8:part code="PT_NAME"/>
         <ns8:part code="PT_CRE"/>
         <ns8:part code="PT_EXT"/>
@@ -10,7 +10,7 @@
         <ns8:part code="PT_REL"/>
         <ns8:part code="PT_IDENT"/>
     </parts-order>
-    <item-types>
+    <item-types entity-type="RULE">
         <ns9:item-type code="NOTE">
             <position>1000</position>
             <width>12</width>
