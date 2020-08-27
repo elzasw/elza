@@ -1,38 +1,49 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.common.FactoryUtils;
-import cz.tacr.elza.controller.config.ClientFactoryDO;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.repository.FilteredResult;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.UserService;
+import static java.util.stream.Collectors.toSet;
+
+import java.util.List;
+import java.util.Set;
+
+import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import static java.util.stream.Collectors.toSet;
+import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.CreateFund;
+import cz.tacr.elza.controller.vo.FindFundsResult;
+import cz.tacr.elza.controller.vo.Fund;
+import cz.tacr.elza.controller.vo.FundDetail;
+import cz.tacr.elza.controller.vo.UpdateFund;
+import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.repository.FilteredResult;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.UserService;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -58,6 +69,12 @@ public class FundController implements FundsApi {
     @Autowired
     private ClientFactoryDO factoryDO;
 
+    @Autowired
+    private StaticDataService staticDataService;
+
+    @Autowired
+    private ScopeRepository scopeRepository;
+
     @Override
     @Transactional
     public ResponseEntity<Fund> createFund(@RequestBody CreateFund createFund) {
@@ -68,15 +85,27 @@ public class FundController implements FundsApi {
         Assert.notNull(createFund.getScopes(), "Musí být zadána alespoň jedna oblast zařazení");
         Assert.notEmpty(createFund.getScopes(), "Musí být zadána alespoň jedna oblast zařazení");
 
-        RulRuleSet ruleSet = ruleSetRepository.findByCode(createFund.getRuleSetCode());
+        StaticDataProvider sdp = staticDataService.getData();
+
+        // prepare ruleset
+        RulRuleSet ruleSet = sdp.getRuleSetByCode(createFund.getRuleSetCode());
         Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s kódem " + createFund.getRuleSetCode());
 
+        // prepare institution
         ParInstitution institution = arrangementService.getInstitution(createFund.getInstitutionIdentifier());
-
         Assert.notNull(institution, "Nebyla nalezena instituce s identifikátorem " + createFund.getInstitutionIdentifier());
 
+        // prepare collection of scopes
+        List<ApScope> scopes = scopeRepository.findByCodes(createFund.getScopes());
+        Assert.isTrue(scopes.size() == createFund.getScopes().size(),
+                      "Některá oblast archivních entit nebyla nalezena");
+
         ArrFund newFund = arrangementService
-                .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(), institution, createFund.getFundNumber(), createFund.getUnitdate(), createFund.getMark(), createFund.getUuid());
+                .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(),
+                                        institution, createFund.getFundNumber(),
+                                        createFund.getUnitdate(), createFund.getMark(),
+                                        createFund.getUuid(),
+                                        scopes);
 
         // Kontrola na vyplněnost uživatele nebo skupiny jako správce, pokud není admin
         UserDetail userDetail = userService.getLoggedUserDetail();

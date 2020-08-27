@@ -98,7 +98,6 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.SysLanguage;
-import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
@@ -111,7 +110,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyResult;
-import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
@@ -520,35 +518,6 @@ public class AccessPointService {
         nodeRepository.save(node);
         nodeRepository.flush();
         return node;
-    }
-
-    public List<String> getScopeCodes() {
-        if (scopeCodes == null) {
-            SettingRecord setting = settingsService.readSettings(UISettings.SettingsType.RECORD.toString(),
-                    null,
-                    SettingRecord.class);
-            if (setting != null) {
-                List<SettingRecord.ScopeCode> scopeCodes = setting.getScopeCodes();
-                if (CollectionUtils.isEmpty(scopeCodes)) {
-                    this.scopeCodes = new ArrayList<>();
-                } else {
-                    this.scopeCodes = scopeCodes.stream().map(SettingRecord.ScopeCode::getValue).collect(toList());
-                }
-            }
-        }
-        return scopeCodes;
-    }
-
-    public List<ApScope> findDefaultScopes() {
-        List<String> scopeCodes = getScopeCodes();
-        List<ApScope> defaultScopes;
-        if (CollectionUtils.isEmpty(scopeCodes)) {
-            defaultScopes = Collections.emptyList();
-        } else {
-            defaultScopes = scopeRepository.findByCodes(scopeCodes);
-        }
-
-        return defaultScopes;
     }
 
     /**
