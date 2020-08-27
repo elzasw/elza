@@ -7,6 +7,7 @@ import cz.tacr.elza.domain.ApPart;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface ApBindingItemRepository extends ElzaJpaRepository<ApBindingItem, Integer> {
@@ -15,7 +16,7 @@ public interface ApBindingItemRepository extends ElzaJpaRepository<ApBindingItem
     ApBindingItem findByBindingAndUuid(@Param("binding") ApBinding binding, @Param("uuid") String uuid);
 
     @Query("SELECT bi FROM ap_binding_item bi WHERE bi.binding IN :bindings")
-    List<ApBindingItem> findByBindings(@Param("bindings") List<ApBinding> bindingList);
+    List<ApBindingItem> findByBindings(@Param("bindings") Collection<ApBinding> bindingList);
 
     @Query("SELECT bi FROM ap_binding_item bi LEFT JOIN FETCH bi.part LEFT JOIN FETCH bi.item i LEFT JOIN FETCH i.data WHERE bi.binding = :binding")
     List<ApBindingItem> findByBinding(@Param("binding") ApBinding binding);

@@ -1446,11 +1446,52 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
         nodesMap.put(nodeId, treeNode);
         Node tempResult = getNodes(nodesMap, treeNode.getParent(), param, fundVersion).get(nodeId);
-        ArrNodeExtendVO result = new ArrNodeExtendVO(tempResult.getId(),tempResult.getName(),tempResult.getUuid(), fundVersion.getFund().getName());
-        return result;
+        return new ArrNodeExtendVO(tempResult.getId(),tempResult.getName(),tempResult.getUuid(), fundVersion.getFund().getName());
     }
 
+    public List<TreeNodeWithFundVO> getTreeNodesWithFunds(final Collection<Integer> nodeIds) {
+        if (CollectionUtils.isEmpty(nodeIds)) {
+            return Collections.emptyList();
+        }
 
+        ObjectListIterator<Integer> iterator = new ObjectListIterator<>(nodeIds);
+        Set<ArrFundVersion> fundVersions = new HashSet<>();
+        while (iterator.hasNext()) {
+            fundVersions.addAll(fundVersionRepository.findVersionsByNodeIds(iterator.next()));
+        }
+
+        List<TreeNodeWithFundVO> result = new ArrayList<>();
+        List<Integer> resolveNodeIds = new ArrayList<>(nodeIds);
+
+        for (ArrFundVersion fundVersion : fundVersions) {
+            Map<Integer, TreeNode> treeMap = getVersionTreeCache(fundVersion);
+
+            Iterator<Integer> it = resolveNodeIds.iterator();
+            while (it.hasNext()) {
+                Integer nodeId = it.next();
+                TreeNode treeNode = treeMap.get(nodeId);
+                if (treeNode == null) {
+                    continue; // není v tomto AS, přeskakujeme
+                }
+                it.remove(); // zpracováváme
+                NodeParam param = NodeParam.create()
+                        .name()
+                        .referenceMark()
+                        .icon();
+                LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
+                nodesMap.put(nodeId, treeNode);
+                Node node = getNodes(nodesMap, treeNode.getParent(), param, fundVersion).get(nodeId);
+                result.add(TreeNodeWithFundVO.newInstance(node, fundVersion));
+            }
+        }
+
+        if (resolveNodeIds.size() > 0) {
+            // může nastat pokud se maže celý podstrom, který obsahuje nějaké odkazující JP
+            logger.debug("JP {} nebyly nalezeny v žádném stromu", resolveNodeIds);
+        }
+
+        return result;
+    }
 
     /**
      * Parametry vyplnění pro požadované JP.

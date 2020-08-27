@@ -241,12 +241,12 @@ public class UISettings {
         /**
          * Nastavení pořadí částí v detailu přístupového bodu.
          */
-        PARTS_ORDER,
+        PARTS_ORDER(true, EntityType.RULE),
 
         /**
          * Nastavení atributů dle části v detailu přístupového bodu.
          */
-        ITEM_TYPES;
+        ITEM_TYPES(true, EntityType.RULE);
 
         /**
          * If settings can be global or has to be defined on some entity.

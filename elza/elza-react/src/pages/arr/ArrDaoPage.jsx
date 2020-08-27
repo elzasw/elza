@@ -294,11 +294,11 @@ class ArrDaoPage extends ArrParentPage {
     renderSelectedTab = (readMode) => {
         const {selectedTab} = this.state;
         switch (selectedTab) {
-            case 0:
+            case '0':
                 return this.renderUnassignedPackages(readMode);
-            case 1:
+            case '1':
                 return this.renderPackages(readMode);
-            case 2:
+            case '2':
                 return this.renderLeftTree(readMode);
             default:
                 return <React.Fragment/>;
@@ -313,16 +313,13 @@ class ArrDaoPage extends ArrParentPage {
         let active = rightHasSelection && !readMode && !fund.closed;
 
         let tabs = [{
-            id: 0,
-            key: 0,
+            id: '0',
             title: 'Nepřiřazené entity',
         },{
-            id: 1,
-            key: 1,
+            id: '1',
             title: 'Balíčky'
         },{
-            id: 2,
-            key: 2,
+            id: '2',
             title: 'Archivní strom'
         }];
 

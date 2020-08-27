@@ -763,6 +763,10 @@
             <column name="output_id" type="int" />
         </createIndex>
 	</changeSet>
+    
+    <changeSet id="20200826124400" author="slapa">
+        <dropColumn tableName="ap_binding_item" columnName="cam_identifier" />
+    </changeSet>
 
     <changeSet id="20200826111000" author="sergey.iryupin">
       <addColumn tableName="arr_async_request">

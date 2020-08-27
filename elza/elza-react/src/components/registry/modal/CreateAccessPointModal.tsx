@@ -42,10 +42,13 @@ const CreateAccessPointModal = ({handleSubmit, onClose, refTables, apTypeId, apT
 
     // eslint-disable-next-line
     useEffect(() => {
-        change('partForm', {
-            partTypeCode: objectById(refTables.partTypes.items, 'PT_NAME', 'code').code,
-            items: []
-        } as ApPartFormVO);
+        const partType = objectById(refTables.partTypes.items, 'PT_NAME', 'code');
+        if (partType) {
+            change('partForm', {
+                partTypeCode: partType.code,
+                items: []
+            } as ApPartFormVO);
+        }
     }, [apTypeId]);
 
     return <ReduxForm onSubmit={handleSubmit}>

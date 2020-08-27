@@ -1,6 +1,12 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.repository.vo.ItemChange;
+import cz.tacr.elza.service.arrangement.DeleteFundHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,7 +22,7 @@ import java.util.List;
  * @since 17.06.2016
  */
 @Repository
-public interface ItemRepository extends JpaRepository<ArrItem, Integer> {
+public interface ItemRepository extends JpaRepository<ArrItem, Integer>, DeleteFundHistory {
 
     @Query(value = "SELECT coalesce(max(i.descItemObjectId), 0) FROM arr_item i")
     Integer findMaxItemObjectId();
@@ -31,21 +37,35 @@ public interface ItemRepository extends JpaRepository<ArrItem, Integer> {
     long getCountByType(RulItemType itemType);
 
     @Query("SELECT i FROM arr_item i "
-           + "inner join i.deleteChange c "
-           + "inner join c.primaryNode n "
-           + "inner join n.fund f "
-           + "where f = ?1")
-    List<ArrItem> findHistoricalByFund(ArrFund fund);
+            + "LEFT JOIN arr_desc_item di ON di.itemId = i.itemId "
+            + "LEFT JOIN arr_output_item oi ON oi.itemId = i.itemId "
+            + "LEFT JOIN arr_structured_item si ON si.itemId = i.itemId "
+            + "LEFT JOIN di.node din "
+            + "LEFT JOIN oi.output oio "
+            + "LEFT JOIN si.structuredObject sis "
+            + "LEFT JOIN din.fund dif "
+            + "LEFT JOIN oio.fund oif "
+            + "LEFT JOIN sis.fund sif "
+            + "WHERE (i.deleteChange IS NOT NULL OR oio.deleteChange IS NOT NULL OR sis.deleteChange IS NOT NULL) AND (dif = :fund OR oif = :fund OR sif = :fund)")
+    List<ArrItem> findHistoricalByFund(@Param("fund") ArrFund fund);
 
-    @Query("SELECT i FROM arr_item i "
-            + "JOIN i.createChange c "
-            + "JOIN c.primaryNode n "
-            + "JOIN n.fund f "
-            + "WHERE f = :fund")
-    List<ArrItem> findByFund(@Param("fund") ArrFund fund);
+    @Override
+    @Query("SELECT new cz.tacr.elza.repository.vo.ItemChange(i.itemId, i.createChange.changeId) FROM arr_item i "
+            + "LEFT JOIN arr_desc_item di ON di.itemId = i.itemId "
+            + "LEFT JOIN arr_output_item oi ON oi.itemId = i.itemId "
+            + "LEFT JOIN arr_structured_item si ON si.itemId = i.itemId "
+            + "LEFT JOIN di.node din "
+            + "LEFT JOIN oi.output oio "
+            + "LEFT JOIN si.structuredObject sis "
+            + "LEFT JOIN din.fund dif "
+            + "LEFT JOIN oio.fund oif "
+            + "LEFT JOIN sis.fund sif "
+            + "WHERE dif = :fund OR oif = :fund OR sif = :fund")
+    List<ItemChange> findByFund(@Param("fund") ArrFund fund);
 
     List<ArrItem> findByData(ArrData arrData);
 
+    @Override
     @Modifying
     @Query("UPDATE arr_item SET createChange = :change WHERE itemId IN :itemIds")
     void updateCreateChange(@Param("itemIds") Collection<Integer> itemIds, @Param("change") ArrChange change);

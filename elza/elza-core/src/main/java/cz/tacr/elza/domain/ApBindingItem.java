@@ -27,9 +27,6 @@ public class ApBindingItem {
     @JoinColumn(name = "itemId")
     private ApItem item;
 
-    @Column(name = "camIdentifier")
-    private Boolean camIdentifier;
-
     public Integer getBindingItemId() {
         return bindingItemId;
     }
@@ -70,11 +67,4 @@ public class ApBindingItem {
         this.item = item;
     }
 
-    public Boolean getCamIdentifier() {
-        return camIdentifier;
-    }
-
-    public void setCamIdentifier(Boolean camIdentifier) {
-        this.camIdentifier = camIdentifier;
-    }
 }

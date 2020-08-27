@@ -4,6 +4,8 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.repository.vo.ItemChange;
+import cz.tacr.elza.service.arrangement.DeleteFundHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -20,7 +22,7 @@ import java.util.List;
  * @since 22.7.15
  */
 @Repository
-public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, LevelRepositoryCustom {
+public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, LevelRepositoryCustom, DeleteFundHistory {
 
     @Query("SELECT c FROM arr_level c WHERE c.nodeParent = ?1 and c.deleteChange is null order by c.position asc")
     List<ArrLevel> findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(ArrNode nodeParent);
@@ -89,13 +91,14 @@ public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, Level
            + "where f = ?1")
     List<ArrLevel> findHistoricalByFund(ArrFund fund);
 
-    @Query("SELECT l FROM arr_level l "
-            + "JOIN l.createChange c "
-            + "JOIN c.primaryNode n "
+    @Override
+    @Query("SELECT new cz.tacr.elza.repository.vo.ItemChange(l.levelId, l.createChange.changeId) FROM arr_level l "
+            + "JOIN l.node n "
             + "JOIN n.fund f "
             + "WHERE f = :fund")
-    List<ArrLevel> findByFund(@Param("fund") ArrFund fund);
+    List<ItemChange> findByFund(@Param("fund") ArrFund fund);
 
+    @Override
     @Modifying
     @Query("UPDATE arr_level SET createChange = :change WHERE levelId IN :levelIds")
     void updateCreateChange(@Param("levelIds") Collection<Integer> levelIds, @Param("change") ArrChange change);

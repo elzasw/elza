@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import cz.tacr.elza.domain.ArrNodeConformity;
 import org.springframework.data.jpa.repository.Modifying;
@@ -68,4 +69,11 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
 
     @Query("SELECT node FROM arr_node node JOIN FETCH arr_node_conformity conf ON conf.node = node AND conf.state = :state")
     List<ArrNode> findNodesByConformityState(@Param(value= "state") ArrNodeConformity.State state);
+
+    @Query("SELECT DISTINCT de.nodeId FROM arr_desc_item de " +
+            "JOIN de.data d " +
+            "JOIN ArrDataUriRef ur ON ur.dataId = d.dataId " +
+            "JOIN ur.arrNode n " +
+            "WHERE de.deleteChange IS NULL AND n.nodeId = :nodeId")
+    Set<Integer> findLinkedNodes(@Param("nodeId") Integer nodeId);
 }
