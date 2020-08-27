@@ -238,13 +238,13 @@ public class DaoCoreServiceImpl implements DaoService {
                                     lis.getDescItemType());
                 }
                 data.setDataType(itemType.getDataType().getEntity());
+                descItem.setItemType(itemType.getEntity());
                 descItem.setData(data);
 
                 descriptionItemService.createDescriptionItemInBatch(descItem,
                                                                     level.getNode(), fundVersion, change,
                                                                     changeContext);
             }
-                
         };
         ArrLevel level = fundLevelService.addNewLevel(fundVersion, rootNode, rootNode,
                                      AddLevelDirection.CHILD,
