@@ -14,7 +14,6 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
@@ -34,6 +33,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.SystemException;
@@ -527,11 +527,11 @@ public class FundLevelService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrLevel addNewLevel(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                 final ArrNode staticNode,
-                                final ArrNode staticNodeParent,
+                                @Nullable final ArrNode staticNodeParent,
                                 final AddLevelDirection direction,
                                 @Nullable final String scenarionName,
                                 final Set<RulItemType> descItemCopyTypes,
-                                final DesctItemProvider desctItemProvider) {
+                                @Nullable final DesctItemProvider desctItemProvider) {
 
         Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
         Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");

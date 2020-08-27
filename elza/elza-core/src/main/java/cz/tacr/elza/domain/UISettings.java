@@ -189,6 +189,11 @@ public class UISettings {
         FUND_TEMPLATES(true, EntityType.FUND),
 
         /**
+         * nastavení pro automatizaci importu dao
+         */
+        DAO_LEVEL_IMPORT(true, EntityType.FUND),
+
+        /**
          * oblíbené specifikace u typu atributu
          */
         FAVORITE_ITEM_SPECS(false, EntityType.ITEM_TYPE),

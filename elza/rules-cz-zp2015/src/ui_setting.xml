@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types" 
           xmlns:ns5="fund-issues" xmlns:ns6="grid-view" xmlns:ns7="structure-type-settings"
-          xmlns:ns8="parts-order" xmlns:ns9="item-types">
+          xmlns:ns8="parts-order" xmlns:ns9="item-types" xmlns:ns10="dao-import-level">
     <favorite-item-specs code="ZP2015_LANGUAGE">
         <!-- čeština -->
         <favorite-item>ZP2015_LANGUAGE_43</favorite-item>
@@ -57,4 +57,10 @@
       <ns7:property code="prefixSeparator"> </ns7:property>
       <ns7:property code="postfixSeparator"> </ns7:property>
     </structure-type-settings>
+    <dao-import-level-settings settings-type="DAO_LEVEL_IMPORT" entity-type="FUND">
+      <ns10:default>
+        <scenario>Série</scenario>
+        <desc-item-type>ZP2015_TITLE</desc-item-type>
+      </ns10:default>
+    </dao-import-level-settings>
 </settings>
