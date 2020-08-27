@@ -292,8 +292,9 @@ public class DaoCoreServiceWsImpl {
      * 
      * @param lis
      * @param levelDaos
+     * @return
      */
-    private void prepareDaoLevels(final ArrFund fund, final LevelImportSettings lis,
+    private List<ArrDaoLink> prepareDaoLevels(final ArrFund fund, final LevelImportSettings lis,
                                   final List<ArrDao> levelDaos) {
         // prepare parent level
         final ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fund.getFundId());
@@ -310,7 +311,7 @@ public class DaoCoreServiceWsImpl {
                 ArrData data = null;
 
                 Date date = Calendar.getInstance().getTime();
-                DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
                 String strDate = dateFormat.format(date);
                 String value = "Importováno - " + strDate;
 
@@ -344,13 +345,19 @@ public class DaoCoreServiceWsImpl {
                                                       lis.getScenarioName(), Collections.emptySet(),
                                                       descProvider);
 
+        List<ArrDaoLink> daoLinks = new ArrayList<>(levelDaos.size());
         // attach to the parent
         for (ArrDao dao : levelDaos) {
+            Validate.isTrue(dao.getDaoType() == DaoType.LEVEL);
+
             DesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
             ArrLevel daoLevel = fundLevelService.addNewLevel(fundVersion, level.getNode(), level.getNode(),
                                                              AddLevelDirection.CHILD, null, null,
                                                              descItemProvider);
+            ArrDaoLink daoLink = daoService.createOrFindDaoLink(fundVersion, dao, daoLevel.getNode());
+            daoLinks.add(daoLink);
         }
+        return daoLinks;
     }
 
     private List<ArrDao> createDaos(Daoset daoset, ArrDaoPackage arrDaoPackage) {
