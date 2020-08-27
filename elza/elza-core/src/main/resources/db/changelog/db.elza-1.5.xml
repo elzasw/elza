@@ -767,4 +767,10 @@
         <dropColumn tableName="ap_binding_item" columnName="cam_identifier" />
     </changeSet>
 
+    <changeSet id="20200826111000" author="sergey.iryupin">
+      <addColumn tableName="arr_async_request">
+        <column name="user_id" type="int" />
+      </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

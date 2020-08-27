@@ -111,6 +111,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
@@ -2117,8 +2118,12 @@ public class ArrangementController {
                                                @RequestParam(value = "forced", defaultValue = "false") boolean forced) {
         ArrOutput output = outputService.getOutput(outputId);
 
+        // get logged user
+        UsrUser loggedUser = userService.getLoggedUser();
+        Integer userId = loggedUser != null ? loggedUser.getUserId() : null;
+
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
-        OutputRequestStatus requestStatus = outputService.addRequest(outputId, fundVersion, !forced);
+        OutputRequestStatus requestStatus = outputService.addRequest(outputId, fundVersion, !forced, userId);
 
         GenerateOutputResult generateOutputResult = new GenerateOutputResult();
         generateOutputResult.setStatus(requestStatus);
