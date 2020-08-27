@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -42,19 +41,18 @@ public class FundServiceImpl implements FundService {
     public FundIdentifiers createFund(Fund fundInfo) throws CreateFundException {
         StaticDataProvider sdp = staticDataService.getData();
 
+        RulRuleSet ruleset = sdp.getRuleSetByCode(fundInfo.getRulesetCode());
+
         String uuid = fundInfo.getUuid();
         if (uuid == null) {
             uuid = UUID.randomUUID().toString();
         }
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.CREATE_AS);
-
-
-        RulRuleSet ruleset = sdp.getRuleSetByCode(fundInfo.getRulesetCode());
         if (fundInfo.getInstitutionIdentifier() == null) {
             ErrorDescription errorDesc = WSHelper.prepareErrorDescription("Missing institution ID", null);
             throw new CreateFundException(errorDesc.getUserMessage(), errorDesc);
         }
+
         ParInstitution institution = instRepo.findByInternalCode(fundInfo.getInstitutionIdentifier());
         if (institution == null) {
             ErrorDescription errorDesc = WSHelper.prepareErrorDescription("Failed to find institution ID: "
@@ -62,19 +60,19 @@ public class FundServiceImpl implements FundService {
                                                                           null);
             throw new CreateFundException(errorDesc.getUserMessage(), errorDesc);
         }
+
         Integer fundNumber = null;
         if(StringUtils.isNotBlank(fundInfo.getId())) {
             fundNumber = Integer.valueOf(fundInfo.getId().trim());
         }
-        ArrFund fund = arrangementService.createFund(fundInfo.getFundName(),
-                                                     ruleset,
-                                                     change,
-                                                     uuid,
-                                                     fundInfo.getInternalCode(),
-                                                     institution,
-                                                     fundNumber,
-                                                     null,
-                                                     fundInfo.getMark());
+        ArrFund fund = arrangementService.createFundWithScenario(fundInfo.getFundName(),
+                                                                 ruleset,
+                                                                 fundInfo.getInternalCode(),
+                                                                 institution,
+                                                                 fundNumber,
+                                                                 fundInfo.getDateRange(),
+                                                                 fundInfo.getMark(),
+                                                                 uuid, null);
         FundIdentifiers fi = new FundIdentifiers();
         fi.setId(fund.getFundId().toString());
         fi.setUuid(uuid);
