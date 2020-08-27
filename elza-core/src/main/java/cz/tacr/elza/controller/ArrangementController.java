@@ -22,6 +22,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.TreeNodeWithFundVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -542,6 +543,21 @@ public class ArrangementController {
         final ArrDaoLink daoLink = daoLinkRepository.getOneCheckExist(daoLinkId);
 
         daoService.deleteDaoLink(fundVersion, daoLink);
+    }
+
+    /**
+     * Získání odkazovaných JP.
+     *
+     * @param fundVersionId verze AS
+     * @param nodeId        JP pro kterou zjišťujeme odkazované JP
+     * @return seznam JP
+     */
+    @RequestMapping(value = "/nodes/{nodeId}/{fundVersionId}/links", method = RequestMethod.GET)
+    @Transactional
+    public List<TreeNodeWithFundVO> findLinkedNodes(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                    @PathVariable(value = "nodeId") final Integer nodeId) {
+        Set<Integer> nodeIds = arrangementService.findLinkedNodes(fundVersionId, nodeId);
+        return levelTreeCacheService.getTreeNodesWithFunds(nodeIds);
     }
 
     /**

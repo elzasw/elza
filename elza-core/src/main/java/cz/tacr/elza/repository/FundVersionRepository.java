@@ -54,4 +54,7 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
     @Modifying
     @Query("DELETE FROM arr_fund_version fv WHERE fv.fund = ?1  and fv.rootNodeId is null")
     void deleteByFundNotRootNode(ArrFund fund);
+
+    @Query("SELECT fv FROM arr_fund_version fv JOIN FETCH fv.fund f WHERE fv.lockChange IS NULL AND f IN (SELECT n.fund FROM arr_node n WHERE n.nodeId IN :nodeIds)")
+    List<ArrFundVersion> findVersionsByNodeIds(@Param("nodeIds") Collection<Integer> nodeIds);
 }
