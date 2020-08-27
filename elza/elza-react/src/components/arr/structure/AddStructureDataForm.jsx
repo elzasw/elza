@@ -2,7 +2,7 @@ import React from 'react';
 import {Form, FormCheck, Modal} from 'react-bootstrap';
 import {Button} from '../../ui';
 import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
-import {reduxForm, Field} from 'redux-form';
+import {formValueSelector, reduxForm, Field} from 'redux-form';
 import {connect} from 'react-redux';
 import StructureSubNodeForm from './StructureSubNodeForm';
 import {structureNodeFormFetchIfNeeded, structureNodeFormSelectId} from '../../../actions/arr/structureNodeForm';
@@ -10,6 +10,8 @@ import PropTypes from 'prop-types';
 import FF from '../../shared/form/FF';
 
 class AddStructureDataForm extends AbstractReactComponent {
+    static form = 'AddStructureData';
+
     static propTypes = {
         multiple: PropTypes.bool,
         fundVersionId: PropTypes.number.isRequired,
@@ -43,14 +45,23 @@ class AddStructureDataForm extends AbstractReactComponent {
 
     customRender = (code, infoType) => {
         if (code === 'INT') {
-            /*const index = incrementedTypeIds.value.indexOf(infoType.id);
-            const checked = index !== -1;*/
+            const {incrementedTypeIds, change} = this.props;
+            const index = incrementedTypeIds.indexOf(infoType.id);
+            const checked = index !== -1;
 
             return (
-                <FF
-                    key={'increment'}
-                    type="checkbox"
-                    name={'incrementedTypeIds'}
+                <FormCheck
+                    key="increment"
+                    checked={checked}
+                    onChange={() => {
+                        let val;
+                        if (checked) {
+                            val = [...incrementedTypeIds.slice(0, index), ...incrementedTypeIds.slice(index + 1)];
+                        } else {
+                            val = [...incrementedTypeIds, infoType.id];
+                        }
+                        change('incrementedTypeIds', val);
+                    }}
                     label={i18n('arr.structure.modal.increment')}
                 />
             );
@@ -69,6 +80,7 @@ class AddStructureDataForm extends AbstractReactComponent {
             fundId,
             multiple,
             storeStructure,
+            incrementedTypeIds,
         } = this.props;
 
         return (
@@ -77,6 +89,7 @@ class AddStructureDataForm extends AbstractReactComponent {
                     {error && <p>{error}</p>}
                     {storeStructure && storeStructure.fetched && (
                         <StructureSubNodeForm
+                            key={'xx-' + incrementedTypeIds.join('-')}
                             id={structureData.id}
                             versionId={fundVersionId}
                             fundId={fundId}
@@ -103,7 +116,7 @@ class AddStructureDataForm extends AbstractReactComponent {
 }
 
 const form = reduxForm({
-    form: 'AddStructureData',
+    form: AddStructureDataForm.form,
     initialValues: {
         count: '',
         incrementedTypeIds: [],
@@ -124,10 +137,12 @@ const form = reduxForm({
 
 export default connect((state, props) => {
     const {structures} = state;
+    const selector = formValueSelector(props.form || AddStructureDataForm.form);
 
     const key = props.structureData.id ? String(props.structureData.id) : null;
     return {
         storeStructure:
             key && props.structureData && structures.stores.hasOwnProperty(key) ? structures.stores[key] : null,
+        incrementedTypeIds: selector(state, 'incrementedTypeIds'),
     };
 })(form);
