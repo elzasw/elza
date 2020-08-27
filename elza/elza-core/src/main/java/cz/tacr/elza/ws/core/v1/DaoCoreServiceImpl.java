@@ -173,7 +173,7 @@ public class DaoCoreServiceImpl implements DaoService {
 
             logger.info("Finished operation daoImport");
         } catch (Exception e) {
-            logger.error("Fail operation _import", e);
+            logger.error("Fail operation daoImport", e);
             throw new CoreServiceException(e.getMessage(), e);
         }
     }

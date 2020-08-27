@@ -674,10 +674,21 @@ Source: EAD3</xs:documentation>
 			<xs:element name="uuid" type="eat:Uuid" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="fundName" type="eat:Label" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="rulesetCode" type="eat:Identifier" minOccurs="1" maxOccurs="1"/>
-			<xs:element name="institutionIdentifier" type="eat:Identifier" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="institutionIdentifier" type="eat:Identifier" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Institution identifier, typicaly UUID or other ID</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 			<xs:element name="internalCode" type="eat:Identifier" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="dateRange" type="eat:String250" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="mark" type="eat:Identifier" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="mark" type="eat:String250" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="fundNumber" type="eat:String250" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Fund number, logical fund number, usually INT
+
+This is fund identifier inside one institution/archive</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="FundIdentifiers">

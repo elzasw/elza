@@ -218,12 +218,25 @@ public class WSHelper {
         return prepareException(msg, (e != null) ? e.toString() : null, e);
     }
 
+    /**
+     * Prepare new exception
+     * 
+     * If e is already CoreServiceException same exception is returned
+     * 
+     * @param msg
+     * @param detail
+     * @param e
+     * @return
+     */
     static public CoreServiceException prepareException(String msg, String detail, Exception e) {
+        if (e != null && e instanceof CoreServiceException) {
+            return (CoreServiceException) e;
+        }
         ErrorDescription ed = prepareErrorDescription(msg, detail);
         return new CoreServiceException(msg, ed, e);
     }
 
-    public static ErrorDescription prepareErrorDescription(String msg, String detail) {
+    static public ErrorDescription prepareErrorDescription(String msg, String detail) {
         ErrorDescription ed = new ErrorDescription();
         ed.setUserMessage(msg);
         ed.setDetail(detail);
