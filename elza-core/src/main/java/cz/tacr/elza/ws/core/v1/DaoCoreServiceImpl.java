@@ -6,10 +6,15 @@
 
 package cz.tacr.elza.ws.core.v1;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.Date;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -21,32 +26,49 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.ArrDaoBatchInfo;
 import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
+import cz.tacr.elza.packageimport.xml.SettingDaoImportLevel;
 import cz.tacr.elza.repository.DaoBatchInfoRepository;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
-import cz.tacr.elza.repository.DaoFileRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
-import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoSyncService;
+import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.FundLevelService;
+import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.GroovyScriptService;
+import cz.tacr.elza.service.SettingsService;
+import cz.tacr.elza.service.arrangement.DesctItemProvider;
+import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
+import cz.tacr.elza.ws.core.v1.daoservice.ImportContext;
+import cz.tacr.elza.ws.core.v1.daoservice.LevelImportSettings;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoBatchInfo;
 import cz.tacr.elza.ws.types.v1.DaoImport;
@@ -70,19 +92,10 @@ public class DaoCoreServiceImpl implements DaoService {
     private DaoPackageRepository daoPackageRepository;
 
     @Autowired
-    private FundRepository fundRepository;
-
-    @Autowired
     private DaoRepository daoRepository;
 
     @Autowired
-    private DaoFileGroupRepository daoFileGroupRepository;
-
-    @Autowired
     private NodeRepository nodeRepository;
-
-    @Autowired
-    private DaoFileRepository daoFileRepository;
 
     @Autowired
     private DaoBatchInfoRepository daoBatchInfoRepository;
@@ -105,6 +118,18 @@ public class DaoCoreServiceImpl implements DaoService {
     @Autowired
     private ArrangementService arrangementService;
 
+    @Autowired
+    private SettingsService settingsService;
+
+    @Autowired
+    private FundLevelService fundLevelService;
+
+    @Autowired
+    private DescriptionItemService descriptionItemService;
+
+    @Autowired
+    private StaticDataService staticDataService;
+
     /*
      * @see cz.tacr.elza.ws.core.v1.DaoService#_import(cz.tacr.elza.ws.types.v1.DaoImport daoImport)
      */
@@ -112,35 +137,126 @@ public class DaoCoreServiceImpl implements DaoService {
     @Transactional
     public void _import(final DaoImport daoImport) throws CoreServiceException {
         try {
-            logger.info("Executing operation _import");
+            logger.info("Executing operation daoImport");
             Assert.notNull(daoImport, "DAO import musí být vyplněn");
             Assert.notNull(daoImport.getDaoPackages(), "DAO obaly musí být vyplněny");
             Assert.notNull(daoImport.getDaoLinks(), "DAO linky musí být vyplněny");
 
+            ImportContext impCtx = new ImportContext();
+
             final List<DaoPackage> daoPackageList = daoImport.getDaoPackages().getDaoPackage();
             if (CollectionUtils.isNotEmpty(daoPackageList)) {
                 for (DaoPackage daoPackage : daoPackageList) {
-                    final ArrDaoPackage arrDaoPackage = createArrDaoPackage(daoPackage);
+                    createArrDaoPackage(impCtx, daoPackage);
                 }
             }
-
-            Set<Integer> nodeIds = new HashSet<>();
 
             // založí se DaoLink bez notifikace, pokud již link existuje, tak se zruší a založí se nový (arr_change).
-            final List<DaoLink> daoLinkList = daoImport.getDaoLinks().getDaoLink();
-            if (CollectionUtils.isNotEmpty(daoLinkList)) {
-                for (DaoLink daoLink : daoLinkList) {
-                    final ArrDaoLink arrDaoLink = createArrDaoLink(daoLink);
-                    nodeIds.add(arrDaoLink.getNodeId());
+            if (daoImport.getDaoLinks() != null) {
+                List<Integer> nodeIds = new ArrayList<>();
+                final List<DaoLink> daoLinkList = daoImport.getDaoLinks().getDaoLink();
+                if (CollectionUtils.isNotEmpty(daoLinkList)) {
+                    for (DaoLink daoLink : daoLinkList) {
+                        final ArrDaoLink arrDaoLink = createArrDaoLink(daoLink);
+                        nodeIds.add(arrDaoLink.getNodeId());
+                    }
                 }
+                daoService.updateNodeCacheDaoLinks(nodeIds);
             }
 
-            daoService.updateNodeCacheDaoLinks(nodeIds);
+            // Auto create new levels
+            List<ArrDao> daos = impCtx.getDaos();
+            Map<ArrFund, List<ArrDao>> levelDaos = daos.stream().filter(dao -> dao.getDaoType() == DaoType.LEVEL)
+                    .collect(Collectors.groupingBy(d -> d.getDaoPackage().getFund(),
+                                                   Collectors.toList()));
+            levelDaos.forEach((fund, list) -> onImportedDaoLevels(fund, list));
 
-            logger.info("Finished operation _import");
+            logger.info("Finished operation daoImport");
         } catch (Exception e) {
             logger.error("Fail operation _import", e);
             throw new CoreServiceException(e.getMessage(), e);
+        }
+    }
+
+    private void onImportedDaoLevels(ArrFund fund, List<ArrDao> levelDaos) {
+        if (CollectionUtils.isEmpty(levelDaos)) {
+            return;
+        }
+
+        List<UISettings> impSettings = settingsService.getGlobalSettings(UISettings.SettingsType.DAO_LEVEL_IMPORT);
+        if(CollectionUtils.isEmpty(impSettings)) {
+            return;
+        }
+        Validate.isTrue(impSettings.size()==1);
+        
+        UISettings s = impSettings.get(0);
+        LevelImportSettings lis = SettingDaoImportLevel.newInstance(s).getLevelImportSettings();
+        prepareDaoLevels(fund, lis, levelDaos);
+    }
+
+    /**
+     * Automatické založení úrovní
+     * 
+     * @param lis
+     * @param levelDaos
+     */
+    private void prepareDaoLevels(final ArrFund fund, final LevelImportSettings lis,
+                                  final List<ArrDao> levelDaos) {
+        // prepare parent level
+        final ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fund.getFundId());
+        final ArrNode rootNode = fundVersion.getRootNode();
+        final StaticDataProvider sdp = staticDataService.getData();
+
+        DesctItemProvider descProvider = new DesctItemProvider() {
+
+            @Override
+            public void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
+                                MultiplItemChangeContext changeContext) {
+                ArrDescItem descItem = new ArrDescItem();
+                ItemType itemType = sdp.getItemTypeByCode(lis.getDescItemType());
+                ArrData data = null;
+
+                Date date = Calendar.getInstance().getTime();
+                DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+                String strDate = dateFormat.format(date);
+                String value = "Importováno - " + strDate;
+
+                switch (itemType.getDataType()) {
+                case STRING:
+                    ArrDataString ds = new ArrDataString();
+                    ds.setValue(value);
+                    data = ds;
+                    break;
+                case TEXT:
+                    ArrDataText dt = new ArrDataText();
+                    dt.setValue(value);
+                    data = dt;
+                    break;
+                default:
+                    Validate.isTrue(false, "Cannot convert string to data type: %s, item type: %s", itemType
+                            .getDataType(),
+                                    lis.getDescItemType());
+                }
+                data.setDataType(itemType.getDataType().getEntity());
+                descItem.setData(data);
+
+                descriptionItemService.createDescriptionItemInBatch(descItem,
+                                                                    level.getNode(), fundVersion, change,
+                                                                    changeContext);
+            }
+                
+        };
+        ArrLevel level = fundLevelService.addNewLevel(fundVersion, rootNode, rootNode,
+                                     AddLevelDirection.CHILD,
+                                     lis.getScenarioName(), Collections.emptySet(),
+                                     descProvider);
+
+        // attach to the parent
+        for (ArrDao dao : levelDaos) {
+            DesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
+            ArrLevel daoLevel = fundLevelService.addNewLevel(fundVersion, level.getNode(), level.getNode(),
+                                                          AddLevelDirection.CHILD, null, null,
+                                                          descItemProvider);
         }
     }
 
@@ -218,7 +334,7 @@ public class DaoCoreServiceImpl implements DaoService {
         return daoLinkRepository.save(arrDaoLink);
     }
 
-    private ArrDaoPackage createArrDaoPackage(final DaoPackage daoPackage) {
+    private ArrDaoPackage createArrDaoPackage(ImportContext impCtx, final DaoPackage daoPackage) {
         Validate.notNull(daoPackage, "DAO obal musí být vyplněn");
 
         ArrFund fund = arrangementService.getFundByString(daoPackage.getFundIdentifier());
@@ -261,42 +377,47 @@ public class DaoCoreServiceImpl implements DaoService {
 
         arrDaoPackage = daoPackageRepository.save(arrDaoPackage);
 
-        createDaos(daoPackage.getDaos(), arrDaoPackage);
+        impCtx.addPackage(arrDaoPackage);
+
+        List<ArrDao> daos = createDaos(daoPackage.getDaos(), arrDaoPackage);
+        impCtx.addDaos(daos);
 
         return arrDaoPackage;
     }
 
 
-    private void createDaos(Daoset daoset, ArrDaoPackage arrDaoPackage) {
+    private List<ArrDao> createDaos(Daoset daoset, ArrDaoPackage arrDaoPackage) {
+        if (daoset == null) {
+            return Collections.emptyList();
+        }
+        List<ArrDao> result = new ArrayList<>(daoset.getDao().size());
+        for (Dao dao : daoset.getDao()) {
 
-        if (daoset != null) {
-            for (Dao dao : daoset.getDao()) {
+            ArrDao arrDao = daoSyncService.createArrDao(arrDaoPackage, dao);
+            result.add(arrDao);
 
-                ArrDao arrDao = daoSyncService.createArrDao(arrDaoPackage, dao);
-
-                if (dao.getFiles() != null) {
-                    for (File file : dao.getFiles().getFile()) {
-                        daoSyncService.createArrDaoFile(arrDao, file);
-                    }
+            if (dao.getFiles() != null) {
+                for (File file : dao.getFiles().getFile()) {
+                    daoSyncService.createArrDaoFile(arrDao, file);
                 }
+            }
 
-                FolderGroup fg = dao.getFolders();
-                if(fg!=null)
-                {
-                    for (Folder folder : fg.getFolder()) {
+            FolderGroup fg = dao.getFolders();
+            if (fg != null) {
+                for (Folder folder : fg.getFolder()) {
 
-                        ArrDaoFileGroup arrDaoFileGroup = daoSyncService.createArrDaoFileGroup(arrDao,
-                                                                                               folder);
+                    ArrDaoFileGroup arrDaoFileGroup = daoSyncService.createArrDaoFileGroup(arrDao,
+                                                                                           folder);
 
-                        if (folder.getFiles() != null) {
-                            for (File file : folder.getFiles().getFile()) {
-                                daoSyncService.createArrDaoFileGroup(arrDaoFileGroup, file);
-                            }
+                    if (folder.getFiles() != null) {
+                        for (File file : folder.getFiles().getFile()) {
+                            daoSyncService.createArrDaoFileGroup(arrDaoFileGroup, file);
                         }
                     }
                 }
             }
         }
+        return result;
     }
 
     /*
@@ -307,7 +428,8 @@ public class DaoCoreServiceImpl implements DaoService {
     public String addPackage(final DaoPackage daoPackage) throws CoreServiceException {
         try {
             logger.info("Executing operation addPackage");
-            final ArrDaoPackage arrDaoPackage = createArrDaoPackage(daoPackage);
+            ImportContext impCtx = new ImportContext();
+            final ArrDaoPackage arrDaoPackage = createArrDaoPackage(impCtx, daoPackage);
             logger.info("Ending operation addPackage");
             return arrDaoPackage.getCode();
         } catch (Exception e) {

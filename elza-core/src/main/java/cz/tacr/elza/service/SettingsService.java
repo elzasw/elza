@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UISettings.EntityType;
+import cz.tacr.elza.domain.UISettings.SettingsType;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -323,5 +324,9 @@ public class SettingsService {
             }
         }
         return null;
+    }
+
+    public List<UISettings> getGlobalSettings(SettingsType settingsType) {
+        return getGlobalSettings(settingsType.toString(), settingsType.getEntityType());
     }
 }
