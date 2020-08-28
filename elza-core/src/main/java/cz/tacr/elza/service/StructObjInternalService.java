@@ -22,6 +22,7 @@ import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,8 +67,10 @@ public class StructObjInternalService {
      * Smazání hodnoty strukturovaného datového typu.
      *
      * @param structObj hodnota struktovaného datového typu
+     * @param changeOverride přetížená změna
      */
-    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj) {
+    public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj,
+                                @Nullable final ArrChange changeOverride) {
         if (structObj.getDeleteChange() != null) {
             throw new BusinessException("Nelze odstranit již smazaná strukturovaná data", BaseCode.INVALID_STATE);
         }
@@ -94,7 +97,9 @@ public class StructObjInternalService {
                         .set("id", structObj.getStructuredObjectId());
             }
 
-            ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA);
+            ArrChange change = changeOverride == null
+                    ? arrangementInternalService.createChange(ArrChange.Type.DELETE_STRUCTURE_DATA)
+                    : changeOverride;
             structObj.setDeleteChange(change);
 
             structObjRepository.save(structObj);
