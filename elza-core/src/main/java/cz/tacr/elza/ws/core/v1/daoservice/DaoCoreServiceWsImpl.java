@@ -350,11 +350,7 @@ public class DaoCoreServiceWsImpl {
         for (ArrDao dao : levelDaos) {
             Validate.isTrue(dao.getDaoType() == DaoType.LEVEL);
 
-            DesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
-            ArrLevel daoLevel = fundLevelService.addNewLevel(fundVersion, level.getNode(), level.getNode(),
-                                                             AddLevelDirection.CHILD, null, null,
-                                                             descItemProvider);
-            ArrDaoLink daoLink = daoService.createOrFindDaoLink(fundVersion, dao, daoLevel.getNode());
+            ArrDaoLink daoLink = daoService.createDaoLink(fundVersion, dao, level.getNode());
             daoLinks.add(daoLink);
         }
         return daoLinks;

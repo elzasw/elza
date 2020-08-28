@@ -36,6 +36,7 @@ import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
@@ -55,7 +56,10 @@ import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
+import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
+import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -112,6 +116,9 @@ public class DaoService {
     private FundVersionRepository fundVersionRepository;
 
     @Autowired
+    private NodeRepository nodeRepository;
+
+    @Autowired
     private ApplicationContext appCtx;
 
     /**
@@ -157,8 +164,7 @@ public class DaoService {
      * @return nalezené nebo vytvořené propojení
      */
     @Transactional(value = TxType.MANDATORY)
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+    private ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                           final ArrDao dao, final ArrNode node) {
         if (!dao.getValid()) {
             throw new BusinessException("Nelze připojit digitální entitu k JP, protože je nevalidní", ArrangementCode.INVALID_DAO).level(Level.WARNING);
@@ -478,5 +484,53 @@ public class DaoService {
         EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(type, fundVersion.getFundVersionId(),
                 dao.getDaoId(), Collections.singletonList(node.getNodeId()));
         eventNotificationService.publishEvent(event);
+    }
+
+    /**
+     * Create DAO link
+     * 
+     * @param fundVersionId
+     * @param daoId
+     * @param nodeId
+     * @return
+     */
+    @Transactional
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL,
+            UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE })
+    public ArrDaoLink createDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) Integer fundVersionId,
+                                    Integer daoId,
+                                    @AuthParam(type = AuthParam.Type.NODE) Integer nodeId) {
+        final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        final ArrDao dao = daoRepository.getOneCheckExist(daoId);
+        final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+
+        return createDaoLink(fundVersion, dao, node);
+    }
+
+    @Transactional(value = TxType.MANDATORY)
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL,
+            UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE })
+    public ArrDaoLink createDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+                                    ArrDao dao,
+                                    @AuthParam(type = AuthParam.Type.NODE) ArrNode node) {
+        ArrNode linkNode;
+        // specializace dle typu DAO
+        switch (dao.getDaoType()) {
+        case LEVEL:
+            DaoSyncService daoSyncService = appCtx.getBean(DaoSyncService.class);
+            DesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
+            FundLevelService fundLevelService = appCtx.getBean(FundLevelService.class);
+            ArrLevel level = fundLevelService.addNewLevel(fundVersion, node, node,
+                                                          AddLevelDirection.CHILD, null, null,
+                                                          descItemProvider);
+            linkNode = level.getNode();
+            break;
+        case ATTACHMENT:
+            linkNode = node;
+            break;
+        default:
+            throw new SystemException("Unrecognized dao type");
+        }
+        return createOrFindDaoLink(fundVersion, dao, linkNode);
     }
 }
