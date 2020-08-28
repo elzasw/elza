@@ -112,6 +112,13 @@ public class ImportServiceImpl implements ImportService {
     }
 
     private void importCam(ImportRequest request, EntitiesXml ents) {
+        if (request.getDisposition() == null) {
+            throw WSHelper.prepareException("Request disposition is null", null);
+        }
+        if (request.getDisposition().getPrimaryScope() == null) {
+            throw WSHelper.prepareException("Primary scope in request disposition is null", null);
+        }
+
         String scopeCode = request.getDisposition().getPrimaryScope();
         ApScope scope = scopeRepository.findByCode(scopeCode);
         if (scope == null) {
