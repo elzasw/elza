@@ -843,7 +843,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         arrangementCacheService.deleteDescItem(descItem.getNodeId(),
                 descItem.getDescItemObjectId(), changeContext);
 
-        deleteAnonymousStructObject(retDescItem);
+        deleteAnonymousStructObject(retDescItem, change);
 
         changeContext.addRemovedItem(descItem);
 
@@ -854,14 +854,15 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * Jedná-li se o odkaz na strukturovaný typ, který je zároveň anonymní, odstraní se i ten.
      *
      * @param retDescItem hodnota atributu
+     * @param change      změna, která se má použít pro vymazání
      */
-    private void deleteAnonymousStructObject(final ArrDescItem retDescItem) {
+    private void deleteAnonymousStructObject(final ArrDescItem retDescItem, final ArrChange change) {
         ItemType itemType = staticDataService.getData().getItemTypeById(retDescItem.getItemTypeId());
         RulStructuredType structuredType = itemType.getEntity().getStructuredType();
         if (structuredType != null) {
             if (structuredType.getAnonymous()) {
                 ArrDataStructureRef data = (ArrDataStructureRef) retDescItem.getData();
-                structObjInternalService.deleteStructObj(data.getStructuredObject());
+                structObjInternalService.deleteStructObj(data.getStructuredObject(), change);
             }
         }
     }
