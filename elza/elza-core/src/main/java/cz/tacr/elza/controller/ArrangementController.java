@@ -22,7 +22,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.controller.vo.TreeNodeWithFundVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -77,6 +76,7 @@ import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.SelectNodeResult;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.TreeNodeWithFundVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
@@ -143,7 +143,6 @@ import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FilterTreeService;
 import cz.tacr.elza.service.FundLevelService;
-import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PolicyService;
@@ -152,7 +151,6 @@ import cz.tacr.elza.service.RequestService;
 import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
-import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.importnodes.ImportFromFund;
 import cz.tacr.elza.service.importnodes.ImportNodesFromSource;
@@ -435,7 +433,6 @@ public class ArrangementController {
      * @param daoId  DAO pro propojení
      * @param nodeId Node pro propojení
      */
-    @Transactional
     @RequestMapping(value = "/daos/{fundVersionId}/{daoId}/{nodeId}/create",
             method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -447,29 +444,18 @@ public class ArrangementController {
         Validate.notNull(daoId, "Identifikátor DAO musí být vyplněn");
         Validate.notNull(nodeId, "Identifikátor JP musí být vyplněn");
 
-        final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
-        final ArrDao dao = daoRepository.getOneCheckExist(daoId);
-        final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+        // create dao link in separate transaction
+        // dao link might create level and data from levelTreeCache are available
+        // in new transaction
+        ArrDaoLink daoLink = daoService.createDaoLink(fundVersionId, daoId, nodeId);
 
-        ArrDaoLink daoLink;
-        // specializace dle typu DAO
-        switch (dao.getDaoType()) {
-        case LEVEL:
-            DesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
-            ArrLevel level = fundLevelService.addNewLevel(fundVersion, node, node,
-                                                          AddLevelDirection.CHILD, null, null,
-                                                          descItemProvider);
-            daoLink = daoService.createOrFindDaoLink(fundVersion, dao, level.getNode());
-            break;
-        case ATTACHMENT:
-            daoLink = daoService.createOrFindDaoLink(fundVersion, dao, node);
-            break;
-        default:
-            throw new SystemException("Unrecognized dao type");
-        }
+        Validate.notNull(daoLink);
+        Validate.notNull(daoLink.getDaoLinkId());
+        Validate.notNull(daoLink.getNodeId());
 
-        ArrDaoLinkVO daoLinkVo = this.factoryVo.createDaoLink(daoLink, fundVersion);
-        return daoLinkVo;
+        // we are outside transaction
+        // only initialized fields might be touched on daoLink
+        return factoryVo.createDaoLink(daoLink.getDaoLinkId(), daoLink.getNodeId(), fundVersionId);
     }
 
     /**

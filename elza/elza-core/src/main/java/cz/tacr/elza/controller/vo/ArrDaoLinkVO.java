@@ -14,6 +14,12 @@ public class ArrDaoLinkVO {
 
     }
 
+    public ArrDaoLinkVO(final Integer id,
+                        final TreeNodeVO treeNodeClient) {
+        this.id = id;
+        this.treeNodeClient = treeNodeClient;
+    }
+
     public ArrDaoLinkVO(final ArrDaoLink daoLink) {
         id = daoLink.getDaoLinkId();
     }

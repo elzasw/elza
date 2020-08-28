@@ -25,6 +25,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.bulkaction.BulkActionConfig;
@@ -1875,15 +1876,17 @@ public class ClientFactoryVO {
     }
 
     public ArrDaoLinkVO createDaoLink(ArrDaoLink daoLink, ArrFundVersion version) {
-        ArrDaoLinkVO daoLinkVo = ArrDaoLinkVO.newInstance(daoLink);
+        return createDaoLink(daoLink.getDaoLinkId(), daoLink.getNodeId(), version.getFundVersionId());
+    }
+
+    @Transactional
+    public ArrDaoLinkVO createDaoLink(Integer daoLinkId, Integer nodeId, Integer fundVersionId) {
 
         final List<TreeNodeVO> nodesByIds = levelTreeCacheService
-                .getNodesByIds(Collections.singletonList(daoLink.getNodeId()),
-                               version.getFundVersionId());
+                .getNodesByIds(Collections.singletonList(nodeId),
+                               fundVersionId);
 
-        daoLinkVo.setTreeNodeClient(nodesByIds.iterator().next());
-
-        return daoLinkVo;
+        return new ArrDaoLinkVO(daoLinkId, nodesByIds.get(0));
     }
 
     public ArrayList<ArrDaoPackageVO> createDaoPackageList(final List<ArrDaoPackage> arrDaoList, final Boolean unassigned) {
