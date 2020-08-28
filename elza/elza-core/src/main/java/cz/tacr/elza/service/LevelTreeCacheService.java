@@ -293,8 +293,13 @@ public class LevelTreeCacheService implements NodePermissionChecker {
                 TreeNodeVO clientNode = clientMap.get(nodeId);
                 clientNode.setReferenceMark(referenceMark);
                 result.add(clientNode);
+            } else {
+                logger.error("Node not found in levelTreeCache, nodeId: {}", nodeId);
+                throw new SystemException("Node not found, nodeId: " + nodeId, BaseCode.INVALID_STATE)
+                        .set("nodeId", nodeId);
             }
         }
+
         return result;
     }
 
