@@ -225,7 +225,7 @@ public class StructObjService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deleteStructObj(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structObj) {
-        structObjInternalService.deleteStructObj(structObj);
+        structObjInternalService.deleteStructObj(structObj, null);
     }
 
     /**
