@@ -31,8 +31,6 @@ import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.AsyncRequestService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -130,7 +128,41 @@ import cz.tacr.elza.packageimport.xml.StructureType;
 import cz.tacr.elza.packageimport.xml.StructureTypes;
 import cz.tacr.elza.packageimport.xml.TemplateXml;
 import cz.tacr.elza.packageimport.xml.Templates;
+import cz.tacr.elza.repository.ActionRecommendedRepository;
+import cz.tacr.elza.repository.ActionRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApExternalIdTypeRepository;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ArrangementExtensionRepository;
+import cz.tacr.elza.repository.ArrangementRuleRepository;
+import cz.tacr.elza.repository.ComponentRepository;
+import cz.tacr.elza.repository.ExtensionRuleRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeActionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
+import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.repository.OutputTemplateRepository;
+import cz.tacr.elza.repository.OutputTypeRepository;
+import cz.tacr.elza.repository.PackageDependencyRepository;
+import cz.tacr.elza.repository.PackageRepository;
+import cz.tacr.elza.repository.Packaging;
+import cz.tacr.elza.repository.PartTypeRepository;
+import cz.tacr.elza.repository.PolicyTypeRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.SettingsRepository;
+import cz.tacr.elza.repository.StructureDefinitionRepository;
+import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
+import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
+import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.repository.WfIssueStateRepository;
+import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.search.IndexWorkProcessor;
+import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.CacheService;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.StructObjService;
@@ -314,6 +346,9 @@ public class PackageService {
 
     @Autowired
     private OutputRepository outputRepository;
+
+    @Autowired
+    private OutputTemplateRepository outputTemplateRepository;
 
     @Autowired
     private ApStateRepository apStateRepository;
@@ -1721,7 +1756,7 @@ public class PackageService {
         rulOutputTypesNew = outputTypeRepository.saveAll(rulOutputTypesNew);
 
         // update templates
-        TemplateUpdater templateUpdater = new TemplateUpdater(this.templateRepository, outputRepository,
+        TemplateUpdater templateUpdater = new TemplateUpdater(this.templateRepository, outputTemplateRepository,
                 this.outputResultRepository,
                 rulOutputTypesNew);
         templateUpdater.run(ruc);
