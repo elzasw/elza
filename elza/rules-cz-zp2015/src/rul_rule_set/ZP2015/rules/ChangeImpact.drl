@@ -70,9 +70,15 @@ then
 	results.add(RelatedNodeDirection.DESCENDANTS);
 end
 
-rule "Pokud v SaveDescriptionItems provedu přidání hodnoty ZP2015_UNIT_DATE, tak dopady jsou na potomky (mohly by mít dataci)"
+rule "Pokud v SaveDescriptionItems provedu přidání významného PP, tak dopady jsou na potomky"
 when
-    descItem : DescItem(type == "ZP2015_UNIT_DATE", change in ( DescItemChange.CREATE, DescItemChange.DELETE))
+    descItem : DescItem(type in ("ZP2015_UNIT_DATE", 
+         "ZP2015_LANGUAGE", "ZP2015_ARRANGER",
+         "ZP2015_UNIT_CURRENT_STATUS", "ZP2015_LANGUAGE",
+         "ZP2015_UNIT_SOURCE"
+         ), 
+    	change in ( DescItemChange.CREATE, DescItemChange.DELETE)
+    	)
     NodeTypeOperation(this==NodeTypeOperation.SAVE_DESC_ITEM)
 then
 	results.add(RelatedNodeDirection.DESCENDANTS);
