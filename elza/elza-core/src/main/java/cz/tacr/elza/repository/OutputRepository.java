@@ -3,20 +3,19 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.repository.vo.ItemChange;
-import cz.tacr.elza.service.arrangement.DeleteFundHistory;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.repository.vo.ItemChange;
+import cz.tacr.elza.service.arrangement.DeleteFundHistory;
 
 /**
  * Respozitory pro výstup z archivního souboru.
@@ -52,9 +51,6 @@ public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer>,
     @Query("UPDATE arr_output o SET o.state = ?2, o.error = ?3 WHERE o.state IN ?1")
     int updateStateFromStateWithError(List<OutputState> statesToFind, OutputState stateToSet, String errorMessage);
 
-    @Query("SELECT o FROM arr_output o JOIN arr_output_template ot WHERE ot.template IN ?1 AND o.state IN ?2 AND o.deleteChange IS NULL")
-    List<ArrOutput> findNonDeletedByTemplatesAndStates(List<RulTemplate> rulTemplateToDelete, List<OutputState> states);
-
     @Query("SELECT o FROM arr_output o WHERE o.outputType IN ?1")
     List<ArrOutput> findByOutputTypes(List<RulOutputType> rulOutputTypes);
 
@@ -62,10 +58,6 @@ public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer>,
     boolean existsByName(@Param("name") String name);
 
     void deleteByFund(ArrFund fund);
-
-    @Modifying
-    @Query("UPDATE arr_output_template o SET o.template = :value WHERE o.template = :key")
-    void updateTemplateByTemplate(@Param(value = "key") RulTemplate key, @Param(value = "value") RulTemplate value);
 
     @Query("SELECT o FROM arr_output o" +
             " JOIN o.fund f" +
