@@ -844,7 +844,7 @@ class DescItemType extends AbstractReactComponent {
             return false;
         }
 
-        if (closed || locked || readMode) {
+        if (closed || locked || readMode || descItem.readOnly) {
             return false;
         }
 
@@ -1207,7 +1207,8 @@ class DescItemType extends AbstractReactComponent {
             const actions = [];
 
             // pokud prvek popisu neni pocitan automaticky nebo je u nej povoleno zadavat vlastni hodnotu
-            const editable = !infoType.cal || infoType.calSt;
+            const editable = (!infoType.cal || infoType.calSt) && !descItem.readOnly ;
+            const canDeleteDescItem = this.getShowDeleteDescItem(descItem);
 
             // pokud je zapnuty rezim uprav a prvek popisu je upravitelny
             if (!readMode && editable) {
@@ -1226,10 +1227,9 @@ class DescItemType extends AbstractReactComponent {
                 }
 
                 // pokud je opakovatelny, nebo je jich vice nez 1
-                if (infoType.rep === 1 || descItemType.descItems.length > 1) {
+                if ((infoType.rep === 1 || descItemType.descItems.length > 1) && canDeleteDescItem) {
                     actions.push(
                         <NoFocusButton
-                            disabled={!this.getShowDeleteDescItem(descItem)}
                             key="delete"
                             onClick={onDescItemRemove.bind(this, descItemIndex)}
                             title={i18n('subNodeForm.deleteDescItem')}
