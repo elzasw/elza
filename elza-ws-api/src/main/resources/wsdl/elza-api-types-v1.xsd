@@ -591,6 +591,13 @@ Source: EAD3</xs:documentation>
 		<xs:sequence>
 			<xs:element name="entityId" type="eat:Identifier" minOccurs="1" maxOccurs="1"/>
 			<xs:element name="uuid" type="eat:Uuid" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="prefName" type="eat:StringLong" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="briefDesc" type="eat:StringLong" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Stručná charakteristika</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="entityClass" type="eat:Identifier" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="ErrorDescription">
@@ -861,6 +868,7 @@ Supported data formats:
 	</xs:complexType>
 	<xs:complexType name="SearchEntity">
 		<xs:sequence>
+			<xs:element name="entityId" type="eat:Identifier" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="items" type="eat:Items" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
