@@ -1,5 +1,23 @@
 package cz.tacr.elza.service.arrangement;
 
+import static cz.tacr.elza.repository.ExceptionThrow.fund;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -42,6 +60,7 @@ import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.OutputTemplateRepository;
@@ -57,22 +76,6 @@ import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static cz.tacr.elza.repository.ExceptionThrow.fund;
 
 /**
  * Action to delete fund history
@@ -127,8 +130,6 @@ public class DeleteFundHistoryAction {
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
-    private OutputResultRepository outputResultRepository;
-    @Autowired
     private RequestRepository requestRepository;
     @Autowired
     private RequestQueueItemRepository requestQueueItemRepository;
@@ -142,6 +143,10 @@ public class DeleteFundHistoryAction {
     private OutputRepository outputRepository;
     @Autowired
     private OutputTemplateRepository outputTemplateRepository;
+    @Autowired
+    private OutputFileRepository outputFileRepository;
+    @Autowired
+    private OutputResultRepository outputResultRepository;
 
     @Autowired
     private NodeOutputRepository nodeOutputRepository;
@@ -247,6 +252,8 @@ public class DeleteFundHistoryAction {
         // výstupy
         nodeOutputRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
         outputTemplateRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
+        outputFileRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
+        outputResultRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
         outputRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
 
         // arr_node se také smazají, pokud se na ně neodkazuje žádný level a musí se smazat i návazné entity jako výstupy, a podobně

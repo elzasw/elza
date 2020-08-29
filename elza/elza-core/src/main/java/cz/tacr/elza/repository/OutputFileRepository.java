@@ -2,6 +2,9 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFund;
@@ -23,4 +26,11 @@ public interface OutputFileRepository extends ElzaJpaRepository<ArrOutputFile, I
     void deleteByOutputResultOutputFund(ArrFund fund);
 
 	List<ArrOutputFile> findByOutputResultOutput(ArrOutput output);
+
+    @Modifying
+    @Query("DELETE FROM arr_output_file WHERE outputResult IN (SELECT ot FROM arr_output_result ot "
+            +
+            "JOIN ot.output o " +
+            "WHERE o.deleteChange IS NOT NULL AND o.fund = :fund)")
+    void deleteByFundAndDeleteChangeIsNotNull(@Param("fund") ArrFund fund);
 }
