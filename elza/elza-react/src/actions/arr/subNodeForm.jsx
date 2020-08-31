@@ -18,7 +18,7 @@ import {fundNodeInfoReceive} from './nodeInfo.jsx';
 import NodeRequestController from 'websocketController.jsx';
 import {fundSubNodeInfoReceive} from './subNodeInfo';
 import {fromDuration} from '../../components/validate';
-import {ItemAvailabilityNumToEnumMap} from '../../stores/app/accesspoint/itemFormUtils';
+import {DataTypeCode, ItemAvailabilityNumToEnumMap} from '../../stores/app/accesspoint/itemFormUtils';
 import {getMapFromList} from '../../shared/utils';
 
 // Konfigurace velikosti cache dat pro formulář
@@ -310,6 +310,9 @@ export class ItemFormActions {
                 ...descItem,
                 value: fromDuration(descItem.value),
             };
+        } else if (refType.dataType.code === DataTypeCode.RECORD_REF) {
+            const {structureData, ...otherDescItem} = descItem;
+            descItem = {...otherDescItem};
         }
 
         if (this.descItemNeedStore(descItem, refType) || overrideDescItem) {
@@ -648,7 +651,7 @@ export class ItemFormActions {
      * @param {Object} refType ref typ atributu
      */
     descItemNeedStore(descItem, refType) {
-        if ((!descItem.error || descItem.error && !descItem.error.hasError) && descItem.touched) {
+        if ((!descItem.error || (descItem.error && !descItem.error.hasError)) && descItem.touched) {
             if (typeof descItem.id !== 'undefined') {
                 // Jen pokud se hodnota nebo specifikace změnila
                 let needUpdate = false;
