@@ -443,11 +443,14 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 storeStringValue(dataId, dataTypeId, rs.getString("name"));
 
                 //zpracování complement
-                itemTypeCode = ItemTypeCode.NM_SUP_GEN.code;
-                dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                dataId = createArrData(dataTypeId);
-                createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
-                storeStringValue(dataId, dataTypeId, rs.getString("complement"));
+                String complement = rs.getString("complement");
+                if (complement != null && !complement.isEmpty()) {
+                    itemTypeCode = ItemTypeCode.NM_SUP_GEN.code;
+                    dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                    dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+                    storeStringValue(dataId, dataTypeId, complement);
+                }
             }
         }
     }
@@ -2408,7 +2411,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         EXC_DEATH("EXC_DEATH"),
         EXC_EXTINCTION("EXC_EXTINCTION"),
         EXC_END("EXC_END"),
-        EXC_LASTMDEATH("EXC_LASTMDEATH");
+        EXC_LASTMDEATH("EXC_LASTMDEATH"),
+        INTERPI("INTERPI");
 
         private String code;
 
