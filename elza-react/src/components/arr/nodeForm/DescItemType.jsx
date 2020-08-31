@@ -1203,64 +1203,66 @@ class DescItemType extends AbstractReactComponent {
 
         const label = this.renderLabel();
         const showDeleteDescItemType = this.getShowDeleteDescItemType();
-        const descItems = descItemType.descItems.map((descItem, descItemIndex) => {
-            const actions = [];
+        const descItems = descItemType.descItems
+            .filter(i => i.hasOwnProperty('formKey'))
+            .map((descItem, descItemIndex) => {
+                const actions = [];
 
-            // pokud prvek popisu neni pocitan automaticky nebo je u nej povoleno zadavat vlastni hodnotu
-            const editable = !infoType.cal || infoType.calSt;
+                // pokud prvek popisu neni pocitan automaticky nebo je u nej povoleno zadavat vlastni hodnotu
+                const editable = !infoType.cal || infoType.calSt;
 
-            // pokud je zapnuty rezim uprav a prvek popisu je upravitelny
-            if (!readMode && editable) {
-                // pokud je opakovatelny, neni ENUM a je mozne ho nastavit jako "nezjisteno"
-                if (infoType.rep === 1 && rulDataType.code !== 'ENUM' && infoType.ind) {
+                // pokud je zapnuty rezim uprav a prvek popisu je upravitelny
+                if (!readMode && editable) {
+                    // pokud je opakovatelny, neni ENUM a je mozne ho nastavit jako "nezjisteno"
+                    if (infoType.rep === 1 && rulDataType.code !== 'ENUM' && infoType.ind) {
+                        actions.push(
+                            <NoFocusButton
+                                key="notIdentified"
+                                className={descItem.undefined ? 'notIdentified' : 'identified'}
+                                onClick={() => onDescItemNotIdentified(descItemIndex, descItem)}
+                                title={i18n('subNodeForm.descItemType.title.notIdentified')}
+                            >
+                                <Icon glyph="fa-low-vision" />
+                            </NoFocusButton>,
+                        );
+                    }
+
+                    // pokud je opakovatelny, nebo je jich vice nez 1
+                    if (infoType.rep === 1 || descItemType.descItems.length > 1) {
+                        actions.push(
+                            <NoFocusButton
+                                disabled={!this.getShowDeleteDescItem(descItem)}
+                                key="delete"
+                                onClick={onDescItemRemove.bind(this, descItemIndex)}
+                                title={i18n('subNodeForm.deleteDescItem')}
+                            >
+                                <Icon glyph="fa-times" />
+                            </NoFocusButton>,
+                        );
+                    }
+                }
+                const errors = conformityInfo.errors[descItem.descItemObjectId];
+                if (errors && errors.length > 0) {
+                    const messages = errors.map(error => error.description);
+                    const tooltip = <div>{messages}</div>;
                     actions.push(
-                        <NoFocusButton
-                            key="notIdentified"
-                            className={descItem.undefined ? 'notIdentified' : 'identified'}
-                            onClick={() => onDescItemNotIdentified(descItemIndex, descItem)}
-                            title={i18n('subNodeForm.descItemType.title.notIdentified')}
-                        >
-                            <Icon glyph="fa-low-vision" />
-                        </NoFocusButton>,
+                        <TooltipTrigger key="info" content={tooltip} holdOnHover placement="auto" showDelay={1}>
+                            <div className="btn btn-default">
+                                <Icon glyph="fa-exclamation-triangle" />
+                            </div>
+                        </TooltipTrigger>,
                     );
                 }
 
-                // pokud je opakovatelny, nebo je jich vice nez 1
-                if (infoType.rep === 1 || descItemType.descItems.length > 1) {
-                    actions.push(
-                        <NoFocusButton
-                            disabled={!this.getShowDeleteDescItem(descItem)}
-                            key="delete"
-                            onClick={onDescItemRemove.bind(this, descItemIndex)}
-                            title={i18n('subNodeForm.deleteDescItem')}
-                        >
-                            <Icon glyph="fa-times" />
-                        </NoFocusButton>,
-                    );
+                let canModifyDescItem = !(locked || closed || descItem.readOnly);
+
+                // Pokud nemá právo na pořádání, nelze provádět akci
+                if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm) {
+                    canModifyDescItem = false;
                 }
-            }
-            const errors = conformityInfo.errors[descItem.descItemObjectId];
-            if (errors && errors.length > 0) {
-                const messages = errors.map(error => error.description);
-                const tooltip = <div>{messages}</div>;
-                actions.push(
-                    <TooltipTrigger key="info" content={tooltip} holdOnHover placement="auto" showDelay={1}>
-                        <div className="btn btn-default">
-                            <Icon glyph="fa-exclamation-triangle" />
-                        </div>
-                    </TooltipTrigger>,
-                );
-            }
 
-            let canModifyDescItem = !(locked || closed || descItem.readOnly);
-
-            // Pokud nemá právo na pořádání, nelze provádět akci
-            if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm) {
-                canModifyDescItem = false;
-            }
-
-            return this.renderDescItem(descItemType, descItem, descItemIndex, actions, !canModifyDescItem);
-        });
+                return this.renderDescItem(descItemType, descItem, descItemIndex, actions, !canModifyDescItem);
+            });
 
         const cls = classNames({
             'read-mode': readMode,
