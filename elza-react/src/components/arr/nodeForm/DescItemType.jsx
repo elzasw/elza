@@ -31,7 +31,7 @@ placeholder.className = 'placeholder';
 /**
  * Atribut - desc item type.
  *
- * TODO @randak výcenásobný attr nefunguje kvůli lokálnímu state!!! takže OHACKY které jedou do store a zapisují tu jsou kvůli @randak
+ * TODO @randak vícenásobný attr nefunguje kvůli lokálnímu state!!! takže OHACKY které jedou do store a zapisují tu jsou kvůli @randak
  */
 class DescItemType extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
@@ -105,6 +105,7 @@ class DescItemType extends AbstractReactComponent {
 
         this.containers = {};
         this.state = {
+            currentEditDescItemIndex: null,
             descItemType: {...props.descItemType},
         };
         this.bindMethods(
@@ -139,16 +140,15 @@ class DescItemType extends AbstractReactComponent {
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         const newDescItemType = {...nextProps.descItemType};
-        const {formKey, value} = this.state;
-        if (formKey) {
-            for (let a = 0; a < newDescItemType.descItems.length; a++) {
-                const di = newDescItemType.descItems[a];
+        const {formKey, value, currentEditDescItemIndex} = this.state;
+        if (formKey && currentEditDescItemIndex !== null) {
+            if (newDescItemType.descItems[currentEditDescItemIndex]) {
+                const di = newDescItemType.descItems[currentEditDescItemIndex];
                 // Nutno nasetovat všechny klíče reálné hodnoty do DescItemu
                 for (let key of Object.keys(value)) {
                     di[key] = value[key];
                 }
                 di.touched = true;
-                break;
             }
         }
 
@@ -323,7 +323,7 @@ class DescItemType extends AbstractReactComponent {
         // Switched to local value change. Value update in "handleBlur"
 
         const {rulDataType, refType} = this.props;
-        let newDescItemType = this.state.descItemType;
+        let newDescItemType = {...this.state.descItemType};
 
         // Convert value to a value compatible with specified data type
         const descItem = {...newDescItemType.descItems[descItemIndex]};
@@ -351,6 +351,7 @@ class DescItemType extends AbstractReactComponent {
         newDescItemType.descItems[descItemIndex] = newDescItem;
 
         this.setState({
+            currentEditDescItemIndex: descItemIndex,
             descItemType: newDescItemType,
             value: convertedValue,
             formKey: descItem.formKey,
@@ -446,6 +447,7 @@ class DescItemType extends AbstractReactComponent {
             value: null,
             formKey: null,
             error: null,
+            currentEditDescItemIndex: null,
         });
 
         const itemElement = this.containers[descItemIndex];
