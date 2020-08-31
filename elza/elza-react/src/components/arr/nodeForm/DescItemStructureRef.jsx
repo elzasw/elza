@@ -74,33 +74,6 @@ class DescItemStructureRef extends React.Component {
         }
     }
 
-    componentWillUnmount() {
-        const {structureNodeForm} = this.props;
-        if (!structureNodeForm) {
-            return;
-        }
-        const {anonymous} = this.props;
-        if (anonymous) {
-            const {
-                versionId,
-                structureNodeForm: {id, state, subNodeForm},
-            } = this.props;
-            if (
-                state === 'TEMP' &&
-                subNodeForm.formData &&
-                subNodeForm.formData.descItemGroups &&
-                subNodeForm.formData.descItemGroups.filter(
-                    i =>
-                        i.descItemTypes &&
-                        i.descItemTypes.filter(n => n.descItems && n.descItems.filter(q => q.id).length === 0)
-                            .length === 0,
-                ).length === 0
-            ) {
-                WebApi.deleteStructureData(versionId, id);
-            }
-        }
-    }
-
     handleFocus = () => {
         this.setState({active: true});
         this.props.onFocus && this.props.onFocus();
