@@ -79,6 +79,15 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20200901120600" author="fantis">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT count(*) FROM db_hibernate_sequences WHERE sequence_name = 'rul_item_type_spec_assign|item_type_spec_assign_id'</sqlCheck>
+        </preConditions>
+        <sql>INSERT INTO db_hibernate_sequences (sequence_name, next_val)
+            SELECT 'rul_item_type_spec_assign|item_type_spec_assign_id', COALESCE(MAX(item_type_spec_assign_id),0)+1
+            FROM rul_item_type_spec_assign</sql>
+    </changeSet>
+
     <changeSet id="20200319092000" author="gotzy">
         <dropColumn tableName="rul_item_spec" columnName="item_type_id"/>
         <dropColumn tableName="rul_item_spec" columnName="view_order"/>
