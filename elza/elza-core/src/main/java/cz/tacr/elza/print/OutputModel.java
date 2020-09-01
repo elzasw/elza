@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -39,6 +40,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -65,6 +67,7 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -140,6 +143,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final StructuredObjectRepository structObjRepos;
 
+    private final DaoLinkRepository daoLinkRepository;
+
     /**
      * Provider for attachments
      */
@@ -168,7 +173,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final StructuredItemRepository structItemRepos,
                        final ApPartRepository partRepository,
                        final ApItemRepository itemRepository,
-                       final ApBindingStateRepository bindingStateRepository) {
+                       final ApBindingStateRepository bindingStateRepository,
+                       final DaoLinkRepository daoLinkRepository) {
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
         this.fundTreeProvider = fundTreeProvider;
@@ -182,6 +188,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
+        this.daoLinkRepository = daoLinkRepository;
     }
 
     public boolean isInitialized() {
@@ -366,11 +373,33 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         OutputItemConvertor conv = new OutputItemConvertor(this);
 
         Map<Integer, RestoredNode> cachedNodeMap = nodeCacheService.getNodes(arrNodeIds);
+
+        Map<Integer, Node> daoLinkMap = new HashMap<>();
+
         for (Node node : nodes) {
             Integer arrNodeId = node.getNodeId().getArrNodeId();
             RestoredNode cachedNode = cachedNodeMap.get(arrNodeId);
             Validate.notNull(cachedNode);
             node.load(cachedNode, conv);
+            // prepare map for daolinks
+            if (CollectionUtils.isNotEmpty(cachedNode.getDaoLinks())) {
+                for (ArrDaoLink daoLink : cachedNode.getDaoLinks()) {
+                    daoLinkMap.put(daoLink.getDaoLinkId(), node);
+                }
+            }
+        }
+        // read dao links
+        if (!daoLinkMap.isEmpty()) {
+            List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(arrNodeIds);
+            Validate.isTrue(daoLinks.size() == daoLinkMap.size());
+
+            for (ArrDaoLink daoLink : daoLinks) {
+                Node node = daoLinkMap.get(daoLink.getDaoLinkId());
+                Validate.notNull(node);
+
+                Dao dao = new Dao(daoLink);
+                node.addDao(dao);
+            }
         }
 
         return nodes;

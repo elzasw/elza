@@ -27,6 +27,8 @@ public class Node {
 
     private List<Record> nodeAPs;
 
+    private List<Dao> daos;
+
     /**
      * UUID of the node
      */
@@ -217,6 +219,26 @@ public class Node {
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems != null) {
             this.items = OutputModel.convert(descItems, conv);
+        }
+    }
+
+    public void addDao(Dao dao) {
+        if (daos == null) {
+            daos = new ArrayList<>();
+        }
+        daos.add(dao);
+    }
+
+    /**
+     * Return collection of daos
+     * 
+     * @return
+     */
+    public List<Dao> getDaos() {
+        if (daos == null) {
+            return Collections.emptyList();
+        } else {
+            return daos;
         }
     }
 }
