@@ -1,18 +1,25 @@
 package cz.tacr.elza.service.output.generator;
 
+import javax.persistence.EntityManager;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.dataexchange.output.DEExportService;
 import cz.tacr.elza.domain.RulTemplate.Engine;
-import cz.tacr.elza.repository.*;
+import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Service;
-
-import javax.persistence.EntityManager;
 
 @Service
 public class OutputGeneratorFactory {
@@ -41,6 +48,8 @@ public class OutputGeneratorFactory {
 
     private final ApItemRepository itemRepository;
 
+    private final DaoLinkRepository daoLinkRepository;
+
     private final ApplicationContext applicationContext;
 
     private ElzaLocale elzaLocale;
@@ -59,7 +68,8 @@ public class OutputGeneratorFactory {
             ApBindingStateRepository bindingStateRepository,
             EntityManager em,
             DmsService dmsService,
-            DEExportService exportService) {
+                                  DEExportService exportService,
+                                  DaoLinkRepository daoLinkRepository) {
         this.applicationContext = applicationContext;
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
@@ -74,6 +84,7 @@ public class OutputGeneratorFactory {
         this.em = em;
         this.dmsService = dmsService;
         this.exportService = exportService;
+        this.daoLinkRepository = daoLinkRepository;
     }
 
     public OutputGenerator createOutputGenerator(Engine engine) {
@@ -92,14 +103,17 @@ public class OutputGeneratorFactory {
     public FreemarkerOutputGenerator createFreemarkerOutputGenerator() {
         return new FreemarkerOutputGenerator(applicationContext, staticDataService, elzaLocale, fundTreeProvider,
                 nodeCacheService,
-                institutionRepository, apStateRepository, bindingRepository, partRepository, itemRepository, bindingStateRepository, em, dmsService);
+                institutionRepository, apStateRepository, bindingRepository, partRepository, itemRepository,
+                bindingStateRepository, em, dmsService,
+                daoLinkRepository);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
         return new JasperOutputGenerator(applicationContext, staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService,
                 institutionRepository, apStateRepository,
-                bindingRepository, partRepository, itemRepository, bindingStateRepository, em, dmsService);
+                bindingRepository, partRepository, itemRepository, bindingStateRepository, em, dmsService,
+                daoLinkRepository);
     }
 
     public DEXmlOutputGenerator createDEXmlOutputGenerator() {

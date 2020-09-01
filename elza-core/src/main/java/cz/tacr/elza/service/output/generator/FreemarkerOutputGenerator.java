@@ -1,21 +1,5 @@
 package cz.tacr.elza.service.output.generator;
 
-import cz.tacr.elza.core.ElzaLocale;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.fund.FundTreeProvider;
-import cz.tacr.elza.exception.ProcessException;
-import cz.tacr.elza.print.OutputModel;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.service.output.OutputParams;
-import freemarker.cache.FileTemplateLoader;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import org.springframework.context.ApplicationContext;
-
-import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -23,6 +7,32 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.persistence.EntityManager;
+
+import org.springframework.context.ApplicationContext;
+
+import cz.tacr.elza.core.ElzaLocale;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.fund.FundTreeProvider;
+import cz.tacr.elza.exception.ProcessException;
+import cz.tacr.elza.print.OutputModel;
+import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.output.OutputParams;
+import freemarker.cache.FileTemplateLoader;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 
 public class FreemarkerOutputGenerator extends DmsOutputGenerator {
 
@@ -42,7 +52,8 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                               ApItemRepository itemRepository,
                               ApBindingStateRepository bindingStateRepository,
                               EntityManager em,
-                              DmsService dmsService) {
+                              DmsService dmsService,
+                              DaoLinkRepository daoLinkRepository) {
         super(em, dmsService);
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
@@ -50,7 +61,9 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
 
         outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
-                bindingRepository, null, structObjRepos, structItemRepos, partRepository, itemRepository, bindingStateRepository);
+                bindingRepository, null, structObjRepos, structItemRepos, partRepository, itemRepository,
+                bindingStateRepository,
+                daoLinkRepository);
     }
 
     @Override
