@@ -1972,7 +1972,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     private String createRootTitle(ArrFund fund, ViewTitles viewTitles, Integer id) {
         // try to creatae from node
         List<String> detailList = new ArrayList<>();
-        if (fund.getFundNumber() == null) {
+        if (fund.getFundNumber() != null) {
             detailList.add(fund.getFundNumber().toString());
         }
         if (StringUtils.isNotEmpty(fund.getInternalCode())) {
