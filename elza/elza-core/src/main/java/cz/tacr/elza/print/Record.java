@@ -92,8 +92,12 @@ public class Record {
         this.bindingStateRepository = src.bindingStateRepository;
     }
 
-    public int getId() {
-        return ap.getAccessPointId().intValue();
+    public Integer getId() {
+        return ap.getAccessPointId();
+    }
+
+    public String getUuid() {
+        return ap.getUuid();
     }
 
     public RecordType getType() {

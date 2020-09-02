@@ -16,7 +16,7 @@
     <!-- Identifikátor z číselníku archivů -->
     <ead:agencycode localtype="PEvA">${output.fund.institution.code}</ead:agencycode>
     <!-- Jméno archivu -->
-    <ead:agencyname>${output.fund.institution.partyGroup.record.prefName.name}</ead:agencyname>
+    <ead:agencyname>${output.fund.institution.record.preferredPart.value}</ead:agencyname>
   </ead:maintenanceagency>
   <ead:maintenancehistory>
     <ead:maintenanceevent>
@@ -42,13 +42,13 @@
 <#--<postwritetags ${levelindex}, endtags=<#list endtags as t>${t}, </#list>> -->
 </#macro>
 
-<#macro writeParty party localtype="ORIGINATOR">
+<#macro writeAp ap localtype="ORIGINATOR">
   <#if localtype!="ORIGINATOR">
   <ead:origination localtype="${localtype}">
   <#else>
   <ead:origination>
   </#if>
-<#switch party.partyType>
+<#switch ap.type.parentType>
   <#case "PERSON">
     <#local tagname="persname">
     <#break>
@@ -58,12 +58,12 @@
   <#case "GROUP_PARTY">
     <#local tagname="corpname">
     <#break>
-  <#case "EVENT">
+  <#default>
     <#local tagname="name">
     <#break>
 </#switch>
-    <ead:${tagname} identifier="${party.partyId?c}">
-      <ead:part>${party.name.fullName}</ead:part>
+    <ead:${tagname} identifier="${ap.uuid}">
+      <ead:part>${ap.preferredPart.value}</ead:part>
     </ead:${tagname}>
   </ead:origination>
 </#macro>
@@ -78,10 +78,36 @@
   </#list>
 </#macro>
 
+<#-- Write single dao object -->
+<#macro writeDao node dao>
+<ead:dao daotype="unknown" identifier="${dao.code}">
+</ead:dao>
+</#macro>
+
+
 <#macro writeUklJednotka item>
   <!-- Ukladaci jednotka -->
   <ead:container>${item.serializedValue}</ead:container>
 </#macro>
+
+<#-- Zapis datace -->
+<#macro writeUnitDate unitDate>
+<#local fromAttr="standarddate">
+<#local toAttr="standarddate">
+<#if unitDate.unitDate.valueFromEstimated>
+  <#local fromAttr="notbefore">
+</#if>
+<#if unitDate.unitDate.valueToEstimated>
+  <#local fromAttr="notafter">
+</#if>
+  <ead:unitdatestructured>
+    <ead:daterange>
+      <ead:fromdate ${fromAttr}="${unitDate.unitDate.valueFrom}">${unitDate.valueFrom}</ead:fromdate>
+      <ead:todate ${toAttr}="${unitDate.unitDate.valueTo}">${unitDate.valueTo}</ead:todate>
+    </ead:daterange>
+  </ead:unitdatestructured>
+</#macro>
+
 
 <#macro writeLanguages items>
   <!-- Jazyky JP -->
@@ -107,6 +133,7 @@
   </ead:relations>
 </#macro>
 
+<#-- Zápis jednoho uzlu -->
 <#macro writeNode node>
 <#local languagesProcessed=0>
 <#local relationsProcessed=0>
@@ -124,16 +151,10 @@
   <ead:unitdate unitdatetype="bulk">${item.serializedValue}</ead:unitdate>
   <#break>
 <#case "ZP2015_UNIT_DATE">
-  <#assign structDate=item.unitDate>
-  <ead:unitdatestructured>
-    <ead:daterange>
-      <ead:fromdate standarddate="${structDate.valueFrom}">${structDate.valueFrom}</ead:fromdate>
-      <ead:todate standarddate="${structDate.valueTo}">${structDate.valueTo}</ead:todate>
-    </ead:daterange>
-  </ead:unitdatestructured>
+  <@writeUnitDate item />
   <#break>
 <#case "ZP2015_ORIGINATOR">
-  <@writeParty item.party />
+  <@writeAp item.record />
   <#break>
 <#case "ZP2015_ENTITY_ROLE">
   <#if relationsProcessed==0>
@@ -158,6 +179,17 @@
   <#break>
 </#switch>
 </#list>
+<#-- Write DAOs -->
+<#if (node.daos?size==1)>
+ <@writeDao node node.daos?first /> 
+</#if>
+<#if (node.daos?size>1)>  
+ <ead:daoset>
+ <#list node.daos as dao>
+   <@writeDao node dao />
+ </#list>
+ </ead:daoset>
+</#if>
 </ead:did>
 <#if !node.nodeId.published>
   <ead:otherfindaid localtype="MightExist"><ead:p>Pro úroveň popisu existují nebo vzniknou další archivní pomůcky.</ead:p></ead:otherfindaid>
@@ -188,7 +220,7 @@
   <@writeTags node.depth />
   <#local tagname="ead:c">
   <#if node.depth==1>
-    <#local tagname="ead:archdesc">
+    <#local tagname="ead:archdesc">    
   </#if>
   <#-- Write level type -->
   <#local level="otherlevel">
@@ -218,8 +250,16 @@
     base="https://archdesc.nacr.cz/dids/${node.uuid}" <#t>
   ><#lt>
 <@writeNode node />
-  <#-- ${node.depth} -->
+
+<#-- Closing part -->
+<#-- ${node.depth} -->
+<#if node.depth==1>
+  <ead:dsc>
+  <#assign endtags=endtags+["</ead:dsc></"+tagname+">"]>
+<#else>
   <#assign endtags=endtags+["</"+tagname+">"]>
+</#if>  
+  
 </#list>
 <#-- Write closing tags -->
 <@writeTags 1 />
