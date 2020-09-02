@@ -74,7 +74,7 @@ public class ValueWithTitleFormatter implements FormatAction {
         // Append title
         if (firstItem) {
             // get name
-            String name = item.getType().getShortcut();
+            String name = item.getType().getName();
             if (StringUtils.isEmpty(name)) {
                 name = item.getType().getName();
             }
