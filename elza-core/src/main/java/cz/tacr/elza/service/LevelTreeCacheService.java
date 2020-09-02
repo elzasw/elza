@@ -1928,7 +1928,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         } else {
             defaultTitle = createDefaultTitle(viewTitles, id);
         }
-        if (nodeValueMap != null) {
+        if (descItemCodeToValueMap != null) {
             if (param.isName()) {
                 node.setName(createTitle(viewTitles.getTreeItemIds(), descItemCodeToValueMap, true,
                                          defaultTitle));
