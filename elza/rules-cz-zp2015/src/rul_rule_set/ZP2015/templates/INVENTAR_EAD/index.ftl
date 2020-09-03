@@ -42,6 +42,17 @@
 </#macro>
 
 <#macro writePublStmt items>
+  <#-- Test is item type exists -->
+  <#local processedTypes = ["ZP2015_FINDING_AID_APPROVED_BY", "ZP2015_RELEASE_DATE_PLACE", 
+                            "ZP2015_DESCRIPTION_DATE", "ZP2015_FINDING_AID_DATE",
+                            "ZP2015_FINDING_AID_EDITOR", "ZP2015_ORIGINATOR_SIMPLE",
+                            "ZP2015_ARRANGER", "ZP2015_ARRANGER_TEXT"
+                            ] >
+  <#local otherItems = items?take_while(item -> !(processedTypes?seq_contains(item.type.code)))  >
+  <#if otherItems?size==items?size>
+    <#return>
+  </#if>
+  <!-- Informace o publikaci pomucky -->
   <ead:publicationstmt>    
     <#list items?filter(item -> item.type.code=="ZP2015_FINDING_AID_APPROVED_BY") as item>
     <!-- Schválil archivni pomucku -->
@@ -88,6 +99,17 @@
 </#macro>
 
 <#macro writeNoteStmt items>
+  <#-- Test is item type exists -->
+  <#local processedTypes = ["ZP2015_UNIT_HIST", "ZP2015_UNIT_ARR", 
+                            "ZP2015_UNIT_CONTENT", "ZP2015_UNIT_SOURCE",
+                            "ZP2015_FUTURE_UNITS",  "ZP2015_UNIT_CURRENT_STATUS",
+                            "ZP2015_ARRANGE_RULES"
+                            ] >
+  <#local otherItems = items?take_while(item -> !(processedTypes?seq_contains(item.type.code)))  >
+  <#if otherItems?size==items?size>
+    <#return>
+  </#if>
+
   <ead:notestmt>
     <#list items?filter(item -> item.type.code=="ZP2015_UNIT_HIST") as item>
     <!-- Dějiny jednotky popisu --> 
@@ -129,13 +151,10 @@
      <ead:titleproper>${output.fund.name}</ead:titleproper>
      <!-- Název archivní pomůcky -->
      <ead:subtitle>${output.name}</ead:subtitle>
-    </ead:titlestmt>
-
-      
-  <!-- Informace o publikaci pomucky -->
-  <@writePublStmt output.items />  
-  
+    </ead:titlestmt>    
+  <@writePublStmt output.items />
   <@writeNoteStmt output.items />
+  
   </ead:filedesc>
   <ead:maintenancestatus value="new" />
   <ead:publicationstatus value="inprocess" />
@@ -237,7 +256,7 @@
   <#local fromAttr="notbefore">
 </#if>
 <#if unitDate.unitDate.valueToEstimated>
-  <#local fromAttr="notafter">
+  <#local toAttr="notafter">
 </#if>
   <ead:unitdatestructured>
     <ead:daterange>
@@ -253,7 +272,7 @@
   <#list items as item>
     <#if item.type.code=="ZP2015_ENTITY_ROLE">
       <ead:relation relationtype="resourcerelation" encodinganalog="${item.record.id?c}" linkrole="${item.specification.code}">
-        <ead:relationentry>${item.record.prefName.fullName}</ead:relationentry>
+        <ead:relationentry>${item.record.preferredPart.value}</ead:relationentry>
       </ead:relation>
     </#if>
   </#list>
@@ -263,7 +282,6 @@
 <#-- Zápis jednoho uzlu -->
 <#macro writeNode node>
 <#local languagesProcessed=0>
-<#local relationsProcessed=0>
 <ead:did>
 <#list node.items as item>
 <#switch item.type.code>
@@ -282,12 +300,6 @@
   <#break>
 <#case "ZP2015_ORIGINATOR">
   <@writeOriginator item.record />
-  <#break>
-<#case "ZP2015_ENTITY_ROLE">
-  <#if relationsProcessed==0>
-    <@writeRelations node.items />
-    <#local relationsProcessed=1>
-  </#if>
   <#break>
 <#case "ZP2015_UNIT_CURRENT_STATUS">
   <ead:physdesc>${item.serializedValue}</ead:physdesc>
@@ -318,8 +330,16 @@
 <#if !node.nodeId.published>
   <ead:otherfindaid localtype="MightExist"><ead:p>Pro úroveň popisu existují nebo vzniknou další archivní pomůcky.</ead:p></ead:otherfindaid>
 </#if>
+<#-- Elements outside did -->
+<#local relationsProcessed=0>
 <#list node.items as item>
 <#switch item.type.code>
+<#case "ZP2015_ENTITY_ROLE">
+  <#if relationsProcessed==0>
+    <@writeRelations node.items />
+    <#local relationsProcessed=1>
+  </#if>
+  <#break>
 <#case "ZP2015_UNIT_HIST">
   <ead:custodhist><ead:p>${item.serializedValue}</ead:p></ead:custodhist>
   <#break>
