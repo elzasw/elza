@@ -2067,7 +2067,7 @@ public class ArrangementController {
     public List<ArrOutputVO> getOutputs(@PathVariable(value = "fundVersionId") final Integer fundVersionId, @RequestParam(value = "state", required = false) final OutputState state) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         List<ArrOutput> outputs = state == null ? outputService.getSortedOutputs(fundVersion) : outputService.getSortedOutputsByState(fundVersion, state);
-        return factoryVo.createOutputExtList(outputs, fundVersion);
+        return factoryVo.createOutputList(outputs);
     }
 
     /**
