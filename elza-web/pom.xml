@@ -19,6 +19,12 @@
             <artifactId>elza-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>cz.tacr.elza</groupId>
+            <artifactId>elza-react</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>runtime</scope>
+        </dependency>
         <!-- Spring boot dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
