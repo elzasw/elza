@@ -92,7 +92,8 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
     private Template loadTemplate() throws IOException {
         Path templateDir = params.getTemplateDir();
 
-        Configuration cfg = new Configuration(Configuration.VERSION_2_3_23);
+        Configuration cfg = new Configuration(Configuration.VERSION_2_3_30);
+        cfg.setAPIBuiltinEnabled(true);
 
         FileTemplateLoader loader = new FileTemplateLoader(templateDir.toFile());
         cfg.setTemplateLoader(loader);

@@ -42,7 +42,7 @@
 </#macro>
 
 <#macro writePublStmt items>
-  <#-- Test is item type exists -->
+  <#-- Test if item type exists -->
   <#local processedTypes = ["ZP2015_FINDING_AID_APPROVED_BY", "ZP2015_RELEASE_DATE_PLACE", 
                             "ZP2015_DESCRIPTION_DATE", "ZP2015_FINDING_AID_DATE",
                             "ZP2015_FINDING_AID_EDITOR", "ZP2015_ORIGINATOR_SIMPLE",
@@ -99,7 +99,7 @@
 </#macro>
 
 <#macro writeNoteStmt items>
-  <#-- Test is item type exists -->
+  <#-- Test if item type exists -->
   <#local processedTypes = ["ZP2015_UNIT_HIST", "ZP2015_UNIT_ARR", 
                             "ZP2015_UNIT_CONTENT", "ZP2015_UNIT_SOURCE",
                             "ZP2015_FUTURE_UNITS",  "ZP2015_UNIT_CURRENT_STATUS",
@@ -279,8 +279,8 @@
   </ead:relations>
 </#macro>
 
-<#-- Zápis jednoho uzlu -->
-<#macro writeNode node>
+<#-- Write did -->
+<#macro writeDid node>
 <#local languagesProcessed=0>
 <ead:did>
 <#list node.items as item>
@@ -290,10 +290,6 @@
   <#break>
 <#case "ZP2015_TITLE">
   <ead:unittitle>${item.serializedValue}</ead:unittitle>
-  <#break>
-<#case "ZP2015_DATE_RANGE">
-  <!-- Časové rozmezí archivní pomůcky (uvádí se v tiráži) -->
-  <ead:unitdate unitdatetype="bulk">${item.serializedValue}</ead:unitdate>
   <#break>
 <#case "ZP2015_UNIT_DATE">
   <@writeUnitDate item />
@@ -327,6 +323,11 @@
  </ead:daoset>
 </#if>
 </ead:did>
+</#macro>
+
+<#-- Zápis jednoho uzlu -->
+<#macro writeNode node>
+<@writeDid node />
 <#if !node.nodeId.published>
   <ead:otherfindaid localtype="MightExist"><ead:p>Pro úroveň popisu existují nebo vzniknou další archivní pomůcky.</ead:p></ead:otherfindaid>
 </#if>
@@ -397,12 +398,12 @@
 
 <#-- Closing part -->
 <#-- ${node.depth} -->
-<#if node.depth==1>
+<#if node.depth==1 && nodes?api.hasNext() >
   <ead:dsc>
   <#assign endtags=endtags+["</ead:dsc></"+tagname+">"]>
 <#else>
   <#assign endtags=endtags+["</"+tagname+">"]>
-</#if>  
+</#if>
   
 </#list>
 <#-- Write closing tags -->
