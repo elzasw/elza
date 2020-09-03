@@ -34,6 +34,13 @@ public class Structured {
         this.value = value;
     }
 
+    public List<Item> getItems() {
+        if (items == null) {
+            load();
+        }
+        return items;
+    }
+
     /*
     public NodeIterator getNodes() {
         Iterator<NodeId> nodeIdIterator = nodeIds.iterator();
