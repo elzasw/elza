@@ -271,7 +271,7 @@
   <ead:relations>
   <#list items as item>
     <#if item.type.code=="ZP2015_ENTITY_ROLE">
-      <ead:relation relationtype="resourcerelation" encodinganalog="${item.record.id?c}" linkrole="${item.specification.code}">
+      <ead:relation relationtype="resourcerelation" encodinganalog="${item.record.uuid}" linkrole="${item.specification.code}">
         <ead:relationentry>${item.record.preferredPart.value}</ead:relationentry>
       </ead:relation>
     </#if>
