@@ -42,8 +42,11 @@ public class ValueFormatter implements FormatAction {
                     // store spec value for later processing
                     String specName = specTitleSource.getValue(spec).toLowerCase();
                     if (ctx.getGroupBySpec()) {
-                        specs.add(specName);
                         List<String> values = specValues.computeIfAbsent(specName, a -> new ArrayList<>());
+                        if (values.size() == 0) {
+                            // new spec found -> add it to the collection
+                            specs.add(specName);
+                        }
                         values.add(value);
                     } else {
                         ctx.appendSpecWithValue(specName, value);

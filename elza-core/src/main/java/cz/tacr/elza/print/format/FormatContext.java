@@ -49,7 +49,7 @@ public class FormatContext {
     /**
      * Separator between same specifications
      */
-    private String sameSpecItemSeparator = ", ";
+    private String sameSpecItemSeparator = "; ";
 
     /**
      * Defines whether the specification is placed before or after the value
