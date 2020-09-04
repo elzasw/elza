@@ -16,6 +16,8 @@ import javax.mail.util.ByteArrayDataSource;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
@@ -61,6 +63,8 @@ import cz.tacr.elza.ws.types.v1.SearchEntityResult;
         //                      wsdlLocation = "file:elza-core-v1.wsdl",
         endpointInterface = "cz.tacr.elza.ws.core.v1.ExportService")
 public class ExportServiceImpl implements ExportService {
+
+    private static Logger log = LoggerFactory.getLogger(ExportServiceImpl.class);
 
     @Autowired
     @Qualifier("threadPoolTaskExecutorBA")
@@ -138,6 +142,7 @@ public class ExportServiceImpl implements ExportService {
         
         List<String> missing = subList.stream().filter(e -> !foundItems.contains(e)).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(missing)) {
+            log.info("Missing items in export request: {}", missing);
             cz.tacr.elza.ws.types.v1.ErrorDescription ed = WSHelper.prepareErrorDescription("Missing some items",
                                                                                             "Missing items: " + String
                                                                                                     .join(",",
