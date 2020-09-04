@@ -15,7 +15,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.ap.ExternalId;
@@ -166,6 +166,29 @@ public class Record {
         return parts;
     }
 
+    /**
+     * Return single part
+     * 
+     * @param partTypeCode
+     * @return
+     */
+    public Part getPart(final String partTypeCode) {
+        parts = getParts(partTypeCode);
+        if (parts.size() == 0) {
+            return null;
+        }
+        if (parts.size() > 1) {
+            throw new BusinessException("Multiple parts of required type exists.", BaseCode.INVALID_STATE)
+                    .set("partTypeCode", partTypeCode)
+                    .set("count", parts.size());
+        }
+        return parts.get(0);
+    }
+
+    public List<Part> getParts(final String partTypeCode) {
+        return getParts(Collections.singletonList(partTypeCode));
+    }
+
     public List<Part> getParts(final Collection<String> partTypeCodes) {
         Validate.notNull(partTypeCodes);
 
@@ -204,18 +227,6 @@ public class Record {
             }).collect(Collectors.toList()));
         }
         return itemList;
-    }
-
-    public PartType getPartTypeById(Integer id) {
-        PartType partType = partTypeIdMap.get(id);
-        if (partType != null) {
-            return partType;
-        }
-
-        RulPartType rulPartType = staticData.getPartTypeById(id);
-        partType = new PartType(rulPartType);
-        partTypeIdMap.put(id, partType);
-        return partType;
     }
 
     public Part getPreferredPart() {
