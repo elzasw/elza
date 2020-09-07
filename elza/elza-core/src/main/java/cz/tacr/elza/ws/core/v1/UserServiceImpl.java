@@ -17,8 +17,6 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.PartyService;
@@ -167,23 +165,30 @@ public class UserServiceImpl implements UserService {
             UsrUser user = userService.findByUsername(addPermissions.getUsername());
             Validate.notNull(user, "User not found: %s", addPermissions.getUsername());
             
+            List<UsrPermission> addPermissionsList = new ArrayList<>(permissions.size());
             // prevent duplicated permissions
             List<UsrPermission> dbPerms = permissionRepository.findByUserOrderByPermissionIdAsc(user);            
-            for (UsrPermission srcPerm : permissions) {
+            outter: for (UsrPermission srcPerm : permissions) {
                 for (UsrPermission dbPerm : dbPerms) {
                     // check if permission found
                     if (srcPerm.isSamePermission(dbPerm)) {
+                        logger.info("Permission already exists: {}", srcPerm.getPermission());
+                        // skip already existing items
+                        continue outter;
+                        /*
                         throw new BusinessException("Permission already exists", BaseCode.PROPERTY_IS_INVALID)
                                 .set("permission", srcPerm.getPermission())
                                 .set("fundId", srcPerm.getFundId())
                                 .set("nodeId", srcPerm.getNodeId())
                                 .set("scopeId", srcPerm.getScopeId())
                                 .set("issueListId", srcPerm.getIssueListId());
+                                */
                     }
                 }
+                addPermissionsList.add(srcPerm);
             }
 
-            userService.addUserPermission(user, permissions, true);
+            userService.addUserPermission(user, addPermissionsList, true);
         } catch (Exception e) {
             logger.error("Failed to add permissions: {}", e.toString(), e);
             throw WSHelper.prepareException("Failed to add permissions", e);
@@ -214,12 +219,15 @@ public class UserServiceImpl implements UserService {
                         continue outer;
                     }
                 }
+                logger.info("Permission not found, permission: {}", srcPerm.getPermission());
+                /*
                 throw new BusinessException("Permission not found", BaseCode.PROPERTY_NOT_EXIST)
                         .set("permission", srcPerm.getPermission())
                         .set("fundId", srcPerm.getFundId())
                         .set("nodeId", srcPerm.getNodeId())
                         .set("scopeId", srcPerm.getScopeId())
                         .set("issueListId", srcPerm.getIssueListId());
+                        */
             }
 
             userService.deleteUserPermission(user, removePermList);
