@@ -38,8 +38,8 @@ public class TemplateXml {
     @XmlAttribute(name = "extension", required = true)
     private String extension;
 
-    @XmlElement(name = "schema-validace")
-    private String schemaValidace;
+    @XmlElement(name = "validation-schema")
+    private String validationSchema;
 
     /**
      * List of invalidated output types which are handled
@@ -112,11 +112,11 @@ public class TemplateXml {
         this.extension = extension;
     }
 
-	public String getSchemaValidace() {
-		return schemaValidace;
+    public String getValidationSchema() {
+        return validationSchema;
 	}
 
-	public void setSchemaValidace(String schemaValidace) {
-		this.schemaValidace = schemaValidace;
+    public void setValidationSchema(final String validationSchema) {
+        this.validationSchema = validationSchema;
 	}
 }
