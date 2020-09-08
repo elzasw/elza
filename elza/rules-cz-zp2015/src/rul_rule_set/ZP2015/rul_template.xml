@@ -58,5 +58,6 @@
         <name>Publikace do EAD</name>
         <engine>FREEMARKER</engine>
         <directory>INVENTAR_EAD</directory>
+        <schema-validace>ead3.xsd</schema-validace>
     </template>
 </templates>
