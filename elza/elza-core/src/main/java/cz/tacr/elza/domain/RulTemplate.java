@@ -69,6 +69,8 @@ public class RulTemplate {
     @Column(nullable = false)
     private Boolean deleted;
 
+    private String schemaValidace;
+
     public Integer getTemplateId() {
         return templateId;
     }
@@ -166,7 +168,15 @@ public class RulTemplate {
         this.deleted = deleted;
     }
 
-    /**
+    public String getSchemaValidace() {
+		return schemaValidace;
+	}
+
+	public void setSchemaValidace(String schemaValidace) {
+		this.schemaValidace = schemaValidace;
+	}
+
+	/**
      * Výčet template enginů
      */
     public enum Engine {
