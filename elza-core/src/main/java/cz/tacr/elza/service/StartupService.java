@@ -61,7 +61,7 @@ public class StartupService implements SmartLifecycle {
 
     private final AccessPointService accessPointService;
 
-    private final AccessPointGeneratorService accessPointGeneratorService;
+    private final AccessPointQueueProcessor accessPointQueueProcessor;
 
     private final IndexWorkProcessor indexWorkProcessor;
 
@@ -82,7 +82,7 @@ public class StartupService implements SmartLifecycle {
                           final BulkActionConfigManager bulkActionConfigManager,
                           final EntityManager em,
                           final AccessPointService accessPointService,
-                          final AccessPointGeneratorService accessPointGeneratorService,
+                          final AccessPointQueueProcessor accessPointQueueProcessor,
                           final NodeConformityErrorRepository nodeConformityErrorRepository,
                           final NodeConformityMissingRepository nodeConformityMissingRepository,
                           final NodeConformityRepository nodeConformityRepository,
@@ -100,7 +100,7 @@ public class StartupService implements SmartLifecycle {
         this.bulkActionConfigManager = bulkActionConfigManager;
         this.em = em;
         this.accessPointService = accessPointService;
-        this.accessPointGeneratorService = accessPointGeneratorService;
+        this.accessPointQueueProcessor = accessPointQueueProcessor;
         this.nodeConformityErrorRepository = nodeConformityErrorRepository;
         this.nodeConformityMissingRepository = nodeConformityMissingRepository;
         this.nodeConformityRepository = nodeConformityRepository;
@@ -212,7 +212,7 @@ public class StartupService implements SmartLifecycle {
      * Provede spuštění AP pro revalidaci.
      */
     private void runQueuedAccessPoints() {
-        accessPointGeneratorService.restartQueuedAccessPoints();
+        accessPointQueueProcessor.startValidating();
     }
 
     /**

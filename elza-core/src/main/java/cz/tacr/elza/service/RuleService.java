@@ -31,7 +31,6 @@ import cz.tacr.elza.drools.model.item.Item;
 import cz.tacr.elza.drools.model.item.IntItem;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.*;
@@ -142,6 +141,12 @@ public class RuleService {
 
     @Autowired
     private ModelValidationRules modelValidationRules;
+
+    @Autowired
+    private ApIndexRepository indexRepository;
+
+    @Autowired
+    private ApStateRepository stateRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
@@ -1031,7 +1036,7 @@ public class RuleService {
 
     @Transactional
     public ApValidationErrorsVO executeValidation(final Integer accessPointId) {
-        ApAccessPoint apAccessPoint = accessPointService.getAccessPoint(accessPointId);
+        ApAccessPoint apAccessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState apState = accessPointService.getState(apAccessPoint);
         List<ApPart> parts = partService.findPartsByAccessPoint(apAccessPoint);
         Integer preferredPartId = apAccessPoint.getPreferredPart().getPartId();
@@ -1042,6 +1047,11 @@ public class RuleService {
             partList.add(createPart(part, preferredPartId, itemList));
         }
         fillParentParts(partList);
+
+        Map<PartType, List<Index>> indexMap = indexRepository.findIndicesByAccessPoint(apAccessPoint.getAccessPointId())
+                        .stream()
+                        .map(index -> createIndex(index, findPartById(partList, index.getPart().getPartId())))
+                        .collect(Collectors.groupingBy(index -> index.getPart().getType()));
 
         Ap ap = new Ap(accessPointId, apState.getApType().getCode(), partList);
         GeoModel geoModel = createGeoModel(ap);
@@ -1054,10 +1064,12 @@ public class RuleService {
         Map<String, Integer> identMap = createIdentMap(partList);
 
         List<AbstractItem> items = createAbstractItemList(partList);
-        ModelValidation modelValidation = new ModelValidation(ap, geoModel, createModelParts(), new ApValidationErrors(), items);
+        ModelValidation modelValidation = new ModelValidation(ap, geoModel, createModelParts(indexMap), new ApValidationErrors(), items);
         ModelValidation validationResult = executeValidation(modelValidation);
         // validace opakovatelnosti partů
         validatePartRepeatability(validationResult);
+        // validace opakovatelnosti indexů přes party se stejným part typem
+        validateIndexRepeatability(validationResult, apValidationErrorsVO);
         // validace vztahů na nevalidní nebo nahrazené entity
         validateEntityRefs(ap, apValidationErrorsVO);
 
@@ -1101,9 +1113,9 @@ public class RuleService {
         return items;
     }
 
-    private void validateEntityRefs(Ap ae, ApValidationErrorsVO aeValidationErrorsVO) {
-        if (CollectionUtils.isNotEmpty(ae.getParts())) {
-            for (Part part : ae.getParts()) {
+    private void validateEntityRefs(Ap ap, ApValidationErrorsVO apValidationErrorsVO) {
+        if (CollectionUtils.isNotEmpty(ap.getParts())) {
+            for (Part part : ap.getParts()) {
                 if (CollectionUtils.isNotEmpty(part.getItems())) {
                     List<Integer> recordCodes = new ArrayList<>();
                     for (AbstractItem item : part.getItems()) {
@@ -1113,18 +1125,17 @@ public class RuleService {
                             recordCodes.add(intItem.getValue());
                         }
                     }
-                    //TODO fantiš ověření stavu AP
-//                    if (CollectionUtils.isNotEmpty(recordCodes)) {
-//                        List<AeRevision> revisionList = revisionService.findActiveByRecordCodes(recordCodes);
-//                        if (CollectionUtils.isNotEmpty(revisionList)) {
-//                            for (AeRevision revision : revisionList) {
-//                                if (revision.getState().equals(AeRevision.State.APS_INVALID) || revision.getState().equals(AeRevision.State.APS_REPLACED)) {
-//                                    PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(aeValidationErrorsVO, part.getId());
-//                                    partValidationErrorsVO.getErrors().add("V části typu " + part.getType().value() + " entita odkazuje na neplatnou nebo nahrazenou entitu");
-//                                }
-//                            }
-//                        }
-//                    }
+                    if (CollectionUtils.isNotEmpty(recordCodes)) {
+                        List<ApState> stateList = stateRepository.findLastByAccessPointIds(recordCodes);
+                        if (CollectionUtils.isNotEmpty(stateList)) {
+                            for (ApState state : stateList) {
+                                if (state.getDeleteChange() != null) {
+                                    PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(apValidationErrorsVO, part.getId());
+                                    partValidationErrorsVO.getErrors().add("V části typu " + part.getType().value() + " entita odkazuje na neplatnou entitu");
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1179,6 +1190,33 @@ public class RuleService {
                 validationResult.getApValidationErrors().addError("Část " + modelPart.getType() + " je v entitě vícekrát.");
             }
         }
+    }
+
+    private void validateIndexRepeatability(ModelValidation validationResult, ApValidationErrorsVO apValidationErrorsVO) {
+        for (ModelPart modelPart : validationResult.getModelParts()) {
+            if (CollectionUtils.isNotEmpty(modelPart.getIndices())) {
+                Map<String, Integer> indexCount = createIndexCountMap(modelPart.getIndices());
+                for (Index index : modelPart.getIndices()) {
+                    int parentId = index.getPart().getParent() != null ? index.getPart().getParent().getId() : -1;
+                    String key = parentId + ":" + index.getIndexType() + ":" + index.getValue();
+                    if (!index.isRepeatable() && indexCount.get(key) > 1) {
+                        PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(apValidationErrorsVO, index.getPart().getId());
+                        partValidationErrorsVO.getErrors().add("V části typu " + index.getPart().getType().value() + " je duplicitní index typu "
+                                + index.getIndexType() + " hodnoty " + index.getValue());
+                    }
+                }
+            }
+        }
+    }
+
+    public Map<String, Integer> createIndexCountMap(final List<Index> indices) {
+        Map<String, Integer> indexCount = new HashMap<>();
+        for (Index index : indices) {
+            int parentId = index.getPart().getParent() != null ? index.getPart().getParent().getId() : -1;
+            String key = parentId + ":" + index.getIndexType() + ":" + index.getValue();
+            indexCount.put(key, indexCount.getOrDefault(key, 0) + 1);
+        }
+        return indexCount;
     }
 
     public List<String> validateAvailableItems(ModelAvailable availableResult) {
@@ -1555,10 +1593,11 @@ public class RuleService {
         return modelItemTypes;
     }
 
-    private List<ModelPart> createModelParts() {
+    private List<ModelPart> createModelParts(Map<PartType, List<Index>> indexMap) {
         List<ModelPart> modelPartList = new ArrayList<>();
         for(PartType partType : PartType.values()) {
-            modelPartList.add(new ModelPart(partType));
+            List<Index> indices = indexMap.getOrDefault(partType, null);
+            modelPartList.add(new ModelPart(partType, indices));
         }
         return modelPartList;
     }
@@ -1614,7 +1653,11 @@ public class RuleService {
         return abstractItem;
     }
 
-    public ModelAvailable executeAvailable(@NotNull final PartType partType,
+    private Index createIndex(ApIndex apIndex, Part part) {
+        return new Index(apIndex.getIndexType(), apIndex.getValue(), part);
+    }
+
+    private ModelAvailable executeAvailable(@NotNull final PartType partType,
                                            @NotNull final ModelAvailable modelAvailable) {
         StaticDataProvider sdp = staticDataService.getData();
         DrlType drlType = DrlType.AVAILABLE_ITEMS;
@@ -1649,7 +1692,7 @@ public class RuleService {
         return modelAvailable;
     }
 
-    public ModelValidation executeValidation(@NotNull final ModelValidation modelValidation) {
+    private ModelValidation executeValidation(@NotNull final ModelValidation modelValidation) {
         StaticDataProvider sdp = staticDataService.getData();
         DrlType drlType = DrlType.VALIDATION;
 

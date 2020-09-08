@@ -58,4 +58,11 @@ public interface ApAccessPointRepository
     List<Integer> findItemIdByAccessPointIdOverDataRecordRef(Integer accessPointId);
 
 
+    @Query("SELECT ap FROM ap_access_point ap " +
+            "JOIN ApPart part ON ap.accessPointId = part.accessPoint.accessPointId " +
+            "JOIN ApItem item ON part.partId = item.part.partId " +
+            "WHERE item.deleteChange IS NULL AND item.data.dataId IN :dataIds")
+    List<ApAccessPoint> findAccessPointsByRefDataId(@Param("dataIds") Collection<Integer> dataIds);
+
+
 }
