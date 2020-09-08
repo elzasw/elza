@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.13.0.final using JasperReports Library version 6.13.0-46ada4d1be8f3c5985fd0b6146f3ed44caed6f05  -->
+<!-- Created with Jaspersoft Studio version 6.14.0.final using JasperReports Library version 6.14.0-2ab0d8625be255bf609c78e1181801213e51db8f  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="contentPage" language="groovy" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="71cc9236-0f65-4a0a-bb66-bbfe841a66c1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -755,6 +755,9 @@
 	<variable name="rootDetail" class="java.lang.String">
 		<variableExpression><![CDATA[$V{isRoot} ? $P{rootNodeDetailFormatter}.format($F{node}) : ""]]></variableExpression>
 	</variable>
+	<variable name="contentEntry" class="java.lang.String">
+		<variableExpression><![CDATA[($F{depth}==1)?"Jednotky popisu":((($V{levelName}.length()+$V{unitDate}.length())>50)?$V{levelName}.substring(0,50-$V{unitDate}.length())+"...":$V{levelName})+" "+$V{unitDate}]]></variableExpression>
+	</variable>
 	<pageHeader>
 		<band height="25">
 			<textField evaluationTime="Master">
@@ -836,7 +839,8 @@
 						<font fontName="DejaVu Sans" pdfEncoding="Cp1250"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{serialNumber}]]></textFieldExpression>
-					<anchorNameExpression><![CDATA["Jednotky popisu"]]></anchorNameExpression>
+					<anchorNameExpression><![CDATA[$V{contentEntry}]]></anchorNameExpression>
+					<bookmarkLevelExpression><![CDATA[$F{depth}]]></bookmarkLevelExpression>
 				</textField>
 				<textField textAdjust="StretchHeight" pattern="">
 					<reportElement x="301" y="0" width="150" height="18" isRemoveLineWhenBlank="true" backcolor="#FF0400" uuid="e97b4a38-1f5a-40bd-a91e-07d8fd22ad3b"/>
