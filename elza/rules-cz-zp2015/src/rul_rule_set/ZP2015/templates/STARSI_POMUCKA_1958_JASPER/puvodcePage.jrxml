@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.10.0.final using JasperReports Library version 6.10.0-unknown  -->
+<!-- Created with Jaspersoft Studio version 6.14.0.final using JasperReports Library version 6.14.0-2ab0d8625be255bf609c78e1181801213e51db8f  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="puvodce" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="5e68af3a-e344-406e-924e-15876401d3ae">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<import value="org.apache.commons.lang3.StringUtils"/>
@@ -10,50 +10,64 @@
 	<style name="Label" style="Text" isBold="true"/>
 	<subDataset name="AlternativeNames" uuid="8a4f4029-b70a-42c7-b2c5-d3e35337c59a">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+		<parameter name="preferredPart" class="java.lang.String"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
-		<field name="PartyNameObj" class="cz.tacr.elza.print.party.PartyName">
+		<field name="partObj" class="cz.tacr.elza.print.part.Part">
 			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
 		</field>
 	</subDataset>
 	<subDataset name="RelationTo" uuid="9835813e-0034-49fc-8272-9aa2927bb305">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
-		<field name="roleType" class="cz.tacr.elza.print.party.RelationToType"/>
-		<field name="record" class="cz.tacr.elza.print.Record"/>
-		<field name="note" class="java.lang.String"/>
+		<field name="part" class="cz.tacr.elza.print.part.Part">
+			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
+		</field>
+		<variable name="note" class="java.lang.String"/>
 	</subDataset>
 	<subDataset name="RelationsByType" uuid="34a0e920-4e15-42fd-bb23-c894f1f9b4d3">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
-		<field name="relationType" class="cz.tacr.elza.print.party.RelationType"/>
-		<field name="relations" class="java.util.List"/>
+		<field name="part" class="cz.tacr.elza.print.part.Part">
+			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
+		</field>
 	</subDataset>
 	<subDataset name="Relation" uuid="dc256e9d-57d0-4014-87fe-bdd4e6d4e507">
-		<field name="type" class="cz.tacr.elza.print.party.RelationType"/>
-		<field name="relationsTo" class="java.util.List"/>
-		<field name="note" class="java.lang.String"/>
-		<field name="source" class="java.lang.String"/>
-		<field name="from" class="cz.tacr.elza.print.party.PartyUnitDate"/>
-		<field name="to" class="cz.tacr.elza.print.party.PartyUnitDate"/>
+		<field name="part" class="cz.tacr.elza.print.part.Part">
+			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
+		</field>
+	</subDataset>
+	<subDataset name="BodyItems" uuid="7ef7dc62-adda-4a62-9eb4-f89f1c577242">
+		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+		<queryString>
+			<![CDATA[]]>
+		</queryString>
+		<field name="item" class="cz.tacr.elza.print.item.Item">
+			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
+		</field>
 	</subDataset>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
 	<parameter name="formatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()]]></defaultValueExpression>
 	</parameter>
-	<field name="partyObj" class="cz.tacr.elza.print.party.Party">
+	<field name="structObj" class="cz.tacr.elza.print.Structured">
 		<fieldDescription><![CDATA[_THIS]]></fieldDescription>
 	</field>
-	<field name="preferredName" class="cz.tacr.elza.print.party.PartyName"/>
-	<field name="record" class="cz.tacr.elza.print.Record"/>
-	<field name="creation" class="cz.tacr.elza.print.party.Relation"/>
-	<field name="destruction" class="cz.tacr.elza.print.party.Relation"/>
-	<field name="partyGroupObj" class="cz.tacr.elza.print.party.PartyGroup">
-		<fieldDescription><![CDATA[_THIS]]></fieldDescription>
-	</field>
-	<field name="eventObj" class="cz.tacr.elza.print.party.Event">
-		<fieldDescription><![CDATA[_THIS]]></fieldDescription>
-	</field>
+	<variable name="record" class="cz.tacr.elza.print.Record">
+		<variableExpression><![CDATA[$F{structObj}.getSingleItem("ZP2015_ORIGINATOR").getValue(cz.tacr.elza.print.Record.class)]]></variableExpression>
+	</variable>
+	<variable name="partCre" class="cz.tacr.elza.print.part.Part">
+		<variableExpression><![CDATA[$V{record}.getPart("PT_CRE")]]></variableExpression>
+	</variable>
+	<variable name="partExt" class="cz.tacr.elza.print.part.Part">
+		<variableExpression><![CDATA[$V{record}.getPart("PT_EXT")]]></variableExpression>
+	</variable>
+	<variable name="partBody" class="cz.tacr.elza.print.part.Part">
+		<variableExpression><![CDATA[$V{record}.getPart("PT_BODY")]]></variableExpression>
+	</variable>
+	<variable name="partsEvent" class="java.util.List">
+		<variableExpression><![CDATA[$V{record}.getParts("PT_EVENT")]]></variableExpression>
+	</variable>
 	<title>
 		<band height="30">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -72,73 +86,78 @@
 	<detail>
 		<band height="150" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="70" width="455" height="20" isRemoveLineWhenBlank="true" uuid="abfcb9c6-78f2-40fa-b097-11ae0c52884f"/>
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Preferovaná forma jména: </b>"+$F{record}.getPrefName().getFullName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Preferovaná forma jména: </b>"+$V{record}.getPreferredPart().getValue()]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="90" width="455" height="20" isRemoveLineWhenBlank="true" uuid="19ed5bf0-79ad-459a-8caf-927314b8f4be">
-					<printWhenExpression><![CDATA[$F{partyObj}.getPreferredName().getFormTypeName()!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$V{record}.getPreferredPart().getSingleItemValue("NM_TYPE")!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Typ preferované formy jména: </b>"+$F{preferredName}.getFormTypeName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Typ preferované formy jména: </b>"+$V{record}.getPreferredPart().getSingleItemValue("NM_TYPE")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="50" width="455" height="20" isRemoveLineWhenBlank="true" uuid="034bd6a6-f9b1-41c3-9d72-45f64a1bb28b">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[org.apache.commons.lang3.StringUtils.isNotBlank($F{partyObj}.getRecord().getFormattedEids())]]></printWhenExpression>
+					<printWhenExpression><![CDATA[org.apache.commons.lang3.StringUtils.isNotBlank($V{record}.getFormattedEids())]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{partyObj}.getRecord().getFormattedEids()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{record}.getFormattedEids()]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" bookmarkLevel="2">
+			<textField textAdjust="StretchHeight" bookmarkLevel="2">
 				<reportElement style="Heading 2" x="0" y="0" width="455" height="50" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" uuid="8df034eb-c92e-4259-9b6a-132ea63701b3"/>
 				<textElement verticalAlignment="Middle" markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{record}.getPrefName().getFullName()]]></textFieldExpression>
-				<anchorNameExpression><![CDATA[$F{record}.getPrefName().getFullName()]]></anchorNameExpression>
+				<textFieldExpression><![CDATA[$V{record}.getPreferredPart().getValue()]]></textFieldExpression>
+				<anchorNameExpression><![CDATA[$V{record}.getPreferredPart().getValue()]]></anchorNameExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="110" width="455" height="20" isRemoveLineWhenBlank="true" uuid="c9328994-3313-40c9-937a-692b67b4c4ed">
-					<printWhenExpression><![CDATA[$F{preferredName}.formatValidFromTo()!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$V{record}.getPreferredPart().getSingleItem("NM_USED_FROM")!=null && $V{record}.getPreferredPart().getSingleItem("NM_USED_TO")!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Datace použití jména od-do: </b>"+$F{preferredName}.formatValidFromTo()]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Datace použití jména od-do: </b>"+$V{record}.getPreferredPart().getSingleItemValue("NM_USED_FROM")+" - "+ $V{record}.getPreferredPart().getSingleItemValue("NM_USED_TO")]]></textFieldExpression>
 			</textField>
 			<componentElement>
 				<reportElement key="" style="Text" positionType="Float" x="136" y="130" width="319" height="20" isRemoveLineWhenBlank="true" uuid="e1b765e6-d2c6-4883-9d2d-3c49f53bc325">
 					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value=""/>
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
-					<printWhenExpression><![CDATA[$F{partyObj}.getNames().size()>0]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$V{record}.getParts( "PT_NAME" ).size()>1]]></printWhenExpression>
 				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
-					<datasetRun subDataset="AlternativeNames" uuid="f402d3fc-ccc0-455f-9386-38004f4482e6">
-						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{partyObj}.getNames())]]></dataSourceExpression>
+					<datasetRun subDataset="AlternativeNames" uuid="5a345605-2002-477d-ae43-aad1ead48536">
+						<datasetParameter name="preferredPart">
+							<datasetParameterExpression><![CDATA[$V{record}.getPreferredPart()]]></datasetParameterExpression>
+						</datasetParameter>
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{record}.getParts( "PT_NAME" ))]]></dataSourceExpression>
 					</datasetRun>
 					<jr:listContents height="20" width="319">
-						<textField isStretchWithOverflow="true">
-							<reportElement style="Text" x="0" y="0" width="319" height="20" uuid="1f1cff8f-eb25-489d-8cef-1bcd72abe735"/>
+						<textField textAdjust="StretchHeight">
+							<reportElement style="Text" x="0" y="0" width="319" height="20" uuid="1f1cff8f-eb25-489d-8cef-1bcd72abe735">
+								<printWhenExpression><![CDATA[!$F{partObj}.equals($P{preferredPart})]]></printWhenExpression>
+							</reportElement>
 							<textElement>
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA[$F{PartyNameObj}.formatWithAllDetails()]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$F{partObj}.getValue()]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
 			</componentElement>
 			<staticText>
 				<reportElement style="Label" positionType="Float" x="0" y="130" width="136" height="20" uuid="113f6a10-3a45-4397-8dfc-0743169bdd41">
-					<printWhenExpression><![CDATA[$F{partyObj}.getNames().size()>0]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$V{record}.getParts( "PT_NAME" ).size()>1]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font isBold="true"/>
@@ -146,191 +165,133 @@
 				<text><![CDATA[Variantní forma jména:]]></text>
 			</staticText>
 		</band>
-		<band height="90">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField isStretchWithOverflow="true">
+		<band height="65">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$V{partCre}!=null]]></printWhenExpression>
+			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="5" width="455" height="20" isRemoveLineWhenBlank="true" uuid="a9337d06-7bac-4e48-8dfb-6f5681f18833">
-					<printWhenExpression><![CDATA[$F{creation}!=null&&$F{creation}.getFrom()!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$V{partCre}!=null&&$V{partCre}.getSingleItem("CRE_CLASS")!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>"+($F{creation}.getType().getCode().equals("CREATION")?"Datum vzniku":"Působnost od")+": </b>"+$F{creation}.getFrom().getValueText()+(StringUtils.isNotBlank($F{creation}.getFrom().getNote())?" "+$F{creation}.getFrom().getNote():"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>"+$V{partCre}.getSingleItem("CRE_CLASS").getSpecification().getName()+": </b>"+$V{partCre}.getSingleItemValue("CRE_DATE")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="066f0355-bd2b-4328-ac97-52ec55458007">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[org.apache.commons.lang3.StringUtils.isNotBlank($F{creation}.getNote())]]></printWhenExpression>
+					<printWhenExpression><![CDATA[StringUtils.isNotBlank($V{partCre}.getSingleItemValue("NOTE"))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Poznámka ke vzniku: </b>"+$F{creation}.getNote()]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="Text" positionType="Float" x="0" y="45" width="455" height="20" isRemoveLineWhenBlank="true" uuid="e4477280-399d-4695-a136-7ce8b2b0072d">
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[org.apache.commons.lang3.StringUtils.isNotBlank($F{creation}.getSource())]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Zdroj informací ke vzniku: </b>"+$F{creation}.getSource()]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Poznámka ke vzniku: </b>"+$V{partCre}.getSingleItemValue("NOTE")]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement style="Text" positionType="Float" x="0" y="65" width="455" height="20" isRemoveLineWhenBlank="true" uuid="f4c7f221-6022-4e84-bd50-ad08f26fc2c4">
-					<printWhenExpression><![CDATA[$F{creation}.getRelationsTo()!=null]]></printWhenExpression>
+				<reportElement style="Text" positionType="Float" x="0" y="45" width="455" height="20" isRemoveLineWhenBlank="true" uuid="f4c7f221-6022-4e84-bd50-ad08f26fc2c4">
+					<printWhenExpression><![CDATA[$V{partCre}.getParts().size()>0]]></printWhenExpression>
 				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
-					<datasetRun subDataset="RelationTo" uuid="93d67b89-ea60-4381-b841-5a4fc7d6eccb">
-						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{creation}.getRelationsTo())]]></dataSourceExpression>
+					<datasetRun subDataset="RelationTo" uuid="bf1e8775-c988-4092-8953-bb10e0c2a489">
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partCre}.getParts())]]></dataSourceExpression>
 					</datasetRun>
 					<jr:listContents height="20" width="455">
-						<textField isStretchWithOverflow="true">
+						<textField textAdjust="StretchHeight">
 							<reportElement positionType="Float" x="0" y="0" width="455" height="20" isRemoveLineWhenBlank="true" uuid="26f2a3a5-09e4-4c78-95cc-47bfbd1ae5cd"/>
 							<textElement markup="html">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{roleType}.getName())+": </b>"+$F{record}.getPrefName().getFullName()]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$F{part}.getValue()]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
 			</componentElement>
 		</band>
-		<band height="90">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField isStretchWithOverflow="true">
+		<band height="65">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$V{partExt}!=null]]></printWhenExpression>
+			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="5" width="455" height="20" isRemoveLineWhenBlank="true" uuid="233e5526-90b2-45ad-bbb4-0ae773480df5">
-					<printWhenExpression><![CDATA[$F{destruction}!=null&&$F{destruction}.getFrom()!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$V{partExt}!=null&&$V{partExt}.getSingleItem("EXT_CLASS")!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>"+($F{destruction}.getType().getCode().equals("EXTINCTION")?"Datum zániku":"Působnost do") + ":</b> " + $F{destruction}.getFrom().getValueText()+(StringUtils.isNotBlank($F{destruction}.getFrom().getNote())?" "+$F{destruction}.getFrom().getNote():"")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>"+$V{partExt}.getSingleItem("EXT_CLASS").getSpecification().getName()+": </b>"+$V{partExt}.getSingleItemValue("EXT_DATE")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="6a019459-1eba-43cc-b95b-8f42c185f959">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[org.apache.commons.lang3.StringUtils.isNotBlank($F{destruction}.getNote())]]></printWhenExpression>
+					<printWhenExpression><![CDATA[StringUtils.isNotBlank($V{partExt}.getSingleItemValue("NOTE"))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Poznámka k zániku: </b>"+$F{destruction}.getNote()]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="Text" positionType="Float" x="0" y="45" width="455" height="20" isRemoveLineWhenBlank="true" uuid="d958fec4-6bcc-47ec-ac2d-c39b41a9b90b">
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[org.apache.commons.lang3.StringUtils.isNotBlank($F{destruction}.getSource())]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Zdroj informací k zániku: </b>"+$F{destruction}.getSource()]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>Poznámka k zániku: </b>"+$V{partExt}.getSingleItemValue("NOTE")]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement style="Text" positionType="Float" x="0" y="65" width="455" height="20" isRemoveLineWhenBlank="true" uuid="62123a0a-b2d4-4852-8746-088467159d46">
-					<printWhenExpression><![CDATA[$F{destruction}.getRelationsTo()!=null]]></printWhenExpression>
+				<reportElement style="Text" positionType="Float" x="0" y="45" width="455" height="20" isRemoveLineWhenBlank="true" uuid="62123a0a-b2d4-4852-8746-088467159d46">
+					<printWhenExpression><![CDATA[$V{partExt}.getParts().size()>0]]></printWhenExpression>
 				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
-					<datasetRun subDataset="RelationTo" uuid="6d125c57-5edf-4e75-8181-f59a9a2dcbf4">
-						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{destruction}.getRelationsTo())]]></dataSourceExpression>
+					<datasetRun subDataset="RelationTo" uuid="9441cf8f-87f4-45b8-a89e-8fb17a2f505e">
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partExt}.getParts())]]></dataSourceExpression>
 					</datasetRun>
 					<jr:listContents height="20" width="455">
-						<textField isStretchWithOverflow="true">
+						<textField textAdjust="StretchHeight">
 							<reportElement positionType="Float" x="0" y="0" width="455" height="20" isRemoveLineWhenBlank="true" uuid="a05c2199-e83d-4171-9904-1be59ba11db4"/>
 							<textElement markup="html">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($F{roleType}.getName())+": </b>"+$F{record}.getPrefName().getFullName()]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$F{part}.getValue()]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
 			</componentElement>
 		</band>
-		<band height="106">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[($F{partyObj}.getRelations()!=null)&&($F{partyObj}.getRelations().size()>0)]]></printWhenExpression>
+		<band height="60">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$V{partsEvent}!=null&&$V{partsEvent}.size()>0]]></printWhenExpression>
 			<componentElement>
-				<reportElement x="0" y="0" width="455" height="106" isRemoveLineWhenBlank="true" uuid="6b7a304d-f4f3-4ee0-bd8a-03112b4e7074">
+				<reportElement x="0" y="0" width="455" height="60" isRemoveLineWhenBlank="true" uuid="6b7a304d-f4f3-4ee0-bd8a-03112b4e7074">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
-					<datasetRun subDataset="RelationsByType" uuid="f9e78ca6-ef3f-4a0a-b9e8-036ce36afad5">
-						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{partyObj}.getRelationsByType())]]></dataSourceExpression>
+					<datasetRun subDataset="RelationsByType" uuid="c415f8f9-d228-40c4-accf-d1275950b391">
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partsEvent})]]></dataSourceExpression>
 					</datasetRun>
-					<jr:listContents height="106" width="455">
+					<jr:listContents height="60" width="455">
 						<textField>
-							<reportElement style="Heading 3" x="0" y="0" width="455" height="30" isPrintInFirstWholeBand="true" uuid="10c60050-e159-4a3a-80eb-282530fc2b91"/>
+							<reportElement style="Heading 3" x="0" y="0" width="455" height="30" isPrintInFirstWholeBand="true" uuid="10c60050-e159-4a3a-80eb-282530fc2b91">
+								<printWhenExpression><![CDATA[$F{part}.getSingleItem("EV_TYPE")!=null]]></printWhenExpression>
+							</reportElement>
 							<textElement verticalAlignment="Middle">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA[StringUtils.capitalize($F{relationType}.getName())]]></textFieldExpression>
+							<textFieldExpression><![CDATA[StringUtils.capitalize($F{part}.getSingleItem("EV_TYPE").getSpecification().getName())]]></textFieldExpression>
+						</textField>
+						<textField textAdjust="StretchHeight">
+							<reportElement x="0" y="30" width="455" height="15" isRemoveLineWhenBlank="true" uuid="b00cab13-4b29-4fc4-8af9-c10b034be759">
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+							</reportElement>
+							<textFieldExpression><![CDATA[$F{part}.getValue()]]></textFieldExpression>
 						</textField>
 						<componentElement>
-							<reportElement positionType="Float" x="0" y="30" width="455" height="76" isRemoveLineWhenBlank="true" uuid="73fb0229-b1e8-47ac-a074-78a83da01886">
-								<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+							<reportElement positionType="Float" x="0" y="45" width="455" height="15" isRemoveLineWhenBlank="true" uuid="73fb0229-b1e8-47ac-a074-78a83da01886">
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+								<printWhenExpression><![CDATA[$F{part}.getParts().size()>0]]></printWhenExpression>
 							</reportElement>
 							<jr:list printOrder="Vertical">
-								<datasetRun subDataset="Relation" uuid="35e37550-9ece-41eb-bcff-c72a9fd20be2">
-									<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{relations})]]></dataSourceExpression>
+								<datasetRun subDataset="Relation" uuid="12505b82-cc84-4379-bfa7-8040449c1abd">
+									<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{part}.getParts())]]></dataSourceExpression>
 								</datasetRun>
-								<jr:listContents height="76" width="455">
-									<componentElement>
-										<reportElement style="Text" positionType="Float" x="0" y="0" width="455" height="19" isRemoveLineWhenBlank="true" uuid="22d6b2b6-b796-4482-aef6-872a46ac996a">
-											<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-										</reportElement>
-										<jr:list printOrder="Vertical">
-											<datasetRun subDataset="RelationTo" uuid="686a134d-961d-452e-b43d-014524f86805">
-												<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{relationsTo})]]></dataSourceExpression>
-											</datasetRun>
-											<jr:listContents height="19" width="455">
-												<textField isStretchWithOverflow="true">
-													<reportElement style="Text" positionType="Float" x="0" y="0" width="455" height="18" isRemoveLineWhenBlank="true" uuid="b2fd1c8e-0055-4b06-8455-a1fdb7b46190">
-														<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-													</reportElement>
-													<textElement>
-														<font pdfEncoding="Cp1250"/>
-													</textElement>
-													<textFieldExpression><![CDATA[StringUtils.capitalize($F{roleType}.getName())+": "+$F{record}.getPrefName().getFullName()+(StringUtils.isNotBlank($F{note})?(" ("+$F{note}+")"):"")]]></textFieldExpression>
-												</textField>
-											</jr:listContents>
-										</jr:list>
-									</componentElement>
-									<textField isStretchWithOverflow="true">
-										<reportElement style="Text" positionType="Float" x="0" y="19" width="455" height="19" isRemoveLineWhenBlank="true" uuid="273bbf27-f6de-4340-8c4d-3c58c3979665">
-											<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-											<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-											<printWhenExpression><![CDATA[$F{from}!=null||$F{to}!=null]]></printWhenExpression>
-										</reportElement>
-										<textElement>
-											<font pdfEncoding="Cp1250"/>
-										</textElement>
-										<textFieldExpression><![CDATA["Datace: "+($F{from}!=null?$F{from}.getValueText()+(StringUtils.isNotBlank($F{from}.getNote())?" "+$F{from}.getNote():""):"")+($F{to}!=null?" - "+$F{to}.getValueText()+(StringUtils.isNotBlank($F{to}.getNote())?" "+$F{to}.getNote():""):"")]]></textFieldExpression>
-									</textField>
-									<textField isStretchWithOverflow="true">
-										<reportElement style="Text" positionType="Float" x="0" y="38" width="455" height="19" isRemoveLineWhenBlank="true" uuid="8668414c-ae5c-4d76-a275-ba8aae90ab10">
-											<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-											<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-											<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{source})]]></printWhenExpression>
-										</reportElement>
-										<textElement>
-											<font pdfEncoding="Cp1250"/>
-										</textElement>
-										<textFieldExpression><![CDATA["Zdroj informací: "+$F{source}]]></textFieldExpression>
-									</textField>
-									<textField isStretchWithOverflow="true">
-										<reportElement style="Text" positionType="Float" x="0" y="57" width="455" height="19" isRemoveLineWhenBlank="true" uuid="144827a1-e9a1-425c-afa0-d21ccecf4358">
-											<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-											<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-											<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{note})]]></printWhenExpression>
-										</reportElement>
-										<textElement>
-											<font pdfEncoding="Cp1250"/>
-										</textElement>
-										<textFieldExpression><![CDATA["Poznámka: "+$F{note}]]></textFieldExpression>
+								<jr:listContents height="15" width="455">
+									<textField>
+										<reportElement x="0" y="0" width="455" height="15" uuid="7a4fc7e2-7240-42f9-84de-8e5316a887c0"/>
+										<textFieldExpression><![CDATA[$F{part}.getValue()]]></textFieldExpression>
 									</textField>
 								</jr:listContents>
 							</jr:list>
@@ -339,185 +300,32 @@
 				</jr:list>
 			</componentElement>
 		</band>
-		<band height="50" splitType="Prevent">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{partyObj}.getCharacteristics())]]></printWhenExpression>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="" style="Heading 3" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" uuid="b3b3266a-fa42-4510-8d8c-6eb181d4eab2">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{partyObj}.getCharacteristics())]]></printWhenExpression>
+		<band height="35" splitType="Prevent">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$V{partBody}!=null&&$V{partBody}.getItems()!=null&&$V{partBody}.getItems().size()>0]]></printWhenExpression>
+			<componentElement>
+				<reportElement x="0" y="0" width="455" height="35" uuid="cbcffa84-3142-4d77-9ed9-96aca5f24cf3">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Charakteristika:"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="" style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="e5edbc2e-b724-46be-b479-91a62d3fab24">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{partyObj}.getCharacteristics())]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Justified" markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyObj}.getCharacteristics())]]></textFieldExpression>
-			</textField>
-		</band>
-		<band height="50" splitType="Prevent">
-			<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{partyObj}.getHistory())]]></printWhenExpression>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="" style="Heading 3" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" uuid="193f30ec-6f1f-47ae-b0d0-537810c54e41">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{partyObj}.getHistory())]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Dějiny původce:"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="" style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" uuid="9e985147-d1ee-4df9-811e-fa438f2e28e3">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{partyObj}.getHistory())]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Justified" markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyObj}.getHistory())]]></textFieldExpression>
-			</textField>
-		</band>
-		<band height="50" splitType="Prevent">
-			<printWhenExpression><![CDATA[($F{partyObj} instanceof cz.tacr.elza.print.party.PartyGroup) && StringUtils.isNotBlank($F{partyGroupObj}.getScope())]]></printWhenExpression>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="" style="Heading 3" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" uuid="1040f23c-7191-4c6b-b9cc-ab1adf45e548">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{partyGroupObj}.getScope())]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Funkce původce:"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="" style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="7d6b38f0-8127-4ea7-bdea-2d3f14b3aad4">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{partyGroupObj}.getScope())]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Justified" markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyGroupObj}.getScope())]]></textFieldExpression>
-			</textField>
-		</band>
-		<band height="50" splitType="Prevent">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[($F{partyObj} instanceof cz.tacr.elza.print.party.PartyGroup) && StringUtils.isNotBlank($F{partyGroupObj}.getFoundingNorm())]]></printWhenExpression>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="" style="Heading 3" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" uuid="2d3dbcba-5f9d-4a08-8fd6-92f1f3290141">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Normy konstitutivní:"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="" style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="eb0bf56f-66b6-4e63-ad9b-75dc94d10413">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Justified" markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyGroupObj}.getFoundingNorm())]]></textFieldExpression>
-			</textField>
-		</band>
-		<band height="50" splitType="Prevent">
-			<printWhenExpression><![CDATA[($F{partyObj} instanceof cz.tacr.elza.print.party.PartyGroup) && StringUtils.isNotBlank($F{partyGroupObj}.getScopeNorm())]]></printWhenExpression>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="" style="Heading 3" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" uuid="21a51ab4-c402-4461-9215-9d7a4307359c">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Normy působnosti:"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="" style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="1d7ddfed-6f4d-4c2a-a30d-d60297019515">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Justified" markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyGroupObj}.getScopeNorm())]]></textFieldExpression>
-			</textField>
-		</band>
-		<band height="50" splitType="Prevent">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[($F{partyObj} instanceof cz.tacr.elza.print.party.PartyGroup) && StringUtils.isNotBlank($F{partyGroupObj}.getOrganization())]]></printWhenExpression>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="" style="Heading 3" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" uuid="bfba8adc-f644-4e94-bca1-ae8a0c976fc4">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Vnitřní struktury:"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="" style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="eb7e137c-6d9e-4732-becc-50afa8912e36">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Justified" markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyGroupObj}.getOrganization())]]></textFieldExpression>
-			</textField>
-		</band>
-		<band height="50" splitType="Prevent">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{partyObj}.getSourceInformation())]]></printWhenExpression>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="Heading 3" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" isPrintInFirstWholeBand="true" uuid="089eb143-d6b2-473a-adca-2b9d84393f0f">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Zdroje informací:"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="20" isRemoveLineWhenBlank="true" uuid="a70032fa-4ca8-424b-b754-8f15cd160eec">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Left" markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format($F{partyObj}.getSourceInformation())]]></textFieldExpression>
-			</textField>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="BodyItems" uuid="37552c24-7663-4907-9c4d-f2b9a98b5a68">
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partBody}.getItems())]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="35" width="455">
+						<textField>
+							<reportElement style="Heading 3" x="0" y="0" width="455" height="20" isRemoveLineWhenBlank="true" uuid="35e5b493-4fe1-4c9e-b7a6-bae7d783a653"/>
+							<textFieldExpression><![CDATA[$F{item}.getType().getName()]]></textFieldExpression>
+						</textField>
+						<textField textAdjust="StretchHeight">
+							<reportElement x="0" y="20" width="454" height="15" isRemoveLineWhenBlank="true" uuid="97e6e006-f56e-45c6-b41f-6f32f4084a80">
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+								<printWhenExpression><![CDATA[$F{item}.getSerializedValue()]]></printWhenExpression>
+							</reportElement>
+							<textFieldExpression><![CDATA[$F{item}.getSerializedValue()]]></textFieldExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
 		</band>
 	</detail>
 	<pageFooter>
