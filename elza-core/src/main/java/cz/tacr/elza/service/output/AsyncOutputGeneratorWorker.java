@@ -31,6 +31,7 @@ import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.domain.ArrOutputItem;
+import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.ArrOutputTemplate;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.RulTemplate.Engine;
@@ -131,10 +132,10 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     }
 
     /**
+     * Generování výstupu
+     * 
+     * @param outputId
      * @param userId
-     * Process output. Must be called in transaction.
-     *
-     * @throws
      */
     private void generateOutput(Integer outputId, Integer userId) {
         ArrOutput output = outputServiceInternal.getOutputForGenerator(outputId);
@@ -150,7 +151,10 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 	        Engine engine = template.getTemplate().getEngine();
 	        try (OutputGenerator generator = outputGeneratorFactory.createOutputGenerator(engine)) {
 	            generator.init(params);
-	            generator.generate();
+	            ArrOutputResult result = generator.generate();
+	            if (template.getTemplate().getSchemaValidace() != null) {
+	            	validate(template, result);
+	            }
 	        } catch (IOException e) {
 	            throw new SystemException("Failed to generate output", e, BaseCode.INVALID_STATE);
 	        }
@@ -164,6 +168,10 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
     }
 
+    private void validate(ArrOutputTemplate template, ArrOutputResult result) {
+    	// TODO
+    }
+    
     private OutputState resolveEndState(OutputParams params) {
         ArrChange change = params.getChange();
         for (Integer outputNodeId : params.getOutputNodeIds()) {

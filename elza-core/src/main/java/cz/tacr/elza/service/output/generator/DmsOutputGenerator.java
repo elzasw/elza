@@ -42,11 +42,11 @@ public abstract class DmsOutputGenerator implements OutputGenerator {
     }
 
     @Override
-    public final void generate() {
+    public final ArrOutputResult generate() {
         try (OutputStream os = openNewResultFile()) {
             generate(os);
             os.close();
-            storeResult();
+            return storeResult();
         } catch (IOException e) {
             throw new ProcessException(params.getOutputId(), "Failed to create output result", e);
         } finally {
@@ -63,7 +63,7 @@ public abstract class DmsOutputGenerator implements OutputGenerator {
         return Files.newOutputStream(tmpResultFile, StandardOpenOption.WRITE);
     }
 
-    private void storeResult() throws IOException {
+    private ArrOutputResult storeResult() throws IOException {
         ArrOutputResult result = new ArrOutputResult();
         result.setChange(params.getChange());
         result.setTemplate(params.getTemplate());
@@ -76,6 +76,7 @@ public abstract class DmsOutputGenerator implements OutputGenerator {
         try (InputStream is = Files.newInputStream(tmpResultFile, StandardOpenOption.READ)) {
             dmsService.createFile(outputFile, is);
         }
+        return result;
     }
 
     private ArrOutputFile createOutputFile(ArrOutputResult result) {
