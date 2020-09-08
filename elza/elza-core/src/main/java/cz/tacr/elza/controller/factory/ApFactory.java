@@ -4,6 +4,7 @@ import static cz.tacr.elza.repository.ExceptionThrow.ap;
 import static cz.tacr.elza.repository.ExceptionThrow.scope;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,8 +16,15 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
+import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
+import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApIndexRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -88,6 +96,8 @@ import cz.tacr.elza.repository.ScopeRepository;
 @Service
 public class ApFactory {
 
+    public static final String DISPLAY_NAME = "DISPLAY_NAME";
+
     private final ApAccessPointRepository apRepository;
 
     private final ApStateRepository stateRepository;
@@ -108,6 +118,8 @@ public class ApFactory {
 
     private final CamConnector camConnector;
 
+    private final ApIndexRepository indexRepository;
+
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
@@ -118,7 +130,8 @@ public class ApFactory {
                      final ApBindingStateRepository bindingStateRepository,
                      final ApBindingItemRepository bindingItemRepository,
                      final RuleFactory ruleFactory,
-                     final CamConnector camConnector) {
+                     final CamConnector camConnector,
+                     final ApIndexRepository indexRepository) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
         this.scopeRepository = scopeRepository;
@@ -129,6 +142,7 @@ public class ApFactory {
         this.bindingItemRepository = bindingItemRepository;
         this.ruleFactory = ruleFactory;
         this.camConnector = camConnector;
+        this.indexRepository = indexRepository;
     }
 
     /**
@@ -231,6 +245,9 @@ public class ApFactory {
             Map<Integer, List<ApItem>> items = itemRepository.findValidItemsByAccessPoint(ap).stream()
                     .collect(Collectors.groupingBy(i -> i.getPartId()));
 
+            Map<Integer, List<ApIndex>> indices = indexRepository.findByPartsAndIndexType(parts, DISPLAY_NAME).stream()
+                    .collect(Collectors.groupingBy(i -> i.getPart().getPartId()));
+
             //comments
             Integer comments = stateRepository.countCommentsByAccessPoint(ap);
             //description
@@ -250,7 +267,7 @@ public class ApFactory {
             fillBindingUrls(eidsVO);
             fillBindingItems(eidsVO, bindings, bindingItemsMap);
 
-            apVO.setParts(createVO(parts, items));
+            apVO.setParts(createVO(parts, items, indices));
             apVO.setComments(comments);
             if (description != null) {
                 apVO.setDescription(description);
@@ -352,23 +369,25 @@ public class ApFactory {
     }
 
     public List<ApPartVO> createVO(final List<ApPart> parts,
-                                   final Map<Integer, List<ApItem>> items) {
+                                   final Map<Integer, List<ApItem>> items,
+                                   final Map<Integer, List<ApIndex>> indices) {
         List<ApPartVO> partVOList = new ArrayList<>();
         for (ApPart part : parts) {
-            partVOList.add(createVO(part, items.get(part.getPartId())));
+            partVOList.add(createVO(part, items.get(part.getPartId()), indices.get(part.getPartId())));
         }
         return partVOList;
     }
 
     public ApPartVO createVO(final ApPart part,
-                             final List<ApItem> apItems) {
+                             final List<ApItem> apItems,
+                             final List<ApIndex> indices) {
         ApPartVO apPartVO = new ApPartVO();
 
         apPartVO.setId(part.getPartId());
         apPartVO.setTypeId(part.getPartType().getPartTypeId());
         apPartVO.setState(part.getState() == null ? null : ApStateVO.valueOf(part.getState().name()));
         apPartVO.setErrorDescription(part.getErrorDescription());
-        apPartVO.setValue(part.getValue());
+        apPartVO.setValue(CollectionUtils.isNotEmpty(indices) ? indices.get(0).getValue() : null);
         apPartVO.setPartParentId(part.getParentPart() != null ? part.getParentPart().getPartId() : null);
         apPartVO.setItems(CollectionUtils.isNotEmpty(apItems) ? createItemsVO(apItems) : null);
 
@@ -607,5 +626,48 @@ public class ApFactory {
                 ? SettingPartsOrder.newInstance(partsOrderSettings.get(0)).getParts()
                 : Collections.emptyList());
         return result;
+    }
+
+    public ApValidationErrorsVO createVO(Integer accessPointId) {
+        ApAccessPoint accessPoint = apRepository.findById(accessPointId)
+                .orElseThrow(() -> new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(accessPointId));
+        List<ApPart> partList = partRepository.findValidPartByAccessPoint(accessPoint);
+
+        String[] errorsArray = StringUtils.split(accessPoint.getErrorDescription(), "\n");
+        List<String> errors = new ArrayList<>();
+
+        if (errorsArray != null) {
+            errors.addAll(Arrays.asList(errorsArray));
+        }
+
+        List<PartValidationErrorsVO> partValidationErrorsVOList = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(partList)) {
+            for (ApPart part : partList) {
+                if (StringUtils.isNotEmpty(part.getErrorDescription())) {
+                    String[] partErrorsArray = StringUtils.split(part.getErrorDescription(), "\n");
+                    if (partErrorsArray != null) {
+                        List<String> partErrors = new ArrayList<>(Arrays.asList(partErrorsArray));
+                        partValidationErrorsVOList.add(createVO(part.getPartId(), partErrors));
+                    }
+                }
+            }
+        }
+
+        return createVO(errors, partValidationErrorsVOList);
+    }
+
+    private PartValidationErrorsVO createVO(final Integer id, final List<String> errors) {
+        PartValidationErrorsVO partValidationErrorsVO = new PartValidationErrorsVO();
+        partValidationErrorsVO.setId(id);
+        partValidationErrorsVO.setErrors(errors);
+        return partValidationErrorsVO;
+    }
+
+    private ApValidationErrorsVO createVO(final List<String> errors, final List<PartValidationErrorsVO> partErrors) {
+        ApValidationErrorsVO apValidationErrorsVO = new ApValidationErrorsVO();
+        apValidationErrorsVO.setErrors(errors);
+        apValidationErrorsVO.setPartErrors(partErrors);
+        return apValidationErrorsVO;
     }
 }

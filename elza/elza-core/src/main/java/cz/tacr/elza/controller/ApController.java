@@ -274,7 +274,6 @@ public class ApController {
         SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
 
         ApState apState = accessPointService.createAccessPoint(scope, type, language, accessPoint.getPartForm());
-        partService.validationNameUnique(apState.getScope(), apState.getAccessPoint().getPreferredPart().getValue());
         return apFactory.createVO(apState, true);
     }
 
@@ -342,6 +341,7 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState oldState = accessPointService.getState(accessPoint);
         ApState newState = accessPointService.changeApType(accessPointId, editVo.getTypeId());
+        accessPointService.generateSync(accessPointId);
         return apFactory.createVO(newState, true);
     }
 
@@ -612,6 +612,7 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
 
         accessPointService.updateApState(accessPoint, stateChange.getState(), stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
+        accessPointService.generateSync(accessPointId);
     }
 
     /**
@@ -655,7 +656,7 @@ public class ApController {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
         ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
-        accessPointService.updatePartValue(apPart);
+        accessPointService.generateSync(accessPointId, apPart);
     }
 
     /**
@@ -674,8 +675,6 @@ public class ApController {
                 .orElseThrow(ap(accessPointId));
         ApPart apPart = partService.getPart(partId);
         accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO);
-        ApState state = accessPointService.getState(apAccessPoint);
-        partService.validationNameUnique(state.getScope(), apAccessPoint.getPreferredPart().getValue());
     }
 
 
@@ -692,6 +691,7 @@ public class ApController {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
         partService.deletePart(apAccessPoint, partId);
+        accessPointService.generateSync(accessPointId);
     }
 
     /**
@@ -709,8 +709,6 @@ public class ApController {
                 .orElseThrow(ap(accessPointId));
         ApPart apPart = partService.getPart(partId);
         accessPointService.setPreferName(apAccessPoint, apPart);
-        ApState state = accessPointService.getState(apAccessPoint);
-        partService.validationNameUnique(state.getScope(), apAccessPoint.getPreferredPart().getValue());
     }
 
     /**
@@ -722,7 +720,7 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "{accessPointId}/validate", method = RequestMethod.GET)
     public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId) {
-        return ruleService.executeValidation(accessPointId);
+        return apFactory.createVO(accessPointId);
     }
 
     /**

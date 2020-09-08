@@ -71,6 +71,10 @@ public class ApPart {
     @Column(nullable = false, updatable = false, insertable = false)
     private Integer accessPointId;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApKeyValue.class)
+    @JoinColumn(name = "key_value_id")
+    private ApKeyValue keyValue;
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "part")
     private List<ApItem> items;
 
@@ -159,5 +163,13 @@ public class ApPart {
 
     public Integer getPartTypeId() {
         return partTypeId;
+    }
+
+    public ApKeyValue getKeyValue() {
+        return keyValue;
+    }
+
+    public void setKeyValue(ApKeyValue keyValue) {
+        this.keyValue = keyValue;
     }
 }

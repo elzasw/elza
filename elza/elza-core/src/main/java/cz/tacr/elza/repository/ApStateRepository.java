@@ -115,4 +115,10 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
             " AND s1.createChangeId = (SELECT min(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
     ApState findFirstByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
 
+    @Query("SELECT s FROM ap_state s JOIN s.accessPoint WHERE s.deleteChangeId IS NULL")
+    List<ApState> findActiveStates();
+
+    @Query("SELECT s FROM ap_state s JOIN s.accessPoint WHERE s.deleteChangeId IS NULL AND s.apType IN :apTypes")
+    List<ApState> findActiveStatesByApTypes(@Param("apTypes") Collection<ApType> apTypes);
+
 }

@@ -1,28 +1,38 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.controller.vo.ApPartFormVO;
-import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
+import cz.tacr.elza.groovy.GroovyKeyValue;
 import cz.tacr.elza.groovy.GroovyResult;
-import cz.tacr.elza.repository.ApChangeRepository;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApKeyValueRepository;
 import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
+import cz.tacr.elza.service.event.AccessPointQueueEvent;
 import cz.tacr.elza.service.vo.DataRef;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+import static cz.tacr.elza.groovy.GroovyResult.PT_PREFER_NAME;
 import static cz.tacr.elza.repository.ExceptionThrow.part;
 
 @Service
@@ -33,18 +43,37 @@ public class PartService {
     private final ApItemRepository itemRepository;
     private final AccessPointItemService apItemService;
     private final AccessPointDataService apDataService;
+    private final ApKeyValueRepository keyValueRepository;
+    private final ApIndexRepository indexRepository;
+    private final DataRecordRefRepository dataRecordRefRepository;
+    private final ApAccessPointRepository accessPointRepository;
+    private ApplicationEventPublisher eventPublisher;
+
+    private static final Logger logger = LoggerFactory.getLogger(PartService.class);
+
+    private final String DUPLICITA = " duplicitní key value ";
 
     @Autowired
     public PartService(final ApPartRepository partRepository,
                        final PartTypeRepository partTypeRepository,
                        final ApItemRepository itemRepository,
                        final AccessPointItemService apItemService,
-                       final AccessPointDataService apDataService) {
+                       final AccessPointDataService apDataService,
+                       final ApKeyValueRepository keyValueRepository,
+                       final ApIndexRepository indexRepository,
+                       final DataRecordRefRepository dataRecordRefRepository,
+                       final ApAccessPointRepository apAccessPointRepository,
+                       final ApplicationEventPublisher eventPublisher) {
         this.partRepository = partRepository;
         this.partTypeRepository = partTypeRepository;
         this.itemRepository = itemRepository;
         this.apItemService = apItemService;
         this.apDataService = apDataService;
+        this.keyValueRepository = keyValueRepository;
+        this.indexRepository = indexRepository;
+        this.dataRecordRefRepository = dataRecordRefRepository;
+        this.accessPointRepository = apAccessPointRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     public ApPart createPart(final RulPartType partType,
@@ -55,7 +84,7 @@ public class PartService {
 
         ApPart part = new ApPart();
         part.setPartType(partType);
-        part.setState(ApStateEnum.TEMP);
+        part.setState(ApStateEnum.OK);
         part.setAccessPoint(accessPoint);
         part.setCreateChange(createChange);
         part.setParentPart(parentPart);
@@ -71,6 +100,7 @@ public class PartService {
         part.setAccessPoint(oldPart.getAccessPoint());
         part.setCreateChange(createChange);
         part.setParentPart(oldPart.getParentPart());
+        part.setKeyValue(oldPart.getKeyValue());
 
         return partRepository.save(part);
     }
@@ -231,7 +261,15 @@ public class PartService {
         return partRepository.findNewerValidPartsByAccessPoint(accessPoint, changeId);
     }
 
-    public void updatePartValue(ApPart apPart, GroovyResult result) {
+    public boolean updatePartValue(ApPart apPart, GroovyResult result, ApState state, boolean async) {
+        ApScope scope = state.getScope();
+        Integer accessPointId = state.getAccessPoint().getAccessPointId();
+        boolean preferredPart = false;
+        if(apPart.getKeyValue() != null && apPart.getKeyValue().getKeyType().equals("PT_PREFER_NAME")) {
+            preferredPart = true;
+        }
+
+        boolean success = true;
         Map<String, String> indexMap = result.getIndexes();
 
         String displayName = indexMap != null ? indexMap.get(DISPLAY_NAME) : null;
@@ -243,33 +281,143 @@ public class PartService {
             apPart.setValue(displayName);
             partRepository.save(apPart);
         }
+
+        GroovyKeyValue keyValue = result.getKeyValue();
+        String keyType = null;
+
+        if (keyValue != null) {
+
+            keyType = StringUtils.stripToNull(keyValue.getKey());
+            if (keyType == null) {
+                throw new SystemException("Neplatný typ ApKeyValue").set("keyType", keyType);
+            }
+            String value = StringUtils.stripToNull(keyValue.getValue());
+            if (value == null) {
+                throw new SystemException("Neplatná hodnota ApKeyValue").set("keyType", keyType).set("value", value);
+            }
+            if (value.length() > StringLength.LENGTH_4000) {
+                value = value.substring(0, StringLength.LENGTH_4000 - 1);
+                logger.warn("Hodnota keyValue byla příliš dlouhá, byla oříznuta: partId={}, keyValue={}", apPart.getPartId(), value);
+            }
+            value = value.toLowerCase();
+
+            if (apPart.getKeyValue() != null) {
+                ApKeyValue apKeyValue = apPart.getKeyValue();
+
+                if ((!apKeyValue.getKeyType().equals(keyType) ||
+                        !apKeyValue.getValue().equals(value) ||
+                        !apKeyValue.getScope().getScopeId().equals(scope.getScopeId()))
+                        && !checkKeyValueUnique(keyType, value, scope, async)) {
+                    value = value + DUPLICITA + accessPointId;
+                    success = false;
+                }
+
+                apKeyValue.setKeyType(keyType);
+                apKeyValue.setValue(value);
+                apKeyValue.setScope(scope);
+                keyValueRepository.save(apKeyValue);
+            } else {
+                if (!checkKeyValueUnique(keyType, value, scope, async)) {
+                    value = value + DUPLICITA + accessPointId;
+                    success = false;
+                }
+
+                ApKeyValue apKeyValue = new ApKeyValue();
+                apKeyValue.setKeyType(keyType);
+                apKeyValue.setValue(value);
+                apKeyValue.setScope(scope);
+                keyValueRepository.save(apKeyValue);
+
+                apPart.setKeyValue(apKeyValue);
+                partRepository.save(apPart);
+            }
+
+        } else {
+            ApKeyValue apKeyValue = apPart.getKeyValue();
+            if (apKeyValue != null) {
+                apPart.setKeyValue(null);
+                partRepository.save(apPart);
+                keyValueRepository.delete(apKeyValue);
+            }
+        }
+
+        Map<String, ApIndex> apIndexMapByType = indexRepository.findByPartId(apPart.getPartId()).stream()
+                .collect(Collectors.toMap(ApIndex::getIndexType, Function.identity()));
+
+        for (Map.Entry<String, String> entry : indexMap.entrySet()) {
+
+            String indexType = StringUtils.stripToNull(entry.getKey());
+            if (indexType == null) {
+                throw new SystemException("Neplatný typ indexu ApIndex").set("indexType", indexType);
+            }
+
+            String value = entry.getValue();
+            if (value == null) {
+                throw new SystemException("Neplatná hodnota indexu ApIndex").set("indexType", indexType).set("value", value);
+            }
+
+            if (value.length() > StringLength.LENGTH_4000) {
+                value = value.substring(0, StringLength.LENGTH_4000 - 1);
+                logger.warn("Hodnota indexu byla příliš dlouhá, byla oříznuta: partId={}, indexType={}, value={}", apPart.getPartId(), indexType, value);
+            }
+
+            ApIndex apIndex = apIndexMapByType.remove(indexType);
+
+            if (preferredPart && indexType.equals(DISPLAY_NAME)) {
+                if(!value.equals(apIndex.getValue())) {
+                    //přegenerování entit, které odkazují na entitu, které se mění preferované jméno
+                    checkReferredRecords(apPart);
+                }
+            }
+
+            if (!success && keyType.equals(PT_PREFER_NAME) && indexType.equals(DISPLAY_NAME)) {
+                value = value + DUPLICITA + accessPointId;
+            }
+
+            if (apIndex == null) {
+                apIndex = new ApIndex();
+                apIndex.setPart(apPart);
+                apIndex.setIndexType(indexType);
+                apIndex.setValue(value);
+                indexRepository.save(apIndex);
+            } else {
+                if (!value.equals(apIndex.getValue())) {
+                    apIndex.setValue(value);
+                    indexRepository.save(apIndex);
+                }
+            }
+        }
+
+        // smazat to, co zbylo
+        if (!apIndexMapByType.isEmpty()) {
+            indexRepository.deleteAll(apIndexMapByType.values());
+        }
+        return success;
     }
 
-    /**
-     * Validace unikátnosti jména v daném scope.
-     *
-     * @param scope    třída
-     * @param fullName validované jméno
-     */
-    public void validationNameUnique(final ApScope scope, final String fullName) {
-        if (!isNameUnique(scope, fullName)) {
-            throw new BusinessException("Celé jméno není unikátní v rámci oblasti", RegistryCode.NOT_UNIQUE_FULL_NAME)
-                    .set("fullName", fullName)
-                    .set("scopeId", scope.getScopeId());
+    private void checkReferredRecords(ApPart apPart) {
+        ApAccessPoint accessPoint = apPart.getAccessPoint();
+        List<Integer> dataIdsList = dataRecordRefRepository.findIdsByRecord(accessPoint);
+
+        if(CollectionUtils.isNotEmpty(dataIdsList)) {
+            List<ApAccessPoint> accessPoints = accessPointRepository.findAccessPointsByRefDataId(dataIdsList);
+            if (CollectionUtils.isNotEmpty(accessPoints)) {
+                AccessPointQueueEvent accessPointQueueEvent = new AccessPointQueueEvent(accessPoints);
+                eventPublisher.publishEvent(accessPointQueueEvent);
+            }
         }
     }
 
-    /**
-     * Kontrola, zdali je jméno unikátní v daném scope.
-     *
-     * @param scope    třída
-     * @param fullName validované jméno
-     * @return true pokud je
-     */
-    public boolean isNameUnique(final ApScope scope, final String fullName) {
-        Validate.notNull(scope, "Přístupový bod musí být vyplněn");
-        Validate.notNull(fullName, "Plné jméno musí být vyplněno");
-        int count = partRepository.countUniqueName(fullName, scope);
-        return count <= 1;
+    private boolean checkKeyValueUnique(String keyType, String value, ApScope scope, boolean async) {
+        ApKeyValue apKeyValue = keyValueRepository.findByKeyTypeAndValueAndScope(keyType, value, scope);
+
+        if (!async && apKeyValue != null) {
+            throw new BusinessException("ApKeyValue s tímto typem a hodnotou a scope už existuje.", BaseCode.PROPERTY_IS_INVALID)
+                    .set("keyType", keyType)
+                    .set("value", value)
+                    .set("scope", scope);
+        }
+
+        return apKeyValue == null;
     }
 }

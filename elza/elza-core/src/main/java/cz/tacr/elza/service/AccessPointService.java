@@ -23,6 +23,12 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
+import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
+import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.repository.ApIndexRepository;
+import cz.tacr.elza.repository.ApPartRepository;
+import liquibase.util.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.Validate;
@@ -229,9 +235,6 @@ public class AccessPointService {
     private AccessPointItemService apItemService;
 
     @Autowired
-    private AccessPointGeneratorService apGeneratorService;
-
-    @Autowired
     private SequenceService sequenceService;
 
     @Autowired
@@ -257,6 +260,15 @@ public class AccessPointService {
 
     @Autowired
     private SearchFilterFactory searchFilterFactory;
+
+    @Autowired
+    private ApIndexRepository indexRepository;
+
+    @Autowired
+    private ApPartRepository partRepository;
+
+    @Autowired
+    private RuleService ruleService;
 
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
@@ -782,7 +794,7 @@ public class AccessPointService {
         accessPoint.setPreferredPart(apPart);
 
         partService.createPartItems(apChange, apPart, apPartFormVO, null, null);
-        updatePartValue(apPart);
+        generateSync(accessPoint.getAccessPointId(), apPart);
 
         publishAccessPointCreateEvent(accessPoint);
 
@@ -842,12 +854,13 @@ public class AccessPointService {
             setAccessPointInDataRecordRefs(state.getAccessPoint(), dataRecordRefList, binding);
         }
         dataRecordRefRepository.saveAll(dataRecordRefList);
-        List<ApPart> partList = itemRepository.findPartsByDataRecordRefList(dataRecordRefList);
-        if (CollectionUtils.isNotEmpty(partList)) {
-            for (ApPart part : partList) {
-                updatePartValue(part);
-            }
-        }
+        //TODO fantiš smazat po vyzkoušení, že je OK
+//        List<ApPart> partList = itemRepository.findPartsByDataRecordRefList(dataRecordRefList);
+//        if (CollectionUtils.isNotEmpty(partList)) {
+//            for (ApPart part : partList) {
+//                updatePartValue(part);
+//            }
+//        }
 
         return states;
     }
@@ -876,7 +889,6 @@ public class AccessPointService {
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         createPartsFromEntityXml(procCtx, entity, accessPoint, apChange, sdp, apState, binding);
-        partService.validationNameUnique(apState.getScope(), accessPoint.getPreferredPart().getValue());
 
         publishAccessPointCreateEvent(accessPoint);
 
@@ -907,7 +919,6 @@ public class AccessPointService {
                                                                 procCtx.getApExternalSystem());
 
         createPartsFromEntityXml(procCtx, entity, accessPoint, apChange, sdp, stateNew, binding);
-        partService.validationNameUnique(procCtx.getScope(), accessPoint.getPreferredPart().getValue());
 
         publishAccessPointUpdateEvent(accessPoint);
     }
@@ -947,7 +958,7 @@ public class AccessPointService {
 
         accessPoint.setPreferredPart(findPreferredPart(partList));
 
-        updatePartValues(apState, partList, itemMap);
+        generateSync(accessPoint.getAccessPointId(), apState, partList, itemMap);
     }
 
     /**
@@ -1043,6 +1054,7 @@ public class AccessPointService {
 
             ApPart newPart = partService.createPart(apPart, change);
             changeBindingItemParts(apPart, newPart);
+            changeIndicesToNewPart(apPart, newPart);
 
             List<DataRef> dataRefList = new ArrayList<>();
 
@@ -1055,8 +1067,18 @@ public class AccessPointService {
                 apAccessPoint.setPreferredPart(newPart);
                 saveWithLock(apAccessPoint);
             }
-            updatePartValue(newPart);
+            generateSync(apAccessPoint.getAccessPointId(), newPart);
 //        }
+    }
+
+    private void changeIndicesToNewPart(ApPart apPart, ApPart newPart) {
+        List<ApIndex> indices = indexRepository.findByPartId(apPart.getPartId());
+        if (CollectionUtils.isNotEmpty(indices)) {
+            for (ApIndex index : indices) {
+                index.setPart(newPart);
+            }
+            indexRepository.saveAll(indices);
+        }
     }
 
     private void changeBindingItemParts(ApPart oldPart, ApPart newPart) {
@@ -1065,6 +1087,7 @@ public class AccessPointService {
             for (ApBindingItem bindingItem : bindingItemList) {
                 bindingItem.setPart(newPart);
             }
+            bindingItemRepository.saveAll(bindingItemList);
         }
     }
 
@@ -1079,16 +1102,21 @@ public class AccessPointService {
         return null;
     }
 
-    private void updatePartValues(final ApState state,
-                                  final List<ApPart> partList,
-                                  final Map<Integer, List<ApItem>> itemMap) {
+    public boolean updatePartValues(final ApState state,
+                                    final List<ApPart> partList,
+                                    final Map<Integer, List<ApItem>> itemMap,
+                                    final boolean async) {
+        boolean success = true;
         for (ApPart part : partList) {
             List<ApPart> childrenParts = findChildrenParts(part, partList);
             List<ApItem> items = getItemsForParts(part, childrenParts, itemMap);
 
             GroovyResult result = groovyService.processGroovy(state, part, childrenParts, items);
-            partService.updatePartValue(part, result);
+            if (!partService.updatePartValue(part, result, state, async)) {
+                success = false;
+            }
         }
+        return success;
     }
 
     private List<ApPart> findChildrenParts(final ApPart part, final List<ApPart> partList) {
@@ -1113,7 +1141,8 @@ public class AccessPointService {
         return itemList;
     }
 
-    public void updatePartValues(final Collection<PartWrapper> partWrappers) {
+    public boolean updatePartValues(final Collection<PartWrapper> partWrappers) {
+        boolean success = true;
         for (PartWrapper partWrapper : partWrappers) {
             ApPart apPart = partWrapper.getEntity();
             ApState state = partWrapper.getPartInfo().getApInfo().getApState();
@@ -1125,8 +1154,11 @@ public class AccessPointService {
 
             GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items);
 
-            partService.updatePartValue(apPart, result);
+            if (!partService.updatePartValue(apPart, result, state, false)) {
+                success = false;
+            }
         }
+        return success;
     }
 
     private List<PartWrapper> findChildrenParts(ApPart apPart, Collection<PartWrapper> partWrappers) {
@@ -1164,7 +1196,7 @@ public class AccessPointService {
         return items;
     }
 
-    public void updatePartValue(final ApPart apPart) {
+    public boolean updatePartValue(final ApPart apPart) {
         ApState state = getState(apPart.getAccessPoint());
         List<ApPart> childrenParts = partService.findPartsByParentPart(apPart);
 
@@ -1176,7 +1208,7 @@ public class AccessPointService {
 
         GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items);
 
-        partService.updatePartValue(apPart, result);
+        return partService.updatePartValue(apPart, result, state, false);
     }
 
     public void updateBindingAfterSave(BatchUpdateResultXml batchUpdateResult, Integer accessPointId, String externalSystemCode) {
@@ -1373,8 +1405,7 @@ public class AccessPointService {
 
             accessPoint.setPreferredPart(findPreferredPart(entity.getPrts().getList(), newBindingParts));
 
-            updatePartValues(state, partList, itemMap);
-            partService.validationNameUnique(state.getScope(), accessPoint.getPreferredPart().getValue());
+            generateSync(accessPoint.getAccessPointId(), state, partList, itemMap);
         }
     }
 
@@ -1545,10 +1576,7 @@ public class AccessPointService {
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         saveWithLock(accessPoint);
-
-        ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
-        //apGeneratorService.generateAndSetResult(accessPoint, change);
-        apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
+        generateSync(accessPoint.getAccessPointId());
     }
 
     /**
@@ -1943,11 +1971,6 @@ public class AccessPointService {
         if (newApType != null) {
             saveWithLock(accessPoint);
         }
-        apGeneratorService.generateAsyncAfterCommit(accessPoint.getAccessPointId(), change.getChangeId());
-
-        if (newApScope != null) {
-            partService.validationNameUnique(newApScope, accessPoint.getPreferredPart().getValue());
-        }
 
         publishAccessPointUpdateEvent(accessPoint);
         reindexDescItem(accessPoint);
@@ -2024,7 +2047,7 @@ public class AccessPointService {
 
         accessPoint.setPreferredPart(apPart);
         saveWithLock(accessPoint);
-        updatePartValue(apPart);
+        generateSync(accessPoint.getAccessPointId(), apPart);
     }
 
     public void checkUniqueBinding(ApScope scope, String archiveEntityId, String externalSystemCode) {
@@ -2172,6 +2195,101 @@ public class AccessPointService {
         headers.add("Content-type",  contentType + "; charset=utf-8");
         headers.add("Content-disposition", "attachment; filename=file." + extension);
         return headers;
+    }
+
+    public void generateSync(final Integer accessPointId, final ApPart apPart) {
+        boolean successfulGeneration = updatePartValue(apPart);
+        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPointId);
+        updateValidationErrors(accessPointId, apValidationErrorsVO, successfulGeneration);
+    }
+
+    public void generateSync(final Integer accessPointId) {
+        ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
+        ApState apState = getState(accessPoint);
+        List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
+        Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
+                .collect(Collectors.groupingBy(ApItem::getPartId));
+
+        generateSync(accessPointId, apState, partList, itemMap);
+    }
+
+    private void generateSync(final Integer accessPointId,
+                             final ApState apState,
+                             final List<ApPart> partList,
+                             final Map<Integer, List<ApItem>> itemMap) {
+
+        boolean successfulGeneration = updatePartValues(apState, partList, itemMap, false);
+        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPointId);
+        updateValidationErrors(accessPointId, apValidationErrorsVO, successfulGeneration);
+    }
+
+
+    /**
+     * Zapsání validačních chyb přístupového bodu do databáze.
+     *
+     * @param apValidationErrorsVO chyby přístupového bodu
+     * @param successfulGeneration úspěšné generování keyValue
+     */
+    public void updateValidationErrors(final Integer accessPointId,
+                                       final ApValidationErrorsVO apValidationErrorsVO,
+                                       final boolean successfulGeneration) {
+        ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
+
+        StringBuilder accessPointErrors = new StringBuilder();
+        if (CollectionUtils.isNotEmpty(apValidationErrorsVO.getErrors())) {
+            for (String error : apValidationErrorsVO.getErrors()) {
+                accessPointErrors.append(error).append("\n");
+            }
+        }
+        if (!successfulGeneration) {
+            accessPointErrors.append("Duplicitní key value přístupového bodu.");
+        }
+
+        List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
+        boolean partError = false;
+        if (CollectionUtils.isNotEmpty(partList)) {
+            for (ApPart part : partList) {
+                PartValidationErrorsVO partErrorList = findPartValidationErrors(part.getPartId(), apValidationErrorsVO);
+                if (partErrorList != null && CollectionUtils.isNotEmpty(partErrorList.getErrors())) {
+                    StringBuilder partErrors = new StringBuilder();
+                    for (String error : partErrorList.getErrors()) {
+                        partErrors.append(error).append("\n");
+                    }
+                    part.setErrorDescription(partErrors.toString());
+                    part.setState(ApStateEnum.ERROR);
+                    partError = true;
+                } else {
+                    part.setErrorDescription(null);
+                    part.setState(ApStateEnum.OK);
+                }
+            }
+
+            partRepository.saveAll(partList);
+        }
+
+
+        if (StringUtils.isNotEmpty(accessPointErrors.toString()) || partError) {
+            accessPoint.setErrorDescription(accessPointErrors.toString());
+            accessPoint.setState(ApStateEnum.ERROR);
+        } else {
+            accessPoint.setErrorDescription(null);
+            accessPoint.setState(ApStateEnum.OK);
+        }
+
+        apAccessPointRepository.save(accessPoint);
+    }
+
+    @Nullable
+    private PartValidationErrorsVO findPartValidationErrors(final Integer partId,
+                                                            final ApValidationErrorsVO apValidationErrorsVO) {
+        if (apValidationErrorsVO != null && CollectionUtils.isNotEmpty(apValidationErrorsVO.getPartErrors())) {
+            for (PartValidationErrorsVO partValidationErrors : apValidationErrorsVO.getPartErrors()) {
+                if (partValidationErrors.getId().equals(partId)) {
+                    return partValidationErrors;
+                }
+            }
+        }
+        return null;
     }
 
     /**

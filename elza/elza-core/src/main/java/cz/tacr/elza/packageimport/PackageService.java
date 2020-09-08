@@ -31,6 +31,8 @@ import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.service.AccessPointGeneratorService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -424,6 +426,9 @@ public class PackageService {
 
     @Autowired
     private AsyncRequestService asyncRequestService;
+
+    @Autowired
+    private AccessPointGeneratorService accessPointGeneratorService;
 
     /**
      * Provede import balíčku.
@@ -1434,6 +1439,8 @@ public class PackageService {
         } catch (IOException e) {
             throw new SystemException(e);
         }
+
+        enqueueAccessPoints();
 
         return rulExtensionRulesNew;
     }
@@ -2935,6 +2942,98 @@ public class PackageService {
             xmlFile.delete();
         }
     }
+
+    private void enqueueAccessPoints() {
+        List<ApState> stateList = apStateRepository.findActiveStates();
+        if (CollectionUtils.isNotEmpty(stateList)) {
+            for (ApState state : stateList) {
+                accessPointGeneratorService.generateAsync(state.getAccessPoint());
+            }
+        }
+    }
+
+//    private void enqueueAccessPoints(RulStructureDefinition rulStructureDefinition) {
+//        if(rulGroovyScript.getAeType() == null) {
+//            List<ApState> stateList = apStateRepository.findActiveStates();
+//            if (CollectionUtils.isNotEmpty(stateList)) {
+//                for (ApState state : stateList) {
+//                    accessPointGeneratorService.generateAsync(state.getAccessPoint());
+//                }
+//            }
+//        } else {
+//            List<ApType> apTypeList = findTreeApTypes(rulGroovyScript.getAeType().getId());
+//            if (CollectionUtils.isNotEmpty(apTypeList)) {
+//                List<ApState> stateList = apStateRepository.findActiveStatesByApTypes(apTypeList);
+//                for(ApState state : stateList) {
+//                    accessPointGeneratorService.generateAsync(state.getAccessPoint());
+//                }
+//            }
+//        }
+//    }
+//
+//    private void enqueueAccessPoints(RulStructureExtensionDefinition rulStructureExtensionDefinition) {
+////        if(rulGroovyScript.getAeType() == null) {
+////            List<IRecord> iRecordList = iRQS.getRecordRepository().findAll();
+////            for(IRecord iRecord : iRecordList) {
+////                iRQS.addToSet(iRecord);
+////            }
+////        } else {
+////            List<RulAeType> rulAeTypeList = findTreeAeTypes(rulGroovyScript.getAeType().getId());
+////            for(RulAeType rulAeType : rulAeTypeList) {
+////                List<? extends IRecord> iRecordList = iRQS.findAllByAeTypeId(rulAeType.getAeTypeId());
+////                for(IRecord iRecord : iRecordList) {
+////                    iRQS.addToSet(iRecord);
+////                }
+////            }
+////        }
+//    }
+//
+//    private void enqueueAccessPoints(RulExtensionRule rulExtensionRule) {
+////        if(rulDrl.getAeType() == null) {
+////            List<IRecord> iRecordList = iRQS.getRecordRepository().findAll();
+////            for(IRecord iRecord : iRecordList) {
+////                iRQS.addToSet(iRecord);
+////            }
+////        } else {
+////            List<RulAeType> rulAeTypeList = findTreeAeTypes(rulDrl.getAeType().getId());
+////            for(RulAeType rulAeType : rulAeTypeList) {
+////                List<? extends IRecord> iRecordList = iRQS.findAllByAeTypeId(rulAeType.getAeTypeId());
+////                for(IRecord iRecord : iRecordList) {
+////                    iRQS.addToSet(iRecord);
+////                }
+////            }
+////        }
+//    }
+
+    private List<ApType> findTreeApTypes(final Integer id) {
+        List<ApType> apTypes = apTypeRepository.findAll();
+        return findTreeApTypes(apTypes, id);
+    }
+
+    private List<ApType> findTreeApTypes(final List<ApType> apTypes, final Integer id) {
+        ApType parent = getApTypeById(apTypes, id);
+        Set<ApType> result = new HashSet<>();
+        if (parent != null) {
+            result.add(parent);
+            for (ApType item : apTypes) {
+                if (parent.equals(item.getParentApType())) {
+                    result.addAll(findTreeApTypes(apTypes, item.getApTypeId()));
+                }
+            }
+        }
+        return new ArrayList<>(result);
+    }
+
+    @Nullable
+    private ApType getApTypeById(final List<ApType> apTypes, final Integer id) {
+        for (ApType apType : apTypes) {
+            if (apType.getApTypeId().equals(id)) {
+                return apType;
+            }
+        }
+        return null;
+    }
+
 
     public Boolean getTesting() {
         return testing;
