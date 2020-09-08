@@ -105,7 +105,7 @@ public class Structured {
      * @throws Throw
      *             exception if there are multiple items with same type.
      */
-    Item getSingleItem(final String typeCode) {
+    public Item getSingleItem(final String typeCode) {
         load();
 
         Validate.notEmpty(typeCode);

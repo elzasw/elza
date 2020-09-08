@@ -36,8 +36,6 @@ import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -49,7 +47,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.Item;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -60,7 +57,6 @@ import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.print.item.ItemType;
 import cz.tacr.elza.print.item.convertors.ItemConvertorContext;
 import cz.tacr.elza.print.item.convertors.OutputItemConvertor;
-import cz.tacr.elza.print.part.Part;
 import cz.tacr.elza.print.party.Institution;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
@@ -160,6 +156,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     private StructuredItemRepository structItemRepos;
 
     private OffsetDateTime changeDateTime;
+
+    private OutputItemConvertor itemConvertor = new OutputItemConvertor(this);
 
     public OutputModel(final StaticDataService staticDataService,
                        final ElzaLocale elzaLocale,
@@ -405,21 +403,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         return nodes;
     }
 
-    private List<cz.tacr.elza.print.item.Item> convertItems(List<? extends Item> srcItems) {
-        OutputItemConvertor conv = new OutputItemConvertor(this);
-        List<cz.tacr.elza.print.item.Item> result = srcItems.stream()
-                .map(i -> conv.convert(i))
-                /*
-                // add packet reference
-                if (item instanceof ItemStructuredRef) {
-                    item.getValue(Structured.class).addNodeId(node.getNodeId());
-                }*/
-                .filter(Objects::nonNull)
-                .sorted(cz.tacr.elza.print.item.Item::compareTo)
-                .collect(Collectors.toList());
-        return result;
-    }
-
     /**
      * Initializes output model. Must be called inside transaction.
      */
@@ -571,28 +554,11 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         ApState apState = apStateRepository.findLastByAccessPoint(ap);
 
         RecordType type = getAPType(apState.getApTypeId());
-        record = new Record(ap, type, staticData, apStateRepository, bindingRepository, partRepository, bindingStateRepository);
-        List<ApPart> apParts = partRepository.findValidPartByAccessPoint(ap);
-        List<ApItem> apItems = itemRepository.findValidItemsByAccessPoint(ap);
-        List<Part> parts = new ArrayList<>(apParts.size());
-        for (ApPart apPart : apParts) {
-            Part part = new Part(apPart, staticData);
-            List<ApItem> partItems = new ArrayList<>();
-            for(ApItem apItem : apItems) {
-                if(apItem.getPart().getPartId().intValue() == part.getPartId()) {
-                    partItems.add(apItem);
-                }
-            }
-           // List<ApItem> apItems = itemRepository.findValidItemsByPartId(part.getPartId());
-
-            part.setItems(convertItems(partItems));
-            if(part.getPartId() == ap.getPreferredPart().getPartId()) {
-                record.setPreferredPart(part);
-            }
-            parts.add(part);
-        }
-        parts = Collections.unmodifiableList(parts);
-        record.setParts(parts);
+        record = new Record(ap, type, staticData, apStateRepository,
+                bindingRepository, partRepository, itemRepository,
+                bindingStateRepository,
+                itemConvertor
+                );
 
         // add to lookup
         apIdMap.put(ap.getAccessPointId(), record);

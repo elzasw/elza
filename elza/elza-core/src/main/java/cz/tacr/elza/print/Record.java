@@ -10,20 +10,20 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.core.data.PartType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.print.ap.ExternalId;
-import cz.tacr.elza.print.ap.Name;
 import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.item.convertors.OutputItemConvertor;
 import cz.tacr.elza.print.part.Part;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 
@@ -48,33 +48,34 @@ public class Record {
 
     private final ApPartRepository partRepository;
 
+    private final ApItemRepository itemRepository;
+
     private List<ExternalId> eids;
 
     private List<Part> parts;
 
-    private final Map<Integer, PartType> partTypeIdMap = new HashMap<>();
-
-    private final Map<Integer, Part> partIdMap = new HashMap<>();
-
     private Part preferredPart;
 
-    //private final
+    private OutputItemConvertor outputItemConvertor;
 
-    public Record(ApAccessPoint ap,
-                  RecordType type,
-                  StaticDataProvider staticData,
-                  ApStateRepository stateRepository,
-                  ApBindingRepository bindingRepository,
-                  ApPartRepository partRepository,
-                  ApBindingStateRepository bindingStateRepository) {
+    public Record(final ApAccessPoint ap,
+                  final RecordType type,
+                  final StaticDataProvider staticData,
+                  final ApStateRepository stateRepository,
+                  final ApBindingRepository bindingRepository,
+                  final ApPartRepository partRepository,
+                  final ApItemRepository itemRepository,
+                  final ApBindingStateRepository bindingStateRepository,
+                  final OutputItemConvertor outputItemConvertor) {
         this.ap = ap;
         this.type = type;
         this.staticData = staticData;
         this.stateRepository = stateRepository;
         this.bindingRepository = bindingRepository;
         this.partRepository = partRepository;
+        this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
-       // this.preferredPart = new Part(partRepository.getOne(ap.getPreferredPart().getPartId()), staticData);
+        this.outputItemConvertor = outputItemConvertor;
     }
 
     /**
@@ -87,9 +88,66 @@ public class Record {
         this.stateRepository = src.stateRepository;
         this.bindingRepository = src.bindingRepository;
         this.partRepository = src.partRepository;
+        this.itemRepository = src.itemRepository;
         this.eids = src.eids;
         this.preferredPart = src.preferredPart;
+        this.parts = src.parts;
         this.bindingStateRepository = src.bindingStateRepository;
+        this.outputItemConvertor = src.outputItemConvertor;
+    }
+
+    public void loadData(List<ApPart> apParts, List<ApItem> apItems) {
+
+        List<Part> subParts = new ArrayList<>();
+        Map<Integer, Part> partIdMap = new HashMap<>();
+
+        // prepare parts
+        parts = new ArrayList<>(apParts.size());
+        for (ApPart apPart : apParts) {
+            Part part = new Part(apPart, staticData);
+
+            partIdMap.put(apPart.getPartId(), part);
+
+            if (part.getParentPartId() != null) {
+                subParts.add(part);
+            } else {
+                // set preferred part
+                if (ap.getPreferredPart().getPartId() == apPart.getPartId()) {
+                    preferredPart = part;
+                }
+                parts.add(part);
+            }
+        }
+        parts = Collections.unmodifiableList(parts);
+
+        Map<Part, List<Part>> subPartMap = new HashMap<>();
+        // process sub parts
+        for (Part subPart : subParts) {
+            Part parent = partIdMap.get(subPart.getPartId());
+            Validate.notNull(parent, "Parent part not found, partId = %i", subPart.getPartId());
+            List<Part> partList = subPartMap.computeIfAbsent(parent, p -> new ArrayList<>());
+            partList.add(subPart);
+        }
+        // store subparts
+        subPartMap.forEach((part, list) -> part.setParts(list));
+
+        // process items
+        for (ApItem apItem : apItems) {
+            Part part = partIdMap.get(apItem.getPartId());
+            Validate.notNull(part, "Part not found, partId: %i", apItem.getPartId());
+            Item item = outputItemConvertor.convert(apItem);
+            part.addItem(item);
+        }
+    }
+
+    private void loadParts() {
+        if (parts != null) {
+            return;
+        }
+
+        List<ApPart> apParts = partRepository.findValidPartByAccessPoint(ap);
+        List<ApItem> apItems = itemRepository.findValidItemsByAccessPoint(ap);
+        loadData(apParts, apItems);
     }
 
     public Integer getId() {
@@ -104,13 +162,6 @@ public class Record {
         return type;
     }
 
-    public Name getPrefName() {
-        return null;
-    }
-
-    public List<Name> getNames() {
-        return null;
-    }
     public List<ExternalId> getEids() {
         if (eids == null) {
             List<ApBindingState> apEids = bindingStateRepository.findByAccessPoint(ap);
@@ -141,28 +192,9 @@ public class Record {
         }
     }
 
-    public Part getPart(Integer partId) {
-        Part part = partIdMap.get(partId);
-        if (part != null) {
-            return part;
-        }
-        ApPart apPart = partRepository.findById(partId)
-                .orElseThrow(() -> new ObjectNotFoundException("Parta neexistuje", BaseCode.ID_NOT_EXIST).setId(partId));
-        part = new Part(apPart, staticData);
-        partIdMap.put(partId, part);
-        return part;
-    }
-
     public List<Part> getParts() {
-        if (parts == null) {
-            List<ApPart> apParts = partRepository.findValidPartByAccessPoint(ap);
-            parts = new ArrayList<>(apParts.size());
-            for (ApPart apPart : apParts) {
-                Part part = new Part(apPart, staticData);
-                parts.add(part);
-            }
-            parts = Collections.unmodifiableList(parts);
-        }
+        loadParts();
+
         return parts;
     }
 
@@ -173,7 +205,7 @@ public class Record {
      * @return
      */
     public Part getPart(final String partTypeCode) {
-        parts = getParts(partTypeCode);
+        final List<Part> parts = getParts(partTypeCode);
         if (parts.size() == 0) {
             return null;
         }
@@ -191,10 +223,7 @@ public class Record {
 
     public List<Part> getParts(final Collection<String> partTypeCodes) {
         Validate.notNull(partTypeCodes);
-
-        if (parts == null || partTypeCodes.isEmpty()) {
-            return Collections.emptyList();
-        }
+        loadParts();
 
         return parts.stream().filter(part -> {
             String partTypeCode = part.getPartType().getCode();
@@ -203,9 +232,8 @@ public class Record {
     }
 
     public List<Item> getItems() {
-        if (parts == null) {
-            return null;
-        }
+        loadParts();
+
         List<Item> itemList = new ArrayList<>();
         for (Part part : parts) {
             itemList.addAll(part.getItems());
@@ -230,6 +258,8 @@ public class Record {
     }
 
     public Part getPreferredPart() {
+        loadParts();
+
         return preferredPart;
     }
 

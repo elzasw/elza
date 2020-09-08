@@ -1,16 +1,18 @@
 package cz.tacr.elza.print.part;
 
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.print.item.Item;
-import cz.tacr.elza.print.item.ItemSpec;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.item.ItemSpec;
 
 public class Part {
 
@@ -24,7 +26,9 @@ public class Part {
 
     private final PartType partType;
 
-    private List<Item> items;
+    private List<Item> items = new ArrayList<>();
+
+    private List<Part> parts = Collections.emptyList();
 
     public Part(ApPart apPart, StaticDataProvider staticData) {
         this.partId = apPart.getPartId();
@@ -34,7 +38,9 @@ public class Part {
         this.partType = new PartType(staticData.getPartTypeById(apPart.getPartTypeId()));
     }
 
-    public List<Item> getItems() { return items;};
+    public List<Item> getItems() {
+        return items;
+    };
 
     /**
      * @param typeCodes seznam kódů typů atributů.
@@ -125,10 +131,6 @@ public class Part {
         return StringUtils.EMPTY;
     }
 
-    public void setItems(List<Item> items) {
-        this.items = items;
-    }
-
     public PartType getPartType() {
         return partType;
     }
@@ -149,5 +151,16 @@ public class Part {
         return parentPartId;
     }
 
+    public void setParts(final List<Part> subParts) {
+        parts = subParts;
+    }
+
+    public List<Part> getParts() {
+        return parts;
+    }
+
+    public void addItem(Item item) {
+        this.items.add(item);
+    }
 
 }
