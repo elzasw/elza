@@ -152,7 +152,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 	        try (OutputGenerator generator = outputGeneratorFactory.createOutputGenerator(engine)) {
 	            generator.init(params);
 	            ArrOutputResult result = generator.generate();
-	            if (template.getTemplate().getSchemaValidace() != null) {
+	            if (template.getTemplate().getValidationSchema() != null) {
 	            	validate(template, result);
 	            }
 	        } catch (IOException e) {

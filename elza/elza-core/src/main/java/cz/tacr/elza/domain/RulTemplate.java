@@ -69,7 +69,8 @@ public class RulTemplate {
     @Column(nullable = false)
     private Boolean deleted;
 
-    private String schemaValidace;
+    @Column(length = StringLength.LENGTH_250, nullable = false)
+    private String validationSchema;
 
     public Integer getTemplateId() {
         return templateId;
@@ -168,12 +169,12 @@ public class RulTemplate {
         this.deleted = deleted;
     }
 
-    public String getSchemaValidace() {
-		return schemaValidace;
+    public String getValidationSchema() {
+		return validationSchema;
 	}
 
-	public void setSchemaValidace(String schemaValidace) {
-		this.schemaValidace = schemaValidace;
+    public void setValidationSchema(final String validationSchema) {
+        this.validationSchema = validationSchema;
 	}
 
 	/**

@@ -869,7 +869,7 @@
 
     <changeSet id="20200908122500" author="sergey.iryupin">
       <addColumn tableName="rul_template">
-        <column name="schema_validace" type="varchar(250)" />
+        <column name="validation_schema" type="varchar(250)" />
       </addColumn>
     </changeSet>
 

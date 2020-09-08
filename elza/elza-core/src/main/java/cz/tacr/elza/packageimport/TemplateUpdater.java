@@ -187,7 +187,7 @@ public class TemplateUpdater {
         rulTemplate.setMimeType(template.getMimeType());
         rulTemplate.setExtension(template.getExtension());
         rulTemplate.setDeleted(false);
-        rulTemplate.setSchemaValidace(template.getSchemaValidace());
+        rulTemplate.setValidationSchema(template.getValidationSchema());
 
         // Find output type
         List<RulOutputType> findItems = outputTypes.stream()
