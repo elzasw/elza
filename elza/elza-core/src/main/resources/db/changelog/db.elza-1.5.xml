@@ -80,11 +80,12 @@
     </changeSet>
 
     <changeSet id="20200901120600" author="fantis">
+        <validCheckSum>8:ec052316d83d3f09d2981838e1901cf6</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">SELECT count(*) FROM db_hibernate_sequences WHERE sequence_name = 'rul_item_type_spec_assign|item_type_spec_assign_id'</sqlCheck>
         </preConditions>
         <sql>INSERT INTO db_hibernate_sequences (sequence_name, next_val)
-            SELECT 'rul_item_type_spec_assign|item_type_spec_assign_id', COALESCE(MAX(item_type_spec_assign_id),0)+1
+            SELECT 'rul_item_type_spec_assign|item_type_spec_assign_id', COALESCE(MAX(item_type_spec_assign_id),0)+30
             FROM rul_item_type_spec_assign</sql>
     </changeSet>
 
