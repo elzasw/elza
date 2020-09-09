@@ -4,14 +4,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.repository.*;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +31,15 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.OutputTypeRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -76,6 +83,9 @@ public class OutputModelTest extends AbstractServiceTest {
 
     @Autowired
     ApBindingStateRepository bindingStateRepository;
+
+    @Autowired
+    DaoLinkRepository daoLinkRepository;
 
     // test output with structObjs
     @Test
@@ -146,7 +156,9 @@ public class OutputModelTest extends AbstractServiceTest {
         helperTestService.waitForWorkers();
         OutputModel outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
-                bindingRepository,null, structObjRepos, structItemRepos, partRepository, itemRepository, bindingStateRepository);
+                bindingRepository, null, structObjRepos, structItemRepos, partRepository, itemRepository,
+                bindingStateRepository,
+                daoLinkRepository);
 
         ArrOutput output = new ArrOutput();
         output.setFund(fi.getFund());

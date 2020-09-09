@@ -16,7 +16,8 @@ rule "Mozne v ramci zjednoduseneho puvodce"
 when
   $itemType : RulItemTypeExt(code in ( 
                "HISTORY", "GENEALOGY", "BIOGRAPHY",
-               "CORP_PURPOSE", "FOUNDING_NORMS", "SCOPE_NORMS", "CORP_STRUCTURE"
+               "CORP_PURPOSE", "FOUNDING_NORMS", "SCOPE_NORMS", "CORP_STRUCTURE",
+               "ZP2015_ORIGINATOR"
               ) )
 then
   $itemType.setRepeatable(false);

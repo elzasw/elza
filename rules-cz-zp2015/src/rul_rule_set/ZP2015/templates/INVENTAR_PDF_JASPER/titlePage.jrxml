@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.14.0.final using JasperReports Library version 6.14.0-2ab0d8625be255bf609c78e1181801213e51db8f  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="titlePage" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="dd0267be-517a-4d78-bc37-65bd954e2a10">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -27,7 +27,7 @@
 	<detail>
 		<band height="682">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement style="Title" x="0" y="303" width="455" height="50" uuid="6169d08a-6fdd-4b38-86fa-d19042c2b9d9"/>
 				<box bottomPadding="20"/>
 				<textElement textAlignment="Center">
@@ -40,7 +40,7 @@
 				<textElement textAlignment="Center"/>
 				<textFieldExpression><![CDATA[$P{output}.getSingleItemValue( "ZP2015_DATE_RANGE" )]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement x="0" y="0" width="455" height="22" uuid="569bfdb1-6510-4732-ac7e-e7f018d39e20">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -51,9 +51,9 @@
 				<textElement>
 					<font size="14" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getRecord().getPrefName().getName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getRecord().getPreferredPart().getValue()]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement positionType="Float" x="0" y="23" width="455" height="27" uuid="702942b3-54f1-49f1-adff-3ad8ae566325"/>
 				<box topPadding="5" bottomPadding="5">
 					<bottomPen lineWidth="1.0"/>
@@ -81,7 +81,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["NAD č. "+$P{fund}.getFundNumber()]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement positionType="Float" x="0" y="61" width="455" height="20" uuid="23d30e4b-4b64-42af-bd93-1e68ba43e2ba">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
@@ -90,7 +90,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$P{output}.getSingleItem("ZP2015_OUTPUT_TYPE")!=null?$P{output}.getSingleItem("ZP2015_OUTPUT_TYPE").getSpecification().getName():""]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement x="0" y="410" width="455" height="250" uuid="e0778e82-e190-4d85-8ff8-3d44f5eaeea5">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
@@ -99,7 +99,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Zpracoval: "+$P{output}.getSingleItemValue( "ZP2015_ARRANGER_TEXT" )]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement mode="Transparent" x="0" y="668" width="455" height="14" backcolor="#FF0400" uuid="af89dff7-c912-4296-ae4b-aba8f44b7ffc">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
