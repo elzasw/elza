@@ -903,6 +903,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
     private void createOtherRelParts(Integer accessPointId, ResultSet rs) throws DatabaseException, SQLException {
         Integer parRelationId = rs.getInt("relation_id");
+        String itemTypeCode = null;
         String itemSpecCode = null;
         String fromUnitdateTypeCode = null;
         String toUnitdateTypeCode = null;
@@ -917,20 +918,30 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         Integer partId = createApPart(accessPointId, rulPartTypeMap.get(convertRelEventMap.get(rs.getString("relation_type_code"))), null);
 
         if (convertRelEventMap.get(rs.getString("relation_type_code")).equals(RulPartTypeCode.PT_CRE.code)) {
-            fromUnitdateTypeCode = "CRE_DATE";
+            fromUnitdateTypeCode = ItemTypeCode.CRE_DATE.code;
+            itemTypeCode = ItemTypeCode.CRE_CLASS.code;
         } else if (convertRelEventMap.get(rs.getString("relation_type_code")).equals(RulPartTypeCode.PT_EVENT.code)) {
-            fromUnitdateTypeCode = "EV_BEGIN";
-            toUnitdateTypeCode = "EV_END";
+            fromUnitdateTypeCode = ItemTypeCode.EV_BEGIN.code;
+            toUnitdateTypeCode = ItemTypeCode.EV_END.code;
+            itemTypeCode = ItemTypeCode.EV_TYPE.code;
         } else if (convertRelEventMap.get(rs.getString("relation_type_code")).equals(RulPartTypeCode.PT_EXT.code)) {
-            toUnitdateTypeCode = "EXT_DATE";
+            toUnitdateTypeCode = ItemTypeCode.EXT_DATE.code;
+            itemTypeCode = ItemTypeCode.EXT_CLASS.code;
         }
+
+        //třída
+        Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+        Integer dataId = createArrData(dataTypeId);
+        createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), rulItemSpecMap.get(itemSpecCode));
+        storeNullValue(dataId, dataTypeId);
+
         //zpracování from_unitdate_id
         int fromUnitdateId = rs.getInt("from_unitdate_id");
         String noteUnitDateFrom = null;
         if (fromUnitdateId > 0 && fromUnitdateTypeCode != null) {
-            String itemTypeCode = fromUnitdateTypeCode;
-            Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-            Integer dataId = createArrData(dataTypeId);
+            itemTypeCode = fromUnitdateTypeCode;
+            dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+            dataId = createArrData(dataTypeId);
             createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
             noteUnitDateFrom = storeUnitdateValue(dataId, dataTypeId, fromUnitdateId);
         }
@@ -939,9 +950,9 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         int validToUnitdateId = rs.getInt("to_unitdate_id");
         String noteUnitDateTo = null;
         if (validToUnitdateId > 0 && toUnitdateTypeCode != null) {
-            String itemTypeCode = toUnitdateTypeCode;
-            Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-            Integer dataId = createArrData(dataTypeId);
+            itemTypeCode = toUnitdateTypeCode;
+            dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+            dataId = createArrData(dataTypeId);
             createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
             noteUnitDateTo = storeUnitdateValue(dataId, dataTypeId, validToUnitdateId);
         }
@@ -949,9 +960,9 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         //zpracování note
         String text = rs.getString("note");
         if ((text != null && !text.isEmpty()) || (noteUnitDateFrom != null && !noteUnitDateFrom.isEmpty()) || (noteUnitDateTo != null && !noteUnitDateTo.isEmpty())) {
-            String itemTypeCode = ItemTypeCode.NOTE.code;
-            Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-            Integer dataId = createArrData(dataTypeId);
+            itemTypeCode = ItemTypeCode.NOTE.code;
+            dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+            dataId = createArrData(dataTypeId);
             createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
             if (noteUnitDateFrom != null && !noteUnitDateFrom.isEmpty()) {
                 if (text == null) {
@@ -971,9 +982,9 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         //zpracování source
         text = rs.getString("source");
         if (text != null && !text.isEmpty()) {
-            String itemTypeCode = ItemTypeCode.SOURCE_INFO.code;
-            Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-            Integer dataId = createArrData(dataTypeId);
+            itemTypeCode = ItemTypeCode.SOURCE_INFO.code;
+            dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+            dataId = createArrData(dataTypeId);
             createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
             storeStringValue(dataId, dataTypeId, text);
         }
@@ -1366,6 +1377,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         convertPersonPartyTypeItemSpec = new HashMap<>();
         convertPersonPartyTypeItemSpec.put("PERSON", "CRC_BIRTH");
         convertPersonPartyTypeItemSpec.put("PARTY_GROUP", "CRC_RISE");
+        convertPersonPartyTypeItemSpec.put("GROUP_PARTY", "CRC_RISE");
         convertPersonPartyTypeItemSpec.put("EVENT", "CRC_ORIGIN");
         convertPersonPartyTypeItemSpec.put("DYNASTY", "CRC_FIRSTMBIRTH");
     }
@@ -1374,6 +1386,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         convertExtinctionPartyTypeItemSpec = new HashMap<>();
         convertExtinctionPartyTypeItemSpec.put("PERSON", "EXC_DEATH");
         convertExtinctionPartyTypeItemSpec.put("PARTY_GROUP", "EXC_EXTINCTION");
+        convertExtinctionPartyTypeItemSpec.put("GROUP_PARTY", "EXC_EXTINCTION");
         convertExtinctionPartyTypeItemSpec.put("EVENT", "EXC_END");
         convertExtinctionPartyTypeItemSpec.put("DYNASTY", "EXC_LASTMDEATH");
     }
@@ -2011,7 +2024,14 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         GENEALOGY("GENEALOGY"),
         REL_BEGIN("REL_BEGIN"),
         REL_END("REL_END"),
-        REL_ENTITY("REL_ENTITY");
+        REL_ENTITY("REL_ENTITY"),
+        CRE_CLASS("CRE_CLASS"),
+        CRE_DATE("CRE_DATE"),
+        EV_BEGIN("EV_BEGIN"),
+        EV_END("EV_END"),
+        EV_TYPE("EV_TYPE"),
+        EXT_CLASS("EXT_CLASS"),
+        EXT_DATE("EXT_DATE");
 
 
         private String code;
@@ -2291,6 +2311,30 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         rit.setValueUnique(false);
         rulItemTypesImport.add(rit);
 
+        rit = new RulItemType();
+        rit.setCode("EV_TYPE");
+        rit.setDataTypeCode("ENUM");
+        rit.setUseSpecification(true);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("CRE_CLASS");
+        rit.setDataTypeCode("ENUM");
+        rit.setUseSpecification(true);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
+        rit = new RulItemType();
+        rit.setCode("EXT_CLASS");
+        rit.setDataTypeCode("ENUM");
+        rit.setUseSpecification(true);
+        rit.setCanBeOrdered(false);
+        rit.setValueUnique(false);
+        rulItemTypesImport.add(rit);
+
 
     }
 
@@ -2412,10 +2456,12 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         CRC_BIRTH("CRC_BIRTH"),
         CRC_RISE("CRC_RISE"),
         CRC_ORIGIN("CRC_ORIGIN"),
+        CRC_BEGINVALIDNESS("CRC_BEGINVALIDNESS"),
         CRC_FIRSTMBIRTH("CRC_FIRSTMBIRTH"),
         EXC_DEATH("EXC_DEATH"),
         EXC_EXTINCTION("EXC_EXTINCTION"),
         EXC_END("EXC_END"),
+        EXC_ENDVALIDNESS("EXC_ENDVALIDNESS"),
         EXC_LASTMDEATH("EXC_LASTMDEATH"),
         INTERPI("INTERPI");
 
