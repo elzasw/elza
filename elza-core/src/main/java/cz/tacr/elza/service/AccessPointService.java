@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Sort;
@@ -45,19 +44,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import cz.tacr.cam.schema.cam.BatchEntityRecordRevXml;
-import cz.tacr.cam.schema.cam.BatchInfoXml;
-import cz.tacr.cam.schema.cam.BatchUpdateErrorXml;
-import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
-import cz.tacr.cam.schema.cam.BatchUpdateSavedXml;
-import cz.tacr.cam.schema.cam.BatchUpdateXml;
-import cz.tacr.cam.schema.cam.EntityRecordStateXml;
-import cz.tacr.cam.schema.cam.EntityXml;
-import cz.tacr.cam.schema.cam.ErrorMessageXml;
-import cz.tacr.cam.schema.cam.LongStringXml;
-import cz.tacr.cam.schema.cam.PartXml;
-import cz.tacr.cam.schema.cam.UuidXml;
-import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
@@ -102,7 +88,6 @@ import cz.tacr.elza.domain.RulItemAptype;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
-import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
@@ -113,7 +98,6 @@ import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -133,12 +117,6 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.cam.CamHelper;
-import cz.tacr.elza.service.cam.CreateEntityBuilder;
-import cz.tacr.elza.service.cam.ProcessingContext;
-import cz.tacr.elza.service.cam.SyncEntityRequest;
-import cz.tacr.elza.service.cam.UpdateEntityBuilder;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.DataRef;
@@ -194,19 +172,10 @@ public class AccessPointService {
     private UserService userService;
 
     @Autowired
-    private SettingsService settingsService;
-
-    @Autowired
-    private ArrangementCacheService arrangementCacheService;
-
-    @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 
     @Autowired
     private DescriptionItemService descriptionItemService;
-
-    @Autowired
-    private ApplicationContext applicationContext;
 
     @Autowired
     private DescItemRepository descItemRepository;
@@ -802,204 +771,12 @@ public class AccessPointService {
         return apState;
     }
 
-    public List<ApState> createAccessPoints(final ProcessingContext procCtx,
-                                            final List<EntityXml> entities) {
-        if (CollectionUtils.isEmpty(entities)) {
-            return Collections.emptyList();
-        }
-        ApExternalSystem apExternalSystem = procCtx.getApExternalSystem();
-
-        List<ApState> states = new ArrayList<>();
-
-        Function<EntityXml, String> idGetter;
-
-        // prepare list of already used ids
-        Map<String, EntityXml> uuids = CamHelper.getEntitiesByUuid(entities);
-        List<ApAccessPoint> existingAps = apAccessPointRepository.findApAccessPointsByUuids(uuids.keySet());
-        Set<String> usedUuids = existingAps.stream().map(ApAccessPoint::getUuid).collect(Collectors.toSet());
-
-        // Read existing binding from DB
-        List<String> values;
-        if (apExternalSystem.getType() == ApExternalSystemType.CAM) {
-            values = CamHelper.getEids(entities);
-            idGetter = CamHelper::getEntityId;
-        } else if (apExternalSystem.getType() == ApExternalSystemType.CAM_UUID) {
-            values = CamHelper.getEuids(entities);
-            idGetter = CamHelper::getEntityUuid;
-        } else {
-            throw new IllegalStateException("Unkonw external system type: " + apExternalSystem.getType());
-        }
-        List<ApBinding> bindingList = bindingRepository.findByScopeAndValuesAndExternalSystem(procCtx.getScope(),
-                                                                                              values,
-                                                                                              apExternalSystem);
-        procCtx.addBindings(bindingList);
-
-        // get list of connected records
-        List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByBindingIn(bindingList);
-
-        for (EntityXml entity : entities) {
-            String bindingValue = idGetter.apply(entity);
-
-            ApBinding binding = procCtx.getBindingByValue(bindingValue);
-            if (binding == null) {
-                binding = externalSystemService.createApBinding(procCtx.getScope(), bindingValue, apExternalSystem);
-                procCtx.addBinding(binding);
-            }
-
-            // prepare uuid
-            String srcUuid = CamHelper.getEntityUuid(entity);
-            String apUuid = usedUuids.contains(srcUuid) ? null : srcUuid;
-
-            ApState state = createAccessPoint(procCtx, entity, binding, apUuid);
-            states.add(state);
-            setAccessPointInDataRecordRefs(state.getAccessPoint(), dataRecordRefList, binding);
-        }
-        dataRecordRefRepository.saveAll(dataRecordRefList);
-        //TODO fantiš smazat po vyzkoušení, že je OK
-//        List<ApPart> partList = itemRepository.findPartsByDataRecordRefList(dataRecordRefList);
-//        if (CollectionUtils.isNotEmpty(partList)) {
-//            for (ApPart part : partList) {
-//                updatePartValue(part);
-//            }
-//        }
-
-        return states;
-    }
-
-    private void setAccessPointInDataRecordRefs(ApAccessPoint accessPoint, List<ArrDataRecordRef> dataRecordRefList, ApBinding binding) {
+    public void setAccessPointInDataRecordRefs(ApAccessPoint accessPoint, List<ArrDataRecordRef> dataRecordRefList, ApBinding binding) {
         if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
             for (ArrDataRecordRef dataRecordRef : dataRecordRefList) {
                 if (dataRecordRef.getBinding().getBindingId().equals(binding.getBindingId())) {
                     dataRecordRef.setRecord(accessPoint);
                 }
-            }
-        }
-    }
-
-    public ApState createAccessPoint(final ProcessingContext procCtx,
-                                     final EntityXml entity,
-                                     ApBinding binding,
-                                     String uuid) {
-        Validate.notNull(procCtx, "Context cannot be null");
-
-        StaticDataProvider sdp = staticDataService.getData();
-
-        ApType type = sdp.getApTypeByCode(entity.getEnt().getValue());
-        ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
-        ApState apState = createAccessPoint(procCtx.getScope(), type, apChange, uuid);
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-
-        createPartsFromEntityXml(procCtx, entity, accessPoint, apChange, sdp, apState, binding);
-
-        publishAccessPointCreateEvent(accessPoint);
-
-        return apState;
-    }
-
-    public void connectAccessPoint(final ApState state, final EntityXml entity,
-                                   final ProcessingContext procCtx, final boolean replace) {
-        StaticDataProvider sdp = staticDataService.getData();
-        ApAccessPoint accessPoint = state.getAccessPoint();
-        ApChange apChange = apDataService.createChange(ApChange.Type.AP_UPDATE);
-        ApType type = sdp.getApTypeByCode(entity.getEnt().getValue());
-
-        state.setDeleteChange(apChange);
-        stateRepository.save(state);
-        ApState stateNew = copyState(state, apChange);
-        stateNew.setApType(type);
-        stateNew.setStateApproval(StateApproval.NEW);
-        stateRepository.save(stateNew);
-
-        if (replace) {
-            partService.deleteParts(accessPoint, apChange);
-        }
-
-
-        ApBinding binding = externalSystemService.createApBinding(procCtx.getScope(),
-                                                                Long.toString(entity.getEid().getValue()),
-                                                                procCtx.getApExternalSystem());
-
-        createPartsFromEntityXml(procCtx, entity, accessPoint, apChange, sdp, stateNew, binding);
-
-        publishAccessPointUpdateEvent(accessPoint);
-    }
-
-    private void createPartsFromEntityXml(final ProcessingContext procCtx,
-                                   final EntityXml entity,
-                                   final ApAccessPoint accessPoint,
-                                   final ApChange apChange,
-                                   final StaticDataProvider sdp,
-                                   final ApState apState,
-                                   final ApBinding binding) {
-        Validate.notNull(binding);
-
-        externalSystemService.createApBindingState(binding, accessPoint, apChange,
-                                                       entity.getEns().value(), entity.getRevi().getRid().getValue(),
-                                                       entity.getRevi().getUsr().getValue(),
-                                                       entity.getReid() != null ? entity.getReid().getValue() : null);
-        List<ApPart> partList = new ArrayList<>();
-        Map<Integer, List<ApItem>> itemMap = new HashMap<>();
-
-        List<DataRef> dataRefList = new ArrayList<>();
-
-        for (PartXml part : entity.getPrts().getList()) {
-            RulPartType partType = sdp.getPartTypeByCode(part.getT().value());
-            ApPart parentPart = part.getPrnt() != null ? findParentPart(binding, part.getPrnt().getValue()) : null;
-
-            ApPart apPart = partService.createPart(partType, accessPoint, apChange, parentPart);
-            externalSystemService.createApBindingItem(binding, part.getPid().getValue(), apPart, null);
-
-            List<ApItem> itemList = partService.createPartItems(apChange, apPart, part.getItms().getItems(), binding, dataRefList);
-
-            itemMap.put(apPart.getPartId(), itemList);
-            partList.add(apPart);
-        }
-
-        createBindingForRel(dataRefList, binding, procCtx);
-
-        accessPoint.setPreferredPart(findPreferredPart(partList));
-
-        generateSync(accessPoint.getAccessPointId(), apState, partList, itemMap);
-    }
-
-    /**
-     * Vytvoreni novych propojeni (binding)
-     *
-     * @param dataRefList
-     * @param binding
-     * @param procCtx
-     */
-    private void createBindingForRel(final List<DataRef> dataRefList, final ApBinding binding,
-                                     final ProcessingContext procCtx) {
-        //TODO fantiš optimalizovat
-        for (DataRef dataRef : dataRefList) {
-            // Tento kod je divny, co to dela?
-            ApBindingItem apBindingItem = externalSystemService.findByBindingAndUuid(binding, dataRef.getUuid());
-            // Co kdyz vazba neni nalezena?
-            if (apBindingItem.getItem() != null) {
-                ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) apBindingItem.getItem().getData();
-                ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(procCtx.getScope(),
-                                                                                                    dataRef.getValue(),
-                                                                                                    procCtx.getApExternalSystem());
-                if (refBinding == null) {
-                    // check if not in the processing context
-                    refBinding = procCtx.getBindingByValue(dataRef.getValue());
-                    if (refBinding == null) {
-                        // we can create new - last resort
-                        refBinding = externalSystemService.createApBinding(procCtx.getScope(),
-                                                                           dataRef.getValue(),
-                                                                           procCtx.getApExternalSystem());
-                        procCtx.addBinding(refBinding);
-                    }
-                } else {
-                    // proc se dela toto?
-                    ApBindingState bindingState = externalSystemService.findByBinding(refBinding);
-                    if (bindingState != null) {
-                        dataRecordRef.setRecord(bindingState.getAccessPoint());
-                    }
-                }
-                dataRecordRef.setBinding(refBinding);
-                dataRecordRefRepository.save(dataRecordRef);
             }
         }
     }
@@ -1037,7 +814,7 @@ public class AccessPointService {
         }
     }
 
-    private ApPart findParentPart(final ApBinding binding, final String parentUuid) {
+    public ApPart findParentPart(final ApBinding binding, final String parentUuid) {
         ApBindingItem apBindingItem = externalSystemService.findByBindingAndUuid(binding, parentUuid);
         return apBindingItem.getPart();
     }
@@ -1092,7 +869,7 @@ public class AccessPointService {
         }
     }
 
-    private ApPart findPreferredPart(final List<ApPart> partList) {
+    public ApPart findPreferredPart(final List<ApPart> partList) {
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         RulPartType defaultPartType = sdp.getDefaultPartType();
         for (ApPart part : partList) {
@@ -1227,280 +1004,9 @@ public class AccessPointService {
         return partService.updatePartValue(apPart, result, state, false);
     }
 
-    public void updateBindingAfterSave(BatchUpdateResultXml batchUpdateResult, Integer accessPointId, String externalSystemCode) {
-        ApAccessPoint accessPoint = getAccessPoint(accessPointId);
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
-        ApBinding binding = bindingState.getBinding();
-
-        if (batchUpdateResult instanceof BatchUpdateSavedXml) {
-            BatchUpdateSavedXml batchUpdateSaved = (BatchUpdateSavedXml) batchUpdateResult;
-            BatchEntityRecordRevXml batchEntityRecordRev = batchUpdateSaved.getRevisions().get(0);
-
-            bindingState.setExtRevision(batchEntityRecordRev.getRev().getValue());
-            binding.setValue(String.valueOf(batchEntityRecordRev.getEid().getValue()));
-
-            bindingStateRepository.save(bindingState);
-            bindingRepository.save(binding);
-        } else {
-            BatchUpdateErrorXml batchUpdateErrorXml = (BatchUpdateErrorXml) batchUpdateResult;
-            bindingItemRepository.deleteByBinding(binding);
-            bindingStateRepository.delete(bindingState);
-            bindingRepository.delete(binding);
-
-            if (CollectionUtils.isNotEmpty(batchUpdateErrorXml.getMessages())) {
-                StringBuilder message = new StringBuilder();
-                for (ErrorMessageXml errorMessage : batchUpdateErrorXml.getMessages()) {
-                    message.append(errorMessage.getMsg().getValue()).append("\n");
-                }
-                throw new SystemException(message.toString(), ExternalCode.EXTERNAL_SYSTEM_ERROR);
-            }
-        }
-    }
-
-    public void updateBindingAfterUpdate(BatchUpdateResultXml batchUpdateResult, ApAccessPoint accessPoint, ApExternalSystem apExternalSystem) {
-        ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
-        ApBinding binding = bindingState.getBinding();
-
-        if (batchUpdateResult instanceof BatchUpdateSavedXml) {
-            BatchUpdateSavedXml batchUpdateSaved = (BatchUpdateSavedXml) batchUpdateResult;
-            BatchEntityRecordRevXml batchEntityRecordRev = batchUpdateSaved.getRevisions().get(0);
-
-            ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
-            externalSystemService.createNewApBindingState(bindingState, change, batchEntityRecordRev.getRev().getValue());
-        } else {
-            BatchUpdateErrorXml batchUpdateErrorXml = (BatchUpdateErrorXml) batchUpdateResult;
-            List<ApBindingItem> bindingItemList = bindingItemRepository.findByBinding(binding);
-
-            if (CollectionUtils.isNotEmpty(bindingItemList)) {
-                for (ApBindingItem bindingItem : bindingItemList) {
-                    if ((bindingItem.getPart() != null && bindingItem.getPart().getCreateChange().getChangeId() <= bindingState.getSyncChange().getChangeId()) ||
-                        bindingItem.getItem() != null && bindingItem.getItem().getCreateChange().getChangeId() <= bindingState.getSyncChange().getChangeId()) {
-                        bindingItemList.remove(bindingItem);
-                    }
-                }
-                if (CollectionUtils.isNotEmpty(bindingItemList)) {
-                    bindingItemRepository.deleteAll(bindingItemList);
-                }
-            }
-
-            if (CollectionUtils.isNotEmpty(batchUpdateErrorXml.getMessages())) {
-                StringBuilder message = new StringBuilder();
-                for (ErrorMessageXml errorMessage : batchUpdateErrorXml.getMessages()) {
-                    message.append(errorMessage.getMsg().getValue()).append("\n");
-                }
-                throw new SystemException(message.toString(), ExternalCode.EXTERNAL_SYSTEM_ERROR);
-            }
-        }
-    }
-
-    public BatchUpdateXml createCreateEntityBatchUpdate(final Integer accessPointId, final String externalSystemCode) {
-        ApAccessPoint accessPoint = getAccessPoint(accessPointId);
-        ApState state = getState(accessPoint);
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
-        UserDetail userDetail = userService.getLoggedUserDetail();
-
-        List<ApPart> partList = partService.findPartsByAccessPoint(state.getAccessPoint());
-        Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
-                .collect(Collectors.groupingBy(i -> i.getPartId()));
-
-        ApBinding binding = externalSystemService.createApBinding(state.getScope(), null, apExternalSystem);
-        ApBindingState bindingState = externalSystemService.createApBindingState(binding, accessPoint, change,
-                EntityRecordStateXml.ERS_NEW.value(), null, userDetail.getUsername(), null);
-
-        BatchUpdateXml batchUpdate = new BatchUpdateXml();
-        batchUpdate.setInf(createBatchInfo(userDetail));
-        CreateEntityBuilder ceb = new CreateEntityBuilder(this.externalSystemService,
-                this.staticDataService.getData(),
-                accessPoint, binding, state);
-        batchUpdate.getChanges().add(ceb.build(partList, itemMap));
-        return batchUpdate;
-    }
-
-    public BatchUpdateXml createUpdateEntityBatchUpdate(final ApAccessPoint accessPoint,
-                                                        final ApBindingState bindingState,
-                                                        final EntityXml entityXml) {
-        ApState state = getState(accessPoint);
-        UserDetail userDetail = userService.getLoggedUserDetail();
-
-        List<ApPart> partList = partService.findPartsByAccessPoint(state.getAccessPoint());
-        Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
-                .collect(Collectors.groupingBy(i -> i.getPartId()));
-        List<ApBindingItem> bindingParts = bindingItemRepository.findPartsByBinding(bindingState.getBinding());
-
-        BatchUpdateXml batchUpdate = new BatchUpdateXml();
-        batchUpdate.setInf(createBatchInfo(userDetail));
-
-        UpdateEntityBuilder ueb = new UpdateEntityBuilder(this.externalSystemService,
-                this.bindingItemRepository,
-                this.staticDataService.getData(),
-                state,
-                bindingState);
-
-        ueb.build(batchUpdate.getChanges(), entityXml, partList, itemMap, bindingParts);
-        return batchUpdate;
-    }
-
-    private BatchInfoXml createBatchInfo(UserDetail userDetail) {
-        BatchInfoXml batchInfo = new BatchInfoXml();
-        batchInfo.setBatchUserInfo(new LongStringXml(userDetail.getUsername()));
-        batchInfo.setBid(new UuidXml(UUID.randomUUID().toString()));
-        return batchInfo;
-    }
-
-    public void synchronizeAccessPoint(ProcessingContext procCtx, ApState state, EntityXml entity,
-                                       ApBindingState bindingState, boolean syncQueue) {
-        //TODO fantiš other external systems
-        if (syncQueue && checkLocalChanges(state, bindingState)) {
-            bindingState.setSyncOk(SyncState.NOT_SYNCED);
-            bindingStateRepository.save(bindingState);
-        } else {
-            StaticDataProvider sdp = staticDataService.getData();
-            ApBinding binding = bindingState.getBinding();
-            ApAccessPoint accessPoint = state.getAccessPoint();
-            ApChange apChange = apDataService.createChange(ApChange.Type.AP_UPDATE);
-
-            List<ApBindingItem> bindingParts = bindingItemRepository.findPartsByBinding(binding);
-            List<ApBindingItem> newBindingParts = new ArrayList<>();
-            Map<Integer, List<ApBindingItem>> bindingItemMap = bindingItemRepository.findItemsByBinding(binding).stream()
-                    .collect(Collectors.groupingBy(i -> i.getItem().getPartId()));
-
-            externalSystemService.createNewApBindingState(bindingState, apChange, entity.getEns().value(),
-                    entity.getRevi().getRid().getValue(),  entity.getRevi().getUsr().getValue(),
-                    entity.getReid() != null ? entity.getReid().getValue() : null);
-
-            List<ApPart> partList = new ArrayList<>();
-            Map<Integer, List<ApItem>> itemMap = new HashMap<>();
-
-            List<DataRef> dataRefList = new ArrayList<>();
-
-            for (PartXml part : entity.getPrts().getList()) {
-                ApBindingItem bindingItem = findBindingItemByUuid(bindingParts, part.getPid().getValue());
-                if (bindingItem != null) {
-                    List<ApBindingItem> bindingItems = bindingItemMap.getOrDefault(bindingItem.getPart().getPartId(), new ArrayList<>());
-                    List<ApBindingItem> notChangeItems = new ArrayList<>();
-                    List<Object> newItems = apItemService.findNewOrChangedItems(part.getItms().getItems(), bindingItems, notChangeItems);
-
-                    if (CollectionUtils.isNotEmpty(newItems) || CollectionUtils.isNotEmpty(bindingItems)) {
-                        //nové nebo změněné itemy z externího systému
-                        deleteChangedOrRemovedItems(bindingItems, apChange);
-
-                        ApPart oldPart = bindingItem.getPart();
-                        partService.deletePart(oldPart, apChange);
-                        ApPart apPart = partService.createPart(oldPart, apChange);
-                        bindingItem.setPart(apPart);
-                        bindingItemRepository.save(bindingItem);
-
-                        changePartInItems(apPart, notChangeItems, apChange);
-                        changePartInItems(apPart, apChange, oldPart);
-
-                        partService.createPartItems(apChange, apPart, newItems, binding, dataRefList);
-
-                        itemMap.put(apPart.getPartId(), itemRepository.findValidItemsByPart(apPart));
-                        partList.add(apPart);
-                    }
-                    newBindingParts.add(bindingItem);
-                    bindingParts.remove(bindingItem);
-                } else {
-                    //nový part v externím systému
-                    RulPartType partType = sdp.getPartTypeByCode(part.getT().value());
-                    ApPart parentPart = part.getPrnt() != null ? findBindingItemByUuid(newBindingParts, part.getPrnt().getValue()).getPart() : null;
-
-                    ApPart apPart = partService.createPart(partType, accessPoint, apChange, parentPart);
-                    newBindingParts.add(externalSystemService.createApBindingItem(binding, part.getPid().getValue(), apPart, null));
-                    List<ApItem> itemList = partService.createPartItems(apChange, apPart, part.getItms().getItems(), binding, dataRefList);
-
-                    itemMap.put(apPart.getPartId(), itemList);
-                    partList.add(apPart);
-                }
-            }
-            deleteParts(bindingParts, apChange);
-
-            createBindingForRel(dataRefList, binding, procCtx);
-
-            accessPoint.setPreferredPart(findPreferredPart(entity.getPrts().getList(), newBindingParts));
-
-            generateSync(accessPoint.getAccessPointId(), state, partList, itemMap);
-        }
-    }
-
-    private void deleteParts(List<ApBindingItem> bindingParts, ApChange apChange) {
-        if (CollectionUtils.isNotEmpty(bindingParts)) {
-            List<ApPart> partList = new ArrayList<>();
-            for (ApBindingItem bindingItem : bindingParts) {
-                partList.add(bindingItem.getPart());
-            }
-            apItemService.deletePartsItems(partList, apChange);
-            partService.deleteParts(partList, apChange);
-
-            bindingItemRepository.deleteAll(bindingParts);
-        }
-    }
-
-    private ApPart findPreferredPart(List<PartXml> partList, List<ApBindingItem> bindingParts) {
-        StaticDataProvider sdp = StaticDataProvider.getInstance();
-        RulPartType defaultPartType = sdp.getDefaultPartType();
-        for (PartXml part : partList) {
-            if (part.getT().value().equals(defaultPartType.getCode())) {
-                ApBindingItem bindingPart = findBindingItemByUuid(bindingParts, part.getPid().getValue());
-                if (bindingPart != null) {
-                    return bindingPart.getPart();
-                }
-            }
-        }
-        return null;
-    }
-
-    private void changePartInItems(ApPart apPart, List<ApBindingItem> notChangeItems, ApChange apChange) {
-        if (CollectionUtils.isNotEmpty(notChangeItems)) {
-            List<ApItem> itemList = new ArrayList<>();
-            for (ApBindingItem bindingItem : notChangeItems) {
-                ApItem item = bindingItem.getItem();
-                item.setDeleteChange(apChange);
-                itemList.add(item);
-
-                ApItem newItem = apItemService.createItem(item, apChange, apPart);
-                itemList.add(newItem);
-
-                bindingItem.setItem(newItem);
-            }
-            bindingItemRepository.saveAll(notChangeItems);
-            itemRepository.saveAll(itemList);
-        }
-    }
-
-    private void changePartInItems(ApPart apPart, ApChange apChange, ApPart oldPart) {
-        List<ApItem> notConnectedItems = itemRepository.findValidItemsByPart(oldPart);
-        if (CollectionUtils.isNotEmpty(notConnectedItems)) {
-            List<ApItem> itemList = new ArrayList<>();
-            for (ApItem item : notConnectedItems) {
-                item.setDeleteChange(apChange);
-                itemList.add(item);
-
-                ApItem newItem = apItemService.createItem(item, apChange, apPart);
-                itemList.add(newItem);
-            }
-            itemRepository.saveAll(itemList);
-        }
-    }
-
-    private void deleteChangedOrRemovedItems(List<ApBindingItem> bindingItemsInPart, ApChange apChange) {
-        if (CollectionUtils.isNotEmpty(bindingItemsInPart)) {
-            List<ApItem> itemList = new ArrayList<>();
-            for (ApBindingItem bindingItem : bindingItemsInPart) {
-                ApItem item = bindingItem.getItem();
-                item.setDeleteChange(apChange);
-                itemList.add(item);
-            }
-            bindingItemRepository.deleteAll(bindingItemsInPart);
-            itemRepository.saveAll(itemList);
-        }
-    }
-
 
     @Nullable
-    private ApBindingItem findBindingItemByUuid(final List<ApBindingItem> bindingItemList, final String pid) {
+    public ApBindingItem findBindingItemByUuid(final List<ApBindingItem> bindingItemList, final String pid) {
         if (CollectionUtils.isNotEmpty(bindingItemList)) {
             for (ApBindingItem bindingItem : bindingItemList) {
                 if (bindingItem.getValue().equals(pid)) {
@@ -1509,20 +1015,6 @@ public class AccessPointService {
             }
         }
         return null;
-    }
-
-    private boolean checkLocalChanges(final ApState state, final ApBindingState bindingState) {
-        //TODO fantiš možná není nutné koukat na party
-        List<ApPart> partList = partService.findNewerPartsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
-        if (CollectionUtils.isNotEmpty(partList)) {
-            return CollectionUtils.isNotEmpty(bindingItemRepository.findByParts(partList));
-        }
-        List<ApItem> itemList = itemRepository.findNewerValidItemsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
-        if (CollectionUtils.isNotEmpty(itemList)) {
-            return CollectionUtils.isNotEmpty(bindingItemRepository.findByItems(itemList));
-        }
-
-        return false;
     }
 
     /**
@@ -1784,7 +1276,7 @@ public class AccessPointService {
      * @param change změna
      * @return přístupový bod
      */
-    private ApState createAccessPoint(final ApScope scope, final ApType type,
+    public ApState createAccessPoint(final ApScope scope, final ApType type,
                                       final ApChange change,
                                       final String uuid) {
         ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change, uuid);
@@ -1804,7 +1296,7 @@ public class AccessPointService {
         return stateRepository.save(apState);
     }
 
-    private ApState copyState(ApState oldState, ApChange change) {
+    public ApState copyState(ApState oldState, ApChange change) {
         ApState newState = new ApState();
         newState.setAccessPoint(oldState.getAccessPoint());
         newState.setApType(oldState.getApType());
@@ -1860,11 +1352,11 @@ public class AccessPointService {
         return item;
     }
 
-    private void publishAccessPointCreateEvent(final ApAccessPoint accessPoint) {
+    public void publishAccessPointCreateEvent(final ApAccessPoint accessPoint) {
         publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_CREATE);
     }
 
-    private void publishAccessPointUpdateEvent(final ApAccessPoint accessPoint) {
+    public void publishAccessPointUpdateEvent(final ApAccessPoint accessPoint) {
         publishAccessPointEvent(accessPoint, EventType.ACCESS_POINT_UPDATE);
     }
 
@@ -2229,7 +1721,7 @@ public class AccessPointService {
         generateSync(accessPointId, apState, partList, itemMap);
     }
 
-    private void generateSync(final Integer accessPointId,
+    public void generateSync(final Integer accessPointId,
                              final ApState apState,
                              final List<ApPart> partList,
                              final Map<Integer, List<ApItem>> itemMap) {
@@ -2364,17 +1856,5 @@ public class AccessPointService {
     public List<ApAccessPoint> findAccessPointsBySinglePartValues(List<Object> criterias) {
 
         return apAccessPointRepository.findAccessPointsBySinglePartValues(criterias);
-    }
-
-    public void updateAccessPoints(final ProcessingContext procCtx,
-                                   final List<SyncEntityRequest> syncRequests) {
-        if (syncRequests == null || syncRequests.isEmpty()) {
-            return;
-        }
-
-        for (SyncEntityRequest syncReq : syncRequests) {
-            synchronizeAccessPoint(procCtx, syncReq.getState(),
-                                   syncReq.getEntityXml(), syncReq.getBindingState(), false);
-        }
     }
 }

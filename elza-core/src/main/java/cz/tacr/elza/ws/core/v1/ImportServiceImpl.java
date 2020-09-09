@@ -13,6 +13,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import cz.tacr.elza.service.cam.CamService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,6 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.cam.CamHelper;
 import cz.tacr.elza.service.cam.ProcessingContext;
@@ -64,10 +64,10 @@ public class ImportServiceImpl implements ImportService {
     private ApBindingStateRepository bindingStateRepository;
 
     @Autowired
-    private AccessPointService accessPointService;
+    private ExternalSystemService externalSystemService;
 
     @Autowired
-    private ExternalSystemService externalSystemService;
+    private CamService camService;
 
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(EntitiesXml.class);
 
@@ -185,8 +185,8 @@ public class ImportServiceImpl implements ImportService {
         }
         
         ProcessingContext procCtx = new ProcessingContext(scope, externalSystem);
-        accessPointService.createAccessPoints(procCtx, newEntities);
-        accessPointService.updateAccessPoints(procCtx, updateEntities);
+        camService.createAccessPoints(procCtx, newEntities);
+        camService.updateAccessPoints(procCtx, updateEntities);
 
         logger.info("Imported entities in CAM format, count: {}", entities.size());
     }
