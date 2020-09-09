@@ -10,6 +10,9 @@ import './elza-iconset/ez-icons.css';
 import React from 'react';
 import {Utils} from './components/shared';
 import * as es6promise from 'es6-promise';
+// Všechny locales které potřebujeme - zatím pouze EN + CS
+import 'moment/locale/cs';
+import 'moment/locale/en-gb';
 import Moment from 'moment';
 import momentLocalizer from 'react-widgets-moment';
 import {store} from 'stores/index.jsx';
