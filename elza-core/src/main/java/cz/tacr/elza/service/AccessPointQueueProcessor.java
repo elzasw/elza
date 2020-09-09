@@ -46,7 +46,12 @@ public class AccessPointQueueProcessor implements Runnable {
     public void revalidateRecords() {
         List<ApAccessPointQueueItem> queueItemList = accessPointQueueItemRepository.findAll();
         for (ApAccessPointQueueItem item : queueItemList) {
-            accessPointGeneratorService.processAsyncGenerate(item);
+            try {
+                accessPointGeneratorService.processAsyncGenerate(item);
+            } catch (Exception e) {
+                logger.error("AccessPointQueueProcessor - processor thread error - AP = {}", item.getAccessPoint().getAccessPointId());
+                accessPointQueueItemRepository.delete(item);
+            }
         }
     }
 }

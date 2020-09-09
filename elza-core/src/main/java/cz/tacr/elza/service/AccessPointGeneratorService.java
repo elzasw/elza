@@ -26,32 +26,23 @@ public class AccessPointGeneratorService implements ApplicationListener<AccessPo
 
     private static final Logger logger = LoggerFactory.getLogger(AccessPointGeneratorService.class);
 
-    private final AccessPointDataService apDataService;
-    private final ApAccessPointRepository accessPointRepository;
     private final AccessPointService accessPointService;
     private final PartService partService;
     private final RuleService ruleService;
     private final ApAccessPointQueueItemRepository accessPointQueueItemRepository;
     private final ApItemRepository itemRepository;
-    private final ApPartRepository partRepository;
 
     @Autowired
-    public AccessPointGeneratorService(final AccessPointDataService apDataService,
-                                       final ApAccessPointRepository accessPointRepository,
-                                       final AccessPointService accessPointService,
+    public AccessPointGeneratorService(final AccessPointService accessPointService,
                                        final PartService partService,
                                        final RuleService ruleService,
                                        final ApAccessPointQueueItemRepository accessPointQueueItemRepository,
-                                       final ApItemRepository itemRepository,
-                                       final ApPartRepository partRepository) {
-        this.apDataService = apDataService;
-        this.accessPointRepository = accessPointRepository;
+                                       final ApItemRepository itemRepository) {
         this.accessPointService = accessPointService;
         this.partService = partService;
         this.ruleService = ruleService;
         this.accessPointQueueItemRepository = accessPointQueueItemRepository;
         this.itemRepository = itemRepository;
-        this.partRepository = partRepository;
     }
 
     /**
