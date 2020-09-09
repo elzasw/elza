@@ -73,6 +73,8 @@ public abstract class DmsOutputGenerator implements OutputGenerator {
 
         ArrOutputFile outputFile = createOutputFile(result);
 
+        result.getOutputFiles().add(outputFile);
+
         try (InputStream is = Files.newInputStream(tmpResultFile, StandardOpenOption.READ)) {
             dmsService.createFile(outputFile, is);
         }
