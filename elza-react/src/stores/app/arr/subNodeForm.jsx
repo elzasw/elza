@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {i18n} from 'components/shared';
 import {getMapFromList, indexById} from 'stores/app/utils.jsx';
 import {

@@ -5,7 +5,7 @@ import {Modal} from 'react-bootstrap';
 import classNames from 'classnames';
 import {createReferenceMark, getNodeIcon} from 'components/arr/ArrUtils.jsx'
 import {AbstractReactComponent, i18n, Icon} from 'components/shared';
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import * as fundSearchActions from '../../actions/arr/fundSearch.jsx'
 import Search from "../shared/search/Search";
 import HorizontalLoader from "../shared/loading/HorizontalLoader";

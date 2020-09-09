@@ -2,7 +2,7 @@
  * Akce pro kontextové menu.
  */
 
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 /**
  * Zobrazení menu.

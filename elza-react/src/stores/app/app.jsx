@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import DetailReducer from 'shared/detail/DetailReducer';
 import SimpleListReducer from 'shared/list/simple/SimpleListReducer';
 import processAreaStores from 'shared/utils/processAreaStores';

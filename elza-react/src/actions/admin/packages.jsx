@@ -6,7 +6,7 @@
  */
 import {WebApi} from 'actions/index.jsx';
 import {i18n} from 'components/shared';
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 

@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import userDetail from './userDetail.jsx';
 import {isUserDetailAction} from 'actions/admin/user.jsx';
 import {isPermissionAction} from 'actions/admin/permission.jsx';

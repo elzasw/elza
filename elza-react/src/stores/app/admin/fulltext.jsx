@@ -4,7 +4,7 @@
  * @author Jiří Vaněk
  * @since 22.1.2016
  */
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 /**
  * Výchozí stav store

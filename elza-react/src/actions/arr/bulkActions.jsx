@@ -1,5 +1,5 @@
 import {WebApi} from 'actions/index.jsx';
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {barrier} from 'components/Utils.jsx';
 
 export function isBulkAction(action) {

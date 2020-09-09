@@ -1,6 +1,6 @@
 import {WebApi} from 'actions/index.jsx';
 
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 export function visiblePolicyFetchIfNeeded(nodeId, fundVersionId) {
     return (dispatch, getState) => {

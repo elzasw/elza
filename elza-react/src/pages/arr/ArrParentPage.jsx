@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {i18n} from 'components/shared';
 import {AbstractReactComponent, ArrFundPanel} from 'components/index.jsx';
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {fundChangeReadMode, fundsFetchIfNeeded} from 'actions/arr/fund.jsx';
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';

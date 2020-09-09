@@ -1,6 +1,22 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {isFundTreeAction} from 'actions/arr/fundTree.jsx';
 import fundDetail from './fundDetail.jsx';
+import {AnyAction} from "redux";
+
+type FundRegionState = {
+    fetched: boolean;
+    fetching: boolean;
+    filterText: string,
+    filter: {
+        from: number;
+        institutionIdentifier?: object | string | number | null;
+        [key: string]: any;
+    },
+    currentDataKey: string,
+    funds: any[],
+    fundsCount: number,
+    fundDetail: ReturnType<typeof fundDetail>;
+}
 
 const initialState = {
     fetched: false,
@@ -15,7 +31,7 @@ const initialState = {
     fundDetail: fundDetail(),
 };
 
-export default function fundRegion(state = initialState, action = {}) {
+export default function fundRegion(state: FundRegionState = initialState, action: AnyAction = {type: undefined}): FundRegionState {
     if (isFundTreeAction(action) && action.area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {
         return {
             ...state,
@@ -33,9 +49,10 @@ export default function fundRegion(state = initialState, action = {}) {
         }
 
         case types.STORE_SAVE:
+            /** ingnorujeme typ - jedná se o SAVE state (celý store není potřeba) */
             return {
                 fundDetail: fundDetail(state.fundDetail, action),
-            };
+            } as any;
         case types.STORE_LOAD:
             if (action.fundRegion) {
                 return {
@@ -108,7 +125,7 @@ export default function fundRegion(state = initialState, action = {}) {
                 fetching: false,
                 fetched: true,
                 funds: action.data.funds,
-                fundsCount: action.data.fundCount,
+                fundsCount: action.data.totalCount,
             };
         default:
             return state;

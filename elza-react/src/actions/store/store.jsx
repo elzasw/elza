@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {routerNavigate} from 'actions/router.jsx';
 import {setFocus} from 'actions/global/focus.jsx';
 import {FOCUS_KEYS} from '../../constants.tsx';

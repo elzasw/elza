@@ -481,6 +481,7 @@ class FundPage extends AbstractReactComponent {
         if (fundRegion.fundDetail.id !== null) {
             activeIndex = indexById(fundRegion.funds, fundRegion.fundDetail.id);
         }
+        console.log(fundRegion.fundsCount)
 
         const leftPanel = (
             <div className="fund-list-container">

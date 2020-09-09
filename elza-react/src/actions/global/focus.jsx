@@ -4,7 +4,7 @@
  * je to z důvodu, aby po nastavení focusu nebyl měněn store a nepřekreslovaly se komponenty.
  */
 
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 // Vnitřní proměnná, které určuje, zda je nutné focus nastavit
 var _setFocus = false;

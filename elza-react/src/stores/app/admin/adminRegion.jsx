@@ -4,7 +4,7 @@
  * @author Martin Šlapa
  * @since 22.12.2015
  */
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import packages from './packages.jsx';
 import user from './user.jsx';
 import group from './group.jsx';

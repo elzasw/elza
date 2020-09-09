@@ -5,7 +5,7 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {Dropdown} from 'react-bootstrap';
 import {
     fundTreeCollapse,

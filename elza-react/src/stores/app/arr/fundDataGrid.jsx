@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {consolidateState} from 'components/Utils.jsx';
 import subNodeForm from './subNodeForm.jsx';
 import {nodeFormActions} from 'actions/arr/subNodeForm.jsx';

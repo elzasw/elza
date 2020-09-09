@@ -3,7 +3,7 @@
  */
 
 import {WebApi} from 'actions/index.jsx';
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {fundSelectSubNode, fundSelectSubNodeInt, increaseMultipleNodesVersions} from 'actions/arr/node.jsx';
 
 export function isNodesAction(action) {

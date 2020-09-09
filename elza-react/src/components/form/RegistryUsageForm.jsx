@@ -1,6 +1,6 @@
 import React from 'react';
 import UsageForm from './UsageForm';
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {i18n} from 'components/shared';
 import {WebApi} from '../../actions/WebApi';
 import HorizontalLoader from '../shared/loading/HorizontalLoader';

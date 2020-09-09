@@ -2,7 +2,7 @@
  * Akce pro správu oprávnění u skupiny a uživatele.
  */
 
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {WebApi} from 'actions/index.jsx';
 
 export function changeUserPermission(userId, permissions) {

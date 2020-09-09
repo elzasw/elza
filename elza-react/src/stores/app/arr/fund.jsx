@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {getRoutingKeyType} from 'stores/app/utils.jsx';
 import fundTree from './fundTree.jsx';
 import nodes from './nodes.jsx';

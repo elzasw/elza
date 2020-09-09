@@ -5,7 +5,7 @@
 import {WebApi} from 'actions/index.jsx';
 import {findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx';
 
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 export function isSubNodeInfoAction(action) {
     switch (action.type) {

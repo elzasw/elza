@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {applyMiddleware, compose, createStore} from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import {createLogger} from 'redux-logger';
@@ -12,7 +12,7 @@ import reduxFormUtils from './app/form/reduxFormUtils.jsx';
  */
 import app from './app/app.jsx';
 import arrRegion from './app/arr/arrRegion.jsx';
-import fundRegion from './app/fund/fundRegion.jsx';
+import fundRegion from './app/fund/fundRegion';
 import splitter from './app/global/splitter.jsx';
 import adminRegion from './app/admin/adminRegion.jsx';
 
