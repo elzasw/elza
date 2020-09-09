@@ -7,6 +7,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyKeyValue;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -412,7 +413,7 @@ public class PartService {
         ApKeyValue apKeyValue = keyValueRepository.findByKeyTypeAndValueAndScope(keyType, value, scope);
 
         if (!async && apKeyValue != null) {
-            throw new BusinessException("ApKeyValue s tímto typem a hodnotou a scope už existuje.", BaseCode.PROPERTY_IS_INVALID)
+            throw new BusinessException("ApKeyValue s tímto typem a hodnotou a scope už existuje.", RegistryCode.NOT_UNIQUE_FULL_NAME)
                     .set("keyType", keyType)
                     .set("value", value)
                     .set("scope", scope);
