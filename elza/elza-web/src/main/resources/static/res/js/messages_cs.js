@@ -161,7 +161,8 @@ var messages = {
     "exception.out.CANNOT_SWITCH_CALCULATING":
         "Nelze přepnout způsob vyplňování, protože neexistuje žádná hodnota generovaná funkcí",
     "exception.out.ITEM_TYPE_CALC": "Tento atribut je počítán automaticky a nemůže být ručně editován",
-    "exception.out.INVALID_FORMAT": "Formát výsledného souboru neodpovídá schématu.",
+    "exception.out.INVALID_FORMAT": "Formát výsledného souboru neodpovídá schématu",
+	"exception.out.SCHEMA_NOT_FOUND": "Schéma ověření nebylo nalezeno",
 
     "exception.pkg.FILE_NOT_FOUND": "Nenalezen soubor '{file}'",
     "exception.pkg.CODE_NOT_FOUND": "Nenalezena entita podle kódu '{code}' v souboru '{file}'",

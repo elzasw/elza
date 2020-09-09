@@ -16,6 +16,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +58,7 @@ import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.output.generator.OutputGenerator;
 import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
+import cz.tacr.elza.utils.SchemaUtils;
 
 @Component
 @Scope("prototype")
@@ -181,7 +183,10 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 
     private void validate(ArrOutputTemplate template, ArrOutputResult result) {
     	SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-    	String xsdFile = template.getTemplate().getValidationSchema();
+    	String xsdFile = SchemaUtils.SchemaUrlToFile(template.getTemplate().getValidationSchema());
+    	if (StringUtils.isEmpty(xsdFile)) {
+            throw new SystemException("Validation schema not found", OutputCode.SCHEMA_NOT_FOUND);
+    	}
     	try {
     		Schema schema = schemaFactory.newSchema(getClass().getResource(xsdFile));
     		Validator validator = schema.newValidator();
