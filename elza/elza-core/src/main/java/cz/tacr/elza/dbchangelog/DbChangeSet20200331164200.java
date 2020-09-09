@@ -683,7 +683,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     migrateParPartyNameFormType(partId, nameFormTypeId);
                 }
 
-                migrateParPartyNameComplement(accessPointId, partyNameId, nmMainDataId, nmMainDataTypeId);
+                migrateParPartyNameComplement(partId, partyNameId, nmMainDataId, nmMainDataTypeId);
             }
         }
     }
@@ -705,7 +705,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         }
     }
 
-    private void migrateParPartyNameComplement(Integer accessPointId, Integer partyNameId, Integer nmMainDataId, Integer nmMainDataTypeId) throws DatabaseException, SQLException {
+    private void migrateParPartyNameComplement(Integer partId, Integer partyNameId, Integer nmMainDataId, Integer nmMainDataTypeId) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT code, complement " +
                 "FROM par_party_name_complement " +
                 "CROSS JOIN par_complement_type " +
@@ -720,8 +720,6 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     ps = conn.prepareStatement("UPDATE " + arrTableName + " SET value = value || ' ' || " + dbString(rs.getString("complement")) + " WHERE data_id = " + nmMainDataId);
                     ps.executeUpdate();
                 } else {
-                    Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_NAME.code), null);
-
                     //zpracování complement
                     String itemTypeCode = convertComplementMap.get(code);
                     Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
