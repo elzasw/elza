@@ -946,8 +946,6 @@ public class ArrangementController {
         descItemResult.setItem(factoryVo.createItem(descItemCreated));
         descItemResult.setParent(ArrNodeVO.valueOf(descItemCreated.getNode()));
 
-        arrangementService.synchronizeNodes(descItemCreated, nodeId, nodeVersion, null);
-
         return descItemResult;
     }
 
