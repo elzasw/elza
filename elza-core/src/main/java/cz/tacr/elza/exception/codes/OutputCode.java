@@ -52,10 +52,15 @@ public enum OutputCode implements ErrorCode {
      * Nemůže být odstraněn v tomto stavu.
      */
     CANNOT_DELETED_IN_STATE,
-    
+
     /**
-     * Formát výsledného souboru neodpovídá schématu.
+     * Formát výsledného souboru neodpovídá schématu
      */
-    INVALID_FORMAT
+    INVALID_FORMAT,
+
+    /**
+     * Schéma ověření nebylo nalezeno
+     */
+    SCHEMA_NOT_FOUND
 
 }
