@@ -17,7 +17,7 @@ import {formatDate} from '../../validate';
 class DescItemDate extends AbstractReactComponent {
     focusEl = null;
     focus() {
-        this.focusEl.refs.inner.focus();
+        this.focusEl && this.focusEl.focus();
     }
 
     handleChange = e => {
