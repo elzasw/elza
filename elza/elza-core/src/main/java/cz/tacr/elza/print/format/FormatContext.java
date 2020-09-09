@@ -1,5 +1,6 @@
 package cz.tacr.elza.print.format;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,6 +46,11 @@ public class FormatContext {
     
     private String specificationPrefix = "";
     
+    /**
+     * Separator between same specifications
+     */
+    private String sameSpecItemSeparator = "; ";
+
     /**
      * Defines whether the specification is placed before or after the value
      */
@@ -93,6 +99,11 @@ public class FormatContext {
 
     private String titleSeparator;
 
+    /**
+     * Flag if item with specification should be grouped
+     */
+    private boolean groupBySpec = true;
+
     public String getItemSeparator() {
         return itemSeparator;
     }
@@ -127,6 +138,14 @@ public class FormatContext {
 
     public String getTitleSeparator() {
         return titleSeparator;
+    }
+
+    public void setGroupFormat(final String sameSpecItemSeparator) {
+        this.sameSpecItemSeparator = sameSpecItemSeparator;
+    }
+
+    public String getSameSpecItemSeparator() {
+        return sameSpecItemSeparator;
     }
 
     public String getBeginBlockSeparator() {
@@ -181,46 +200,57 @@ public class FormatContext {
      * @param value
      */
     public void appendSpecWithValue(String spec, String value) {
-    	boolean hasPrefix = StringUtils.isNotBlank(specificationPrefix);
-    	boolean hasValue = StringUtils.isNotBlank(value);
-    	boolean hasPostfix = StringUtils.isNotBlank(specificationPostfix);
-    	
-    	if (specificationAfterValue) {
-    		if(hasValue) {
-    			appendResult(value);
-    		}
-    		
+        appendSpecWithValues(spec, Collections.singletonList(value));
+    }
+
+    /**
+     * Append specification and value to result
+     *
+     * @param spec
+     * @param values
+     */
+    public void appendSpecWithValues(String spec, List<String> values) {
+        boolean hasPrefix = StringUtils.isNotBlank(specificationPrefix);
+        String value = String.join(sameSpecItemSeparator, values);
+        boolean hasValue = StringUtils.isNotBlank(value);
+        boolean hasPostfix = StringUtils.isNotBlank(specificationPostfix);
+
+        if (specificationAfterValue) {
+            if (hasValue) {
+                appendResult(value);
+            }
+
+            if (hasPrefix) {
+                appendResult(specificationPrefix);
+            }
+
+            appendResult(spec);
+
+            if (hasPostfix) {
+                appendResult(specificationPostfix);
+            }
+        } else {
             if(hasPrefix) {
-				appendResult(specificationPrefix);
-			}
-			
-			appendResult(spec);
-			
-			if(hasPostfix) {
-				appendResult(specificationPostfix);
-			}
-    	}		
-    	else{
-        	if(hasPrefix) {
-				appendResult(specificationPrefix);
-			}
-			
-			appendResult(spec);
-			
-			if(hasPostfix) {
-				// Append postfix when prefix or value exist
-				// This condition allows to print:  spec: val | spec | (spec)
-				if(hasPrefix || hasValue) {
-					appendResult(specificationPostfix);
-				}
-			}
-			
+                appendResult(specificationPrefix);
+            }
+
+            appendResult(spec);
+
+            if (hasPostfix) {
+                // Append postfix when prefix or value exist
+                // This condition allows to print:  spec: val | spec | (spec)
+                if (hasPrefix || hasValue) {
+                    appendResult(specificationPostfix);
+                }
+            }
+
             if(hasValue) {
-    			appendResult(value);
-    		}
-    	}   
+                appendResult(value);
+            }
+        }
         
         this.pendingSeparator = itemSeparator;
+
     }
 
     /**
@@ -293,4 +323,18 @@ public class FormatContext {
             resultBuffer.append(result);
         }
     }
+
+    /**
+     * Set group by specification flag
+     * 
+     * @param groupBySpec
+     */
+    public void setGroupBySpec(final boolean groupBySpec) {
+        this.groupBySpec = groupBySpec;
+    }
+
+    public boolean getGroupBySpec() {
+        return groupBySpec;
+    }
+
 }

@@ -1,5 +1,13 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -7,16 +15,10 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.vo.ItemChange;
 import cz.tacr.elza.service.arrangement.DeleteFundHistory;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
-import java.util.Collection;
-import java.util.List;
 
 /**
- * @author Martin Šlapa
+ * Repository for ArrDaoLink
+ * 
  * @since 1.9.2015
  */
 
@@ -30,6 +32,13 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
     List<ArrDaoLink> findByDao(ArrDao arrDao);
 
     List<ArrDaoLink> findByNodeIdInAndDeleteChangeIsNull(Collection<Integer> nodeIds);
+
+    @Query("SELECT dl" +
+            " FROM arr_dao_link dl" +
+            " JOIN FETCH dl.dao" +
+            " WHERE dl.nodeId in :nodeIds" +
+            " AND dl.deleteChange is null")
+    List<ArrDaoLink> findByNodeIdsAndFetchDao(@Param(value = "nodeIds") Collection<Integer> nodeIds);
 
     @Modifying
     void deleteByNode(ArrNode node);

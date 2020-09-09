@@ -14,7 +14,10 @@ import javax.activation.DataSource;
 import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
@@ -28,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.common.io.FilterInputStreamWithException;
+import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
@@ -37,6 +42,7 @@ import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlNameConsts;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -57,6 +63,8 @@ import cz.tacr.elza.ws.types.v1.SearchEntityResult;
         //                      wsdlLocation = "file:elza-core-v1.wsdl",
         endpointInterface = "cz.tacr.elza.ws.core.v1.ExportService")
 public class ExportServiceImpl implements ExportService {
+
+    private static Logger log = LoggerFactory.getLogger(ExportServiceImpl.class);
 
     @Autowired
     @Qualifier("threadPoolTaskExecutorBA")
@@ -134,6 +142,7 @@ public class ExportServiceImpl implements ExportService {
         
         List<String> missing = subList.stream().filter(e -> !foundItems.contains(e)).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(missing)) {
+            log.info("Missing items in export request: {}", missing);
             cz.tacr.elza.ws.types.v1.ErrorDescription ed = WSHelper.prepareErrorDescription("Missing some items",
                                                                                             "Missing items: " + String
                                                                                                     .join(",",
@@ -180,7 +189,8 @@ public class ExportServiceImpl implements ExportService {
             	fis.setException(e);
             };            
 
-            ExportWorker eew = appCtx.getBean(ExportWorker.class, out, exportBuilder, params, auth, asyncErrorHandler);
+            ExportWorker eew = appCtx.getBean(ExportWorker.class, out, exportBuilder,
+                                              params, auth, asyncErrorHandler);
     
             taskExecutor.execute(eew);
 
@@ -197,27 +207,50 @@ public class ExportServiceImpl implements ExportService {
     @Transactional
     @Override
     public SearchEntityResult searchEntity(SearchEntity request) throws SearchEntityException {
-        Items items = request.getItems();
-        Validate.notNull(items);
-        List<Object> itemList = items.getStrOrLongOrEnm();
+        String entityId = request.getEntityId();
+        
+        ApAccessPoint ap;
+        if(StringUtils.isBlank(entityId)) {
+            Items items = request.getItems();
+            Validate.notNull(items);
+            List<Object> itemList = items.getStrOrLongOrEnm();
+            
+            List<ApAccessPoint> aps = accessPointService.findAccessPointsBySinglePartValues(itemList);
 
-        List<ApAccessPoint> aps = accessPointService.findAccessPointsBySinglePartValues(itemList);
-
-        if (aps.size() > 1) {
-            ErrorDescription ed = WSHelper.prepareErrorDescription("Too many results: " + aps.size(), String.valueOf(aps
-                    .size()));
-            throw new SearchEntityException(ed.getUserMessage(), ed);
+            if (aps.size() > 1) {
+                ErrorDescription ed = WSHelper.prepareErrorDescription("Too many results: " + aps.size(),
+                                                                       String.valueOf(aps.size()));
+                throw new SearchEntityException(ed.getUserMessage(), ed);
+            }
+            if (aps.size() == 1) {
+                ap = aps.get(0);
+            } else {
+                ap = null;
+            }
+        } else {
+            if(entityId.length()==36) {
+                ap = accessPointService.getAccessPointByUuid(entityId);
+            } else {
+                Integer id = Integer.parseInt(entityId);
+                ap = accessPointService.getAccessPoint(id);
+            }
         }
 
         SearchEntityResult result = new SearchEntityResult();
-        if (aps.size() == 1) {
-            ApAccessPoint ap = aps.get(0);
+        if (ap != null) {
+            ApState apState = accessPointService.getState(ap);
+            ApFactory apFactory = appCtx.getBean(ApFactory.class);
+            ApAccessPointVO apVo = apFactory.createVO(apState, true);
+
             EntityInfo entityInfo = new EntityInfo();
             entityInfo.setEntityId(ap.getAccessPointId().toString());
             entityInfo.setUuid(ap.getUuid());
+            entityInfo.setPrefName(apVo.getName());
+            entityInfo.setBriefDesc(apVo.getDescription());
+            entityInfo.setEntityClass(apState.getApType().getCode());
+
             result.setEntityInfo(entityInfo);
         }
         return result;
     }
 }
-

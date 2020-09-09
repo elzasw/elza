@@ -8,8 +8,8 @@
         <ns2:default>
             <title>&lt;Není nastaveno&gt;</title>
             <strict-mode>true</strict-mode>
-            <tree>ZP2015_NAD ZP2015_ZNACKA_FONDU ZP2015_TITLE ZP2015_UNIT_DATE</tree>
-            <accordion-left>ZP2015_NAD ZP2015_ZNACKA_FONDU ZP2015_TITLE ZP2015_UNIT_DATE</accordion-left>
+            <tree>ZP2015_TITLE ZP2015_UNIT_DATE</tree>
+            <accordion-left>ZP2015_TITLE ZP2015_UNIT_DATE</accordion-left>
             <accordion-right>ZP2015_FOLDER_TYPE ZP2015_STORAGE_ID ZP2015_ITEM_ORDER</accordion-right>
             <hierarchy type-code="ZP2015_LEVEL_TYPE" default-separator="|">
                 <level spec-code="ZP2015_LEVEL_ROOT">

@@ -24,9 +24,9 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -288,8 +288,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         for (Integer nodeId : nodeIds) {
             TreeNode treeNode = versionTreeCache.get(nodeId);
             if(treeNode != null){
-                String[] referenceMark = createClientReferenceMarkFromRoot(treeNode, levelTypeId,
-                        viewTitles, valuesMap);
+                String[] referenceMark = createClientReferenceMarkFromRoot(treeNode, viewTitles, valuesMap);
                 TreeNodeVO clientNode = clientMap.get(nodeId);
                 clientNode.setReferenceMark(referenceMark);
                 result.add(clientNode);
@@ -777,7 +776,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         String[] rootReferenceMark = new String[0];
         if (subtreeRoot != null) {
             rootReferenceMark = createClientReferenceMarkFromRoot(subtreeRoot,
-                                                                  levelTypeId, viewTitles, valuesMap);
+                                                                  viewTitles, valuesMap);
         }
         String[] parentReferenceMark = rootReferenceMark;
 
@@ -1616,6 +1615,60 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     }
 
     /**
+     * Context for method GetNodes
+     * 
+     *
+     */
+    public static class GetNodesCtx {
+
+        /**
+         * Created nodes
+         */
+        LinkedHashMap<Integer, Node> nodeMap = new LinkedHashMap<>();
+
+        /**
+         * Request parameters
+         */
+        private NodeParam param;
+        private ArrFundVersion fundVersion;
+
+        private ViewTitles viewTitles;
+
+        private Map<Integer, ArrNode> arrNodeMap;
+
+        public GetNodesCtx(final NodeParam param,
+                           final ArrFundVersion fundVersion,
+                           final ViewTitles viewTitles,
+                           final Map<Integer, ArrNode> arrNodeMap) {
+            this.param = param;
+            this.fundVersion = fundVersion;
+            this.viewTitles = viewTitles;
+            this.arrNodeMap = arrNodeMap;
+        }
+
+        ViewTitles getViewTitles() {
+            return viewTitles;
+        }
+
+        NodeParam getParam() {
+            return param;
+        }
+
+        ArrFundVersion getFundVersion() {
+            return fundVersion;
+        }
+
+        public void addNode(Node node) {
+            nodeMap.put(node.getId(), node);
+        }
+
+        LinkedHashMap<Integer, Node> getNodes() {
+            return nodeMap;
+        }
+
+    }
+
+    /**
      * Interní třída pro JP.
      */
     public static class Node {
@@ -1784,23 +1837,14 @@ public class LevelTreeCacheService implements NodePermissionChecker {
                                                   final ArrFundVersion fundVersion) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
 
-        LinkedHashMap<Integer, Node> nodeMap = new LinkedHashMap<>();
+        ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(), fundVersion.getFundId());
+
         Set<Integer> nodeIds = treeNodeMap.keySet();
         Map<Integer, ArrNode> arrNodeMap = createNodeMap(nodeIds);
 
-        ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(), fundVersion.getFund().getFundId());
-        // read LevelTypeId
-        Integer levelTypeId = viewTitles.getLevelTypeId();
+        GetNodesCtx getNodesCtx = new GetNodesCtx(param, fundVersion, viewTitles, arrNodeMap);
 
         Map<Integer, TitleItemsByType> nodeValueMap = createValuesMap(treeNodeMap, fundVersion, subtreeRoot);
-
-        String[] rootReferenceMark = new String[0];
-        if (param.isReferenceMark() && subtreeRoot != null) {
-            rootReferenceMark = createClientReferenceMarkFromRoot(subtreeRoot, levelTypeId,
-                                                                  viewTitles, nodeValueMap);
-        }
-
-        String[] parentReferenceMark = rootReferenceMark;
 
         Map<Integer, ArrNodeConformityExt> conformityInfoForNodes = Collections.emptyMap();
         List<Integer> conformityNodeIds = Collections.emptyList();
@@ -1824,47 +1868,10 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         for (TreeNode treeNode : treeNodeMap.values()) {
             Integer id = treeNode.getId();
 
-            Node node = new Node(id, arrNodeMap.get(id).getVersion(), arrNodeMap.get(id).getUuid());
-            node.setHasChildren(!treeNode.getChilds().isEmpty());
-            node.setDepth(treeNode.getDepth());
+            ArrNode arrNode = arrNodeMap.get(id);
 
-            TitleItemsByType descItemCodeToValueMap = nodeValueMap.get(id);
-
-            String defaultTitle = createDefaultTitle(viewTitles, id);
-            if (descItemCodeToValueMap != null) {
-                if (param.isName()) {
-                    node.setName(createTitle(viewTitles.getTreeItemIds(), descItemCodeToValueMap, true,
-                                             defaultTitle));
-                }
-                if (param.isAccordion()) {
-                    node.setAccordionLeft(createTitle(viewTitles.getAccordionLeftIds(), descItemCodeToValueMap, true,
-                                                      defaultTitle));
-                    node.setAccordionRight(createTitle(viewTitles.getAccordionRightIds(), descItemCodeToValueMap, false,
-                                                       defaultTitle));
-                }
-                if (param.isIcon()) {
-                    String iconName = getIcon(descItemCodeToValueMap, viewTitles);
-                    node.setIcon(iconName);
-                }
-            } else {
-                if (param.isName()) {
-                    node.setName(defaultTitle);
-                }
-            }
-
-            if (param.isReferenceMark() && subtreeRoot != null) {
-                TreeNode parent = treeNode.getParent();
-                if (parent != null) {
-                    if (parent.equals(subtreeRoot)) {
-                        parentReferenceMark = rootReferenceMark;
-                    } else {
-                        parentReferenceMark = nodeMap.get(parent.getId()).getReferenceMark();
-                    }
-                }
-                String[] referenceMark = createClientNodeReferenceMark(treeNode, levelTypeId, viewTitles, nodeValueMap,
-                                                                       parentReferenceMark);
-                node.setReferenceMark(referenceMark);
-            }
+            Node node = prepareNode(getNodesCtx, treeNode, arrNode, nodeValueMap, subtreeRoot);
+            getNodesCtx.addNode(node);
 
             if (param.isNodeConformity()) {
                 ArrNodeConformityExt nodeConformity = conformityInfoForNodes.get(id);
@@ -1877,13 +1884,11 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             if (param.isDigitizationRequest()) {
                 node.setDigitizationRequests(addDigitizationRequests(requestVOMap, requestMap, id));
             }
-
-            nodeMap.put(id, node);
         }
 
         if (param.isNodeConformity() && conformityNodeIds.size() > 0) {
             Map<Integer, Map<Integer, Boolean>> nodeIdsVisiblePolicy = policyService.getVisiblePolicyIds(conformityNodeIds, fundVersion, true);
-            for (Node node : nodeMap.values()) {
+            for (Node node : getNodesCtx.getNodes().values()) {
                 Map<Integer, Boolean> visiblePolicy = nodeIdsVisiblePolicy.get(node.getId());
                 if (visiblePolicy != null) {
                     node.getNodeConformity().setPolicyTypeIdsVisible(visiblePolicy);
@@ -1891,7 +1896,96 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             }
         }
 
-        return nodeMap;
+        return getNodesCtx.getNodes();
+    }
+
+    /**
+     * Prepare data for one node
+     * 
+     * @param getNodesCtx
+     * 
+     * @param treeNode
+     * @param arrNode
+     * @param nodeValueMap
+     * @return
+     */
+    private Node prepareNode(GetNodesCtx requestCtx, TreeNode treeNode, ArrNode arrNode,
+                             Map<Integer, TitleItemsByType> nodeValueMap,
+                             TreeNode subtreeRoot) {
+        final Integer id = treeNode.getId();
+        final ViewTitles viewTitles = requestCtx.getViewTitles();
+        final NodeParam param = requestCtx.getParam();
+        final TitleItemsByType descItemCodeToValueMap = nodeValueMap.get(id);
+        TreeNode parent = treeNode.getParent();
+
+        Node node = new Node(id, arrNode.getVersion(), arrNode.getUuid());
+        node.setHasChildren(!treeNode.getChilds().isEmpty());
+        node.setDepth(treeNode.getDepth());
+
+        String defaultTitle;
+        if (parent == null) {
+            defaultTitle = createRootTitle(requestCtx.getFundVersion().getFund(), viewTitles, id);
+        } else {
+            defaultTitle = createDefaultTitle(viewTitles, id);
+        }
+        if (descItemCodeToValueMap != null) {
+            if (param.isName()) {
+                node.setName(createTitle(viewTitles.getTreeItemIds(), descItemCodeToValueMap, true,
+                                         defaultTitle));
+            }
+            if (param.isAccordion()) {
+                node.setAccordionLeft(createTitle(viewTitles.getAccordionLeftIds(), descItemCodeToValueMap, true,
+                                                  defaultTitle));
+                node.setAccordionRight(createTitle(viewTitles.getAccordionRightIds(), descItemCodeToValueMap, false,
+                                                   defaultTitle));
+            }
+            if (param.isIcon()) {
+                String iconName = getIcon(descItemCodeToValueMap, viewTitles);
+                node.setIcon(iconName);
+            }
+        } else {
+            if (param.isName()) {
+                node.setName(defaultTitle);
+            }
+        }
+
+        if (param.isReferenceMark() && subtreeRoot != null) {
+
+            String[] parentReferenceMark;
+            if (parent == null || parent.equals(subtreeRoot)) {
+                parentReferenceMark = createClientReferenceMarkFromRoot(subtreeRoot, viewTitles, nodeValueMap);
+            } else {
+                Node parentNode = requestCtx.getNodes().get(parent.getId());
+                Validate.notNull(parentNode, "Parent node not found, nodeId: %i", parent.getId());
+                parentReferenceMark = parentNode.getReferenceMark();
+            }
+            String[] referenceMark = createClientNodeReferenceMark(treeNode, viewTitles.getLevelTypeId(),
+                                                                   viewTitles, nodeValueMap,
+                                                                   parentReferenceMark);
+            node.setReferenceMark(referenceMark);
+        }
+
+        return node;
+
+    }
+
+    private String createRootTitle(ArrFund fund, ViewTitles viewTitles, Integer id) {
+        // try to creatae from node
+        List<String> detailList = new ArrayList<>();
+        if (fund.getFundNumber() != null) {
+            detailList.add(fund.getFundNumber().toString());
+        }
+        if (StringUtils.isNotEmpty(fund.getInternalCode())) {
+            detailList.add(fund.getInternalCode());
+        }
+        if (StringUtils.isNotEmpty(fund.getMark())) {
+            detailList.add(fund.getMark());
+        }
+        String title = String.join(" ", detailList);
+        if (StringUtils.isNotEmpty(title)) {
+            return title;
+        }
+        return createDefaultTitle(viewTitles, id);
     }
 
     /**
@@ -2141,13 +2235,11 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * Provede načtení referečního označení pro uzel. Načte označení od kořenu až po uzel.
      *
      * @param node          uzel
-     * @param levelTypeId   id atributu úrovně popisu
      * @param viewTitles    nastavení načítání atributů
      * @param valuesMap     mapa načtených hodnot pro uzly
      * @return referenční označení
      */
     private String[] createClientReferenceMarkFromRoot(final TreeNode node,
-                                                       @Nullable final Integer levelTypeId,
                                                        final ViewTitles viewTitles,
                                                        final Map<Integer, TitleItemsByType> valuesMap) {
 
@@ -2155,8 +2247,9 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         if (parent == null) {
             return new String[0];
         }
+        final Integer levelTypeId = viewTitles.getLevelTypeId();
 
-        String[] parentReferenceMark = createClientReferenceMarkFromRoot(parent, levelTypeId, viewTitles, valuesMap);
+        String[] parentReferenceMark = createClientReferenceMarkFromRoot(parent, viewTitles, valuesMap);
 
         String[] referenceMark = createClientNodeReferenceMark(node, levelTypeId, viewTitles, valuesMap,
                 parentReferenceMark);

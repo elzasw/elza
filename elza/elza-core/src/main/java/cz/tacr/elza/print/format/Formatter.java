@@ -176,6 +176,20 @@ public class Formatter {
                 useBeginSeparatorAlways, useEndSeparatorAlways));
     }
 
+    public Formatter setGroupBySpec(boolean groupBySpec) {
+        return addAction(new SetGroupBySpec(groupBySpec));
+    }
+
+    /**
+     * Set group format
+     * 
+     * @param itemSeparator
+     * @return
+     */
+    public Formatter setGroupFormat(String itemSeparator) {
+        return addAction(new SetGroupFormat(itemSeparator));
+    }
+
     /**
 	 * Format items from node
 	 * @param node Node to be formatted

@@ -2,8 +2,11 @@ package cz.tacr.elza.print;
 
 import java.util.List;
 
+import org.apache.commons.lang3.Validate;
+
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.print.item.Item;
+import net.bytebuddy.implementation.bytecode.Throw;
 
 /**
  * Structured
@@ -32,6 +35,12 @@ public class Structured {
 
     public void setValue(final String value) {
         this.value = value;
+    }
+
+    public List<Item> getItems() {
+        load();
+
+        return items;
     }
 
     /*
@@ -85,5 +94,33 @@ public class Structured {
 
     public Integer getId() {
         return id;
+    }
+
+    /**
+     * Return single item
+     * 
+     * @param itemTypeCode
+     *            Code of item
+     * @return Return single item if exists. Return null if item does not exists.
+     * @throws Throw
+     *             exception if there are multiple items with same type.
+     */
+    public Item getSingleItem(final String typeCode) {
+        load();
+
+        Validate.notEmpty(typeCode);
+
+        cz.tacr.elza.print.item.Item found = null;
+        for (cz.tacr.elza.print.item.Item item : items) {
+            if (typeCode.equals(item.getType().getCode())) {
+                // check if item already found
+                if (found != null) {
+                    throw new IllegalStateException("Multiple items with same code exists: " + typeCode);
+                }
+                found = item;
+            }
+        }
+        return found;
+
     }
 }

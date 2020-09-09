@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -35,10 +36,9 @@ import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -47,7 +47,6 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.Item;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -58,13 +57,13 @@ import cz.tacr.elza.print.item.ItemSpec;
 import cz.tacr.elza.print.item.ItemType;
 import cz.tacr.elza.print.item.convertors.ItemConvertorContext;
 import cz.tacr.elza.print.item.convertors.OutputItemConvertor;
-import cz.tacr.elza.print.part.Part;
 import cz.tacr.elza.print.party.Institution;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -140,6 +139,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final StructuredObjectRepository structObjRepos;
 
+    private final DaoLinkRepository daoLinkRepository;
+
     /**
      * Provider for attachments
      */
@@ -156,6 +157,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private OffsetDateTime changeDateTime;
 
+    private OutputItemConvertor itemConvertor = new OutputItemConvertor(this);
+
     public OutputModel(final StaticDataService staticDataService,
                        final ElzaLocale elzaLocale,
                        final FundTreeProvider fundTreeProvider,
@@ -168,7 +171,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final StructuredItemRepository structItemRepos,
                        final ApPartRepository partRepository,
                        final ApItemRepository itemRepository,
-                       final ApBindingStateRepository bindingStateRepository) {
+                       final ApBindingStateRepository bindingStateRepository,
+                       final DaoLinkRepository daoLinkRepository) {
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
         this.fundTreeProvider = fundTreeProvider;
@@ -182,6 +186,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
+        this.daoLinkRepository = daoLinkRepository;
     }
 
     public boolean isInitialized() {
@@ -366,29 +371,36 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         OutputItemConvertor conv = new OutputItemConvertor(this);
 
         Map<Integer, RestoredNode> cachedNodeMap = nodeCacheService.getNodes(arrNodeIds);
+
+        Map<Integer, Node> daoLinkMap = new HashMap<>();
+
         for (Node node : nodes) {
             Integer arrNodeId = node.getNodeId().getArrNodeId();
             RestoredNode cachedNode = cachedNodeMap.get(arrNodeId);
             Validate.notNull(cachedNode);
             node.load(cachedNode, conv);
+            // prepare map for daolinks
+            if (CollectionUtils.isNotEmpty(cachedNode.getDaoLinks())) {
+                for (ArrDaoLink daoLink : cachedNode.getDaoLinks()) {
+                    daoLinkMap.put(daoLink.getDaoLinkId(), node);
+                }
+            }
+        }
+        // read dao links
+        if (!daoLinkMap.isEmpty()) {
+            List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(arrNodeIds);
+            Validate.isTrue(daoLinks.size() == daoLinkMap.size());
+
+            for (ArrDaoLink daoLink : daoLinks) {
+                Node node = daoLinkMap.get(daoLink.getDaoLinkId());
+                Validate.notNull(node);
+
+                Dao dao = new Dao(daoLink);
+                node.addDao(dao);
+            }
         }
 
         return nodes;
-    }
-
-    private List<cz.tacr.elza.print.item.Item> convertItems(List<? extends Item> srcItems) {
-        OutputItemConvertor conv = new OutputItemConvertor(this);
-        List<cz.tacr.elza.print.item.Item> result = srcItems.stream()
-                .map(i -> conv.convert(i))
-                /*
-                // add packet reference
-                if (item instanceof ItemStructuredRef) {
-                    item.getValue(Structured.class).addNodeId(node.getNodeId());
-                }*/
-                .filter(Objects::nonNull)
-                .sorted(cz.tacr.elza.print.item.Item::compareTo)
-                .collect(Collectors.toList());
-        return result;
     }
 
     /**
@@ -542,28 +554,11 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         ApState apState = apStateRepository.findLastByAccessPoint(ap);
 
         RecordType type = getAPType(apState.getApTypeId());
-        record = new Record(ap, type, staticData, apStateRepository, bindingRepository, partRepository, bindingStateRepository);
-        List<ApPart> apParts = partRepository.findValidPartByAccessPoint(ap);
-        List<ApItem> apItems = itemRepository.findValidItemsByAccessPoint(ap);
-        List<Part> parts = new ArrayList<>(apParts.size());
-        for (ApPart apPart : apParts) {
-            Part part = new Part(apPart, staticData);
-            List<ApItem> partItems = new ArrayList<>();
-            for(ApItem apItem : apItems) {
-                if(apItem.getPart().getPartId().intValue() == part.getPartId()) {
-                    partItems.add(apItem);
-                }
-            }
-           // List<ApItem> apItems = itemRepository.findValidItemsByPartId(part.getPartId());
-
-            part.setItems(convertItems(partItems));
-            if(part.getPartId() == ap.getPreferredPart().getPartId()) {
-                record.setPreferredPart(part);
-            }
-            parts.add(part);
-        }
-        parts = Collections.unmodifiableList(parts);
-        record.setParts(parts);
+        record = new Record(ap, type, staticData, apStateRepository,
+                bindingRepository, partRepository, itemRepository,
+                bindingStateRepository,
+                itemConvertor
+                );
 
         // add to lookup
         apIdMap.put(ap.getAccessPointId(), record);
