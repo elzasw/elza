@@ -18,6 +18,8 @@
     white-space: nowrap;
 
     padding-right: 3px;
+    vertical-align: middle;
+    line-height: 1.8em;
 
     &:not(:last-child) {
       white-space: normal;
