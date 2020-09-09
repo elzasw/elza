@@ -1,4 +1,4 @@
-import * as types from '../../actions/constants/ActionTypes.js';
+import * as types from '../../actions/constants/ActionTypes';
 import {WebApi} from 'actions/index.jsx';
 
 export function isCustomFundAction(action) {

@@ -2,7 +2,7 @@
  * akce pro toastry
  */
 
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 export function addToastr(title, message = null, style = 'info', size = 'lg', time = null) {
     return {

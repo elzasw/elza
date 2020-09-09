@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 /**
  * Zdůvodu zpětné kompatibility jsou zachována původní policyTypeIds jako data a ostatní data jsou z requestu odlita do sekundárního attr

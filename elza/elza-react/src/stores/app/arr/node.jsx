@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {indexById} from 'stores/app/utils.jsx';
 import subNodeForm from './subNodeForm.jsx';
 import subNodeFormCache from './subNodeFormCache.jsx';
@@ -105,14 +105,14 @@ export function nodeInitState(node, prevNodesNode) {
 
 function getViewStartIndex(index, pageSize) {
     // -1 může být, pokud nejsou data seznamu položek accordionu (childNodes) ještě načtena
-    if (index === undefined || index < 0) {   
+    if (index === undefined || index < 0) {
         throw new Error("invalid index provided");
     }
     // Zajisteni ze "okno" je cele cislo
     const view = Math.floor(pageSize);
 
     // Ziskani v kolikatem "okne" se polozka nachazi.
-    const startIndex = Math.floor(index/view)*view; 
+    const startIndex = Math.floor(index/view)*view;
 
     // Posunuti o "okno" zpet pokud se polozka nachazi v jeho prvni polovine
     if(index - startIndex > view/2){

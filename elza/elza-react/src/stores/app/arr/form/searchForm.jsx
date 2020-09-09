@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 export default function searchForm(state, action) {
     switch (action.type) {

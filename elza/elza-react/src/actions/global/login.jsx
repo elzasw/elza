@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {_WebApi, WebApi} from 'actions/index.jsx';
 import {userDetailChange, userDetailRequest} from 'actions/user/userDetail.jsx';
 import {routerNavigate} from 'actions/router.jsx';

@@ -2,7 +2,7 @@
  * Output related actions
  */
 
-import * as types from '../constants/ActionTypes.js';
+import * as types from '../constants/ActionTypes';
 
 /**
  * Increase output version. Zvýšení probíhá o 1.

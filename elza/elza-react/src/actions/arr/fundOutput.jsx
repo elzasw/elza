@@ -2,7 +2,7 @@
  * Akce pro výstupy - named output.
  */
 
-import * as types from '../../actions/constants/ActionTypes.js';
+import * as types from '../../actions/constants/ActionTypes';
 import {WebApi} from '../../actions/index.jsx';
 import {i18n} from '../../components/shared';
 import {indexById} from '../../stores/app/utils.jsx';
@@ -278,7 +278,7 @@ export function fundOutputGenerate(outputId) {
 export function fundOutputSend(outputId) {
     return (dispatch) => {
         if (window.confirm(i18n('ribbon.action.arr.output.send.confirm'))) {
-            WebApi.outputSend(outputId).then(() => { 
+            WebApi.outputSend(outputId).then(() => {
                 dispatch(addToastrSuccess(i18n('ribbon.action.arr.output.send.success')));
             });
         }

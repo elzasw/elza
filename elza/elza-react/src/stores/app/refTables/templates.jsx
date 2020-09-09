@@ -1,5 +1,5 @@
 import template from './template';
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 const initialState = {
     items: {},

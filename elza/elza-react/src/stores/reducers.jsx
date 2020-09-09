@@ -6,7 +6,7 @@ import {reducer as formReducer} from 'redux-form';
 import arrRegion from './app/arr/arrRegion.jsx';
 import refTables from './app/refTables/refTables.jsx';
 import toastr from '../components/shared/toastr/ToastrStore.jsx';
-import fundRegion from './app/fund/fundRegion.jsx';
+import fundRegion from './app/fund/fundRegion';
 import contextMenu from './app/global/contextMenu.jsx';
 import modalDialog from './app/global/modalDialog.jsx';
 import webSocket from './app/global/webSocket.jsx';

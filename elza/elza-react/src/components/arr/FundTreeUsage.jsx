@@ -6,7 +6,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {AbstractReactComponent} from 'components/shared';
 import FundTreeLazy from './FundTreeLazy';
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 import {fundTreeCollapse} from 'actions/arr/fundTree.jsx';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';

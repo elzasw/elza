@@ -2,7 +2,7 @@
  * Akce pro hromadné akce
  */
 
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {WebApi} from 'actions/index.jsx';
 import {indexById} from 'stores/app/utils.jsx';
 import {ActionState} from '../../constants.tsx';

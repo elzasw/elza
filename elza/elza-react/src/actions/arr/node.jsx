@@ -3,7 +3,7 @@
  */
 
 import {WebApi} from 'actions/index.jsx';
-import * as types from './../../actions/constants/ActionTypes.js';
+import * as types from './../../actions/constants/ActionTypes';
 import {findByRoutingKeyInGlobalState, indexById} from 'stores/app/utils.jsx';
 import {createFundRoot, isFundRootId} from 'components/arr/ArrUtils.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';

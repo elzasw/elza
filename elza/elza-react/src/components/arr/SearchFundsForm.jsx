@@ -6,7 +6,7 @@ import {createReferenceMark, getNodeIcon} from 'components/arr/ArrUtils.jsx';
 import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 import {WebApi} from '../../actions/WebApi';
 
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 import {routerNavigate} from 'actions/router.jsx';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx';

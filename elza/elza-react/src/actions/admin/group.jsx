@@ -2,7 +2,7 @@
  * Akce pro správu skupin uživatelů.
  */
 
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {WebApi} from 'actions/index.jsx';
 import {i18n} from 'components/shared';
 import {savingApiWrapper} from 'actions/global/status.jsx';

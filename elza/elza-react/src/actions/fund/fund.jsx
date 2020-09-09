@@ -2,7 +2,7 @@
  * Akce pro archivní soubory.
  */
 
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {WebApi} from 'actions/index.jsx';
 
 import {DEFAULT_LIST_SIZE} from '../../constants.tsx';

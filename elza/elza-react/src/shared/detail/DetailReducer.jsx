@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {INVALIDATE, REQUEST, RESET, RESPONSE, SELECT, UPDATE_VALUE} from './DetailActions';
 
 /**

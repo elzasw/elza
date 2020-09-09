@@ -1,7 +1,7 @@
 /**
  * Akce pro záložky otevřených stromů AS. - Pouze z důvodu circular dependency
  */
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 /**
  * Zapnutí/vypnutí rozšířeného zobrazení stromu AS.

@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {getSetFromIdsList} from 'stores/app/utils.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 

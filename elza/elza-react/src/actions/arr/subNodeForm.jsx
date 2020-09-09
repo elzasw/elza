@@ -10,7 +10,7 @@ import {valuesEquals} from 'components/Utils.jsx';
 import {setFocus} from 'actions/global/focus.jsx';
 import {increaseNodeVersion} from './node.jsx';
 import {outputIncreaseNodeVersion} from './outputActions.jsx';
-import * as types from '../../actions/constants/ActionTypes.js';
+import * as types from '../../actions/constants/ActionTypes';
 import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {i18n} from 'components/shared';
 import {statusSaved, statusSaving} from 'actions/global/status.jsx';

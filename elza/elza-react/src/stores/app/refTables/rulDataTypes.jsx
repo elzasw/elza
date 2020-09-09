@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {default as genericRefTable, genericRefTableState} from './genericRefTable';
 
 export default function rulDataTypes(state = genericRefTableState, action = {}) {

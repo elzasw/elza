@@ -5,7 +5,7 @@
  * @since 22.1.2016
  */
 import {WebApi} from 'actions/index.jsx';
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 /**
  * Získání stavu indexování ze serveru.

@@ -2,7 +2,7 @@
  * Akce pro různá nastavení pro konkrétní uzel, např. zamykání atributů atp.
  */
 
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 export function isNodeSettingsAction(action) {
     switch (action.type) {

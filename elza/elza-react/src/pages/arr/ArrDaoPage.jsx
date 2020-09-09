@@ -12,7 +12,7 @@ import FundTreeDaos from '../../components/arr/FundTreeDaos';
 import ArrDaos from '../../components/arr/ArrDaos';
 
 import {i18n, Icon, RibbonGroup, Tabs} from 'components/shared';
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {createFundRoot, getParentNode} from 'components/arr/ArrUtils.jsx';
 import {addNodeForm} from 'actions/arr/addNodeForm.jsx';
 import ArrParentPage from './ArrParentPage.jsx';
@@ -216,7 +216,7 @@ class ArrDaoPage extends ArrParentPage {
                     {...fund.fundTreeDaosLeft}
                 />
                 {
-                    /*fund.fundTreeDaosLeft.selectedId !== null &&*/ 
+                    /*fund.fundTreeDaosLeft.selectedId !== null &&*/
                 }
                 <ArrDaos
                         type="NODE"
@@ -243,17 +243,17 @@ class ArrDaoPage extends ArrParentPage {
         const {selectedDaoLeft} = this.state;
         const fund = this.getActiveFund(this.props);
 
-        let canLink = selectedDaoLeft 
-            && fund.fundTreeDaosRight.selectedId !== null 
+        let canLink = selectedDaoLeft
+            && fund.fundTreeDaosRight.selectedId !== null
             && !readMode;
 
         if(this.isDaoType("LEVEL")){
             return (
-                <Button 
-                    onClick={this.handleLink} 
+                <Button
+                    onClick={this.handleLink}
                     disabled={!canLink}
                 >
-                    <Icon 
+                    <Icon
                         glyph="ez-move-under"
                     />
                     <div>
@@ -263,24 +263,24 @@ class ArrDaoPage extends ArrParentPage {
             );
         } else {
             return [
-                <Button 
+                <Button
                     key="0"
-                    onClick={this.handleLink} 
+                    onClick={this.handleLink}
                     disabled={!canLink}
                 >
-                    <Icon 
+                    <Icon
                         glyph="fa-thumb-tack"
                     />
                     <div>
                         {i18n('arr.daos.link')}
                     </div>
                 </Button>,
-                <Button 
+                <Button
                     key="1"
-                    onClick={this.handleCreateUnderAndLink} 
+                    onClick={this.handleCreateUnderAndLink}
                     disabled={!canLink}
                 >
-                    <Icon 
+                    <Icon
                         glyph="ez-move-under"
                     />
                     <div>

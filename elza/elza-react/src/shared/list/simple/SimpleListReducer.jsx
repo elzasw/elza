@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {FILTER, INVALIDATE, REQUEST, RESET, RESPONSE, SELECT_PARENT} from './SimpleListActions';
 
 const simpleFilter = (rows, filter) => rows;

@@ -5,7 +5,7 @@ import {Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import FundNodesSelect from './FundNodesSelect';
 import {customFundActionFetchListIfNeeded} from '../../actions/arr/customFundAction';
-import * as types from '../../actions/constants/ActionTypes.js';
+import * as types from '../../actions/constants/ActionTypes';
 import Loading from '../shared/loading/Loading';
 import PropTypes from 'prop-types';
 

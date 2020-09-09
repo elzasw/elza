@@ -4,7 +4,7 @@
  * @author Petr Compel
  * @since 15.2.2015
  */
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 
 /**
  * Výchozí stav store

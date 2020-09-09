@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {isPermissionAction} from 'actions/admin/permission.jsx';
 import permission from './permission.jsx';
 

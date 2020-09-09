@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {indexById} from 'stores/app/utils.jsx';
 
 const bulkActionsInitState = {

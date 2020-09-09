@@ -1,4 +1,4 @@
-import * as types from 'actions/constants/ActionTypes.js';
+import * as types from 'actions/constants/ActionTypes';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {WebApi} from 'actions/index.jsx';
