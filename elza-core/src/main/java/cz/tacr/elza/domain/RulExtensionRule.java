@@ -4,6 +4,7 @@ import static cz.tacr.elza.domain.enumeration.StringLength.LENGTH_ENUM;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -51,6 +52,10 @@ public class RulExtensionRule {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
+
+    @Basic
+    @Column(name = "compatibility_rul_package")
+    private Integer compatibilityRulPackage;
 
     /**
      * @return identifikátor entity
@@ -122,6 +127,14 @@ public class RulExtensionRule {
 
     public void setArrangementExtension(final RulArrangementExtension arrangementExtension) {
         this.arrangementExtension = arrangementExtension;
+    }
+
+    public Integer getCompatibilityRulPackage() {
+        return compatibilityRulPackage;
+    }
+
+    public void setCompatibilityRulPackage(Integer compatibilityRulPackage) {
+        this.compatibilityRulPackage = compatibilityRulPackage;
     }
 
     /**

@@ -1,501 +1,501 @@
 <extension-rules>
-    <extension-rule filename="available_items/GLOBAL.drl" arrangement-extension="AVAILABLE_ITEMS">
+    <extension-rule filename="available_items/GLOBAL.drl" arrangement-extension="AVAILABLE_ITEMS" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/PT_BODY">
+    <extension-rule filename="available_items/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/PT_CRE">
+    <extension-rule filename="available_items/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/PT_EVENT">
+    <extension-rule filename="available_items/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/PT_EVENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/PT_EXT">
+    <extension-rule filename="available_items/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/PT_IDENT">
+    <extension-rule filename="available_items/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/PT_IDENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/PT_NAME">
+    <extension-rule filename="available_items/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/PT_REL">
+    <extension-rule filename="available_items/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/PT_REL" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK/PT_BODY">
+    <extension-rule filename="available_items/ARTWORK/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK/PT_CRE">
+    <extension-rule filename="available_items/ARTWORK/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK/PT_EVENT">
+    <extension-rule filename="available_items/ARTWORK/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK/PT_EVENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK/PT_EXT">
+    <extension-rule filename="available_items/ARTWORK/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK/PT_NAME">
+    <extension-rule filename="available_items/ARTWORK/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK/PT_REL">
+    <extension-rule filename="available_items/ARTWORK/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK/PT_REL" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_ARTWORK/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_ARTWORK/PT_BODY">
+    <extension-rule filename="available_items/ARTWORK_ARTWORK/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_ARTWORK/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_ARTWORK/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_ARTWORK/PT_CRE">
+    <extension-rule filename="available_items/ARTWORK_ARTWORK/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_ARTWORK/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_ARTWORK/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_ARTWORK/PT_EXT">
+    <extension-rule filename="available_items/ARTWORK_ARTWORK/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_ARTWORK/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_ARTWORK/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_ARTWORK/PT_NAME">
+    <extension-rule filename="available_items/ARTWORK_ARTWORK/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_ARTWORK/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_AWARD/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_AWARD/PT_CRE">
+    <extension-rule filename="available_items/ARTWORK_AWARD/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_AWARD/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_AWARD/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_AWARD/PT_EXT">
+    <extension-rule filename="available_items/ARTWORK_AWARD/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_AWARD/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_AWARD/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_AWARD/PT_NAME">
+    <extension-rule filename="available_items/ARTWORK_AWARD/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_AWARD/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_CHARTER/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CHARTER/PT_CRE">
+    <extension-rule filename="available_items/ARTWORK_CHARTER/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CHARTER/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_CHARTER/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CHARTER/PT_EXT">
+    <extension-rule filename="available_items/ARTWORK_CHARTER/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CHARTER/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_CHARTER/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CHARTER/PT_NAME">
+    <extension-rule filename="available_items/ARTWORK_CHARTER/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CHARTER/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_CONSTR/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_BODY">
+    <extension-rule filename="available_items/ARTWORK_CONSTR/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_CONSTR/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_CRE">
+    <extension-rule filename="available_items/ARTWORK_CONSTR/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_CONSTR/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_EXT">
+    <extension-rule filename="available_items/ARTWORK_CONSTR/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_CONSTR/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_NAME">
+    <extension-rule filename="available_items/ARTWORK_CONSTR/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_CONSTR/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_GAME/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_GAME/PT_CRE">
+    <extension-rule filename="available_items/ARTWORK_GAME/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_GAME/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_GAME/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_GAME/PT_EXT">
+    <extension-rule filename="available_items/ARTWORK_GAME/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_GAME/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_PROD/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_PROD/PT_CRE">
+    <extension-rule filename="available_items/ARTWORK_PROD/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_PROD/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_PROD/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_PROD/PT_EXT">
+    <extension-rule filename="available_items/ARTWORK_PROD/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_PROD/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_PROD/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_PROD/PT_NAME">
+    <extension-rule filename="available_items/ARTWORK_PROD/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_PROD/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_PROJ/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_PROJ/PT_CRE">
+    <extension-rule filename="available_items/ARTWORK_PROJ/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_PROJ/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_PROJ/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_PROJ/PT_EXT">
+    <extension-rule filename="available_items/ARTWORK_PROJ/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_PROJ/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/ARTWORK_PROJ/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_PROJ/PT_NAME">
+    <extension-rule filename="available_items/ARTWORK_PROJ/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/ARTWORK_PROJ/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/DYNASTY/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_BODY">
+    <extension-rule filename="available_items/DYNASTY/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/DYNASTY/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_CRE">
+    <extension-rule filename="available_items/DYNASTY/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/DYNASTY/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_EVENT">
+    <extension-rule filename="available_items/DYNASTY/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_EVENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/DYNASTY/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_EXT">
+    <extension-rule filename="available_items/DYNASTY/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/DYNASTY/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_IDENT">
+    <extension-rule filename="available_items/DYNASTY/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_IDENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/DYNASTY/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_NAME">
+    <extension-rule filename="available_items/DYNASTY/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/DYNASTY/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_REL">
+    <extension-rule filename="available_items/DYNASTY/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/DYNASTY/PT_REL" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_BODY">
+    <extension-rule filename="available_items/EVENT/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_CRE">
+    <extension-rule filename="available_items/EVENT/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_EVENT">
+    <extension-rule filename="available_items/EVENT/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_EVENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_EXT">
+    <extension-rule filename="available_items/EVENT/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_IDENT">
+    <extension-rule filename="available_items/EVENT/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_IDENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_NAME">
+    <extension-rule filename="available_items/EVENT/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_REL">
+    <extension-rule filename="available_items/EVENT/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT/PT_REL" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT_EVENT/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_EVENT/PT_CRE">
+    <extension-rule filename="available_items/EVENT_EVENT/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_EVENT/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT_EVENT/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_EVENT/PT_EXT">
+    <extension-rule filename="available_items/EVENT_EVENT/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_EVENT/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT_EVENT/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_EVENT/PT_NAME">
+    <extension-rule filename="available_items/EVENT_EVENT/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_EVENT/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT_NATURE/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_NATURE/PT_NAME">
+    <extension-rule filename="available_items/EVENT_NATURE/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_NATURE/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT_TRADITION/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_TRADITION/PT_CRE">
+    <extension-rule filename="available_items/EVENT_TRADITION/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_TRADITION/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT_TRADITION/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_TRADITION/PT_EXT">
+    <extension-rule filename="available_items/EVENT_TRADITION/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_TRADITION/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/EVENT_TRADITION/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_TRADITION/PT_NAME">
+    <extension-rule filename="available_items/EVENT_TRADITION/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/EVENT_TRADITION/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/FAMILY/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/FAMILY/PT_NAME">
+    <extension-rule filename="available_items/FAMILY/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/FAMILY/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/FAMILY_BRANCH/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/FAMILY_BRANCH/PT_NAME">
+    <extension-rule filename="available_items/FAMILY_BRANCH/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/FAMILY_BRANCH/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_BODY">
+    <extension-rule filename="available_items/GEO/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_CRE">
+    <extension-rule filename="available_items/GEO/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_EVENT">
+    <extension-rule filename="available_items/GEO/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_EVENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_EXT">
+    <extension-rule filename="available_items/GEO/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_IDENT">
+    <extension-rule filename="available_items/GEO/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_IDENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_NAME">
+    <extension-rule filename="available_items/GEO/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_REL">
+    <extension-rule filename="available_items/GEO/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/GEO/PT_REL" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_ADMIN_UNIT/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_ADMIN_UNIT/PT_BODY">
+    <extension-rule filename="available_items/GEO_ADMIN_UNIT/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_ADMIN_UNIT/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_ADMIN_UNIT/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_ADMIN_UNIT/PT_EXT">
+    <extension-rule filename="available_items/GEO_ADMIN_UNIT/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_ADMIN_UNIT/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_CLIMATIC_PHEN/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_CLIMATIC_PHEN/PT_BODY">
+    <extension-rule filename="available_items/GEO_CLIMATIC_PHEN/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_CLIMATIC_PHEN/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_FORMATION/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_FORMATION/PT_BODY">
+    <extension-rule filename="available_items/GEO_FORMATION/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_FORMATION/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_FORMATION/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_FORMATION/PT_EXT">
+    <extension-rule filename="available_items/GEO_FORMATION/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_FORMATION/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_NATURE_RES/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_NATURE_RES/PT_BODY">
+    <extension-rule filename="available_items/GEO_NATURE_RES/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_NATURE_RES/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_NATURE_RES/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_NATURE_RES/PT_EXT">
+    <extension-rule filename="available_items/GEO_NATURE_RES/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_NATURE_RES/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_SEA_FORMATION/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_SEA_FORMATION/PT_BODY">
+    <extension-rule filename="available_items/GEO_SEA_FORMATION/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_SEA_FORMATION/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_SEA_FORMATION/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_SEA_FORMATION/PT_EXT">
+    <extension-rule filename="available_items/GEO_SEA_FORMATION/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_SEA_FORMATION/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_SHAPES/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_SHAPES/PT_BODY">
+    <extension-rule filename="available_items/GEO_SHAPES/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_SHAPES/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_SHAPES/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_SHAPES/PT_EXT">
+    <extension-rule filename="available_items/GEO_SHAPES/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_SHAPES/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_SPACE/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_SPACE/PT_BODY">
+    <extension-rule filename="available_items/GEO_SPACE/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_SPACE/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_UNIT/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_UNIT/PT_BODY">
+    <extension-rule filename="available_items/GEO_UNIT/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_UNIT/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_UNIT/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_UNIT/PT_EXT">
+    <extension-rule filename="available_items/GEO_UNIT/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_UNIT/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_UNIT/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_UNIT/PT_IDENT">
+    <extension-rule filename="available_items/GEO_UNIT/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_UNIT/PT_IDENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_WATERS/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_WATERS/PT_BODY">
+    <extension-rule filename="available_items/GEO_WATERS/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_WATERS/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/GEO_WATERS/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_WATERS/PT_EXT">
+    <extension-rule filename="available_items/GEO_WATERS/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/GEO_WATERS/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/HEALTH_AND_EDU/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/HEALTH_AND_EDU/PT_IDENT">
+    <extension-rule filename="available_items/HEALTH_AND_EDU/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/HEALTH_AND_EDU/PT_IDENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PARTY_GROUP/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_BODY">
+    <extension-rule filename="available_items/PARTY_GROUP/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PARTY_GROUP/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_CRE">
+    <extension-rule filename="available_items/PARTY_GROUP/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PARTY_GROUP/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_EVENT">
+    <extension-rule filename="available_items/PARTY_GROUP/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_EVENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PARTY_GROUP/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_EXT">
+    <extension-rule filename="available_items/PARTY_GROUP/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PARTY_GROUP/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_IDENT">
+    <extension-rule filename="available_items/PARTY_GROUP/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_IDENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PARTY_GROUP/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_NAME">
+    <extension-rule filename="available_items/PARTY_GROUP/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PARTY_GROUP/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_REL">
+    <extension-rule filename="available_items/PARTY_GROUP/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/PARTY_GROUP/PT_REL" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PERSON/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_BODY">
+    <extension-rule filename="available_items/PERSON/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PERSON/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_CRE">
+    <extension-rule filename="available_items/PERSON/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PERSON/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_EVENT">
+    <extension-rule filename="available_items/PERSON/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_EVENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PERSON/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_EXT">
+    <extension-rule filename="available_items/PERSON/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PERSON/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_IDENT">
+    <extension-rule filename="available_items/PERSON/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_IDENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PERSON/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_NAME">
+    <extension-rule filename="available_items/PERSON/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PERSON/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_REL">
+    <extension-rule filename="available_items/PERSON/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON/PT_REL" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PERSON_ANIMAL/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON_ANIMAL/PT_NAME">
+    <extension-rule filename="available_items/PERSON_ANIMAL/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON_ANIMAL/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PERSON_BEING/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON_BEING/PT_NAME">
+    <extension-rule filename="available_items/PERSON_BEING/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON_BEING/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PERSON_INDIVIDUAL/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON_INDIVIDUAL/PT_IDENT">
+    <extension-rule filename="available_items/PERSON_INDIVIDUAL/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON_INDIVIDUAL/PT_IDENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PERSON_INDIVIDUAL/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON_INDIVIDUAL/PT_NAME">
+    <extension-rule filename="available_items/PERSON_INDIVIDUAL/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/PERSON_INDIVIDUAL/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/PUBLIC_ADMINISTRATION/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/PUBLIC_ADMINISTRATION/PT_IDENT">
+    <extension-rule filename="available_items/PUBLIC_ADMINISTRATION/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/PUBLIC_ADMINISTRATION/PT_IDENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/REGION/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/REGION/PT_BODY">
+    <extension-rule filename="available_items/REGION/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/REGION/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/TERM/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/TERM/PT_BODY">
+    <extension-rule filename="available_items/TERM/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/TERM/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/TERM/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/TERM/PT_CRE">
+    <extension-rule filename="available_items/TERM/PT_CRE.drl" arrangement-extension="AVAILABLE_ITEMS/TERM/PT_CRE" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/TERM/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/TERM/PT_EVENT">
+    <extension-rule filename="available_items/TERM/PT_EVENT.drl" arrangement-extension="AVAILABLE_ITEMS/TERM/PT_EVENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/TERM/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/TERM/PT_EXT">
+    <extension-rule filename="available_items/TERM/PT_EXT.drl" arrangement-extension="AVAILABLE_ITEMS/TERM/PT_EXT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/TERM/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/TERM/PT_NAME">
+    <extension-rule filename="available_items/TERM/PT_NAME.drl" arrangement-extension="AVAILABLE_ITEMS/TERM/PT_NAME" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/TERM_GENERAL/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/TERM_GENERAL/PT_REL">
+    <extension-rule filename="available_items/TERM_GENERAL/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/TERM_GENERAL/PT_REL" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/TERM_TAXONOMY/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/TERM_TAXONOMY/PT_IDENT">
+    <extension-rule filename="available_items/TERM_TAXONOMY/PT_IDENT.drl" arrangement-extension="AVAILABLE_ITEMS/TERM_TAXONOMY/PT_IDENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/TERM_TAXONOMY/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/TERM_TAXONOMY/PT_REL">
+    <extension-rule filename="available_items/TERM_TAXONOMY/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/TERM_TAXONOMY/PT_REL" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/COMPANY/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/COMPANY/PT_REL">
+    <extension-rule filename="available_items/COMPANY/PT_REL.drl" arrangement-extension="AVAILABLE_ITEMS/COMPANY/PT_REL" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="validation/GLOBAL.drl" arrangement-extension="VALIDATION">
+    <extension-rule filename="validation/GLOBAL.drl" arrangement-extension="VALIDATION" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="validation/ARTWORK/GLOBAL.drl" arrangement-extension="VALIDATION/ARTWORK">
+    <extension-rule filename="validation/ARTWORK/GLOBAL.drl" arrangement-extension="VALIDATION/ARTWORK" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="validation/DYNASTY/GLOBAL.drl" arrangement-extension="VALIDATION/DYNASTY">
+    <extension-rule filename="validation/DYNASTY/GLOBAL.drl" arrangement-extension="VALIDATION/DYNASTY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="validation/EVENT/GLOBAL.drl" arrangement-extension="VALIDATION/EVENT">
+    <extension-rule filename="validation/EVENT/GLOBAL.drl" arrangement-extension="VALIDATION/EVENT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="validation/GEO/GLOBAL.drl" arrangement-extension="VALIDATION/GEO">
+    <extension-rule filename="validation/GEO/GLOBAL.drl" arrangement-extension="VALIDATION/GEO" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="validation/GEO_UNIT/GLOBAL.drl" arrangement-extension="VALIDATION/GEO_UNIT">
+    <extension-rule filename="validation/GEO_UNIT/GLOBAL.drl" arrangement-extension="VALIDATION/GEO_UNIT" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="validation/PARTY_GROUP/GLOBAL.drl" arrangement-extension="VALIDATION/PARTY_GROUP">
+    <extension-rule filename="validation/PARTY_GROUP/GLOBAL.drl" arrangement-extension="VALIDATION/PARTY_GROUP" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="validation/PERSON/GLOBAL.drl" arrangement-extension="VALIDATION/PERSON">
+    <extension-rule filename="validation/PERSON/GLOBAL.drl" arrangement-extension="VALIDATION/PERSON" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="validation/PERSON_INDIVIDUAL/GLOBAL.drl" arrangement-extension="VALIDATION/PERSON_INDIVIDUAL">
+    <extension-rule filename="validation/PERSON_INDIVIDUAL/GLOBAL.drl" arrangement-extension="VALIDATION/PERSON_INDIVIDUAL" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="validation/TERM/GLOBAL.drl" arrangement-extension="VALIDATION/TERM">
+    <extension-rule filename="validation/TERM/GLOBAL.drl" arrangement-extension="VALIDATION/TERM" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="validation/TERM_GENERAL/GLOBAL.drl" arrangement-extension="VALIDATION/TERM_GENERAL">
+    <extension-rule filename="validation/TERM_GENERAL/GLOBAL.drl" arrangement-extension="VALIDATION/TERM_GENERAL" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="validation/TERM_TAXONOMY/GLOBAL.drl" arrangement-extension="VALIDATION/TERM_TAXONOMY">
+    <extension-rule filename="validation/TERM_TAXONOMY/GLOBAL.drl" arrangement-extension="VALIDATION/TERM_TAXONOMY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>

@@ -2,6 +2,7 @@ package cz.tacr.elza.domain;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -51,6 +52,10 @@ public class RulStructureExtensionDefinition {
 
     @Column(nullable = false)
     private Integer priority;
+
+    @Basic
+    @Column(name = "compatibility_rul_package")
+    private Integer compatibilityRulPackage;
 
     /**
      * @return identifikátor entity
@@ -134,6 +139,14 @@ public class RulStructureExtensionDefinition {
      */
     public void setPriority(final Integer priority) {
         this.priority = priority;
+    }
+
+    public Integer getCompatibilityRulPackage() {
+        return compatibilityRulPackage;
+    }
+
+    public void setCompatibilityRulPackage(Integer compatibilityRulPackage) {
+        this.compatibilityRulPackage = compatibilityRulPackage;
     }
 
     /**

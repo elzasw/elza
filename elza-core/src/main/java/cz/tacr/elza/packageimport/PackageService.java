@@ -31,7 +31,7 @@ import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.service.AccessPointGeneratorService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -291,6 +291,9 @@ public class PackageService {
      * adresář pro groovy v zip
      */
     static public final String ZIP_DIR_SCRIPTS = "scripts";
+
+    private static final String AVAILABLE_ITEMS = "AVAILABLE_ITEMS";
+    private static final String VALIDATION = "VALIDATION";
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -814,6 +817,7 @@ public class PackageService {
                 .filter(x -> x.getCode().equals(structureDefinition.getStructureType()))
                 .findFirst()
                 .orElse(null));
+        item.setCompatibilityRulPackage(structureDefinition.getCompatibilityRulPackage());
 
         String filename = structureDefinition.getFilename();
         if (filename != null) {
@@ -1456,6 +1460,7 @@ public class PackageService {
                 .filter(x -> x.getCode().equals(extensionRule.getArrangementExtension()))
                 .findFirst()
                 .orElse(null));
+        rulExtensionRule.setCompatibilityRulPackage(extensionRule.getCompatibilityRulPackage());
 
         String filename = extensionRule.getFilename();
         if (filename != null) {
@@ -2857,6 +2862,7 @@ public class PackageService {
         extensionRule.setPriority(rulExtensionRule.getPriority());
         extensionRule.setRuleType(rulExtensionRule.getRuleType());
         extensionRule.setArrangementExtension(rulExtensionRule.getArrangementExtension().getCode());
+        extensionRule.setCompatibilityRulPackage(rulExtensionRule.getCompatibilityRulPackage());
     }
 
     /**
@@ -2944,66 +2950,60 @@ public class PackageService {
     }
 
     private void enqueueAccessPoints() {
-        List<ApState> stateList = apStateRepository.findActiveStates();
-        if (CollectionUtils.isNotEmpty(stateList)) {
-            for (ApState state : stateList) {
-                accessPointGeneratorService.generateAsync(state.getAccessPoint());
-            }
+        List<ApAccessPoint> accessPointList = accessPointRepository.findActiveAccessPoints();
+        if (CollectionUtils.isNotEmpty(accessPointList)) {
+            accessPointGeneratorService.generateAsync(accessPointList);
         }
     }
 
-//    private void enqueueAccessPoints(RulStructureDefinition rulStructureDefinition) {
-//        if(rulGroovyScript.getAeType() == null) {
-//            List<ApState> stateList = apStateRepository.findActiveStates();
-//            if (CollectionUtils.isNotEmpty(stateList)) {
-//                for (ApState state : stateList) {
-//                    accessPointGeneratorService.generateAsync(state.getAccessPoint());
-//                }
-//            }
-//        } else {
-//            List<ApType> apTypeList = findTreeApTypes(rulGroovyScript.getAeType().getId());
-//            if (CollectionUtils.isNotEmpty(apTypeList)) {
-//                List<ApState> stateList = apStateRepository.findActiveStatesByApTypes(apTypeList);
-//                for(ApState state : stateList) {
-//                    accessPointGeneratorService.generateAsync(state.getAccessPoint());
-//                }
-//            }
-//        }
-//    }
-//
-//    private void enqueueAccessPoints(RulStructureExtensionDefinition rulStructureExtensionDefinition) {
-////        if(rulGroovyScript.getAeType() == null) {
-////            List<IRecord> iRecordList = iRQS.getRecordRepository().findAll();
-////            for(IRecord iRecord : iRecordList) {
-////                iRQS.addToSet(iRecord);
-////            }
-////        } else {
-////            List<RulAeType> rulAeTypeList = findTreeAeTypes(rulGroovyScript.getAeType().getId());
-////            for(RulAeType rulAeType : rulAeTypeList) {
-////                List<? extends IRecord> iRecordList = iRQS.findAllByAeTypeId(rulAeType.getAeTypeId());
-////                for(IRecord iRecord : iRecordList) {
-////                    iRQS.addToSet(iRecord);
-////                }
-////            }
-////        }
-//    }
-//
-//    private void enqueueAccessPoints(RulExtensionRule rulExtensionRule) {
-////        if(rulDrl.getAeType() == null) {
-////            List<IRecord> iRecordList = iRQS.getRecordRepository().findAll();
-////            for(IRecord iRecord : iRecordList) {
-////                iRQS.addToSet(iRecord);
-////            }
-////        } else {
-////            List<RulAeType> rulAeTypeList = findTreeAeTypes(rulDrl.getAeType().getId());
-////            for(RulAeType rulAeType : rulAeTypeList) {
-////                List<? extends IRecord> iRecordList = iRQS.findAllByAeTypeId(rulAeType.getAeTypeId());
-////                for(IRecord iRecord : iRecordList) {
-////                    iRQS.addToSet(iRecord);
-////                }
-////            }
-////        }
-//    }
+    private void enqueueAccessPoints(RulStructureDefinition rulStructureDefinition) {
+        String apTypeCode = null;
+        enqueueAccessPoints(apTypeCode);
+    }
+
+    private void enqueueAccessPoints(RulStructureExtensionDefinition rulStructureExtensionDefinition) {
+        String apTypeCode = null;
+        String structureExtensionCode = rulStructureExtensionDefinition.getStructuredTypeExtension().getCode();
+        String[] strArray = StringUtils.split(structureExtensionCode, "/");
+        if (strArray != null && strArray.length == 2) {
+            apTypeCode = strArray[0];
+        }
+
+        enqueueAccessPoints(apTypeCode);
+    }
+
+    private void enqueueAccessPoints(RulExtensionRule rulExtensionRule) {
+        String apTypeCode = null;
+        String arrangementExtensionCode = rulExtensionRule.getArrangementExtension().getCode();
+        String[] strArray = StringUtils.split(arrangementExtensionCode, "/");
+        if (strArray != null && strArray.length > 0) {
+            String rulType = strArray[0];
+            if ((rulType.equals(AVAILABLE_ITEMS) && strArray.length == 3) ||
+                    (rulType.equals(VALIDATION) && strArray.length == 2)) {
+                apTypeCode = strArray[1];
+            }
+        }
+        enqueueAccessPoints(apTypeCode);
+    }
+
+    private void enqueueAccessPoints(final String apTypeCode) {
+        StaticDataProvider sdp = staticDataService.getData();
+        ApType apType = sdp.getApTypeByCode(apTypeCode);
+        if(apType == null) {
+            List<ApAccessPoint> accessPointList = accessPointRepository.findActiveAccessPoints();
+            if (CollectionUtils.isNotEmpty(accessPointList)) {
+                accessPointGeneratorService.generateAsync(accessPointList);
+            }
+        } else {
+            List<ApType> apTypeList = findTreeApTypes(apType.getApTypeId());
+            if (CollectionUtils.isNotEmpty(apTypeList)) {
+                List<ApAccessPoint> accessPointList = accessPointRepository.findActiveAccessPointsByApTypes(apTypeList);
+                if (CollectionUtils.isNotEmpty(accessPointList)) {
+                    accessPointGeneratorService.generateAsync(accessPointList);
+                }
+            }
+        }
+    }
 
     private List<ApType> findTreeApTypes(final Integer id) {
         List<ApType> apTypes = apTypeRepository.findAll();

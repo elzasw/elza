@@ -51,7 +51,7 @@ public class PartService {
 
     private static final Logger logger = LoggerFactory.getLogger(PartService.class);
 
-    private final String DUPLICITA = " duplicitní key value ";
+    private static final String DUPLICITA = " duplicitní key value ";
 
     @Autowired
     public PartService(final ApPartRepository partRepository,

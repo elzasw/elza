@@ -146,6 +146,12 @@ public class HelperTestService {
     private DaoDigitizationRequestNodeRepository daoDigitizationRequestNodeRepository;
     @Autowired
     private DigitizationRequestRepository digitizationRequestRepository;
+    @Autowired
+    private ApIndexRepository indexRepository;
+    @Autowired
+    private ApKeyValueRepository keyValueRepository;
+    @Autowired
+    private ApAccessPointQueueItemRepository accessPointQueueItemRepository;
 
     @Autowired
     private PackageService packageService;
@@ -216,8 +222,11 @@ public class HelperTestService {
         fundStructureExtensionRepository.deleteAll();
         bulkActionNodeRepository.deleteAll();
         faBulkActionRepository.deleteAll();
+        indexRepository.deleteAll();
         apItemRepository.deleteAll();
         partRepository.deleteAll();
+        keyValueRepository.deleteAll();
+        accessPointQueueItemRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();
