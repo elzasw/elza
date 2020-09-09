@@ -461,9 +461,11 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
                 logger.debug("Migrating par_party : " + rs.getInt("party_id"));
+                Integer partId = null;
+
                 if (rs.getString("history") != null || rs.getString("source_information") != null || rs.getString("characteristics") != null) {
 
-                    Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_BODY.code), null);
+                    partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_BODY.code), null);
 
                     //zpracování history
                     String history = rs.getString("history");
@@ -506,8 +508,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
                 //migrate parties
                 Integer partyId = rs.getInt("party_id");
-                migrateParPartyGroup(accessPointId, partyId);
-                migrateParDynasty(accessPointId, partyId);
+                partId = migrateParPartyGroup(accessPointId, partyId, partId);
+                migrateParDynasty(accessPointId, partyId, partId);
                 migrateParPartyName(accessPointId, partyId, preferredNameId);
                 migrateParPartyGroupIdentifier(accessPointId, partyId);
                 migrateParRelation(accessPointId, partyId);
@@ -515,7 +517,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         }
     }
 
-    private void migrateParPartyGroup(Integer accessPointId, Integer partyId) throws DatabaseException, SQLException {
+    private Integer migrateParPartyGroup(Integer accessPointId, Integer partyId, Integer partId) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT scope, founding_norm, scope_norm, organization FROM par_party_group WHERE party_id = " + partyId);
         ps.execute();
 
@@ -523,7 +525,9 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
             while (rs.next()) {
                 if (rs.getString("scope") != null || rs.getString("founding_norm") != null ||
                         rs.getString("scope_norm") != null || rs.getString("organization") != null) {
-                    Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_BODY.code), null);
+                    if (partId == null) {
+                        partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_BODY.code), null);
+                    }
 
                     //zpracování scope
                     String text = rs.getString("scope");
@@ -564,15 +568,18 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 }
             }
         }
+        return partId;
     }
 
-    private void migrateParDynasty(Integer accessPointId, Integer partyId) throws DatabaseException, SQLException {
+    private void migrateParDynasty(Integer accessPointId, Integer partyId, Integer partId) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT party_id, genealogy FROM par_dynasty WHERE party_id = " + partyId);
         ps.execute();
         try (ResultSet rs = ps.getResultSet();) {
             while (rs.next()) {
                 if (rs.getString("genealogy") != null) {
-                    Integer partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_BODY.code), null);
+                    if (partId == null) {
+                        partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_BODY.code), null);
+                    }
 
                     //zpracování genealogy
                     String itemTypeCode = ItemTypeCode.GENEALOGY.code;
