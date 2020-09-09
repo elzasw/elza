@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -87,6 +88,9 @@ public class ArrOutputResult {
     }
 
     public List<ArrOutputFile> getOutputFiles() {
+    	if (outputFiles == null) {
+    		outputFiles = new ArrayList<>();
+    	}
         return outputFiles;
     }
 

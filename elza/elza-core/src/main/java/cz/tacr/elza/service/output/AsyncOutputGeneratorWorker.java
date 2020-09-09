@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.output;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -8,7 +9,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import javax.xml.XMLConstants;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.xml.sax.SAXException;
 
 import cz.tacr.elza.asynchactions.AsyncRequest;
 import cz.tacr.elza.asynchactions.AsyncRequestEvent;
@@ -30,6 +39,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
+import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.ArrOutputTemplate;
@@ -39,6 +49,7 @@ import cz.tacr.elza.exception.ExceptionResponse;
 import cz.tacr.elza.exception.ExceptionResponseBuilder;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelServiceInternal;
@@ -169,9 +180,22 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     }
 
     private void validate(ArrOutputTemplate template, ArrOutputResult result) {
-    	// TODO
+    	SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+    	String xsdFile = template.getTemplate().getValidationSchema();
+    	try {
+    		Schema schema = schemaFactory.newSchema(getClass().getResource(xsdFile));
+    		Validator validator = schema.newValidator();
+    		Validate.notNull(result.getOutputFiles(), "Musí existovat alespoň jeden soubor.");
+	    	for (ArrOutputFile file : result.getOutputFiles()) {
+	    		try (FileInputStream fis = new FileInputStream(resourcePathResolver.getDmsFile(file).toString())) {
+	    			validator.validate(new StreamSource(fis));
+	    		}
+	    	}
+    	} catch (SAXException | IOException e) {
+            throw new SystemException("Failed to validate file", e, OutputCode.INVALID_FORMAT);
+		}
     }
-    
+
     private OutputState resolveEndState(OutputParams params) {
         ArrChange change = params.getChange();
         for (Integer outputNodeId : params.getOutputNodeIds()) {
