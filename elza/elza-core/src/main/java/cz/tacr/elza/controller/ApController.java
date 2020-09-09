@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.service.cam.CamService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -168,6 +169,9 @@ public class ApController {
 
     @Autowired
     private SettingsService settingsService;
+
+    @Autowired
+    private CamService camService;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -883,7 +887,7 @@ public class ApController {
                                                                 externalSystemCode);
         procCtx.addBinding(binding);
 
-        ApState apState = accessPointService.createAccessPoint(procCtx, entity, binding, null);
+        ApState apState = camService.createAccessPoint(procCtx, entity, binding, null);
         return apState.getAccessPointId();
     }
 
@@ -917,7 +921,7 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        accessPointService.connectAccessPoint(state, entity, procCtx, replace);
+        camService.connectAccessPoint(state, entity, procCtx, replace);
     }
 
     /**
@@ -930,10 +934,10 @@ public class ApController {
     @RequestMapping(value = "/external/save/{accessPointId}", method = RequestMethod.POST)
     public void saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                 @RequestParam final String externalSystemCode) {
-        BatchUpdateXml batchUpdate = accessPointService.createCreateEntityBatchUpdate(accessPointId, externalSystemCode);
+        BatchUpdateXml batchUpdate = camService.createCreateEntityBatchUpdate(accessPointId, externalSystemCode);
         try {
             BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
-            accessPointService.updateBindingAfterSave(batchUpdateResult, accessPointId, externalSystemCode);
+            camService.updateBindingAfterSave(batchUpdateResult, accessPointId, externalSystemCode);
         } catch (ApiException e) {
             throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
         }
@@ -962,7 +966,7 @@ public class ApController {
             throw prepareSystemException(e);
         }
         ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem);
-        accessPointService.synchronizeAccessPoint(procCtx, state, entity, bindingState, false);
+        camService.synchronizeAccessPoint(procCtx, state, entity, bindingState, false);
     }
 
     /**
@@ -986,10 +990,10 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        BatchUpdateXml batchUpdate = accessPointService.createUpdateEntityBatchUpdate(accessPoint, bindingState, entity);
+        BatchUpdateXml batchUpdate = camService.createUpdateEntityBatchUpdate(accessPoint, bindingState, entity);
         try {
             BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
-            accessPointService.updateBindingAfterUpdate(batchUpdateResult, accessPoint, apExternalSystem);
+            camService.updateBindingAfterUpdate(batchUpdateResult, accessPoint, apExternalSystem);
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
@@ -1042,7 +1046,7 @@ public class ApController {
         }
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem);
-        accessPointService.createAccessPoints(procCtx, entities);
+        camService.createAccessPoints(procCtx, entities);
     }
 
     @Transactional
