@@ -29,6 +29,9 @@ public class StructureExtensionDefinition {
     @XmlElement(name = "priority", required = true)
     private Integer priority;
 
+    @XmlAttribute(name="compatibility-rul-package")
+    private Integer compatibilityRulPackage;
+
     public String getStructureExtension() {
         return structureExtension;
     }
@@ -59,5 +62,13 @@ public class StructureExtensionDefinition {
 
     public void setPriority(final Integer priority) {
         this.priority = priority;
+    }
+
+    public Integer getCompatibilityRulPackage() {
+        return compatibilityRulPackage;
+    }
+
+    public void setCompatibilityRulPackage(Integer compatibilityRulPackage) {
+        this.compatibilityRulPackage = compatibilityRulPackage;
     }
 }

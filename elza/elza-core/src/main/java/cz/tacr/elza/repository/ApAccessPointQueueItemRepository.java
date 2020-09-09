@@ -10,9 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ApAccessPointQueueItemRepository extends JpaRepository<ApAccessPointQueueItem, Integer> {
 
-    @Query("SELECT COUNT (q) FROM ap_access_point_queue_item q WHERE q.accessPoint =:accessPoint")
-    int countByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
-
     @Query("SELECT (COUNT(q) > 0) FROM ap_access_point_queue_item q")
     boolean isQueuePopulated();
 }

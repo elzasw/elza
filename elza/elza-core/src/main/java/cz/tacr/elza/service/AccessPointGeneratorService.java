@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -83,22 +84,40 @@ public class AccessPointGeneratorService implements ApplicationListener<AccessPo
      * Provede přidání AP do fronty pro přegenerování/validaci.
      * V případě, že ve frontě již AP je, nepřidá se.
      *
-     * @param accessPoint přístupový bod
+     * @param accessPoints přístupové body
      */
-    public void generateAsync(final ApAccessPoint accessPoint) {
-        if (accessPointQueueItemRepository.countByAccessPoint(accessPoint) == 0) {
-            ApAccessPointQueueItem accessPointQueueItem = new ApAccessPointQueueItem();
-            accessPointQueueItem.setAccessPoint(accessPoint);
-            accessPointQueueItemRepository.save(accessPointQueueItem);
+    public void generateAsync(final List<ApAccessPoint> accessPoints) {
+        if (CollectionUtils.isNotEmpty(accessPoints)) {
+            List<ApAccessPointQueueItem> accessPointQueueItems = new ArrayList<>();
+            List<ApAccessPointQueueItem> queueApList = accessPointQueueItemRepository.findAll();
+
+            for (ApAccessPoint accessPoint : accessPoints) {
+                if (!isApAlreadyInQueue(queueApList, accessPoint)) {
+                    ApAccessPointQueueItem accessPointQueueItem = new ApAccessPointQueueItem();
+                    accessPointQueueItem.setAccessPoint(accessPoint);
+                    accessPointQueueItems.add(accessPointQueueItem);
+                }
+            }
+
+            if (CollectionUtils.isNotEmpty(accessPointQueueItems)) {
+                accessPointQueueItemRepository.saveAll(accessPointQueueItems);
+            }
         }
+    }
+
+    private boolean isApAlreadyInQueue(List<ApAccessPointQueueItem> queueApList, ApAccessPoint accessPoint) {
+        if (CollectionUtils.isNotEmpty(queueApList)) {
+            for (ApAccessPointQueueItem item : queueApList) {
+                if (item.getAccessPoint().getAccessPointId().equals(accessPoint.getAccessPointId())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
     public void onApplicationEvent(AccessPointQueueEvent accessPointQueueEvent) {
-        if (CollectionUtils.isNotEmpty(accessPointQueueEvent.getApAccessPoints())) {
-            for (ApAccessPoint accessPoint : accessPointQueueEvent.getApAccessPoints()) {
-                generateAsync(accessPoint);
-            }
-        }
+        generateAsync(accessPointQueueEvent.getApAccessPoints());
     }
 }

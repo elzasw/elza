@@ -155,6 +155,7 @@ public class AccessPointService {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessPointService.class);
     private static final String OBJECT_ID_SEQUENCE_NAME = "ap_name|object_id";
+    private static final String PT_NAME = "PT_NAME";
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
@@ -1107,11 +1108,13 @@ public class AccessPointService {
                                     final Map<Integer, List<ApItem>> itemMap,
                                     final boolean async) {
         boolean success = true;
+        ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
         for (ApPart part : partList) {
             List<ApPart> childrenParts = findChildrenParts(part, partList);
             List<ApItem> items = getItemsForParts(part, childrenParts, itemMap);
 
-            GroovyResult result = groovyService.processGroovy(state, part, childrenParts, items);
+            boolean preferred = preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), part.getPartId());
+            GroovyResult result = groovyService.processGroovy(state, part, childrenParts, items, preferred);
             if (!partService.updatePartValue(part, result, state, async)) {
                 success = false;
             }
@@ -1143,6 +1146,8 @@ public class AccessPointService {
 
     public boolean updatePartValues(final Collection<PartWrapper> partWrappers) {
         boolean success = true;
+        Set<Integer> accessPointIds = new HashSet<>();
+
         for (PartWrapper partWrapper : partWrappers) {
             ApPart apPart = partWrapper.getEntity();
             ApState state = partWrapper.getPartInfo().getApInfo().getApState();
@@ -1152,7 +1157,16 @@ public class AccessPointService {
 
             List<ApItem> items = getItemsFromPartWrappers(partWrapper, childrenPartWrappers);
 
-            GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items);
+            boolean preferred = false;
+            Integer accessPointId = state.getAccessPoint().getAccessPointId();
+
+            if (partWrapper.getPartInfo().getRulPartType().getCode().equals(PT_NAME) &&
+                !accessPointIds.contains(accessPointId)) {
+                accessPointIds.add(accessPointId);
+                preferred = true;
+            }
+
+            GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items, preferred);
 
             if (!partService.updatePartValue(apPart, result, state, false)) {
                 success = false;
@@ -1198,6 +1212,7 @@ public class AccessPointService {
 
     public boolean updatePartValue(final ApPart apPart) {
         ApState state = getState(apPart.getAccessPoint());
+        ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
         List<ApPart> childrenParts = partService.findPartsByParentPart(apPart);
 
         List<ApPart> parts = new ArrayList<>();
@@ -1206,7 +1221,8 @@ public class AccessPointService {
 
         List<ApItem> items = apItemService.findItemsByParts(parts);
 
-        GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items);
+        boolean preferred = preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), apPart.getPartId());
+        GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items, preferred);
 
         return partService.updatePartValue(apPart, result, state, false);
     }

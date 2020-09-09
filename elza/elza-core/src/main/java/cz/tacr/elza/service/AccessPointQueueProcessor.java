@@ -22,11 +22,10 @@ public class AccessPointQueueProcessor implements Runnable {
     private ApAccessPointQueueItemRepository accessPointQueueItemRepository;
 
     public void startValidating() {
-        if(this.manager != null) {
-            throw new IllegalStateException("AccessPointQueueProcessor already running");
+        if(this.manager == null) {
+            this.manager = new Thread(this,"AccessPointQueueProcessor");
+            this.manager.start();
         }
-        this.manager = new Thread(this,"AccessPointQueueProcessor");
-        this.manager.start();
     }
 
     @Override

@@ -93,6 +93,7 @@ public class GroovyService {
         StaticDataProvider sdp = staticDataService.getData();
         ApType apType = sdp.getApTypeById(state.getApTypeId());
         List<GroovyPart> groovyParts = new ArrayList<>(parts.size());
+        ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
         for (ApPart part : parts) {
             List<ApPart> childrenParts = new ArrayList<>();
             for (ApPart p : parts) {
@@ -100,7 +101,9 @@ public class GroovyService {
                     childrenParts.add(p);
                 }
             }
-            groovyParts.add(convertPart(state, part, childrenParts, items));
+
+            boolean preferred = preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), part.getPartId());
+            groovyParts.add(convertPart(state, part, childrenParts, items, preferred));
         }
         return new GroovyAe(apType.getCode(), groovyParts);
     }
@@ -108,21 +111,18 @@ public class GroovyService {
     public GroovyResult processGroovy(@NotNull final ApState state,
                                       @NotNull final ApPart part,
                                       @Nullable final List<ApPart> childrenParts,
-                                      @NotNull final List<ApItem> items) {
-        GroovyPart groovyPart = convertPart(state, part, childrenParts, items);
+                                      @NotNull final List<ApItem> items,
+                                      final boolean preferred) {
+        GroovyPart groovyPart = convertPart(state, part, childrenParts, items, preferred);
         return groovyScriptService.process(groovyPart, getGroovyFilePath(groovyPart));
     }
 
     public GroovyPart convertPart(@NotNull final ApState state,
                                   @NotNull final ApPart part,
                                   @Nullable final List<ApPart> childrenParts,
-                                  @NotNull final List<ApItem> items) {
+                                  @NotNull final List<ApItem> items,
+                                  final boolean preferred) {
         StaticDataProvider sdp = staticDataService.getData();
-        ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
-        boolean preferred = false;
-        if (preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), part.getPartId())) {
-            preferred = true;
-        }
 
         GroovyItems groovyItems = new GroovyItems();
         for (ApItem item : items) {
@@ -206,7 +206,7 @@ public class GroovyService {
         if (childrenParts != null) {
             groovyParts = new ArrayList<>();
             for (ApPart childPart : childrenParts) {
-                groovyParts.add(convertPart(state, childPart, null, items));
+                groovyParts.add(convertPart(state, childPart, null, items, false));
             }
         }
 

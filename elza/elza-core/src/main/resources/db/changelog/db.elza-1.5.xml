@@ -841,5 +841,17 @@
     <changeSet id="20200908143800" author="fantis">
         <addUniqueConstraint columnNames="key_type, value, scope_id" constraintName="UNIQUE_key_value" tableName="ap_key_value"/>
     </changeSet>
+    
+    <changeSet id="20200909112000" author="fantis">
+        <addColumn tableName="rul_extension_rule">
+            <column name="compatibility_rul_package" type="int"/>
+        </addColumn>
+        <addColumn tableName="rul_structure_definition">
+            <column name="compatibility_rul_package" type="int"/>
+        </addColumn>
+        <addColumn tableName="rul_structure_extension_definition">
+            <column name="compatibility_rul_package" type="int"/>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

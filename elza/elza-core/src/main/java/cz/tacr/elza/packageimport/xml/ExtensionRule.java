@@ -42,6 +42,9 @@ public class ExtensionRule {
     @XmlElement(name = "priority", required = true)
     private Integer priority;
 
+    @XmlAttribute(name="compatibility-rul-package")
+    private Integer compatibilityRulPackage;
+
     public String getFilename() {
         return filename;
     }
@@ -72,5 +75,13 @@ public class ExtensionRule {
 
     public void setPriority(final Integer priority) {
         this.priority = priority;
+    }
+
+    public Integer getCompatibilityRulPackage() {
+        return compatibilityRulPackage;
+    }
+
+    public void setCompatibilityRulPackage(Integer compatibilityRulPackage) {
+        this.compatibilityRulPackage = compatibilityRulPackage;
     }
 }

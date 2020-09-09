@@ -161,6 +161,7 @@ public class StructTypeExtensionUpdater
 	    dbExtDef.setDefType(xmlExtDef.getDefType());
 	    dbExtDef.setPriority(xmlExtDef.getPriority());
 	    dbExtDef.setRulPackage(rulPackage);
+	    dbExtDef.setCompatibilityRulPackage(xmlExtDef.getCompatibilityRulPackage());
 
 		// find extension
         RulStructuredTypeExtension structExt = this.structExts.stream()
