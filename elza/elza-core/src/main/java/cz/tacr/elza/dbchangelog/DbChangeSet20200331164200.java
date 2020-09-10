@@ -4,6 +4,7 @@ import liquibase.database.Database;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.CustomChangeException;
 import liquibase.exception.DatabaseException;
+import liquibase.util.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -463,7 +464,9 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 logger.debug("Migrating par_party : " + rs.getInt("party_id"));
                 Integer partId = null;
 
-                if (rs.getString("history") != null || rs.getString("source_information") != null || rs.getString("characteristics") != null) {
+                if (StringUtils.isNotEmpty(rs.getString("history")) ||
+                        StringUtils.isNotEmpty(rs.getString("source_information")) ||
+                        StringUtils.isNotEmpty(rs.getString("characteristics"))) {
 
                     partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_BODY.code), null);
 
@@ -523,8 +526,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
-                if (rs.getString("scope") != null || rs.getString("founding_norm") != null ||
-                        rs.getString("scope_norm") != null || rs.getString("organization") != null) {
+                if (StringUtils.isNotEmpty(rs.getString("scope")) || StringUtils.isNotEmpty(rs.getString("founding_norm")) ||
+                        StringUtils.isNotEmpty(rs.getString("scope_norm"))  || StringUtils.isNotEmpty(rs.getString("organization"))) {
                     if (partId == null) {
                         partId = createApPart(accessPointId, rulPartTypeMap.get(RulPartTypeCode.PT_BODY.code), null);
                     }
@@ -656,26 +659,17 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     storeStringValue(dataId, dataTypeId, text); //TEXT
                 }
 
-                Integer dataTypeId;
-                Integer dataId;
-
                 //zpracování valid_from_unitdate_id
                 int validFromUnitdateId = rs.getInt("valid_from_unitdate_id");
                 if (validFromUnitdateId > 0) {
                     itemTypeCode = ItemTypeCode.NM_USED_FROM.code;
-                    dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
-                    storeUnitdateValue(dataId, dataTypeId, validFromUnitdateId);
+                    storeUnitdateValue(partId, validFromUnitdateId, itemTypeCode);
                 }
                 //zpracování valid_to_unitdate_id
                 int validToUnitdateId = rs.getInt("valid_to_unitdate_id");
                 if (validToUnitdateId > 0) {
                     itemTypeCode = ItemTypeCode.NM_USED_TO.code;
-                    dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    dataId = createArrData(dataTypeId);
-                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
-                    storeUnitdateValue(dataId, dataTypeId, validToUnitdateId);
+                    storeUnitdateValue(partId, validToUnitdateId, itemTypeCode);
                 }
 
                 Integer nameFormTypeId = rs.getInt("name_form_type_id");
@@ -744,20 +738,14 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 int validToUnitdateId = rs.getInt("to_unitdate_id");
                 if (validToUnitdateId > 0) {
                     String itemTypeCode = ItemTypeCode.IDN_VALID_TO.code;
-                    Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    Integer dataId = createArrData(dataTypeId);
-                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
-                    storeUnitdateValue(dataId, dataTypeId, validToUnitdateId);
+                    storeUnitdateValue(partId, validToUnitdateId, itemTypeCode);
                 }
 
                 //zpracování from_unitdate_id
                 int validFromUnitdateId = rs.getInt("from_unitdate_id");
                 if (validFromUnitdateId > 0) {
                     String itemTypeCode = ItemTypeCode.IDN_VALID_FROM.code;
-                    Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    Integer dataId = createArrData(dataTypeId);
-                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
-                    storeUnitdateValue(dataId, dataTypeId, validFromUnitdateId);
+                    storeUnitdateValue(partId, validFromUnitdateId, itemTypeCode);
                 }
 
                 //zpracování source
@@ -844,10 +832,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 String noteUnitDateFrom = null;
                 if (fromUnitdateId > 0) {
                     String itemTypeCode = ItemTypeCode.REL_BEGIN.code;
-                    Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    Integer dataId = createArrData(dataTypeId);
-                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
-                    noteUnitDateFrom = storeUnitdateValue(dataId, dataTypeId, fromUnitdateId);
+                    noteUnitDateFrom = storeUnitdateValue(partId, fromUnitdateId, itemTypeCode);
                 }
 
                 //zpracování to_unitdate_id
@@ -855,10 +840,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                 String noteUnitDateTo = null;
                 if (validToUnitdateId > 0) {
                     String itemTypeCode = ItemTypeCode.REL_END.code;
-                    Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-                    Integer dataId = createArrData(dataTypeId);
-                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
-                    noteUnitDateTo = storeUnitdateValue(dataId, dataTypeId, validToUnitdateId);
+                    noteUnitDateTo = storeUnitdateValue(partId, validToUnitdateId, itemTypeCode);
                 }
 
                 //zpracování note
@@ -940,10 +922,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         String noteUnitDateFrom = null;
         if (fromUnitdateId > 0 && fromUnitdateTypeCode != null) {
             itemTypeCode = fromUnitdateTypeCode;
-            dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-            dataId = createArrData(dataTypeId);
-            createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
-            noteUnitDateFrom = storeUnitdateValue(dataId, dataTypeId, fromUnitdateId);
+            noteUnitDateFrom = storeUnitdateValue(partId, fromUnitdateId, itemTypeCode);
         }
 
         //zpracování to_unitdate_id
@@ -951,10 +930,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         String noteUnitDateTo = null;
         if (validToUnitdateId > 0 && toUnitdateTypeCode != null) {
             itemTypeCode = toUnitdateTypeCode;
-            dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
-            dataId = createArrData(dataTypeId);
-            createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
-            noteUnitDateTo = storeUnitdateValue(dataId, dataTypeId, validToUnitdateId);
+            noteUnitDateTo = storeUnitdateValue(partId, validToUnitdateId, itemTypeCode);
         }
 
         //zpracování note
@@ -1127,7 +1103,7 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         ps.executeUpdate();
     }
 
-    private String storeUnitdateValue(Integer dataId, Integer dataTypeId, Integer unitdateId) throws DatabaseException, SQLException {
+    private String storeUnitdateValue(Integer partId, Integer unitdateId, String itemTypeCode) throws DatabaseException, SQLException {
         PreparedStatement ps = conn.prepareStatement("SELECT unitdate_id, par_unitdate.calendar_type_id, code, value_from, value_from_estimated, value_to, value_to_estimated, " +
                 "format, text_date, note FROM par_unitdate CROSS JOIN arr_calendar_type " +
                 "WHERE arr_calendar_type.calendar_type_id = par_unitdate.calendar_type_id " +
@@ -1136,35 +1112,41 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         String dateNote = null;
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
-                dateNote = rs.getString("note");
-
-                Integer calendarTypeId = rs.getInt("calendar_type_id");
-                //CalendarType calType = CalendarType.fromId(calendarTypeId);
-                String valueFrom = rs.getString("value_from");
-                Boolean valueFromEstimated = rs.getBoolean("value_from_estimated");
-                // prepare normalized values - from
-                Long normalizedFrom;
-                if (valueFrom != null && !valueFrom.isEmpty()) {
-                    LocalDateTime locDateTime = LocalDateTime.parse(valueFrom, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                    CalendarConverter calendarConverter = new CalendarConverter();
-                    normalizedFrom = calendarConverter.toSeconds(rs.getString("code"), locDateTime);
-                } else {
-                    normalizedFrom = Long.MIN_VALUE;
-                }
-
-                // prepare normalized values - to
-                String valueTo = rs.getString("value_to");
-                Boolean valueToEstimated = rs.getBoolean("value_to_estimated");
-                Long normalizedTo;
-                if (valueTo != null && !valueTo.isEmpty()) {
-                    LocalDateTime locDateTime = LocalDateTime.parse(valueTo, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                    CalendarConverter calendarConverter = new CalendarConverter();
-                    normalizedTo = calendarConverter.toSeconds(rs.getString("code"), locDateTime);
-                } else {
-                    normalizedTo = Long.MAX_VALUE;
-                }
                 String format = rs.getString("format");
-                if (format != null && normalizedFrom != null && normalizedTo != null) {
+                String valueFrom = rs.getString("value_from");
+                String valueTo = rs.getString("value_to");
+
+                if (format != null && (valueFrom != null || valueTo != null)) {
+                    Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                    Integer dataId = createArrData(dataTypeId);
+                    createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
+
+                    dateNote = rs.getString("note");
+
+                    Integer calendarTypeId = rs.getInt("calendar_type_id");
+                    //CalendarType calType = CalendarType.fromId(calendarTypeId);
+                    Boolean valueFromEstimated = rs.getBoolean("value_from_estimated");
+                    // prepare normalized values - from
+                    Long normalizedFrom;
+                    if (valueFrom != null && !valueFrom.isEmpty()) {
+                        LocalDateTime locDateTime = LocalDateTime.parse(valueFrom, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                        CalendarConverter calendarConverter = new CalendarConverter();
+                        normalizedFrom = calendarConverter.toSeconds(rs.getString("code"), locDateTime);
+                    } else {
+                        normalizedFrom = Long.MIN_VALUE;
+                    }
+
+                    // prepare normalized values - to
+                    Boolean valueToEstimated = rs.getBoolean("value_to_estimated");
+                    Long normalizedTo;
+                    if (valueTo != null && !valueTo.isEmpty()) {
+                        LocalDateTime locDateTime = LocalDateTime.parse(valueTo, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                        CalendarConverter calendarConverter = new CalendarConverter();
+                        normalizedTo = calendarConverter.toSeconds(rs.getString("code"), locDateTime);
+                    } else {
+                        normalizedTo = Long.MAX_VALUE;
+                    }
+
                     PreparedStatement psu = conn.prepareStatement("INSERT INTO arr_data_unitdate(data_id, calendar_type_id, value_from, value_from_estimated, " +
                             "value_to, value_to_estimated, format, normalized_from, normalized_to) " +
                             " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
