@@ -88,13 +88,18 @@ public class ArrOutputResult {
     }
 
     public List<ArrOutputFile> getOutputFiles() {
-    	if (outputFiles == null) {
-    		outputFiles = new ArrayList<>();
-    	}
         return outputFiles;
     }
 
     public void setOutputFiles(final List<ArrOutputFile> outputFiles) {
         this.outputFiles = outputFiles;
+    }
+
+    public void addOutputFile(ArrOutputFile file) {
+        if (outputFiles == null) {
+            outputFiles = new ArrayList<>();
+        }
+        outputFiles.add(file);
+        file.setOutputResult(this);
     }
 }
