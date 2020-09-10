@@ -22,14 +22,11 @@ import SimpleCheckListBox from './SimpleCheckListBox';
 import FundFilterCondition from './FundFilterCondition';
 import {DateTimePicker} from 'react-widgets';
 import {formatDate} from '../validate';
+import {validateUnitDate} from "../registry/field/UnitdateField";
 
 /**
  * Formulář nastavení filtru na sloupečku.
  */
-
-var _ffs_validateTimer;
-var _ffs_prevReject = null;
-
 const renderTextFields = fields => {
     return fields.map((field, index) => {
         var decorate;
@@ -152,6 +149,14 @@ const renderUnitdateFields = (calendarTypes, fields) => {
         case 0:
             return null;
         case 2:
+            let decorate;
+            if (fields[1].error) {
+                decorate = {
+                    touched: true,
+                    error: fields[1].error,
+                };
+            }
+
             var vals = [];
             vals.push(
                 <div key={0} className="value-container">
@@ -173,6 +178,7 @@ const renderUnitdateFields = (calendarTypes, fields) => {
             vals.push(
                 <div key={1} className="value-container">
                     <FormInput
+                        {...decorate}
                         type="text"
                         value={fields[1].value}
                         onChange={e => {
@@ -578,22 +584,8 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 case 'UNITDATE':
                     renderFields = renderUnitdateFields.bind(this, calendarTypes);
                     validateField = (code, valuesCount, value, index) => {
-                        return new Promise(function(resolve, reject) {
-                            if (_ffs_validateTimer) {
-                                clearTimeout(_ffs_validateTimer);
-                                if (_ffs_prevReject) {
-                                    _ffs_prevReject();
-                                    _ffs_prevReject = null;
-                                }
-                            }
-                            _ffs_prevReject = reject;
-                            var fc = () => {
-                                WebApi.validateUnitdate(value).then(json => {
-                                    resolve(json.message);
-                                });
-                            };
-                            _ffs_validateTimer = setTimeout(fc, 250);
-                        });
+                        const validateResult = validateUnitDate(value);
+                        return validateResult.valid ? null : validateResult.message;
                     };
                     items = [
                         {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},

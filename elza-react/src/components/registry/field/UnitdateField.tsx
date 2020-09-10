@@ -4,6 +4,7 @@ import {Datace} from "../../shared/datace/datace-types";
 import parse from "../../shared/datace/datace";
 import {OverlayTrigger, Tooltip} from "react-bootstrap";
 import {FormInput} from "../../index";
+import {i18n} from "../../shared";
 
 type Props = {
     name: string;
@@ -47,7 +48,27 @@ const validateUnitDateInput = (input: Datace) => {
     }
 };
 
-export function validate(v?: string) {
+/**
+ * Provede validaci vstupního řetězce na dataci.
+ * Jako chybu validace vrací obecnou chybovou hlášku, protože aktuálně jsme schopni "správně určit" jen některé chyby zápisu a u ostatních jsou chybové hlášky pro uživatele nesrozumitelné.
+ * @param řetězec datace
+ */
+export function validateUnitDate(value?: string): {valid: boolean, message?: string} {
+    const validateError = validate(value);
+    const isValid = !validateError;
+    const result = {
+        valid: isValid,
+        message: isValid ? null : i18n("global.validation.datation.invalid")
+    }
+    return result;
+}
+
+/**
+ * Provede validaci vstupního řetězce na dataci.
+ * Jako chybu validace vrací podrobnější hlášky, ale míchané s hláškami, které nejsou uživateli úplně srozumitelné.
+ * @param v řetězec datace
+ */
+function validate(v?: string) {
     if (v) {
         try {
             const parseResult = parse(v);

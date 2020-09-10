@@ -24,6 +24,7 @@ import './AbstractDescItem.scss';
 import {convertValue, validate} from '../../../stores/app/arr/subNodeForm.jsx';
 import {WebApi} from '../../../actions/index';
 import objectById from '../../../shared/utils/objectById';
+import {validateUnitDate} from "../../registry/field/UnitdateField";
 
 const placeholder = document.createElement('div');
 placeholder.className = 'placeholder';
@@ -287,32 +288,6 @@ class DescItemType extends AbstractReactComponent {
         );
     }
 
-    /*
-     * Unitdate server validation
-     */
-    validateUnitdate = (value, descItemIndex) => {
-        return () => {
-            WebApi.validateUnitdate(value).then(result => {
-                const {refType} = this.props;
-                let newDescItemType = this.state.descItemType;
-                const newDescItem = {...newDescItemType.descItems[descItemIndex]};
-
-                // validation with added error from server
-                let valueServerError;
-                if (!result.valid) {
-                    valueServerError = result.message;
-                }
-                newDescItem.error = validate(newDescItem, refType, valueServerError);
-
-                newDescItemType.descItems[descItemIndex] = newDescItem;
-                this.setState({
-                    descItemType: newDescItemType,
-                    error: result, //unitdate validation expects different format
-                });
-            });
-        };
-    };
-
     /**
      * Změna hodnoty atributu.
      * @param descItemIndex {number} index hodnoty atributu v seznamu
@@ -335,15 +310,7 @@ class DescItemType extends AbstractReactComponent {
             ...convertedValue,
             touched,
         };
-        // Unitdate server validation
-        if (rulDataType.code === 'UNITDATE') {
-            // debouncing validation request
-            if (newDescItem.validateTimer) {
-                clearTimeout(descItem.validateTimer);
-            }
-            newDescItem.validateTimer = setTimeout(this.validateUnitdate(newDescItem.value, descItemIndex), 250);
-        }
-        // newDescItem validation
+
         const error = validate(newDescItem, refType);
         newDescItem.error = error;
 
@@ -1197,11 +1164,7 @@ class DescItemType extends AbstractReactComponent {
         } = this.props;
         const {descItemType} = this.state;
 
-        if (descItemType.id === 63) {
-            console.log('RENDER...', descItemType);
-        }
-
-        // console.log('[DescItemType] RENDER', this.props.refType.name);
+        // console.log('[DescItemType] RENDER', this.props.refType.name, descItemType.id, JSON.parse(JSON.stringify(descItemType)));
 
         const label = this.renderLabel();
         const showDeleteDescItemType = this.getShowDeleteDescItemType();

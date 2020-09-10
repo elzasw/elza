@@ -16,6 +16,7 @@ import {DisplayType} from '../../../constants.tsx';
 import {buildIgnoreMap, endWith, startWith} from '../../../components/Utils';
 import {cloneDeep} from 'lodash-es';
 import {prepareNextFormKey} from './subNodeFormUtils';
+import {validateUnitDate} from "../../../components/registry/field/UnitdateField";
 
 const FORM_KEY = 'formKey'; // klíč verze formuláře
 const UID = '_uid'; // virtuální identifikátor hodnoty atributu (jedná se buď o objectId a nebo virtuální klíč v případě, že ještě hodnota atributu nebyla uložena na serveru)
@@ -137,6 +138,11 @@ export function validate(descItem, refType, valueServerError) {
             }
             if (!descItem.value || descItem.value.length === 0) {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
+            } else {
+                const validateResult = validateUnitDate(descItem.value);
+                if (!validateResult.valid) {
+                    error.value = validateResult.message;
+                }
             }
             break;
         case 'UNITID':
@@ -400,22 +406,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 touched,
             };
 
-            // Unitdate server validation
-            if (refType.dataType.code === 'UNITDATE') {
-                if (loc.descItem.validateTimer) {
-                    clearTimeout(loc.descItem.validateTimer);
-                }
-                // FIXME @randak tohle je blbě
-                var fc = () =>
-                    action.dispatch(
-                        action.formActions.fundSubNodeFormValueValidate(
-                            action.versionId,
-                            action.routingKey,
-                            action.valueLocation,
-                        ),
-                    );
-                loc.descItem.validateTimer = setTimeout(fc, 250);
-            }
+            // Validace dat položky
             loc.descItem.error = validate(loc.descItem, refType);
 
             setLoc(state, action.valueLocation, loc);
