@@ -15,11 +15,7 @@
  * @since 17.2.2016
  **/
 
-/**
- * Ajax je pro validaci datace, i18n překlad
- **/
 import i18n from './i18n';
-//import AjaxUtils from "./AjaxUtils";
 
 /**
  * Validace zda je číslo celým číslem kladným i záporným  v intervalu clého čísla JAVA
@@ -82,25 +78,6 @@ export function validateDouble(doubleNumber) {
         return i18n('validate.validateDouble.outOfRange');
     return null;
 }
-
-/**
- * Validace zda je datace ve správném formátu
- * @param dateNumber datace
- * @param callback funkce
- * volání funkce: validateDate('19.st.', function (message){console.log(message); });
- * @deprecated Nepoužívá se - pokud se bude znovu používat nutno vyextrahovat do extra souboru
- **/
-
-/*export function validateDate(dateNumber, callback = function () {
-}) {
-    AjaxUtils.ajaxGet('/api/validate/unitDate', {value: dateNumber})
-        .then(json=> {
-            var message = null;
-            if (json['valid'] == false)
-                message = json['message'];
-            callback(message);
-        });
-};*/
 
 /**
  * Normalizace čísla - pouze povolené celé číslo - (přes string rychlejší než ukládat do pole)

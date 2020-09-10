@@ -508,27 +508,6 @@ export class ItemFormActions {
     }
 
     /**
-     * Akce validace hodnoty na serveru - týká se jen hodnot datace.
-     * @param {int} versionId verze AS
-     * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
-     * @param {Object} valueLocation konkrétní umístění hodnoty pro validaci
-     */
-    fundSubNodeFormValueValidate(versionId, routingKey, valueLocation) {
-        return (dispatch, getState) => {
-            const state = getState();
-            const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
-            const loc = subNodeForm.getLoc(subNodeForm, valueLocation);
-
-            // only when loc exists
-            if (loc) {
-                WebApi.validateUnitdate(loc.descItem.value).then(json => {
-                    dispatch(this._fundSubNodeFormValueValidateResult(versionId, routingKey, valueLocation, json));
-                });
-            }
-        };
-    }
-
-    /**
      * Akce změny hodnoty a její promítnutí do store, případné uložení na server, pokud je toto vynuceno parametrem forceStore.
      * @param {int} versionId verze AS
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
