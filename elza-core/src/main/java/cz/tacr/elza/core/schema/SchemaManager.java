@@ -19,15 +19,20 @@ import cz.tacr.elza.exception.codes.OutputCode;
 @Component
 public class SchemaManager {
 
+    public static final String EAD3_SCHEMA_URL = "http://ead3.archivists.org/schema/";
+
+    private SchemaFactory schemaFactory;
+
     private Map<String, Schema> schemaMap;
 
     @PostConstruct
     protected void init() {
+        schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         schemaMap = new HashMap<>();
     }
 
     /**
-     * Získání schématu podle daného souboru
+     * Získání schématu podle url schématu
      * @param url schématu
      * @return
      */
@@ -38,7 +43,6 @@ public class SchemaManager {
         }
         Schema schema = schemaMap.get(fileSchema);
         if (schema == null) {
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             try {
                 schema = schemaFactory.newSchema(getClass().getResource(fileSchema));
             } catch (SAXException e) {
@@ -52,11 +56,11 @@ public class SchemaManager {
     /**
      * Získání cesty k souboru podle URL schématu
      * @param url schématu
-     * @return cesta k souboru
+     * @return cesta k souboru nebo null
      */
     public String schemaUrlToFile(String url) {
         switch (url) {
-        case "http://ead3.archivists.org/schema/":
+        case EAD3_SCHEMA_URL:
             return "/schema/ead3.xsd";
         default:
             return null;
