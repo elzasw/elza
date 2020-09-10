@@ -73,8 +73,6 @@ public abstract class DmsOutputGenerator implements OutputGenerator {
 
         ArrOutputFile outputFile = createOutputFile(result);
 
-        result.getOutputFiles().add(outputFile);
-
         try (InputStream is = Files.newInputStream(tmpResultFile, StandardOpenOption.READ)) {
             dmsService.createFile(outputFile, is);
         }
@@ -86,11 +84,12 @@ public abstract class DmsOutputGenerator implements OutputGenerator {
         RulTemplate template = params.getTemplate();
 
         ArrOutputFile file = new ArrOutputFile();
-        file.setOutputResult(result);
         file.setName(definitionName);
         file.setFileName(definitionName + "." + template.getExtension());
         file.setMimeType(template.getMimeType());
         file.setFileSize(0); // DmsService will set real value after write
+        
+        result.addOutputFile(file);
         return file;
     }
 }

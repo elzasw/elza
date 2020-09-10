@@ -192,7 +192,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     		Validator validator = schema.newValidator();
     		Validate.notNull(result.getOutputFiles(), "Musí existovat alespoň jeden soubor.");
 	    	for (ArrOutputFile file : result.getOutputFiles()) {
-	    		try (FileInputStream fis = new FileInputStream(resourcePathResolver.getDmsFile(file).toString())) {
+	    		try (FileInputStream fis = new FileInputStream(resourcePathResolver.getDmsFile(String.valueOf(file.getFileId())).toString())) {
 	    			validator.validate(new StreamSource(fis));
 	    		}
 	    	}
