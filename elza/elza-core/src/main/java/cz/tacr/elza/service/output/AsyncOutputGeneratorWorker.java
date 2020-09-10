@@ -18,6 +18,7 @@ import javax.xml.validation.Validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.apache.cxf.common.util.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ import cz.tacr.elza.asynchactions.AsyncRequest;
 import cz.tacr.elza.asynchactions.AsyncRequestEvent;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -58,7 +60,6 @@ import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.output.generator.OutputGenerator;
 import cz.tacr.elza.service.output.generator.OutputGeneratorFactory;
-import cz.tacr.elza.utils.SchemaUtils;
 
 @Component
 @Scope("prototype")
@@ -93,10 +94,13 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     private ArrangementService arrangementService;
     
     @Autowired
-    private OutputTemplateRepository outputTemplateRepository; 
+    private OutputTemplateRepository outputTemplateRepository;
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private SchemaManager schemaManager;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
 
@@ -165,8 +169,9 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 	        try (OutputGenerator generator = outputGeneratorFactory.createOutputGenerator(engine)) {
 	            generator.init(params);
 	            ArrOutputResult result = generator.generate();
-	            if (template.getTemplate().getValidationSchema() != null) {
-	            	validate(template, result);
+	            String validationSchema = template.getTemplate().getValidationSchema();
+	            if (validationSchema != null) {
+	            	validate(validationSchema, result);
 	            }
 	        } catch (IOException e) {
 	            throw new SystemException("Failed to generate output", e, BaseCode.INVALID_STATE);
@@ -181,24 +186,18 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
     }
 
-    private void validate(ArrOutputTemplate template, ArrOutputResult result) {
-    	SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-    	String xsdFile = SchemaUtils.SchemaUrlToFile(template.getTemplate().getValidationSchema());
-    	if (StringUtils.isEmpty(xsdFile)) {
-            throw new SystemException("Validation schema not found", OutputCode.SCHEMA_NOT_FOUND);
-    	}
-    	try {
-    		Schema schema = schemaFactory.newSchema(getClass().getResource(xsdFile));
-    		Validator validator = schema.newValidator();
-    		Validate.notNull(result.getOutputFiles(), "Musí existovat alespoň jeden soubor.");
-	    	for (ArrOutputFile file : result.getOutputFiles()) {
-	    		try (FileInputStream fis = new FileInputStream(resourcePathResolver.getDmsFile(String.valueOf(file.getFileId())).toString())) {
-	    			validator.validate(new StreamSource(fis));
-	    		}
-	    	}
-    	} catch (SAXException | IOException e) {
-            throw new SystemException("Failed to validate file", e, OutputCode.INVALID_FORMAT);
-		}
+    private void validate(String validationSchema, ArrOutputResult result) {
+        if (!CollectionUtils.isEmpty(result.getOutputFiles())) {
+            for (ArrOutputFile file : result.getOutputFiles()) {
+                try (FileInputStream fis = new FileInputStream(resourcePathResolver.getDmsFile(String.valueOf(file.getFileId())).toString())) {
+                    Schema schema = schemaManager.getSchema(validationSchema);
+                    Validator validator = schema.newValidator();
+                    validator.validate(new StreamSource(fis));
+                  } catch (SAXException | IOException e) {
+                      throw new SystemException("Failed to validate file", e, OutputCode.INVALID_FORMAT);
+                  }
+            }
+        }
     }
 
     private OutputState resolveEndState(OutputParams params) {

@@ -88,7 +88,7 @@ public abstract class DmsOutputGenerator implements OutputGenerator {
         file.setFileName(definitionName + "." + template.getExtension());
         file.setMimeType(template.getMimeType());
         file.setFileSize(0); // DmsService will set real value after write
-        
+
         result.addOutputFile(file);
         return file;
     }
