@@ -803,7 +803,7 @@
     </item-type>
     <!-- Prvek je určen k zajištění správného počítání EJ u starších pomůcek.
          U těchto pomůcek mohlo docházet k situacím, kdy jedna EJ byla popsána
-         pomocí několika spolu souvisejícími za sebou uvedenými jendotkami popisu. -->
+         pomocí několika spolu souvisejícími za sebou uvedenými jednotkami popisu. -->
     <item-type code="ZP2015_CONNECTED_RECORD" data-type="ENUM">
         <name>Souvislost s jinou EJ</name>
         <shortcut>Související EJ</shortcut>

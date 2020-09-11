@@ -73,8 +73,8 @@
     
     <#-- Sestavil -->
     <#list items?filter(item -> item.type.code=="ZP2015_FINDING_AID_EDITOR") as item>
-    <!-- Sestavil/editor archivni pomucky --> 
-    <ead:date localtype="FINDING_AID_EDITOR">${item.serializedValue}</ead:date>
+    <!-- Sestavil/editor archivni pomucky -->
+    <ead:p><ead:name localtype="FINDING_AID_EDITOR"><ead:part>${item.serializedValue}</ead:part></ead:name></ead:p>
     </#list>
     
     <#-- Puvodce - strukt.typ -->
@@ -92,7 +92,7 @@
     </#list>
     <#-- Zpracovatel (textove) -->
     <#list items?filter(item -> item.type.code=="ZP2015_ARRANGER_TEXT") as item>
-    <!-- Zpracovatel v uvodu archivni pomucky --> 
+    <!-- Zpracovatel v tirazi archivni pomucky --> 
     <ead:p><ead:name localtype="ARRANGER_BRIEF"><ead:part>${item.serializedValue}</ead:part></ead:name></ead:p>
     </#list>
   </ead:publicationstmt>
