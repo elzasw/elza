@@ -75,7 +75,7 @@ class SubNodeForm extends AbstractReactComponent {
     static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
-        routingKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        routingKey: PropTypes.string,
         nodeSetting: PropTypes.object,
         rulDataTypes: PropTypes.object.isRequired,
         calendarTypes: PropTypes.object.isRequired,
