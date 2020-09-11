@@ -55,6 +55,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ArrItemRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -170,6 +171,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     @Autowired
     private StructObjInternalService structObjInternalService;
+
+    @Autowired
+    private ArrItemRepository arrItemRepository; 
 
     private TransactionSynchronizationAdapter indexWorkNotify;
 
@@ -1110,7 +1114,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                              final Integer nodeVersion,
                                              @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
                                              @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
-                                             final Boolean createNewVersion) {
+                                             final Boolean createNewVersion, final boolean forceUpdate) {
         Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
         Assert.notNull(descItem.getPosition(), "Pozice musí být vyplněna");
         Assert.notNull(descItem.getDescItemObjectId(), "Identifikátor hodnoty atributu musí být vyplněn");
@@ -1118,6 +1122,15 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
         Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
+
+        // kontrola zákazu změn
+        if (!forceUpdate) {
+            ArrItem item = arrItemRepository.findById(descItem.getItemId()).orElse(null);
+            Assert.notNull(item, "Záznam v databázi musí existovat");
+            if (item.getReadOnly()) {
+                throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+            }
+        }
 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         ArrNode node = arrangementService.getNode(nodeId);
