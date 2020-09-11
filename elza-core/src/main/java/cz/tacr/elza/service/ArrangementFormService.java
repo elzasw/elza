@@ -303,7 +303,7 @@ public class ArrangementFormService {
 
 		// store updated value
 		ArrDescItem descItemUpdated = descriptionItemService
-		        .updateDescriptionItem(descItem, nodeVersion, nodeId, fundVersion.getFundVersionId(), createVersion);
+		        .updateDescriptionItem(descItem, nodeVersion, nodeId, fundVersion.getFundVersionId(), createVersion, false);
 
 		// prepare form data
 		List<RulItemTypeExt> itemTypes = ruleService.getDescriptionItemTypes(fundVersion, descItemUpdated.getNode());
@@ -326,7 +326,7 @@ public class ArrangementFormService {
 		ArrDescItem descItem = factoryDo.createDescItem(descItemVO);
 
 		ArrDescItem descItemUpdated = descriptionItemService
-				.updateDescriptionItem(descItem, nodeVersion, nodeId, fundVersionId, createNewVersion);
+				.updateDescriptionItem(descItem, nodeVersion, nodeId, fundVersionId, createNewVersion, false);
 
 		DescItemResult descItemResult = new DescItemResult();
 		descItemResult.setItem(factoryVo.createItem(descItemUpdated));
