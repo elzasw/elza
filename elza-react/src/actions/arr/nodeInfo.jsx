@@ -19,36 +19,6 @@ export function isNodeInfoAction(action) {
 }
 
 /**
- * Dohledání store node pro předané parametry.
- * @param {state} kořenový store
- * @param {int} versionId verze AS
- * @param {string} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
- */
-function getNode(state, versionId, routingKey) {
-    var r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
-    if (r != null) {
-        return r.node;
-    }
-
-    return null;
-}
-
-/**
- * Vyžádání dat - aby byla ve store k dispozici.
- */
-export function fundNodeInfoFetchIfNeeded(versionId, nodeId, routingKey, showParents) {
-    return (dispatch, getState) => {
-        const state = getState();
-        const node = getNode(state, versionId, routingKey);
-        //console.log("FETCH_NODE",node);
-        if (node != null && (!node.nodeInfoFetched || node.nodeInfoDirty) && !node.isNodeInfoFetching) {
-            //console.log("FETCHING_NODE_INFO");
-            return dispatch(fundNodeInfoFetch(versionId, nodeId, routingKey, showParents));
-        }
-    };
-}
-
-/**
  * Nové načtení dat.
  */
 export function fundNodeInfoFetch(versionId, nodeId, routingKey, showParents) {

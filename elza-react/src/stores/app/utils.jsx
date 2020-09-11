@@ -1,9 +1,7 @@
 export function findByRoutingKeyInNodes(nodesState, versionId, routingKey) {
     const nodes = nodesState.nodes;
     for (let a = 0; a < nodes.length; a++) {
-        // TODO May need revision for type comparison
-        // FIXME
-        if (nodes[a].routingKey == routingKey) return {node: nodes[a], nodeIndex: a};
+        if (nodes[a].routingKey === routingKey) return {node: nodes[a], nodeIndex: a};
     }
     return null;
 }
@@ -19,9 +17,7 @@ export function findByRoutingKeyInGlobalState(globalState, versionId, routingKey
         const fund = globalState.arrRegion.funds[fundIndex];
         const nodes = fund.nodes.nodes;
         for (let a = 0; a < nodes.length; a++) {
-            // TODO May need revision for type comparison
-            // FIXME
-            if (nodes[a].routingKey == routingKey)
+            if (nodes[a].routingKey === routingKey)
                 return {fundIndex: fundIndex, fund: fund, node: nodes[a], nodeIndex: a};
         }
     }
