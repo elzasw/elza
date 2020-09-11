@@ -555,7 +555,7 @@ public class ArrangementController {
         Assert.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
 
         ArrNode node = descriptionItemService
-                .deleteDescriptionItemsByType(fundVersionId, nodeId, nodeVersion, descItemTypeId);
+                .deleteDescriptionItemsByType(fundVersionId, nodeId, nodeVersion, descItemTypeId, false);
 
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setItem(null);
@@ -618,7 +618,7 @@ public class ArrangementController {
         Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
 
         ArrDescItem descItemDeleted = descriptionItemService
-                .deleteDescriptionItem(descItemVO.getDescItemObjectId(), nodeVersion, nodeId, fundVersionId);
+                .deleteDescriptionItem(descItemVO.getDescItemObjectId(), nodeVersion, nodeId, fundVersionId, false);
 
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setItem(null);
@@ -844,7 +844,7 @@ public class ArrangementController {
                                                      @RequestParam(value = "descItemSpecId", required = false) final Integer descItemSpecId,
                                                      @RequestParam(value = "descItemObjectId", required = false) final Integer descItemObjectId) {
         ArrDescItem descItemDeleted = descriptionItemService
-                .deleteDescriptionItem(descItemObjectId, nodeVersion, nodeId, fundVersionId);
+                .deleteDescriptionItem(descItemObjectId, nodeVersion, nodeId, fundVersionId, false);
         DescItemResult descItemResult = new DescItemResult();
         descItemResult.setItem(null);
         descItemResult.setParent(ArrNodeVO.valueOf(descItemDeleted.getNode()));
@@ -1928,7 +1928,7 @@ public class ArrangementController {
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
                         new HashSet<>(itemSpecRepository.findAllById(replaceDataBody.getSpecIds()));
 
-        descriptionItemService.replaceDescItemValues(fundVersion, descItemType, nodesDO, specifications, searchText, replaceText, replaceDataBody.getSelectionType() == SelectionType.FUND);
+        descriptionItemService.replaceDescItemValues(fundVersion, descItemType, nodesDO, specifications, searchText, replaceText, replaceDataBody.getSelectionType() == SelectionType.FUND, false);
     }
 
     /**
