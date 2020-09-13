@@ -148,6 +148,15 @@ public class RuleService {
     @Autowired
     private ApStateRepository stateRepository;
 
+    private static final String IDN_VALUE = "IDN_VALUE";
+    private static final String IDN_TYPE = "IDN_TYPE";
+    private static final String ISO3166_2 = "ISO3166_2";
+    private static final String ISO3166_3 = "ISO3166_3";
+    private static final String REL_ENTITY = "REL_ENTITY";
+    private static final String GEO_UNIT = "GEO_UNIT";
+    private static final String GEO_ADMIN_CLASS = "GEO_ADMIN_CLASS";
+    private static final String GEO_TYPE = "GEO_TYPE";
+
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
     public synchronized ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId, final Long asyncRequestId) {
@@ -1148,7 +1157,7 @@ public class RuleService {
                 Integer key = part.getParent() != null ? part.getParent().getId() : -1;
                 Map<String, Relation> relationSpecCount = partRelationSpecMap.computeIfAbsent(key, k -> new HashMap<>());
                 for (AbstractItem abstractItem : part.getItems()) {
-                    if (abstractItem.getType().equals("REL_ENTITY")) {
+                    if (abstractItem.getType().equals(REL_ENTITY)) {
                         Relation relation = relationSpecCount.get(abstractItem.getSpec());
                         if (relation == null) {
                             relation = new Relation(part);
@@ -1169,7 +1178,7 @@ public class RuleService {
         for (Part part : parts) {
             if (part.getType().equals(PartType.PT_IDENT)) {
                 for (AbstractItem abstractItem : part.getItems()) {
-                    if (abstractItem.getType().equals("IDN_TYPE")) {
+                    if (abstractItem.getType().equals(IDN_TYPE)) {
                         identMap.put(abstractItem.getSpec(), identMap.getOrDefault(abstractItem.getSpec(), 0) + 1);
                     }
                 }
@@ -1320,11 +1329,11 @@ public class RuleService {
             Part parent = availableResult.getPart().getParent();
             Integer key = parent != null ? parent.getId() : -1;
             Map<String, Relation> simpleRelationMap = relationMap.get(key);
-            AbstractItem item = findItem(availableResult.getItems(), "REL_ENTITY");
+            AbstractItem item = findItem(availableResult.getItems(), REL_ENTITY);
             if (item != null) {
                 Relation simpleRelation = simpleRelationMap.get(item.getSpec());
                 if (simpleRelation.getRelationCount() > 1) {
-                    ItemSpec itemSpec = findItemSpec(availableResult.getItemTypes(), item, "REL_ENTITY");
+                    ItemSpec itemSpec = findItemSpec(availableResult.getItemTypes(), item, REL_ENTITY);
                     if (itemSpec != null && !itemSpec.isRepeatable()) {
                         RulItemSpec rulItemSpec = sdp.getItemSpecByCode(itemSpec.getCode());
                         if (parent != null) {
@@ -1345,9 +1354,9 @@ public class RuleService {
         StaticDataProvider sdp = staticDataService.getData();
         List<String> errors = new ArrayList<>();
         if (availableResult.getPart().getType().equals(PartType.PT_IDENT)) {
-            AbstractItem item = findItem(availableResult.getItems(), "IDN_TYPE");
+            AbstractItem item = findItem(availableResult.getItems(), IDN_TYPE);
             if (item != null && identMap.get(item.getSpec()) > 1) {
-                ItemSpec itemSpec = findItemSpec(availableResult.getItemTypes(), item, "IDN_TYPE");
+                ItemSpec itemSpec = findItemSpec(availableResult.getItemTypes(), item, IDN_TYPE);
                 if (itemSpec != null && !itemSpec.isRepeatable()) {
                     RulItemSpec rulItemSpec = sdp.getItemSpecByCode(itemSpec.getCode());
                     errors.add("V části typu " + availableResult.getPart().getType().value() +
@@ -1360,7 +1369,7 @@ public class RuleService {
 
     @Nullable
     private GeoModel createGeoModel(final Ap ap) {
-        if (ap.getAeType().equals("GEO_UNIT")) {
+        if (ap.getAeType().equals(GEO_UNIT)) {
             Integer parentGeoId = findParentGeoId(ap);
             String country = findEntityCountry(ap);
             if (parentGeoId != null) {
@@ -1382,7 +1391,7 @@ public class RuleService {
         Integer recordId = null;
         for (Part part : ap.getParts()) {
             if (part.getType().equals(PartType.PT_BODY)) {
-                IntItem item = (IntItem) findItem(part.getItems(), "GEO_ADMIN_CLASS");
+                IntItem item = (IntItem) findItem(part.getItems(), GEO_ADMIN_CLASS);
                 if (item != null) {
                     recordId = item.getValue();
                     break;
@@ -1397,7 +1406,7 @@ public class RuleService {
     @Nullable
     private Integer findParentGeoId(Integer recordId) {
         StaticDataProvider sdp = staticDataService.getData();
-        RulItemType itemType = sdp.getItemTypeByCode("GEO_ADMIN_CLASS").getEntity();
+        RulItemType itemType = sdp.getItemTypeByCode(GEO_ADMIN_CLASS).getEntity();
         List<ApItem> items = accessPointItemService.findItems(recordId, itemType, PartType.PT_BODY.value());
         if (CollectionUtils.isNotEmpty(items)) {
             ApItem aeItem = items.get(0);
@@ -1410,7 +1419,7 @@ public class RuleService {
     @Nullable
     private String findEntityGeoType(Integer recordId) {
         StaticDataProvider sdp = staticDataService.getData();
-        RulItemType rulItemType = sdp.getItemTypeByCode("GEO_TYPE").getEntity();
+        RulItemType rulItemType = sdp.getItemTypeByCode(GEO_TYPE).getEntity();
         List<ApItem> aeItemList = accessPointItemService.findItems(recordId, rulItemType, PartType.PT_BODY.value());
         if (CollectionUtils.isNotEmpty(aeItemList)) {
             RulItemSpec itemSpec = aeItemList.get(0).getItemSpec();
@@ -1424,9 +1433,9 @@ public class RuleService {
     private String findEntityCountry(Ap ap) {
         for (Part part : ap.getParts()) {
             if (part.getType().equals(PartType.PT_IDENT)) {
-                AbstractItem idnType = findItem(part.getItems(), "IDN_TYPE");
-                if (idnType != null && (idnType.getSpec().equals("ISO3166_2") || idnType.getSpec().equals("ISO3166_3"))) {
-                    Item idnValue = (Item) findItem(part.getItems(), "IDN_VALUE");
+                AbstractItem idnType = findItem(part.getItems(), IDN_TYPE);
+                if (idnType != null && (idnType.getSpec().equals(ISO3166_2) || idnType.getSpec().equals(ISO3166_3))) {
+                    Item idnValue = (Item) findItem(part.getItems(), IDN_VALUE);
                     if (idnValue != null) {
                         return idnValue.getValue();
                     }
@@ -1454,8 +1463,8 @@ public class RuleService {
     @Nullable
     private String findCountryIso(Integer recordId) {
         StaticDataProvider sdp = staticDataService.getData();
-        RulItemType idnType = sdp.getItemTypeByCode("IDN_TYPE").getEntity();
-        RulItemType idnValue = sdp.getItemTypeByCode("IDN_VALUE").getEntity();
+        RulItemType idnType = sdp.getItemTypeByCode(IDN_TYPE).getEntity();
+        RulItemType idnValue = sdp.getItemTypeByCode(IDN_VALUE).getEntity();
         List<RulItemType> itemTypes = Arrays.asList(idnType, idnValue);
 
         List<ApItem> itemsList = accessPointItemService.findItems(recordId, itemTypes, PartType.PT_IDENT.value());
@@ -1465,7 +1474,7 @@ public class RuleService {
         if (CollectionUtils.isNotEmpty(idnTypeItemList)) {
             for (ApItem idnTypeItem : idnTypeItemList) {
                 RulItemSpec itemSpec = sdp.getItemSpecById(idnTypeItem.getItemSpec().getItemSpecId());
-                if (itemSpec.getCode().equals("ISO3166_2") || itemSpec.getCode().equals("ISO3166_3")) {
+                if (itemSpec.getCode().equals(ISO3166_2) || itemSpec.getCode().equals(ISO3166_3)) {
                     if (CollectionUtils.isNotEmpty(idnValueItemList)) {
                         for (ApItem aeItem : idnValueItemList) {
                             if (aeItem.getPartId().equals(idnTypeItem.getPartId())) {
