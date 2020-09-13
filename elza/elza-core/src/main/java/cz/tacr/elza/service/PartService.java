@@ -266,7 +266,7 @@ public class PartService {
         ApScope scope = state.getScope();
         Integer accessPointId = state.getAccessPoint().getAccessPointId();
         boolean preferredPart = false;
-        if(apPart.getKeyValue() != null && apPart.getKeyValue().getKeyType().equals("PT_PREFER_NAME")) {
+        if(apPart.getKeyValue() != null && apPart.getKeyValue().getKeyType().equals(PT_PREFER_NAME)) {
             preferredPart = true;
         }
 

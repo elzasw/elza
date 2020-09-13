@@ -58,15 +58,16 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
     }
 
     private void processParts(PartyGroup pg) {
+        String partTypeCode = staticData.getDefaultBodyPartType().getCode();
         AccessPointInfo apInfo = apContext.getApInfo(pg.getId());
         processNames(pg.getNms(), apInfo);
-        processPartyGroupPart("PT_BODY", "BRIEF_DESC", pg.getChr(), apInfo);
-        processPartyGroupPart("PT_BODY", "SOURCE_INFO", pg.getSrc(), apInfo);
-        processPartyGroupPart("PT_BODY", "HISTORY", pg.getHst(), apInfo);
-        processPartyGroupPart("PT_BODY", "FOUNDING_NORMS", pg.getFn(), apInfo);
-        processPartyGroupPart("PT_BODY", "CORP_PURPOSE", pg.getScp(), apInfo);
-        processPartyGroupPart("PT_BODY", "CORP_STRUCTURE", pg.getStr(), apInfo);
-        processPartyGroupPart("PT_BODY", "SCOPE_NORMS", pg.getSn(), apInfo);
+        processPartyGroupPart(partTypeCode, "BRIEF_DESC", pg.getChr(), apInfo);
+        processPartyGroupPart(partTypeCode, "SOURCE_INFO", pg.getSrc(), apInfo);
+        processPartyGroupPart(partTypeCode, "HISTORY", pg.getHst(), apInfo);
+        processPartyGroupPart(partTypeCode, "FOUNDING_NORMS", pg.getFn(), apInfo);
+        processPartyGroupPart(partTypeCode, "CORP_PURPOSE", pg.getScp(), apInfo);
+        processPartyGroupPart(partTypeCode, "CORP_STRUCTURE", pg.getStr(), apInfo);
+        processPartyGroupPart(partTypeCode, "SCOPE_NORMS", pg.getSn(), apInfo);
     }
 
     private void processNames(PartyNames names, AccessPointInfo apInfo) {

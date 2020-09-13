@@ -47,6 +47,11 @@ public class StaticDataProvider {
      */
     public static final String DEFAULT_PART_TYPE = "PT_NAME";
 
+    /**
+     * Výchozí kód pro část typu tělo.
+     */
+    public static final String DEFAULT_BODY_PART_TYPE = "PT_BODY";
+
     private List<RulPackage> packages;
 
     private List<ApType> apTypes;
@@ -199,6 +204,12 @@ public class StaticDataProvider {
 
     public RulPartType getDefaultPartType() {
         RulPartType partType = partTypeCodeMap.get(DEFAULT_PART_TYPE);
+        Validate.notNull(partType);
+        return partType;
+    }
+
+    public RulPartType getDefaultBodyPartType() {
+        RulPartType partType = partTypeCodeMap.get(DEFAULT_BODY_PART_TYPE);
         Validate.notNull(partType);
         return partType;
     }

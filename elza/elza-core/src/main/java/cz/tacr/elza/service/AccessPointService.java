@@ -133,7 +133,6 @@ public class AccessPointService {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessPointService.class);
     private static final String OBJECT_ID_SEQUENCE_NAME = "ap_name|object_id";
-    private static final String PT_NAME = "PT_NAME";
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
@@ -922,6 +921,8 @@ public class AccessPointService {
     }
 
     public boolean updatePartValues(final Collection<PartWrapper> partWrappers) {
+        StaticDataProvider sdp = staticDataService.getData();
+
         boolean success = true;
         Set<Integer> accessPointIds = new HashSet<>();
 
@@ -937,7 +938,7 @@ public class AccessPointService {
             boolean preferred = false;
             Integer accessPointId = state.getAccessPoint().getAccessPointId();
 
-            if (partWrapper.getPartInfo().getRulPartType().getCode().equals(PT_NAME) &&
+            if (partWrapper.getPartInfo().getRulPartType().getCode().equals(sdp.getDefaultPartType().getCode()) &&
                 !accessPointIds.contains(accessPointId)) {
                 accessPointIds.add(accessPointId);
                 preferred = true;

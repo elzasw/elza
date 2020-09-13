@@ -27,6 +27,11 @@ import java.util.regex.Pattern;
 @Service
 public class SearchFilterFactory {
 
+    private static final String NM_MAIN = "NM_MAIN";
+    private static final String CRE_DATE = "CRE_DATE";
+    private static final String EXT_DATE = "EXT_DATE";
+    private static final String DISPLAY_NAME = "DISPLAY_NAME";
+
     @Autowired
     private StaticDataService staticDataService;
 
@@ -158,7 +163,7 @@ public class SearchFilterFactory {
                 for (String keyWord : keyWords) {
                     QueryBaseCondDef cond;
                     if (filter.getOnlyMainPart() && !area.equals(Area.ALL_PARTS)) {
-                        cond = createQueryValueCondDef("NM_MAIN", null, QueryComparator.CONTAIN, keyWord);
+                        cond = createQueryValueCondDef(NM_MAIN, null, QueryComparator.CONTAIN, keyWord);
                     } else {
                         cond = createQueryIndexCondDef(keyWord);
                     }
@@ -196,13 +201,13 @@ public class SearchFilterFactory {
             if (StringUtils.isNotEmpty(filter.getCreation())) {
                 ArrDataUnitdate aeDataUnitdate = UnitDateConvertor.convertToUnitDate(filter.getCreation(), new ArrDataUnitdate());
                 String intervalCreation = aeDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + aeDataUnitdate.getValueTo();
-                QueryValueCondDef valueCondDef = createQueryValueCondDef("CRE_DATE", null, QueryComparator.CONTAIN, intervalCreation);
+                QueryValueCondDef valueCondDef = createQueryValueCondDef(CRE_DATE, null, QueryComparator.CONTAIN, intervalCreation);
                 andCondDefList.add(createQueryPartCondDef(valueCondDef, QueryPartCondDef.PartTypeEnum.CRE));
             }
             if (StringUtils.isNotEmpty(filter.getExtinction())) {
                 ArrDataUnitdate aeDataUnitdate = UnitDateConvertor.convertToUnitDate(filter.getExtinction(), new ArrDataUnitdate());
                 String intervalExtinction = aeDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + aeDataUnitdate.getValueTo();
-                QueryValueCondDef valueCondDef = createQueryValueCondDef("EXT_DATE", null, QueryComparator.CONTAIN, intervalExtinction);
+                QueryValueCondDef valueCondDef = createQueryValueCondDef(EXT_DATE, null, QueryComparator.CONTAIN, intervalExtinction);
                 andCondDefList.add(createQueryPartCondDef(valueCondDef, QueryPartCondDef.PartTypeEnum.EXT));
             }
             if (andCondDefList.size() == 1) {
@@ -232,7 +237,7 @@ public class SearchFilterFactory {
 
     private QueryIndexCondDef createQueryIndexCondDef(String value) {
         QueryIndexCondDef queryIndexCondDef = new QueryIndexCondDef();
-        queryIndexCondDef.setName("DISPLAY_NAME");
+        queryIndexCondDef.setName(DISPLAY_NAME);
         queryIndexCondDef.setComparator(QueryComparator.CONTAIN);
         queryIndexCondDef.setCondType("index");
         queryIndexCondDef.setValue(value);

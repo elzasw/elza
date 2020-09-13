@@ -96,7 +96,8 @@ import cz.tacr.elza.repository.ScopeRepository;
 @Service
 public class ApFactory {
 
-    public static final String DISPLAY_NAME = "DISPLAY_NAME";
+    private static final String DISPLAY_NAME = "DISPLAY_NAME";
+    private static final String BRIEF_DESC = "BRIEF_DESC";
 
     private final ApAccessPointRepository apRepository;
 
@@ -339,10 +340,11 @@ public class ApFactory {
     private String getDescription(List<ApPart> parts, Map<Integer, List<ApItem>> items) {
         ApPart body = null;
         String briefDesc = null;
+        StaticDataProvider sdp = staticDataService.getData();
 
         if (CollectionUtils.isNotEmpty(parts)) {
             for (ApPart part : parts) {
-                if (part.getPartType().getCode().equals("PT_BODY")) {
+                if (part.getPartType().getCode().equals(sdp.getDefaultBodyPartType().getCode())) {
                     body = part;
                     break;
                 }
@@ -353,7 +355,7 @@ public class ApFactory {
             List<ApItem> bodyItems = items.get(body.getPartId());
             if (CollectionUtils.isNotEmpty(bodyItems)) {
                 for (ApItem item : bodyItems) {
-                    if (item.getItemType().getCode().equals("BRIEF_DESC")) {
+                    if (item.getItemType().getCode().equals(BRIEF_DESC)) {
                         briefDesc = item.getData().getFulltextValue();
                         break;
                     }
@@ -430,11 +432,6 @@ public class ApFactory {
 
         Map<Integer, ApState> apStateMap = stateRepository.findLastByAccessPoints(accessPoints).stream()
                 .collect(Collectors.toMap(o -> o.getAccessPointId(), Function.identity()));
-//        Map<Integer, List<ApBindingState>> apEidsMap = bindingStateRepository.findByAccessPoints(accessPoints).stream()
-//                .collect(Collectors.groupingBy(o -> o.getAccessPointId()));
-//        RulItemType rulItemType = sdp.getItemTypeByCode("BRIEF_DESC").getEntity();
-//        Map<Integer, List<ApItem>> descMap = itemRepository.findItemsByAccessPointsAndItemTypeAndPartTypeCode(accessPoints, rulItemType, "PT_BODY").stream()
-//                .collect(Collectors.groupingBy(o -> o.getPart().getAccessPointId()));
 
         for (ApAccessPoint accessPoint : accessPoints) {
             Integer accessPointId = accessPoint.getAccessPointId();
