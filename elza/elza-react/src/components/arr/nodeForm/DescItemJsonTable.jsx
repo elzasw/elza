@@ -83,7 +83,7 @@ class DescItemJsonTable extends AbstractReactComponent {
     }
 
     focus() {
-        this.dataGrid.getWrappedInstance().focus();
+        this.dataGrid.focus();
     }
 
     handleBlur() {
@@ -127,7 +127,7 @@ class DescItemJsonTable extends AbstractReactComponent {
             return;
         }
 
-        const dataGridComp = this.dataGrid.getWrappedInstance();
+        const dataGridComp = this.dataGrid;
         const cellEl = dataGridComp.getCellElement(rowIndex, colIndex);
         const cellRect = cellEl.getBoundingClientRect();
 
@@ -242,14 +242,14 @@ class DescItemJsonTable extends AbstractReactComponent {
                     {descItem.undefined ? (
                         <input
                             {...decorateValue(this, descItem.hasFocus, descItem.error.value, true)}
-                            ref={ref => this.focusEl = ref}
+                            ref={ref => (this.focusEl = ref)}
                             type="text"
                             value={i18n('subNodeForm.descItemType.notIdentified')}
                         />
                     ) : (
                         <DataGrid
                             key="grid"
-                            ref={ref => this.dataGrid = ref}
+                            ref={ref => (this.dataGrid = ref)}
                             rows={rows}
                             cols={cols}
                             onFocus={onFocus}
