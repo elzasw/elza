@@ -754,16 +754,18 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
                         reader.onload = async () => {
                             const data = reader.result;
                             try {
-                                const fieldValue = await WebApi.importApCoordinates(data!, formData.format).then(
-                                    x => x.data,
-                                );
-                                dispatch(change(props.formInfo.formName, field, fieldValue));
+                                const fieldValue = await WebApi.importApCoordinates(data!, formData.format);
+                                let realField = props.formInfo.sectionName
+                                    ? `${props.formInfo.sectionName}.${field}`
+                                    : field;
+                                dispatch(change(props.formInfo.formName, realField, fieldValue));
                             } catch (e) {
                                 //notification.error({message: 'Nepodařilo se importovat souřadnice'});
                             }
                         };
                         reader.readAsBinaryString(formData.file);
                     }}
+                    onSubmitSuccess={(result, dispatch) => dispatch(modalDialogHide())}
                 />,
             ),
         ),
