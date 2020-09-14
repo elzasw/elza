@@ -66,10 +66,4 @@ public interface ApAccessPointRepository
             "WHERE item.deleteChange IS NULL AND item.data.dataId IN :dataIds")
     List<ApAccessPoint> findAccessPointsByRefDataId(@Param("dataIds") Collection<Integer> dataIds);
 
-    @Query("SELECT s.accessPoint FROM ap_state s JOIN s.accessPoint WHERE s.deleteChangeId IS NULL")
-    List<ApAccessPoint> findActiveAccessPoints();
-
-    @Query("SELECT s.accessPoint FROM ap_state s JOIN s.accessPoint WHERE s.deleteChangeId IS NULL AND s.apType IN :apTypes")
-    List<ApAccessPoint> findActiveAccessPointsByApTypes(@Param("apTypes") Collection<ApType> apTypes);
-
 }

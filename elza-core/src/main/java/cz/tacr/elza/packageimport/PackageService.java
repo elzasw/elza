@@ -32,6 +32,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.service.AccessPointGeneratorService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -432,6 +433,8 @@ public class PackageService {
 
     @Autowired
     private AccessPointGeneratorService accessPointGeneratorService;
+
+    private List<ApState> activeStates;
 
     /**
      * Provede import balíčku.
@@ -3001,20 +3004,46 @@ public class PackageService {
             apType = sdp.getApTypeByCode(apTypeCode);
         }
 
+        if (activeStates == null) {
+            activeStates = apStateRepository.findActiveStates();
+        }
+
         if(apType == null) {
-            List<ApAccessPoint> accessPointList = accessPointRepository.findActiveAccessPoints();
+            List<ApAccessPoint> accessPointList = getAccessPointList(activeStates);
             if (CollectionUtils.isNotEmpty(accessPointList)) {
                 asyncRequestService.enqueue(accessPointList);
             }
         } else {
             List<ApType> apTypeList = findTreeApTypes(apType.getApTypeId());
             if (CollectionUtils.isNotEmpty(apTypeList)) {
-                List<ApAccessPoint> accessPointList = accessPointRepository.findActiveAccessPointsByApTypes(apTypeList);
+                List<ApAccessPoint> accessPointList = getAccessPointList(activeStates, apTypeList);
                 if (CollectionUtils.isNotEmpty(accessPointList)) {
                     asyncRequestService.enqueue(accessPointList);
                 }
             }
         }
+    }
+
+    private List<ApAccessPoint> getAccessPointList(List<ApState> states) {
+        List<ApAccessPoint> accessPointList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(states)) {
+            for (ApState state : states) {
+                accessPointList.add(state.getAccessPoint());
+            }
+        }
+        return accessPointList;
+    }
+
+    private List<ApAccessPoint> getAccessPointList(List<ApState> states, List<ApType> apTypes) {
+        List<ApAccessPoint> accessPointList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(states)) {
+            for (ApState state : states) {
+                if (getApTypeById(apTypes, state.getApType().getApTypeId()) != null) {
+                    accessPointList.add(state.getAccessPoint());
+                }
+            }
+        }
+        return accessPointList;
     }
 
     private List<ApType> findTreeApTypes(final Integer id) {
