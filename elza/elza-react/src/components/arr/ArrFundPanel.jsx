@@ -11,6 +11,7 @@ import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
 import * as perms from 'actions/user/Permission.jsx';
 import classNames from 'classnames';
 import TooltipTrigger from '../shared/tooltip/TooltipTrigger';
+import objectById from "../../shared/utils/objectById";
 
 class ArrFundPanel extends AbstractReactComponent {
     setReadMode = readMode => {
@@ -39,7 +40,15 @@ class ArrFundPanel extends AbstractReactComponent {
         if (fund.nodes && fund.nodes.activeIndex !== null) {
             const node = fund.nodes.nodes[fund.nodes.activeIndex];
             const subNodeForm = node.subNodeForm;
-            arrPerm = subNodeForm.data && subNodeForm.data.arrPerm;
+
+            const fundNodes = fund && fund.fundTree && fund.fundTree.nodes ? fund.fundTree.nodes || [] : [];
+            const nodeInTree = objectById(fundNodes, node.selectedSubNodeId);
+
+            if (subNodeForm.data) {
+                arrPerm = subNodeForm.data.arrPerm;
+            } else if (nodeInTree) {
+                arrPerm = nodeInTree.arrPerm;
+            }
         }
 
         if (fund.lockDate || (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm)) {
