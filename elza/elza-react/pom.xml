@@ -101,12 +101,6 @@
                             </arguments>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <executions>
                     <execution>
                         <id>install-elza-react-dependencies</id>
                         <phase>process-sources</phase>
