@@ -399,9 +399,12 @@ public class PartService {
         List<Integer> dataIdsList = dataRecordRefRepository.findIdsByRecord(accessPoint);
 
         if(CollectionUtils.isNotEmpty(dataIdsList)) {
-            List<ApAccessPoint> accessPoints = accessPointRepository.findAccessPointsByRefDataId(dataIdsList);
-            if (CollectionUtils.isNotEmpty(accessPoints)) {
-                asyncRequestService.enqueue(accessPoints);
+            List<Integer> accessPointIds = accessPointRepository.findAccessPointIdsByRefDataId(dataIdsList);
+            if (accessPointIds.remove(apPart.getAccessPointId())) {
+                logger.warn("Archivní entita id " + apPart.getAccessPointId() + " má referenci sama na sebe!");
+            }
+            if (CollectionUtils.isNotEmpty(accessPointIds)) {
+                asyncRequestService.enqueue(accessPointIds);
             }
         }
     }

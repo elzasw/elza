@@ -434,7 +434,7 @@ public class PackageService {
     @Autowired
     private AccessPointGeneratorService accessPointGeneratorService;
 
-    private Set<ApAccessPoint> accessPoints;
+    private Set<Integer> accessPoints;
 
     /**
      * Provede import balíčku.
@@ -3012,14 +3012,14 @@ public class PackageService {
         }
 
         if(apType == null) {
-            List<ApAccessPoint> accessPointList = accessPointRepository.findActiveAccessPoints();
+            List<Integer> accessPointList = accessPointRepository.findActiveAccessPointIds();
             if (CollectionUtils.isNotEmpty(accessPointList)) {
                 accessPoints.addAll(accessPointList);
             }
         } else {
             List<ApType> apTypeList = findTreeApTypes(apType.getApTypeId());
             if (CollectionUtils.isNotEmpty(apTypeList)) {
-                List<ApAccessPoint> accessPointList = accessPointRepository.findActiveAccessPointsByApTypes(apTypeList);
+                List<Integer> accessPointList = accessPointRepository.findActiveAccessPointIdsByApTypes(apTypeList);
                 if (CollectionUtils.isNotEmpty(accessPointList)) {
                     accessPoints.addAll(accessPointList);
                 }

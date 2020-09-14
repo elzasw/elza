@@ -60,16 +60,16 @@ public interface ApAccessPointRepository
     List<Integer> findItemIdByAccessPointIdOverDataRecordRef(Integer accessPointId);
 
 
-    @Query("SELECT ap FROM ap_access_point ap " +
+    @Query("SELECT ap.accessPointId FROM ap_access_point ap " +
             "JOIN ApPart part ON ap.accessPointId = part.accessPoint.accessPointId " +
             "JOIN ApItem item ON part.partId = item.part.partId " +
             "WHERE item.deleteChange IS NULL AND item.data.dataId IN :dataIds")
-    List<ApAccessPoint> findAccessPointsByRefDataId(@Param("dataIds") Collection<Integer> dataIds);
+    List<Integer> findAccessPointIdsByRefDataId(@Param("dataIds") Collection<Integer> dataIds);
 
-    @Query("SELECT s.accessPoint FROM ap_state s JOIN s.accessPoint WHERE s.deleteChangeId IS NULL")
-    List<ApAccessPoint> findActiveAccessPoints();
+    @Query("SELECT s.accessPointId FROM ap_state s WHERE s.deleteChangeId IS NULL")
+    List<Integer> findActiveAccessPointIds();
 
-    @Query("SELECT s.accessPoint FROM ap_state s JOIN s.accessPoint WHERE s.deleteChangeId IS NULL AND s.apType IN :apTypes")
-    List<ApAccessPoint> findActiveAccessPointsByApTypes(@Param("apTypes") Collection<ApType> apTypes);
+    @Query("SELECT s.accessPointId FROM ap_state s WHERE s.deleteChangeId IS NULL AND s.apType IN :apTypes")
+    List<Integer> findActiveAccessPointIdsByApTypes(@Param("apTypes") Collection<ApType> apTypes);
 
 }
