@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: ELZA API
-  version: "1.0"
+  version: "1.0.0"
 tags:
   - name: funds
     description: Archivní soubory
