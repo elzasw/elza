@@ -360,7 +360,7 @@ const inlineFormSupport = new (class {
     }
 })();
 
-const inlineFormMiddleware = function(_ref) {
+const inlineFormMiddleware = function (_ref) {
     const getState = _ref.getState;
     const dispatch = _ref.dispatch;
 
@@ -466,20 +466,18 @@ const inlineFormMiddleware = function(_ref) {
 
 let createStoreWithMiddleware;
 
-if (typeof window.__DEVTOOLS__ !== 'undefined' && window.__DEVTOOLS__) {
-    createStoreWithMiddleware = composeWithDevTools(
-        applyMiddleware(
-            // enforceImmutableMiddleware,
-            thunkMiddleware,
-            // promiseMiddleware,
-            loggerMiddleware,
-            inlineFormMiddleware,
-        ),
-    )(createStore);
-} else if (loggerMiddleware) {
-    createStoreWithMiddleware = compose(applyMiddleware(thunkMiddleware, loggerMiddleware, inlineFormMiddleware))(
-        createStore,
-    );
+if (window.__DEV__) {
+    const composeFunction =
+        typeof window.__DEVTOOLS__ !== 'undefined' && window.__DEVTOOLS__ ? composeWithDevTools : compose;
+
+    const middleWares = [
+        require('redux-immutable-state-invariant').default(),
+        thunkMiddleware,
+        loggerMiddleware,
+        inlineFormMiddleware,
+    ];
+
+    createStoreWithMiddleware = composeFunction(applyMiddleware(...middleWares))(createStore);
 } else {
     createStoreWithMiddleware = compose(applyMiddleware(thunkMiddleware, inlineFormMiddleware))(createStore);
 }
@@ -535,7 +533,7 @@ if (_logStoreSize) {
     store.subscribe(handleChange);
 }
 
-export const save = function(store) {
+export const save = function (store) {
     const action = {
         type: types.STORE_SAVE,
     };
