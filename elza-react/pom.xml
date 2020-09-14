@@ -21,6 +21,7 @@
 
     <build>
         <plugins>
+            <!-- Copy api definition from elza-core -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -45,6 +46,7 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Generate typescript source files for api -->
             <plugin>
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
@@ -68,6 +70,7 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Install dependencies and build api package -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
