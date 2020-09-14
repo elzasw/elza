@@ -434,7 +434,7 @@ public class PackageService {
     @Autowired
     private AccessPointGeneratorService accessPointGeneratorService;
 
-    private List<ApState> activeStates;
+    private Set<ApAccessPoint> accessPoints;
 
     /**
      * Provede import balíčku.
@@ -492,6 +492,7 @@ public class PackageService {
 
                 pkgCtx.close();
                 pkgCtx = null;
+                accessPoints = null;
             }
         }
 
@@ -639,6 +640,8 @@ public class PackageService {
 
         IssueStates issueStates = pkgCtx.convertXmlStreamToObject(IssueStates.class, ISSUE_STATE_XML);
         processIssueStates(issueStates, rulPackage);
+
+        asyncRequestService.enqueue(accessPoints);
 
         entityManager.flush();
 
@@ -3004,46 +3007,24 @@ public class PackageService {
             apType = sdp.getApTypeByCode(apTypeCode);
         }
 
-        if (activeStates == null) {
-            activeStates = apStateRepository.findActiveStates();
+        if (accessPoints == null) {
+            accessPoints = new HashSet<>();
         }
 
         if(apType == null) {
-            List<ApAccessPoint> accessPointList = getAccessPointList(activeStates);
+            List<ApAccessPoint> accessPointList = accessPointRepository.findActiveAccessPoints();
             if (CollectionUtils.isNotEmpty(accessPointList)) {
-                asyncRequestService.enqueue(accessPointList);
+                accessPoints.addAll(accessPointList);
             }
         } else {
             List<ApType> apTypeList = findTreeApTypes(apType.getApTypeId());
             if (CollectionUtils.isNotEmpty(apTypeList)) {
-                List<ApAccessPoint> accessPointList = getAccessPointList(activeStates, apTypeList);
+                List<ApAccessPoint> accessPointList = accessPointRepository.findActiveAccessPointsByApTypes(apTypeList);
                 if (CollectionUtils.isNotEmpty(accessPointList)) {
                     asyncRequestService.enqueue(accessPointList);
                 }
             }
         }
-    }
-
-    private List<ApAccessPoint> getAccessPointList(List<ApState> states) {
-        List<ApAccessPoint> accessPointList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(states)) {
-            for (ApState state : states) {
-                accessPointList.add(state.getAccessPoint());
-            }
-        }
-        return accessPointList;
-    }
-
-    private List<ApAccessPoint> getAccessPointList(List<ApState> states, List<ApType> apTypes) {
-        List<ApAccessPoint> accessPointList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(states)) {
-            for (ApState state : states) {
-                if (getApTypeById(apTypes, state.getApType().getApTypeId()) != null) {
-                    accessPointList.add(state.getAccessPoint());
-                }
-            }
-        }
-        return accessPointList;
     }
 
     private List<ApType> findTreeApTypes(final Integer id) {

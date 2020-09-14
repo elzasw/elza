@@ -202,12 +202,12 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     }
 
     @Transactional
-    public void enqueue(final List<ApAccessPoint> accessPoints) {
+    public void enqueue(final Collection<ApAccessPoint> accessPoints) {
         enqueue(accessPoints, null);
     }
 
     @Transactional
-    public void enqueue(final List<ApAccessPoint> accessPoints,
+    public void enqueue(final Collection<ApAccessPoint> accessPoints,
                         final Integer priority) {
         List<AsyncRequest> requests = new ArrayList<>(accessPoints.size());
         for (ApAccessPoint accessPoint : accessPoints) {
@@ -315,12 +315,14 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         asyncExecutor.doLockQueue(() -> {
             for (final AsyncRequest request : asyncExecutor.queue) {
                 Integer fundVersionId = request.getFundVersionId();
-                FundStatisticsVO fundStatistics = map.get(fundVersionId);
-                if (fundStatistics == null) {
-                    fundStatistics = createFundStatisticsVO(fundVersionId);
-                    map.put(fundVersionId, fundStatistics);
+                if (fundVersionId != null) {
+                    FundStatisticsVO fundStatistics = map.get(fundVersionId);
+                    if (fundStatistics == null) {
+                        fundStatistics = createFundStatisticsVO(fundVersionId);
+                        map.put(fundVersionId, fundStatistics);
+                    }
+                    fundStatistics.addCount();
                 }
-                fundStatistics.addCount();
             }
         });
         List<FundStatisticsVO> statistics = new ArrayList<>(map.values());
