@@ -53,7 +53,7 @@
         <module>package-cz-base</module>
         <module>rules-cz-zp2015</module>
         <module>rules-simple-dev</module>
-<!--        <module>dao-test-bench</module>-->
+        <module>dao-test-bench</module>
     </modules>
 
     <dependencyManagement>
