@@ -26,6 +26,7 @@ import {registryDetailFetchIfNeeded} from '../../actions/registry/registry';
 import {ApViewSettingRule, ApViewSettings} from '../../api/ApViewSettings';
 import {indexById, objectById} from '../../shared/utils';
 import {RulDescItemTypeExtVO} from '../../api/RulDescItemTypeExtVO';
+import {ApItemBitVO} from '../../api/ApItemBitVO';
 
 type OwnProps = {
     id: number; // ap id
@@ -210,7 +211,9 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
 
     const validationResult = props.apValidation.data;
 
-    const sortedParts = accessPoint ? sortPart(props.refTables.partTypes.items, props.apViewSettings.data?.rules[accessPoint.ruleSetId]) : [];
+    const sortedParts = accessPoint
+        ? sortPart(props.refTables.partTypes.items, props.apViewSettings.data?.rules[accessPoint.ruleSetId])
+        : [];
 
     return (
         <div className={'detail-page-wrapper'}>
@@ -301,7 +304,13 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
                         const formData: ApPartFormVO = data.partForm;
 
                         const submitData = {
-                            items: formData.items,
+                            items: formData.items.filter(i => {
+                                if (i['@class'] === '.ApItemEnumVO') {
+                                    return i.specId !== undefined;
+                                } else {
+                                    return (i as ApItemBitVO).value !== undefined;
+                                }
+                            }),
                             parentPartId: parentPartId,
                             partId: part.id,
                             partTypeCode: partType,
@@ -318,7 +327,13 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
                     scopeId={scopeId}
                     initialValues={{
                         partForm: {
-                            items: sortItems(partType, part.items, refTables, descItemTypesMap, apViewSettings.data!.rules[ruleSetId]),
+                            items: sortItems(
+                                partType,
+                                part.items,
+                                refTables,
+                                descItemTypesMap,
+                                apViewSettings.data!.rules[ruleSetId],
+                            ),
                         },
                     }}
                     formData={
@@ -326,7 +341,13 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
                             partId: part.id,
                             parentPartId: part.partParentId,
                             partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
-                            items: sortItems(partType, part.items, refTables, descItemTypesMap, apViewSettings.data!.rules[ruleSetId]),
+                            items: sortItems(
+                                partType,
+                                part.items,
+                                refTables,
+                                descItemTypesMap,
+                                apViewSettings.data!.rules[ruleSetId],
+                            ),
                         } as ApPartFormVO
                     }
                     parentPartId={part.partParentId}
@@ -358,7 +379,13 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
                         const formData: ApPartFormVO = data.partForm;
 
                         const submitData = {
-                            items: formData.items,
+                            items: formData.items.filter(i => {
+                                if (i['@class'] === '.ApItemEnumVO') {
+                                    return i.specId !== undefined;
+                                } else {
+                                    return (i as ApItemBitVO).value !== undefined;
+                                }
+                            }),
                             parentPartId: parentPartId,
                             partTypeCode: partType.code,
                         } as ApPartFormVO;
