@@ -248,7 +248,7 @@ class DataGrid extends AbstractReactComponent {
         const {needComputeColumnsWidth} = this.state;
 
         if (staticColumns && needComputeColumnsWidth) {
-            const dataGrid = ReactDOM.findDOMNode(this.dataGridRef);
+            const dataGrid = this.dataGridRef;
             const rect = dataGrid.getBoundingClientRect();
             var width = rect.width - getScrollbarWidth() - 4; // konstanta 3 - kvůli padding atp.
             var colWidths = {};
