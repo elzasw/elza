@@ -23,7 +23,7 @@ import PartEditModal from './modal/PartEditModal';
 import {sortItems} from '../../utils/ItemInfo';
 import {RulPartTypeVO} from '../../api/RulPartTypeVO';
 import {registryDetailFetchIfNeeded} from '../../actions/registry/registry';
-import {ApViewSettings} from '../../api/ApViewSettings';
+import {ApViewSettingRule, ApViewSettings} from '../../api/ApViewSettings';
 import {indexById, objectById} from '../../shared/utils';
 import {RulDescItemTypeExtVO} from '../../api/RulDescItemTypeExtVO';
 
@@ -72,7 +72,7 @@ function createBindings(accessPoint: ApAccessPointVO | undefined) {
     return bindings;
 }
 
-function sortPart(items: RulPartTypeVO[], data: ApViewSettings | undefined) {
+function sortPart(items: RulPartTypeVO[], data: ApViewSettingRule | undefined) {
     const parts = [...items];
     if (data && data.partsOrder) {
         parts.sort((a, b) => {
@@ -137,6 +137,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
                 partType,
                 props.id,
                 apTypeId,
+                detail.ruleSetId,
                 detail.scopeId,
                 props.refTables,
                 props.descItemTypesMap,
@@ -209,7 +210,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
 
     const validationResult = props.apValidation.data;
 
-    const sortedParts = sortPart(props.refTables.partTypes.items, props.apViewSettings.data);
+    const sortedParts = accessPoint ? sortPart(props.refTables.partTypes.items, props.apViewSettings.data?.rules[accessPoint.ruleSetId]) : [];
 
     return (
         <div className={'detail-page-wrapper'}>
@@ -262,7 +263,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
                                     onDeleteParts={handleDeletePart}
                                     onAddRelated={onAddRelated}
                                     partValidationErrors={validationResult && validationResult.partErrors}
-                                    itemTypeSettings={props.apViewSettings.data!.itemTypes}
+                                    itemTypeSettings={props.apViewSettings.data!.rules[props.detail.data!.ruleSetId].itemTypes}
                                     globalEntity={props.globalEntity}
                                 />
                             );
@@ -280,6 +281,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
         partType,
         apId: number,
         apTypeId: number,
+        ruleSetId: number,
         scopeId: number,
         refTables,
         descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
@@ -316,7 +318,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
                     scopeId={scopeId}
                     initialValues={{
                         partForm: {
-                            items: sortItems(partType, part.items, refTables, descItemTypesMap, apViewSettings),
+                            items: sortItems(partType, part.items, refTables, descItemTypesMap, apViewSettings.data!.rules[ruleSetId]),
                         },
                     }}
                     formData={
@@ -324,7 +326,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
                             partId: part.id,
                             parentPartId: part.partParentId,
                             partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
-                            items: sortItems(partType, part.items, refTables, descItemTypesMap, apViewSettings),
+                            items: sortItems(partType, part.items, refTables, descItemTypesMap, apViewSettings.data!.rules[ruleSetId]),
                         } as ApPartFormVO
                     }
                     parentPartId={part.partParentId}

@@ -96,6 +96,11 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      */
     private Integer comments;
 
+    /**
+     * Identifikátor pravidel.
+     */
+    private Integer ruleSetId;
+
     public Integer getId() {
         return id;
     }
@@ -232,5 +237,13 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setComments(Integer comments) {
         this.comments = comments;
+    }
+
+    public Integer getRuleSetId() {
+        return ruleSetId;
+    }
+
+    public void setRuleSetId(final Integer ruleSetId) {
+        this.ruleSetId = ruleSetId;
     }
 }

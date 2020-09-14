@@ -37,7 +37,7 @@ import FormInput from '../../shared/form/FormInput';
 import {Area} from '../../../api/Area';
 import RelationPartItemEditModalForm from '../modal/RelationPartItemEditModalForm';
 import {objectById} from '../../../shared/utils';
-import {ApViewSettings, ItemType} from '../../../api/ApViewSettings';
+import {ApViewSettingRule, ApViewSettings, ItemType} from '../../../api/ApViewSettings';
 import storeFromArea from '../../../shared/utils/storeFromArea';
 import {AP_VIEW_SETTINGS} from '../../../constants';
 import {DetailStoreState} from '../../../types';
@@ -394,7 +394,7 @@ const renderAddActions = ({
     refTables: any;
     partTypeId: number;
     descItemTypesMap: Record<number, RulDescItemTypeExtVO>;
-    apViewSettings: DetailStoreState<ApViewSettings>;
+    apViewSettings: ApViewSettingRule;
     handleAddItems: (
         attributes: Array<ApCreateTypeVO>,
         refTables: any,
@@ -403,7 +403,7 @@ const renderAddActions = ({
         arrayInsert: (index: number, value: any) => void,
         userAction: boolean,
         descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-        apViewSettings: DetailStoreState<ApViewSettings>,
+        apViewSettings: ApViewSettingRule,
     ) => void;
 }): any => {
     const existingItemTypeIds: Record<number, boolean> = {};
@@ -464,6 +464,8 @@ const PartEditForm = ({
     const [editErrors, setEditErrors] = useState<Array<string> | undefined>(undefined);
     const [availAttributes, setAvailAttributes] = useState<ApCreateTypeVO[] | undefined>();
 
+    const apViewSettingRule = apViewSettings.data!.rules[apViewSettings.data!.typeRuleSetMap[apTypeId]];
+
     const fetchAttributes = (formData: ApPartFormVO, partId?: number, parentPartId?: number) => {
         const form: ApAccessPointCreateVO = {
             typeId: apTypeId,
@@ -487,7 +489,7 @@ const PartEditForm = ({
                 // Seřazení dat
                 let attrs = attributesInfo.attributes;
                 attrs.sort((a, b) => {
-                    return compareCreateTypes(a, b, partTypeId, refTables, descItemTypesMap, apViewSettings);
+                    return compareCreateTypes(a, b, partTypeId, refTables, descItemTypesMap, apViewSettingRule);
                 });
 
                 setAvailAttributes(attrs);
@@ -599,7 +601,7 @@ const PartEditForm = ({
                             refTables={refTables}
                             handleAddItems={handleAddItems}
                             descItemTypesMap={descItemTypesMap}
-                            apViewSettings={apViewSettings}
+                            apViewSettings={apViewSettings.data!.rules[apViewSettings.data!.typeRuleSetMap[apTypeId]]}
                         />
                     )}
                 </Col>
@@ -626,7 +628,7 @@ const PartEditForm = ({
                     formData={formData}
                     apId={apId}
                     showImportDialog={showImportDialog}
-                    itemTypeSettings={apViewSettings.data!.itemTypes}
+                    itemTypeSettings={apViewSettingRule!.itemTypes}
                     descItemTypesMap={descItemTypesMap}
                 />
             </Row>

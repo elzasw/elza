@@ -41,6 +41,7 @@ type Props = {
     refTables?: any;
     typeId: number;
     partTypeId: number;
+    apTypeId: number;
     scopeId: number;
     itemTypeAttributeMap: Record<number, ApCreateTypeVO>;
     onClose: () => void;
@@ -60,6 +61,7 @@ const RelationPartItemEditModalForm = ({
                                            geoSearchItemType,
                                            submitting,
                                            apViewSettings,
+                                           apTypeId,
                                            geoSpecId
                                        }: Props) => {
     if (!refTables) {
@@ -77,7 +79,8 @@ const RelationPartItemEditModalForm = ({
 
     const getSpecialActionField = () => {
         if (apViewSettings.data && itemType && part) {
-            const itemTypeSettings = findViewItemType(apViewSettings.data.itemTypes, part, itemType.code);
+            const apViewSettingRule = apViewSettings.data.rules[apViewSettings.data.typeRuleSetMap[apTypeId]];
+            const itemTypeSettings = findViewItemType(apViewSettingRule.itemTypes, part, itemType.code);
             if (itemTypeSettings && itemTypeSettings.geoSearchItemType) {
                 const getItemType = objectById(refTables.descItemTypes.items, itemTypeSettings.geoSearchItemType, 'code') as RulDescItemTypeExtVO;
                 const geoUseItemSpecIds = computeAllowedItemSpecIds(itemTypeAttributeMap, getItemType);

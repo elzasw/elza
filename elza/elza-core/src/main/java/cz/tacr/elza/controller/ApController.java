@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.service.cam.CamService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -258,7 +261,7 @@ public class ApController {
 
         final List<ApState> foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from, count, fund, scopeId, states, searchTypeNameFinal, searchTypeUsernameFinal);
 
-        return new FilteredResultVO<>(foundRecords, apState -> apFactory.createVO(apState), foundRecordsCount);
+        return new FilteredResultVO<>(foundRecords, apState -> apFactory.createVO(apState, apFactory.getTypeRuleSetMap()), foundRecordsCount);
     }
 
     /**
@@ -1054,9 +1057,21 @@ public class ApController {
     public ApViewSettings getApTypeViewSettings() {
         UISettings.SettingsType itemTypes = UISettings.SettingsType.ITEM_TYPES;
         UISettings.SettingsType partsOrder = UISettings.SettingsType.PARTS_ORDER;
-        List<UISettings> itemTypesSettings = settingsService.getGlobalSettings(itemTypes.toString(), itemTypes.getEntityType());
-        List<UISettings> partsOrderSettings = settingsService.getGlobalSettings(partsOrder.toString(), partsOrder.getEntityType());
-        return apFactory.createApTypeViewSettings(itemTypesSettings, partsOrderSettings);
+
+        List<RulRuleSet> ruleRules = ruleService.findAllApRules();
+
+        ApViewSettings result = new ApViewSettings();
+        Map<Integer, ApViewSettings.ApViewSettingsRule> map = new HashMap<>();
+        for (RulRuleSet ruleRule : ruleRules) {
+            List<UISettings> itemTypesSettings = settingsService.getGlobalSettings(itemTypes.toString(), itemTypes.getEntityType(), ruleRule.getRuleSetId());
+            List<UISettings> partsOrderSettings = settingsService.getGlobalSettings(partsOrder.toString(), partsOrder.getEntityType(), ruleRule.getRuleSetId());
+            ApViewSettings.ApViewSettingsRule settings = apFactory.createApTypeViewSettings(ruleRule, itemTypesSettings, partsOrderSettings);
+            map.put(settings.getRuleSetId(), settings);
+        }
+        result.setRules(map);
+        result.setTypeRuleSetMap(apFactory.getTypeRuleSetMap());
+
+        return result;
     }
 
     /**

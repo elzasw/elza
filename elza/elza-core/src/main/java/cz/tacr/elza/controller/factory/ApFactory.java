@@ -19,12 +19,14 @@ import java.util.stream.Collectors;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
 import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApIndexRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.vo.TypeRuleSet;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -121,6 +123,8 @@ public class ApFactory {
 
     private final ApIndexRepository indexRepository;
 
+    private final ApTypeRepository apTypeRepository;
+
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
@@ -132,7 +136,8 @@ public class ApFactory {
                      final ApBindingItemRepository bindingItemRepository,
                      final RuleFactory ruleFactory,
                      final CamConnector camConnector,
-                     final ApIndexRepository indexRepository) {
+                     final ApIndexRepository indexRepository,
+                     final ApTypeRepository apTypeRepository) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
         this.scopeRepository = scopeRepository;
@@ -144,6 +149,7 @@ public class ApFactory {
         this.ruleFactory = ruleFactory;
         this.camConnector = camConnector;
         this.indexRepository = indexRepository;
+        this.apTypeRepository = apTypeRepository;
     }
 
     /**
@@ -199,7 +205,16 @@ public class ApFactory {
      */
     public ApAccessPointVO createVO(ApAccessPoint accessPoint) {
         ApState apState = stateRepository.findLastByAccessPoint(accessPoint);
-        return createVO(apState);
+        return createVO(apState, getTypeRuleSetMap());
+    }
+
+    public Map<Integer, Integer> getTypeRuleSetMap() {
+        List<TypeRuleSet> typeRuleSets = apTypeRepository.findTypeRuleSets();
+        Map<Integer, Integer> result = new HashMap<>(typeRuleSets.size());
+        for (TypeRuleSet typeRuleSet : typeRuleSets) {
+            result.put(typeRuleSet.getTypeId(), typeRuleSet.getRuleSetId());
+        }
+        return result;
     }
 
     private Map<ApBinding, ApBindingState> getBindingMap(List<ApBindingState> eids) {
@@ -236,7 +251,7 @@ public class ApFactory {
     }
 
     public ApAccessPointVO createVO(ApState state, boolean fillParts) {
-        ApAccessPointVO apVO = createVO(state);
+        ApAccessPointVO apVO = createVO(state, getTypeRuleSetMap());
         if (fillParts) {
             ApAccessPoint ap = state.getAccessPoint();
 
@@ -277,7 +292,8 @@ public class ApFactory {
         return apVO;
     }
 
-    public ApAccessPointVO createVO(final ApState apState) {
+    public ApAccessPointVO createVO(final ApState apState,
+                                    final Map<Integer, Integer> typeRuleSetMap) {
         ApAccessPoint ap = apState.getAccessPoint();
         ApPart preferredPart = ap.getPreferredPart();
         UserVO ownerUser = getOwnerUser(ap);
@@ -293,6 +309,9 @@ public class ApFactory {
         vo.setUuid(ap.getUuid());
         vo.setExternalIds(Collections.emptyList());
         vo.setErrorDescription(ap.getErrorDescription());
+        if (typeRuleSetMap != null) {
+            vo.setRuleSetId(typeRuleSetMap.get(apState.getApTypeId()));
+        }
 
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
         vo.setName(preferredPart != null ? preferredPart.getValue() : null);
@@ -436,7 +455,7 @@ public class ApFactory {
         for (ApAccessPoint accessPoint : accessPoints) {
             Integer accessPointId = accessPoint.getAccessPointId();
             ApState apState = apStateMap.get(accessPointId);
-            result.add(createVO(apState));
+            result.add(createVO(apState, getTypeRuleSetMap()));
         }
 
         return result;
@@ -614,14 +633,16 @@ public class ApFactory {
         return new ApEidTypeVO(type.getExternalIdTypeId(), type.getCode(), type.getName());
     }
 
-    public ApViewSettings createApTypeViewSettings(final List<UISettings> itemTypesSettings, final List<UISettings> partsOrderSettings) {
-        ApViewSettings result = new ApViewSettings();
+    public ApViewSettings.ApViewSettingsRule createApTypeViewSettings(final RulRuleSet ruleRule, final List<UISettings> itemTypesSettings, final List<UISettings> partsOrderSettings) {
+        ApViewSettings.ApViewSettingsRule result = new ApViewSettings.ApViewSettingsRule();
         result.setItemTypes(itemTypesSettings.size() > 0
                 ? SettingItemTypes.newInstance(itemTypesSettings.get(0)).getItemTypes()
                 : Collections.emptyList());
         result.setPartsOrder(partsOrderSettings.size() > 0
                 ? SettingPartsOrder.newInstance(partsOrderSettings.get(0)).getParts()
                 : Collections.emptyList());
+        result.setCode(ruleRule.getCode());
+        result.setRuleSetId(ruleRule.getRuleSetId());
         return result;
     }
 
