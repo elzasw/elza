@@ -27,6 +27,7 @@ import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.AsyncOutputGeneratorWorker;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -209,13 +210,15 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Transactional
     public void enqueue(final Collection<ApAccessPoint> accessPoints,
                         final Integer priority) {
-        List<AsyncRequest> requests = new ArrayList<>(accessPoints.size());
-        for (ApAccessPoint accessPoint : accessPoints) {
-            ArrAsyncRequest request = ArrAsyncRequest.create(accessPoint, priority == null ? 1 : priority);
-            asyncRequestRepository.save(request);
-            requests.add(new AsyncRequest(request));
+        if (CollectionUtils.isNotEmpty(accessPoints)) {
+            List<AsyncRequest> requests = new ArrayList<>(accessPoints.size());
+            for (ApAccessPoint accessPoint : accessPoints) {
+                ArrAsyncRequest request = ArrAsyncRequest.create(accessPoint, priority == null ? 1 : priority);
+                asyncRequestRepository.save(request);
+                requests.add(new AsyncRequest(request));
+            }
+            getExecutor(AsyncTypeEnum.AP).enqueue(requests);
         }
-        getExecutor(AsyncTypeEnum.AP).enqueue(requests);
     }
 
     private AsyncExecutor getExecutor(final AsyncTypeEnum type) {
