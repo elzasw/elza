@@ -37,6 +37,11 @@ export interface ApAccessPointVO {
     comment: string;
 
     /**
+     * Identifikátor pravidel.
+     */
+    ruleSetId: number;
+
+    /**
      * Jméno přistupového bodu.
      */
     name: string;

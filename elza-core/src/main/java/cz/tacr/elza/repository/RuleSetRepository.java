@@ -28,6 +28,8 @@ public interface RuleSetRepository extends JpaRepository<RulRuleSet, Integer> {
 
     RulRuleSet findByCode(String ruleSetCode);
 
+    List<RulRuleSet> findByRuleType(RulRuleSet.RuleType ruleType);
+
     /**
      * Vrací právě jedny pravidla pro fund podle poslední otevřené verze.
      *

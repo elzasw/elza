@@ -15,10 +15,8 @@ import {ApItemDateVO} from '../api/ApItemDateVO';
 import {ApItemFormattedTextVO} from '../api/ApItemFormattedTextVO';
 import {ApItemDecimalVO} from '../api/ApItemDecimalVO';
 import {ApItemUnitidVO} from '../api/ApItemUnitidVO';
-import {ApViewSettings, ItemType} from '../api/ApViewSettings';
-import {ApPartVO} from '../api/ApPartVO';
+import {ApViewSettingRule, ItemType} from '../api/ApViewSettings';
 import {RulPartTypeVO} from '../api/RulPartTypeVO';
-import {DetailStoreState} from '../types';
 
 export const ApItemAccessPointRefClass = '.ApItemAccessPointRefVO';
 export const ApItemBitClass = '.ApItemBitVO';
@@ -81,7 +79,7 @@ export function compareItems(
     partTypeId: number,
     refTables: any,
     descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    apViewSettings: DetailStoreState<ApViewSettings>,
+    apViewSettings: ApViewSettingRule,
 ): number {
     const part: RulPartTypeVO | undefined = refTables.partTypes.itemsMap[partTypeId];
 
@@ -89,7 +87,7 @@ export function compareItems(
     const bInfo = descItemTypesMap[b.typeId];
 
     if (aInfo && bInfo && part) {
-        let itemTypes = apViewSettings.data!.itemTypes;
+        let itemTypes = apViewSettings.itemTypes;
         let aIt = findViewItemType(itemTypes, part, aInfo.code);
         let bIt = findViewItemType(itemTypes, part, bInfo.code);
         if (aIt && bIt) {
@@ -122,7 +120,7 @@ export function compareCreateTypes(
     partTypeId: number,
     refTables: any,
     descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    apViewSettings: DetailStoreState<ApViewSettings>,
+    apViewSettings: ApViewSettingRule,
 ): number {
     const part: RulPartTypeVO | undefined = refTables.partTypes.itemsMap[partTypeId];
 
@@ -130,7 +128,7 @@ export function compareCreateTypes(
     const bInfo = descItemTypesMap[b.itemTypeId];
 
     if (aInfo && bInfo && part) {
-        let itemTypes = apViewSettings.data!.itemTypes;
+        let itemTypes = apViewSettings.itemTypes;
         let aIt = findViewItemType(itemTypes, part, aInfo.code);
         let bIt = findViewItemType(itemTypes, part, bInfo.code);
         if (aIt && bIt) {
@@ -162,7 +160,7 @@ export function sortItems(
     items: ApItemVO[],
     refTables: any,
     descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    apViewSettings: DetailStoreState<ApViewSettings>,
+    apViewSettings: ApViewSettingRule,
 ): ApItemVO[] {
     return [...items].sort((a, b) => {
         return compareItems(a, b, partTypeId, refTables, descItemTypesMap, apViewSettings);
@@ -174,7 +172,7 @@ export function sortOwnItems(
     items: ApItemVO[],
     refTables: any,
     descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    apViewSettings: DetailStoreState<ApViewSettings>,
+    apViewSettings: ApViewSettingRule,
 ): ApItemVO[] {
     return items.sort((a, b) => {
         return compareItems(a, b, partTypeId, refTables, descItemTypesMap, apViewSettings);
@@ -187,7 +185,7 @@ export function findItemPlacePosition(
     partTypeId: number,
     refTables: any,
     descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    apViewSettings: DetailStoreState<ApViewSettings>,
+    apViewSettings: ApViewSettingRule,
 ): number {
     for (let index = items.length - 1; index >= 0; index--) {
         let i = items[index];

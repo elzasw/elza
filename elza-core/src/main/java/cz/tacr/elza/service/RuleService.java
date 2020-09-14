@@ -56,6 +56,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static cz.tacr.elza.domain.RulRuleSet.RuleType.ENTITY;
 import static cz.tacr.elza.exception.codes.BaseCode.INVALID_STATE;
 import static cz.tacr.elza.repository.ExceptionThrow.itemType;
 import static cz.tacr.elza.repository.ExceptionThrow.node;
@@ -147,6 +148,9 @@ public class RuleService {
 
     @Autowired
     private ApStateRepository stateRepository;
+
+    @Autowired
+    private RuleSetRepository ruleSetRepository;
 
     private static final String IDN_VALUE = "IDN_VALUE";
     private static final String IDN_TYPE = "IDN_TYPE";
@@ -1747,5 +1751,9 @@ public class RuleService {
             throw new ObjectNotFoundException("Neexistuje specifikace", BaseCode.ID_NOT_EXIST).setId(specId);
         }
         return itemSpec;
+    }
+
+    public List<RulRuleSet> findAllApRules() {
+        return ruleSetRepository.findByRuleType(ENTITY);
     }
 }
