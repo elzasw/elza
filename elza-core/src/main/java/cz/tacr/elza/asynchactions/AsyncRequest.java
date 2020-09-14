@@ -14,11 +14,12 @@ public class AsyncRequest {
     private Integer nodeId;
     private Integer bulkActionId;
     private Integer outputId;
+    private Integer accessPointId;
     private Integer userId;
 
     public AsyncRequest(ArrAsyncRequest request) {
         this.requestId = request.getAsyncRequestId();
-        this.fundVersionId = request.getFundVersion().getFundVersionId();
+        this.fundVersionId = request.getFundVersion() != null ? request.getFundVersion().getFundVersionId() : null;
         this.type = request.getType();
         this.priority = request.getPriority();
         switch (type) {
@@ -31,6 +32,9 @@ public class AsyncRequest {
             case OUTPUT:
                 this.outputId = request.getOutput().getOutputId();
                 this.userId = request.getUserId();
+                break;
+            case AP:
+                this.accessPointId = request.getAccessPoint().getAccessPointId();
                 break;
             default:
                 throw new NotImplementedException("Neimplmentovaný typ: " + type);
@@ -45,6 +49,8 @@ public class AsyncRequest {
                 return bulkActionId;
             case NODE:
                 return nodeId;
+            case AP:
+                return accessPointId;
             default:
                 throw new NotImplementedException("Neimplmentovaný typ: " + type);
         }
@@ -80,6 +86,10 @@ public class AsyncRequest {
 
     public Integer getUserId() {
         return userId;
+    }
+
+    public Integer getAccessPointId() {
+        return accessPointId;
     }
 
     @Override

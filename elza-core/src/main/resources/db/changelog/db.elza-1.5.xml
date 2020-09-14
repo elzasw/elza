@@ -855,4 +855,16 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20200914122800" author="fantis">
+        <dropTable tableName="ap_access_point_queue_item"/>
+        <addColumn tableName="arr_async_request">
+            <column name="access_point_id" type="int">
+                <constraints foreignKeyName="fk_arr_async_request_access_point"
+                             referencedTableName="ap_access_point"
+                             referencedColumnNames="access_point_id"/>
+            </column>
+        </addColumn>
+        <dropNotNullConstraint tableName="arr_async_request" columnName="fund_version_id" columnDataType="int"/>
+    </changeSet>
+
 </databaseChangeLog>

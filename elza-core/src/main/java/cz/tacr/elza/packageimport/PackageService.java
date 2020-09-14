@@ -587,7 +587,8 @@ public class PackageService {
             StructTypeExtensionUpdater steu = new StructTypeExtensionUpdater(this.structureExtensionRepository,
                     this.structureExtensionDefinitionRepository,
                     this.componentRepository,
-                    this.structureService);
+                    this.structureService,
+                    this);
             steu.run(pkgCtx);
             processPackageActions(ruc);
         }
@@ -751,6 +752,14 @@ public class PackageService {
                 }
 
                 convertRulStructureDefinition(puc.getPackage(), structureDefinition, item, rulStructureTypes);
+
+                if (structureDefinition.getCompatibilityRulPackage() != null) {
+                    if (puc.getOldPackageVersion() == null ||
+                            structureDefinition.getCompatibilityRulPackage() > puc.getOldPackageVersion()) {
+                        enqueueAccessPoints(item);
+                    }
+                }
+
                 rulStructureDefinitionsNew.add(item);
             }
         }
@@ -1421,6 +1430,14 @@ public class PackageService {
                 }
 
                 convertRulExtensionRule(ruc.getRulPackage(), extensionRule, item, rulArrangementExtensions);
+
+                if (extensionRule.getCompatibilityRulPackage() != null) {
+                    if (ruc.getPackageUpdateContext().getOldPackageVersion() == null ||
+                            extensionRule.getCompatibilityRulPackage() > ruc.getPackageUpdateContext().getOldPackageVersion()) {
+                        enqueueAccessPoints(item);
+                    }
+                }
+
                 rulExtensionRulesNew.add(item);
             }
         }
@@ -1443,8 +1460,6 @@ public class PackageService {
         } catch (IOException e) {
             throw new SystemException(e);
         }
-
-        enqueueAccessPoints();
 
         return rulExtensionRulesNew;
     }
@@ -2949,19 +2964,12 @@ public class PackageService {
         }
     }
 
-    private void enqueueAccessPoints() {
-        List<ApAccessPoint> accessPointList = accessPointRepository.findActiveAccessPoints();
-        if (CollectionUtils.isNotEmpty(accessPointList)) {
-            accessPointGeneratorService.generateAsync(accessPointList);
-        }
-    }
-
     private void enqueueAccessPoints(RulStructureDefinition rulStructureDefinition) {
         String apTypeCode = null;
         enqueueAccessPoints(apTypeCode);
     }
 
-    private void enqueueAccessPoints(RulStructureExtensionDefinition rulStructureExtensionDefinition) {
+    public void enqueueAccessPoints(RulStructureExtensionDefinition rulStructureExtensionDefinition) {
         String apTypeCode = null;
         String structureExtensionCode = rulStructureExtensionDefinition.getStructuredTypeExtension().getCode();
         String[] strArray = StringUtils.split(structureExtensionCode, "/");
@@ -2988,18 +2996,22 @@ public class PackageService {
 
     private void enqueueAccessPoints(final String apTypeCode) {
         StaticDataProvider sdp = staticDataService.getData();
-        ApType apType = sdp.getApTypeByCode(apTypeCode);
+        ApType apType = null;
+        if (StringUtils.isNotEmpty(apTypeCode)) {
+            apType = sdp.getApTypeByCode(apTypeCode);
+        }
+
         if(apType == null) {
             List<ApAccessPoint> accessPointList = accessPointRepository.findActiveAccessPoints();
             if (CollectionUtils.isNotEmpty(accessPointList)) {
-                accessPointGeneratorService.generateAsync(accessPointList);
+                asyncRequestService.enqueue(accessPointList);
             }
         } else {
             List<ApType> apTypeList = findTreeApTypes(apType.getApTypeId());
             if (CollectionUtils.isNotEmpty(apTypeList)) {
                 List<ApAccessPoint> accessPointList = accessPointRepository.findActiveAccessPointsByApTypes(apTypeList);
                 if (CollectionUtils.isNotEmpty(accessPointList)) {
-                    accessPointGeneratorService.generateAsync(accessPointList);
+                    asyncRequestService.enqueue(accessPointList);
                 }
             }
         }

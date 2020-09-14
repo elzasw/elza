@@ -19,7 +19,7 @@ public class ArrAsyncRequest {
     private Long asyncRequestId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="type", length = StringLength.LENGTH_ENUM)
+    @Column(name="type", length = StringLength.LENGTH_10)
     private AsyncTypeEnum type;
 
     @Basic
@@ -27,7 +27,7 @@ public class ArrAsyncRequest {
     private int priority;
 
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ArrFundVersion.class)
-    @JoinColumn(name="fund_version_id", nullable = false)
+    @JoinColumn(name="fund_version_id", nullable = true)
     private ArrFundVersion fundVersion;
 
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ArrNode.class)
@@ -45,6 +45,10 @@ public class ArrAsyncRequest {
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ArrStructuredObject.class)
     @JoinColumn(name="structured_object_id", nullable = true)
     private ArrStructuredObject structuredObject;
+
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
+    @JoinColumn(name = "access_point_id", nullable = true)
+    private ApAccessPoint accessPoint;
 
     @Column(name="user_id")
     private Integer userId;
@@ -80,6 +84,13 @@ public class ArrAsyncRequest {
         return new ArrAsyncRequest(fundVersion, output, priority, userId);
     }
 
+    public static ArrAsyncRequest create(final ApAccessPoint accessPoint,
+                                       final Integer priority) {
+        Validate.notNull(accessPoint);
+        Validate.notNull(priority);
+        return new ArrAsyncRequest(accessPoint, priority);
+    }
+
     protected ArrAsyncRequest(final ArrFundVersion fundVersion,
                               final ArrBulkActionRun bulkAction,
                               final Integer priority) {
@@ -107,6 +118,13 @@ public class ArrAsyncRequest {
         this.fundVersion = fundVersion;
         this.output = output;
         this.userId = userId;
+    }
+
+    protected ArrAsyncRequest(final ApAccessPoint accessPoint,
+                              final Integer priority) {
+        this.type = AsyncTypeEnum.AP;
+        this.priority = priority;
+        this.accessPoint = accessPoint;
     }
 
     public Long getAsyncRequestId() {
@@ -180,4 +198,12 @@ public class ArrAsyncRequest {
 	public void setUserId(Integer userId) {
 		this.userId = userId;
 	}
+
+    public ApAccessPoint getAccessPoint() {
+        return accessPoint;
+    }
+
+    public void setAccessPoint(ApAccessPoint accessPoint) {
+        this.accessPoint = accessPoint;
+    }
 }

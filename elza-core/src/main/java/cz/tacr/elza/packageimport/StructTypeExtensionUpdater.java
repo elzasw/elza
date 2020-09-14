@@ -45,6 +45,8 @@ public class StructTypeExtensionUpdater
 
 	private StructObjService structureService;
 
+	private PackageService packageService;
+
 	/**
 	 * Updated and new structured extensions
 	 */
@@ -58,13 +60,15 @@ public class StructTypeExtensionUpdater
     private List<RulStructuredTypeExtension> rulStructureExtensionsDelete;
 
     public StructTypeExtensionUpdater(StructuredTypeExtensionRepository structureExtensionRepository,
-            StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
-            ComponentRepository componentRepository,
-            StructObjService structureService) {
+									  StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
+									  ComponentRepository componentRepository,
+									  StructObjService structureService,
+									  PackageService packageService) {
         this.structureExtensionRepository = structureExtensionRepository;
         this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.componentRepository = componentRepository;
         this.structureService = structureService;
+        this.packageService = packageService;
     }
 
     private String getZipDir(final RulStructureExtensionDefinition extensionDefinition) {
@@ -112,6 +116,14 @@ public class StructTypeExtensionUpdater
 				}
 
                 convertDef(puc.getPackage(), structureExtensionDefinition, item);
+
+				if (structureExtensionDefinition.getCompatibilityRulPackage() != null) {
+					if (puc.getOldPackageVersion() == null ||
+							structureExtensionDefinition.getCompatibilityRulPackage() > puc.getOldPackageVersion()) {
+						packageService.enqueueAccessPoints(item);
+					}
+				}
+
 				rulStructureExtensionDefinitionsNew.add(item);
 			}
 		}

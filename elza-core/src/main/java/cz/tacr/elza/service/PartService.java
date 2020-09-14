@@ -17,7 +17,6 @@ import cz.tacr.elza.repository.ApKeyValueRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
-import cz.tacr.elza.service.event.AccessPointQueueEvent;
 import cz.tacr.elza.service.vo.DataRef;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +24,6 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -48,7 +46,7 @@ public class PartService {
     private final ApIndexRepository indexRepository;
     private final DataRecordRefRepository dataRecordRefRepository;
     private final ApAccessPointRepository accessPointRepository;
-    private ApplicationEventPublisher eventPublisher;
+    private final AsyncRequestService asyncRequestService;
 
     private static final Logger logger = LoggerFactory.getLogger(PartService.class);
 
@@ -64,7 +62,7 @@ public class PartService {
                        final ApIndexRepository indexRepository,
                        final DataRecordRefRepository dataRecordRefRepository,
                        final ApAccessPointRepository apAccessPointRepository,
-                       final ApplicationEventPublisher eventPublisher) {
+                       final AsyncRequestService asyncRequestService) {
         this.partRepository = partRepository;
         this.partTypeRepository = partTypeRepository;
         this.itemRepository = itemRepository;
@@ -74,7 +72,7 @@ public class PartService {
         this.indexRepository = indexRepository;
         this.dataRecordRefRepository = dataRecordRefRepository;
         this.accessPointRepository = apAccessPointRepository;
-        this.eventPublisher = eventPublisher;
+        this.asyncRequestService = asyncRequestService;
     }
 
     public ApPart createPart(final RulPartType partType,
@@ -403,8 +401,7 @@ public class PartService {
         if(CollectionUtils.isNotEmpty(dataIdsList)) {
             List<ApAccessPoint> accessPoints = accessPointRepository.findAccessPointsByRefDataId(dataIdsList);
             if (CollectionUtils.isNotEmpty(accessPoints)) {
-                AccessPointQueueEvent accessPointQueueEvent = new AccessPointQueueEvent(accessPoints);
-                eventPublisher.publishEvent(accessPointQueueEvent);
+                asyncRequestService.enqueue(accessPoints);
             }
         }
     }

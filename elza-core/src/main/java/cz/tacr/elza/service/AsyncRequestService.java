@@ -8,10 +8,12 @@ import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.asynchactions.NodePriorityComparator;
 import cz.tacr.elza.asynchactions.ThreadLoadInfo;
 import cz.tacr.elza.asynchactions.TimeRequestInfo;
+import cz.tacr.elza.bulkaction.AsyncAccessPointWorker;
 import cz.tacr.elza.bulkaction.AsyncBulkActionWorker;
 import cz.tacr.elza.controller.vo.ArrAsyncRequestVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.FundStatisticsVO;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrAsyncRequest;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -94,6 +96,11 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Max(100)
     private int outputMaxPerFund;
 
+    @Value("${elza.asyncActions.accessPoint.maxPerFund:1}")
+    @Min(1)
+    @Max(100)
+    private int accessPointMaxPerFund;
+
     @Autowired
     private ApplicationContext appCtx;
 
@@ -125,6 +132,10 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private ThreadPoolTaskExecutor outputTaskExecutor;
 
     @Autowired
+    @Qualifier("threadPoolTaskExecutorOP")
+    private ThreadPoolTaskExecutor accessPointTaskExecutor;
+
+    @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager txManager;
 
@@ -136,6 +147,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         register(new AsyncNodeExecutor(nodeTaskExecutor, txManager, asyncRequestRepository, appCtx, nodeMaxPerFund));
         register(new AsyncBulkExecutor(bulkActionTaskExecutor, txManager, asyncRequestRepository, appCtx, bulkMaxPerFund, bulkActionRepository));
         register(new AsyncOutputExecutor(outputTaskExecutor, txManager, asyncRequestRepository, appCtx, outputMaxPerFund, outputRepository));
+        register(new AsyncAccessPointExecutor(accessPointTaskExecutor, txManager, asyncRequestRepository, appCtx, accessPointMaxPerFund));
     }
 
     private void register(final AsyncExecutor asyncExecutor) {
@@ -187,6 +199,23 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             requests.add(new AsyncRequest(request));
         }
         getExecutor(AsyncTypeEnum.NODE).enqueue(requests);
+    }
+
+    @Transactional
+    public void enqueue(final List<ApAccessPoint> accessPoints) {
+        enqueue(accessPoints, null);
+    }
+
+    @Transactional
+    public void enqueue(final List<ApAccessPoint> accessPoints,
+                        final Integer priority) {
+        List<AsyncRequest> requests = new ArrayList<>(accessPoints.size());
+        for (ApAccessPoint accessPoint : accessPoints) {
+            ArrAsyncRequest request = ArrAsyncRequest.create(accessPoint, priority == null ? 1 : priority);
+            asyncRequestRepository.save(request);
+            requests.add(new AsyncRequest(request));
+        }
+        getExecutor(AsyncTypeEnum.AP).enqueue(requests);
     }
 
     private AsyncExecutor getExecutor(final AsyncTypeEnum type) {
@@ -1010,5 +1039,40 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             return AsyncOutputGeneratorWorker.class;
         }
 
+    }
+
+    private static class AsyncAccessPointExecutor extends AsyncExecutor {
+
+        AsyncAccessPointExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund) {
+            super(AsyncTypeEnum.AP, executor, new LinkedList<>(), txManager, asyncRequestRepository, appCtx, maxPerFund);
+        }
+
+        @Override
+        protected Class<? extends IAsyncWorker> workerClass() {
+            return AsyncAccessPointWorker.class;
+        }
+
+        @Override
+        protected boolean skip(final AsyncRequest request) {
+            Map<Integer, AsyncRequest> queuedNodeIds = queue.stream()
+                    .collect(Collectors.toMap(AsyncRequest::getAccessPointId, Function.identity()));
+            AsyncRequest existAsyncRequest = queuedNodeIds.get(request.getAccessPointId());
+            if (existAsyncRequest == null) {
+                // neexistuje ve frontě, chceme přidat
+                return false;
+            } else {
+                Integer priorityExists = existAsyncRequest.getPriority();
+                Integer priorityAdding = request.getPriority();
+                if (priorityAdding > priorityExists) {
+                    // nově přidáváná položka má lepší prioritu; mažeme aktuální z fronty a vložíme novou
+                    queue.remove(existAsyncRequest);
+                    deleteRequest(existAsyncRequest);
+                    return false;
+                } else {
+                    // nově přidáváná položka má horší prioritu, než je ve frontě; proto přeskakujeme
+                    return true;
+                }
+            }
+        }
     }
 }

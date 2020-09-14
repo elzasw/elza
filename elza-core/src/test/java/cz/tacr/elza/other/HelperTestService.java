@@ -150,8 +150,6 @@ public class HelperTestService {
     private ApIndexRepository indexRepository;
     @Autowired
     private ApKeyValueRepository keyValueRepository;
-    @Autowired
-    private ApAccessPointQueueItemRepository accessPointQueueItemRepository;
 
     @Autowired
     private PackageService packageService;
@@ -226,7 +224,6 @@ public class HelperTestService {
         apItemRepository.deleteAll();
         partRepository.deleteAll();
         keyValueRepository.deleteAll();
-        accessPointQueueItemRepository.deleteAll();
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();
