@@ -61,8 +61,6 @@ public class StartupService implements SmartLifecycle {
 
     private final AccessPointService accessPointService;
 
-    private final AccessPointQueueProcessor accessPointQueueProcessor;
-
     private final IndexWorkProcessor indexWorkProcessor;
 
     private final ApplicationContext applicationContext;
@@ -82,7 +80,6 @@ public class StartupService implements SmartLifecycle {
                           final BulkActionConfigManager bulkActionConfigManager,
                           final EntityManager em,
                           final AccessPointService accessPointService,
-                          final AccessPointQueueProcessor accessPointQueueProcessor,
                           final NodeConformityErrorRepository nodeConformityErrorRepository,
                           final NodeConformityMissingRepository nodeConformityMissingRepository,
                           final NodeConformityRepository nodeConformityRepository,
@@ -100,7 +97,6 @@ public class StartupService implements SmartLifecycle {
         this.bulkActionConfigManager = bulkActionConfigManager;
         this.em = em;
         this.accessPointService = accessPointService;
-        this.accessPointQueueProcessor = accessPointQueueProcessor;
         this.nodeConformityErrorRepository = nodeConformityErrorRepository;
         this.nodeConformityMissingRepository = nodeConformityMissingRepository;
         this.nodeConformityRepository = nodeConformityRepository;
@@ -185,7 +181,6 @@ public class StartupService implements SmartLifecycle {
         });
 
         runQueuedRequests();
-        runQueuedAccessPoints();
     }
 
     private void clearOrphanedNodes() {
@@ -206,13 +201,6 @@ public class StartupService implements SmartLifecycle {
         nodeCacheService.deleteNodes(unusedNodes);
         nodeRepository.deleteByNodeIdIn(unusedNodes);
         logger.info("Orpahed nodes deleted.");
-    }
-
-    /**
-     * Provede spuštění AP pro revalidaci.
-     */
-    private void runQueuedAccessPoints() {
-        accessPointQueueProcessor.startValidating();
     }
 
     /**
