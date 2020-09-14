@@ -3021,7 +3021,7 @@ public class PackageService {
             if (CollectionUtils.isNotEmpty(apTypeList)) {
                 List<ApAccessPoint> accessPointList = accessPointRepository.findActiveAccessPointsByApTypes(apTypeList);
                 if (CollectionUtils.isNotEmpty(accessPointList)) {
-                    asyncRequestService.enqueue(accessPointList);
+                    accessPoints.addAll(accessPointList);
                 }
             }
         }
