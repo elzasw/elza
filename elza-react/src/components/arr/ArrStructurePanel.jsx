@@ -393,7 +393,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                 </div>,
             );
         } else {
-            if (node.assignable) {
+            if (node && node.assignable) {
                 menuParts.push(
                     <div
                         key="changeToClosed"
