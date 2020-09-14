@@ -13,13 +13,13 @@ import cz.tacr.elza.bulkaction.AsyncBulkActionWorker;
 import cz.tacr.elza.controller.vo.ArrAsyncRequestVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.FundStatisticsVO;
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrAsyncRequest;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.AsyncTypeEnum;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ArrAsyncRequestRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -121,6 +121,9 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private IEventNotificationService eventNotificationService;
 
     @Autowired
+    private ApAccessPointRepository accessPointRepository;
+
+    @Autowired
     @Qualifier(value = "threadPoolTaskExecutorAR")
     private ThreadPoolTaskExecutor nodeTaskExecutor;
 
@@ -203,17 +206,17 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     }
 
     @Transactional
-    public void enqueue(final Collection<ApAccessPoint> accessPoints) {
-        enqueue(accessPoints, null);
+    public void enqueue(final Collection<Integer> accessPointIds) {
+        enqueue(accessPointIds, null);
     }
 
     @Transactional
-    public void enqueue(final Collection<ApAccessPoint> accessPoints,
+    public void enqueue(final Collection<Integer> accessPointIds,
                         final Integer priority) {
-        if (CollectionUtils.isNotEmpty(accessPoints)) {
-            List<AsyncRequest> requests = new ArrayList<>(accessPoints.size());
-            for (ApAccessPoint accessPoint : accessPoints) {
-                ArrAsyncRequest request = ArrAsyncRequest.create(accessPoint, priority == null ? 1 : priority);
+        if (CollectionUtils.isNotEmpty(accessPointIds)) {
+            List<AsyncRequest> requests = new ArrayList<>(accessPointIds.size());
+            for (Integer accessPointId : accessPointIds) {
+                ArrAsyncRequest request = ArrAsyncRequest.create(accessPointRepository.getOne(accessPointId), priority == null ? 1 : priority);
                 asyncRequestRepository.save(request);
                 requests.add(new AsyncRequest(request));
             }
