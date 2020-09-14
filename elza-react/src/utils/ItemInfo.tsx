@@ -87,7 +87,7 @@ export function compareItems(
     const bInfo = descItemTypesMap[b.typeId];
 
     if (aInfo && bInfo && part) {
-        let itemTypes = apViewSettings.itemTypes;
+        let itemTypes = apViewSettings.itemTypes || [];
         let aIt = findViewItemType(itemTypes, part, aInfo.code);
         let bIt = findViewItemType(itemTypes, part, bInfo.code);
         if (aIt && bIt) {
