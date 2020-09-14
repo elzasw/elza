@@ -292,11 +292,15 @@ public class DmsService {
 
         fileRepository.delete(dmsFile);
 
+        deleteFileFS(dmsFile);
+        publishFileChange(dmsFile);
+    }
+
+    public void deleteFileFS(final DmsFile dmsFile) {
         File outputFile = getFilePath(dmsFile).toFile();
         if (outputFile.exists() && !outputFile.delete()) {
             throw new SystemException("Nelze odstranit existující soubor");
         }
-        publishFileChange(dmsFile);
     }
 
     /**

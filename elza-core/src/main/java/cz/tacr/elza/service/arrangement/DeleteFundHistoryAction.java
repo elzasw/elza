@@ -1,23 +1,5 @@
 package cz.tacr.elza.service.arrangement;
 
-import static cz.tacr.elza.repository.ExceptionThrow.fund;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -32,6 +14,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
@@ -52,6 +35,7 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundStructureExtensionRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LockedValueRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
@@ -71,11 +55,30 @@ import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.repository.vo.ItemChange;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.AsyncRequestService;
+import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static cz.tacr.elza.repository.ExceptionThrow.fund;
 
 /**
  * Action to delete fund history
@@ -105,6 +108,8 @@ public class DeleteFundHistoryAction {
     private BulkActionNodeRepository faBulkActionNodeRepository;
     @Autowired
     private AsyncRequestService asyncRequestService;
+    @Autowired
+    private DmsService dmsService;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -183,6 +188,9 @@ public class DeleteFundHistoryAction {
     @Autowired
     private VisiblePolicyRepository visiblePolicyRepository;
 
+    @Autowired
+    private ItemSettingsRepository itemSettingsRepository;
+
 
     /**
      * Prepare fund history deletion
@@ -252,8 +260,20 @@ public class DeleteFundHistoryAction {
         // výstupy
         nodeOutputRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
         outputTemplateRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
+        List<ArrOutputFile> outputFiles = outputFileRepository.findByFundAndDeleteChangeIsNotNull(fund);
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                for (ArrOutputFile outputFile : outputFiles) {
+                    logger.debug("Mažu soubor na disku: {}", outputFile.getFile());
+                    dmsService.deleteFileFS(outputFile);
+                }
+            }
+        });
         outputFileRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
+
         outputResultRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
+        itemSettingsRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
         outputRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
 
         // arr_node se také smazají, pokud se na ně neodkazuje žádný level a musí se smazat i návazné entity jako výstupy, a podobně

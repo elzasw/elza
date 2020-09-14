@@ -28,9 +28,15 @@ public interface OutputFileRepository extends ElzaJpaRepository<ArrOutputFile, I
 	List<ArrOutputFile> findByOutputResultOutput(ArrOutput output);
 
     @Modifying
-    @Query("DELETE FROM arr_output_file WHERE outputResult IN (SELECT ot FROM arr_output_result ot "
-            +
+    @Query("DELETE FROM arr_output_file WHERE outputResult IN (SELECT ot FROM arr_output_result ot " +
             "JOIN ot.output o " +
             "WHERE o.deleteChange IS NOT NULL AND o.fund = :fund)")
     void deleteByFundAndDeleteChangeIsNotNull(@Param("fund") ArrFund fund);
+
+    @Modifying
+    @Query("SELECT aof FROM arr_output_file aof " +
+            "JOIN aof.outputResult ot " +
+            "JOIN ot.output o " +
+            "WHERE o.deleteChange IS NOT NULL AND o.fund = :fund")
+    List<ArrOutputFile> findByFundAndDeleteChangeIsNotNull(@Param("fund") ArrFund fund);
 }
