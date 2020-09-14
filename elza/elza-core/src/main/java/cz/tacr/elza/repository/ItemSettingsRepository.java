@@ -8,6 +8,9 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulItemType;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 
 /**
@@ -24,4 +27,10 @@ public interface ItemSettingsRepository extends JpaRepository<ArrItemSettings, I
     // void deleteByOutput(ArrOutput output);
 
     void deleteByOutputFund(ArrFund fund);
+
+    @Modifying
+    @Query("DELETE FROM arr_item_settings WHERE itemSettingsId IN (SELECT s.itemSettingsId FROM arr_item_settings s " +
+            "JOIN s.output o " +
+            "WHERE o.deleteChange IS NOT NULL AND o.fund = :fund)")
+    void deleteByFundAndDeleteChangeIsNotNull(@Param("fund") ArrFund fund);
 }
