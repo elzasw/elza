@@ -16,6 +16,7 @@ import {createException} from 'components/ExceptionUtils.jsx';
 import i18n from './i18n';
 
 import $ from 'jquery';
+import {logout} from "actions/global/login";
 
 const serverContextPath = window.serverContextPath;
 
@@ -100,6 +101,9 @@ function resolveException(status, statusText, data) {
     if (result.createToaster) {
         console.log('___', _store);
         _store.dispatch(createException(result));
+    }
+    if(result.unauthorized){
+        _store.dispatch(logout());
     }
 
     return result;

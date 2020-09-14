@@ -4,6 +4,7 @@
 
 import * as types from 'actions/constants/ActionTypes';
 import {WebApi} from 'actions/index.jsx';
+import {Api} from "../../api";
 
 import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
 
@@ -73,12 +74,12 @@ export function fundsFetchIfNeeded(size = DEFAULT_FUND_LIST_MAX_SIZE) {
 
         if (fundRegion.currentDataKey !== dataKey) {
             dispatch(fundsRequest(dataKey));
-            WebApi.findFunds2(fundRegion.filterText, filter.institutionIdentifier, size, filter.from).then(json => {
+            Api.funds.findFunds(fundRegion.filterText, filter.institutionIdentifier, size, filter.from).then(response => {
                 const newState = getState();
                 const newFundRegion = newState.fundRegion;
                 const newDataKey = _fundRegionDataKey(newFundRegion);
                 if (newDataKey === dataKey) {
-                    dispatch(fundsReceive(json));
+                    dispatch(fundsReceive(response.data));
                 }
             });
         }

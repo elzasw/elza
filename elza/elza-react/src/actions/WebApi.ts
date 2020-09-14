@@ -33,6 +33,7 @@ import {SyncsFilterVO} from '../api/SyncsFilterVO';
 import {ExtSyncsQueueResultListVO} from '../api/ExtSyncsQueueResultListVO';
 import {ApViewSettings} from '../api/ApViewSettings';
 import {UsrUserVO} from '../api/UsrUserVO';
+
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 
@@ -1218,14 +1219,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/getRuleSets');
     }
 
-    createFund2(createFund: CreateFund) {
-        return AjaxUtils.ajaxPost(WebApiCls.fundV1, null, createFund);
-    }
-
-    updateFund2(id, data: UpdateFund) {
-        return AjaxUtils.ajaxPut(WebApiCls.fundV1 + '/' + id, null, data);
-    }
-
     approveVersion(versionId) {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/approveVersion', {versionId});
     }
@@ -1521,10 +1514,6 @@ export class WebApiCls {
             max,
             from,
         }));
-    }
-
-    findFunds2(fulltext = null, institutionIdentifier = null, max = 200, from = 0): Promise<FindFundsResult> {
-        return AjaxUtils.ajaxGet(WebApiCls.fundV1, {fulltext, institutionIdentifier, max, from});
     }
 
     findUser(
