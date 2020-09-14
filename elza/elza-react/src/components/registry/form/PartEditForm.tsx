@@ -628,7 +628,7 @@ const PartEditForm = ({
                     formData={formData}
                     apId={apId}
                     showImportDialog={showImportDialog}
-                    itemTypeSettings={apViewSettingRule!.itemTypes}
+                    itemTypeSettings={apViewSettingRule?.itemTypes || []}
                     descItemTypesMap={descItemTypesMap}
                 />
             </Row>
@@ -721,6 +721,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>, pro
                     initialValues={initialValues}
                     itemTypeAttributeMap={itemTypeAttributeMap}
                     typeId={item.typeId}
+                    apTypeId={props.apTypeId}
                     scopeId={props.scopeId}
                     partTypeId={partTypeId}
                     onSubmit={form => {

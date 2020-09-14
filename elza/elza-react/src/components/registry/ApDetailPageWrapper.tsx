@@ -242,7 +242,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
                                       }
                                   }
                                 : undefined;
-
+                            const apViewSettingRule = props.apViewSettings.data!.rules[props.detail.data!.ruleSetId];
                             return (
                                 <DetailMultiSection
                                     key={partType.code}
@@ -263,7 +263,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
                                     onDeleteParts={handleDeletePart}
                                     onAddRelated={onAddRelated}
                                     partValidationErrors={validationResult && validationResult.partErrors}
-                                    itemTypeSettings={props.apViewSettings.data!.rules[props.detail.data!.ruleSetId].itemTypes}
+                                    itemTypeSettings={apViewSettingRule?.itemTypes || []}
                                     globalEntity={props.globalEntity}
                                 />
                             );
