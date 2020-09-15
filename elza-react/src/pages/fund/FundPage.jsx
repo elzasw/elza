@@ -420,6 +420,18 @@ class FundPage extends AbstractReactComponent {
 
     renderListItem(props) {
         const {item} = props;
+        // popis archivního souboru
+        var fields=[];
+        if(item.internalCode) {
+            fields.push(item.internalCode);
+        }
+        if(item.fundNumber) {
+            fields.push(item.fundNumber);
+        }
+        if(item.mark) {
+            fields.push(item.mark);
+        }
+        var desc = fields.join(', ');
         return [
             <div className="item-row" key={item.id}>
                 <div className="name">{item.name}</div>
@@ -428,7 +440,7 @@ class FundPage extends AbstractReactComponent {
                 </Button>
             </div>,
             <div className="item-row desc" key={item.id + '-x'}>
-                <div>{item.internalCode}</div>
+                <div>{desc}</div>
                 <div>{item.id}</div>
             </div>,
         ];
