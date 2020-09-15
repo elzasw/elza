@@ -97,11 +97,6 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Max(100)
     private int outputMaxPerFund;
 
-    @Value("${elza.asyncActions.accessPoint.maxPerFund:1}")
-    @Min(1)
-    @Max(100)
-    private int accessPointMaxPerFund;
-
     @Autowired
     private ApplicationContext appCtx;
 
@@ -136,7 +131,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private ThreadPoolTaskExecutor outputTaskExecutor;
 
     @Autowired
-    @Qualifier("threadPoolTaskExecutorOP")
+    @Qualifier("threadPoolTaskExecutorAP")
     private ThreadPoolTaskExecutor accessPointTaskExecutor;
 
     @Autowired
@@ -151,7 +146,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         register(new AsyncNodeExecutor(nodeTaskExecutor, txManager, asyncRequestRepository, appCtx, nodeMaxPerFund));
         register(new AsyncBulkExecutor(bulkActionTaskExecutor, txManager, asyncRequestRepository, appCtx, bulkMaxPerFund, bulkActionRepository));
         register(new AsyncOutputExecutor(outputTaskExecutor, txManager, asyncRequestRepository, appCtx, outputMaxPerFund, outputRepository));
-        register(new AsyncAccessPointExecutor(accessPointTaskExecutor, txManager, asyncRequestRepository, appCtx, accessPointMaxPerFund));
+        register(new AsyncAccessPointExecutor(accessPointTaskExecutor, txManager, asyncRequestRepository, appCtx));
     }
 
     private void register(final AsyncExecutor asyncExecutor) {
@@ -1051,8 +1046,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     private static class AsyncAccessPointExecutor extends AsyncExecutor {
 
-        AsyncAccessPointExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund) {
-            super(AsyncTypeEnum.AP, executor, new LinkedList<>(), txManager, asyncRequestRepository, appCtx, maxPerFund);
+        AsyncAccessPointExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx) {
+            super(AsyncTypeEnum.AP, executor, new LinkedList<>(), txManager, asyncRequestRepository, appCtx, Integer.MAX_VALUE);
         }
 
         @Override

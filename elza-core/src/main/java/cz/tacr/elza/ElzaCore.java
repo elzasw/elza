@@ -70,6 +70,11 @@ public class ElzaCore {
     @Max(50)
     private int outputThreadCount;
 
+    @Value("${elza.asyncActions.ap.threadCount:5}")
+    @Min(1)
+    @Max(50)
+    private int apThreadCount;
+
     public static void main(final String[] args) {
         configure();
         SpringApplication.run(ElzaCore.class, args);
@@ -133,6 +138,15 @@ public class ElzaCore {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(outputThreadCount);
         threadPoolTaskExecutor.setMaxPoolSize(10);
+        threadPoolTaskExecutor.afterPropertiesSet();
+        return threadPoolTaskExecutor;
+    }
+
+    @Bean(name = "threadPoolTaskExecutorAP")
+    public ThreadPoolTaskExecutor threadPoolTaskExecutorAp() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(apThreadCount);
+        threadPoolTaskExecutor.setMaxPoolSize(48);
         threadPoolTaskExecutor.afterPropertiesSet();
         return threadPoolTaskExecutor;
     }

@@ -52,6 +52,8 @@ public class PartService {
 
     private static final String DUPLICITA = " duplicitní key value ";
 
+    private static final KeyValueLock keyValueLock = new KeyValueLock();
+
     @Autowired
     public PartService(final ApPartRepository partRepository,
                        final PartTypeRepository partTypeRepository,
@@ -300,36 +302,43 @@ public class PartService {
             }
             value = value.toLowerCase();
 
-            if (apPart.getKeyValue() != null) {
-                ApKeyValue apKeyValue = apPart.getKeyValue();
+            try {
+                if (apPart.getKeyValue() != null) {
+                    ApKeyValue apKeyValue = apPart.getKeyValue();
 
-                if ((!apKeyValue.getKeyType().equals(keyType) ||
-                        !apKeyValue.getValue().equals(value) ||
-                        !apKeyValue.getScope().getScopeId().equals(scope.getScopeId()))
-                        && !checkKeyValueUnique(keyType, value, scope, async)) {
-                    value = value + DUPLICITA + accessPointId;
-                    success = false;
+                    if ((!apKeyValue.getKeyType().equals(keyType) ||
+                            !apKeyValue.getValue().equals(value) ||
+                            !apKeyValue.getScope().getScopeId().equals(scope.getScopeId()))
+                            && (!checkKeyValueUnique(keyType, value, scope, async) ||
+                            keyValueLock.addIfExists(keyType, value, scope.getScopeId()))) {
+                        value = value + DUPLICITA + accessPointId;
+                        success = false;
+                    }
+
+                    apKeyValue.setKeyType(keyType);
+                    apKeyValue.setValue(value);
+                    apKeyValue.setScope(scope);
+                    keyValueRepository.save(apKeyValue);
+                } else {
+                    if (!checkKeyValueUnique(keyType, value, scope, async) ||
+                            keyValueLock.addIfExists(keyType, value, scope.getScopeId())) {
+                        value = value + DUPLICITA + accessPointId;
+                        success = false;
+                    }
+
+                    ApKeyValue apKeyValue = new ApKeyValue();
+                    apKeyValue.setKeyType(keyType);
+                    apKeyValue.setValue(value);
+                    apKeyValue.setScope(scope);
+                    keyValueRepository.save(apKeyValue);
+
+                    apPart.setKeyValue(apKeyValue);
+                    partRepository.save(apPart);
                 }
-
-                apKeyValue.setKeyType(keyType);
-                apKeyValue.setValue(value);
-                apKeyValue.setScope(scope);
-                keyValueRepository.save(apKeyValue);
-            } else {
-                if (!checkKeyValueUnique(keyType, value, scope, async)) {
-                    value = value + DUPLICITA + accessPointId;
-                    success = false;
-                }
-
-                ApKeyValue apKeyValue = new ApKeyValue();
-                apKeyValue.setKeyType(keyType);
-                apKeyValue.setValue(value);
-                apKeyValue.setScope(scope);
-                keyValueRepository.save(apKeyValue);
-
-                apPart.setKeyValue(apKeyValue);
-                partRepository.save(apPart);
+            } finally {
+                keyValueLock.delete(keyType, value, scope.getScopeId());
             }
+
 
         } else {
             ApKeyValue apKeyValue = apPart.getKeyValue();
@@ -420,5 +429,43 @@ public class PartService {
         }
 
         return apKeyValue == null;
+    }
+
+    /**
+     * Třída pro kontrolu keyValue v případě souběhu
+     */
+    private static class KeyValueLock {
+
+        private Set<String> uniqueIds;
+        private final Object lock = new Object();
+
+        public KeyValueLock() {
+            this.uniqueIds = new HashSet<>();
+        }
+
+        /**
+         * Přidání keyValue do setu
+         * @param keyType typ klíče
+         * @param value hodnota klíče
+         * @param scopeId identifikátor scope
+         * @return true pokud keyValue v setu ještě neexistovala
+         */
+        public boolean addIfExists(String keyType, String value, Integer scopeId) {
+           synchronized (lock) {
+               return uniqueIds.add(keyType + value + scopeId);
+           }
+        }
+
+        /**
+         * Smazání keyValue z setu
+         * @param keyType typ klíče
+         * @param value hodnota klíče
+         * @param scopeId identifikátor scope
+         */
+        public void delete(String keyType, String value, Integer scopeId) {
+            synchronized (lock) {
+                uniqueIds.remove(keyType + value + scopeId);
+            }
+        }
     }
 }
