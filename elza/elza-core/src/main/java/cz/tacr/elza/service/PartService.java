@@ -422,10 +422,10 @@ public class PartService {
         ApKeyValue apKeyValue = keyValueRepository.findByKeyTypeAndValueAndScope(keyType, value, scope);
 
         if (!async && apKeyValue != null) {
-            throw new BusinessException("ApKeyValue s tímto typem a hodnotou a scope už existuje.", RegistryCode.NOT_UNIQUE_FULL_NAME)
+            throw new BusinessException("ApKeyValue s tímto typem a hodnotou a scopeId už existuje.", RegistryCode.NOT_UNIQUE_FULL_NAME)
                     .set("keyType", keyType)
                     .set("value", value)
-                    .set("scope", scope);
+                    .set("scopeId", scope.getScopeId());
         }
 
         return apKeyValue == null;
