@@ -791,8 +791,8 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
 
             TreeNodeVO client = new TreeNodeVO(treeNode.getId(), treeNode.getDepth(), null, 
-                                               treeNode.getParent() != null, !treeNode.getChilds().isEmpty(), 
-                                               treeNode.getReferenceMark(), nodeMap.get(treeNode.getId()).getVersion());
+                    !treeNode.getChilds().isEmpty(),
+                    treeNode.getReferenceMark(), nodeMap.get(treeNode.getId()).getVersion());
             if (subtreeRoot != null) {
                 String[] referenceMark = createClientNodeReferenceMark(treeNode, levelTypeId, viewTitles, valuesMap,
                         parentReferenceMark);
@@ -879,7 +879,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     private void fillValues(final ArrFundVersion version, final TitleItemsByType descItemCodeToValueMap,
                             final ViewTitles viewTitles, final TreeNodeVO treeNodeClient) {
         String defaultTitle;
-        if (treeNodeClient.isHasParent()) {
+        if (treeNodeClient.getDepth() > 1) {
             defaultTitle = createDefaultTitle(viewTitles, treeNodeClient.getId());
         } else {
             defaultTitle = createRootTitle(version.getFund(), viewTitles, treeNodeClient.getId());

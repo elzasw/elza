@@ -39,11 +39,6 @@ public class TreeNodeVO {
     private boolean hasChildren;
 
     /**
-     * True - uzel má předky, false - toto je kořenový uzel.
-     */
-    private boolean hasParent;
-
-    /**
      * Referenční označení. Od kořene k uzlu.
      */
     @JsonIgnore
@@ -68,14 +63,12 @@ public class TreeNodeVO {
                       final Integer depth,
                       final String name,
                       final boolean hasChildren,
-                      final boolean hasParent,
                       final Integer[] referenceMarkInt,
                       final Integer version) {
         this.id = id;
         this.depth = depth;
         this.name = name;
         this.hasChildren = hasChildren;
-        this.hasParent = hasParent;
         this.referenceMarkInt = referenceMarkInt;
         this.version = version;
     }
@@ -111,14 +104,6 @@ public class TreeNodeVO {
 
     public void setHasChildren(final boolean hasChildren) {
         this.hasChildren = hasChildren;
-    }
-
-    public boolean isHasParent() {
-        return hasParent;
-    }
-
-    public void setHasParent(boolean hasParent) {
-        this.hasParent = hasParent;
     }
 
     public Integer[] getReferenceMarkInt() {
