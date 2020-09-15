@@ -102,4 +102,8 @@ public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, Level
     @Modifying
     @Query("UPDATE arr_level SET createChange = :change WHERE levelId IN :levelIds")
     void updateCreateChange(@Param("levelIds") Collection<Integer> levelIds, @Param("change") ArrChange change);
+
+    @Modifying
+    @Query("UPDATE arr_level SET createChange = :change WHERE createChange.changeId IN :changeIds")
+    void updateCreateChangeByChangeIds(@Param("changeIds") Collection<Integer> changeIds, @Param("change") ArrChange change);
 }

@@ -275,12 +275,23 @@ public class DeleteFundHistoryAction {
         outputResultRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
         itemSettingsRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
         outputRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
+        structuredObjectRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
+
+        ArrChange change = arrangementService.createChange(ArrChange.Type.CREATE_AS);
 
         // arr_node se také smazají, pokud se na ně neodkazuje žádný level a musí se smazat i návazné entity jako výstupy, a podobně
-        final List<Integer> unusedNodeIdsByFund = nodeRepository.findUnusedNodeIdsByFund(fund);
+        List<Integer> unusedNodeIdsByFund = nodeRepository.findUnusedNodeIdsByFund(fund);
         if (!unusedNodeIdsByFund.isEmpty()) {
+            List<Integer> changesIds = new ArrayList<>();
+            ObjectListIterator<Integer> iterator = new ObjectListIterator<>(unusedNodeIdsByFund);
+            while (iterator.hasNext()) {
+                List<Integer> next = iterator.next();
+                changesIds.addAll(changeRepository.findChangesIdsByPrimaryNodeIds(next));
+            }
             dropNodeInfo(unusedNodeIdsByFund);
-            changeRepository.deleteByPrimaryNodeIds(unusedNodeIdsByFund);
+
+            iterateAction(changesIds, (ids) -> levelRepository.updateCreateChangeByChangeIds(ids, change));
+            changeRepository.deleteByPrimaryNodeIds(unusedNodeIdsByFund, change.getChangeId());
 
             dataUriRefRepository.updateByNodesIdIn(unusedNodeIdsByFund);
 
@@ -289,7 +300,7 @@ public class DeleteFundHistoryAction {
         em.flush();
 
         // vyčištění nepoužitých arr_change
-        Query deleteNotUseChangesQuery = revertingChangesService.createDeleteNotUseChangesQuery();
+        Query deleteNotUseChangesQuery = revertingChangesService.createDeleteNotUseChangesQuery(change.getChangeId());
         deleteNotUseChangesQuery.executeUpdate();
         em.flush();
 
@@ -306,7 +317,6 @@ public class DeleteFundHistoryAction {
 
         fundVersionRepository.deleteByFund(fund);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.CREATE_AS);
         em.flush();
 
         // create new version
@@ -371,8 +381,10 @@ public class DeleteFundHistoryAction {
         List<ItemChange> items = repository.findByFund(fund);
         Set<Integer> ids = new HashSet<>(items.size());
         for (ItemChange item : items) {
-            changes.add(item.getChangeId());
-            ids.add(item.getId());
+            if (!item.getChangeId().equals(newChange.getChangeId())) {
+                changes.add(item.getChangeId());
+                ids.add(item.getId());
+            }
         }
         iterateAction(ids, partIds -> repository.updateCreateChange(partIds, newChange));
     }

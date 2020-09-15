@@ -700,7 +700,7 @@ public class RevertingChangesService {
      *
      * @return
      */
-    public Query createDeleteNotUseChangesQuery() {
+    public Query createDeleteNotUseChangesQuery(@Nullable final Integer ignoreChangeId) {
 
         StringBuilder sqlBuilder = new StringBuilder();
         sqlBuilder.append(
@@ -753,12 +753,24 @@ public class RevertingChangesService {
         sqlBuilder.append(") as used_change ON c.change_id = used_change.change_id ");
         sqlBuilder.append("WHERE used_change.change_id IS NULL");
         sqlBuilder.append(")");
+        if (ignoreChangeId != null) {
+            sqlBuilder.append(" AND c.change_id <> ").append(ignoreChangeId);
+        }
 
         String sql = sqlBuilder.toString();
 
         logger.debug("Prepared query: {}", sql);
 
         return entityManager.createNativeQuery(sql);
+    }
+
+    /**
+     * Delete from ARR_CHANGE unused change_ids
+     *
+     * @return
+     */
+    public Query createDeleteNotUseChangesQuery() {
+        return createDeleteNotUseChangesQuery(null);
     }
 
     private Query createExtendUpdateEntityQuery(@NotNull final ArrFund fund,
