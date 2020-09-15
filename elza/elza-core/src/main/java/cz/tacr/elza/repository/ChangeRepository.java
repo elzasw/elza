@@ -25,9 +25,16 @@ public interface ChangeRepository extends ElzaJpaRepository<ArrChange, Integer> 
     @Query("DELETE FROM arr_change c WHERE c.primaryNode IN (SELECT n FROM arr_node n WHERE n.fund = ?1)")
     void deleteByPrimaryNodeFund(ArrFund fund);
 
+    @Query("SELECT c.changeId FROM arr_change c WHERE c.primaryNodeId IN :nodeIds")
+    List<Integer> findChangesIdsByPrimaryNodeIds(@Param("nodeIds") Collection<Integer> nodeIds);
+
     @Modifying
     @Query("DELETE FROM arr_change c WHERE c.primaryNodeId IN ?1")
     void deleteByPrimaryNodeIds(List<Integer> deleteNodeIds);
+
+    @Modifying
+    @Query("DELETE FROM arr_change c WHERE c.primaryNodeId IN :deleteNodeIds AND c.changeId <> :ignoreChangeId")
+    void deleteByPrimaryNodeIds(@Param("deleteNodeIds") List<Integer> deleteNodeIds, @Param("ignoreChangeId") Integer ignoreChangeId);
 
     @Modifying
     @Query("DELETE FROM arr_change c WHERE c.changeId IN :changeIds")

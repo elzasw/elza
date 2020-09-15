@@ -121,6 +121,8 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
                                     @Param("fromChangeId") Integer fromChangeId,
                                     @Param("toChangeId") Integer toChangeId);
 
+    void deleteByFundAndDeleteChangeIsNotNull(ArrFund fund);
+
     public interface MaximalItemValues {
         String getPrefix();
 
