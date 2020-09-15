@@ -310,7 +310,7 @@ public class PartService {
                             !apKeyValue.getValue().equals(value) ||
                             !apKeyValue.getScope().getScopeId().equals(scope.getScopeId()))
                             && (!checkKeyValueUnique(keyType, value, scope, async) ||
-                            keyValueLock.addIfExists(keyType, value, scope.getScopeId()))) {
+                            !keyValueLock.addIfExists(keyType, value, scope.getScopeId()))) {
                         value = value + DUPLICITA + accessPointId;
                         success = false;
                     }
@@ -321,7 +321,7 @@ public class PartService {
                     keyValueRepository.save(apKeyValue);
                 } else {
                     if (!checkKeyValueUnique(keyType, value, scope, async) ||
-                            keyValueLock.addIfExists(keyType, value, scope.getScopeId())) {
+                            !keyValueLock.addIfExists(keyType, value, scope.getScopeId())) {
                         value = value + DUPLICITA + accessPointId;
                         success = false;
                     }
