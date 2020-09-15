@@ -790,9 +790,9 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             }
 
 
-            TreeNodeVO client = new TreeNodeVO(treeNode.getId(), treeNode.getDepth(),
-                    null, !treeNode.getChilds().isEmpty(), treeNode.getReferenceMark(),
-                    nodeMap.get(treeNode.getId()).getVersion());
+            TreeNodeVO client = new TreeNodeVO(treeNode.getId(), treeNode.getDepth(), null, 
+                                               treeNode.getParent() != null, !treeNode.getChilds().isEmpty(), 
+                                               treeNode.getReferenceMark(), nodeMap.get(treeNode.getId()).getVersion());
             if (subtreeRoot != null) {
                 String[] referenceMark = createClientNodeReferenceMark(treeNode, levelTypeId, viewTitles, valuesMap,
                         parentReferenceMark);
@@ -809,7 +809,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
         for (TreeNodeVO treeNodeClient : result.values()) {
             TitleItemsByType descItemCodeToValueMap = valuesMap.get(treeNodeClient.getId());
-            fillValues(descItemCodeToValueMap, viewTitles, treeNodeClient);
+            fillValues(version, descItemCodeToValueMap, viewTitles, treeNodeClient);
         }
 
         return result;
@@ -868,10 +868,22 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         return title;
     }
 
-    // ??
-    private void fillValues(final TitleItemsByType descItemCodeToValueMap,
+    /**
+     * Nastavení hodnot (icon, name) ve třídě TreeNodeVO.
+     * 
+     * @param version
+     * @param descItemCodeToValueMap
+     * @param viewTitles
+     * @param treeNodeClient
+     */
+    private void fillValues(final ArrFundVersion version, final TitleItemsByType descItemCodeToValueMap,
                             final ViewTitles viewTitles, final TreeNodeVO treeNodeClient) {
-        String defaultTitle = createDefaultTitle(viewTitles, treeNodeClient.getId());
+        String defaultTitle;
+        if (treeNodeClient.isHasParent()) {
+            defaultTitle = createDefaultTitle(viewTitles, treeNodeClient.getId());
+        } else {
+            defaultTitle = createRootTitle(version.getFund(), viewTitles, treeNodeClient.getId());
+        }
 
         if (descItemCodeToValueMap != null) {
             treeNodeClient
