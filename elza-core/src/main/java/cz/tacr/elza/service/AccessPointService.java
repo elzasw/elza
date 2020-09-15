@@ -1666,9 +1666,11 @@ public class AccessPointService {
             String content = IOUtils.toString(body.getInputStream(), StandardCharsets.UTF_8);
             switch (fileType) {
                 case KML:
-                    return apDataService.convertCoordinatesFromKml(content);
+                    content = content.substring(1, content.length() - 1);
+                    return "\"" + apDataService.convertCoordinatesFromKml(content) + "\"";
                 case GML:
-                    return apDataService.convertCoordinatesFromGml(content);
+                    content = content.substring(1, content.length() - 1);
+                    return "\"" + apDataService.convertCoordinatesFromGml(content) + "\"";
                 case WKT:
                     return content;
                 default:
