@@ -144,6 +144,8 @@ class DescItemType extends AbstractReactComponent {
         const {formKey, value, currentEditDescItemIndex} = this.state;
         if (formKey && currentEditDescItemIndex !== null) {
             if (newDescItemType.descItems[currentEditDescItemIndex]) {
+                newDescItemType.descItems = [...newDescItemType.descItems];
+                newDescItemType.descItems[currentEditDescItemIndex] = {...newDescItemType.descItems[currentEditDescItemIndex]};
                 const di = newDescItemType.descItems[currentEditDescItemIndex];
                 // Nutno nasetovat všechny klíče reálné hodnoty do DescItemu
                 for (let key of Object.keys(value)) {
@@ -299,6 +301,7 @@ class DescItemType extends AbstractReactComponent {
 
         const {rulDataType, refType} = this.props;
         let newDescItemType = {...this.state.descItemType};
+        newDescItemType.descItems = [...newDescItemType.descItems];
 
         // Convert value to a value compatible with specified data type
         const descItem = {...newDescItemType.descItems[descItemIndex]};
