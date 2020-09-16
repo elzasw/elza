@@ -24,7 +24,7 @@ import './AbstractDescItem.scss';
 import {convertValue, validate} from '../../../stores/app/arr/subNodeForm.jsx';
 import {WebApi} from '../../../actions/index';
 import objectById from '../../../shared/utils/objectById';
-import {validateUnitDate} from "../../registry/field/UnitdateField";
+import {validateUnitDate} from '../../registry/field/UnitdateField';
 
 const placeholder = document.createElement('div');
 placeholder.className = 'placeholder';
@@ -69,20 +69,20 @@ class DescItemType extends AbstractReactComponent {
         descItemType: PropTypes.object.isRequired,
         rulDataType: PropTypes.object.isRequired,
         calendarTypes: PropTypes.object.isRequired,
-        structureTypes: PropTypes.object.isRequired,
+        structureTypes: PropTypes.object,
         locked: PropTypes.bool.isRequired,
         hideDelete: PropTypes.bool,
         readMode: PropTypes.bool.isRequired,
         arrPerm: PropTypes.bool.isRequired,
-        notIdentified: PropTypes.bool.isRequired,
-        onDescItemNotIdentified: PropTypes.func.isRequired,
-        closed: PropTypes.bool.isRequired,
-        copy: PropTypes.bool.isRequired,
+        notIdentified: PropTypes.bool,
+        onDescItemNotIdentified: PropTypes.func,
+        closed: PropTypes.bool,
+        copy: PropTypes.bool,
         conformityInfoMissings: PropTypes.array,
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
         userDetail: PropTypes.object.isRequired,
-        showNodeAddons: PropTypes.bool.isRequired,
+        showNodeAddons: PropTypes.bool,
         strictMode: PropTypes.bool.isRequired,
         descItemFactory: PropTypes.func.isRequired,
     };
@@ -1084,7 +1084,14 @@ class DescItemType extends AbstractReactComponent {
             }
         }
 
-        if (!closed && !readMode && !infoType.rep && infoType.ind && rulDataType.code !== 'ENUM') {
+        if (
+            !closed &&
+            !readMode &&
+            !infoType.rep &&
+            infoType.ind &&
+            rulDataType.code !== 'ENUM' &&
+            onDescItemNotIdentified
+        ) {
             actions.push(
                 <NoFocusButton
                     key="notIdentified"
@@ -1174,13 +1181,13 @@ class DescItemType extends AbstractReactComponent {
                 const actions = [];
 
                 // pokud prvek popisu neni pocitan automaticky nebo je u nej povoleno zadavat vlastni hodnotu
-                const editable = (!infoType.cal || infoType.calSt) && !descItem.readOnly ;
+                const editable = (!infoType.cal || infoType.calSt) && !descItem.readOnly;
                 const canDeleteDescItem = this.getShowDeleteDescItem(descItem);
 
                 // pokud je zapnuty rezim uprav a prvek popisu je upravitelny
                 if (!readMode && editable) {
                     // pokud je opakovatelny, neni ENUM a je mozne ho nastavit jako "nezjisteno"
-                    if (infoType.rep === 1 && rulDataType.code !== 'ENUM' && infoType.ind) {
+                    if (infoType.rep === 1 && rulDataType.code !== 'ENUM' && infoType.ind && onDescItemNotIdentified) {
                         actions.push(
                             <NoFocusButton
                                 key="notIdentified"

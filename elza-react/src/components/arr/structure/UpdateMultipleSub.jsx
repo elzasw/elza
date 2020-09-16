@@ -39,16 +39,10 @@ class UpdateMultipleSub extends AbstractReactComponent {
         this.refs.subNodeForm.getWrappedInstance().initFocus();
     };
 
-    UNSAFE_componentWillMount() {
+    componentDidMount() {
         const {fundVersionId, id} = this.props;
         this.props.dispatch(structureNodeFormSelectId(fundVersionId, id));
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
-        this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(fundVersionId, id));
-    }
-
-    componentDidMount() {
-        const {fundVersionId, id} = this.props;
-        this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(fundVersionId, null));
         this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
@@ -62,7 +56,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
      * Zobrazení dialogu pro přidání atributu.
      */
     handleAddDescItemType = () => {
-        const {fundVersionId} = this.props;
+        const {fundVersionId, id} = this.props;
 
         const descItemTypes = this.descItemTypeItems();
 
@@ -77,7 +71,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
                         this.props.dispatch(
                             structureFormActions.fundSubNodeFormDescItemTypeAdd(
                                 fundVersionId,
-                                null,
+                                id,
                                 data.descItemTypeId.id,
                             ),
                         )
@@ -457,7 +451,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
     render() {
         const {handleSubmit, submitting, items, onClose, subNodeForm, nodeSetting} = this.props;
 
-        if (!subNodeForm || !subNodeForm.fetched) {
+        if (!subNodeForm || !subNodeForm.fetched || !items) {
             return <Loading />;
         }
 
