@@ -17,7 +17,7 @@ public class TreeNodeWithFundVO extends TreeNodeVO {
     protected TreeNodeWithFundVO(final Integer id, final Integer depth, final String name,
                                  final String icon, final String[] referenceMark, final Integer version,
                                  final String nodeUuid, final String fundName, final Integer fundId, final Integer fundVersionId) {
-        super(id, depth, name, false, null, version);
+        super(id, depth, name, false, false, null, version);
         setIcon(icon);
         setReferenceMark(referenceMark);
         this.nodeUuid = nodeUuid;
