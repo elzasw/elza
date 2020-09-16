@@ -1,6 +1,7 @@
 import React from 'react';
 import {AbstractReactComponent, i18n, Icon, Loading, NoFocusButton} from 'components/shared';
-import {reduxForm} from 'redux-form';
+import {connect} from 'react-redux';
+import {formValueSelector, reduxForm} from 'redux-form';
 import {Form, FormCheck, Modal} from 'react-bootstrap';
 import {Button} from '../../ui';
 import '../NodeSubNodeForm.scss';
@@ -19,10 +20,12 @@ import './StructureSubNodeForm.scss';
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 class UpdateMultipleSub extends AbstractReactComponent {
+    static formName = 'UpdateMultipleStructureForm';
+
     static propTypes = {
         fundVersionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
-        selectedSubNodeId: PropTypes.number.isRequired,
+        id: PropTypes.number.isRequired,
         // Store
         rulDataTypes: PropTypes.object,
         calendarTypes: PropTypes.object,
@@ -40,16 +43,19 @@ class UpdateMultipleSub extends AbstractReactComponent {
         const {fundVersionId, id} = this.props;
         this.props.dispatch(structureNodeFormSelectId(fundVersionId, id));
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
+        this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
     componentDidMount() {
-        const {fundVersionId} = this.props;
+        const {fundVersionId, id} = this.props;
         this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(fundVersionId, null));
+        this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         const {fundVersionId, id} = nextProps;
         this.props.dispatch(structureNodeFormFetchIfNeeded(fundVersionId, id));
+        this.props.dispatch(structureFormActions.fundSubNodeFormFetchIfNeeded(fundVersionId, id));
     }
 
     /**
@@ -82,87 +88,75 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     handleNotModify = id => {
-        const {
-            fields: {autoincrementItemTypeIds, deleteItemTypeIds, items},
-        } = this.props;
-        const incrementIndex = autoincrementItemTypeIds.value.indexOf(id);
+        const {autoincrementItemTypeIds, deleteItemTypeIds, items, change} = this.props;
+        const incrementIndex = autoincrementItemTypeIds.indexOf(id);
         if (incrementIndex !== -1) {
-            autoincrementItemTypeIds.onChange([
-                ...autoincrementItemTypeIds.value.slice(0, incrementIndex),
-                ...autoincrementItemTypeIds.value.slice(incrementIndex + 1),
+            change('autoincrementItemTypeIds', [
+                ...autoincrementItemTypeIds.slice(0, incrementIndex),
+                ...autoincrementItemTypeIds.slice(incrementIndex + 1),
             ]);
         }
-        const deleteIndex = deleteItemTypeIds.value.indexOf(id);
+        const deleteIndex = deleteItemTypeIds.indexOf(id);
         if (deleteIndex !== -1) {
-            deleteItemTypeIds.onChange([
-                ...deleteItemTypeIds.value.slice(0, deleteIndex),
-                ...deleteItemTypeIds.value.slice(deleteIndex + 1),
+            change('deleteItemTypeIds', [
+                ...deleteItemTypeIds.slice(0, deleteIndex),
+                ...deleteItemTypeIds.slice(deleteIndex + 1),
             ]);
         }
 
-        if (items.value.hasOwnProperty(id)) {
-            const newItems = {...items.value};
+        if (items.hasOwnProperty(id)) {
+            const newItems = {...items};
             delete newItems[id];
-            items.onChange(newItems);
+            change('items', newItems);
         }
     };
 
     handleModify = (id, descItems) => {
-        const {
-            fields: {items},
-        } = this.props;
-        if (!items.value.hasOwnProperty(id)) {
-            items.onChange({
-                ...items.value,
+        const {items, change} = this.props;
+        if (!items.hasOwnProperty(id)) {
+            change('items', {
+                ...items,
                 [id]: descItems.map(i => ({...i, id: undefined})),
             });
         }
     };
 
     handleDeleteToggle = id => {
-        const {
-            fields: {autoincrementItemTypeIds, deleteItemTypeIds, items},
-        } = this.props;
-        const indexInDeleted = deleteItemTypeIds.value.indexOf(id);
+        const {autoincrementItemTypeIds, deleteItemTypeIds, items, change} = this.props;
+        const indexInDeleted = deleteItemTypeIds.indexOf(id);
         if (indexInDeleted !== -1) {
-            deleteItemTypeIds.onChange([
-                ...deleteItemTypeIds.value.slice(0, indexInDeleted),
-                ...deleteItemTypeIds.value.slice(indexInDeleted + 1),
+            change('deleteItemTypeIds', [
+                ...deleteItemTypeIds.slice(0, indexInDeleted),
+                ...deleteItemTypeIds.slice(indexInDeleted + 1),
             ]);
         } else {
-            const indexInAutoincrement = autoincrementItemTypeIds.value.indexOf(id);
+            const indexInAutoincrement = autoincrementItemTypeIds.indexOf(id);
             if (indexInAutoincrement !== -1) {
-                autoincrementItemTypeIds.onChange([
-                    ...autoincrementItemTypeIds.value.slice(0, indexInAutoincrement),
-                    ...autoincrementItemTypeIds.value.slice(indexInAutoincrement + 1),
+                change('autoincrementItemTypeIds', [
+                    ...autoincrementItemTypeIds.slice(0, indexInAutoincrement),
+                    ...autoincrementItemTypeIds.slice(indexInAutoincrement + 1),
                 ]);
             }
 
-            if (items.value.hasOwnProperty(id)) {
-                const newItems = {...items.value};
+            if (items.hasOwnProperty(id)) {
+                const newItems = {...items};
                 delete newItems[id];
-                items.onChange(newItems);
+                change('items', newItems);
             }
 
-            deleteItemTypeIds.onChange([...deleteItemTypeIds.value, id]);
+            change('deleteItemTypeIds', [...deleteItemTypeIds, id]);
         }
     };
 
     customInRender = (descItems, code, infoType) => {
-        const {
-            fields: {autoincrementItemTypeIds, deleteItemTypeIds, items},
-        } = this.props;
+        const {autoincrementItemTypeIds, deleteItemTypeIds, items, change} = this.props;
         const parts = [];
 
         let glyph = 'fa-lock';
         let clickFunction = this.handleModify.bind(this, infoType.id, descItems);
 
-        const isInDeleted = deleteItemTypeIds.value.indexOf(infoType.id) !== -1;
-        if (
-            autoincrementItemTypeIds.value.indexOf(infoType.id) !== -1 ||
-            isInDeleted ||
-            items.value.hasOwnProperty(infoType.id)
-        ) {
+        const isInDeleted = deleteItemTypeIds.indexOf(infoType.id) !== -1;
+        if (autoincrementItemTypeIds.indexOf(infoType.id) !== -1 || isInDeleted || items.hasOwnProperty(infoType.id)) {
             glyph = 'fa-unlock';
             clickFunction = this.handleNotModify.bind(this, infoType.id);
         }
@@ -184,8 +178,8 @@ class UpdateMultipleSub extends AbstractReactComponent {
             </NoFocusButton>,
         );
 
-        if (code === 'INT' && items.value.hasOwnProperty(infoType.id)) {
-            const index = autoincrementItemTypeIds.value.indexOf(infoType.id);
+        if (code === 'INT' && items.hasOwnProperty(infoType.id)) {
+            const index = autoincrementItemTypeIds.indexOf(infoType.id);
             const checked = index !== -1;
 
             parts.push(
@@ -194,12 +188,12 @@ class UpdateMultipleSub extends AbstractReactComponent {
                     checked={checked}
                     onChange={() => {
                         if (checked) {
-                            autoincrementItemTypeIds.onChange([
-                                ...autoincrementItemTypeIds.value.slice(0, index),
-                                ...autoincrementItemTypeIds.value.slice(index + 1),
+                            change('autoincrementItemTypeIds', [
+                                ...autoincrementItemTypeIds.slice(0, index),
+                                ...autoincrementItemTypeIds.slice(index + 1),
                             ]);
                         } else {
-                            autoincrementItemTypeIds.onChange([...autoincrementItemTypeIds.value, infoType.id]);
+                            change('autoincrementItemTypeIds', [...autoincrementItemTypeIds, infoType.id]);
                         }
                     }}
                     label={i18n('arr.structure.modal.increment')}
@@ -241,32 +235,24 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     handleChange = (id, index, value) => {
-        const {
-            fields: {items},
-        } = this.props;
-        if (items.value.hasOwnProperty(id)) {
-            items.onChange({
-                ...items.value,
-                [id]: [
-                    ...items.value[id].slice(0, index),
-                    {...items.value[id][index], value},
-                    ...items.value[id].slice(index + 1),
-                ],
+        const {items, change} = this.props;
+        if (items.hasOwnProperty(id)) {
+            change('items', {
+                ...items,
+                [id]: [...items[id].slice(0, index), {...items[id][index], value}, ...items[id].slice(index + 1)],
             });
         }
     };
 
     handleChangeSpec = (id, index, descItemSpecId) => {
-        const {
-            fields: {items},
-        } = this.props;
-        if (items.value.hasOwnProperty(id)) {
-            items.onChange({
-                ...items.value,
+        const {items, change} = this.props;
+        if (items.hasOwnProperty(id)) {
+            change('items', {
+                ...items,
                 [id]: [
-                    ...items.value[id].slice(0, index),
-                    {...items.value[id][index], descItemSpecId},
-                    ...items.value[id].slice(index + 1),
+                    ...items[id].slice(0, index),
+                    {...items[id][index], descItemSpecId},
+                    ...items[id].slice(index + 1),
                 ],
             });
         }
@@ -294,16 +280,14 @@ class UpdateMultipleSub extends AbstractReactComponent {
 */
 
     handleOnDescItemAdd = id => {
-        const {
-            fields: {items},
-        } = this.props;
-        if (items.value.hasOwnProperty(id)) {
-            const lastAdded = items.value[id][items.value[id].length - 1];
+        const {items, change} = this.props;
+        if (items.hasOwnProperty(id)) {
+            const lastAdded = items[id][items[id].length - 1];
 
-            items.onChange({
-                ...items.value,
+            change('items', {
+                ...items,
                 [id]: [
-                    ...items.value[id],
+                    ...items[id],
                     {
                         ...lastAdded,
                         descItemObjectId: null,
@@ -316,22 +300,19 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     handleOnDescItemDelete = (id, index) => {
-        const {
-            fields: {items},
-        } = this.props;
-        if (items.value.hasOwnProperty(id)) {
-            items.onChange({
-                ...items.value,
-                [id]: [...items.value[id].slice(0, index), ...items.value[id].slice(index + 1)],
+        const {items, change} = this.props;
+        if (items.hasOwnProperty(id)) {
+            change('items', {
+                ...items,
+                [id]: [...items[id].slice(0, index), ...items[id].slice(index + 1)],
             });
         }
     };
 
     renderDescItemType = (descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting) => {
         const {
-            fields: {items, deleteItemTypeIds},
-        } = this.props;
-        const {
+            items,
+            deleteItemTypeIds,
             subNodeForm,
             descItemCopyFromPrevEnabled,
             singleDescItemTypeEdit,
@@ -349,7 +330,7 @@ class UpdateMultipleSub extends AbstractReactComponent {
         const rulDataType = refType.dataType;
 
         const strictMode = this.getStrictMode();
-        const itemModified = items.value.hasOwnProperty(infoType.id);
+        const itemModified = items.hasOwnProperty(infoType.id);
 
         const {descItems, ...allowedProps} = descItemType;
 
@@ -358,9 +339,9 @@ class UpdateMultipleSub extends AbstractReactComponent {
         let overrideInfo = null;
 
         if (itemModified) {
-            hackedDescItems = items.value[infoType.id];
+            hackedDescItems = items[infoType.id];
         } else {
-            const itemDeleted = deleteItemTypeIds.value.indexOf(infoType.id) !== -1;
+            const itemDeleted = deleteItemTypeIds.indexOf(infoType.id) !== -1;
             let value = i18n(
                 itemDeleted
                     ? 'arr.structure.modal.updateMultiple.deletedValue'
@@ -474,19 +455,15 @@ class UpdateMultipleSub extends AbstractReactComponent {
     };
 
     render() {
-        const {
-            handleSubmit,
-            submitting,
-            fields: {items},
-            onClose,
-            subNodeForm,
-            subNodeForm: {formData},
-            nodeSetting,
-        } = this.props;
+        const {handleSubmit, submitting, items, onClose, subNodeForm, nodeSetting} = this.props;
 
         if (!subNodeForm || !subNodeForm.fetched) {
             return <Loading />;
         }
+
+        const {
+            subNodeForm: {formData},
+        } = this.props;
 
         const descItemGroups = [];
         formData.descItemGroups.forEach((group, groupIndex) => {
@@ -528,17 +505,37 @@ class UpdateMultipleSub extends AbstractReactComponent {
     }
 }
 
-function mapStateToProps(state, props) {
+const rf = reduxForm({
+    form: UpdateMultipleSub.formName,
+    initialValues: {
+        autoincrementItemTypeIds: [],
+        deleteItemTypeIds: [],
+        items: {},
+        structureDataIds: [],
+    },
+    destroyOnUnmount: true,
+})(UpdateMultipleSub);
+
+export default connect(function (state, props) {
     const {arrRegion, focus, refTables, userDetail, structures} = state;
     let fund = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
     }
 
+    const selector = formValueSelector(props.form || UpdateMultipleSub.formName);
+
+    const {items, deleteItemTypeIds, autoincrementItemTypeIds} = selector(
+        state,
+        'items',
+        'deleteItemTypeIds',
+        'autoincrementItemTypeIds',
+    );
     return {
-        subNodeForm: structures.stores.hasOwnProperty(props.selectedSubNodeId)
-            ? structures.stores[props.selectedSubNodeId].subNodeForm
-            : null,
+        items,
+        deleteItemTypeIds,
+        autoincrementItemTypeIds,
+        subNodeForm: structures.stores.hasOwnProperty(props.id) ? structures.stores[props.id].subNodeForm : null,
         userDetail,
         fund,
         focus,
@@ -546,18 +543,4 @@ function mapStateToProps(state, props) {
         calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
     };
-}
-
-export default reduxForm(
-    {
-        form: 'UpdateMultipleStructureForm',
-        initialValues: {
-            autoincrementItemTypeIds: [],
-            deleteItemTypeIds: [],
-            items: {},
-            structureDataIds: [],
-        },
-        fields: ['structureDataIds', 'autoincrementItemTypeIds', 'deleteItemTypeIds', 'items'],
-    },
-    mapStateToProps,
-)(UpdateMultipleSub);
+})(rf);

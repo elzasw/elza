@@ -220,6 +220,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                             this.props.dispatch(modalDialogHide());
                             this.props.dispatch(structureTypeInvalidate());
                         }}
+                        fundId={fundId}
                         fundVersionId={fundVersionId}
                         initialValues={{
                             autoincrementItemTypeIds: [],
