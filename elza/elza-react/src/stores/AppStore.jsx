@@ -7,6 +7,8 @@ import {splitterResize} from 'actions/global/splitter.jsx';
 import {composeWithDevTools} from 'redux-devtools-extension';
 import rootReducer from './reducers.jsx';
 import reduxFormUtils from './app/form/reduxFormUtils.jsx';
+import reduxImmutableStateInvariant from 'redux-immutable-state-invariant';
+
 /**
  * reducery pro save
  */
@@ -470,8 +472,32 @@ if (window.__DEV__) {
     const composeFunction =
         typeof window.__DEVTOOLS__ !== 'undefined' && window.__DEVTOOLS__ ? composeWithDevTools : compose;
 
+    const immutableMiddleware = reduxImmutableStateInvariant({
+        ignore: [
+            'adminRegion',
+            'app',
+            'contextMenu',
+            'developer',
+            'focus',
+            'formn',
+            'fundRegion',
+            'login',
+            'modalDialog',
+            'refTables',
+            'router',
+            'splitter',
+            'stateRegion',
+            'status',
+            'structures',
+            'tab',
+            'toastr',
+            'userDetail',
+            'websocket'
+        ]
+    });
+
     const middleWares = [
-        require('redux-immutable-state-invariant').default(),
+        // immutableMiddleware,
         thunkMiddleware,
         loggerMiddleware,
         inlineFormMiddleware,

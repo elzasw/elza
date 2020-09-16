@@ -37,8 +37,15 @@ function setLoc(state, valueLocation, loc, descItemType = true, descItem = true)
         console.warn('formData do not exist');
     }
 
-    state.formData.descItemGroups = [...state.formData.descItemGroups];
-    state.formData.descItemGroups[valueLocation.descItemGroupIndex] = loc.descItemGroup;
+    const newState = {
+        ...state,
+        formData: {
+            ...state.formData
+        }
+    }
+
+    newState.formData.descItemGroups = [...newState.formData.descItemGroups];
+    newState.formData.descItemGroups[valueLocation.descItemGroupIndex] = loc.descItemGroup;
 
     if (descItemType) {
         loc.descItemGroup.descItemTypes = [...loc.descItemGroup.descItemTypes];
@@ -51,6 +58,8 @@ function setLoc(state, valueLocation, loc, descItemType = true, descItem = true)
             }
         }
     }
+
+    return newState;
 }
 
 function getLoc(state, valueLocation) {
@@ -77,10 +86,10 @@ function getLoc(state, valueLocation) {
     // descItem && console.log("$$$$$$$$$", descItem.descItemSpecId)
 
     return {
-        descItemGroup: {...descItemGroup},
-        descItemType: {...descItemType},
-        descItem: descItem ? {...descItem} : descItem,
-    };
+        descItemGroup,
+        descItemType,
+        descItem
+    }
 }
 
 const initialState = {
@@ -364,10 +373,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             }
             loc.descItem.error = validate(loc.descItem, refType, valueServerError);
 
-            setLoc(state, action.valueLocation, loc);
-            state.formData = {...state.formData};
-            checkFormData(state.formData);
-            return {...state};
+            return setLoc(state, action.valueLocation, loc);
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_POSITION:
             var descItems = [...loc.descItemType.descItems];
 
@@ -388,10 +394,7 @@ export default function subNodeForm(state = initialState, action = {}) {
 
             loc.descItemType.descItems = descItems;
 
-            setLoc(state, action.valueLocation, loc);
-            state.formData = {...state.formData};
-            checkFormData(state.formData);
-            return {...state};
+            return setLoc(state, action.valueLocation, loc);
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
             const {valueLocation} = action;
@@ -409,22 +412,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             // Validace dat položky
             loc.descItem.error = validate(loc.descItem, refType);
 
-            setLoc(state, action.valueLocation, loc);
-            //  Zapsani descItem s novou hodnotou do formData naprimo
-            const newFormData = {...state.formData};
-            if (
-                typeof valueLocation.descItemGroupIndex !== 'undefined' &&
-                typeof valueLocation.descItemTypeIndex !== 'undefined' &&
-                typeof valueLocation.descItemIndex !== 'undefined'
-            ) {
-                newFormData.descItemGroups[valueLocation.descItemGroupIndex].descItemTypes[
-                    valueLocation.descItemTypeIndex
-                ].descItems[valueLocation.descItemIndex] = loc.descItem;
-            }
-
-            state.formData = newFormData;
-            checkFormData(state.formData);
-            return {...state};
+            return setLoc(state, action.valueLocation, loc);
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_SPEC:
             var refType = state.refTypesMap[loc.descItemType.id];
 
@@ -434,12 +422,8 @@ export default function subNodeForm(state = initialState, action = {}) {
                 loc.descItem.touched = true;
                 loc.descItem.error = validate(loc.descItem, refType);
 
-                setLoc(state, action.valueLocation, loc);
-                state.formData = {...state.formData};
-                checkFormData(state.formData);
-                return {...state};
+                return setLoc(state, action.valueLocation, loc);
             } else {
-                checkFormData(state.formData);
                 return state;
             }
         case types.FUND_SUB_NODE_FORM_VALUE_BLUR:
@@ -447,33 +431,22 @@ export default function subNodeForm(state = initialState, action = {}) {
             loc.descItemType.hasFocus = false;
             loc.descItemGroup.hasFocus = false;
 
-            setLoc(state, action.valueLocation, loc);
-            state.formData = {...state.formData};
-            checkFormData(state.formData);
-            return {...state};
+            return setLoc(state, action.valueLocation, loc);
         case types.FUND_SUB_NODE_FORM_VALUE_FOCUS:
             loc.descItem.visited = true;
             loc.descItem.hasFocus = true;
             loc.descItemType.hasFocus = true;
             loc.descItemGroup.hasFocus = true;
 
-            setLoc(state, action.valueLocation, loc);
-            state.formData = {...state.formData};
-            checkFormData(state.formData);
-            return {...state};
+            return setLoc(state, action.valueLocation, loc);
         case types.FUND_SUB_NODE_FORM_VALUE_CREATE:
             loc.descItem.saving = true;
 
-            setLoc(state, action.valueLocation, loc);
-            state.formData = {...state.formData};
-            checkFormData(state.formData);
-            return {...state};
+            return setLoc(state, action.valueLocation, loc);
         case types.FUND_SUB_NODE_FORM_VALUE_ADD:
             addValue(state, loc);
 
-            setLoc(state, action.valueLocation, loc, true, false);
-            checkFormData(state.formData);
-            return {...state};
+            return setLoc(state, action.valueLocation, loc, true, false);
         case types.CHANGE_NODES:
         case types.OUTPUT_CHANGES_DETAIL:
         case types.OUTPUT_CHANGES:
@@ -505,10 +478,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             // Upravení a opravení seznamu hodnot, případně přidání prázdných
             consolidateDescItems(loc.descItemType, infoType, refType, false);
 
-            setLoc(state, action.valueLocation, loc);
-            state.formData = {...state.formData};
-            checkFormData(state.formData);
-            return {...state};
+            return setLoc(state, action.valueLocation, loc);
         case types.FUND_SUB_NODE_FORM_OUTPUT_CALC_SWITCH: {
             const infoType = state.infoTypesMap[loc.descItemType.id];
             return {
@@ -573,7 +543,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 checkFormData(state.formData);
                 return state;
             }
-            const newState = cloneDeep(state);
+            let newState = cloneDeep(state);
             loc = getLoc(newState, action.valueLocation);
             newState.data.parent = node;
 
@@ -583,8 +553,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItemType.descItems.forEach((descItem, index) => {
                         descItem.position = index + 1;
                     });
-                    setLoc(newState, action.valueLocation, loc, true, false);
-                    newState.formData = {...newState.formData};
+                    newState = setLoc(newState, action.valueLocation, loc, true, false);
                     break;
                 case 'UPDATE':
                     loc.descItem.descItemObjectId = action.descItemResult.item
@@ -604,8 +573,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                         loc.descItem.prevRefTemplateId = action.descItemResult.item.refTemplateId;
                     }
                     loc.descItem.touched = false;
-                    setLoc(newState, action.valueLocation, loc, true, true);
-                    newState.formData = {...newState.formData};
+                    newState = setLoc(newState, action.valueLocation, loc, true, true);
                     break;
                 case 'CREATE':
                     loc.descItem.descItemObjectId = action.descItemResult.item.descItemObjectId;
@@ -630,8 +598,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItemType.descItems.forEach((descItem, index) => {
                         descItem.position = index + 1;
                     });
-                    setLoc(newState, action.valueLocation, loc, true, true);
-                    newState.formData = {...newState.formData};
+                    newState = setLoc(newState, action.valueLocation, loc, true, true);
                     break;
                 case 'DELETE_DESC_ITEM_TYPE':
                     // nic dalšího není potřeba, node se aktualizuje výše
@@ -639,7 +606,6 @@ export default function subNodeForm(state = initialState, action = {}) {
                 default:
                     break;
             }
-            checkFormData(newState.formData);
             return newState;
 
         case types.FUND_SUB_NODE_FORM_TEMPLATE_USE: {
@@ -784,10 +750,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 }
             }
 
-            setLoc(state, action.valueLocation, loc, false, false);
-            state.formData = {...state.formData};
-            checkFormData(state.formData);
-            return {...state};
+            return setLoc(state, action.valueLocation, loc, false, false);
         case types.FUND_SUB_NODE_FORM_VALUE_DELETE:
             loc.descItemType.descItems = [
                 ...loc.descItemType.descItems.slice(0, action.valueLocation.descItemIndex),
@@ -800,10 +763,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             // Upravení a opravení seznamu hodnot, případně přidání prázdných
             consolidateDescItems(loc.descItemType, infoType, refType, true);
 
-            setLoc(state, action.valueLocation, loc, true, false);
-            state.formData = {...state.formData};
-            checkFormData(state.formData);
-            return {...state};
+            return setLoc(state, action.valueLocation, loc, true, false);
         case types.FUND_SUB_NODE_FORM_REQUEST:
             return Object.assign({}, state, {
                 fetchingId: action.nodeId,
@@ -880,7 +840,7 @@ export default function subNodeForm(state = initialState, action = {}) {
             const {node, parent} = action.data;
             let nodeId = (node && node.id) || (parent && parent.id);
 
-            if (nodeId != state.nodeId) {
+            if (nodeId !== state.nodeId) {
                 // not the right node
                 return state;
             }
@@ -895,9 +855,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                 needClean: false,
             };
 
-            checkFormData(result.formData, '#checkFormData - before mergeAfterUpdate');
             mergeAfterUpdate(result, action.data, action.refTables); // merges result with data from action
-            checkFormData(result.formData, '#checkFormData - after mergeAfterUpdate');
             return result;
         }
         case types.CHANGE_FUND_RECORD:

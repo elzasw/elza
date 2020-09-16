@@ -340,7 +340,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
                     (prevDescItem.touched || (!descItem.value && !descItem.undefined))
                 ) {
                     // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
-                    var item = prevDescItem;
+                    var item = {...prevDescItem};
                     if (state.updatedItem && state.updatedItem.descItemObjectId === descItem.descItemObjectId) {
                         item.value = state.updatedItem.value;
                     }
@@ -367,6 +367,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
                 // Vícehodnotový
                 var prevDescItem = null;
                 prevType.descItems.forEach((descItem, index) => {
+                    descItem = {...descItem};   // immutable
                     addUid(descItem, index);
 
                     if (typeof descItem.id === 'undefined') {
@@ -430,7 +431,6 @@ function prepareFlatData(data) {
     data.types = replaceIdsWithString(data.types, typesNumToStrMap);
     data.specs = replaceIdsWithString(data.specs, typesNumToStrMap);
     data.types = insertDescItemSpecsMap(data.types, data.specs);
-    return data;
 }
 
 /**
@@ -505,8 +505,8 @@ export function mergeAfterUpdate(state, data, refTables) {
     flatLocalForm.flattenInit(state.formData);
 
     // Modifications of the flat forms
-    flatForm = prepareFlatData(flatForm);
-    flatLocalForm = prepareFlatData(flatLocalForm);
+    prepareFlatData(flatForm);
+    prepareFlatData(flatLocalForm);
 
     // Inserting item type from local descItems,
     // because it is not defined on the item received from server
@@ -548,20 +548,26 @@ export function mergeAfterUpdate(state, data, refTables) {
  * Inserts map of specifications for descItems
  */
 function insertDescItemSpecsMap(types, specs) {
+    const newTypes = {...types};
     for (let s = 0; s < specs.ids.length; s++) {
         let specId = specs.ids[s];
         let spec = specs[specId];
-        let type = types[spec.itemType];
+        let type = newTypes[spec.itemType];
 
         if (type) {
-            if (!type.descItemSpecsMap) {
-                type.descItemSpecsMap = {};
+            const newType = {...type};
+            newTypes[spec.itemType] = newType;
+
+            if (!newType.descItemSpecsMap) {
+                newType.descItemSpecsMap = {};
+            } else {
+                newType.descItemSpecsMap = {...newType.descItemSpecsMap};
             }
 
-            type.descItemSpecsMap[spec.id] = spec;
+            newType.descItemSpecsMap[spec.id] = spec;
         }
     }
-    return types;
+    return newTypes;
 }
 
 /**
@@ -1030,11 +1036,12 @@ function replaceIdWithString(item, map) {
 }
 
 function replaceIdsWithString(items, map) {
-    for (let i = 0; i < items.ids.length; i++) {
-        let itemId = items.ids[i];
-        items[itemId] = replaceIdWithString(items[itemId], map);
+    const newItems = {...items};
+    for (let i = 0; i < newItems.ids.length; i++) {
+        let itemId = newItems.ids[i];
+        newItems[itemId] = replaceIdWithString({...newItems[itemId]}, map);
     }
-    return items;
+    return newItems;
 }
 
 function merge(state) {

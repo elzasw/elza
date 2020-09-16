@@ -300,10 +300,16 @@ export function node(state = nodeInitialState, action) {
             const data = action.data;
             const node = data.node;
 
-            let childNodes = state.childNodes;
+            const resultState = {...state};
+
+            let childNodes = [...state.childNodes];
+            resultState.childNodes = childNodes;
+
             let index = indexById(childNodes, node && node.id);
             console.log('update index', index);
-            let updatedNode = childNodes[index];
+            let updatedNode = {...childNodes[index]};
+            childNodes[index] = updatedNode;
+
             // copy same values from source object
             // not needed for WS update -> should be removed
             // (have to be tested first)
@@ -312,20 +318,17 @@ export function node(state = nodeInitialState, action) {
                     updatedNode[i] = data[i];
                 }
             }
-            if (updatedNode.accordionLeft != data.formTitle.titleLeft)
+            if (updatedNode.accordionLeft !== data.formTitle.titleLeft) {
                 updatedNode.accordionLeft = data.formTitle.titleLeft;
-            if (updatedNode.accordionRight != data.formTitle.titleRight)
+            }
+            if (updatedNode.accordionRight !== data.formTitle.titleRight) {
                 updatedNode.accordionRight = data.formTitle.titleRight;
-            //console.log("update node", updatedNode);
+            }
 
-            var result = {
-                ...state,
-
-                subNodeForm: subNodeForm(state.subNodeForm, action),
-                subNodeDaos: subNodeDaos(state.subNodeDaos, action),
-                subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
-            };
-            return consolidateState(state, result);
+            resultState.subNodeForm = subNodeForm(state.subNodeForm, action);
+            resultState.subNodeDaos = subNodeDaos(state.subNodeDaos, action);
+            resultState.subNodeFormCache = subNodeFormCache(state.subNodeFormCache, action);
+            return consolidateState(state, resultState);
         }
         case types.FUND_FUND_CHANGE_READ_MODE: {
             var result = {
