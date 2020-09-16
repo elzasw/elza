@@ -271,7 +271,10 @@ public class PartService {
         if(apPart.getKeyValue() != null && apPart.getKeyValue().getKeyType().equals(PT_PREFER_NAME)) {
             oldPreferredPart = true;
         }
-        boolean preferedPart = apPart.getPartId().equals(accessPoint.getPreferredPart().getPartId());
+        boolean preferredPart = false;
+        if (accessPoint.getPreferredPart() != null) {
+            preferredPart = apPart.getPartId().equals(accessPoint.getPreferredPart().getPartId());
+        }
 
         boolean success = true;
         Map<String, String> indexMap = result.getIndexes();
@@ -376,7 +379,7 @@ public class PartService {
 
             if (indexType.equals(DISPLAY_NAME)) {
                 if ((oldPreferredPart && !value.equals(apIndex.getValue())) ||
-                        (preferedPart && (apIndex == null || !value.equals(apIndex.getValue())))) {
+                        (preferredPart && (apIndex == null || !value.equals(apIndex.getValue())))) {
                     //přegenerování entit, které odkazují na entitu, které se mění preferované jméno
                     checkReferredRecords(accessPoint);
                 }
