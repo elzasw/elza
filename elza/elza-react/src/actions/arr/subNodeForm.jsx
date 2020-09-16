@@ -956,6 +956,7 @@ export class ItemFormActions {
                 const subNodeForm = this._getItemFormStore(state, versionId, routingKey);
                 const parentObjStore = this._getParentObjStore(state, versionId, routingKey);
                 if (
+                    subNodeForm &&
                     (!subNodeForm.fetched || subNodeForm.dirty || subNodeForm.needClean || needClean) &&
                     !subNodeForm.isFetching
                 ) {
@@ -1142,7 +1143,7 @@ class NodeFormActions extends ItemFormActions {
                 } else {
                     // je v cache, vrátíme ji
                     //console.log('### USE_CACHE')
-                    return new Promise(function(resolve, reject) {
+                    return new Promise(function (resolve, reject) {
                         resolve(data);
                     });
                 }

@@ -83,7 +83,11 @@
                 padding: 2px 5px;
                 display: flex;
                 align-items: center;
-
+                &.listbox-item-checkbox {
+                    width: auto;
+                    margin-right: 0;
+                    padding-right: 0;
+                }
                 .structure-name {
                     display: flex;
                     flex-grow: 1;
