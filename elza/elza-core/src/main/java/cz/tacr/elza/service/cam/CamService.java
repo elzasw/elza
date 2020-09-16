@@ -41,6 +41,7 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.UserService;
@@ -79,6 +80,9 @@ public class CamService {
     private ApStateRepository stateRepository;
 
     @Autowired
+    private ApAccessPointRepository accessPointRepository;
+
+    @Autowired
     private ApBindingStateRepository bindingStateRepository;
 
     @Autowired
@@ -104,6 +108,9 @@ public class CamService {
 
     @Autowired
     private AccessPointItemService apItemService;
+
+    @Autowired
+    private AsyncRequestService asyncRequestService;
 
 
     public List<ApState> createAccessPoints(final ProcessingContext procCtx,
@@ -159,13 +166,12 @@ public class CamService {
             accessPointService.setAccessPointInDataRecordRefs(state.getAccessPoint(), dataRecordRefList, binding);
         }
         dataRecordRefRepository.saveAll(dataRecordRefList);
-        //TODO fantiš smazat po vyzkoušení, že je OK
-//        List<ApPart> partList = itemRepository.findPartsByDataRecordRefList(dataRecordRefList);
-//        if (CollectionUtils.isNotEmpty(partList)) {
-//            for (ApPart part : partList) {
-//                updatePartValue(part);
-//            }
-//        }
+        if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
+            List<Integer> accessPointIds = accessPointRepository.findAccessPointIdsByRefData(dataRecordRefList);
+            if (CollectionUtils.isNotEmpty(accessPointIds)) {
+                asyncRequestService.enqueue(accessPointIds);
+            }
+        }
 
         return states;
     }
@@ -458,10 +464,12 @@ public class CamService {
                         deleteChangedOrRemovedItems(bindingItems, apChange);
 
                         ApPart oldPart = bindingItem.getPart();
-                        partService.deletePart(oldPart, apChange);
                         ApPart apPart = partService.createPart(oldPart, apChange);
+                        partService.deletePart(oldPart, apChange);
+                        accessPointService.changeIndicesToNewPart(oldPart, apPart);
                         bindingItem.setPart(apPart);
                         bindingItemRepository.save(bindingItem);
+                        accessPointService.changeBindingItemParts(oldPart, apPart);
 
                         changePartInItems(apPart, notChangeItems, apChange);
                         changePartInItems(apPart, apChange, oldPart);

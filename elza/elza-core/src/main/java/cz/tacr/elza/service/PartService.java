@@ -204,6 +204,7 @@ public class PartService {
      */
     public void deletePart(ApPart apPart, ApChange apChange) {
         apPart.setDeleteChange(apChange);
+        apPart.setKeyValue(null);
         partRepository.save(apPart);
     }
 
@@ -264,11 +265,13 @@ public class PartService {
 
     public boolean updatePartValue(ApPart apPart, GroovyResult result, ApState state, boolean async) {
         ApScope scope = state.getScope();
-        Integer accessPointId = state.getAccessPoint().getAccessPointId();
-        boolean preferredPart = false;
+        ApAccessPoint accessPoint = state.getAccessPoint();
+        Integer accessPointId = accessPoint.getAccessPointId();
+        boolean oldPreferredPart = false;
         if(apPart.getKeyValue() != null && apPart.getKeyValue().getKeyType().equals(PT_PREFER_NAME)) {
-            preferredPart = true;
+            oldPreferredPart = true;
         }
+        boolean preferedPart = apPart.getPartId().equals(accessPoint.getPreferredPart().getPartId());
 
         boolean success = true;
         Map<String, String> indexMap = result.getIndexes();
@@ -371,10 +374,11 @@ public class PartService {
 
             ApIndex apIndex = apIndexMapByType.remove(indexType);
 
-            if (preferredPart && indexType.equals(DISPLAY_NAME)) {
-                if(!value.equals(apIndex.getValue())) {
+            if (indexType.equals(DISPLAY_NAME)) {
+                if ((oldPreferredPart && !value.equals(apIndex.getValue())) ||
+                        (preferedPart && (apIndex == null || !value.equals(apIndex.getValue())))) {
                     //přegenerování entit, které odkazují na entitu, které se mění preferované jméno
-                    checkReferredRecords(apPart);
+                    checkReferredRecords(accessPoint);
                 }
             }
 
@@ -403,14 +407,13 @@ public class PartService {
         return success;
     }
 
-    private void checkReferredRecords(ApPart apPart) {
-        ApAccessPoint accessPoint = apPart.getAccessPoint();
+    private void checkReferredRecords(ApAccessPoint accessPoint) {
         List<Integer> dataIdsList = dataRecordRefRepository.findIdsByRecord(accessPoint);
 
         if(CollectionUtils.isNotEmpty(dataIdsList)) {
             List<Integer> accessPointIds = accessPointRepository.findAccessPointIdsByRefDataId(dataIdsList);
-            if (accessPointIds.remove(apPart.getAccessPointId())) {
-                logger.warn("Archivní entita id " + apPart.getAccessPointId() + " má referenci sama na sebe!");
+            if (accessPointIds.remove(accessPoint.getAccessPointId())) {
+                logger.warn("Archivní entita id " + accessPoint.getAccessPointId() + " má referenci sama na sebe!");
             }
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
                 asyncRequestService.enqueue(accessPointIds);
