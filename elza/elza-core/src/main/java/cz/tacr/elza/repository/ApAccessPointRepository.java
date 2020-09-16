@@ -6,6 +6,7 @@ import java.util.Set;
 
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -65,6 +66,12 @@ public interface ApAccessPointRepository
             "JOIN ApItem item ON part.partId = item.part.partId " +
             "WHERE item.deleteChange IS NULL AND item.data.dataId IN :dataIds")
     List<Integer> findAccessPointIdsByRefDataId(@Param("dataIds") Collection<Integer> dataIds);
+
+    @Query("SELECT ap.accessPointId FROM ap_access_point ap " +
+            "JOIN ApPart part ON ap.accessPointId = part.accessPoint.accessPointId " +
+            "JOIN ApItem item ON part.partId = item.part.partId " +
+            "WHERE item.deleteChange IS NULL AND item.data IN :dataRecordRefs")
+    List<Integer> findAccessPointIdsByRefData(@Param("dataRecordRefs") Collection<ArrDataRecordRef> dataRecordRefs);
 
     @Query("SELECT s.accessPointId FROM ap_state s WHERE s.deleteChangeId IS NULL")
     List<Integer> findActiveAccessPointIds();

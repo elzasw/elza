@@ -827,9 +827,9 @@ public class AccessPointService {
             List<ApBindingItem> bindingItemList = bindingItemRepository.findByItems(itemList);
 
             apItemService.deletePartItems(apPart, change);
+            ApPart newPart = partService.createPart(apPart, change);
             partService.deletePart(apPart, change);
 
-            ApPart newPart = partService.createPart(apPart, change);
             changeBindingItemParts(apPart, newPart);
             changeIndicesToNewPart(apPart, newPart);
 
@@ -848,7 +848,7 @@ public class AccessPointService {
 //        }
     }
 
-    private void changeIndicesToNewPart(ApPart apPart, ApPart newPart) {
+    public void changeIndicesToNewPart(ApPart apPart, ApPart newPart) {
         List<ApIndex> indices = indexRepository.findByPartId(apPart.getPartId());
         if (CollectionUtils.isNotEmpty(indices)) {
             for (ApIndex index : indices) {
@@ -858,7 +858,7 @@ public class AccessPointService {
         }
     }
 
-    private void changeBindingItemParts(ApPart oldPart, ApPart newPart) {
+    public void changeBindingItemParts(ApPart oldPart, ApPart newPart) {
         List<ApBindingItem> bindingItemList = bindingItemRepository.findByPart(oldPart);
         if (CollectionUtils.isNotEmpty(bindingItemList)) {
             for (ApBindingItem bindingItem : bindingItemList) {
@@ -1556,7 +1556,7 @@ public class AccessPointService {
 
         accessPoint.setPreferredPart(apPart);
         saveWithLock(accessPoint);
-        generateSync(accessPoint.getAccessPointId(), apPart);
+        generateSync(accessPoint.getAccessPointId());
     }
 
     public void checkUniqueBinding(ApScope scope, String archiveEntityId, String externalSystemCode) {
