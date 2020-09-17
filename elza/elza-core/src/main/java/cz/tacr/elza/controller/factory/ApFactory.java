@@ -25,6 +25,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.vo.TypeRuleSet;
+import cz.tacr.elza.repository.UserRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -125,6 +126,8 @@ public class ApFactory {
 
     private final ApTypeRepository apTypeRepository;
 
+    private final UserRepository userRepository;
+
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
@@ -137,7 +140,8 @@ public class ApFactory {
                      final RuleFactory ruleFactory,
                      final CamConnector camConnector,
                      final ApIndexRepository indexRepository,
-                     final ApTypeRepository apTypeRepository) {
+                     final ApTypeRepository apTypeRepository,
+                     final UserRepository userRepository) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
         this.scopeRepository = scopeRepository;
@@ -150,6 +154,7 @@ public class ApFactory {
         this.camConnector = camConnector;
         this.indexRepository = indexRepository;
         this.apTypeRepository = apTypeRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -205,7 +210,10 @@ public class ApFactory {
      */
     public ApAccessPointVO createVO(ApAccessPoint accessPoint) {
         ApState apState = stateRepository.findLastByAccessPoint(accessPoint);
-        return createVO(apState, getTypeRuleSetMap());
+        ApPart preferredPart = accessPoint.getPreferredPart();
+        ApIndex preferredPartDisplayName = indexRepository.findByPartAndIndexType(preferredPart, DISPLAY_NAME);
+        String name = preferredPartDisplayName != null ? preferredPartDisplayName.getValue() : null;
+        return createVO(apState, getTypeRuleSetMap(), accessPoint, name);
     }
 
     public Map<Integer, Integer> getTypeRuleSetMap() {
@@ -251,9 +259,13 @@ public class ApFactory {
     }
 
     public ApAccessPointVO createVO(ApState state, boolean fillParts) {
-        ApAccessPointVO apVO = createVO(state, getTypeRuleSetMap());
+        ApAccessPoint ap = state.getAccessPoint();
+        ApPart preferredPart = ap.getPreferredPart();
+        ApIndex preferredPartDisplayName = indexRepository.findByPartAndIndexType(preferredPart, DISPLAY_NAME);
+        String name = preferredPartDisplayName != null ? preferredPartDisplayName.getValue() : null;
+
+        ApAccessPointVO apVO = createVO(state, getTypeRuleSetMap(), ap, name);
         if (fillParts) {
-            ApAccessPoint ap = state.getAccessPoint();
 
             // prepare parts
             List<ApPart> parts = partRepository.findValidPartByAccessPoint(ap);
@@ -268,6 +280,9 @@ public class ApFactory {
             Integer comments = stateRepository.countCommentsByAccessPoint(ap);
             //description
             String description = getDescription(parts, items);
+
+            //vlastník entity
+            UsrUser ownerUser = userRepository.findAccessPointOwner(ap);
 
             //prepare external ids
             List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(ap);
@@ -288,16 +303,17 @@ public class ApFactory {
             if (description != null) {
                 apVO.setDescription(description);
             }
+            apVO.setPreferredPart(preferredPart.getPartId());
+            apVO.setLastChange(createVO(state.getCreateChange()));
+            apVO.setOwnerUser(createVO(ownerUser));
         }
         return apVO;
     }
 
     public ApAccessPointVO createVO(final ApState apState,
-                                    final Map<Integer, Integer> typeRuleSetMap) {
-        ApAccessPoint ap = apState.getAccessPoint();
-        ApPart preferredPart = ap.getPreferredPart();
-        UserVO ownerUser = getOwnerUser(ap);
-
+                                    final Map<Integer, Integer> typeRuleSetMap,
+                                    final ApAccessPoint ap,
+                                    final String name) {
         // create VO
         ApAccessPointVO vo = new ApAccessPointVO();
         vo.setId(ap.getAccessPointId());
@@ -314,10 +330,7 @@ public class ApFactory {
         }
 
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
-        vo.setName(preferredPart != null ? preferredPart.getValue() : null);
-        vo.setPreferredPart(preferredPart != null ? preferredPart.getPartId() : null);
-        vo.setLastChange(createVO(apState.getCreateChange()));
-        vo.setOwnerUser(ownerUser);
+        vo.setName(name);
         return vo;
     }
 
@@ -384,11 +397,6 @@ public class ApFactory {
         return briefDesc;
     }
 
-    private UserVO getOwnerUser(final ApAccessPoint accessPoint) {
-        ApState first = stateRepository.findFirstByAccessPoint(accessPoint);
-        return createVO(first.getCreateChange().getUser());
-    }
-
     public List<ApPartVO> createVO(final List<ApPart> parts,
                                    final Map<Integer, List<ApItem>> items,
                                    final Map<Integer, List<ApIndex>> indices) {
@@ -452,10 +460,15 @@ public class ApFactory {
         Map<Integer, ApState> apStateMap = stateRepository.findLastByAccessPoints(accessPoints).stream()
                 .collect(Collectors.toMap(o -> o.getAccessPointId(), Function.identity()));
 
+        Map<Integer, ApIndex> nameMap = indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(accessPoints, DISPLAY_NAME).stream()
+                .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
+
         for (ApAccessPoint accessPoint : accessPoints) {
             Integer accessPointId = accessPoint.getAccessPointId();
             ApState apState = apStateMap.get(accessPointId);
-            result.add(createVO(apState, getTypeRuleSetMap()));
+            ApIndex indexName = nameMap.get(accessPointId);
+            String name = indexName != null ? indexName.getValue() : null;
+            result.add(createVO(apState, getTypeRuleSetMap(), accessPoint, name));
         }
 
         return result;

@@ -76,6 +76,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         CriteriaQuery<ApState> query = builder.createQuery(ApState.class);
         Root<ApAccessPoint> accessPointRoot = query.from(ApAccessPoint.class);
         Root<ApState> apStateRoot = query.from(ApState.class);
+        apStateRoot.fetch(ApState.FIELD_ACCESS_POINT, JoinType.INNER);
 
         Subquery<Integer> subquery = query.subquery(Integer.class);
         Root<ApAccessPoint> accessPointSubquery = subquery.from(ApAccessPoint.class);
