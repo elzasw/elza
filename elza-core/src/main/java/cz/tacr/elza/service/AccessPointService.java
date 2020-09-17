@@ -1804,10 +1804,6 @@ public class AccessPointService {
         return null;
     }
 
-    public List<ApAccessPoint> findApAccessPointsByStates(List<ApState> states) {
-        return apAccessPointRepository.findApAccessPointsByStates(states);
-    }
-
     public Map<Integer, ApIndex> findPreferredPartIndexMap(List<ApAccessPoint> accessPoints) {
         return indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(accessPoints, DISPLAY_NAME).stream()
                 .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
