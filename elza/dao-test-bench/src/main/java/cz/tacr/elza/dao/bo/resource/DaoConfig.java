@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.ws.types.v1.DaoType;
+
 public class DaoConfig {
 
 	public static final String FILE_IDENTIFIER_ATTR_NAME = "identifier";
@@ -19,6 +21,7 @@ public class DaoConfig {
 	private String label;
 
     private Map<String, String> attributes = new HashMap<>();
+    private DaoType daoType;
 
 
 	public List<Map<String, Object>> getFileAttributes() {
@@ -51,5 +54,13 @@ public class DaoConfig {
 
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
+    }
+
+    public void setDaoType(final DaoType daoType) {
+        this.daoType = daoType;
+    }
+
+    public DaoType getDaoType() {
+        return daoType;
     }
 }
