@@ -79,4 +79,7 @@ public interface ApAccessPointRepository
     @Query("SELECT s.accessPointId FROM ap_state s WHERE s.deleteChangeId IS NULL AND s.apType IN :apTypes")
     List<Integer> findActiveAccessPointIdsByApTypes(@Param("apTypes") Collection<ApType> apTypes);
 
+    @Query("SELECT ap FROM ap_access_point ap JOIN ap_state s ON s.accessPoint = ap WHERE s IN :states")
+    List<ApAccessPoint> findApAccessPointsByStates(@Param("states") Collection<ApState> states);
+
 }
