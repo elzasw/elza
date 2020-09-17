@@ -15,6 +15,7 @@ import cz.tacr.elza.dao.common.PathResolver;
 import cz.tacr.elza.dao.exception.DaoComponentException;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoLink;
+import cz.tacr.elza.ws.types.v1.DaoType;
 import cz.tacr.elza.ws.types.v1.FileGroup;
 import cz.tacr.elza.ws.types.v1.ItemString;
 import cz.tacr.elza.ws.types.v1.Items;
@@ -92,6 +93,11 @@ public class DaoBo {
 		Dao dao = new Dao();
 		dao.setIdentifier(getUId());
 		dao.setLabel(getConfig().getLabel());
+        DaoType daoType = getConfig().getDaoType();
+        if (daoType == null) {
+            daoType = DaoType.ATTACHMENT;
+        }
+        dao.setDaoType(daoType);
         Map<String, String> attrs = getConfig().getAttributes();
         if (attrs != null && attrs.size() > 0) {
             Items items = new Items();

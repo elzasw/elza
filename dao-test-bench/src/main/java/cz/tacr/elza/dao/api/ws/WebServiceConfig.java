@@ -66,12 +66,12 @@ public class WebServiceConfig {
 	}
 
 	@Bean
-	public ServletRegistrationBean CXFServlet() {
+    public ServletRegistrationBean<CXFServlet> CXFServlet() {
 		String contextPath = "/" + storageConfig.getRepositoryIdentifier() + "/ws/*";
 
         log.info("URL for WSDL services: " + contextPath);
 
-		ServletRegistrationBean servlet = new ServletRegistrationBean(new CXFServlet(), contextPath);
+        ServletRegistrationBean<CXFServlet> servlet = new ServletRegistrationBean<>(new CXFServlet(), contextPath);
 		servlet.setLoadOnStartup(1);
 		return servlet;
 	}
