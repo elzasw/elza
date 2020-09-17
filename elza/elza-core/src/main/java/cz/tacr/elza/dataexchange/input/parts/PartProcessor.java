@@ -3,6 +3,14 @@ package cz.tacr.elza.dataexchange.input.parts;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.common.items.DescriptionItemAPRefImpl;
+import cz.tacr.elza.dataexchange.common.items.DescriptionItemBitImpl;
+import cz.tacr.elza.dataexchange.common.items.DescriptionItemDecimalImpl;
+import cz.tacr.elza.dataexchange.common.items.DescriptionItemEnumImpl;
+import cz.tacr.elza.dataexchange.common.items.DescriptionItemFileRefImpl;
+import cz.tacr.elza.dataexchange.common.items.DescriptionItemIntegerImpl;
+import cz.tacr.elza.dataexchange.common.items.DescriptionItemStringImpl;
+import cz.tacr.elza.dataexchange.common.items.DescriptionItemStructObjectRefImpl;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointsContext;
@@ -18,6 +26,8 @@ import cz.tacr.elza.schema.v2.*;
 import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -36,6 +46,8 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
 
     private final StaticDataProvider staticData;
 
+    private final ImportContext context;
+
     protected P party;
 
     protected PartInfo info;
@@ -45,6 +57,7 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
         this.partsContext = context.getParts();
         this.apContext = context.getAccessPoints();
         this.staticData = context.getStaticData();
+        this.context = context;
     }
 
     @Override
@@ -86,40 +99,41 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
         List<ItemWrapper> returnList = new ArrayList<>();
 
         ItemType itemType = staticData.getItemTypeByCode("NM_MAIN");
-        ApItem mainEntity = createApItem(partEntity, createItemData(itemType, name.getMain()), itemType, null,returnList);
+        ApItem mainEntity = createApItem(partEntity, createItemData(itemType, null, name.getMain()), itemType, null,returnList);
         ItemWrapper itemWrapper = partsContext.addItem(mainEntity, info);
         returnList.add(itemWrapper);
 
         itemType = staticData.getItemTypeByCode("NM_TYPE");
-        ApItem entity = createApItem(partEntity, createItemData(itemType, null), itemType, name.getFt(), returnList);
+        String itemSpecCode = name.getFt();
+        ApItem entity = createApItem(partEntity, createItemData(itemType, itemSpecCode, null), itemType, itemSpecCode, returnList);
         itemWrapper = partsContext.addItem(entity, info);
         returnList.add(itemWrapper);
 
 
         if (name.getOth() != null && !name.getOth().isEmpty()) {
             itemType = staticData.getItemTypeByCode("NM_MINOR");
-            entity = createApItem(partEntity, createItemData(itemType, name.getOth()), itemType,null, returnList);
+            entity = createApItem(partEntity, createItemData(itemType, null, name.getOth()), itemType,null, returnList);
             itemWrapper = partsContext.addItem(entity, info);
             returnList.add(itemWrapper);
         }
 
         if (name.getNote() != null && !name.getNote().isEmpty()) {
             itemType = staticData.getItemTypeByCode("NOTE");
-            entity = createApItem(partEntity, createItemData(itemType, name.getNote()), itemType, null,returnList);
+            entity = createApItem(partEntity, createItemData(itemType, null, name.getNote()), itemType, null,returnList);
             itemWrapper = partsContext.addItem(entity, info);
             returnList.add(itemWrapper);
         }
 
         if (name.getDgb() != null && !name.getDgb().isEmpty()) {
             itemType = staticData.getItemTypeByCode("NM_DEGREE_PRE");
-            entity = createApItem(partEntity, createItemData(itemType, name.getDgb()), itemType,null, returnList);
+            entity = createApItem(partEntity, createItemData(itemType, null, name.getDgb()), itemType,null, returnList);
             itemWrapper = partsContext.addItem(entity, info);
             returnList.add(itemWrapper);
         }
 
         if (name.getDga() != null && !name.getDga().isEmpty()) {
             itemType = staticData.getItemTypeByCode("NM_DEGREE_POST");
-            entity = createApItem(partEntity, createItemData(itemType, name.getDga()), itemType, null, returnList);
+            entity = createApItem(partEntity, createItemData(itemType, null, name.getDga()), itemType, null, returnList);
             itemWrapper = partsContext.addItem(entity, info);
             returnList.add(itemWrapper);
         }
@@ -137,25 +151,25 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
                         break;
                     case "GENERAL":
                         itemType = staticData.getItemTypeByCode("NM_SUP_GEN");
-                        entity = createApItem(partEntity, createItemData(itemType, nc.getV()), itemType, null,returnList);
+                        entity = createApItem(partEntity, createItemData(itemType, null, nc.getV()), itemType, null,returnList);
                         itemWrapper = partsContext.addItem(entity, info);
                         returnList.add(itemWrapper);
                         break;
                     case "GEO":
                         itemType = staticData.getItemTypeByCode("NM_SUP_GEO");
-                        entity = createApItem(partEntity, createItemData(itemType, nc.getV()), itemType, null, returnList);
+                        entity = createApItem(partEntity, createItemData(itemType, null, nc.getV()), itemType, null, returnList);
                         itemWrapper = partsContext.addItem(entity, info);
                         returnList.add(itemWrapper);
                         break;
                     case "TIME":
                         itemType = staticData.getItemTypeByCode("NM_SUP_CHRO");
-                        entity = createApItem(partEntity, createItemData(itemType, nc.getV()), itemType, null, returnList);
+                        entity = createApItem(partEntity, createItemData(itemType, null, nc.getV()), itemType, null, returnList);
                         itemWrapper = partsContext.addItem(entity, info);
                         returnList.add(itemWrapper);
                         break;
                     case "ORDER":
                         itemType = staticData.getItemTypeByCode("NM_ORDER");
-                        entity = createApItem(partEntity, createItemData(itemType, nc.getV()), itemType, null, returnList);
+                        entity = createApItem(partEntity, createItemData(itemType, null, nc.getV()), itemType, null, returnList);
                         itemWrapper = partsContext.addItem(entity, info);
                         returnList.add(itemWrapper);
                         break;
@@ -175,7 +189,7 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
             List<ItemWrapper> itemWrapperList = new ArrayList<>();
 
             ItemType itemType = staticData.getItemTypeByCode(itemTypeCode);
-            ApItem entity = createApItem(partEntity, createItemData(itemType, value), itemType, null, itemWrapperList);
+            ApItem entity = createApItem(partEntity, createItemData(itemType, null, value), itemType, null, itemWrapperList);
             ItemWrapper itemWrapper = partsContext.addItem(entity, info);
             itemWrapperList.add(itemWrapper);
             info = partsContext.addPart(partEntity, String.valueOf(partsContext.getCurrentImportId()), apInfo, type, itemWrapperList);
@@ -210,24 +224,22 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
         return position;
     }
 
-    protected ArrData createItemData(ItemType itemType, String value) {
-        ArrData data = null;
+    protected ArrData createItemData(ItemType itemType, String itemSpecCode, String value) {
+        DescriptionItem descriptionItem = null;
         switch (itemType.getDataType().getCode()) {
             case "FORMATTED_TEXT":
             case "TEXT":
-                ArrDataText dataText = new ArrDataText();
-                dataText.setValue(value);
-                data = dataText;
-                break;
             case "STRING":
-                ArrDataString itemString = new ArrDataString();
-                itemString.setValue(value);
-                data = itemString;
+            case "UNITID":
+            case "COORDINATES":
+                DescriptionItemString descriptionItemString = new DescriptionItemStringImpl();
+                descriptionItemString.setV(value);
+                descriptionItem = descriptionItemString;
                 break;
             case "INT":
-                ArrDataInteger itemInteger = new ArrDataInteger();
-                itemInteger.setValue(Integer.valueOf(value));
-                data = itemInteger;
+                DescriptionItemInteger descriptionItemInteger = new DescriptionItemIntegerImpl();
+                descriptionItemInteger.setV(BigInteger.valueOf(Integer.parseInt(value)));
+                descriptionItem = descriptionItemInteger;
                 break;
             case "DATE":
                 ArrDataDate dataDate = new ArrDataDate();
@@ -235,50 +247,41 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
                 LocalDate localDate = LocalDate.parse(value, formatter);
                 dataDate.setValue(localDate);
                 dataDate.setDataType(DataType.DATE.getEntity());
-                data = dataDate;
-                break;
-            case "UNITID":
-                ArrDataUnitid itemUnitid = new ArrDataUnitid();
-                itemUnitid.setUnitId(value);
-                data = itemUnitid;
-                break;
-            case "UNITDATE":
-                // TODO : gotzy doresit
-                /*ArrDataUnitdate itemUnitdate = createArrDataUnitdate(text);
-                data = itemUnitdate;*/
-                break;
-            case "COORDINATES":
-                break;
+                return dataDate;
             case "RECORD_REF":
-                // TODO : gotzy doresit
-                /*ArrDataRecordRef itemRecordRef = new ArrDataRecordRef();
-                ApAccessPoint record = apAccessPointRepository.getOneCheckExist(Integer.valueOf(text));
-                itemRecordRef.setRecord(record);
-                data = itemRecordRef;*/
+                DescriptionItemAPRef descriptionItemAPRef = new DescriptionItemAPRefImpl();
+                descriptionItemAPRef.setApid(value);
+                descriptionItem = descriptionItemAPRef;
                 break;
             case "BIT":
-                ArrDataBit itemBit = new ArrDataBit();
-                itemBit.setValue(Boolean.valueOf(value));
-                data = itemBit;
-                break;
-            case "URI-REF":
-                ArrDataUriRef itemUriRef = new ArrDataUriRef();
-                itemUriRef.setValue(value);
-                data = itemUriRef;
+                DescriptionItemBit descriptionItemBit = new DescriptionItemBitImpl();
+                descriptionItemBit.setV(Boolean.valueOf(value));
+                descriptionItem = descriptionItemBit;
                 break;
             case "DECIMAL":
+                DescriptionItemDecimal descriptionItemDecimal = new DescriptionItemDecimalImpl();
+                descriptionItemDecimal.setV(BigDecimal.valueOf(Double.parseDouble(value)));
+                descriptionItem = descriptionItemDecimal;
                 break;
             case "STRUCTURED":
+                DescriptionItemStructObjectRef descriptionItemStructObjectRef = new DescriptionItemStructObjectRefImpl();
+                descriptionItemStructObjectRef.setSoid(value);
+                descriptionItem = descriptionItemStructObjectRef;
                 break;
             case "ENUM":
-                ArrDataNull itemNull = new ArrDataNull();
-                data = itemNull;
+                descriptionItem = new DescriptionItemEnumImpl();
+                break;
+            case "FILE_REF":
+                DescriptionItemFileRef descriptionItemFileRef = new DescriptionItemFileRefImpl();
+                descriptionItemFileRef.setFid(value);
+                descriptionItem = descriptionItemFileRef;
                 break;
             default:
                 throw new SystemException("Neplatný typ atributu " + itemType.getDataType().getCode(), BaseCode.INVALID_STATE);
         }
-        data.setDataType(itemType.getDataType().getEntity());
-        return data;
+        descriptionItem.setT(itemType.getCode());
+        descriptionItem.setS(itemSpecCode);
+        return descriptionItem.createData(context, itemType.getDataType()).getData();
     }
 
     protected E createPart(RulPartType type, AccessPointInfo apInfo) {
