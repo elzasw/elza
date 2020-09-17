@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.service.cam.CamService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -261,7 +262,18 @@ public class ApController {
 
         final List<ApState> foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from, count, fund, scopeId, states, searchTypeNameFinal, searchTypeUsernameFinal);
 
-        return new FilteredResultVO<>(foundRecords, apState -> apFactory.createVO(apState, apFactory.getTypeRuleSetMap()), foundRecordsCount);
+        final List<ApAccessPoint> accessPoints = accessPointService.findApAccessPointsByStates(foundRecords);
+
+        final Map<Integer, Integer> typeRuleSetMap = apFactory.getTypeRuleSetMap();
+
+        final Map<Integer, ApIndex> nameMap = accessPointService.findPreferredPartIndexMap(accessPoints);
+
+        return new FilteredResultVO<>(foundRecords, apState ->
+                apFactory.createVO(apState,
+                        typeRuleSetMap,
+                        apState.getAccessPoint(),
+                        nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getValue() : null),
+                foundRecordsCount);
     }
 
     /**

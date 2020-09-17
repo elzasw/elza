@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -1801,6 +1802,15 @@ public class AccessPointService {
             }
         }
         return null;
+    }
+
+    public List<ApAccessPoint> findApAccessPointsByStates(List<ApState> states) {
+        return apAccessPointRepository.findApAccessPointsByStates(states);
+    }
+
+    public Map<Integer, ApIndex> findPreferredPartIndexMap(List<ApAccessPoint> accessPoints) {
+        return indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(accessPoints, DISPLAY_NAME).stream()
+                .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
     }
 
     /**
