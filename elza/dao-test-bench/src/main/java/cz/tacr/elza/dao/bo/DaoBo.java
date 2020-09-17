@@ -3,6 +3,7 @@ package cz.tacr.elza.dao.bo;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -11,13 +12,13 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.dao.DCStorageConfig;
 import cz.tacr.elza.dao.bo.resource.DaoConfig;
 import cz.tacr.elza.dao.bo.resource.DaoConfigResource;
+import cz.tacr.elza.dao.bo.resource.ItemConfig;
 import cz.tacr.elza.dao.common.PathResolver;
 import cz.tacr.elza.dao.exception.DaoComponentException;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoLink;
 import cz.tacr.elza.ws.types.v1.DaoType;
 import cz.tacr.elza.ws.types.v1.FileGroup;
-import cz.tacr.elza.ws.types.v1.ItemString;
 import cz.tacr.elza.ws.types.v1.Items;
 
 public class DaoBo {
@@ -98,15 +99,14 @@ public class DaoBo {
             daoType = DaoType.ATTACHMENT;
         }
         dao.setDaoType(daoType);
-        Map<String, String> attrs = getConfig().getAttributes();
-        if (attrs != null && attrs.size() > 0) {
+
+        List<ItemConfig> configItems = getConfig().getItems();
+        if (configItems != null && configItems.size() > 0) {
             Items items = new Items();
-            attrs.forEach((name, value) -> {
-                ItemString item = new ItemString();
-                item.setType(name);
-                item.setValue(value);
+            for (ItemConfig configItem : configItems) {
+                Object item = configItem.getItem();
                 items.getStrOrLongOrEnm().add(item);
-            });
+            }
 
             dao.setItems(items);
         }

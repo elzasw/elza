@@ -31,13 +31,16 @@ Volání příkazů serveru - vzor
 -----------------------------
 
 Odeslání připraveného balíčku ze serveru do Elzy (prázdný balíček):
-curl -v -X POST http://localhost:8085/repo/import/1/system/elza
+curl -v -X POST http://localhost:8085/import/1/system/elza
+
+Odebrání prázdného balíčku
+curl -v -X GET http://127.0.0.1:8085/daoservice/remove/1/system/elza
 
 Odeslání připraveného balíčku ze serveru do Elzy (balíček s jedním dao):
-curl -v -X POST http://localhost:8085/repo/import/2/system/elza
+curl -v -X POST http://localhost:8085/import/2/system/elza
 
 Odeslání připraveného balíčku ze serveru do Elzy (balíček s jedním dao typu Level):
-curl -v -X POST http://localhost:8085/repo/import/3/system/elza
+curl -v -X POST http://localhost:8085/import/3/system/elza
 
 
 Nastavení v Elza - vzorové nastavení odpovídající vzorovému nastavení dao testovacímu serveru
