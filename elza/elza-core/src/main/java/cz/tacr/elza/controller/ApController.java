@@ -262,7 +262,9 @@ public class ApController {
 
         final List<ApState> foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from, count, fund, scopeId, states, searchTypeNameFinal, searchTypeUsernameFinal);
 
-        final List<ApAccessPoint> accessPoints = accessPointService.findApAccessPointsByStates(foundRecords);
+        final List<ApAccessPoint> accessPoints = foundRecords.stream()
+                .map(ApState::getAccessPoint)
+                .collect(Collectors.toList());
 
         final Map<Integer, Integer> typeRuleSetMap = apFactory.getTypeRuleSetMap();
 
