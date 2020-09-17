@@ -68,4 +68,13 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
 	        "       and (p.groupControlId = :checkedGroupId)")
 	List<Integer> findPermissionAllowingGroupAccess(@Param("userId") int userId,
 	        @Param("checkedGroupId") int checkedGroupId);
+
+
+	@Query("SELECT user" +
+			" FROM ap_state s1" +
+			" JOIN s1.createChange cc" +
+			" JOIN cc.user user" +
+			" WHERE s1.accessPoint = :accessPoint" +
+			" AND s1.createChangeId = (SELECT min(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
+	UsrUser findAccessPointOwner(@Param("accessPoint") ApAccessPoint accessPoint);
 }
