@@ -69,9 +69,6 @@ public class FundLevelService {
     private IEventNotificationService eventNotificationService;
     @Autowired
     private DescriptionItemService descriptionItemService;
-    @Autowired
-    private DaoService daoService;
-
 
     /**
      * Přesunutí uzlů před jiný.
@@ -405,6 +402,7 @@ public class FundLevelService {
      * @param version          verze stromu
      * @param deleteNode       node ke smazání
      * @param deleteNodeParent rodič nodu ke smazání
+     * @param deleteLevelsWithAttachedDao povolit nebo zakázat mazání úrovně s objektem dao
      */
     // Dává smysl, aby deleteNodeParent byl null?
     // Pravděpodobně by vždy měl být non-null - nemůžeme takto mazat kořen
@@ -428,18 +426,14 @@ public class FundLevelService {
             }
         }
 
-        List<ArrDao> arrDaos = daoService.findDaos(version, deleteNode, 0, 99);
-        if (arrDaos.size() > 0 && !deleteLevelsWithAttachedDao) {
-            throw new SystemException("Uzel " + deleteNode.getNodeId() + " má " + arrDaos.size() + " připojený objekt(y) dao");
-        }
-
         ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(deleteNode.getNodeId()),
                 NodeTypeOperation.DELETE_NODE, null, null, null);
 
         shiftNodes(nodesToShift(deleteLevel), change, deleteLevel.getPosition());
 
         ArrLevel level = arrangementService.deleteLevelCascade(deleteLevel, change,
-                levelRepository.findLevelsByDirection(deleteLevel, version, RelatedNodeDirection.DESCENDANTS));
+                levelRepository.findLevelsByDirection(deleteLevel, version, RelatedNodeDirection.DESCENDANTS),
+                deleteLevelsWithAttachedDao);
 
         eventNotificationService.publishEvent(new EventDeleteNode(EventType.DELETE_LEVEL,
                 version.getFundVersionId(),
