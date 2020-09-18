@@ -964,6 +964,7 @@ when
       "ZP2015_UNIT_INFO_RIGHTS", 
       "ZP2015_RESTRICTION_ACCESS_SHARED", 
       "ZP2015_RESTRICTION_ACCESS_INLINE", 
+      "ZP2015_PUBLISHED",
       // 4.4.3 Možnost zveřejnění reprodukce jednotky popisu
       "ZP2015_UNIT_COPY_RIGHTS",
       // 4.4.4 Fyzický stav jednotky popisu a technické požadavky

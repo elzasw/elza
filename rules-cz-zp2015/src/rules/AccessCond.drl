@@ -19,8 +19,10 @@ no-loop
 when
   $itemType : RulItemTypeExt(code in ( // nastaveni pro ulozeni
         "ZP2015_RESTRICTED_ACCESS_REASON", 
-		"ZP2015_RESTRICTED_ACCESS_TYPE", 
+        "ZP2015_RESTRICTED_ACCESS_TYPE", 
         "ZP2015_RESTRICTION_ACCESS_DATE",
+        "ZP2015_PUBLISH_EVENT_TYPE",
+        "ZP2015_PUBLISH_EVENT_DATE",
         "ZP2015_NOTE"))
 then
   $itemType.setRepeatable(false);
@@ -40,31 +42,133 @@ rule "Možné důvody omezení"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ZP2015_RESTRICTED_ACCESS_REASON")
-    $itemSpec : RulItemSpecExt( ) from $itemType.rulItemSpecList
+    $itemSpec : RulItemSpecExt( code in ("ZP2015_ACCESS_AGREEMENT",
+    "ZP2015_ACCESS_COPY_EXISTANCE", "ZP2015_ACCESS_CULT_HERITAGE",
+    "ZP2015_ACCESS_PHYS_STATE", "ZP2015_ACCESS_PROC_STATE",
+    "ZP2015_ACCESS_SECRET", "ZP2015_ACCESS_LAW",
+    "ZP2015_ACCESS_PERSONAL_DATA", "ZP2015_ACCESS_COPYRIGHT1",
+    "ZP2015_ACCESS_COPYRIGHT2") ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-
-rule "Opakovatelnost pro vybrane"
-no-loop
-when
-    $itemType : RulItemTypeExt(code in (
-		"ZP2015_RESTRICTED_ACCESS_TYPE"))
-then
-  $itemType.setRepeatable(true);
-end
-
-rule "Doporučené prvky popisu"
+rule "Vždy možné prvky popisu"
 no-loop
 when
     $itemType : RulItemTypeExt(code in (
 		"ZP2015_NOTE"))
 then
-    $itemType.setType(RulItemType.Type.RECOMMENDED);
+    $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
-rule "Datum pro omezení ze smlouvy"
+rule "Opakovatelnost pro vybrane"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ZP2015_RESTRICTED_ACCESS_TYPE"))
+then
+  $itemType.setRepeatable(true);
+end
+
+rule "Jiné datum spouštěcí události"
+no-loop
+when
+    StructObjItem(type == "ZP2015_RESTRICTED_ACCESS_REASON" && 
+        specCode in ("ZP2015_ACCESS_AGREEMENT", 
+        			 "ZP2015_ACCESS_PERSONAL_DATA",
+        			 "ZP2015_ACCESS_COPYRIGHT1",
+        			 "ZP2015_ACCESS_COPYRIGHT2")
+    )
+    not StructObjItem(type == "ZP2015_RESTRICTION_ACCESS_DATE" )
+    $itemType : RulItemTypeExt(code == "ZP2015_PUBLISH_EVENT_TYPE")
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Povinná datace v případě uvedení spouštěcí události"
+no-loop
+when
+    StructObjItem(type == "ZP2015_PUBLISH_EVENT_TYPE" && 
+        specCode in ("ZP2015_PUBLISH_EVENT_TYPE_BIRTH",
+                     "ZP2015_PUBLISH_EVENT_TYPE_BIRTH_ESTM", 
+        			 "ZP2015_PUBLISH_EVENT_TYPE_DEATH")
+    )
+    $itemType : RulItemTypeExt(code in ("ZP2015_PUBLISH_EVENT_DATE"))
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+rule "Možné druhy jiných spouštěcích událostí - smlouva"
+no-loop
+when
+    StructObjItem(type == "ZP2015_RESTRICTED_ACCESS_REASON" && 
+    	specCode in ("ZP2015_ACCESS_AGREEMENT"
+    		)
+    )
+    $itemType : RulItemTypeExt(code == "ZP2015_PUBLISH_EVENT_TYPE")
+    $itemSpec : RulItemSpecExt( code in (
+    				"ZP2015_PUBLISH_EVENT_TYPE_BIRTH",
+    				"ZP2015_PUBLISH_EVENT_TYPE_BIRTH_ESTM",
+    				"ZP2015_PUBLISH_EVENT_TYPE_DEATH") ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+
+rule "Možné druhy jiných spouštěcích událostí - osobní údaje"
+no-loop
+when
+    StructObjItem(type == "ZP2015_RESTRICTED_ACCESS_REASON" && 
+    	specCode in ("ZP2015_ACCESS_PERSONAL_DATA"
+    		)
+    )
+    $itemType : RulItemTypeExt(code == "ZP2015_PUBLISH_EVENT_TYPE")
+    $itemSpec : RulItemSpecExt( code in (
+    				"ZP2015_PUBLISH_EVENT_TYPE_BIRTH",
+    				"ZP2015_PUBLISH_EVENT_TYPE_BIRTH_ESTM",
+    				"ZP2015_PUBLISH_EVENT_TYPE_DEATH") ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Možné druhy jiných spouštěcích událostí - autor.prava - majetkova"
+no-loop
+when
+    StructObjItem(type == "ZP2015_RESTRICTED_ACCESS_REASON" && 
+    	specCode in ("ZP2015_ACCESS_COPYRIGHT1"
+    		)
+    )
+    $itemType : RulItemTypeExt(code == "ZP2015_PUBLISH_EVENT_TYPE")
+    $itemSpec : RulItemSpecExt( code in (
+    				"ZP2015_PUBLISH_EVENT_TYPE_BIRTH_ESTM",
+    				"ZP2015_PUBLISH_EVENT_TYPE_DEATH",
+    				"ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_1",
+    				"ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_2",
+    				"ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_3",
+    				"ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_4",
+    				"ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_5",
+    				"ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_6",
+    				"ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_7",
+    				"ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_8") ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Možné druhy jiných spouštěcích událostí - autor.prava - osobnostni"
+no-loop
+when
+    StructObjItem(type == "ZP2015_RESTRICTED_ACCESS_REASON" && 
+    	specCode in ("ZP2015_ACCESS_COPYRIGHT2"
+    		)
+    )
+    $itemType : RulItemTypeExt(code == "ZP2015_PUBLISH_EVENT_TYPE")
+    $itemSpec : RulItemSpecExt( code in (
+    				"ZP2015_PUBLISH_EVENT_TYPE_BIRTH",
+    				"ZP2015_PUBLISH_EVENT_TYPE_BIRTH_ESTM") ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Datum zpřístupnění pro omezení ze smlouvy"
 no-loop
 when
     StructObjItem(type in ("ZP2015_RESTRICTED_ACCESS_REASON") && 
@@ -74,10 +178,12 @@ when
     	"ZP2015_RESTRICTION_ACCESS_DATE"
 		)
 	)
+	not StructObjItem(type in ("ZP2015_PUBLISH_EVENT_TYPE") )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
+/*
 rule "Možné druhy omezení přístupu (archiválie)"
 no-loop
 when
@@ -91,7 +197,7 @@ when
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
-
+*/
 
 rule "Možné druhy omezení přístupu (smlouva, utaj.skut, prav.skut)"
 no-loop
@@ -106,10 +212,9 @@ when
     $itemType : RulItemTypeExt(code == "ZP2015_RESTRICTED_ACCESS_TYPE")
     $itemSpec : RulItemSpecExt( code in 
     				("ZP2015_RESTRICTION_DAO", 
-    				"ZP2015_RESTRICTION_ARCHMAT",
+    				"ZP2015_RESTRICTION_ARCHMAT2",    				
     				"ZP2015_RESTRICTION_ARCHDESC",
-    				"ZP2015_RESTRICTION_ABSTRACT",
-    				"ZP2015_RESTRICTION_ARCHENTITY"
+    				"ZP2015_RESTRICTION_ABSTRACT"
     				 ) 
     			) from $itemType.rulItemSpecList
 then
@@ -123,13 +228,29 @@ when
     StructObjItem(type == "ZP2015_RESTRICTED_ACCESS_REASON" && 
         specCode in ("ZP2015_ACCESS_COPY_EXISTANCE",
         	"ZP2015_ACCESS_CULT_HERITAGE",
-        	"ZP2015_ACCESS_PHYS_STATE",
-        	"ZP2015_ACCESS_PROC_STATE")
+        	"ZP2015_ACCESS_PHYS_STATE")
     )
     $itemType : RulItemTypeExt(code == "ZP2015_RESTRICTED_ACCESS_TYPE")
     $itemSpec : RulItemSpecExt( code in 
     				( 
     				"ZP2015_RESTRICTION_ARCHMAT"
+    				 ) 
+    			) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Možné druhy omezení přístupu - stav zpracování"
+no-loop
+when
+    StructObjItem(type == "ZP2015_RESTRICTED_ACCESS_REASON" && 
+        specCode in ("ZP2015_ACCESS_PROC_STATE")
+    )
+    $itemType : RulItemTypeExt(code == "ZP2015_RESTRICTED_ACCESS_TYPE")
+    $itemSpec : RulItemSpecExt( code in 
+    				( 
+    				"ZP2015_RESTRICTION_ARCHMAT2",
+    				"ZP2015_RESTRICTION_ARCHDESC2"
     				 ) 
     			) from $itemType.rulItemSpecList
 then
@@ -145,8 +266,7 @@ when
     $itemType : RulItemTypeExt(code == "ZP2015_RESTRICTED_ACCESS_TYPE")
     $itemSpec : RulItemSpecExt( code in 
     				( 
-    				"ZP2015_RESTRICTION_DAO_INPERS_ONLY",
-    				"ZP2015_RESTRICTION_ARCHMAT_INPERS_ONLY"
+    				"ZP2015_RESTRICTION_DAO_INPERS_ONLY"
     				 ) 
     			) from $itemType.rulItemSpecList
 then

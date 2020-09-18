@@ -102,8 +102,11 @@
                 <type code="ZP2015_AWARD_LEVEL" width="2"/>
                 <type code="ZP2015_AWARD_GROUP" width="1"/>
                 <type code="ZP2015_RESTRICTION_ACCESS_NAME" width="0"/>
-                <type code="ZP2015_RESTRICTED_ACCESS_REASON" width="2"/>                
+                <type code="ZP2015_RESTRICTED_ACCESS_REASON" width="2"/>
                 <type code="ZP2015_RESTRICTION_ACCESS_DATE" width="1"/>
+                <type code="ZP2015_PUBLISH_EVENT_TYPE" width="2"/>
+                <type code="ZP2015_PUBLISH_EVENT_DATE" width="1"/>
+                <type code="ZP2015_PUBLISH_EVENT_PERIOD" width="1"/>
                 <type code="ZP2015_RESTRICTED_ACCESS_TYPE" width="2"/>
             </group>
             <group code="06_ZP2015_CH4">
@@ -123,8 +126,9 @@
                 <type code="ZP2015_FUTURE_UNITS" width="0"/>
                 <!-- 4.4.1 Podmínky přístupu, práva k jednotce popisu a její reprodukci -->
                 <type code="ZP2015_UNIT_ACCESS" width="0"/>
+                <type code="ZP2015_PUBLISHED"  width="2"/>
                 <type code="ZP2015_RESTRICTION_ACCESS_SHARED" width="2"/>
-                <type code="ZP2015_RESTRICTION_ACCESS_INLINE" width="2"/>
+                <type code="ZP2015_RESTRICTION_ACCESS_INLINE" width="2"/>                
                 <!-- 4.4.2 Možnost zveřejnění informací o jednotce popisu -->
                 <type code="ZP2015_UNIT_INFO_RIGHTS" width="1"/>
                 <!-- 4.4.3 Možnost zveřejnění reprodukce jednotky popisu -->
