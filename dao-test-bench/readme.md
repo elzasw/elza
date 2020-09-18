@@ -17,7 +17,8 @@ Nastavení na straně Elza
 
 Na straně Elza je nuté definovat úložiště digitalizátů s těmito parametry:
 
-FileUrl: http://localhost:8085/file/{daoPackageCode}/{daoCode}/{code}
+FileUrl: http://localhost:8085/file/{code}
+ThumbnailURL: http://localhost:8085/file/{code}
 Zasílání upozornění: Ne
 Kód: repo
 Název: DaoTestBench
