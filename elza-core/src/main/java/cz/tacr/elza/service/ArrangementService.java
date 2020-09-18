@@ -112,6 +112,7 @@ import cz.tacr.elza.repository.ArrRefTemplateMapSpecRepository;
 import cz.tacr.elza.repository.ArrRefTemplateMapTypeRepository;
 import cz.tacr.elza.repository.ArrRefTemplateRepository;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -222,8 +223,11 @@ public class ArrangementService {
     private StaticDataService staticDataService;
 
     @Autowired
-    DaoService daoService;
+    DaoRepository daoRepository;
     
+    @Autowired
+    DaoService daoService;
+
     public static final String UNDEFINED = "Nezjištěno";
 
     /**
@@ -770,11 +774,8 @@ public class ArrangementService {
         ArrFund fund = baselevel.getNode().getFund();
         ArrFundVersion fundVersion = getOpenVersionByFundId(fund.getFundId());
 
-        List<ArrDao> arrDaos = daoService.findDaos(fundVersion, node, 0, 99);
-        for (ArrDao arrDao : arrDaos) {
-            if (arrDao.getDaoType() == DaoType.LEVEL && !deleteLevelsWithAttachedDao) {
-                throw new SystemException("Uzel " + node.getNodeId() + " má připojený objekt dao typu LEVEL");
-            }
+        if (daoRepository.existsDaoByNodeAndDaoTypeIsLevel(node.getNodeId()) && !deleteLevelsWithAttachedDao) {
+            throw new SystemException("Uzel " + node.getNodeId() + " má připojený objekt dao typu LEVEL");
         }
 
         for (ArrDescItem descItem : descItemRepository.findByNodeAndDeleteChangeIsNull(baselevel.getNode())) {
