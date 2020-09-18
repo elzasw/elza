@@ -196,6 +196,9 @@ public class ArrangementService {
     private ArrangementInternalService arrangementInternalService;
 
     @Autowired
+    DaoService daoService;
+    
+    @Autowired
     private PolicyService policyService;
 
     @Autowired
@@ -769,8 +772,9 @@ public class ArrangementService {
         ArrFund fund = baselevel.getNode().getFund();
         ArrFundVersion fundVersion = getOpenVersionByFundId(fund.getFundId());
 
-        List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNode(node);
+        daoService.deleteDaoLinkByNode(fundVersion, node);
 
+        List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNode(node);
 
         arrDescItemList = arrDescItemList.stream().map(i -> {
             em.detach(i);

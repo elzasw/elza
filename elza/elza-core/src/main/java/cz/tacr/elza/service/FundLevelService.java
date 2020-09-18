@@ -26,6 +26,7 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -410,7 +411,8 @@ public class FundLevelService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrLevel deleteLevel(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                 final ArrNode deleteNode,
-                                final ArrNode deleteNodeParent) {
+                                final ArrNode deleteNodeParent,
+                                final boolean deleteLevelsWithAttachedDao) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(deleteNode, "Mazané JP musí být vyplněna");
 
@@ -426,7 +428,10 @@ public class FundLevelService {
             }
         }
 
-        daoService.deleteDaoLinkByNode(version, deleteNode);
+        List<ArrDao> arrDaos = daoService.findDaos(version, deleteNode, 0, 99);
+        if (arrDaos.size() > 0 && !deleteLevelsWithAttachedDao) {
+            throw new SystemException("Uzel " + deleteNode.getNodeId() + " má " + arrDaos.size() + " připojený objekt(y) dao");
+        }
 
         ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(deleteNode.getNodeId()),
                 NodeTypeOperation.DELETE_NODE, null, null, null);

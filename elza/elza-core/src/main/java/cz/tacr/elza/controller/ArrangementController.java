@@ -1626,7 +1626,7 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(nodeParam.getVersionId());
 
-        ArrLevel deleteLevel = fundLevelService.deleteLevel(fundVersion, deleteNode, deleteParent);
+        ArrLevel deleteLevel = fundLevelService.deleteLevel(fundVersion, deleteNode, deleteParent, false);
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
