@@ -936,4 +936,36 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZP2015_PUBLISHED" data-type="BIT">
+        <name>Zveřejněno</name>
+        <shortcut>Zveřejněno</shortcut>
+        <description>Zveřejněná jednotka popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PUBLISH_EVENT_TYPE" data-type="ENUM">
+        <name>jiná spouštěcí událost</name>
+        <shortcut>jiná spouštěcí událost</shortcut>
+        <description>Jiná spouštěcí událost zveřejnění</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PUBLISH_EVENT_DATE" data-type="DATE">
+        <name>datum spouštěcí událost</name>
+        <shortcut>datum spouštěcí událost</shortcut>
+        <description>datum spouštěcí událost</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PUBLISH_EVENT_PERIOD" data-type="INT">
+        <name>jiná lhůta zpřístupnění</name>
+        <shortcut>lhůta</shortcut>
+        <description>jiná lhůta zpřístupnění</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
 </item-types>
