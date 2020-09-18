@@ -356,7 +356,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                             </NoFocusButton>
                         )}
                         {notRoot && (
-                            <NoFocusButton onClick={this.handleDeleteNode}>
+                            <NoFocusButton disabled={this.hasDaos(["LEVEL"])} onClick={this.handleDeleteNode}>
                                 <Icon glyph="fa-trash" />
                             </NoFocusButton>
                         )}
@@ -366,7 +366,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                             <Icon glyph="fa-camera" />
                             {i18n('subNodeForm.digitizationRequest')}
                         </NoFocusButton>
-                        {editPermAllowed && (
+                        {editPermAllowed && this.hasDaos() && (
                             <NoFocusButton onClick={this.props.onDigitizationSync}>
                                 <Icon glyph="fa-camera" />
                                 {i18n('subNodeForm.digitizationSync')}
@@ -407,6 +407,22 @@ class NodeSubNodeForm extends AbstractReactComponent {
                 </div>
             </div>
         );
+    }
+
+    /**
+     * Checks if current subNode has daos. 
+     * If given an array of types, checks only for daos of those types.
+     */
+    hasDaos = (daoTypes) => {
+        const { subNodeDaos } = this.props.parentNode;
+        if(subNodeDaos && subNodeDaos.data){
+            const data = subNodeDaos.data;
+            for(let i = 0; i < data.length; i++){
+                const daoType = data[i].daoType;
+                return daoTypes ? daoTypes.indexOf(daoType) >= 0 : true;
+            }
+        }
+        return false;
     }
 
     handleCreateIssueNode = () => {
