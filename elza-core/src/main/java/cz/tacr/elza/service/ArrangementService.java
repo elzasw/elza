@@ -73,6 +73,8 @@ import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -196,9 +198,6 @@ public class ArrangementService {
     private ArrangementInternalService arrangementInternalService;
 
     @Autowired
-    DaoService daoService;
-    
-    @Autowired
     private PolicyService policyService;
 
     @Autowired
@@ -222,6 +221,9 @@ public class ArrangementService {
     @Autowired
     private StaticDataService staticDataService;
 
+    @Autowired
+    DaoService daoService;
+    
     public static final String UNDEFINED = "Nezjištěno";
 
     /**
@@ -754,23 +756,31 @@ public class ArrangementService {
      * @param baselevel počáteční level
      * @param deleteChange záznam o provedených změnách
      * @param allDeletedLevels list všech levelů, které se budou mazat
+     * @param deleteLevelsWithAttachedDao povolit nebo zakázat mazání úrovně s objektem dao
      * @return
      */
-    public ArrLevel deleteLevelCascade(final ArrLevel baselevel, final ArrChange deleteChange, List allDeletedLevels) {
+    public ArrLevel deleteLevelCascade(final ArrLevel baselevel, final ArrChange deleteChange, List allDeletedLevels, final boolean deleteLevelsWithAttachedDao) {
 
         for (ArrLevel childLevel : levelRepository
                 .findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(baselevel.getNode())) {
-            deleteLevelCascade(childLevel, deleteChange, allDeletedLevels);
+            deleteLevelCascade(childLevel, deleteChange, allDeletedLevels, deleteLevelsWithAttachedDao);
+        }
+
+        ArrNode node = baselevel.getNode();
+        ArrFund fund = baselevel.getNode().getFund();
+        ArrFundVersion fundVersion = getOpenVersionByFundId(fund.getFundId());
+
+        List<ArrDao> arrDaos = daoService.findDaos(fundVersion, node, 0, 99);
+        for (ArrDao arrDao : arrDaos) {
+            if (arrDao.getDaoType() == DaoType.LEVEL && !deleteLevelsWithAttachedDao) {
+                throw new SystemException("Uzel " + node.getNodeId() + " má připojený objekt dao typu LEVEL");
+            }
         }
 
         for (ArrDescItem descItem : descItemRepository.findByNodeAndDeleteChangeIsNull(baselevel.getNode())) {
             descItem.setDeleteChange(deleteChange);
             descItemRepository.save(descItem);
         }
-
-        ArrNode node = baselevel.getNode();
-        ArrFund fund = baselevel.getNode().getFund();
-        ArrFundVersion fundVersion = getOpenVersionByFundId(fund.getFundId());
 
         daoService.deleteDaoLinkByNode(fundVersion, node);
 
