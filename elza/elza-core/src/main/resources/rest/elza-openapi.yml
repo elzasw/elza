@@ -5,6 +5,8 @@ info:
 tags:
   - name: funds
     description: Archivní soubory
+  - name: accesspoints
+    description: Přístupové body a archivní entity
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -124,6 +126,30 @@ paths:
           description: Neplatné údaje pro úpravu AS
         404:
           description: AS neexistuje
+  /accesspoints/{id}:
+    delete:
+      summary: Zneplatnění přístupového bodu
+      operationId: deleteAccessPoint
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Doplnění způsobu zneplatnění
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/DeleteAccessPointDetail'
+      responses:
+        200:
+          description: Potvrzení o úspěšném odstranění
+        404:
+          description: AP neexistuje
 components:
   schemas:
     CreateFund:
@@ -309,3 +335,10 @@ components:
           description: Celkový počet dohledaných AS
           type: integer
           format: int32
+    DeleteAccessPointDetail:
+      type: object
+      description: Doplňující informace k požadavku na zneplatnění přístupového bodu
+      properties:
+        replacedBy:
+          description: Id entity, kterou je odstraňovaná nahrazena
+          type: string
