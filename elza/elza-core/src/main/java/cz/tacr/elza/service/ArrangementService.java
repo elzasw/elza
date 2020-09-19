@@ -73,8 +73,6 @@ import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -763,7 +761,8 @@ public class ArrangementService {
      * @param deleteLevelsWithAttachedDao povolit nebo zakázat mazání úrovně s objektem dao
      * @return
      */
-    public ArrLevel deleteLevelCascade(final ArrLevel baselevel, final ArrChange deleteChange, List allDeletedLevels, final boolean deleteLevelsWithAttachedDao) {
+    public ArrLevel deleteLevelCascade(final ArrLevel baselevel, final ArrChange deleteChange,
+                                       List<ArrLevel> allDeletedLevels, final boolean deleteLevelsWithAttachedDao) {
 
         for (ArrLevel childLevel : levelRepository
                 .findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(baselevel.getNode())) {
@@ -774,8 +773,10 @@ public class ArrangementService {
         ArrFund fund = baselevel.getNode().getFund();
         ArrFundVersion fundVersion = getOpenVersionByFundId(fund.getFundId());
 
-        if (daoRepository.existsDaoByNodeAndDaoTypeIsLevel(node.getNodeId()) && !deleteLevelsWithAttachedDao) {
-            throw new SystemException("Uzel " + node.getNodeId() + " má připojený objekt dao typu LEVEL");
+        // check if connected Dao(type=Level) exists
+        if (!deleteLevelsWithAttachedDao && daoRepository.existsDaoByNodeAndDaoTypeIsLevel(node.getNodeId())) {
+            throw new SystemException("Uzel " + node.getNodeId() + " má připojený objekt dao typu LEVEL")
+                    .set("nodeId", node.getNodeId());
         }
 
         for (ArrDescItem descItem : descItemRepository.findByNodeAndDeleteChangeIsNull(baselevel.getNode())) {
