@@ -23,7 +23,9 @@ import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureDefinition;
+import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -37,6 +39,8 @@ import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
+import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
+import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
 import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
 
@@ -311,7 +315,10 @@ public class StaticDataProvider {
      */
     void init(StaticDataService service) {
         initRuleSets(service.ruleSetRepository);
-        initStructuredTypes(service.structuredTypeRepository, service.structureDefinitionRepository);
+        initStructuredTypes(service.structuredTypeRepository,
+                            service.structureDefinitionRepository,
+                            service.structuredTypeExtensionRepository,
+                            service.structureExtensionDefinitionRepository);
         initItemTypes( service.itemTypeRepository, service.itemSpecRepository, service.itemTypeSpecAssignRepository);
         initPackages(service.packageRepository);
         initApTypes(service.apTypeRepository);
@@ -389,7 +396,9 @@ public class StaticDataProvider {
     }
 
     private void initStructuredTypes(StructuredTypeRepository structuredTypeRepository,
-                                     StructureDefinitionRepository structureDefinitionRepository) {
+                                     StructureDefinitionRepository structureDefinitionRepository,
+                                     StructuredTypeExtensionRepository structuredTypeExtensionRepository,
+                                     StructureExtensionDefinitionRepository structureExtensionDefinitionRepository) {
         List<RulStructuredType> structuredTypes = structuredTypeRepository.findAll();
 
         ArrayList<StructType> structTypes = new ArrayList<>(structuredTypes.size());
@@ -397,10 +406,12 @@ public class StaticDataProvider {
         // Prepare structured types
         structuredTypes.forEach(st -> {
             // read attrs definition
-            List<RulStructureDefinition> attrDefs = structureDefinitionRepository
-                    .findByStructTypeAndDefTypeOrderByPriority(st, RulStructureDefinition.DefType.ATTRIBUTE_TYPES);
+            List<RulStructureDefinition> defs = structureDefinitionRepository.findByStructTypeOrderByPriority(st);
+            List<RulStructuredTypeExtension> exts = structuredTypeExtensionRepository.findByStructureType(st);
+            List<RulStructureExtensionDefinition> extDefs = structureExtensionDefinitionRepository
+                    .findByStructureTypeAndDefTypeOrderByPriority(st);
 
-            StructType structType = new StructType(st, attrDefs);
+            StructType structType = new StructType(st, defs, exts, extDefs);
             structTypes.add(structType);
 
             structuredTypeIdMap.put(st.getStructuredTypeId(), structType);

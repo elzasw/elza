@@ -41,6 +41,7 @@ import com.google.common.eventbus.Subscribe;
 
 import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.domain.ArrFund;
@@ -375,13 +376,13 @@ public class StructObjValueService {
      *            callback volaný, pokud při zpracování dojde ke změně hodnoty strukturovaného datového typu
      * @return Return true if next check is required
      */
-    private boolean generateAndValidate(final ArrStructuredObject structObj, Consumer<ArrStructuredObject> onChange) {
+    private boolean generateAndValidate(final ArrStructuredObject structObj,
+                                        Consumer<ArrStructuredObject> onChange) {
         // do not generate for temp objects
         if (structObj.getState() == ArrStructuredObject.State.TEMP) {
             return false;
         }
         
-        Integer typeId = structObj.getStructuredTypeId();
         StructType structType = staticDataService.getData().getStructuredTypeById(structObj.getStructuredTypeId());
         // read settings for given fund
         SettingsService settingsService = this.applicationContext.getBean(SettingsService.class);        
@@ -391,22 +392,26 @@ public class StructObjValueService {
         // read settings
         SettingStructTypeSettings ssts = settingsService.readSettings(settingsName, structObj.getFundId(), SettingStructTypeSettings.class);
 
-        return generateValue(structObj, onChange, ssts);
+        return generateValue(structType, structObj, onChange, ssts);
     }
 
     /**
      * Internal method to generate value and save it.
      *
      * Method will only check if value is empty.
+     * 
+     * @param structType
      *
      * @param structObj
      *            hodnota struktovaného datového typu
      * @param onChange
-     *            callback volaný, pokud při zpracování dojde ke změně hodnoty strukturovaného datového typu
-     * @param ssts 
+     *            callback volaný, pokud při zpracování dojde ke změně hodnoty
+     *            strukturovaného datového typu
+     * @param ssts
      * @return Return true if next check is required
      */
-    private boolean generateValue(ArrStructuredObject structObj, Consumer<ArrStructuredObject> onChange,
+    private boolean generateValue(StructType structType,
+                                  ArrStructuredObject structObj, Consumer<ArrStructuredObject> onChange,
                                   SettingStructTypeSettings ssts) {
         boolean requestNextCheck = false;
         // generate value
@@ -419,7 +424,7 @@ public class StructObjValueService {
 
         validateStructureItems(validationErrorDescription, structObj, structureItems);
 
-        Result result = generateValue(structObj, structureItems, ssts);
+        Result result = generateValue(structType, structObj, structureItems, ssts);
         // Check if result is properly set (not empty)
         String value = result.getValue();
         String sortValue = result.getSortValue();
@@ -611,12 +616,12 @@ public class StructObjValueService {
      * @param ssts 
      * @return hodnota
      */
-    private Result generateValue(final ArrStructuredObject structureData,
+    private Result generateValue(StructType structType,
+                                 final ArrStructuredObject structureData,
                                  final List<ArrStructuredItem> structureItems, 
                                  final SettingStructTypeSettings ssts) {
 
-        RulStructuredType structureType = structureData.getStructuredType();
-        File groovyFile = findSerializedGroovyFile(structureType, structureData.getFund());
+        File groovyFile = findSerializedGroovyFile(structType, structureData.getFund());
 
         GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFile);
 
@@ -643,8 +648,9 @@ public class StructObjValueService {
     public ParseResult parseValue(final ArrStructuredObject structureData,
                                    final String value) {
 
-        RulStructuredType structureType = structureData.getStructuredType();
-        File groovyFile = findParseGroovyFile(structureType, structureData.getFund());
+        StaticDataProvider sdp = staticDataService.getData();
+        StructType structType = sdp.getStructuredTypeById(structureData.getStructuredTypeId());
+        File groovyFile = findParseGroovyFile(structType, structureData.getFund());
 
         if (groovyFile == null) {
             return null;
@@ -681,16 +687,16 @@ public class StructObjValueService {
     /**
      * Vyhledání groovy scriptu pro parsování podle strukturovaného typu k AS.
      *
-     * @param structureType
+     * @param structType.getStructuredType()
      *            strukturovaný typ
      * @param fund
      *            archivní soubor
      * @return nalezený groovy soubor
      */
     @Nullable
-    private File findParseGroovyFile(final RulStructuredType structureType, final ArrFund fund) {
+    private File findParseGroovyFile(final StructType structType, final ArrFund fund) {
         List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
-                .findByStructureTypeAndDefTypeAndFundOrderByPriority(structureType,
+                .findByStructureTypeAndDefTypeAndFundOrderByPriority(structType.getStructuredType(),
                         RulStructureExtensionDefinition.DefType.PARSE_VALUE,
                         fund);
         RulComponent component;
@@ -701,9 +707,8 @@ public class StructObjValueService {
             component = structureExtensionDefinition.getComponent();
             rulPackage = structureExtensionDefinition.getRulPackage();
         } else {
-            List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
-                    .findByStructTypeAndDefTypeOrderByPriority(structureType,
-                            RulStructureDefinition.DefType.PARSE_VALUE);
+            List<RulStructureDefinition> structureDefinitions = structType
+                    .getDefsByType(RulStructureDefinition.DefType.PARSE_VALUE);
             if (structureDefinitions.size() > 0) {
                 RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
                 component = structureDefinition.getComponent();
@@ -721,15 +726,15 @@ public class StructObjValueService {
     /**
      * Vyhledání groovy scriptu podle strukturovaného typu k AS.
      *
-     * @param structureType
+     * @param structType
      *            strukturovaný typ
      * @param fund
      *            archivní soubor
      * @return nalezený groovy soubor
      */
-    private File findSerializedGroovyFile(final RulStructuredType structureType, final ArrFund fund) {
+    private File findSerializedGroovyFile(final StructType structType, final ArrFund fund) {
         List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository
-                .findByStructureTypeAndDefTypeAndFundOrderByPriority(structureType,
+                .findByStructureTypeAndDefTypeAndFundOrderByPriority(structType.getStructuredType(),
                                                                      RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE,
                                                                      fund);
         RulComponent component;
@@ -740,16 +745,15 @@ public class StructObjValueService {
             component = structureExtensionDefinition.getComponent();
             rulPackage = structureExtensionDefinition.getRulPackage();
         } else {
-            List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository
-                    .findByStructTypeAndDefTypeOrderByPriority(structureType,
-                                                                   RulStructureDefinition.DefType.SERIALIZED_VALUE);
+            List<RulStructureDefinition> structureDefinitions = structType
+                    .getDefsByType(RulStructureDefinition.DefType.SERIALIZED_VALUE);
             if (structureDefinitions.size() > 0) {
                 RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
                 component = structureDefinition.getComponent();
                 rulPackage = structureDefinition.getRulPackage();
             } else {
                 throw new SystemException(
-                        "Strukturovaný typ '" + structureType.getCode() + "' nemá žádný script pro výpočet hodnoty",
+                        "Strukturovaný typ '" + structType.getCode() + "' nemá žádný script pro výpočet hodnoty",
                         BaseCode.INVALID_STATE);
             }
         }

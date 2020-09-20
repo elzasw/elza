@@ -21,6 +21,6 @@ public interface StructureDefinitionRepository extends JpaRepository<RulStructur
     List<RulStructureDefinition> findByRulPackageAndStructuredTypeIn(RulPackage rulPackage, List<RulStructuredType> rulStructureTypes);
 
     // TODO: Replace structureType with structureTypeId
-    @Query("select sd from rul_structure_definition sd JOIN FETCH sd.component c WHERE sd.structuredType=?1 and sd.defType = ?2 ORDER BY sd.priority")
-    List<RulStructureDefinition> findByStructTypeAndDefTypeOrderByPriority(RulStructuredType structureType, RulStructureDefinition.DefType defType);
+    @Query("select sd from rul_structure_definition sd JOIN FETCH sd.component c WHERE sd.structuredType=?1 ORDER BY sd.priority")
+    List<RulStructureDefinition> findByStructTypeOrderByPriority(RulStructuredType structureType);
 }

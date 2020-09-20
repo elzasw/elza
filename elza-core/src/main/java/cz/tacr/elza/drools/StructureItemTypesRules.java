@@ -16,6 +16,7 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulStructureDefinition;
+import cz.tacr.elza.domain.RulStructureDefinition.DefType;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
@@ -61,7 +62,8 @@ public class StructureItemTypesRules extends Rules {
 
         StructType st = sdp.getStructuredTypeById(structTypeId);
 
-        List<RulStructureDefinition> rulStructureDefinitions = st.getAttrDefs();
+        List<RulStructureDefinition> rulStructureDefinitions = st
+                .getDefsByType(DefType.ATTRIBUTE_TYPES);
 
         for (RulStructureDefinition rulStructureDefinition : rulStructureDefinitions) {
             // TODO: Consider using structureType in getDroolsFile?
