@@ -1,16 +1,17 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulStructuredTypeExtension;
-import cz.tacr.elza.domain.RulStructureExtensionDefinition;
-import cz.tacr.elza.domain.RulStructuredType;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulStructureExtensionDefinition;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
 
 /**
  * Repozitory pro {@link RulStructureExtensionDefinition}
@@ -37,13 +38,12 @@ public interface StructureExtensionDefinitionRepository extends JpaRepository<Ru
                                                                                               @Param("fund") ArrFund fund);
 
     /**
-     * Vyhledá aktivované definice rozšíření pro strukturovaný typ, def-type.
+     * Vyhledá aktivované definice rozšíření pro strukturovaný typ.
      *
-     * @param structuredType strukturovaný typ
-     * @param defType       typ definice
+     * @param structuredType
+     *            strukturovaný typ
      * @return nalezené soubory
      */
-    @Query("SELECT sed FROM rul_structure_extension_definition sed JOIN sed.structuredTypeExtension se WHERE se.structuredType = :structuredType AND sed.defType = :defType ORDER BY sed.priority")
-    List<RulStructureExtensionDefinition> findByStructureTypeAndDefTypeOrderByPriority(@Param("structuredType") RulStructuredType structuredType,
-                                                                                       @Param("defType") RulStructureExtensionDefinition.DefType defType);
+    @Query("SELECT sed FROM rul_structure_extension_definition sed JOIN sed.structuredTypeExtension se JOIN FETCH sed.component c WHERE se.structuredType = :structuredType ORDER BY sed.priority")
+    List<RulStructureExtensionDefinition> findByStructureTypeAndDefTypeOrderByPriority(@Param("structuredType") RulStructuredType structuredType);
 }
