@@ -32,15 +32,10 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer>, DaoRe
             + " where dp.daoPackageId = :daoPackageId")
     long countByDaoPackageID(@Param("daoPackageId") Integer daoPackageId);
 
-//    @Query("SELECT COUNT(d) FROM arr_dao d "
-//           + "JOIN arr_dao_link l "
-//           + "WHERE l.node = :node AND d.daoType = 'LEVEL' AND l.deleteChangeId IS NULL")
-    @Query(value = "SELECT EXISTS(" 
-            + "  SELECT d.* FROM arr_dao d" 
-            + "  JOIN arr_dao_link l ON l.dao_id = d.dao_id" 
-            + "  WHERE l.node_id = ?1 AND d.dao_type = 'LEVEL' AND l.delete_change_id IS NULL" 
-            + ")", nativeQuery = true) // TODO přepsat do dialektu JPQL
-    boolean existsDaoByNodeAndDaoTypeIsLevel(Integer nodeId);
+    @Query("SELECT COUNT(d) > 0 FROM arr_dao d"
+           + " JOIN arr_dao_link l ON l.daoId = d.daoId"
+           + " WHERE l.nodeId = :nodeId AND d.daoType = 'LEVEL' AND l.deleteChangeId IS NULL")
+    boolean existsDaoByNodeAndDaoTypeIsLevel(@Param("nodeId") Integer nodeId);
 
     ArrDao findOneByCode(String code);
 
