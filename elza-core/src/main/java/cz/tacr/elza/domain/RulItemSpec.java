@@ -97,6 +97,7 @@ public class RulItemSpec {
 		policyTypeCode = src.policyTypeCode;
 		category = src.category;
 		rulPackage = src.rulPackage;
+		viewOrder = src.viewOrder;
 	}
 
 	public Integer getItemSpecId() {
