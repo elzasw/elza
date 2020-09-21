@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, {memo, PropsWithChildren, ReactElement} from 'react';
 import {Form} from 'react-bootstrap';
-import {Autocomplete} from "../index";
+import {Autocomplete} from '../index';
 
 interface IFormInputProps {
     name?: string;
@@ -18,8 +18,9 @@ interface IFormInputProps {
     staticInput?: boolean;
     disabled?: boolean;
 }
+type Props = Partial<React.ComponentProps<typeof Form.Control>> & PropsWithChildren<IFormInputProps>;
 
-const FormInput: React.FC<PropsWithChildren<IFormInputProps>> = memo(
+const FormInput: React.ForwardRefExoticComponent<Props> = memo(
     React.forwardRef((props, ref) => {
         const {
             error,
