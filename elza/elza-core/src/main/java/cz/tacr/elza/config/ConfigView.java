@@ -14,9 +14,9 @@ import com.google.common.eventbus.Subscribe;
 import cz.tacr.elza.EventBusListener;
 import cz.tacr.elza.config.view.FundViewConfigs;
 import cz.tacr.elza.config.view.ViewTitles;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -101,7 +101,7 @@ public class ConfigView {
 
             ViewTitles vt = ViewTitles.valueOf(xmlFundView, sdp);
 
-            RulRuleSet rulRuleSet = sdp.getRuleSetById(uiSettings.getEntityId());
+            RuleSet rulRuleSet = sdp.getRuleSetById(uiSettings.getEntityId());
 
             result.addRuleSetFundView(rulRuleSet.getRuleSetId(), vt);
         });

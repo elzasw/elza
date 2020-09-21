@@ -27,13 +27,13 @@ import cz.tacr.elza.controller.vo.FindFundsResult;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.UpdateFund;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -88,7 +88,7 @@ public class FundController implements FundsApi {
         StaticDataProvider sdp = staticDataService.getData();
 
         // prepare ruleset
-        RulRuleSet ruleSet = sdp.getRuleSetByCode(createFund.getRuleSetCode());
+        RuleSet ruleSet = sdp.getRuleSetByCode(createFund.getRuleSetCode());
         Assert.notNull(ruleSet, "Nebyla nalezena pravidla tvorby s kódem " + createFund.getRuleSetCode());
 
         // prepare institution
@@ -101,7 +101,7 @@ public class FundController implements FundsApi {
                       "Některá oblast archivních entit nebyla nalezena");
 
         ArrFund newFund = arrangementService
-                .createFundWithScenario(createFund.getName(), ruleSet, createFund.getInternalCode(),
+                .createFundWithScenario(createFund.getName(), ruleSet.getEntity(), createFund.getInternalCode(),
                                         institution, createFund.getFundNumber(),
                                         createFund.getUnitdate(), createFund.getMark(),
                                         createFund.getUuid(),
