@@ -8,6 +8,7 @@ import DescItemLabel from './DescItemLabel.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import TextareaAutosize from 'react-autosize-textarea';
 import './DescItemText.scss';
+import {CLS_CALCULABLE} from "../../../constants";
 
 class DescItemText extends AbstractReactComponent {
     textarea = null;
@@ -32,7 +33,7 @@ class DescItemText extends AbstractReactComponent {
         };
 
         if (cal) {
-            cls.push('calculable');
+            cls.push(CLS_CALCULABLE);
 
             textareaProps.key = 'calc';
             textareaProps.disabled = true;

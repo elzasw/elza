@@ -8,7 +8,7 @@ import {normalizeDuration, normalizeInt} from 'components/validate.jsx';
 import {decorateValue, inputValue} from './DescItemUtils.jsx';
 import DescItemLabel from './DescItemLabel.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
-import {DisplayType} from '../../../constants.tsx';
+import {CLS_CALCULABLE, DisplayType} from '../../../constants.tsx';
 
 class DescItemInt extends AbstractReactComponent {
 
@@ -50,7 +50,7 @@ class DescItemInt extends AbstractReactComponent {
 
         let cls = [];
         if (cal) {
-            cls.push('calculable');
+            cls.push(CLS_CALCULABLE);
         }
 
         return (

@@ -8,6 +8,7 @@ import {normalizeDouble} from 'components/validate.jsx';
 import {decorateValue} from './DescItemUtils.jsx';
 import DescItemLabel from './DescItemLabel.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
+import {CLS_CALCULABLE} from "../../../constants";
 
 class DescItemDecimal extends AbstractReactComponent {
     focusEl = null;
@@ -74,7 +75,7 @@ class DescItemDecimal extends AbstractReactComponent {
 
         let cls = [];
         if (cal) {
-            cls.push('calculable');
+            cls.push(CLS_CALCULABLE);
         }
 
         value = cal && this.state.value === '' ? value : this.state.value;
@@ -84,7 +85,7 @@ class DescItemDecimal extends AbstractReactComponent {
                 <ItemTooltipWrapper tooltipTitle="dataType.decimal.format">
                     <input
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                        ref={ref => this.focusEl = ref}
+                        ref={ref => (this.focusEl = ref)}
                         type="text"
                         disabled={locked || descItem.undefined}
                         onChange={this.handleChange}

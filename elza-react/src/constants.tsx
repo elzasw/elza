@@ -118,3 +118,5 @@ export enum CoordinateFileType {
     GML = 'GML',
     WKT = 'WKT',
 }
+
+export const CLS_CALCULABLE = 'calculable';

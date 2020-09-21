@@ -3,6 +3,7 @@ import {AbstractReactComponent, i18n} from 'components/shared';
 import classNames from 'classnames';
 import './DescItemLabel.scss';
 import {Button} from '../../ui';
+import {CLS_CALCULABLE} from "../../../constants";
 
 class DescItemLabel extends AbstractReactComponent {
     render() {
@@ -10,7 +11,7 @@ class DescItemLabel extends AbstractReactComponent {
 
         let cls = ['desc-item-label-value'];
         if (cal) {
-            cls.push('calculable');
+            cls.push(CLS_CALCULABLE);
         }
 
         // Sestavení hodnoty - změna znaku < na entitu, nahrazení enterů <br/>
