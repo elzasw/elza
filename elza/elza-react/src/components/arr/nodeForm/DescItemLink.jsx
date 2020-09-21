@@ -12,7 +12,7 @@ import {Button} from 'react-bootstrap';
 import SelectSearchFundsForm from 'components/arr/SelectSearchFundsForm';
 import {modalDialogHide, modalDialogShow} from '../../../actions/global/modalDialog';
 import {WebApi} from '../../../actions';
-import {ELZA_SCHEME_NODE} from '../../../constants';
+import {CLS_CALCULABLE, ELZA_SCHEME_NODE} from '../../../constants';
 import {routerNavigate} from '../../../actions/router';
 import './DescItemLink.scss';
 import RefTemplateField from '../RefTemplateField';
@@ -120,7 +120,7 @@ class DescItemLink extends AbstractReactComponent {
 
         let cls = [];
         if (cal) {
-            cls.push('calculable');
+            cls.push(CLS_CALCULABLE);
         }
 
         return (

@@ -8,6 +8,7 @@ import {normalizeString} from 'components/validate';
 import {decorateValue, inputValue} from './DescItemUtils';
 import DescItemLabel from './DescItemLabel';
 import ItemTooltipWrapper from './ItemTooltipWrapper';
+import {CLS_CALCULABLE} from "../../../constants";
 
 const DescItemString_MAX_LENGTH = 1000;
 
@@ -42,7 +43,7 @@ class DescItemString extends AbstractReactComponent {
 
         let cls = [];
         if (cal) {
-            cls.push('calculable');
+            cls.push(CLS_CALCULABLE);
         }
 
         return (

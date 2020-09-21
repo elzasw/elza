@@ -6,6 +6,7 @@ import {indexById} from 'stores/app/utils.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
 import './DescItemUnitdate.scss';
+import {CLS_CALCULABLE} from "../../../constants";
 
 /**
  * Input prvek pro desc item - typ UNITDATE.
@@ -55,7 +56,7 @@ class DescItemUnitdate extends AbstractReactComponent {
 
         let cls = ['unitdate-input'];
         if (cal) {
-            cls.push('calculable');
+            cls.push(CLS_CALCULABLE);
         }
 
         return (

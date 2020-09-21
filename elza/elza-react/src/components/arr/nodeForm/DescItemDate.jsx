@@ -13,6 +13,7 @@ import './DescItemDate.scss';
 import Moment from 'moment';
 import {DateTimePicker} from 'react-widgets';
 import {formatDate} from '../../validate';
+import {CLS_CALCULABLE} from "../../../constants";
 
 class DescItemDate extends AbstractReactComponent {
     focusEl = null;
@@ -43,7 +44,7 @@ class DescItemDate extends AbstractReactComponent {
 
         let cls = [];
         if (cal) {
-            cls.push('calculable');
+            cls.push(CLS_CALCULABLE);
         }
 
         return (
