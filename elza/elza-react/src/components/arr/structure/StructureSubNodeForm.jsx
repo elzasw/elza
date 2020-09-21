@@ -13,6 +13,8 @@ import {modalDialogShow} from '../../../actions/global/modalDialog';
 import './StructureSubNodeForm.scss';
 import objectById from '../../../shared/utils/objectById';
 
+const BLANK_CONFORMITY_INFO = {missings: [], errors: []};
+
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
@@ -112,6 +114,32 @@ class StructureSubNodeForm extends React.Component {
         if (!subNodeForm || !subNodeForm.fetched) {
             return <Loading />;
         }
+        let conformityInfo = BLANK_CONFORMITY_INFO;
+        if (subNodeForm.data && subNodeForm.data.parent && subNodeForm.data.parent.errorDescription) {
+            try {
+                const jsErr = JSON.parse(subNodeForm.data.parent.errorDescription);
+                conformityInfo = {
+                    errors: {},
+                    missings: [],
+                };
+                for (let itemTypeId of jsErr.impossibleItemTypeIds) {
+                    const descItemObjectIds = subNodeForm.data.descItems
+                        .filter(i => i.itemTypeId === itemTypeId)
+                        .map(i => ({
+                            descItemObjectId: i.descItemObjectId,
+                            description: i18n('arr.structure.conformityInfo.impossible'),
+                        }));
+                    for (let item of descItemObjectIds) {
+                        if (!conformityInfo.errors.hasOwnProperty(item.descItemObjectId)) {
+                            conformityInfo.errors[item.descItemObjectId] = [];
+                        }
+                        conformityInfo.errors[item.descItemObjectId].push(item);
+                    }
+                }
+            } catch (e) {
+                ///
+            }
+        }
 
         return (
             <div className="structure-item-form-container">
@@ -134,7 +162,7 @@ class StructureSubNodeForm extends React.Component {
                     structureTypes={structureTypes}
                     subNodeForm={subNodeForm}
                     closed={false}
-                    conformityInfo={{missings: [], errors: []}}
+                    conformityInfo={conformityInfo}
                     descItemCopyFromPrevEnabled={false}
                     focus={focus}
                     singleDescItemTypeId={null}

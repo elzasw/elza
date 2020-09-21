@@ -901,6 +901,7 @@ var messages = {
     "arr.structure.modal.update.title": "Upravit - {0}",
     "arr.structure.modal.updateMultiple.title": "Upravit hromadně - {0}",
     "arr.structure.modal.updateMultiple.originalValue": "Původní hodnota",
+    "arr.structure.conformityInfo.impossible": "Tento prvek popisu není možné evidovat u této struktury.",
 
     "subNodeForm.descItemGroup.default": "Ostatní",
     "subNodeForm.deleteDescItem": "Odstranit hodnotu",
