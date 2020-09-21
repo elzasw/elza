@@ -27,6 +27,8 @@ public interface InstitutionRepository extends JpaRepository<ParInstitution, Int
 
     ParInstitution findByAccessPoint(ApAccessPoint accessPoint);
 
+    Boolean existsByAccessPointId(Integer accessPointId);
+
     //List<ParInstitutionInfo> findInfoByPartyIdIn(Collection<Integer> partyIds);
 
     List<ParInstitutionInfo> findInfoByAccessPointIdIn(Collection<Integer> accessPointIds);
