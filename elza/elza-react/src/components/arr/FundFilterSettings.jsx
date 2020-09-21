@@ -2,7 +2,7 @@ import './FundFilterSettings.scss';
 
 import React from 'react';
 import {AbstractReactComponent, FilterableListBox, FormInput, HorizontalLoader, i18n} from 'components/shared';
-import DescItemCoordinates from './nodeForm/DescItemCoordinates.jsx';
+import DescItemCoordinates from './nodeForm/DescItemCoordinates';
 import {Accordion, Card, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {WebApi} from 'actions/index.jsx';
@@ -22,7 +22,7 @@ import SimpleCheckListBox from './SimpleCheckListBox';
 import FundFilterCondition from './FundFilterCondition';
 import {DateTimePicker} from 'react-widgets';
 import {formatDate} from '../validate';
-import {validateUnitDate} from "../registry/field/UnitdateField";
+import {validateUnitDate} from '../registry/field/UnitdateField';
 
 /**
  * Formulář nastavení filtru na sloupečku.
@@ -336,9 +336,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 // TODO [stanekpa] Toto zde nebude, když se na server přidělá podpora na vracení a hledání NULL hodnot - problé je ale v locales (řetězec arr.fund.filterSettings.value.empty), měly by se doplnit i na server
                 if (
                     valueSearchText == '' ||
-                    i18n('arr.fund.filterSettings.value.empty')
-                        .toLowerCase()
-                        .indexOf(valueSearchText) !== -1
+                    i18n('arr.fund.filterSettings.value.empty').toLowerCase().indexOf(valueSearchText) !== -1
                 ) {
                     // u prázdného hledání a případně u hledání prázdné hodnoty doplňujeme null položku
                     valueItems = [
