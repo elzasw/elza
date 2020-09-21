@@ -145,7 +145,9 @@ class DescItemType extends AbstractReactComponent {
         if (formKey && currentEditDescItemIndex !== null) {
             if (newDescItemType.descItems[currentEditDescItemIndex]) {
                 newDescItemType.descItems = [...newDescItemType.descItems];
-                newDescItemType.descItems[currentEditDescItemIndex] = {...newDescItemType.descItems[currentEditDescItemIndex]};
+                newDescItemType.descItems[currentEditDescItemIndex] = {
+                    ...newDescItemType.descItems[currentEditDescItemIndex],
+                };
                 const di = newDescItemType.descItems[currentEditDescItemIndex];
                 // Nutno nasetovat všechny klíče reálné hodnoty do DescItemu
                 for (let key of Object.keys(value)) {
@@ -1041,7 +1043,7 @@ class DescItemType extends AbstractReactComponent {
                         </NoFocusButton>,
                         <FormInput
                             key="upload-field"
-                            className="hidden"
+                            className="d-none"
                             accept="application/vnd.google-earth.kml+xml"
                             type="file"
                             ref={ref => (this.refUploadInput = ref)}
@@ -1066,7 +1068,7 @@ class DescItemType extends AbstractReactComponent {
                         </NoFocusButton>,
                         <FormInput
                             key="upload-field"
-                            className="hidden"
+                            className="d-none"
                             accept="text/csv"
                             type="file"
                             ref={ref => (this.refUploadInput = ref)}
