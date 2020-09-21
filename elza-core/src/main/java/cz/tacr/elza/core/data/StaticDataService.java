@@ -18,8 +18,10 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.repository.ApExternalIdTypeRepository;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
@@ -91,9 +93,15 @@ public class StaticDataService {
 
     final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
 
+    final ArrangementExtensionRepository ruleSetExtRepository;
+
+    final ExtensionRuleRepository extensionRuleRepository;
+
     @Autowired
     public StaticDataService(final EntityManager em,
                              final RuleSetRepository ruleSetRepository,
+                             final ArrangementExtensionRepository ruleSetExtRepository,
+                             final ExtensionRuleRepository extensionRuleRepository,
                              final ItemTypeRepository itemTypeRepository,
                              final ItemSpecRepository itemSpecRepository,
                              final ItemTypeSpecAssignRepository itemTypeSpecAssignRepository,
@@ -111,6 +119,8 @@ public class StaticDataService {
                              final ApExternalSystemRepository apExternalSystemRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
+        this.ruleSetExtRepository = ruleSetExtRepository;
+        this.extensionRuleRepository = extensionRuleRepository;
         this.itemTypeRepository = itemTypeRepository;
         this.itemSpecRepository = itemSpecRepository;
         this.itemTypeSpecAssignRepository = itemTypeSpecAssignRepository;

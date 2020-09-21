@@ -1,42 +1,31 @@
 package cz.tacr.elza.service;
 
-import com.google.common.collect.Lists;
-import cz.tacr.elza.common.GeometryConvertor;
-import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
-import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
-import cz.tacr.elza.controller.vo.ApPartFormVO;
-import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
-import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
-import cz.tacr.elza.controller.vo.ap.item.*;
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
-import cz.tacr.elza.core.security.AuthMethod;
-import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.domain.vo.DataValidationResult;
-import cz.tacr.elza.domain.vo.NodeTypeOperation;
-import cz.tacr.elza.domain.vo.RelatedNodeDirection;
-import cz.tacr.elza.drools.AvailableItemsRules;
-import cz.tacr.elza.drools.DrlType;
-import cz.tacr.elza.drools.ModelValidationRules;
-import cz.tacr.elza.drools.RulesExecutor;
-import cz.tacr.elza.drools.model.*;
-import cz.tacr.elza.drools.model.item.AbstractItem;
-import cz.tacr.elza.drools.model.item.BoolItem;
-import cz.tacr.elza.drools.model.item.Item;
-import cz.tacr.elza.drools.model.item.IntItem;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.packageimport.xml.SettingGridView;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
-import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.validation.ArrDescItemsPostValidator;
+import static cz.tacr.elza.domain.RulRuleSet.RuleType.ENTITY;
+import static cz.tacr.elza.exception.codes.BaseCode.INVALID_STATE;
+import static cz.tacr.elza.repository.ExceptionThrow.itemType;
+import static cz.tacr.elza.repository.ExceptionThrow.node;
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.Validate;
@@ -48,19 +37,122 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import com.google.common.collect.Lists;
 
-import static cz.tacr.elza.domain.RulRuleSet.RuleType.ENTITY;
-import static cz.tacr.elza.exception.codes.BaseCode.INVALID_STATE;
-import static cz.tacr.elza.repository.ExceptionThrow.itemType;
-import static cz.tacr.elza.repository.ExceptionThrow.node;
-import static cz.tacr.elza.repository.ExceptionThrow.version;
+import cz.tacr.elza.common.GeometryConvertor;
+import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.controller.factory.ExtendedObjectsFactory;
+import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
+import cz.tacr.elza.controller.vo.ApPartFormVO;
+import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
+import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemBitVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemEnumVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemIntVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemTextVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemUnitdateVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemUriRefVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.RuleSet;
+import cz.tacr.elza.core.data.RuleSetExtension;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDataBit;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItemSettings;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrNodeExtension;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulExtensionRule;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeAction;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.vo.DataValidationResult;
+import cz.tacr.elza.domain.vo.NodeTypeOperation;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
+import cz.tacr.elza.drools.AvailableItemsRules;
+import cz.tacr.elza.drools.DrlType;
+import cz.tacr.elza.drools.ModelValidationRules;
+import cz.tacr.elza.drools.RulesExecutor;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.ApValidationErrors;
+import cz.tacr.elza.drools.model.GeoModel;
+import cz.tacr.elza.drools.model.Index;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ModelAvailable;
+import cz.tacr.elza.drools.model.ModelPart;
+import cz.tacr.elza.drools.model.ModelValidation;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+import cz.tacr.elza.drools.model.Relation;
+import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.AbstractItem;
+import cz.tacr.elza.drools.model.item.BoolItem;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.packageimport.xml.SettingGridView;
+import cz.tacr.elza.repository.ApIndexRepository;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.ArrangementExtensionRepository;
+import cz.tacr.elza.repository.ExceptionThrow;
+import cz.tacr.elza.repository.ExtensionRuleRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemSettingsRepository;
+import cz.tacr.elza.repository.ItemTypeActionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeExtensionRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputTypeRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.service.eventnotification.events.EventNodeIdVersionInVersion;
+import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.validation.ArrDescItemsPostValidator;
 
 
 /**
@@ -820,7 +912,8 @@ public class RuleService {
                 .orElseThrow(itemType(itemTypeId));
     }
 
-    public List<RulExtensionRule> findExtensionRuleByNode(final ArrNode node, final RulExtensionRule.RuleType attributeTypes) {
+    public List<RulExtensionRule> findExtensionRuleByNode(final ArrNode node,
+                                                          final RulExtensionRule.RuleType attributeTypes) {
         Assert.notNull(node, "JP musí být vyplněna");
 
         List<ArrNodeExtension> nodeExtensions = nodeExtensionRepository.findAllByNodeIdFromRoot(node.getNodeId());
@@ -1678,24 +1771,31 @@ public class RuleService {
         Ap ae = modelAvailable.getAp();
         ApType aeType = sdp.getApTypeByCode(ae.getAeType());
 
-        List<String> executeDrls = new ArrayList<>();
-        executeDrls.add(drlType.value());
-        executeDrls.add(drlType.value() + "/" + partType.value());
-
         ApType aeTypeProcess = aeType;
-        List<String> executeDrlsProcess = new ArrayList<>();
+        ArrayList<String> executeDrls = new ArrayList<>();
         while (aeTypeProcess != null) {
-            executeDrlsProcess.add(drlType.value() + "/" + aeTypeProcess.getCode() + "/" + partType.value());
-            executeDrlsProcess.add(drlType.value() + "/" + aeTypeProcess.getCode());
+            executeDrls.add(drlType.value() + "/" + aeTypeProcess.getCode() + "/" + partType.value());
+            executeDrls.add(drlType.value() + "/" + aeTypeProcess.getCode());
             aeTypeProcess = aeTypeProcess.getParentApType();
+        }
+        executeDrls.add(drlType.value() + "/" + partType.value());
+        executeDrls.add(drlType.value());
 
-            if (aeTypeProcess == null) {
-                Collections.reverse(executeDrlsProcess);
-                executeDrls.addAll(executeDrlsProcess);
+        // add in reverse order
+        List<RulExtensionRule> rules = new ArrayList<>(executeDrls.size());
+        for (int pos = executeDrls.size() - 1; pos >= 0; pos--) {
+            String extCode = executeDrls.get(pos);
+            // check all rules (invalid, only Ap related rules should be checked
+            for(RuleSet ruleSet: sdp.getRuleSets()) {
+                RuleSetExtension ruleSetExt = ruleSet.getExtByCode(extCode);
+                if (ruleSetExt != null) {
+                    List<RulExtensionRule> extRules = ruleSetExt
+                            .getRulesByType(RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
+                    rules.addAll(extRules);
+                }
             }
         }
-        List<RulArrangementExtension> rulArrangementExtensions = arrangementExtensionRepository.findByCodeIn(executeDrls);
-        List<RulExtensionRule> rules = extensionRuleRepository.findExtensionRules(rulArrangementExtensions, RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
+
         try {
             availableItemsRules.execute(rules, modelAvailable);
         } catch (Exception e) {

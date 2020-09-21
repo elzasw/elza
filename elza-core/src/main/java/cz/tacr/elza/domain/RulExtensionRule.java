@@ -49,6 +49,9 @@ public class RulExtensionRule {
     @JoinColumn(name = "arrangementExtensionId", nullable = false)
     private RulArrangementExtension arrangementExtension;
 
+    @Column(name = "arrangementExtensionId", insertable = false, updatable = false)
+    private Integer arrangementExtensionId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
@@ -125,8 +128,14 @@ public class RulExtensionRule {
         return arrangementExtension;
     }
 
+    public Integer getArrangementExtensionId() {
+        return arrangementExtensionId;
+    }
+
     public void setArrangementExtension(final RulArrangementExtension arrangementExtension) {
         this.arrangementExtension = arrangementExtension;
+        this.arrangementExtensionId = arrangementExtension != null ? arrangementExtension.getArrangementExtensionId()
+                : null;
     }
 
     public Integer getCompatibilityRulPackage() {

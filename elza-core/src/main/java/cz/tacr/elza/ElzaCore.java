@@ -52,25 +52,25 @@ public class ElzaCore {
     /**
      * pocet threadu vyhrazenych pro hromadnou indexaci Hibernate Search
      */
-    @Value("${elza.hibernate.index.thread_max:4}")
+    @Value("${elza.hibernate.index.thread_max:2}")
     private int threadMax;
 
-    @Value("${elza.asyncActions.node.threadCount:5}")
+    @Value("${elza.asyncActions.node.threadCount:2}")
     @Min(1)
     @Max(50)
     private int nodeThreadCount;
 
-    @Value("${elza.asyncActions.bulk.threadCount:5}")
+    @Value("${elza.asyncActions.bulk.threadCount:2}")
     @Min(1)
     @Max(50)
     private int bulkThreadCount;
 
-    @Value("${elza.asyncActions.output.threadCount:5}")
+    @Value("${elza.asyncActions.output.threadCount:2}")
     @Min(1)
     @Max(50)
     private int outputThreadCount;
 
-    @Value("${elza.asyncActions.ap.threadCount:5}")
+    @Value("${elza.asyncActions.ap.threadCount:2}")
     @Min(1)
     @Max(50)
     private int apThreadCount;

@@ -16,6 +16,8 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeSpecAssign;
@@ -32,6 +34,8 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApExternalIdTypeRepository;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ArrangementExtensionRepository;
+import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
@@ -64,7 +68,7 @@ public class StaticDataProvider {
 
     private List<ItemType> itemTypes;
 
-    private List<RulRuleSet> ruleSets;
+    private List<RuleSet> ruleSets;
 
     private List<RulItemSpec> itemSpecs;
 
@@ -94,9 +98,9 @@ public class StaticDataProvider {
 
     private Map<String, ItemType> itemTypeCodeMap;
 
-    private Map<Integer, RulRuleSet> ruleSetIdMap;
+    private Map<Integer, RuleSet> ruleSetIdMap;
 
-    private Map<String, RulRuleSet> ruleSetCodeMap;
+    private Map<String, RuleSet> ruleSetCodeMap;
 
     private Map<Integer, RulItemSpec> itemSpecIdMap;
 
@@ -135,7 +139,7 @@ public class StaticDataProvider {
         return sysLanguages;
     }
 
-    public List<RulRuleSet> getRuleSets() {
+    public List<RuleSet> getRuleSets() {
         return ruleSets;
     }
 
@@ -237,12 +241,12 @@ public class StaticDataProvider {
         return itemTypeCodeMap.get(code);
     }
 
-    public RulRuleSet getRuleSetById(Integer id) {
+    public RuleSet getRuleSetById(Integer id) {
         Validate.notNull(id);
         return ruleSetIdMap.get(id);
     }
 
-    public RulRuleSet getRuleSetByCode(String code) {
+    public RuleSet getRuleSetByCode(String code) {
         Validate.notEmpty(code);
         return ruleSetCodeMap.get(code);
     }
@@ -314,7 +318,9 @@ public class StaticDataProvider {
      * needs to be called in active transaction.
      */
     void init(StaticDataService service) {
-        initRuleSets(service.ruleSetRepository);
+        initRuleSets(service.ruleSetRepository,
+                     service.ruleSetExtRepository,
+                     service.extensionRuleRepository);
         initStructuredTypes(service.structuredTypeRepository,
                             service.structureDefinitionRepository,
                             service.structuredTypeExtensionRepository,
@@ -329,12 +335,29 @@ public class StaticDataProvider {
         self = this;
     }
 
-    private void initRuleSets(RuleSetRepository ruleSetRepository) {
-        List<RulRuleSet> ruleSets = ruleSetRepository.findAll();
+    private void initRuleSets(RuleSetRepository ruleSetRepository,
+                              ArrangementExtensionRepository extRepository,
+                              ExtensionRuleRepository extensionRuleRepository) {
+        List<RulRuleSet> dbRuleSets = ruleSetRepository.findAll();
+        // read extensions from db
+        List<RulArrangementExtension> dbRuleSetExts = extRepository.findAll();
+        Map<Integer, List<RulArrangementExtension>> ruleSetExtsById = dbRuleSetExts
+                .stream().collect(Collectors.groupingBy(RulArrangementExtension::getRuleSetId));
 
+        List<RulExtensionRule> dbExtRules = extensionRuleRepository.findAllFetchOrderByPriority();
+        Map<Integer, List<RulExtensionRule>> extRulesByExtId = dbExtRules.stream()
+                .collect(Collectors.groupingBy(RulExtensionRule::getArrangementExtensionId));
+
+        List<RuleSet> ruleSets = dbRuleSets.stream()
+                .map(rs -> {
+                    List<RulArrangementExtension> exts = ruleSetExtsById.getOrDefault(rs.getRuleSetId(), Collections
+                            .emptyList());
+                    return new RuleSet(rs, exts, extRulesByExtId);
+                })
+                .collect(Collectors.toList());
         this.ruleSets = Collections.unmodifiableList(ruleSets);
-        this.ruleSetIdMap = createLookup(ruleSets, RulRuleSet::getRuleSetId);
-        this.ruleSetCodeMap = createLookup(ruleSets, RulRuleSet::getCode);
+        this.ruleSetIdMap = createLookup(ruleSets, RuleSet::getRuleSetId);
+        this.ruleSetCodeMap = createLookup(ruleSets, RuleSet::getCode);
     }
 
     private void initItemTypes(ItemTypeRepository itemTypeRepository, ItemSpecRepository itemSpecRepository, ItemTypeSpecAssignRepository itemTypeSpecAssignRepository) {

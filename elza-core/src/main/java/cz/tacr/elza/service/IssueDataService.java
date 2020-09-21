@@ -1,19 +1,16 @@
 package cz.tacr.elza.service;
 
-import com.google.common.eventbus.Subscribe;
-import cz.tacr.elza.EventBusListener;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.packageimport.PackageService;
-import cz.tacr.elza.packageimport.xml.SettingFundIssues;
-import cz.tacr.elza.repository.SettingsRepository;
-import cz.tacr.elza.repository.WfCommentRepository;
-import cz.tacr.elza.repository.WfIssueListRepository;
-import cz.tacr.elza.repository.WfIssueRepository;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.event.CacheInvalidateEvent;
-import cz.tacr.elza.service.vo.WfConfig;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,13 +19,29 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import com.google.common.eventbus.Subscribe;
 
-import static cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.EventBusListener;
+import cz.tacr.elza.core.data.RuleSet;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfComment;
+import cz.tacr.elza.domain.WfIssue;
+import cz.tacr.elza.domain.WfIssueList;
+import cz.tacr.elza.domain.WfIssueState;
+import cz.tacr.elza.packageimport.xml.SettingFundIssues;
+import cz.tacr.elza.repository.SettingsRepository;
+import cz.tacr.elza.repository.WfCommentRepository;
+import cz.tacr.elza.repository.WfIssueListRepository;
+import cz.tacr.elza.repository.WfIssueRepository;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.event.CacheInvalidateEvent;
+import cz.tacr.elza.service.vo.WfConfig;
 
 @Service
 @Transactional(readOnly = true)
@@ -145,7 +158,7 @@ public class IssueDataService {
                                                                                                         UISettings.SettingsType.FUND_ISSUES.getEntityType());
 
             uiSettingsList.forEach(uiSettings -> {
-                RulRuleSet rulRuleSet = sdp.getRuleSetById(uiSettings.getEntityId());
+                RuleSet rulRuleSet = sdp.getRuleSetById(uiSettings.getEntityId());
                 SettingFundIssues setting = SettingFundIssues.newInstance(uiSettings);
                 configs.put(rulRuleSet.getCode(), new WfConfig(setting.getIssueTypeColors(), setting.getIssueStateIcons()));
             });
