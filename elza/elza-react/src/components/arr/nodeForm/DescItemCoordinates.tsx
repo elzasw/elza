@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
-import React from 'react';
-import ReactDOM from 'react-dom';
+import * as React from 'react';
 import {AbstractReactComponent, FormInput, i18n, Icon, NoFocusButton} from 'components/shared';
 import {objectFromWKT, wktFromTypeAndData, wktType} from 'components/Utils.jsx';
 import {decorateValue} from './DescItemUtils.jsx';
@@ -14,12 +13,14 @@ import './DescItemCoordinates.scss';
  * Input prvek pro desc item - typ STRING.
  */
 class DescItemCoordinates extends AbstractReactComponent {
-    focusEl = null;
-    uploadInput = null;
+    private readonly focusEl: React.RefObject<HTMLInputElement>;
+    private readonly uploadInput: React.RefObject<React.ComponentClass<typeof FormInput>>;
 
     constructor(props) {
         super(props);
         this.state = objectFromWKT(props.descItem.value);
+        this.focusEl = React.createRef();
+        this.uploadInput = React.createRef();
     }
 
     static propTypes = {
@@ -35,11 +36,13 @@ class DescItemCoordinates extends AbstractReactComponent {
     }
 
     focus = () => {
-        this.focusEl.focus();
+        this.focusEl.current?.focus();
     };
 
     handleUploadClick = () => {
-        ReactDOM.findDOMNode(this.uploadInput.refs.input).click();
+        if (this.uploadInput.current) {
+            ((this.uploadInput.current as any) as HTMLInputElement).click();
+        }
     };
 
     handleChangeData = e => {
@@ -75,7 +78,7 @@ class DescItemCoordinates extends AbstractReactComponent {
                         <ItemTooltipWrapper tooltipTitle="dataType.coordinates.format">
                             <input
                                 {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
-                                ref={ref => this.focusEl = ref}
+                                ref={this.focusEl}
                                 disabled={locked || descItem.undefined}
                                 onChange={this.handleChangeData}
                                 value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : data}
@@ -101,10 +104,10 @@ class DescItemCoordinates extends AbstractReactComponent {
                             <Icon glyph="fa-upload" />
                         </NoFocusButton>
                         <FormInput
-                            className="hidden"
+                            className="d-none"
                             accept="application/vnd.google-earth.kml+xml"
                             type="file"
-                            ref={ref => this.uploadInput = ref}
+                            ref={this.uploadInput}
                             onChange={onUpload}
                         />
                     </div>
