@@ -8,24 +8,24 @@ import {normalizeString} from 'components/validate.jsx';
 import {decorateValue, inputValue} from './DescItemUtils.jsx';
 import DescItemLabel from './DescItemLabel.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
-import {CLS_CALCULABLE} from "../../../constants";
+import {CLS_CALCULABLE} from '../../../constants';
 
-const DescItemString_MAX_LENGTH = 250;
+const DescItemUnitid_MAX_LENGTH = 250;
 
 class DescItemUnitid extends AbstractReactComponent {
-    focusEl = null;
+    private readonly focusEl: React.RefObject<HTMLInputElement>;
+
     constructor(props) {
         super(props);
-
-        this.bindMethods('handleChange', 'focus');
+        this.focusEl = React.createRef();
     }
 
     focus() {
-        this.focusEl.focus();
+        this.focusEl.current?.focus();
     }
 
     handleChange(e) {
-        var newValue = normalizeString(e.target.value, DescItemString_MAX_LENGTH);
+        const newValue = normalizeString(e.target.value, DescItemUnitid_MAX_LENGTH);
 
         if (newValue != this.props.descItem.value) {
             this.props.onChange(newValue);
@@ -41,7 +41,7 @@ class DescItemUnitid extends AbstractReactComponent {
             return <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />;
         }
 
-        let cls = [];
+        let cls: string[] = [];
         if (cal) {
             cls.push(CLS_CALCULABLE);
         }
@@ -51,7 +51,7 @@ class DescItemUnitid extends AbstractReactComponent {
                 <ItemTooltipWrapper tooltipTitle="dataType.unitid.format">
                     <input
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                        ref={ref => this.focusEl = ref}
+                        ref={this.focusEl}
                         type="text"
                         disabled={locked || descItem.undefined}
                         value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : value}
