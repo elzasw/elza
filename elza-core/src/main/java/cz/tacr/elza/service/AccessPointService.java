@@ -336,27 +336,22 @@ public class AccessPointService {
         apDataService.validationNotDeleted(apState);
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
-        if (accessPoint.getState() == ApStateEnum.TEMP) {
-            removeTempAccessPoint(accessPoint);
-        } else {
-
-            if (checkUsage) {
-                checkDeletion(accessPoint);
-            }
-
-            ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
-            apState.setDeleteChange(change);
-            apStateRepository.save(apState);
-
-            saveWithLock(accessPoint);
-
-            List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(accessPoint);
-            eids.forEach(eid -> eid.setDeleteChange(change));
-            bindingStateRepository.saveAll(eids);
-
-            publishAccessPointDeleteEvent(accessPoint);
-            reindexDescItem(accessPoint);
+        if (checkUsage) {
+            checkDeletion(accessPoint);
         }
+
+        ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
+        apState.setDeleteChange(change);
+        apStateRepository.save(apState);
+
+        saveWithLock(accessPoint);
+
+        List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(accessPoint);
+        eids.forEach(eid -> eid.setDeleteChange(change));
+        bindingStateRepository.saveAll(eids);
+
+        publishAccessPointDeleteEvent(accessPoint);
+        reindexDescItem(accessPoint);
     }
 
     /**
@@ -1227,55 +1222,6 @@ public class AccessPointService {
             }
         }
         return result;
-    }
-
-    /**
-     * Odstranění dočasných AP včetně návazných objektů.
-     */
-    public void removeTempAccessPoints() {
-        apItemService.removeTempItems();
-        List<ApState> states = apStateRepository.findTempStates();
-        List<ApChange> changes = new ArrayList<>();
-        Set<ApAccessPoint> aps = new HashSet<>();
-        for (ApState state : states) {
-            changes.add(state.getCreateChange());
-            // Delete Change u temporary nejspis nebude
-            if (state.getDeleteChange() != null) {
-                changes.add(state.getDeleteChange());
-            }
-            aps.add(state.getAccessPoint());
-        }
-        if (!states.isEmpty()) {
-            apStateRepository.deleteAll(states);
-        }
-        if (!changes.isEmpty()) {
-            apChangeRepository.deleteAll(changes);
-        }
-        apAccessPointRepository.deleteAll(aps);
-        apAccessPointRepository.removeTemp();
-    }
-
-    /**
-     * Odstranění dočasných AP včetně návazných objektů u AP.
-     */
-    private void removeTempAccessPoint(final ApAccessPoint ap) {
-        apItemService.removeTempItems(ap);
-        List<ApState> states = apStateRepository.findAllByAccessPoint(ap);
-        List<ApChange> changes = new ArrayList<>();
-        for (ApState state : states) {
-            changes.add(state.getCreateChange());
-            // Delete Change u temporary nejspis nebude
-            if (state.getDeleteChange() != null) {
-                changes.add(state.getDeleteChange());
-            }
-        }
-        if (!states.isEmpty()) {
-            apStateRepository.deleteAll(states);
-        }
-        if (!changes.isEmpty()) {
-            apChangeRepository.deleteAll(changes);
-        }
-        apAccessPointRepository.delete(ap);
     }
 
     /**

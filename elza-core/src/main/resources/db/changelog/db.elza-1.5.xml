@@ -885,4 +885,12 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="20200922132200" author="slapa">
+        <update tableName="ap_access_point">
+            <column name="state" value="ERROR" />
+            <column name="error_description" value="Původní AP s TEMP state" />
+            <where>state='TEMP'</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>

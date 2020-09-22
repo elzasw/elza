@@ -13,6 +13,7 @@ import cz.tacr.cam.schema.cam.LongStringXml;
 import cz.tacr.cam.schema.cam.PartXml;
 import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -167,8 +168,9 @@ public class CamService {
         }
         dataRecordRefRepository.saveAll(dataRecordRefList);
         if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
-            List<Integer> accessPointIds = accessPointRepository.findAccessPointIdsByRefData(dataRecordRefList);
+            List<Integer> accessPointIds = ObjectListIterator.findIterable(dataRecordRefList, accessPointRepository::findAccessPointIdsByRefData);
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
+                ObjectListIterator.forEachPage(accessPointIds, accessPointRepository::updateToInit);
                 asyncRequestService.enqueue(accessPointIds);
             }
         }

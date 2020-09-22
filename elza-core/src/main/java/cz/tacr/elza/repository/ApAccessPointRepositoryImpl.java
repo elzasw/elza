@@ -158,7 +158,6 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
 
         // search only active AP
         conjunctions.add(apState.get(ApState.FIELD_DELETE_CHANGE_ID).isNull());
-        conjunctions.add(cb.or(accessPoint.get(ApAccessPoint.STATE).isNull(), cb.notEqual(accessPoint.get(ApAccessPoint.STATE), ApStateEnum.TEMP)));
 
         // add name join
         Path<String> accessPointName = null;
