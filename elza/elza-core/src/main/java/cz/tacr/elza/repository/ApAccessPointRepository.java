@@ -73,6 +73,6 @@ public interface ApAccessPointRepository
     List<Integer> findActiveAccessPointIdsByApTypes(@Param("apTypes") Collection<ApType> apTypes);
 
     @Modifying
-    @Query("UPDATE ap_access_point SET state = 'INIT' WHERE accessPointId IN :accessPointIds")
+    @Query("UPDATE ap_access_point SET state = 'INIT' WHERE accessPointId IN :accessPointIds AND state <> 'INIT'")
     void updateToInit(@Param("accessPointIds") Collection<Integer> accessPointIds);
 }
