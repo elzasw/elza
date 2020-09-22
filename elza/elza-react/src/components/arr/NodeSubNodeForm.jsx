@@ -39,7 +39,9 @@ import {objectEqualsDiff} from 'components/Utils';
 import {NODE_SUB_NODE_FORM_CMP} from '../../stores/app/arr/subNodeForm';
 
 import './NodeSubNodeForm.scss';
-import {JAVA_ATTR_CLASS} from '../../constants';
+import {JAVA_ATTR_CLASS, JAVA_CLASS_ARR_DIGITIZATION_FRONTDESK_SIMPLE_VO, ItemClass} from '../../constants';
+
+import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -113,6 +115,14 @@ class NodeSubNodeForm extends AbstractReactComponent {
                 !objectEqualsDiff(this.props.readMode, nextProps.readMode, {}, '', log)
             );
         }
+    }
+
+    componentDidMount(){
+        this.props.dispatch(refExternalSystemsFetchIfNeeded());
+    }
+
+    UNSAFE_componentWillReceiveProps() {
+        this.props.dispatch(refExternalSystemsFetchIfNeeded());
     }
 
     getNodeSetting() {
@@ -296,6 +306,30 @@ class NodeSubNodeForm extends AbstractReactComponent {
     }
 
     /**
+     * Checks if there is an external system of type 'digitization frontdesk'
+     */
+    isDigitizationFrontdeskDefined = () => {
+        const { externalSystems } = this.props;
+        if(externalSystems.fetched){
+            return externalSystems.items.some((extSystem)=>(
+                extSystem[JAVA_ATTR_CLASS] === JAVA_CLASS_ARR_DIGITIZATION_FRONTDESK_SIMPLE_VO
+            ))
+        }
+        return false;
+    }
+
+    /**
+     * Checks if currently selected subnode has a desc item of the given class (data type)
+     */
+    subNodeHasDescItemClass = (itemClass) => {
+        const { subNodeForm } = this.props;
+        if(subNodeForm && subNodeForm.data && subNodeForm.data.descItems){
+            return subNodeForm.data.descItems.some((item)=>( item[JAVA_ATTR_CLASS] === itemClass))
+        }
+        return false;
+    }
+
+    /**
      * Renderování globálních akcí pro formulář.
      * @return {Object} view
      */
@@ -362,10 +396,12 @@ class NodeSubNodeForm extends AbstractReactComponent {
                         )}
                     </div>
                     <div className="section">
-                        <NoFocusButton onClick={this.props.onDigitizationRequest}>
-                            <Icon glyph="fa-camera" />
-                            {i18n('subNodeForm.digitizationRequest')}
-                        </NoFocusButton>
+                        { this.isDigitizationFrontdeskDefined() &&
+                            <NoFocusButton onClick={this.props.onDigitizationRequest}>
+                                <Icon glyph="fa-camera" />
+                                {i18n('subNodeForm.digitizationRequest')}
+                            </NoFocusButton>
+                        }
                         {editPermAllowed && this.hasDaos() && (
                             <NoFocusButton onClick={this.props.onDigitizationSync}>
                                 <Icon glyph="fa-camera" />
@@ -374,10 +410,12 @@ class NodeSubNodeForm extends AbstractReactComponent {
                         )}
                     </div>
                     <div className="section">
-                        <NoFocusButton onClick={this.props.onRefSync}>
-                            <Icon glyph="fa-refresh" />
-                            {i18n('subNodeForm.refSync')}
-                        </NoFocusButton>
+                        { this.subNodeHasDescItemClass(ItemClass.URI_REF) &&
+                            <NoFocusButton onClick={this.props.onRefSync}>
+                                <Icon glyph="fa-refresh" />
+                                {i18n('subNodeForm.refSync')}
+                            </NoFocusButton>
+                        }
                     </div>
                     {isProtocolLoaded && (
                         <div className="section">
@@ -402,6 +440,15 @@ class NodeSubNodeForm extends AbstractReactComponent {
                             <Dropdown.Item eventKey="2" onClick={this.handleUseTemplate}>
                                 {i18n('subNodeForm.section.useTemplate')}
                             </Dropdown.Item>
+                            { !this.subNodeHasDescItemClass(ItemClass.URI_REF) &&
+                                <>
+                                    <Dropdown.Divider/>
+                                    <Dropdown.Item onClick={this.props.onRefSync}>
+                                        <Icon glyph="fa-refresh" />
+                                        {i18n('subNodeForm.refSync')}
+                                    </Dropdown.Item>
+                                </>
+                            }
                         </DropdownButton>
                     </div>
                 </div>
@@ -677,7 +724,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
             if (
                 notEmpty(newItem.value) ||
-                (newItem[JAVA_ATTR_CLASS] === '.ArrItemEnumVO' && notEmpty(item.descItemSpecId))
+                (newItem[JAVA_ATTR_CLASS] === ItemClass.ENUM && notEmpty(item.descItemSpecId))
             ) {
                 if (actualFormData[itemTypeId]) {
                     // pokud existuje
@@ -885,6 +932,7 @@ function mapStateToProps(state) {
     }
 
     return {
+        externalSystems: refTables.externalSystems,
         nodeSettings: arrRegion.nodeSettings,
         structureTypes,
         fund,
