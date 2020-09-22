@@ -1,5 +1,51 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.repository.ExceptionThrow.bulkAction;
+import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
 import cz.tacr.elza.asynchactions.AsyncNodeWorker;
 import cz.tacr.elza.asynchactions.AsyncRequest;
 import cz.tacr.elza.asynchactions.AsyncRequestEvent;
@@ -27,50 +73,6 @@ import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.AsyncOutputGeneratorWorker;
-import org.apache.commons.collections4.CollectionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.transaction.support.TransactionTemplate;
-
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static cz.tacr.elza.repository.ExceptionThrow.bulkAction;
-import static org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
 /**
  * Servisní třída pro spouštění validací a hromadných akcí.
@@ -1055,6 +1057,11 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             return AsyncAccessPointWorker.class;
         }
 
+        /*
+         V pripade spusteni revalidace velkeho mnozstvi entit (100k+)
+         je velmi pomale volani Map<Integer, AsyncRequest> queuedNodeIds = queue.stream()...
+         muselo by se prepracovat na trvalejsi mapu pozadavku
+         
         @Override
         protected boolean skip(final AsyncRequest request) {
             Map<Integer, AsyncRequest> queuedNodeIds = queue.stream()
@@ -1077,5 +1084,6 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                 }
             }
         }
+        */
     }
 }

@@ -26,6 +26,7 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -68,9 +69,6 @@ public class FundLevelService {
     private IEventNotificationService eventNotificationService;
     @Autowired
     private DescriptionItemService descriptionItemService;
-    @Autowired
-    private DaoService daoService;
-
 
     /**
      * Přesunutí uzlů před jiný.
@@ -404,13 +402,15 @@ public class FundLevelService {
      * @param version          verze stromu
      * @param deleteNode       node ke smazání
      * @param deleteNodeParent rodič nodu ke smazání
+     * @param deleteLevelsWithAttachedDao povolit nebo zakázat mazání úrovně s objektem dao
      */
     // Dává smysl, aby deleteNodeParent byl null?
     // Pravděpodobně by vždy měl být non-null - nemůžeme takto mazat kořen
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrLevel deleteLevel(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                 final ArrNode deleteNode,
-                                final ArrNode deleteNodeParent) {
+                                final ArrNode deleteNodeParent,
+                                final boolean deleteLevelsWithAttachedDao) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(deleteNode, "Mazané JP musí být vyplněna");
 
@@ -426,15 +426,14 @@ public class FundLevelService {
             }
         }
 
-        daoService.deleteDaoLinkByNode(version, deleteNode);
-
         ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(deleteNode.getNodeId()),
                 NodeTypeOperation.DELETE_NODE, null, null, null);
 
         shiftNodes(nodesToShift(deleteLevel), change, deleteLevel.getPosition());
 
         ArrLevel level = arrangementService.deleteLevelCascade(deleteLevel, change,
-                levelRepository.findLevelsByDirection(deleteLevel, version, RelatedNodeDirection.DESCENDANTS));
+                levelRepository.findLevelsByDirection(deleteLevel, version, RelatedNodeDirection.DESCENDANTS),
+                deleteLevelsWithAttachedDao);
 
         eventNotificationService.publishEvent(new EventDeleteNode(EventType.DELETE_LEVEL,
                 version.getFundVersionId(),

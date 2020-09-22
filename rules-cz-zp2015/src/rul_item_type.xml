@@ -803,7 +803,7 @@
     </item-type>
     <!-- Prvek je určen k zajištění správného počítání EJ u starších pomůcek.
          U těchto pomůcek mohlo docházet k situacím, kdy jedna EJ byla popsána
-         pomocí několika spolu souvisejícími za sebou uvedenými jendotkami popisu. -->
+         pomocí několika spolu souvisejícími za sebou uvedenými jednotkami popisu. -->
     <item-type code="ZP2015_CONNECTED_RECORD" data-type="ENUM">
         <name>Souvislost s jinou EJ</name>
         <shortcut>Související EJ</shortcut>
@@ -934,6 +934,38 @@
         <description>Zjednodušený původce pro výstupy</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PUBLISHED" data-type="BIT">
+        <name>Zveřejněno</name>
+        <shortcut>Zveřejněno</shortcut>
+        <description>Zveřejněná jednotka popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PUBLISH_EVENT_TYPE" data-type="ENUM">
+        <name>jiná spouštěcí událost</name>
+        <shortcut>jiná spouštěcí událost</shortcut>
+        <description>Jiná spouštěcí událost zveřejnění</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PUBLISH_EVENT_DATE" data-type="DATE">
+        <name>datum spouštěcí událost</name>
+        <shortcut>datum spouštěcí událost</shortcut>
+        <description>datum spouštěcí událost</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_PUBLISH_EVENT_PERIOD" data-type="INT">
+        <name>jiná lhůta zpřístupnění</name>
+        <shortcut>lhůta</shortcut>
+        <description>jiná lhůta zpřístupnění</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
 </item-types>

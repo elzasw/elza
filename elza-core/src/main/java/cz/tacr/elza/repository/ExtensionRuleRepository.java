@@ -1,12 +1,14 @@
 package cz.tacr.elza.repository;
 
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
 import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulPackage;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 
 /**
@@ -22,5 +24,8 @@ public interface ExtensionRuleRepository extends JpaRepository<RulExtensionRule,
     void deleteByRulPackage(RulPackage rulPackage);
 
     List<RulExtensionRule> findByRulPackageAndArrangementExtensionIn(RulPackage rulPackage, List<RulArrangementExtension> rulArrangementExtensions);
+
+    @Query("SELECT re FROM rul_extension_rule re JOIN FETCH re.component ORDER BY re.priority")
+    List<RulExtensionRule> findAllFetchOrderByPriority();
 
 }

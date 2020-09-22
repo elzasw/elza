@@ -28,13 +28,14 @@ public class DCStorageApp extends SpringBootServletInitializer {
 		return new DispatcherServlet();
 	}
 
+	/*
 	@Bean
 	public ServletRegistrationBean dispatcherServletRegistration() {
 		String contextPath = "/" + storageConfig.getRepositoryIdentifier() + "/*";
 		ServletRegistrationBean registration = new ServletRegistrationBean(dispatcherServlet(), contextPath);
 		registration.setName(DispatcherServletAutoConfiguration.DEFAULT_DISPATCHER_SERVLET_REGISTRATION_BEAN_NAME);
 		return registration;
-	}
+	}*/
 
 	public static void main(String[] args) {
 		System.setProperty("server.port", "8085");

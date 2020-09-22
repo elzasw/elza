@@ -458,7 +458,13 @@ public class DaoSyncService {
             }
         }
 
-        arrDao.setDaoType(DaoType.valueOf(dao.getDaoType().name()));
+        DaoType daoType;
+        if (dao.getDaoType() != null) {
+            daoType = DaoType.valueOf(dao.getDaoType().name());
+        } else {
+            daoType = DaoType.ATTACHMENT;
+        }
+        arrDao.setDaoType(daoType);
         arrDao.setDaoPackage(arrDaoPackage);
         return daoRepository.save(arrDao);
     }

@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -187,6 +189,7 @@ public class TemplateUpdater {
         rulTemplate.setMimeType(template.getMimeType());
         rulTemplate.setExtension(template.getExtension());
         rulTemplate.setDeleted(false);
+        rulTemplate.setValidationSchema(template.getValidationSchema());
 
         // Find output type
         List<RulOutputType> findItems = outputTypes.stream()
@@ -204,28 +207,30 @@ public class TemplateUpdater {
         rulTemplate.setOutputType(item);
     }
 
-    private void importTemplatesFiles(
-                                      final File dirTemplates,
-                                      final List<RulTemplate> rulTemplateActual)
-            throws IOException {
+    private void importTemplatesFiles(final File dirTemplates,
+                                      final List<RulTemplate> rulTemplateActual) throws IOException {
+        Set<String> templateDirSet = new HashSet<>();
         String rulsetCode = ruc.getRulSetCode();
         for (RulTemplate template : rulTemplateActual) {
             final String templateDir = PackageService.ZIP_DIR_RULE_SET + "/" + rulsetCode + "/"
                     + PackageService.ZIP_DIR_TEMPLATES + "/"
                     + template.getDirectory();
-            final String templateZipKeyDir = templateDir + "/";
-            List<String> templateFileKeys = ruc.getPackageUpdateContext().getByteStreamKeys()
-                    .stream()
-                    .filter(key -> key.startsWith(templateZipKeyDir) && !key.equals(templateZipKeyDir))
-                    .map(key -> key.replace(templateZipKeyDir, ""))
-                    .collect(Collectors.toList());
-            String path = dirTemplates + File.separator + template.getDirectory();
-            File dirFile = new File(path);
-            if (!dirFile.exists() && !dirFile.mkdirs()) {
-                throw new IOException("Nepodařilo se vytvořit složku: " + path);
-            }
-            for (String file : templateFileKeys) {
-                ruc.getPackageUpdateContext().saveFile(dirFile, templateDir, file);
+            if (!templateDirSet.contains(templateDir)) {
+                templateDirSet.add(templateDir);
+                final String templateZipKeyDir = templateDir + "/";
+                List<String> templateFileKeys = ruc.getPackageUpdateContext().getByteStreamKeys()
+                        .stream()
+                        .filter(key -> key.startsWith(templateZipKeyDir) && !key.equals(templateZipKeyDir))
+                        .map(key -> key.replace(templateZipKeyDir, ""))
+                        .collect(Collectors.toList());
+                String path = dirTemplates + File.separator + template.getDirectory();
+                File dirFile = new File(path);
+                if (!dirFile.exists() && !dirFile.mkdirs()) {
+                    throw new IOException("Nepodařilo se vytvořit složku: " + path);
+                }
+                for (String file : templateFileKeys) {
+                    ruc.getPackageUpdateContext().saveFile(dirFile, templateDir, file);
+                }
             }
         }
     }

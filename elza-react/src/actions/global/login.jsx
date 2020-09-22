@@ -1,5 +1,6 @@
 import * as types from 'actions/constants/ActionTypes';
 import {_WebApi, WebApi} from 'actions/index.jsx';
+import { continueRequests } from "../../api";
 import {userDetailChange, userDetailRequest} from 'actions/user/userDetail.jsx';
 import {routerNavigate} from 'actions/router.jsx';
 
@@ -56,6 +57,7 @@ function loginSuccess(forcedUserDetail) {
             });
         }
 
+        continueRequests();
         WebApi.onLogin();
     };
 }

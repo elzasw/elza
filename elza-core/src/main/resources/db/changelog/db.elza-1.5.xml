@@ -739,6 +739,7 @@
     </changeSet>
 
     <changeSet id="20200811130500" author="sergey.iryupin">
+        <validCheckSum>8:f0d00a080109f9f9afe53c2c874f9f34</validCheckSum>
         <createTable tableName="arr_output_template">
             <column name="output_template_id" type="int">
                 <constraints primaryKey="true" primaryKeyName="pk_arr_output_template"/>
@@ -757,7 +758,7 @@
         <sql>INSERT INTO arr_output_template (output_template_id, output_id, template_id)
 			 SELECT o.output_id, o.output_id, o.template_id FROM arr_output o</sql>
         <sql>INSERT INTO db_hibernate_sequences (sequence_name, next_val)
-        	SELECT 'arr_output_template|output_template_id', COALESCE(MAX(output_template_id),0)+1
+        	SELECT 'arr_output_template|output_template_id', COALESCE(MAX(output_template_id),0)+30
         	FROM arr_output_template</sql>
         <dropColumn tableName="arr_output" columnName="template_id" />
     </changeSet>
@@ -865,6 +866,23 @@
             </column>
         </addColumn>
         <dropNotNullConstraint tableName="arr_async_request" columnName="fund_version_id" columnDataType="int"/>
+    </changeSet>
+
+    <changeSet id="20200908122500" author="sergey.iryupin">
+      <addColumn tableName="rul_template">
+        <column name="validation_schema" type="varchar(250)" />
+      </addColumn>
+    </changeSet>
+
+    <changeSet id="20200921235927" author="ppyt">
+        <createIndex indexName="ap_index_part_idx" tableName="ap_index" unique="false">
+            <column name="part_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_key_value_all_idx" tableName="ap_key_value" unique="false">
+            <column name="scope_id" type="int"/>
+            <column name="key_type" type="nvarchar(50)"/>
+            <column name="value" type="nvarchar(4000)"/>
+        </createIndex>
     </changeSet>
 
 </databaseChangeLog>

@@ -35,6 +35,9 @@ public class RulArrangementExtension {
     @JoinColumn(name = "ruleSetId", nullable = false)
     private RulRuleSet ruleSet;
 
+    @Column(name = "ruleSetId", insertable = false, updatable = false)
+    private Integer ruleSetId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
@@ -66,11 +69,16 @@ public class RulArrangementExtension {
         return ruleSet;
     }
 
+    public Integer getRuleSetId() {
+        return ruleSetId;
+    }
+
     /**
      * @param ruleSet pravidla
      */
     public void setRuleSet(final RulRuleSet ruleSet) {
         this.ruleSet = ruleSet;
+        this.ruleSetId = (ruleSet != null) ? ruleSet.getRuleSetId() : null;
     }
 
     /**

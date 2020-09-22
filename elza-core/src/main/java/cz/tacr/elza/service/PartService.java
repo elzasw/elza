@@ -1,7 +1,41 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+import static cz.tacr.elza.groovy.GroovyResult.PT_PREFER_NAME;
+import static cz.tacr.elza.repository.ExceptionThrow.part;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import cz.tacr.elza.controller.vo.ApPartFormVO;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingItem;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApKeyValue;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApStateEnum;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -18,21 +52,6 @@ import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
 import cz.tacr.elza.service.vo.DataRef;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
-import static cz.tacr.elza.groovy.GroovyResult.PT_PREFER_NAME;
-import static cz.tacr.elza.repository.ExceptionThrow.part;
 
 @Service
 public class PartService {
@@ -263,6 +282,16 @@ public class PartService {
         return partRepository.findNewerValidPartsByAccessPoint(accessPoint, changeId);
     }
 
+    /**
+     * Update part key value
+     * 
+     * @param apPart
+     *            should be with fetched key value
+     * @param result
+     * @param state
+     * @param async
+     * @return
+     */
     public boolean updatePartValue(ApPart apPart, GroovyResult result, ApState state, boolean async) {
         ApScope scope = state.getScope();
         ApAccessPoint accessPoint = state.getAccessPoint();

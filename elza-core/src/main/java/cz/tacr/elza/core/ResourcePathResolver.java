@@ -6,15 +6,25 @@ import java.nio.file.Paths;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.domain.*;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.RulAction;
+import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulExtensionRule;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.RulStructureDefinition;
+import cz.tacr.elza.domain.RulStructureExtensionDefinition;
+import cz.tacr.elza.domain.RulTemplate;
 
 @Service
 public class ResourcePathResolver {
@@ -57,6 +67,16 @@ public class ResourcePathResolver {
     @Transactional
     public Path getDmsDir() {
         Path path = Paths.get(workDir, DMS_DIR);
+
+        return path;
+    }
+
+    /**
+     * @return Path to file in data management system (DMS) directory (may not exist).
+     */
+    @Transactional
+    public Path getDmsFile(String fileName) {
+        Path path = Paths.get(workDir, DMS_DIR).resolve(fileName);
 
         return path;
     }
@@ -116,9 +136,9 @@ public class ResourcePathResolver {
     public Path getTemplatesDir(int packageId, int ruleSetId) {
         StaticDataProvider staticData = staticDataService.getData();
         RulPackage rulPackage = staticData.getPackageById(packageId);
-        RulRuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
+        RuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
 
-        Path path = getTemplatesDir(rulPackage, ruleSet);
+        Path path = getTemplatesDir(rulPackage, ruleSet.getEntity());
 
         return path;
     }
@@ -215,9 +235,9 @@ public class ResourcePathResolver {
     public Path getDroolsDir(int packageId, int ruleSetId) {
         StaticDataProvider staticData = staticDataService.getData();
         RulPackage rulPackage = staticData.getPackageById(packageId);
-        RulRuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
+        RuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
 
-        Path path = getDroolsDir(rulPackage, ruleSet);
+        Path path = getDroolsDir(rulPackage, ruleSet.getEntity());
 
         return path;
     }
@@ -276,9 +296,9 @@ public class ResourcePathResolver {
     public Path getGroovyDir(int packageId, int ruleSetId) {
         StaticDataProvider staticData = staticDataService.getData();
         RulPackage rulPackage = staticData.getPackageById(packageId);
-        RulRuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
+        RuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
 
-        Path path = getGroovyDir(rulPackage, ruleSet);
+        Path path = getGroovyDir(rulPackage, ruleSet.getEntity());
 
         return path;
     }
@@ -324,9 +344,9 @@ public class ResourcePathResolver {
     public Path getFunctionsDir(int packageId, int ruleSetId) {
         StaticDataProvider staticData = staticDataService.getData();
         RulPackage rulPackage = staticData.getPackageById(packageId);
-        RulRuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
+        RuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
 
-        Path path = getFunctionsDir(rulPackage, ruleSet);
+        Path path = getFunctionsDir(rulPackage, ruleSet.getEntity());
 
         return path;
     }

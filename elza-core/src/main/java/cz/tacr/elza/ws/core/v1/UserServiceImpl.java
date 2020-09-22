@@ -130,6 +130,9 @@ public class UserServiceImpl implements UserService {
         case FUND_BA_ALL:
             up.setPermission(cz.tacr.elza.domain.UsrPermission.Permission.FUND_BA_ALL);
             break;
+        case FUND_CREATE:
+            up.setPermission(cz.tacr.elza.domain.UsrPermission.Permission.FUND_CREATE);
+            break;
         case FUND_EXPORT_ALL:
             up.setPermission(cz.tacr.elza.domain.UsrPermission.Permission.FUND_EXPORT_ALL);
             break;

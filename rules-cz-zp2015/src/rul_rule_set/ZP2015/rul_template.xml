@@ -13,7 +13,7 @@
         </other-codes>
         <name>Manipulační seznam, PDF</name>
         <engine>JASPER</engine>
-        <directory>MANIP_SEZNAM_PDF_JASPER</directory>
+		<directory>POMUCKA_PDF_JASPER</directory>
     </template>
     <template code="ZP2015_INVENTAR_PDF_JASPER" output-type="ZP2015_INVENTAR" 
               mime-type="application/pdf" extension="pdf">
@@ -23,20 +23,20 @@
         </other-codes>
         <name>PDF</name>
         <engine>JASPER</engine>
-        <directory>INVENTAR_PDF_JASPER</directory>
+        <directory>POMUCKA_PDF_JASPER</directory>
     </template>
     <template code="STARSI_POMUCKA_1958_JASPER" output-type="STARSI_POMUCKA_1958" 
               mime-type="application/pdf" extension="pdf">
         <name>Starší pomůcka do PDF</name>
         <engine>JASPER</engine>
-        <directory>STARSI_POMUCKA_1958_JASPER</directory>
+		<directory>POMUCKA_PDF_JASPER</directory>
     </template>
     <template code="ZP2015_STITKY_PDF_JASPER" output-type="ZP2015_STITKY" 
               mime-type="application/pdf" extension="pdf">
         <other-codes>
            <!-- Odstraneno ve verzi 1.0 / 140 -->
            <other-code code="ZP2015_KOSILKY_PDF_JASPER" />
-        </other-codes>
+        	</other-codes>
         <name>Štítky 2x3 (PDF)</name>
         <engine>JASPER</engine>
         <directory>STITKY_PDF_JASPER</directory>
@@ -58,5 +58,6 @@
         <name>Publikace do EAD</name>
         <engine>FREEMARKER</engine>
         <directory>INVENTAR_EAD</directory>
+        <validation-schema>http://ead3.archivists.org/schema/</validation-schema>
     </template>
 </templates>

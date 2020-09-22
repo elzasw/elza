@@ -183,25 +183,29 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 												 final int maxResults,
 												 Class<T> clazz) {
 
-		StringBuilder query = new StringBuilder();
-		StringBuilder whereConds = new StringBuilder();
-		StringBuilder orderBy = new StringBuilder();
-		if (dataQuery) {
-			query.append("select distinct f ");
-			orderBy.append("f.name");
-		} else {
-			query.append("select count(distinct f) ");
-		}
+        StringBuilder query = new StringBuilder();
+        StringBuilder orderBy = new StringBuilder();
+        if (dataQuery) {
+            query.append("SELECT DISTINCT f ");
+            orderBy.append("f.name");
+        } else {
+            query.append("SELECT COUNT(DISTINCT f) ");
+        }
 
-		query.append("FROM arr_fund f ");
+        query.append("FROM arr_fund f ");
 
-		// text condition
-		if (!StringUtils.isEmpty(search)) {
-			query.append("where (LOWER(f.name) LIKE :search OR LOWER(f.internalCode) LIKE :search)");
-		}
-		if (orderBy.length() > 0) {
-			query.append(" order by ").append(orderBy);
-		}
+        // text condition
+        if (!StringUtils.isEmpty(search)) {
+            query.append("WHERE "
+                + "(LOWER(f.name) LIKE :search OR "
+                + "LOWER(f.internalCode) LIKE :search OR "
+                + "CAST(f.fundNumber AS text) LIKE :search OR "
+                + "LOWER(f.mark) LIKE :search) "
+            );
+        }
+        if (orderBy.length() > 0) {
+            query.append("ORDER BY ").append(orderBy);
+        }
 
 		TypedQuery<T> q = entityManager.createQuery(query.toString(), clazz);
 
@@ -226,32 +230,36 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 												 final int maxResults,
 												 Class<T> clazz) {
 
-		StringBuilder query = new StringBuilder();
-		StringBuilder whereConds = new StringBuilder();
-		StringBuilder orderBy = new StringBuilder();
-		if (dataQuery) {
-			query.append("select distinct f ");
-			orderBy.append("f.name");
-		} else {
-			query.append("select count(distinct f) ");
-		}
+        StringBuilder query = new StringBuilder();
+        StringBuilder orderBy = new StringBuilder();
+        if (dataQuery) {
+            query.append("SELECT DISTINCT f ");
+            orderBy.append("f.name");
+        } else {
+            query.append("SELECT COUNT(DISTINCT f) ");
+        }
 
-		query.append("FROM arr_fund f ");
+        query.append("FROM arr_fund f ");
 
-		// text condition
-		if (!StringUtils.isEmpty(search)) {
-			query.append("where (LOWER(f.name) LIKE :search OR LOWER(f.internalCode) LIKE :search) ");
-			if (institutionId != null) {
-				query.append("AND f.institution.institutionId = :institutionId ");
-			}
-		} else {
-			if (institutionId != null) {
-				query.append("where f.institution.institutionId = :institutionId ");
-			}
-		}
-		if (orderBy.length() > 0) {
-			query.append(" order by ").append(orderBy);
-		}
+        // text condition
+        if (!StringUtils.isEmpty(search)) {
+            query.append("WHERE "
+                + "(LOWER(f.name) LIKE :search OR "
+                + "LOWER(f.internalCode) LIKE :search OR "
+                + "CAST(f.fundNumber AS text) LIKE :search OR "
+                + "LOWER(f.mark) LIKE :search) "
+            );
+            if (institutionId != null) {
+                query.append("AND f.institution.institutionId = :institutionId ");
+            }
+        } else {
+            if (institutionId != null) {
+                query.append("WHERE f.institution.institutionId = :institutionId ");
+            }
+        }
+        if (orderBy.length() > 0) {
+            query.append("ORDER BY ").append(orderBy);
+        }
 
 		TypedQuery<T> q = entityManager.createQuery(query.toString(), clazz);
 
@@ -287,7 +295,7 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 	-- vyber skupin jejichz je clenem
 	SELECT gu.group_Id FROM usr_group_user gu WHERE gu.user_Id = 23
 	)
-	-- AND LOWER(f.name) like '%t%' OR LOWER(f.internalCode)  like '%t%'
+	-- AND LOWER(f.name) like '%t%' OR LOWER(f.internalCode) like '%t%'
 	ORDER BY f.name
 	 */
 
@@ -298,36 +306,38 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 														 final int userId,
 														 Class<T> clazz) {
 
-		StringBuilder query = new StringBuilder();
-		StringBuilder orderBy = new StringBuilder();
-		if (dataQuery) {
-			query.append("select distinct f ");
-			orderBy.append("f.name");
-		} else {
-			query.append("select count(distinct f) ");
-		}
+        StringBuilder query = new StringBuilder();
+        StringBuilder orderBy = new StringBuilder();
+        if (dataQuery) {
+            query.append("SELECT DISTINCT f ");
+            orderBy.append("f.name");
+        } else {
+            query.append("SELECT COUNT(DISTINCT f) ");
+        }
 
-		query.append(
-				"FROM arr_fund f " +
-						"JOIN usr_permission fu on fu.fund = f " +
-						"where " +
-						"(fu.userId = :userId OR " +
-						"       fu.groupId IN " +
-						"         ( SELECT gu.groupId FROM usr_group_user gu WHERE gu.userId = :userId ) " +
-						")"
-		);
+        query.append("FROM arr_fund f "
+                + "JOIN usr_permission fu ON fu.fund = f "
+                + "WHERE "
+                + "(fu.userId = :userId OR"
+                + " fu.groupId IN"
+                + " (SELECT gu.groupId FROM usr_group_user gu WHERE gu.userId = :userId)"
+                + ") "
+        );
 
-		// text condition
-		if (!StringUtils.isEmpty(search)) {
-			query.append(" AND ")
-					.append("(LOWER(f.name) LIKE :search OR LOWER(f.internalCode) LIKE :search)");
-		}
+        // text condition
+        if (!StringUtils.isEmpty(search)) {
+            query.append("AND "
+                + "(LOWER(f.name) LIKE :search OR "
+                + "LOWER(f.internalCode) LIKE :search OR "
+                + "CAST(f.fundNumber AS text) LIKE :search OR "
+                + "LOWER(f.mark) LIKE :search) "
+            );
+        }
 
-		// Připojení podmínek ke query
-		if (orderBy.length() > 0) {
-			query.append(" order by ")
-					.append(orderBy);
-		}
+        // Připojení podmínek ke query
+        if (orderBy.length() > 0) {
+            query.append("ORDER BY ").append(orderBy);
+        }
 
 		TypedQuery<T> q = entityManager.createQuery(query.toString(), clazz);
 
@@ -373,39 +383,41 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 														 final int userId,
 														 Class<T> clazz) {
 
-		StringBuilder query = new StringBuilder();
-		StringBuilder orderBy = new StringBuilder();
-		if (dataQuery) {
-			query.append("select distinct f ");
-			orderBy.append("f.name");
-		} else {
-			query.append("select count(distinct f) ");
-		}
+        StringBuilder query = new StringBuilder();
+        StringBuilder orderBy = new StringBuilder();
+        if (dataQuery) {
+            query.append("SELECT DISTINCT f ");
+            orderBy.append("f.name");
+        } else {
+            query.append("SELECT COUNT(DISTINCT f) ");
+        }
 
-		query.append(
-				"FROM arr_fund f " +
-						"JOIN usr_permission fu on fu.fund = f " +
-						"where " +
-						"(fu.userId = :userId OR " +
-						"       fu.groupId IN " +
-						"         ( SELECT gu.groupId FROM usr_group_user gu WHERE gu.userId = :userId ) " +
-						")"
-		);
+        query.append("FROM arr_fund f "
+                + "JOIN usr_permission fu ON fu.fund = f "
+                + "WHERE "
+                + "(fu.userId = :userId OR"
+                + " fu.groupId IN"
+                + " (SELECT gu.groupId FROM usr_group_user gu WHERE gu.userId = :userId)"
+                + ") "
+        );
 
-		// text condition
-		if (!StringUtils.isEmpty(search)) {
-			query.append(" AND ")
-					.append("(LOWER(f.name) LIKE :search OR LOWER(f.internalCode) LIKE :search) ");
-		}
-		if (institutionId != null) {
-			query.append(" AND ").append("f.institution.institutionId = :institutionId ");
-		}
+        // text condition
+        if (!StringUtils.isEmpty(search)) {
+            query.append("AND "
+                + "(LOWER(f.name) LIKE :search OR "
+                + "LOWER(f.internalCode) LIKE :search OR "
+                + "CAST(f.fundNumber AS text) LIKE :search OR "
+                + "LOWER(f.mark) LIKE :search) "
+            );
+        }
+        if (institutionId != null) {
+            query.append("AND ").append("f.institution.institutionId = :institutionId ");
+        }
 
-		// Připojení podmínek ke query
-		if (orderBy.length() > 0) {
-			query.append(" order by ")
-					.append(orderBy);
-		}
+        // Připojení podmínek ke query
+        if (orderBy.length() > 0) {
+            query.append("ORDER BY ").append(orderBy);
+        }
 
 		TypedQuery<T> q = entityManager.createQuery(query.toString(), clazz);
 

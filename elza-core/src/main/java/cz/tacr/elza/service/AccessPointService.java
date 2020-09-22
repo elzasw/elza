@@ -113,6 +113,7 @@ import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRelationRepository;
@@ -239,6 +240,9 @@ public class AccessPointService {
 
     @Autowired
     private RuleService ruleService;
+    
+    @Autowired
+    InstitutionRepository institutionRepository;
 
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
@@ -306,6 +310,10 @@ public class AccessPointService {
      */
     public void checkDeletion(final ApAccessPoint accessPoint) {
         // arr_data_record_ref
+        if (institutionRepository.existsByAccessPointId(accessPoint.getAccessPointId())) {
+            throw new BusinessException("Nelze smazat/zneplatnit přístupový bod, který je institucí.",
+                                        RegistryCode.EXIST_INSTITUCI);
+        }
         List<ArrDescItem> arrRecordItems = descItemRepository.findArrItemByRecord(accessPoint);
         if (CollectionUtils.isNotEmpty(arrRecordItems)) {
             throw new BusinessException(

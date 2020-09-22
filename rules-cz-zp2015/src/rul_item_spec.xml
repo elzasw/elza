@@ -3577,6 +3577,7 @@
         <item-type-assign code="ZP2015_AWARD_LEVEL"/>
     </item-spec>
     <!-- Důvod omezení přístupnosti -->
+    <!-- Neplatná specifikace, nepoužívat -->
     <item-spec code="ZP2015_ACCESS_STATUTORY_DEADLINE">
         <name>zákonná lhůta (archiválie mladší 30 let)</name>
         <description>mladší než 30 let, zákon č. 499/2004 Sb. § 37 odst. 1</description>
@@ -3657,11 +3658,18 @@
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_RESTRICTION_ARCHMAT">
-        <name>nepřístupná archiválie</name>
-        <description>nepřístupná archiválie</description>
-        <shortcut>nepřístupná archiválie</shortcut>
+        <name>nepřístupný originál archiválie</name>
+        <description>nepřístupný originál archiválie</description>
+        <shortcut>nepřístupný originál archiválie</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
+    <item-spec code="ZP2015_RESTRICTION_ARCHMAT2">
+        <name>dočasně nepřístupná archiválie</name>
+        <description>dočasně nepřístupná archiválie</description>
+        <shortcut>dočasně nepřístupná archiválie</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+    </item-spec>
+    <!-- zastaralé, nepoužívat -->
     <item-spec code="ZP2015_RESTRICTION_ARCHMAT_INPERS_ONLY">
         <name>archiválie přístupná jen v badatelně</name>
         <description>archiválie přístupná jen v badatelně</description>
@@ -3674,16 +3682,96 @@
         <shortcut>nepřístupná jednotka popisu</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
+    <item-spec code="ZP2015_RESTRICTION_ARCHDESC2">
+        <name>skrytá jednotka popisu</name>
+        <description>skrytá jednotka popisu</description>
+        <shortcut>skrytá jednotka popisu</shortcut>
+        <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+    </item-spec>
     <item-spec code="ZP2015_RESTRICTION_ABSTRACT">
         <name>nepřístupný prvek obsah</name>
         <description>nepřístupný prvek obsah</description>
         <shortcut>nepřístupný prvek obsah</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
+    <!-- Neplatná specifikace, nepoužívat -->
     <item-spec code="ZP2015_RESTRICTION_ARCHENTITY">
         <name>nepřístupné napojené archivní entity</name>
         <description>nepřístupné napojené archivní entity</description>
         <shortcut>nepřístupné archivní entity</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+    </item-spec>
+    <!-- Jiné spouštěcí události -->
+    <item-spec code="ZP2015_PUBLISH_EVENT_TYPE_CREATION">
+        <name>datace vzniku</name>
+        <description>datace vzniku</description>
+        <shortcut>datace vzniku</shortcut>
+        <item-type-assign code="ZP2015_PUBLISH_EVENT_TYPE"/>
+    </item-spec>    
+    <item-spec code="ZP2015_PUBLISH_EVENT_TYPE_BIRTH">
+        <name>datum narození</name>
+        <description>datum narození</description>
+        <shortcut>datum narození</shortcut>
+        <item-type-assign code="ZP2015_PUBLISH_EVENT_TYPE"/>
+    </item-spec>    
+    <item-spec code="ZP2015_PUBLISH_EVENT_TYPE_BIRTH_ESTM">
+        <name>datum narození - odhad</name>
+        <description>datum narození - odhad</description>
+        <shortcut>datum narození - odhad</shortcut>
+        <item-type-assign code="ZP2015_PUBLISH_EVENT_TYPE"/>
+    </item-spec>    
+    <item-spec code="ZP2015_PUBLISH_EVENT_TYPE_DEATH">
+        <name>datum úmrtí</name>
+        <description>datum úmrtí</description>
+        <shortcut>datum úmrtí</shortcut>
+        <item-type-assign code="ZP2015_PUBLISH_EVENT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_1">
+        <name>datum oprávněného zveřejnění díla</name>
+        <description>datum oprávněného zveřejnění díla</description>
+        <shortcut>datum oprávněného zveřejnění díla</shortcut>
+        <item-type-assign code="ZP2015_PUBLISH_EVENT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_2">
+        <name>datum vytvoření výkonu</name>
+        <description>datum vytvoření výkonu</description>
+        <shortcut>datum vytvoření výkonu</shortcut>
+        <item-type-assign code="ZP2015_PUBLISH_EVENT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_3">
+        <name>datum oprávněného vydání nebo sdělení veřejnosti</name>
+        <description>datum oprávněného vydání nebo sdělení veřejnosti</description>
+        <shortcut>datum oprávněného vydání nebo sdělení veřejnosti</shortcut>
+        <item-type-assign code="ZP2015_PUBLISH_EVENT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_4">
+        <name>datum pořízení zvukového záznamu</name>
+        <description>datum pořízení zvukového záznamu</description>
+        <shortcut>datum pořízení zvukového záznamu</shortcut>
+        <item-type-assign code="ZP2015_PUBLISH_EVENT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_5">
+        <name>datum pořízení zvukově obrazového záznamu</name>
+        <description>datum pořízení zvukově obrazového záznamu</description>
+        <shortcut>datum pořízení zvukově obrazového záznamu</shortcut>
+        <item-type-assign code="ZP2015_PUBLISH_EVENT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_6">
+        <name>datum zveřejnění zvukově obrazového záznamu</name>
+        <description>datum zveřejnění zvukově obrazového záznamu</description>
+        <shortcut>datum zveřejnění zvukově obrazového záznamu</shortcut>
+        <item-type-assign code="ZP2015_PUBLISH_EVENT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_7">
+        <name>datum prvního vysílání</name>
+        <description>datum prvního vysílání</description>
+        <shortcut>datum prvního vysílání</shortcut>
+        <item-type-assign code="ZP2015_PUBLISH_EVENT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PUBLISH_EVENT_TYPE_AUTHLAW_8">
+        <name>datum prvního zveřejnění</name>
+        <description>datum prvního zveřejnění</description>
+        <shortcut>datum prvního zveřejnění</shortcut>
+        <item-type-assign code="ZP2015_PUBLISH_EVENT_TYPE"/>
     </item-spec>
 </item-specs>

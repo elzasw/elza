@@ -9,6 +9,7 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
@@ -19,7 +20,6 @@ import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.schema.v2.FundInfo;
 import cz.tacr.elza.service.ArrangementService;
@@ -87,14 +87,14 @@ public class SectionsContext {
         if (StringUtils.isEmpty(ruleSetCode)) {
             throw new DEImportException("Rule set code is empty");
         }
-        RulRuleSet ruleSet = staticData.getRuleSetByCode(ruleSetCode);
+        RuleSet ruleSet = staticData.getRuleSetByCode(ruleSetCode);
         if (ruleSet == null) {
             throw new DEImportException("Rule set not found, code:" + ruleSetCode);
         }
 
         // create current section
         SectionContext section = new SectionContext(storageManager, batchSize, createChange,
-                                                    ruleSet, staticData, initHelper);
+                ruleSet.getEntity(), staticData, initHelper);
 
         // set subsection root adapter when position present
         if (importPosition != null) {

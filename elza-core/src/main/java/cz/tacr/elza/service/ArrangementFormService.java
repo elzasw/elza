@@ -1,5 +1,7 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.repository.ExceptionThrow.node;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +25,7 @@ import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -32,7 +35,6 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.exception.BusinessException;
@@ -46,8 +48,6 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 import cz.tacr.elza.websocket.service.WebScoketStompService;
-
-import static cz.tacr.elza.repository.ExceptionThrow.node;
 
 /**
  * Service to handle form related requests
@@ -207,7 +207,7 @@ public class ArrangementFormService {
 			// prepare form data
 			List<RulItemTypeExt> itemTypes = ruleService.getDescriptionItemTypes(fundVersion, node);
 
-			RulRuleSet rs = dataProvider.getRuleSetById(fundVersion.getRuleSetId());
+            RuleSet rs = dataProvider.getRuleSetById(fundVersion.getRuleSetId());
 			List<ItemTypeLiteVO> itemTypesVO = factoryVo.createItemTypes(rs.getCode(), fundVersion.getFundId(), itemTypes);
 
 			LevelTreeCacheService.Node simpleNode = levelTreeCache.getSimpleNode(nodeId, fundVersion);
@@ -303,13 +303,13 @@ public class ArrangementFormService {
 
 		// store updated value
 		ArrDescItem descItemUpdated = descriptionItemService
-		        .updateDescriptionItem(descItem, nodeVersion, nodeId, fundVersion.getFundVersionId(), createVersion);
+		        .updateDescriptionItem(descItem, nodeVersion, nodeId, fundVersion.getFundVersionId(), createVersion, false);
 
 		// prepare form data
 		List<RulItemTypeExt> itemTypes = ruleService.getDescriptionItemTypes(fundVersion, descItemUpdated.getNode());
 
 		StaticDataProvider dataProvider = this.staticData.getData();
-		RulRuleSet rs = dataProvider.getRuleSetById(fundVersion.getRuleSetId());
+        RuleSet rs = dataProvider.getRuleSetById(fundVersion.getRuleSetId());
 		List<ItemTypeLiteVO> itemTypesVO = factoryVo.createItemTypes(rs.getCode(), fundVersion.getFundId(), itemTypes);
 
 		ArrItemVO descItemVo = factoryVo.createItem(descItemUpdated);
@@ -326,7 +326,7 @@ public class ArrangementFormService {
 		ArrDescItem descItem = factoryDo.createDescItem(descItemVO);
 
 		ArrDescItem descItemUpdated = descriptionItemService
-				.updateDescriptionItem(descItem, nodeVersion, nodeId, fundVersionId, createNewVersion);
+				.updateDescriptionItem(descItem, nodeVersion, nodeId, fundVersionId, createNewVersion, false);
 
 		DescItemResult descItemResult = new DescItemResult();
 		descItemResult.setItem(factoryVo.createItem(descItemUpdated));

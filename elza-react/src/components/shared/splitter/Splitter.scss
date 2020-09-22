@@ -6,7 +6,7 @@
     display: flex;
     /*flex-flow: row wrap;*/
     .splitter-left, .splitter-right, .splitter-center {
-        height: 100%;
+        // height: 100%;
     }
     .splitter-right {
         min-width: 220px;

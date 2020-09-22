@@ -15,7 +15,12 @@ import org.yaml.snakeyaml.representer.Representer;
 
 public abstract class YamlResource<T> extends AbstractStorageResource<T> {
 
-	protected final static Yaml YAML_INSTANCE = new Yaml(new NotNullRepresenter());
+    protected final static Yaml YAML_INSTANCE;
+
+    static {
+        NotNullRepresenter representer = new NotNullRepresenter();
+        YAML_INSTANCE = new Yaml(representer);
+    }
 
 	private final Class<T> type;
 

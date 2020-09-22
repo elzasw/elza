@@ -228,13 +228,15 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param descItemObjectId identifikátor hodnoty atributu
      * @param nodeVersion      verze uzlu (optimistické zámky)
      * @param fundVersionId    identifikátor verze archivní pomůcky
+     * @param forceUpdate      ignorovat příznak readOnly
      * @return smazaná hodnota atributu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public ArrDescItem deleteDescriptionItem(final Integer descItemObjectId,
                                              final Integer nodeVersion,
                                              @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
-                                             @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
+                                             @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                             final boolean forceUpdate) {
         Assert.notNull(descItemObjectId, "Nebyl vyplněn jednoznačný identifikátor descItem");
         Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
         Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
@@ -243,6 +245,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         ArrNode node = arrangementService.getNode(nodeId);
         ArrDescItem descItem = fetchOpenItemFromDB(descItemObjectId);
+
+        // kontrola zákazu změn
+        if (!forceUpdate) {
+            if (descItem.getReadOnly()) {
+                throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+            }
+        }
 
         if (!node.getFundId().equals(fundVersion.getFundId())) {
             throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
@@ -275,13 +284,14 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param nodeId         identifikátor uzlu
      * @param nodeVersion    verze uzlu (optimistické zámky)
      * @param descItemTypeId identifikátor typu hodnoty atributu
+     * @param forceUpdate    ignorovat příznak readOnly
      * @return upravený uzel
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public ArrNode deleteDescriptionItemsByType(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                                 @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
                                                 final Integer nodeVersion,
-                                                final Integer descItemTypeId) {
+                                                final Integer descItemTypeId, final boolean forceUpdate) {
         Assert.notNull(descItemTypeId, "Nebyl vyplněn typ hodnoty atributu");
         Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
         Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
@@ -313,6 +323,12 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         MultiplItemChangeContext changeContext = createChangeContext(fundVersionId);
 
         for (ArrDescItem descItem : descItems) {
+            // kontrola zákazu změn
+            if (!forceUpdate) {
+                if (descItem.getReadOnly()) {
+                    throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+                }
+            }
             deleteDescriptionItem(descItem, fundVersion, change, false, changeContext);
 
             changeContext.flushIfNeeded();
@@ -1103,6 +1119,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param nodeVersion      verze uzlu (optimistické zámky)
      * @param fundVersionId    identifikátor verze archivní pomůcky
      * @param createNewVersion vytvořit novou verzi?
+     * @param forceUpdate      ignorovat příznak readOnly
      * @return upravená výsledná hodnota atributu
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
@@ -1110,7 +1127,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                              final Integer nodeVersion,
                                              @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
                                              @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
-                                             final Boolean createNewVersion) {
+                                             final Boolean createNewVersion, final boolean forceUpdate) {
         Assert.notNull(descItem, "Hodnota atributu musí být vyplněna");
         Assert.notNull(descItem.getPosition(), "Pozice musí být vyplněna");
         Assert.notNull(descItem.getDescItemObjectId(), "Identifikátor hodnoty atributu musí být vyplněn");
@@ -1122,6 +1139,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         ArrNode node = arrangementService.getNode(nodeId);
         ArrDescItem descItemDB = fetchOpenItemFromDB(descItem.getDescItemObjectId());
+
+        // kontrola zákazu změn
+        if (!forceUpdate) {
+            if (descItemDB.getReadOnly()) {
+                throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+            }
+        }
 
         if (!node.getFundId().equals(fundVersion.getFundId())) {
             throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
@@ -1474,6 +1498,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param findText       hledaný text v atributu
      * @param replaceText    text, který nahradí hledaný text v celém textu
      * @param allNodes       najít u všech JP a nahradit
+     * @param forceUpdate    ignorovat příznak readOnly
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void replaceDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
@@ -1481,7 +1506,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                       final Collection<ArrNode> nodes,
                                       final Set<RulItemSpec> specifications, final String findText,
                                       final String replaceText,
-                                      final boolean allNodes) {
+                                      final boolean allNodes, final boolean forceUpdate) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         Assert.hasText(findText, "Musí být vyplněn hledaný text");
@@ -1505,12 +1530,17 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         if (!descItemsToReplaceText.isEmpty()) {
 
-
             ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
             MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
 
             for (ArrDescItem descItem: descItemsToReplaceText) {
+                // kontrola zákazu změn
+                if (!forceUpdate) {
+                    if (descItem.getReadOnly()) {
+                        throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+                    }
+                }
                 ArrNode clientNode = nodesMap.get(descItem.getNodeId());
                 arrangementService.lockNode(descItem.getNode(), clientNode == null ? descItem.getNode() : clientNode, change);
 
