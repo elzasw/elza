@@ -1,8 +1,14 @@
 package cz.tacr.elza.common;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 
 /**
@@ -51,5 +57,36 @@ public class ObjectListIterator<T> {
 
     public void remove() {
         throw new UnsupportedOperationException("Remove opreration is not supported.");
+    }
+
+    public static <T> void forEachPage(final Collection<T> list, Consumer<Collection<T>> call) {
+        if (CollectionUtils.isNotEmpty(list)) {
+            ObjectListIterator<T> iterator = new ObjectListIterator<>(list);
+            while (iterator.hasNext()) {
+                call.accept(iterator.next());
+            }
+        }
+    }
+
+    public static <T, R> List<R> findIterable(final Collection<T> list, Function<Collection<T>, List<R>> call) {
+        List<R> result = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(list)) {
+            ObjectListIterator<T> iterator = new ObjectListIterator<>(list);
+            while (iterator.hasNext()) {
+                result.addAll(call.apply(iterator.next()));
+            }
+        }
+        return result;
+    }
+
+    public static <T, R> Set<R> findIterableSet(final Collection<T> list, Function<Collection<T>, Collection<R>> call) {
+        Set<R> result = new HashSet<>();
+        if (CollectionUtils.isNotEmpty(list)) {
+            ObjectListIterator<T> iterator = new ObjectListIterator<>(list);
+            while (iterator.hasNext()) {
+                result.addAll(call.apply(iterator.next()));
+            }
+        }
+        return result;
     }
 }

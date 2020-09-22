@@ -20,11 +20,6 @@ public enum ApStateEnum {
     ERROR,
 
     /**
-     * Dočasná entita, bude odstraněno.
-     */
-    TEMP,
-
-    /**
      * Připraveno k přegenerování.
      */
     INIT
