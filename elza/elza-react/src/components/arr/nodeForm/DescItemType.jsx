@@ -25,6 +25,7 @@ import {convertValue, validate} from '../../../stores/app/arr/subNodeForm.jsx';
 import {WebApi} from '../../../actions/index';
 import objectById from '../../../shared/utils/objectById';
 import {validateUnitDate} from '../../registry/field/UnitdateField';
+import {RulItemTypeType} from '../../../api/RulItemTypeType';
 
 const placeholder = document.createElement('div');
 placeholder.className = 'placeholder';
@@ -408,7 +409,7 @@ class DescItemType extends AbstractReactComponent {
         value &&
             onChange(
                 descItemIndex,
-                value && Object.keys(value).length === 1 && value.value ? value.value : value,
+                value && Object.keys(value).length === 1 && value.value !== undefined ? value.value : value,
                 error,
             );
 
@@ -694,6 +695,9 @@ class DescItemType extends AbstractReactComponent {
             },
             INT: {
                 refType,
+            },
+            BIT: {
+                required: infoType.itemType === RulItemTypeType.REQUIRED,
             },
         };
 

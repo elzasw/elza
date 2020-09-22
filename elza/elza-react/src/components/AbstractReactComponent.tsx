@@ -1,11 +1,11 @@
-import React from 'react';
+import React, {Component} from 'react';
 import {propsEquals} from './Utils.jsx';
 
 /**
  * Abstraktní předek pro všechny komponenty.
  *
  */
-class AbstractReactComponent extends React.Component {
+class AbstractReactComponent<P = {}, S = {}, SS = any> extends React.Component<P, S, SS> {
     UNSAFE_componentWillUpdate() {
         //console.log(this);
     }

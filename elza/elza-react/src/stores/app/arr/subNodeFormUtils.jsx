@@ -4,6 +4,13 @@ import {DisplayType} from '../../../constants.tsx';
 import {isNormalizeDurationLength, normalizeDurationLength, toDuration} from '../../../components/validate';
 import {ItemAvailability, ItemAvailabilityNumToEnumMap} from '../accesspoint/itemFormUtils';
 import {JAVA_ATTR_CLASS} from '../../../constants';
+import {
+    CLS_ITEM_BIT,
+    CLS_ITEM_DATE,
+    CLS_ITEM_UNIT_DATE,
+    CLS_ITEM_UNITID,
+    CLS_ITEM_URI_REF,
+} from '../../../shared/factory/factoryConsts';
 
 const availability = {
     REQUIRED: 'REQUIRED',
@@ -18,7 +25,7 @@ typesNumToStrMap[2] = availability.RECOMMENDED;
 typesNumToStrMap[1] = availability.POSSIBLE;
 typesNumToStrMap[0] = availability.IMPOSSIBLE;
 
-export function isType(maybeType/*: number || string*/, checkType/*: string*/) {
+export function isType(maybeType /*: number || string*/, checkType /*: string*/) {
     if (typeof maybeType === 'number') {
         return typesNumToStrMap[maybeType] == checkType;
     } else {
@@ -367,7 +374,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
                 // Vícehodnotový
                 var prevDescItem = null;
                 prevType.descItems.forEach((descItem, index) => {
-                    descItem = {...descItem};   // immutable
+                    descItem = {...descItem}; // immutable
                     addUid(descItem, index);
 
                     if (typeof descItem.id === 'undefined') {
@@ -1298,7 +1305,7 @@ export function createDescItem(descItemType, refType, addedByUser) {
         addedByUser,
     };
 
-    prepareNextFormKey(descItemType)
+    prepareNextFormKey(descItemType);
     initFormKey(descItemType, result);
 
     if (refType.useSpecification) {
@@ -1345,13 +1352,15 @@ export function getItemClass(dataType) {
         case 'FORMATTED_TEXT':
             return '.ArrItemFormattedTextVO';
         case 'UNITDATE':
-            return '.ArrItemUnitdateVO';
+            return CLS_ITEM_UNIT_DATE;
         case 'UNITID':
-            return '.ArrItemUnitidVO';
+            return CLS_ITEM_UNITID;
         case 'DATE':
-            return '.ArrItemDateVO';
+            return CLS_ITEM_DATE;
         case 'URI_REF':
-            return '.ArrItemUriRefVO';
+            return CLS_ITEM_URI_REF;
+        case 'BIT':
+            return CLS_ITEM_BIT;
         default:
             console.error('Unsupported data type', dataType);
             return null;
