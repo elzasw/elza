@@ -58,7 +58,7 @@
 
     <dependencyManagement>
         <dependencies>
-            <!--- JAX-WS  -->
+            <!-- JAX-WS  -->
             <dependency>
                 <groupId>com.sun.xml.ws</groupId>
                 <artifactId>jaxws-ri-bom-ext</artifactId>
@@ -66,7 +66,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!--- Jackson -->
+            <!-- Jackson -->
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
