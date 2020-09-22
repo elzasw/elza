@@ -1771,6 +1771,7 @@ public class RuleService {
         Ap ae = modelAvailable.getAp();
         ApType aeType = sdp.getApTypeByCode(ae.getAeType());
 
+        // prepare list of rule codes
         ApType aeTypeProcess = aeType;
         ArrayList<String> executeDrls = new ArrayList<>();
         while (aeTypeProcess != null) {
@@ -1781,20 +1782,9 @@ public class RuleService {
         executeDrls.add(drlType.value() + "/" + partType.value());
         executeDrls.add(drlType.value());
 
-        // add in reverse order
-        List<RulExtensionRule> rules = new ArrayList<>(executeDrls.size());
-        for (int pos = executeDrls.size() - 1; pos >= 0; pos--) {
-            String extCode = executeDrls.get(pos);
-            // check all rules (invalid, only Ap related rules should be checked
-            for(RuleSet ruleSet: sdp.getRuleSets()) {
-                RuleSetExtension ruleSetExt = ruleSet.getExtByCode(extCode);
-                if (ruleSetExt != null) {
-                    List<RulExtensionRule> extRules = ruleSetExt
-                            .getRulesByType(RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
-                    rules.addAll(extRules);
-                }
-            }
-        }
+        // TODO: change to only one ruleset
+        List<RuleSet> ruleSets = sdp.getRuleSets();
+        List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSets);
 
         try {
             availableItemsRules.execute(rules, modelAvailable);
@@ -1812,29 +1802,25 @@ public class RuleService {
         Ap ae = modelValidation.getAp();
         ApType aeType = sdp.getApTypeByCode(ae.getAeType());
 
-        List<String> executeDrls = new ArrayList<>();
-        executeDrls.add(drlType.value());
+        // prepare list of rule codes
+        ApType aeTypeProcess = aeType;
+        ArrayList<String> executeDrls = new ArrayList<>();
+        while (aeTypeProcess != null) {
+            for (PartType partType : PartType.values()) {
+                executeDrls.add(drlType.value() + "/" + aeTypeProcess.getCode() + "/" + partType.value());
+            }
+            executeDrls.add(drlType.value() + "/" + aeTypeProcess.getCode());
+            aeTypeProcess = aeTypeProcess.getParentApType();
+        }
         for (PartType partType : PartType.values()) {
             executeDrls.add(drlType.value() + "/" + partType.value());
         }
+        executeDrls.add(drlType.value());
 
-        ApType aeTypeProcess = aeType;
-        List<String> executeDrlsProcess = new ArrayList<>();
-        while (aeTypeProcess != null) {
-            for (PartType partType : PartType.values()) {
-                executeDrlsProcess.add(drlType.value() + "/" + aeTypeProcess.getCode() + "/" + partType.value());
-            }
-            executeDrlsProcess.add(drlType.value() + "/" + aeTypeProcess.getCode());
-            aeTypeProcess = aeTypeProcess.getParentApType();
-
-            if (aeTypeProcess == null) {
-                Collections.reverse(executeDrlsProcess);
-                executeDrls.addAll(executeDrlsProcess);
-            }
-        }
-
-
-        List<RulExtensionRule> rules = new ArrayList<>(executeDrls.size());
+        // TODO: change to only one ruleset
+        List<RuleSet> ruleSets = sdp.getRuleSets();
+        List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSets);
+        new ArrayList<>(executeDrls.size());
         for (String extCode : executeDrls) {
             // check all rules (invalid, only Ap related rules should be checked
             for (RuleSet ruleSet : sdp.getRuleSets()) {
@@ -1854,6 +1840,25 @@ public class RuleService {
         }
 
         return modelValidation;
+    }
+
+    private List<RulExtensionRule> prepareExtRuleList(@NotNull final ArrayList<String> executeDrls,
+                                                      @NotNull final List<RuleSet> ruleSets) {
+        // add in reverse order
+        List<RulExtensionRule> rules = new ArrayList<>(executeDrls.size());
+        for (int pos = executeDrls.size() - 1; pos >= 0; pos--) {
+            String extCode = executeDrls.get(pos);
+            // check all rules (invalid, only Ap related rules should be checked
+            for (RuleSet ruleSet : ruleSets) {
+                RuleSetExtension ruleSetExt = ruleSet.getExtByCode(extCode);
+                if (ruleSetExt != null) {
+                    List<RulExtensionRule> extRules = ruleSetExt
+                            .getRulesByType(RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
+                    rules.addAll(extRules);
+                }
+            }
+        }
+        return rules;
     }
 
     public RulItemSpec getItemSpecById(final Integer specId) {
