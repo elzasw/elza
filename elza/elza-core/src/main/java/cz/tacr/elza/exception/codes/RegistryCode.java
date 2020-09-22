@@ -33,11 +33,16 @@ public enum RegistryCode implements ErrorCode {
      * Nalezeno použití hesla v návazné tabulce.
      */
     EXIST_FOREIGN_DATA,
-
+    
     /**
      * Existuje vazba z osoby
      */
     EXIST_FOREIGN_PARTY,
+
+    /**
+     * Existuje vazba z institucí
+     */
+    EXIST_INSTITUCI,
 
     /**
      * Navázaná entita musí mít stejnou třídu rejstříkového hesla jako osoba, ke

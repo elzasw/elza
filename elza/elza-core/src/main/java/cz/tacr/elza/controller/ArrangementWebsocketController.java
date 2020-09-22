@@ -204,7 +204,7 @@ public class ArrangementWebsocketController {
         ArrFundVersion version = fundVersionRepository.findById(nodeParam.getVersionId())
                 .orElseThrow(version(nodeParam.getVersionId()));
 
-        ArrLevel deleteLevel = moveLevelService.deleteLevel(version, deleteNode, deleteParent);
+        ArrLevel deleteLevel = moveLevelService.deleteLevel(version, deleteNode, deleteParent, false);
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),

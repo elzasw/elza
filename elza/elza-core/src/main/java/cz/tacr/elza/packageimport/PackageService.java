@@ -31,9 +31,6 @@ import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.service.AccessPointGeneratorService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -53,6 +50,7 @@ import org.springframework.util.FileSystemUtils;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.AutoDeletingTempFile;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -165,6 +163,7 @@ import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.repository.WfIssueStateRepository;
 import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.search.IndexWorkProcessor;
+import cz.tacr.elza.service.AccessPointGeneratorService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.CacheService;
 import cz.tacr.elza.service.SettingsService;
@@ -2375,7 +2374,7 @@ public class PackageService {
     private void exportSettingsForRuleset(UISettingsExport uiSettingsForRuleset,
                                           final ZipOutputStream zos) throws IOException {
         StaticDataProvider sdp = this.staticDataService.getData();
-        RulRuleSet ruleSet = null;
+        RuleSet ruleSet = null;
         if (uiSettingsForRuleset.getRuleSetId() != null) {
             ruleSet = sdp.getRuleSetById(uiSettingsForRuleset.getRuleSetId());
         }

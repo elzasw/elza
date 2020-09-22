@@ -75,7 +75,7 @@ public class SectionContext {
     }
 
     public RulRuleSet getRuleSet() {
-        return staticData.getRuleSetById(fundVersion.getRuleSetId());
+        return staticData.getRuleSetById(fundVersion.getRuleSetId()).getEntity();
     }
 
     public String getInstitutionCode() {

@@ -1,0 +1,6 @@
+﻿dcstorage:
+  basePath: demostorage
+logging:
+  file: log
+  level:
+    cz.tacr: 'DEBUG'

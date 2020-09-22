@@ -3,6 +3,7 @@
  */
 
 import {UrlFactory, WebApi} from 'actions/index.jsx';
+import {Api} from "../../api";
 import {i18n} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
@@ -102,16 +103,16 @@ export function createFund(data) {
         });
 
     return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.createFund2(formData)).then(fund => {
+        return savingApiWrapper(dispatch, Api.funds.createFund(formData)).then(response => {
             dispatch(addToastrSuccess(i18n('arr.fund.title.added')));
-            dispatch(fundsSelectFund(fund.id));
+            dispatch(fundsSelectFund(response.data.id));
         });
     };
 }
 
 export function updateFund(id, data) {
     return dispatch => {
-        return savingApiWrapper(dispatch, WebApi.updateFund2(id, data));
+        return savingApiWrapper(dispatch, Api.funds.updateFund(id, data));
     };
 }
 

@@ -1,7 +1,48 @@
+DaoTestBench
+=================
+
+DaoTestBench je aplikace, která umožňuje volat WSDL rozhraní Elza a
+zasílat do ní DAO. Aplikace umožňuje testovat rozhraní pro úložiště
+digitalizátů a digitalizační linku.
+
+Aplikace se ovládá pomocí HTTP požadavků, data jsou uložena na disku.
+Součástí aplikace je vzorová konfigurace (application.yaml.template) a
+vzorové úložiště digitalizátů (demostorage).
+
+DaoTestBench standardně běží na portu 8085.
+
+
+Nastavení na straně Elza
+-------------------------
+
+Na straně Elza je nuté definovat úložiště digitalizátů s těmito parametry:
+
+FileUrl: http://localhost:8085/file/{code}
+ThumbnailURL: http://localhost:8085/file/{code}
+Zasílání upozornění: Ne
+Kód: repo
+Název: DaoTestBench
+URL: http://localhost:8085/repo/ws
+Kód ELZA: elza
+
+Vytvoření prázdného AS s interním kódem DaoTestFund1
+
+
 Volání příkazů serveru - vzor
 -----------------------------
-Odeslání připraveného balíčku ze serveru do Elzy:
-curl -v -X POST http://localhost:8085/repo/request/digi/1544537470675/confirm/package01 -o log.html
+
+Odeslání připraveného balíčku ze serveru do Elzy (prázdný balíček):
+curl -v -X POST http://localhost:8085/import/1/system/elza
+
+Odebrání prázdného balíčku
+curl -v -X GET http://127.0.0.1:8085/daoservice/remove/1/system/elza
+
+Odeslání připraveného balíčku ze serveru do Elzy (balíček s jedním dao):
+curl -v -X POST http://localhost:8085/import/2/system/elza
+
+Odeslání připraveného balíčku ze serveru do Elzy (balíček s jedním dao typu Level):
+curl -v -X POST http://localhost:8085/import/3/system/elza
+
 
 Nastavení v Elza - vzorové nastavení odpovídající vzorovému nastavení dao testovacímu serveru
 ---------------------------------------------------------------------------------------------

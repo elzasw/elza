@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -92,5 +93,13 @@ public class ArrOutputResult {
 
     public void setOutputFiles(final List<ArrOutputFile> outputFiles) {
         this.outputFiles = outputFiles;
+    }
+
+    public void addOutputFile(ArrOutputFile file) {
+        if (outputFiles == null) {
+            outputFiles = new ArrayList<>();
+        }
+        outputFiles.add(file);
+        file.setOutputResult(this);
     }
 }

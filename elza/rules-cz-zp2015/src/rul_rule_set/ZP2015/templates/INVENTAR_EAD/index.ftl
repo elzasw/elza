@@ -73,15 +73,20 @@
     
     <#-- Sestavil -->
     <#list items?filter(item -> item.type.code=="ZP2015_FINDING_AID_EDITOR") as item>
-    <!-- Sestavil/editor archivni pomucky --> 
-    <ead:date localtype="FINDING_AID_EDITOR">${item.serializedValue}</ead:date>
+    <!-- Sestavil/editor archivni pomucky -->
+    <ead:p><ead:name localtype="FINDING_AID_EDITOR"><ead:part>${item.serializedValue}</ead:part></ead:name></ead:p>
     </#list>
     
     <#-- Puvodce - strukt.typ -->
     <#list items?filter(item -> item.type.code=="ZP2015_ORIGINATOR_SIMPLE") as structitem>
-    <#list structitem.value.items?filter(item -> item.type.code=="ZP2015_ORIGINATOR") as item>
     <!-- Původce v uvodu archivni pomucky -->
-    <ead:p><@writeAp item.record "ORIGINATOR" /></ead:p>
+    <#list structitem.value.items?filter(item -> item.type.code=="ZP2015_ORIGINATOR") as item>
+    <ead:p>
+      <@writeAp item.record "ORIGINATOR" />
+      <#list structitem.value.items?filter(item -> item.type.code!="ZP2015_ORIGINATOR") as otheritem>
+        <ead:quote localtype="${otheritem.type.code}">${otheritem.serializedValue}</ead:quote>
+      </#list>
+    </ead:p>
     </#list>
     </#list>
     
@@ -92,7 +97,7 @@
     </#list>
     <#-- Zpracovatel (textove) -->
     <#list items?filter(item -> item.type.code=="ZP2015_ARRANGER_TEXT") as item>
-    <!-- Zpracovatel v uvodu archivni pomucky --> 
+    <!-- Zpracovatel v tirazi archivni pomucky --> 
     <ead:p><ead:name localtype="ARRANGER_BRIEF"><ead:part>${item.serializedValue}</ead:part></ead:name></ead:p>
     </#list>
   </ead:publicationstmt>

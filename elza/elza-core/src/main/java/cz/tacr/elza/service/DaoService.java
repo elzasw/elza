@@ -238,7 +238,7 @@ public class DaoService {
             // odstraneni urovne
             ArrNode deleteNode = daoLink.getNode();
             FundLevelService fundLevelService = appCtx.getBean(FundLevelService.class);
-            fundLevelService.deleteLevel(fundVersion, deleteNode, null);
+            fundLevelService.deleteLevel(fundVersion, deleteNode, null, true);
             break;
         case ATTACHMENT:
             ArrDaoLink result = deleteDaoLink(Collections.singletonList(fundVersion), daoLink, true);

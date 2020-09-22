@@ -8,7 +8,6 @@ import javax.transaction.Synchronization;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import cz.tacr.elza.repository.*;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -16,6 +15,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.repository.ApExternalIdTypeRepository;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.ArrangementExtensionRepository;
+import cz.tacr.elza.repository.CalendarTypeRepository;
+import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.ExtensionRuleRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
+import cz.tacr.elza.repository.PackageRepository;
+import cz.tacr.elza.repository.PartTypeRepository;
+import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.StructureDefinitionRepository;
+import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
+import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
+import cz.tacr.elza.repository.StructuredTypeRepository;
+import cz.tacr.elza.repository.SysLanguageRepository;
 
 /**
  * Service for static data
@@ -72,9 +89,19 @@ public class StaticDataService {
 
     final ApExternalSystemRepository apExternalSystemRepository;
 
+    final StructuredTypeExtensionRepository structuredTypeExtensionRepository;
+
+    final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository;
+
+    final ArrangementExtensionRepository ruleSetExtRepository;
+
+    final ExtensionRuleRepository extensionRuleRepository;
+
     @Autowired
     public StaticDataService(final EntityManager em,
                              final RuleSetRepository ruleSetRepository,
+                             final ArrangementExtensionRepository ruleSetExtRepository,
+                             final ExtensionRuleRepository extensionRuleRepository,
                              final ItemTypeRepository itemTypeRepository,
                              final ItemSpecRepository itemSpecRepository,
                              final ItemTypeSpecAssignRepository itemTypeSpecAssignRepository,
@@ -83,6 +110,8 @@ public class StaticDataService {
                              final PackageRepository packageRepository,
                              final StructuredTypeRepository structuredTypeRepository,
                              final StructureDefinitionRepository structureDefinitionRepository,
+                             final StructuredTypeExtensionRepository structuredTypeExtensionRepository,
+                             final StructureExtensionDefinitionRepository structureExtensionDefinitionRepository,
                              final ApTypeRepository apTypeRepository,
                              final ApExternalIdTypeRepository apEidTypeRepository,
                              final SysLanguageRepository sysLanguageRepository,
@@ -90,6 +119,8 @@ public class StaticDataService {
                              final ApExternalSystemRepository apExternalSystemRepository) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
+        this.ruleSetExtRepository = ruleSetExtRepository;
+        this.extensionRuleRepository = extensionRuleRepository;
         this.itemTypeRepository = itemTypeRepository;
         this.itemSpecRepository = itemSpecRepository;
         this.itemTypeSpecAssignRepository = itemTypeSpecAssignRepository;
@@ -98,6 +129,8 @@ public class StaticDataService {
         this.packageRepository = packageRepository;
         this.structuredTypeRepository = structuredTypeRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
+        this.structuredTypeExtensionRepository = structuredTypeExtensionRepository;
+        this.structureExtensionDefinitionRepository = structureExtensionDefinitionRepository;
         this.apTypeRepository = apTypeRepository;
         this.apEidTypeRepository = apEidTypeRepository;
         this.sysLanguageRepository = sysLanguageRepository;

@@ -9,11 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.ws.core.v1.CreateFundException;
@@ -50,7 +50,7 @@ public class FundServiceWsImpl {
     public FundIdentifiers createFund(Fund fundInfo) {
         StaticDataProvider sdp = staticDataService.getData();
 
-        RulRuleSet ruleset = sdp.getRuleSetByCode(fundInfo.getRulesetCode());
+        RuleSet ruleset = sdp.getRuleSetByCode(fundInfo.getRulesetCode());
 
         String uuid = fundInfo.getUuid();
         if (uuid == null) {
@@ -79,7 +79,7 @@ public class FundServiceWsImpl {
             fundNumber = Integer.valueOf(fundInfo.getFundNumber().trim());
         }
         ArrFund fund = arrangementService.createFundWithScenario(fundInfo.getFundName(),
-                                                                 ruleset,
+                                                                 ruleset.getEntity(),
                                                                  fundInfo.getInternalCode(),
                                                                  institution,
                                                                  fundNumber,
@@ -107,7 +107,7 @@ public class FundServiceWsImpl {
         if (fundUpdate.getFundName() != null) {
             fund.setName(fundUpdate.getFundName());
         }
-        RulRuleSet ruleSet = sdp.getRuleSetByCode(fundUpdate.getRulesetCode());
+        RuleSet ruleSet = sdp.getRuleSetByCode(fundUpdate.getRulesetCode());
 
         if (fundUpdate.getDateRange() != null) {
             fund.setUnitdate(fundUpdate.getDateRange());
@@ -132,7 +132,7 @@ public class FundServiceWsImpl {
             fund.setInstitution(institution);
         }
 
-        arrangementService.updateFund(fund, ruleSet, null);
+        arrangementService.updateFund(fund, ruleSet.getEntity(), null);
     }
 
     private FundIdentifiers getFundInfo(Fund fund) {

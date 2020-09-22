@@ -2,6 +2,7 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -193,16 +194,16 @@ public class DateRangeAction extends Action {
             ArrDataUnitdate bulkUnitDate = (ArrDataUnitdate) bulkRange.getData();
 
             if (bulkFrom == null || bulkFrom.getNormalizedFrom() > bulkUnitDate.getNormalizedFrom()
-            // if same value -> estimated is more important then not estimated
-                    || (bulkFrom.getNormalizedFrom() == bulkUnitDate.getNormalizedFrom()
-                            && Boolean.TRUE.equals(bulkUnitDate.getValueFromEstimated()))) {
+            // if same value -> not estimated is more important then estimated
+                    || (Objects.equals(bulkFrom.getNormalizedFrom(), bulkUnitDate.getNormalizedFrom())
+                            && !Boolean.TRUE.equals(bulkUnitDate.getValueFromEstimated()))) {
                 bulkFrom = bulkUnitDate;
             }
 
             if (bulkTo == null || bulkTo.getNormalizedTo() < bulkUnitDate.getNormalizedTo() ||
-            // if same value -> estimated is more important then not estimated
-                    (bulkTo.getNormalizedTo() == bulkUnitDate.getNormalizedTo()
-                            && Boolean.TRUE.equals(bulkUnitDate.getValueToEstimated()))) {
+            // if same value -> not estimated is more important then estimated
+                    (Objects.equals(bulkTo.getNormalizedTo(), bulkUnitDate.getNormalizedTo())
+                            && !Boolean.TRUE.equals(bulkUnitDate.getValueToEstimated()))) {
                 bulkTo = bulkUnitDate;
             }
         }
@@ -295,12 +296,14 @@ public class DateRangeAction extends Action {
     private void processMainUnitDate(ArrDataUnitdate unitDate) {
         // store as standard range
         if (dateMin == null || dateMin.getNormalizedFrom() > unitDate.getNormalizedFrom()
-                || (dateMin.getNormalizedFrom() == unitDate.getNormalizedFrom() && unitDate.getValueFromEstimated())) {
+                || (Objects.equals(dateMin.getNormalizedFrom(), unitDate.getNormalizedFrom())
+                        && !unitDate.getValueFromEstimated())) {
 
             dateMin = unitDate;
         }
         if (dateMax == null || dateMax.getNormalizedTo() < unitDate.getNormalizedTo()
-                || (dateMax.getNormalizedTo() == unitDate.getNormalizedTo() && unitDate.getValueToEstimated())) {
+                || (Objects.equals(dateMax.getNormalizedTo(), unitDate.getNormalizedTo())
+                        && !unitDate.getValueToEstimated())) {
             dateMax = unitDate;
         }
     }

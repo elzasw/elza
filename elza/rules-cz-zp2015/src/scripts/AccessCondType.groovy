@@ -26,10 +26,11 @@ void generate()
     
     // Fixed prefix
     appendValue(valueBuilder, "ZP2015_RESTRICTION_ACCESS_NAME");
-    appendValue(sortValueBuilder, "ZP2015_RESTRICTION_ACCESS_NAME");    
+    appendValue(sortValueBuilder, "ZP2015_RESTRICTION_ACCESS_NAME");
         
     // Prepare complement
     StringBuilder complementBuilder = new StringBuilder();
+    appendValue(complementBuilder, "ZP2015_RESTRICTED_ACCESS_REASON");
     appendValue(complementBuilder, "ZP2015_RESTRICTED_ACCESS_TYPE");
     appendValue(complementBuilder, "ZP2015_RESTRICTION_ACCESS_DATE");
     
@@ -70,6 +71,10 @@ void appendValue(StringBuilder sb, String itemTypeCode)
 {
     for (ArrStructuredItem item : items) {
         if (item.getItemType().getCode().equalsIgnoreCase(itemTypeCode)) {
+            if(sb.length()>0) {
+                sb.append(" ");
+            }
+        
             RulItemSpec spec = item.getItemSpec();
             if(spec!=null) {
                 sb.append(spec.getShortcut());

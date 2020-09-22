@@ -1,7 +1,10 @@
 package cz.tacr.elza.groovy;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
+
+import javax.validation.constraints.NotNull;
+
+import cz.tacr.elza.domain.RulPartType;
 
 public class GroovyPart {
 
@@ -18,7 +21,7 @@ public class GroovyPart {
     /**
      * Typ části archivní entity.
      */
-    private String partTypeCode;
+    private RulPartType partType;
 
     /**
      * Itemy části archivní entity.
@@ -32,12 +35,12 @@ public class GroovyPart {
 
     public GroovyPart(final String aeType,
                       final boolean preferred,
-                      final String partTypeCode,
+                      final RulPartType rulPartType,
                       final GroovyItems items,
                       final List<GroovyPart> children) {
         this.aeType = aeType;
         this.preferred = preferred;
-        this.partTypeCode = partTypeCode;
+        this.partType = rulPartType;
         this.items = items;
         this.children = children;
     }
@@ -50,8 +53,12 @@ public class GroovyPart {
         return preferred;
     }
 
+    public RulPartType getPartType() {
+        return partType;
+    }
+
     public String getPartTypeCode() {
-        return partTypeCode;
+        return partType.getCode();
     }
 
     public List<GroovyItem> getItems(@NotNull String itemType) {

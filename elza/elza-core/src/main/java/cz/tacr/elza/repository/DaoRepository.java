@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.repository.vo.DaoExternalSystemVO;
 import org.springframework.data.jpa.repository.Modifying;
@@ -30,6 +31,11 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer>, DaoRe
             + " join d.daoPackage dp "
             + " where dp.daoPackageId = :daoPackageId")
     long countByDaoPackageID(@Param("daoPackageId") Integer daoPackageId);
+
+    @Query("SELECT COUNT(d) > 0 FROM arr_dao d"
+           + " JOIN arr_dao_link l ON l.daoId = d.daoId"
+           + " WHERE l.nodeId = :nodeId AND d.daoType = 'LEVEL' AND l.deleteChangeId IS NULL")
+    boolean existsDaoByNodeAndDaoTypeIsLevel(@Param("nodeId") Integer nodeId);
 
     ArrDao findOneByCode(String code);
 
