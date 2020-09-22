@@ -874,4 +874,15 @@
       </addColumn>
     </changeSet>
 
+    <changeSet id="20200921235927" author="ppyt">
+        <createIndex indexName="ap_index_part_idx" tableName="ap_index" unique="false">
+            <column name="part_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_key_value_all_idx" tableName="ap_key_value" unique="false">
+            <column name="scope_id" type="int"/>
+            <column name="key_type" type="nvarchar(50)"/>
+            <column name="value" type="nvarchar(4000)"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
