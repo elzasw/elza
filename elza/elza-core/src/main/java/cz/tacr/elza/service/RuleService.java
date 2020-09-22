@@ -1833,8 +1833,20 @@ public class RuleService {
             }
         }
 
-        List<RulArrangementExtension> rulArrangementExtensions = arrangementExtensionRepository.findByCodeIn(executeDrls);
-        List<RulExtensionRule> rules = extensionRuleRepository.findExtensionRules(rulArrangementExtensions, RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
+
+        List<RulExtensionRule> rules = new ArrayList<>(executeDrls.size());
+        for (String extCode : executeDrls) {
+            // check all rules (invalid, only Ap related rules should be checked
+            for (RuleSet ruleSet : sdp.getRuleSets()) {
+                RuleSetExtension ruleSetExt = ruleSet.getExtByCode(extCode);
+                if (ruleSetExt != null) {
+                    List<RulExtensionRule> extRules = ruleSetExt
+                            .getRulesByType(RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
+                    rules.addAll(extRules);
+                }
+            }
+        }
+
         try {
             modelValidationRules.execute(rules, modelValidation);
         } catch (Exception e) {

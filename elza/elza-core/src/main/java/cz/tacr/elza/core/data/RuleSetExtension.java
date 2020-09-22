@@ -32,4 +32,8 @@ public class RuleSetExtension {
         return extRulesByType.getOrDefault(attributeTypes, Collections.emptyList());
     }
 
+    public String getCode() {
+        return entity.getCode();
+    }
+
 }
