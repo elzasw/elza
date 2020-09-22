@@ -106,6 +106,25 @@ export const JAVA_CLASS_AP_ACCESS_POINT_VO = 'cz.tacr.elza.controller.vo.ApAcces
 export const JAVA_CLASS_ARR_DIGITIZATION_FRONTDESK_SIMPLE_VO = '.ArrDigitizationFrontdeskSimpleVO';
 export const JAVA_ATTR_CLASS = '@class';
 
+export enum ItemClass {
+    BIT = ".ArrItemBitVO",
+    COORDINATES = ".ArrItemCoordinatesVO",
+    DATE = ".ArrItemDateVO",
+    DECIMAL = ".ArrItemDecimalVO",
+    ENUM = ".ArrItemEnumVO",
+    FILE_REF = ".ArrItemFileRefVO",
+    FORMATTED_TEXT = ".ArrItemFormattedTextVO",
+    INT = ".ArrItemIntVO",
+    JSON_TABLE = ".ArrItemJsonTableVO",
+    RECORD_REF = ".ArrItemRecordRefVO",
+    STRING = ".ArrItemStringVO",
+    STRUCTURE = ".ArrItemStructureVO",
+    TEXT = ".ArrItemTextVO",
+    UNITDATE = ".ArrItemUnitdateVO",
+    UNIT_ID = ".ArrItemUnitidVO",
+    URI_REF = ".ArrItemUriRefVO",
+}
+
 export enum MODAL_DIALOG_SIZE {
     FULLSCREEN = 'dialog-fullscreen',
     LG = 'dialog-lg',
