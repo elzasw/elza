@@ -164,7 +164,6 @@ public class StartupService implements SmartLifecycle {
         outputServiceInternal.init();
         clearBulkActions();
         clearTempStructureData();
-        clearTempAccessPoint();
         clearOrphanedNodes();
         bulkActionConfigManager.load();
         syncNodeCacheService();
@@ -201,13 +200,6 @@ public class StartupService implements SmartLifecycle {
         nodeCacheService.deleteNodes(unusedNodes);
         nodeRepository.deleteByNodeIdIn(unusedNodes);
         logger.info("Orpahed nodes deleted.");
-    }
-
-    /**
-     * Provede vymazání nepoužitých dočasných AP všechně návazných dat.
-     */
-    private void clearTempAccessPoint() {
-        accessPointService.removeTempAccessPoints();
     }
 
     /**

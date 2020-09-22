@@ -47,13 +47,6 @@ public interface ApAccessPointRepository
             " AND s.deleteChangeId IS NULL")
     List<ApAccessPointInfo> findActiveInfoByUuids(@Param("uuids") Collection<String> uuids);
 
-    @Modifying
-    @Query("DELETE FROM ap_access_point ap WHERE ap.state = 'TEMP'")
-    void removeTemp();
-
-    @Query("SELECT DISTINCT ap.accessPointId FROM ap_access_point ap WHERE ap.state = 'INIT'")
-    Set<Integer> findInitAccessPointIds();
-
     @Query("SELECT distinct i.itemId" +
             " FROM arr_item i" +
             " JOIN arr_data_record_ref rr ON (rr.dataId = i.dataId)" +
@@ -79,4 +72,7 @@ public interface ApAccessPointRepository
     @Query("SELECT s.accessPointId FROM ap_state s WHERE s.deleteChangeId IS NULL AND s.apType IN :apTypes")
     List<Integer> findActiveAccessPointIdsByApTypes(@Param("apTypes") Collection<ApType> apTypes);
 
+    @Modifying
+    @Query("UPDATE ap_access_point SET state = 'INIT' WHERE accessPointId IN :accessPointIds")
+    void updateToInit(@Param("accessPointIds") Collection<Integer> accessPointIds);
 }

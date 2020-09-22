@@ -50,7 +50,7 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     private String uuid;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = StringLength.LENGTH_ENUM)
+    @Column(length = StringLength.LENGTH_ENUM, nullable = false)
     private ApStateEnum state;
 
     @Column

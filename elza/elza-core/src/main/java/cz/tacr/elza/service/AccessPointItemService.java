@@ -98,71 +98,9 @@ public class AccessPointItemService {
         this.bindingRepository = bindingRepository;
     }
 
-    /**
-     * Odstranění prvků popisů u dočasných jmen a AP.
-     */
-    public void removeTempItems() {
-
-        //TODO fantis
-//        itemRepository.removeTempItems();
-    }
-
-    /**
-     * Odstranění prvůk popisů u dočasných jmen a AP.
-     */
-    public void removeTempItems(final ApAccessPoint ap) {
-
-        //TODO fantis
-//        itemRepository.removeTempItems(ap);
-    }
-
     @FunctionalInterface
     public interface CreateFunction {
         ApItem apply(final RulItemType itemType, final RulItemSpec itemSpec, final ApChange change, final int objectId, final int position);
-    }
-
-    /**
-     * Provede změnu položek.
-     *
-     * @param items   položky k úpravě
-     * @param itemsDb aktuální položky v DB
-     * @param change  změna
-     * @param create  funkce pro založené nové položky
-     * @return nové položky, které ze vytvořili při změně
-     */
-    public List<ApItem> changeItems(final List<ApUpdateItemVO> items, final List<ApItem> itemsDb, final ApChange change, final CreateFunction create) {
-        Map<Integer, ApItem> objectIdItemMap = itemsDb.stream().collect(Collectors.toMap(ApItem::getObjectId, Function.identity()));
-        Map<Integer, List<ApItem>> typeIdItemsMap = itemsDb.stream().collect(Collectors.groupingBy(ApItem::getItemTypeId));
-
-        List<ApItemVO> createItems = new ArrayList<>();
-        List<ApItemVO> updateItems = new ArrayList<>();
-        List<ApItemVO> deleteItems = new ArrayList<>();
-
-        for (ApUpdateItemVO item : items) {
-            UpdateOp updateOp = item.getUpdateOp();
-            switch (updateOp) {
-                case CREATE:
-                    createItems.add(item.getItem());
-                    break;
-                case UPDATE:
-                    updateItems.add(item.getItem());
-                    break;
-                case DELETE:
-                    deleteItems.add(item.getItem());
-                    break;
-                default:
-                    throw new NotImplementedException("Neimplementovaná operace: " + updateOp);
-            }
-        }
-
-        // TODO: optimalizace při úpravě se stejným change id (bez odverzování) - pro deleteItems a updateItems
-        deleteItems(deleteItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
-        List<ApItem> itemsCreated = createItems(createItems, typeIdItemsMap, itemsDb, change, null, null, create);
-        updateItems(updateItems, typeIdItemsMap, itemsDb, objectIdItemMap, change);
-
-        itemRepository.saveAll(itemsDb);
-
-        return itemsCreated;
     }
 
     /**
