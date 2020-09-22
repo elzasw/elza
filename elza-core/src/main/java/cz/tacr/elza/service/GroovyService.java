@@ -36,6 +36,7 @@ import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.exception.SystemException;
@@ -199,10 +200,11 @@ public class GroovyService {
         }
 
         ApType apType = sdp.getApTypeById(state.getApTypeId());
+        RulPartType partType = sdp.getPartTypeById(part.getPartTypeId());
 
         return new GroovyPart(apType.getCode(),
                 preferred,
-                part.getPartType(),
+                partType,
                 groovyItems,
                 groovyParts);
     }
