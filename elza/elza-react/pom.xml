@@ -59,7 +59,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <generatorName>typescript-axios</generatorName>              
+                            <generatorName>typescript-axios</generatorName>
                             <inputSpec>${project.basedir}/target/core/rest/elza-openapi.yml</inputSpec>
                             <output>${project.build.directory}/elza-api</output>
                             <configOptions>
@@ -113,7 +113,7 @@
                         <configuration>
                             <executable>npm</executable>
                             <arguments>
-                                <argument>clean-install</argument>
+                                <argument>ci</argument>
                             </arguments>
                         </configuration>
                     </execution>
