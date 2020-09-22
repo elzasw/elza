@@ -50,6 +50,7 @@ import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker.ErrorHandler;
 import cz.tacr.elza.ws.types.v1.EntityInfo;
+import cz.tacr.elza.ws.types.v1.EntityUpdates;
 import cz.tacr.elza.ws.types.v1.ErrorDescription;
 import cz.tacr.elza.ws.types.v1.ExportRequest;
 import cz.tacr.elza.ws.types.v1.ExportResponseData;
@@ -57,6 +58,7 @@ import cz.tacr.elza.ws.types.v1.IdentifierList;
 import cz.tacr.elza.ws.types.v1.Items;
 import cz.tacr.elza.ws.types.v1.SearchEntity;
 import cz.tacr.elza.ws.types.v1.SearchEntityResult;
+import cz.tacr.elza.ws.types.v1.SearchEntityUpdates;
 
 @Component
 @javax.jws.WebService(serviceName = "CoreService", portName = "ExportService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
@@ -252,5 +254,11 @@ public class ExportServiceImpl implements ExportService {
             result.setEntityInfo(entityInfo);
         }
         return result;
+    }
+
+    @Override
+    public EntityUpdates searchEntityUpdates(SearchEntityUpdates request) throws CoreServiceException {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
