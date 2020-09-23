@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -385,5 +386,9 @@ public class ExternalSystemService {
 
     public ApBindingState findByAccessPointAndExternalSystem(final ApAccessPoint accessPoint, final ApExternalSystem externalSystem) {
         return bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
+    }
+
+    public List<ApBindingState> findByRecordCodesAndExternalSystem(List<String> recordCodes, ApExternalSystem externalSystem) {
+        return ObjectListIterator.findIterable(recordCodes, rec -> bindingStateRepository.findByRecordCodesAndExternalSystem(rec, externalSystem));
     }
 }
