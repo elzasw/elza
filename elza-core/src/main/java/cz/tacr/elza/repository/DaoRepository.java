@@ -45,6 +45,9 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
     @Query("select d from arr_dao d where d.daoPackage = :daoPackage")
     List<ArrDao> findByPackage(@Param(value = "daoPackage") ArrDaoPackage arrDaoPackage);
 
+    @Query("SELECT d FROM arr_dao d WHERE d.valid = TRUE AND d.daoPackage = :daoPackage")
+    Page<ArrDao> findByPackage(ArrDaoPackage daoPackage, Pageable pageable);    
+
     @Modifying
     @Query("DELETE FROM arr_dao d WHERE d.daoPackageId IN (SELECT p.daoPackageId FROM arr_dao_package p WHERE p.fund = ?1)")
     void deleteByFund(ArrFund fund);
@@ -71,15 +74,10 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
     List<ArrDao> findByCodes(@Param(value = "codes") Collection<String> codes);
 
     @Query("SELECT d FROM arr_dao d" +
-            " JOIN d.daoPackage p" +
-            " JOIN p.fund f" +
+            " JOIN arr_dao_link dl ON dl.daoId = d.daoId" +
             " WHERE d.valid = TRUE" +
-            "  AND EXISTS(SELECT l FROM arr_dao_link l" +
-            "  JOIN l.node n" +
-            "  WHERE n = :node" +
-            "  AND f.fundId = n.fundId" +
-            "  AND l.dao = d" +
-            "  AND l.deleteChange IS NULL)" +
+            "  AND dl.node = :node" +
+            "  AND dl.deleteChange IS NULL" +
             " ORDER BY d.label ASC, d.code ASC")
     Page<ArrDao> findAttachedByNode(ArrNode node, Pageable pageable);
 
@@ -92,9 +90,6 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
             "  AND dl.deleteChange IS NULL)" +
             " ORDER BY d.label ASC, d.code ASC")
     Page<ArrDao> findDettachedByFund(ArrFund fund, Pageable pageable);
-
-    @Query("SELECT d FROM arr_dao d WHERE d.valid = TRUE AND d.daoPackage = :daoPackage")
-    Page<ArrDao> findAttachedByPackage(ArrDaoPackage daoPackage, Pageable pageable);    
 
     @Query("SELECT d FROM arr_dao d" +
             " JOIN d.daoPackage p" +

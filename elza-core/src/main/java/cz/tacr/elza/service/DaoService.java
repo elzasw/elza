@@ -158,14 +158,15 @@ public class DaoService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrDao> findDaosByPackage(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
                                           final ArrDaoPackage daoPackage,
-                                          final Integer index, final Integer maxResults, final boolean unassigned) {
+                                          final Integer index, final Integer maxResults, 
+                                          final boolean unassigned) {
         Validate.notNull(fundId, "Verze AS musí být vyplněna");
         Validate.notNull(daoPackage, "DAO obal musí být vyplněn");
         Pageable pageable = PageRequest.of(index, maxResults);  
         if (unassigned) {
             return daoRepository.findDettachedByPackage(daoPackage, pageable).toList();
         } else {
-            return daoRepository.findAttachedByPackage(daoPackage, pageable).toList();
+            return daoRepository.findByPackage(daoPackage, pageable).toList();
         }
     }
 
