@@ -28,6 +28,7 @@ import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.UpdateFund;
 import cz.tacr.elza.controller.vo.nodes.*;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemBitVO;
 import cz.tacr.elza.domain.RulItemSpec;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
@@ -1262,6 +1263,27 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         deleteRefTemplate(refTemplateVO.getId());
 
+    }
+
+
+    @Test
+    public void createDescItemBit() {
+        Fund fundSource = createdFund();
+        ArrFundVersionVO fundVersion = getOpenVersion(fundSource);
+
+        List<ArrNodeVO> nodesSource = createLevels(fundVersion);
+        ArrNodeVO node1 = nodesSource.get(1);
+
+        // vytvoření itemu typu bit
+        RulDescItemTypeExtVO type = findDescItemTypeByCode("ZVEREJNENO");
+        ArrItemVO descItem = buildDescItem(type.getCode(), null, true, null, null);
+        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node1,
+                type);
+        ArrItemVO descItemCreated = descItemResult.getItem();
+
+        assertEquals(((ArrItemBitVO) descItem).isValue(), ((ArrItemBitVO) descItemCreated).isValue());
+        assertNotNull(descItemCreated.getPosition());
+        assertNotNull(descItemCreated.getDescItemObjectId());
     }
 
 }
