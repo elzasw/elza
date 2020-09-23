@@ -21,6 +21,7 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.service.GroovyService;
 
 public class EntityXmlBuilder extends CamXmlBuilder {
 
@@ -28,12 +29,13 @@ public class EntityXmlBuilder extends CamXmlBuilder {
 
     public EntityXmlBuilder(StaticDataProvider sdp,
                             ApAccessPoint accessPoint,
-                            ApState apState) {
-        super(sdp, accessPoint, new ApUuidRecordRefHandler());
+                            ApState apState,
+                            GroovyService groovyService) {
+        super(sdp, accessPoint, new ApUuidRecordRefHandler(), groovyService);
         this.apState = apState;
     }
 
-    public EntityXml build(Collection<ApPart> partList, Map<Integer, List<ApItem>> itemMap) {
+    public EntityXml build(Collection<ApPart> partList, Map<Integer, List<ApItem>> itemMap, String externalSystemTypeCode) {
 
         EntityXml ent = new EntityXml();
         ent.setEid(new EntityIdXml(apState.getAccessPointId()));
@@ -60,7 +62,7 @@ public class EntityXmlBuilder extends CamXmlBuilder {
         ent.setRevi(revInfo);
 
         // Prepare empty parts
-        ent.setPrts(this.createParts(partList, itemMap));
+        ent.setPrts(this.createParts(partList, itemMap, externalSystemTypeCode));
 
         return ent;
     }

@@ -44,6 +44,7 @@ import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.vo.DataRef;
@@ -112,6 +113,9 @@ public class CamService {
 
     @Autowired
     private AsyncRequestService asyncRequestService;
+
+    @Autowired
+    private GroovyService groovyService;
 
 
     public List<ApState> createAccessPoints(final ProcessingContext procCtx,
@@ -392,14 +396,18 @@ public class CamService {
         batchUpdate.setInf(createBatchInfo(userDetail));
         CreateEntityBuilder ceb = new CreateEntityBuilder(this.externalSystemService,
                 this.staticDataService.getData(),
-                accessPoint, binding, state);
-        batchUpdate.getChanges().add(ceb.build(partList, itemMap));
+                accessPoint,
+                binding,
+                state,
+                this.groovyService);
+        batchUpdate.getChanges().add(ceb.build(partList, itemMap, apExternalSystem.getType().toString()));
         return batchUpdate;
     }
 
     public BatchUpdateXml createUpdateEntityBatchUpdate(final ApAccessPoint accessPoint,
                                                         final ApBindingState bindingState,
-                                                        final EntityXml entityXml) {
+                                                        final EntityXml entityXml,
+                                                        final ApExternalSystem apExternalSystem) {
         ApState state = accessPointService.getState(accessPoint);
         UserDetail userDetail = userService.getLoggedUserDetail();
 
@@ -415,9 +423,10 @@ public class CamService {
                 this.bindingItemRepository,
                 this.staticDataService.getData(),
                 state,
-                bindingState);
+                bindingState,
+                this.groovyService);
 
-        ueb.build(batchUpdate.getChanges(), entityXml, partList, itemMap, bindingParts);
+        ueb.build(batchUpdate.getChanges(), entityXml, partList, itemMap, bindingParts, apExternalSystem.getType().toString());
         return batchUpdate;
     }
 
