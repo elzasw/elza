@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import cz.tacr.cam.schema.cam.UpdatesFromXml;
+import cz.tacr.cam.schema.cam.UpdatesXml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +70,21 @@ public class CamConnector {
                                             final String externalSystemCode) throws ApiException {
         ApiResponse<File> fileApiResponse = getBatchUpdatesApiByCode(externalSystemCode).getBatchStatusWithHttpInfo(bid);
         return JaxbUtils.unmarshal(BatchUpdateResultXml.class, fileApiResponse.getData());
+    }
+
+    public UpdatesFromXml getUpdatesFrom(final String fromTransId,
+                                         final String externalSystemCode) throws ApiException {
+        ApiResponse<File> fileApiResponse = getUpdatesApiByCode(externalSystemCode).getUpdatesFromWithHttpInfo(fromTransId);
+        return JaxbUtils.unmarshal(UpdatesFromXml.class, fileApiResponse.getData());
+    }
+
+    public UpdatesXml getUpdatesFromTo(final String fromTransId,
+                                       final String toTransId,
+                                       final Integer page,
+                                       final Integer pageSize,
+                                       final String externalSystemCode) throws ApiException {
+        ApiResponse<File> fileApiResponse = getUpdatesApiByCode(externalSystemCode).getUpdatesFromToWithHttpInfo(fromTransId, toTransId, page, pageSize);
+        return JaxbUtils.unmarshal(UpdatesXml.class, fileApiResponse.getData());
     }
 
     /**

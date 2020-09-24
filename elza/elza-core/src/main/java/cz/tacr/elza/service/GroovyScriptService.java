@@ -45,6 +45,8 @@ public class GroovyScriptService {
     private final NodeCacheService nodeCacheService;
 
     private static final String PART = "PART";
+    private static final String EXT_SYSTEM_TYPE = "EXT_SYSTEM_TYPE";
+    private static final String ITEM_TYPE_CODE = "ITEM_TYPE_CODE";
 
     private Map<File, GroovyScriptFile> groovyScriptMap = new HashMap<>();
 
@@ -104,6 +106,25 @@ public class GroovyScriptService {
     }
 
     public GroovyResult process(GroovyPart part, String groovyFilePath) {
+        GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFilePath);
+
+        Map<String, Object> input = new HashMap<>();
+        input.put(PART, part);
+
+        return (GroovyResult) groovyScriptFile.evaluate(input);
+    }
+
+    public String findItemTypeCode(String extSystemType, String itemTypeCode, String groovyFilePath) {
+        GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFilePath);
+
+        Map<String, Object> input = new HashMap<>();
+        input.put(EXT_SYSTEM_TYPE, extSystemType);
+        input.put(ITEM_TYPE_CODE, itemTypeCode);
+
+        return (String) groovyScriptFile.evaluate(input);
+    }
+
+    private GroovyScriptFile getGroovyScriptFile(String groovyFilePath) {
         GroovyScriptFile groovyScriptFile;
         File groovyFile = new File(groovyFilePath);
         try {
@@ -117,11 +138,7 @@ public class GroovyScriptService {
         } catch (Throwable t) {
             throw new SystemException("Failed to initialize groovy scripts", t);
         }
-
-        Map<String, Object> input = new HashMap<>();
-        input.put(PART, part);
-
-        return (GroovyResult) groovyScriptFile.evaluate(input);
+        return groovyScriptFile;
     }
 
     public static class GroovyScriptFile {

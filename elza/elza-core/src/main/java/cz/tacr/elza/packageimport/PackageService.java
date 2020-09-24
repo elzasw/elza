@@ -2972,8 +2972,12 @@ public class PackageService {
     }
 
     private void enqueueAccessPoints(RulStructureDefinition rulStructureDefinition) {
-        String apTypeCode = null;
-        enqueueAccessPoints(apTypeCode);
+        StaticDataProvider sdp = staticDataService.getData();
+        RulPartType partType = sdp.getPartTypeByCode(rulStructureDefinition.getStructuredType().getCode());
+        if (partType != null) {
+            String apTypeCode = null;
+            enqueueAccessPoints(apTypeCode);
+        }
     }
 
     public void enqueueAccessPoints(RulStructureExtensionDefinition rulStructureExtensionDefinition) {

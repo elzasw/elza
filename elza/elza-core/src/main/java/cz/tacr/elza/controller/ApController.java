@@ -1007,7 +1007,7 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        BatchUpdateXml batchUpdate = camService.createUpdateEntityBatchUpdate(accessPoint, bindingState, entity);
+        BatchUpdateXml batchUpdate = camService.createUpdateEntityBatchUpdate(accessPoint, bindingState, entity, apExternalSystem);
         try {
             BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
             camService.updateBindingAfterUpdate(batchUpdateResult, accessPoint, apExternalSystem);

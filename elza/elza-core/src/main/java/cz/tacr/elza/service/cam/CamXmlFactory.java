@@ -35,6 +35,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.service.GroovyService;
 
 /**
  * Factory methods for CAM XML
@@ -60,11 +61,20 @@ public class CamXmlFactory {
         return objectFactory;
     }
 
-    static public Object createItem(StaticDataProvider sdp, ApItem item, String uuid,
-                                    EntityRefHandler entityRefHandler) {
+    static public Object createItem(StaticDataProvider sdp,
+                                    ApItem item,
+                                    String uuid,
+                                    EntityRefHandler entityRefHandler,
+                                    GroovyService groovyService,
+                                    String externalSystemTypeCode) {
         ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
 
-        CodeXml itemTypeCode = new CodeXml(itemType.getCode());
+        String camItemTypeCode = groovyService.findItemTypeCode(externalSystemTypeCode, itemType.getCode());
+        if (camItemTypeCode == null) {
+            return null;
+        }
+
+        CodeXml itemTypeCode = new CodeXml(camItemTypeCode);
         CodeXml itemSpecCode;
         if (item.getItemSpecId() != null) {
             RulItemSpec itemSpec = itemType.getItemSpecById(item.getItemSpecId());
