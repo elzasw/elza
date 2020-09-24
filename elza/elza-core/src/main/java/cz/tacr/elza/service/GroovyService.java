@@ -72,6 +72,7 @@ public class GroovyService {
     private ResourcePathResolver resourcePathResolver;
 
     private static final String ITEM_TYPE_MAP = "ITEM_TYPE_MAP";
+    private static final String ITEM_SPEC_MAP = "ITEM_SPEC_MAP";
 
     @PostConstruct
     public void setStatic() {
@@ -242,6 +243,10 @@ public class GroovyService {
 
     public String findItemTypeCode(String extSystemType, String itemTypeCode) {
         return groovyScriptService.findItemTypeCode(extSystemType, itemTypeCode, getGroovyFilePath(ITEM_TYPE_MAP));
+    }
+
+    public String findItemSpecCode(String extSystemType, String itemSpecCode) {
+        return groovyScriptService.findItemSpecCode(extSystemType, itemSpecCode, getGroovyFilePath(ITEM_SPEC_MAP));
     }
 
     public String getGroovyFilePath(GroovyPart part) {
