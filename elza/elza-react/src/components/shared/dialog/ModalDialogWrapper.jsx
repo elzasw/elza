@@ -41,7 +41,13 @@ class ModalDialogWrapper extends React.Component {
         const renderHeader = title !== null;
 
         return (
-            <Modal backdrop="static" className={className} ref="modal" show={true} onHide={this.onHide}>
+            <Modal
+                backdrop={this.onHide ? true : 'static'}
+                className={className}
+                ref="modal"
+                show={true}
+                onHide={this.onHide}
+            >
                 {renderHeader && (
                     <Modal.Header closeButton onHide={this.onHide}>
                         <Modal.Title>{title}</Modal.Title>

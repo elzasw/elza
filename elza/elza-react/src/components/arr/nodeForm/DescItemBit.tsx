@@ -56,7 +56,6 @@ class DescItemBit extends AbstractReactComponent<Props> {
                 <FormControl
                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                     type={'text'}
-                    innerRef={this.focusEl}
                     disabled={locked || descItem.undefined}
                     value={value}
                 />
@@ -71,7 +70,7 @@ class DescItemBit extends AbstractReactComponent<Props> {
                 <FormControl
                     {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                     as={'select'}
-                    innerRef={this.focusEl}
+                    ref={this.focusEl as any}
                     disabled={locked || descItem.undefined}
                     value={value}
                     placeholder={'Vyberte'}
