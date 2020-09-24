@@ -71,6 +71,10 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
     @Column(name = FIELD_STATE_APPROVAL, length = StringLength.LENGTH_ENUM, nullable = false)
     private ApState.StateApproval stateApproval;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
+    @JoinColumn(nullable = true)
+    private ApAccessPoint replacedBy;
+
     @Column(length = StringLength.LENGTH_2000)
     private String comment;
 
