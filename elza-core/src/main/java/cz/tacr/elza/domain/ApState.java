@@ -26,6 +26,7 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
     public static final String FIELD_STATE_APPROVAL = "stateApproval";
     public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String FIELD_REPLACED_BY = "replacedBy";
 
     @Id
     @GeneratedValue
@@ -72,7 +73,7 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
     private ApState.StateApproval stateApproval;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
-    @JoinColumn(nullable = true)
+    @JoinColumn(name = FIELD_REPLACED_BY, nullable = true)
     private ApAccessPoint replacedBy;
 
     @Column(length = StringLength.LENGTH_2000)
@@ -176,6 +177,14 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
 
     public void setStateApproval(ApState.StateApproval stateApproval) {
         this.stateApproval = stateApproval;
+    }
+
+    public ApAccessPoint getReplacedBy() {
+        return replacedBy;
+    }
+
+    public void setReplacedBy(ApAccessPoint replacedBy) {
+        this.replacedBy = replacedBy;
     }
 
     public String getComment() {
