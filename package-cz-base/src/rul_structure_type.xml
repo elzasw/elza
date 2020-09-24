@@ -20,4 +20,7 @@
     <structure-type code="PT_BODY">
         <name>Tělo</name>
     </structure-type>
+    <structure-type code="ITEM_TYPE_MAP">
+        <name>Item type map</name>
+    </structure-type>
 </structure-types>

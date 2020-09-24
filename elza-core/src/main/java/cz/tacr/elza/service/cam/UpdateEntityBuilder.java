@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.service.GroovyService;
 import org.apache.commons.collections4.CollectionUtils;
 
 import cz.tacr.cam.schema.cam.BatchEntityRecordRevXml;
@@ -44,12 +45,12 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
     List<ApBindingItem> bindingItems = new ArrayList<>();
 
     public UpdateEntityBuilder(ExternalSystemService externalSystemService,
-                        ApBindingItemRepository bindingItemRepository,
+                               ApBindingItemRepository bindingItemRepository,
                                StaticDataProvider sdp,
                                final ApState state,
-                               ApBindingState bindingState) {
-        super(sdp, bindingState.getAccessPoint(),
-                new BindingRecordRefHandler(bindingState.getBinding()));
+                               ApBindingState bindingState,
+                               GroovyService groovyService) {
+        super(sdp, bindingState.getAccessPoint(), new BindingRecordRefHandler(bindingState.getBinding()), groovyService);
         this.bindingItemRepository = bindingItemRepository;
         this.bindingState = bindingState;
         this.apState = state;
@@ -57,13 +58,13 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         this.binding = bindingState.getBinding();
     }
 
-    protected UpdateItemsXml createUpdateItems(ApBindingItem changedPart, List<ApBindingItem> changedItems) {
+    protected UpdateItemsXml createUpdateItems(ApBindingItem changedPart, List<ApBindingItem> changedItems, String externalSystemTypeCode) {
         UpdateItemsXml updateItemsXml = new UpdateItemsXml();
         updateItemsXml.setPid(new UuidXml(changedPart.getValue()));
         updateItemsXml.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
 
         for (ApBindingItem bindingItem : changedItems) {
-            Object i = CamXmlFactory.createItem(sdp, bindingItem.getItem(), bindingItem.getValue(), entityRefHandler);
+            Object i = CamXmlFactory.createItem(sdp, bindingItem.getItem(), bindingItem.getValue(), entityRefHandler, groovyService, externalSystemTypeCode);
             if (i != null) {
                 updateItemsXml.getItems().add(i);
             }
@@ -73,7 +74,8 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
 
     private List<Object> createUpdateEntityChanges(Collection<ApPart> partList,
                                                    Map<Integer, List<ApItem>> itemMap,
-                                                   List<ApBindingItem> bindingParts) {
+                                                   List<ApBindingItem> bindingParts,
+                                                   String externalSystemTypeCode) {
         List<Object> changes = new ArrayList<>();
         List<ApBindingItem> deletedParts = new ArrayList<>();
         List<ApBindingItem> changedParts = new ArrayList<>();
@@ -90,15 +92,16 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
             }
         }
 
-        changes.addAll(createPartList(partList, itemMap));
+        changes.addAll(createPartList(partList, itemMap, externalSystemTypeCode));
         changes.addAll(createDeletePartList(deletedParts));
-        changes.addAll(createChangedPartList(changedParts, itemMap));
+        changes.addAll(createChangedPartList(changedParts, itemMap, externalSystemTypeCode));
 
         return changes;
     }
 
     private List<Object> createChangedPartList(List<ApBindingItem> changedParts,
-                                               Map<Integer, List<ApItem>> itemMap) {
+                                               Map<Integer, List<ApItem>> itemMap,
+                                               String externalSystemTypeCode) {
         List<Object> changes = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(changedParts)) {
             Map<Integer, List<ApBindingItem>> bindingItemMap = bindingItemRepository.findItemsByBinding(bindingState
@@ -109,14 +112,16 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
                         .emptyList());
                 List<ApBindingItem> bindingItemList = bindingItemMap.getOrDefault(changedPart.getPart().getPartId(),
                                                                                   new ArrayList<>());
-                changes.addAll(createChangedPartList(changedPart, itemList, bindingItemList));
+                changes.addAll(createChangedPartList(changedPart, itemList, bindingItemList, externalSystemTypeCode));
             }
         }
         return changes;
     }
 
-    private List<Object> createChangedPartList(ApBindingItem changedPart, Collection<ApItem> itemList,
-                                               List<ApBindingItem> bindingItemList) {
+    private List<Object> createChangedPartList(ApBindingItem changedPart,
+                                               Collection<ApItem> itemList,
+                                               List<ApBindingItem> bindingItemList,
+                                               String externalSystemTypeCode) {
         List<Object> changes = new ArrayList<>();
         List<ApBindingItem> changedItems = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(bindingItemList)) {
@@ -130,10 +135,10 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         }
 
         if (CollectionUtils.isNotEmpty(itemList)) {
-            changes.add(createNewItems(changedPart, itemList));
+            changes.add(createNewItems(changedPart, itemList, externalSystemTypeCode));
         }
         if (CollectionUtils.isNotEmpty(changedItems)) {
-            changes.add(createUpdateItems(changedPart, changedItems));
+            changes.add(createUpdateItems(changedPart, changedItems, externalSystemTypeCode));
         }
 
         return changes;
@@ -164,9 +169,16 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
     public void build(final List<Object> trgList,
                       final EntityXml entityXml, List<ApPart> partList,
                       Map<Integer, List<ApItem>> itemMap,
-                      List<ApBindingItem> bindingParts) {
+                      List<ApBindingItem> bindingParts,
+                      String externalSystemTypeCode) {
         
-        List<Object> changes = createUpdateEntityChanges(partList, itemMap, bindingParts);
+        List<Object> changes = createUpdateEntityChanges(partList, itemMap, bindingParts, externalSystemTypeCode);
+
+        if (CollectionUtils.isNotEmpty(changes)) {
+            for (Object change : changes) {
+                addChange(trgList, change);
+            }
+        }
 
         // TODO: this is broken, probably meant for aptype change
         if (!entityXml.getEnt().getValue().equals(apState.getApType().getCode())) {

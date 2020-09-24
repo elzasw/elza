@@ -13,6 +13,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.GroovyService;
 
 public class CreateEntityBuilder extends CamXmlBuilder {
 
@@ -21,23 +22,25 @@ public class CreateEntityBuilder extends CamXmlBuilder {
     final private ApBinding binding;
 
     public CreateEntityBuilder(final ExternalSystemService externalSystemService,
-                        final StaticDataProvider sdp,
-                        final ApAccessPoint accessPoint,
-                        final ApBinding binding,
-                        final ApState state) {
-        super(sdp, accessPoint, new BindingRecordRefHandler(binding));
+                               final StaticDataProvider sdp,
+                               final ApAccessPoint accessPoint,
+                               final ApBinding binding,
+                               final ApState state,
+                               final GroovyService groovyService) {
+        super(sdp, accessPoint, new BindingRecordRefHandler(binding), groovyService);
         this.apState = state;
         this.externalSystemService = externalSystemService;
         this.binding = binding;
     }
 
     public CreateEntityXml build(List<ApPart> partList,
-                                 Map<Integer, List<ApItem>> itemMap) {
+                                 Map<Integer, List<ApItem>> itemMap,
+                                 String externalSystemTypeCode) {
         CreateEntityXml createEntity = new CreateEntityXml();
         createEntity.setLid("LID" + apState.getAccessPointId());
         createEntity.setEt(new CodeXml(apState.getApType().getCode()));
         createEntity.setEuid(new UuidXml(accessPoint.getUuid()));
-        createEntity.setPrts(createParts(partList, itemMap));
+        createEntity.setPrts(createParts(partList, itemMap, externalSystemTypeCode));
         return createEntity;
     }
 

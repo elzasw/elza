@@ -130,7 +130,7 @@ class DescItemRecordRef extends AbstractReactComponent {
                         value={record}
                         footer={!singleDescItemTypeEdit}
                         footerButtons={false}
-                        detail={!descItem.undefined && (typePrefix === 'output' ? false : !disabled)}
+                        detail={!descItem.undefined && (typePrefix === 'output' && cal ? false : !disabled)}
                         onSelectModule={this.handleSelectModule}
                         undefined={descItem.undefined}
                         {...decorateAutocompleteValue(
