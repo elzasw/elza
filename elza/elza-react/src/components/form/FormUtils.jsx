@@ -1,7 +1,9 @@
-import { SubmissionError } from 'redux-form'
+import {SubmissionError} from 'redux-form';
 /**
  * Utility pro formuláře s inplace editací.
  */
+
+import {modalDialogHide} from '../../actions/global/modalDialog.jsx';
 
 /**
  * Vrácení objektu pro dekoraci input prvku inplace editace.
@@ -9,11 +11,8 @@ import { SubmissionError } from 'redux-form'
  * @param inline {Boolean} pokud je true, jedná se o inline editaci, kde se chyba nezobrazuje pod prvke, ale až po najetí myší jako title
  * @return {Object} objekt pro dekoraci input prvku
  */
-
-import {modalDialogHide} from 'actions/global/modalDialog.jsx';
-
 export function decorateFormField(field, inline = false) {
-    if (field.touched && field.error) {
+    if (field && field.touched && field.error) {
         const result = {
             variant: 'error',
             hasFeedback: true,
@@ -52,7 +51,7 @@ const defaultOptions = {
  * @param {object} options - configuration object
  */
 const formSubmitted = (dispatch, options) => {
-    var finishOnSubmit = false;
+    let finishOnSubmit = false;
     if (options.closeOnSubmit) {
         dispatch(modalDialogHide());
     }
