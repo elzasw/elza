@@ -27,4 +27,8 @@
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
+    <structure-definition structure-type="ITEM_SPEC_MAP" filename="ItemSpecMap.groovy" compatibility-rul-package="34">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
 </structure-definitions>
