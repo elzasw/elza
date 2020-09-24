@@ -6,7 +6,7 @@ import {Button} from '../ui';
 import {AbstractReactComponent, Icon} from 'components/shared';
 import i18n from '../i18n';
 import ListBox from '../shared/listbox/ListBox';
-import {Field, FieldArray, reduxForm} from 'redux-form';
+import {Field, FieldArray, FormErrors, formValueSelector, InjectedFormProps, reduxForm} from 'redux-form';
 import {WebApi} from '../../actions';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import HorizontalLoader from '../shared/loading/HorizontalLoader';
@@ -14,8 +14,27 @@ import ScopeField from '../admin/ScopeField';
 import Loading from '../shared/loading/Loading';
 import * as scopeActions from '../../actions/scopes/scopes';
 import FormInputField from '../shared/form/FormInputField';
+import {ArrRefTemplateVO, SimpleListStoreState} from '../../types';
+import {ApScopeVO} from '../../api/ApScopeVO';
+import {LanguageVO} from '../../typings/LanguageVO';
+import {refRuleSetFetchIfNeeded} from '../../actions/refTables/ruleSet';
+import {BaseRefTableStore} from '../../typings/BaseRefTableStore';
+import {RuleType, RulRuleSetVO} from '../../typings/RulRuleSetVO';
 
-class ScopeListForm extends AbstractReactComponent {
+type OwnProps = {id: number; onCreate: Function; onSave: Function};
+type Props = OwnProps &
+    InjectedFormProps<ArrRefTemplateVO, OwnProps, FormErrors<ArrRefTemplateVO>> &
+    ReturnType<typeof mapStateToProps>;
+
+const toOptions = (i: {code: string; name: string}) => (
+    <option value={i.code} key={i.code}>
+        {i.name}
+    </option>
+);
+
+class ScopeListForm extends AbstractReactComponent<Props> {
+    static FORM_NAME = 'scopeList';
+
     static propTypes = {
         onCreate: PropTypes.func.isRequired,
         onSave: PropTypes.func.isRequired,
@@ -31,7 +50,7 @@ class ScopeListForm extends AbstractReactComponent {
         }, {});
 
     static validate = (values, props) => {
-        return ScopeListForm.requireFields('name', 'code')(values);
+        return ScopeListForm.requireFields('name', 'code', 'ruleSetCode')(values);
     };
 
     static fields = [
@@ -47,8 +66,6 @@ class ScopeListForm extends AbstractReactComponent {
 
     static initialValues = {connectedScopes: []};
 
-    state = {scopesList: []};
-
     UNSAFE_componentWillReceiveProps(nextProps, nextContext) {
         this.fetchData(nextProps);
     }
@@ -57,12 +74,12 @@ class ScopeListForm extends AbstractReactComponent {
         if (prevProps.id && !this.props.id) {
             this.props.reset();
         } else if (
-            this.props.fields &&
-            prevProps.fields &&
             this.props.id &&
             prevProps.id &&
             prevProps.id === this.props.id &&
-            this.props.fields.connectedScopes.length !== prevProps.fields.connectedScopes.length
+            this.props.connectedScopes &&
+            prevProps.connectedScopes &&
+            this.props.connectedScopes.length !== prevProps.connectedScopes.length
         ) {
             this.props.asyncValidate();
         }
@@ -73,6 +90,7 @@ class ScopeListForm extends AbstractReactComponent {
     }
 
     fetchData = props => {
+        props.dispatch(refRuleSetFetchIfNeeded());
         props.dispatch(scopeActions.scopesListFetchIfNeeded());
         props.dispatch(scopeActions.languagesListFetchIfNeeded());
     };
@@ -110,7 +128,7 @@ class ScopeListForm extends AbstractReactComponent {
     };
 
     render() {
-        const {id, scopeList, languageList} = this.props;
+        const {id, scopeList, languageList, ruleSetItems} = this.props;
 
         const customProps = {
             disabled: id == null,
@@ -120,14 +138,10 @@ class ScopeListForm extends AbstractReactComponent {
             return <HorizontalLoader />;
         }
 
-        const languagesOptions = languageList.rows.map(i => (
-            <option value={i.code} key={i.code}>
-                {i.name}
-            </option>
-        ));
-        const connectableScopes = scopeList.rows.filter(s => s.id !== id);
+        const languagesOptions = languageList.rows!.map(toOptions);
+        const connectableScopes = scopeList.rows!.filter(s => s.id !== id);
         return (
-            <Form onSubmit={null}>
+            <Form onSubmit={null as any}>
                 <Row>
                     <Col xs={6}>
                         <Field
@@ -147,7 +161,7 @@ class ScopeListForm extends AbstractReactComponent {
                             {...customProps}
                             label={i18n('accesspoint.scope.language')}
                         >
-                            <option key={0} value={null} />
+                            <option key={0} value={undefined} />
                             {languagesOptions}
                         </Field>
                     </Col>
@@ -159,6 +173,15 @@ class ScopeListForm extends AbstractReactComponent {
                     {...customProps}
                     label={i18n('accesspoint.scope.name')}
                 />
+                <Field
+                    component={FormInputField}
+                    as="select"
+                    name={'ruleSetCode'}
+                    {...customProps}
+                    label={i18n('accesspoint.scope.ruleSetCode')}
+                >
+                    {ruleSetItems.map(toOptions)}
+                </Field>
                 <label>{i18n('accesspoint.scope.relatedScopes')}</label>
                 <FieldArray
                     name={'connectedScopes'}
@@ -187,7 +210,7 @@ class ScopeListForm extends AbstractReactComponent {
 }
 
 const form = reduxForm({
-    form: 'scopeList',
+    form: ScopeListForm.FORM_NAME,
     initialValues: ScopeListForm.initialValues,
     validate: ScopeListForm.validate,
     asyncBlurFields: ScopeListForm.fields,
@@ -201,9 +224,24 @@ const form = reduxForm({
     enableReinitialize: true,
 })(ScopeListForm);
 
-export default connect(state => {
+function mapStateToProps(
+    state,
+    props: {form?: string},
+): {
+    languageList: SimpleListStoreState<LanguageVO>;
+    scopeList: SimpleListStoreState<ApScopeVO>;
+    connectedScopes: number[];
+    ruleSetItems: RulRuleSetVO[];
+} {
+    const selector = formValueSelector(props.form || ScopeListForm.FORM_NAME);
+
+    const ruleSet = state.refTables.ruleSet as BaseRefTableStore<RulRuleSetVO> | undefined;
     return {
         languageList: storeFromArea(state, scopeActions.AREA_LANGUAGE_LIST),
         scopeList: storeFromArea(state, scopeActions.AREA_SCOPE_LIST),
+        connectedScopes: selector(state, 'connectedScopes'),
+        ruleSetItems: (ruleSet?.items || []).filter(i => i.ruleType === RuleType.ENTITY),
     };
-})(form);
+}
+
+export default connect(mapStateToProps)(form);
