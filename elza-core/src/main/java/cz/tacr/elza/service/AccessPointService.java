@@ -331,17 +331,19 @@ public class AccessPointService {
      * Smaže rej. heslo a jeho variantní hesla. Předpokládá, že již proběhlo ověření, že je možné ho smazat (vazby atd...).
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState, final boolean checkUsage) {
+    public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState,
+                                  final ApAccessPoint replacedBy) {
 
         apDataService.validationNotDeleted(apState);
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
-        if (checkUsage) {
-            checkDeletion(accessPoint);
-        }
+        checkDeletion(accessPoint);
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
         apState.setDeleteChange(change);
+        if (replacedBy != null) {
+            apState.setReplacedBy(replacedBy);
+        }
         apStateRepository.save(apState);
 
         saveWithLock(accessPoint);
