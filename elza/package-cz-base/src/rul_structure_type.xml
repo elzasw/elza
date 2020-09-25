@@ -20,7 +20,9 @@
     <structure-type code="PT_BODY">
         <name>Tělo</name>
     </structure-type>
+<!-- Skript by měl být součástí pravidel, lze zavést speciální typ rozšíření
     <structure-type code="ITEM_TYPE_MAP">
         <name>Item type map</name>
     </structure-type>
+-->
 </structure-types>
