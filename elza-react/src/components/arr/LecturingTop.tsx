@@ -299,7 +299,7 @@ class LecturingTop extends React.Component {
                                     {canWrite && (
                                         <div className="actions">
                                             <DropdownButton
-                                                pullRight
+                                                alignRight={true}
                                                 variant={'action' as any}
                                                 id="issue-type"
                                                 title={((<Icon glyph="fa-ellipsis-h" />) as any) as string}

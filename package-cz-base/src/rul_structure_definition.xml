@@ -23,8 +23,12 @@
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
-<!-- Skript by mÄ›l bÃ½t souÄÃ¡stÃ­ pravidel, lze zavÃ©st speciÃ¡lnÃ­ typ rozÅ¡Ã­Å™enÃ­
+<!-- Skript by mìl být souèástí pravidel, lze zavést speciální typ rozšíøení
     <structure-definition structure-type="ITEM_TYPE_MAP" filename="ItemTypeMap.groovy" compatibility-rul-package="33">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
+    <structure-definition structure-type="ITEM_SPEC_MAP" filename="ItemSpecMap.groovy" compatibility-rul-package="34">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>

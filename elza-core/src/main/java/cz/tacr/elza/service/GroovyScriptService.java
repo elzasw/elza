@@ -47,6 +47,7 @@ public class GroovyScriptService {
     private static final String PART = "PART";
     private static final String EXT_SYSTEM_TYPE = "EXT_SYSTEM_TYPE";
     private static final String ITEM_TYPE_CODE = "ITEM_TYPE_CODE";
+    private static final String ITEM_SPEC_CODE = "ITEM_SPEC_CODE";
 
     private Map<File, GroovyScriptFile> groovyScriptMap = new HashMap<>();
 
@@ -120,6 +121,16 @@ public class GroovyScriptService {
         Map<String, Object> input = new HashMap<>();
         input.put(EXT_SYSTEM_TYPE, extSystemType);
         input.put(ITEM_TYPE_CODE, itemTypeCode);
+
+        return (String) groovyScriptFile.evaluate(input);
+    }
+
+    public String findItemSpecCode(String extSystemType, String itemSpecCode, String groovyFilePath) {
+        GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFilePath);
+
+        Map<String, Object> input = new HashMap<>();
+        input.put(EXT_SYSTEM_TYPE, extSystemType);
+        input.put(ITEM_SPEC_CODE, itemSpecCode);
 
         return (String) groovyScriptFile.evaluate(input);
     }

@@ -215,8 +215,8 @@ class LecturingBottom extends React.Component {
                                 </div>
                                 <div className="text-right">
                                     <DropdownButton
-                                        dropup
-                                        pullRight
+                                        drop={'up'}
+                                        alignRight
                                         title={i18n('arr.issues.state.change')}
                                         variant={'action' as any}
                                         id="comment-state"
