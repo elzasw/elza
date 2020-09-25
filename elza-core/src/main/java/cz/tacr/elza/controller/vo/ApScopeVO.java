@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.core.data.RuleSet;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
@@ -17,6 +18,8 @@ public class ApScopeVO
 
     private String language;
 
+    private String ruleSetCode;
+
     public String getLanguage() {
         return language;
     }
@@ -24,7 +27,15 @@ public class ApScopeVO
     public void setLanguage(final String language) {
         this.language = language;
     }
-    
+
+    public String getRuleSetCode() {
+        return ruleSetCode;
+    }
+
+    public void setRuleSetCode(String ruleSetCode) {
+        this.ruleSetCode = ruleSetCode;
+    }
+
     /**
      * Creates AP scope from this value object.
      */
@@ -37,6 +48,11 @@ public class ApScopeVO
             SysLanguage lang = staticData.getSysLanguageByCode(language);
             entity.setLanguage(Validate.notNull(lang));
         }
+        if (StringUtils.isNotEmpty(ruleSetCode)) {
+            RuleSet ruleSet = staticData.getRuleSetByCode(ruleSetCode);
+            entity.setRulRuleSet(ruleSet.getEntity());
+        }
+
         return entity;
     }
     
@@ -51,6 +67,10 @@ public class ApScopeVO
         if (src.getLanguageId() != null) {
             SysLanguage lang = staticData.getSysLanguageById(src.getLanguageId());
             vo.setLanguage(lang.getCode());
+        }
+        if (src.getRulRuleSet() != null) {
+            RuleSet ruleSet = staticData.getRuleSetById(src.getRuleSetId());
+            vo.setRuleSetCode(ruleSet.getCode());
         }
         return vo;
     }
