@@ -29,9 +29,9 @@ import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApPartRepository;
-import liquibase.util.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -300,6 +300,25 @@ public class AccessPointService {
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
 
         return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds, scopeIdsForSearch, approvalStates, searchTypeName, searchTypeUsername);
+    }
+
+    /**
+     * Získání objektu pomocí id nebo uuid
+     * 
+     * @param id řetězec znaků, id nebo uuid
+     * @return ApAccessPoint
+     */
+    public ApAccessPoint findAccessPointByIdOrUuid(String id) {
+        ApAccessPoint accessPoint;
+        if (!StringUtils.isNumeric(id)) {
+            accessPoint = apAccessPointRepository.findApAccessPointByUuid(id);
+        } else {
+            accessPoint = apAccessPointRepository.findById(Integer.valueOf(id)).orElse(null);
+        }
+        if (accessPoint == null) {
+            throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST);
+        }
+        return accessPoint;
     }
 
     /**
