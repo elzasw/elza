@@ -910,4 +910,14 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="20200925131800" author="fantis">
+        <addColumn tableName="ap_scope">
+            <column name="rule_set_id" type="int">
+                <constraints foreignKeyName="fk_scope_rul_rule_set"
+                             referencedTableName="rul_rule_set"
+                             referencedColumnNames="rule_set_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
