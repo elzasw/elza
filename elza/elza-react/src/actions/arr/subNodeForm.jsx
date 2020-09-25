@@ -310,7 +310,10 @@ export class ItemFormActions {
                 ...descItem,
                 value: fromDuration(descItem.value),
             };
-        } else if (refType.dataType.code === DataTypeCode.RECORD_REF) {
+        } else if (
+            refType.dataType.code === DataTypeCode.RECORD_REF ||
+            refType.dataType.code === DataTypeCode.STRUCTURED
+        ) {
             const {structureData, ...otherDescItem} = descItem;
             descItem = {...otherDescItem};
         }
@@ -637,6 +640,7 @@ export class ItemFormActions {
                 if (refType.useSpecification && !valuesEquals(descItem.descItemSpecId, descItem.prevDescItemSpecId)) {
                     needUpdate = true;
                 }
+                // TODO tato část by chtělat projít protože "valuesEquals" bere null a undefined jako stejné hodnoty
                 if (!valuesEquals(descItem.value, descItem.prevValue)) {
                     needUpdate = true;
                 }

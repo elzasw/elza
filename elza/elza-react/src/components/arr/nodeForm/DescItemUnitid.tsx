@@ -9,10 +9,13 @@ import {decorateValue, inputValue} from './DescItemUtils.jsx';
 import DescItemLabel from './DescItemLabel.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import {CLS_CALCULABLE} from '../../../constants';
+import {DescItemComponentProps} from './DescItemTypes';
 
 const DescItemUnitid_MAX_LENGTH = 250;
 
-class DescItemUnitid extends AbstractReactComponent {
+type Props = DescItemComponentProps<string>;
+
+class DescItemUnitid extends AbstractReactComponent<Props> {
     private readonly focusEl: React.RefObject<HTMLInputElement>;
 
     constructor(props) {

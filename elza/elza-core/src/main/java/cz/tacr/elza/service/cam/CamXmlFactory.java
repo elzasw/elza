@@ -78,7 +78,12 @@ public class CamXmlFactory {
         CodeXml itemSpecCode;
         if (item.getItemSpecId() != null) {
             RulItemSpec itemSpec = itemType.getItemSpecById(item.getItemSpecId());
-            itemSpecCode = new CodeXml(itemSpec.getCode());
+            String camItemSpecCode = groovyService.findItemSpecCode(externalSystemTypeCode, itemSpec.getCode());
+            if (camItemSpecCode == null) {
+                return null;
+            }
+
+            itemSpecCode = new CodeXml(camItemSpecCode);
         } else {
             itemSpecCode = null;
         }

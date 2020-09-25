@@ -14,6 +14,7 @@ import {ItemString} from './ItemString';
 import {ItemStructure} from './ItemStructure';
 import {ItemText} from './ItemText';
 import {ItemUnitid} from './ItemUnitid';
+import {ItemBit} from './ItemBit';
 
 const itemsMap = {
     '.ArrItemUnitdateVO': ItemUnitdate,
@@ -29,6 +30,7 @@ const itemsMap = {
     '.ArrItemStructureVO': ItemStructure,
     '.ArrItemTextVO': ItemText,
     '.ArrItemUnitidVO': ItemUnitid,
+    '.ArrItemBitVO': ItemBit,
 };
 
 export function createClass(item) {

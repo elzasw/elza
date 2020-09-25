@@ -4,7 +4,7 @@ import * as Toastr from 'components/shared/toastr/index';
 import * as Tabs from 'components/shared/tabs/Tabs';
 
 export {Utils, ExceptionUtils, Toastr, Tabs};
-export {default as AbstractReactComponent} from 'components/AbstractReactComponent';
+export {default as AbstractReactComponent} from '../AbstractReactComponent';
 
 export {default as i18n} from 'components/i18n';
 export {default as LongText} from 'components/LongText';

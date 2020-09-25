@@ -266,7 +266,7 @@ const DetailHeader: FC<Props> = ({
                         </div>
                     </Col>
                 )}
-                <Col>
+                <Col xs={collapsed ? true : 'auto'}>
                     <Button
                         onClick={onToggleCollapsed}
                         variant={'light'}

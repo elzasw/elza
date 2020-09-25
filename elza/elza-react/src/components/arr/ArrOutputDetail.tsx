@@ -15,7 +15,7 @@ import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import OutputInlineForm from 'components/arr/OutputInlineForm';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import './ArrOutputDetail.scss';
 import {Shortcuts} from 'react-shortcuts';
 import OutputSubNodeForm from './OutputSubNodeForm';
@@ -24,14 +24,14 @@ import FundNodesSelectForm from './FundNodesSelectForm';
 import defaultKeymap from './ArrOutputDetailKeymap.jsx';
 import FundOutputFiles from './FundOutputFiles';
 import ToggleContent from '../shared/toggle-content/ToggleContent';
-import {ApScopeVO, ArrOutputVO} from "../../typings/Outputs";
-import {AppFetchingStore} from "../../typings/globals";
-import ScopeField from "../admin/ScopeField";
-import * as scopeActions from "../../actions/scopes/scopes";
-import storeFromArea from "../../shared/utils/storeFromArea";
-import {WebApi} from "actions/index";
-import {ThunkDispatch} from "redux-thunk";
-import {ScopeList} from "./ScopeList";
+import {ApScopeVO, ArrOutputVO} from '../../typings/Outputs';
+import {AppFetchingStore} from '../../typings/globals';
+import ScopeField from '../admin/ScopeField';
+import * as scopeActions from '../../actions/scopes/scopes';
+import storeFromArea from '../../shared/utils/storeFromArea';
+import {WebApi} from 'actions/index';
+import {ThunkDispatch} from 'redux-thunk';
+import {ScopeList} from './ScopeList';
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -51,7 +51,7 @@ type ComponentProps = {
     rulDataTypes: any;
     closed: boolean;
     readMode: boolean;
-    fundOutputDetail: ArrOutputVO & AppFetchingStore & {subNodeForm: any, lockDate: any};
+    fundOutputDetail: ArrOutputVO & AppFetchingStore & {subNodeForm: any; lockDate: any};
     scopeList: any;
 };
 
@@ -66,10 +66,9 @@ type Props = ComponentProps & ConnectedProps & {dispatch: ThunkDispatch<any, any
 /**
  * Formulář detailu a editace verze výstupu.
  */
-class ArrOutputDetail extends AbstractReactComponent {
+class ArrOutputDetail extends AbstractReactComponent<Props> {
     static contextTypes = {shortcuts: PropTypes.object};
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
-    props: Props;
 
     shortcutManager: any;
 
@@ -80,19 +79,19 @@ class ArrOutputDetail extends AbstractReactComponent {
     getChildContext() {
         return {shortcuts: this.shortcutManager};
     }
-
-    static propTypes = {
-        versionId: PropTypes.number.isRequired,
-        fund: PropTypes.object.isRequired,
-        calendarTypes: PropTypes.object.isRequired,
-        descItemTypes: PropTypes.object.isRequired,
-        templates: PropTypes.object.isRequired,
-        rulDataTypes: PropTypes.object.isRequired,
-        userDetail: PropTypes.object.isRequired,
-        closed: PropTypes.bool.isRequired,
-        readMode: PropTypes.bool.isRequired,
-        fundOutputDetail: PropTypes.object.isRequired,
-    };
+    //
+    // static propTypes = {
+    //     versionId: PropTypes.number.isRequired,
+    //     fund: PropTypes.object.isRequired,
+    //     calendarTypes: PropTypes.object.isRequired,
+    //     descItemTypes: PropTypes.object.isRequired,
+    //     templates: PropTypes.object.isRequired,
+    //     rulDataTypes: PropTypes.object.isRequired,
+    //     userDetail: PropTypes.object.isRequired,
+    //     closed: PropTypes.bool.isRequired,
+    //     readMode: PropTypes.bool.isRequired,
+    //     fundOutputDetail: PropTypes.object.isRequired,
+    // };
 
     componentDidMount() {
         const {versionId, fundOutputDetail} = this.props;
@@ -125,7 +124,9 @@ class ArrOutputDetail extends AbstractReactComponent {
     requestData(versionId, fundOutputDetail) {
         this.props.dispatch(descItemTypesFetchIfNeeded());
         if (fundOutputDetail.fetched && !fundOutputDetail.isFetching) {
-            this.props.dispatch(outputFormActions.fundSubNodeFormFetchIfNeeded(versionId, null, undefined, undefined, undefined));
+            this.props.dispatch(
+                outputFormActions.fundSubNodeFormFetchIfNeeded(versionId, null, undefined, undefined, undefined),
+            );
         }
         this.props.dispatch(refRulDataTypesFetchIfNeeded());
         this.props.dispatch(calendarTypesFetchIfNeeded());
@@ -163,11 +164,10 @@ class ArrOutputDetail extends AbstractReactComponent {
     handleRemoveScope = (scope: ApScopeVO) => {
         const {fundOutputDetail} = this.props;
 
-        if (confirm(i18n("arr.fund.nodes.deleteNode"))) {
+        if (confirm(i18n('arr.fund.nodes.deleteNode'))) {
             WebApi.deleteRestrictedScope(fundOutputDetail.id, scope.id);
         }
     };
-
 
     handleAddScope = (scope: ApScopeVO) => {
         const {fundOutputDetail} = this.props;
@@ -203,8 +203,7 @@ class ArrOutputDetail extends AbstractReactComponent {
             fundOutput: {fundOutputFiles},
         } = fund;
 
-        if (fundOutputDetail.outputResultIds === null||
-            fundOutputDetail.outputResultIds.length===0) {
+        if (fundOutputDetail.outputResultIds === null || fundOutputDetail.outputResultIds.length === 0) {
             return null;
         }
 
@@ -230,7 +229,7 @@ class ArrOutputDetail extends AbstractReactComponent {
             rulDataTypes,
             closed,
             readMode,
-            scopeList
+            scopeList,
         } = this.props;
 
         if (fundOutputDetail.id === null) {
@@ -281,14 +280,14 @@ class ArrOutputDetail extends AbstractReactComponent {
                 handler={this.handleShortcuts}
             >
                 <div className="output-definition-commons">
-                    <OutputInlineForm  
+                    <OutputInlineForm
                         // @ts-ignore
-                        disabled={readonly} 
-                        initialValues={fundOutputDetail} 
+                        disabled={readonly}
+                        initialValues={fundOutputDetail}
                         onSave={this.handleSaveOutput}
-                        // pridan outputDetail navic k initialValues, protoze 
+                        // pridan outputDetail navic k initialValues, protoze
                         // zmena initialValues nezpusobi render kvuli redux-form
-                        outputDetail={fundOutputDetail} 
+                        outputDetail={fundOutputDetail}
                     />
                     {fundOutputDetail.error && (
                         <div>
@@ -302,7 +301,7 @@ class ArrOutputDetail extends AbstractReactComponent {
                     )}
                 </div>
                 <div>
-                    <label className="control-label">{i18n("arr.output.title.scopes")}</label>
+                    <label className="control-label">{i18n('arr.output.title.scopes')}</label>
                     {!readonly && <ScopeField scopes={connectableScopes} onChange={this.handleAddScope} value={null} />}
                     <ScopeList
                         scopes={fundOutputDetail.scopes || []}

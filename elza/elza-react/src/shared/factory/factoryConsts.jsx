@@ -18,3 +18,6 @@ export const CLS_ITEM_STRING = '.ArrItemStringVO';
 export const CLS_ITEM_STRUCTURE = '.ArrItemStructureVO';
 export const CLS_ITEM_TEXT = '.ArrItemTextVO';
 export const CLS_ITEM_UNITID = '.ArrItemUnitidVO';
+export const CLS_ITEM_DATE = '.ArrItemDateVO';
+export const CLS_ITEM_URI_REF = '.ArrItemUriRefVO';
+export const CLS_ITEM_BIT = '.ArrItemBitVO';
