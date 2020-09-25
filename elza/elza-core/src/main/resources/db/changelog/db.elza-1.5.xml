@@ -910,4 +910,15 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="20200924104900" author="sergey.iryupin">
+      <addColumn tableName="ap_state">
+        <column name="replaced_by" type="int">
+            <constraints foreignKeyName="fk_ar_state_replaced_by"
+                         referencedTableName="ap_access_point"
+                         referencedColumnNames="access_point_id"
+                         nullable="true" />
+        </column>
+      </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
