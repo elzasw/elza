@@ -377,7 +377,7 @@ public class ApController {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState apState = accessPointService.getState(accessPoint);
-        accessPointService.deleteAccessPoint(apState, true);
+        accessPointService.deleteAccessPoint(apState, null);
     }
 
     /**
