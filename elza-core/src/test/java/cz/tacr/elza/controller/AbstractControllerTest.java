@@ -362,6 +362,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String FUND_V1 = FUND_CONTROLLER_URL + "/fund/{id}";
     protected static final String FUNDS_V1 = FUND_CONTROLLER_URL + "/fund";
 
+    //ACCESSPOINTS
+    protected static final String DELETE_ACCESSPOINTS_ID = FUND_CONTROLLER_URL + "/accesspoints/{id}";
+
     //ŠABLONY PRO JP
     protected static final String CREATE_NODE_TEMPLATE = NODES + "/{fundId}/template/create";
     protected static final String UPDATE_NODE_TEMPLATE = NODES + "/template/{templateId}";
