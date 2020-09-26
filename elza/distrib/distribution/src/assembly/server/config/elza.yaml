@@ -1,0 +1,61 @@
+elza:
+  data:
+      # Database connection
+      url: jdbc:postgresql://localhost/elza
+      user: app
+      pass: app
+  # Elza working directory. Set absolute path to the working directory
+  # On Windows set: D:\Elza\work
+  # On Linux set: /opt/elza/work
+  workingDir: D:\Elza\work
+#
+# Performance specific options
+#
+# Set number of threads available
+# for asynchronous actions and number
+#
+#  asyncActions:
+#    ap:
+#      threadCount: 2
+#    bulk:
+#      maxPerFund: 1
+#      threadCount: 2
+#    node:
+#      maxPerFund: 2
+#      threadCount: 2
+#    output:
+#      maxPerFund: 1
+#      threadCount: 2
+#
+# Number of funds in memory
+# LevelTreeCache is standard LRU cache.
+# Size of cache depends on number of users
+# and available RAM
+#
+#  levelTreeCache
+#    size: 30
+#
+spring:
+  jpa:
+      properties:
+          hibernate:
+              # Set database type and dialect for the database
+              # PostgreSQL
+              dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
+              # H2
+              #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
+              # MySQL
+              #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
+              # Oracle
+              #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
+              # MSSQL
+              #dialect: org.hibernate.dialect.SQLServer2008Dialect
+
+logging:
+  file:
+    name: ${elza.workingDir}/log/elza.log
+  level:
+    cz.tacr.elza: debug
+
+multipart:
+  maxFileSize: 10000000
