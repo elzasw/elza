@@ -1,197 +1,83 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <ns2:edx xmlns:ns2="http://elza.tacr.cz/schema/v2">
-	<pars>
-		<per id="recordId-0">
-			<chr>characteristics</chr>
-			<hst>history 0</hst>
-			<src>sourceInformations 0</src>
-
-			<nms>
-				<nm ft="NT_OFFICIAL">
-					<dga>degreeAfter 0</dga>
-					<dgb>degreeBefore 0</dgb>
-					<main>mainPart 0</main>
-					<note>anotation 0</note>
-					<oth>otherPart 0</oth>
-					<ncs>
-						<nc ct="GENERAL" v="complement" />
-						<nc ct="GEO" v="complement" />
-					</ncs>
-					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-				</nm>
-			</nms>
-
-			<ape id="partyId-0" t="PERSON_INDIVIDUAL">
-				<!-- <eid>
-					<t>externalSourceCode 1341799512</t>
-					<v>externalId 0</v>
-				</eid> -->
-			</ape>
-		</per>
-
-		<famy id="recordId-1">
-			<chr>characteristics</chr>
-			<hst>history 1</hst>
-			<src>sourceInformations 1</src>
-
-			<nms>
-				<nm ft="NT_OFFICIAL">
-					<dga>degreeAfter 1</dga>
-					<dgb>degreeBefore 1</dgb>
-					<main>mainPart 1</main>
-					<note>anotation 1</note>
-					<oth>otherPart 1</oth>
-					<ncs>
-						<nc ct="GENERAL" v="complement" />
-						<nc ct="GEO" v="complement" />
-					</ncs>
-					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-				</nm>
-			</nms>
-
-			<ape id="partyId-1" t="FAMILY_BRANCH">
-				<!-- <eid>
-					<t>externalSourceCode 1341799512</t>
-					<v>externalId 1</v>
-				</eid> -->
-			</ape>
-
-			<gen>rod</gen>
-		</famy>
-
-		<evnt id="recordId-2">
-			<chr>characteristics</chr>
-			<hst>history 2</hst>
-			<src>sourceInformations 2</src>
-
-			<nms>
-				<nm ft="NT_OFFICIAL">
-					<dga>degreeAfter 2</dga>
-					<dgb>degreeBefore 2</dgb>
-					<main>mainPart 2</main>
-					<note>anotation 2</note>
-					<oth>otherPart 2</oth>
-					<ncs>
-						<nc ct="GENERAL" v="complement" />
-						<nc ct="GEO" v="complement" />
-					</ncs>
-					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-				</nm>
-				<nm ft="ABBRV">
-					<dga>degreeAfter 2</dga>
-					<dgb>degreeBefore 2</dgb>
-					<main>mainPart 2</main>
-					<note>anotation 2</note>
-					<oth>otherPart 2</oth>
-					<ncs>
-						<nc ct="GENERAL" v="complement" />
-						<nc ct="GEO" v="complement" />
-					</ncs>
-					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-				</nm>
-				<nm ft="ABBRV">
-					<dga>degreeAfter 2</dga>
-					<dgb>degreeBefore 2</dgb>
-					<main>mainPart 2</main>
-					<note>anotation 2</note>
-					<oth>otherPart 2</oth>
-					<ncs>
-						<nc ct="GENERAL" v="complement" />
-						<nc ct="GEO" v="complement" />
-					</ncs>
-					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-				</nm>
-				<nm ft="ABBRV">
-					<dga>degreeAfter 2</dga>
-					<dgb>degreeBefore 2</dgb>
-					<main>mainPart 2</main>
-					<note>anotation 2</note>
-					<oth>otherPart 2</oth>
-					<ncs>
-						<nc ct="GENERAL" v="complement" />
-						<nc ct="GEO" v="complement" />
-					</ncs>
-					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-				</nm>
-				<nm ft="AUTHOR">
-					<dga>degreeAfter 2</dga>
-					<dgb>degreeBefore 2</dgb>
-					<main>mainPart 2</main>
-					<note>anotation 2</note>
-					<oth>otherPart 2</oth>
-					<ncs>
-						<nc ct="GENERAL" v="complement" />
-						<nc ct="GEO" v="complement" />
-					</ncs>
-					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-				</nm>
-			</nms>
-
-			<ape id="partyId-2" t="EVENT_EVENT">
-				<!-- <eid>
-					<t>externalSourceCode 1341799512</t>
-					<v>externalId 2</v>
-				</eid> -->
-			</ape>
-		</evnt>
-
-		<pg id="recordId-3">
-			<chr>characteristics</chr>
-			<hst>history 3</hst>
-			<src>sourceInformations 3</src>
-
-			<nms>
-				<nm ft="NT_OFFICIAL">
-					<dga>degreeAfter 3</dga>
-					<dgb>degreeBefore 3</dgb>
-					<main>mainPart 3</main>
-					<note>anotation 3</note>
-					<oth>otherPart 3</oth>
-					<ncs>
-						<nc ct="GENERAL" v="complement" />
-						<nc ct="GEO" v="complement" />
-					</ncs>
-					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-				</nm>
-			</nms>
-
-			<ape id="partyId-3" t="ORGANIZATION">
-				<!-- <eid>
-					<t>externalSourceCode 1097950573</t>
-					<v>externalId 3</v>
-				</eid> -->
-			</ape>
-
-			<fn>foundingNorm</fn>
-			<scp>scope</scp>
-			<sn>scopeNorm</sn>
-			<str>organization</str>
-			<pis>
-				<pi v="id 0">
-					<note>note</note>
-					<src>source</src>
-					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-				</pi>
-				<pi v="id 1">
-					<note>note</note>
-					<src>source</src>
-					<vf f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-					<vto f="2016-02-23T18:53:22" to="2016-02-23T18:53:22" />
-				</pi>
-			</pis>
-		</pg>
-	</pars>
-
-	<inss>
-		<inst c="in1" t="DEFAULT" paid="recordId-3" />
-	</inss>
+  <aps>
+    <ap>
+      <ape id="b50776b9-8d76-4688-ad15-9358b59d057b" uuid="b50776b9-8d76-4688-ad15-9358b59d057b" t="PUBLIC_ADMINISTRATION"/>
+      <frgs>
+        <frg fid="994d2598-cac7-4b66-b9f3-1501fc9b1d80" t="PT_NAME">
+          <ds t="NM_MAIN">
+            <v>Archivní správa Ministerstva vnitra České republiky</v>
+          </ds>
+          <de t="NM_LANG" s="LNG_cze"/>
+        </frg>
+        <frg fid="27c37f5d-121e-4420-b198-109cf91afb44" t="PT_NAME">
+          <ds t="NM_MAIN">
+            <v>AS MV ČR</v>
+          </ds>
+          <de t="NM_LANG" s="LNG_cze"/>
+          <de t="NM_TYPE" s="NT_ACRONYM"/>
+        </frg>
+        <frg fid="aec567b4-fbd4-48ae-b957-17da6a3ff69d" t="PT_IDENT">
+          <de t="IDN_TYPE" s="ARCHNUM"/>
+          <ds t="IDN_VALUE">
+            <v>000000010</v>
+          </ds>
+          <db t="IDN_VERIFIED" v="true"/>
+        </frg>
+      </frgs>
+    </ap>
+    <ap>
+      <ape id="9f783015-b9af-42fc-bff4-11ff57cdb072" uuid="9f783015-b9af-42fc-bff4-11ff57cdb072" t="PUBLIC_ADMINISTRATION"/>
+      <frgs>
+        <frg fid="a1ebacdb-ce49-44b1-ac51-a6e7f724ac51" t="PT_NAME">
+          <ds t="NM_MAIN">
+            <v>Firma 1</v>
+          </ds>
+          <de t="NM_LANG" s="LNG_cze"/>
+        </frg>
+        <frg fid="252caef6-fd27-44ba-87bf-fb876e55fc30" t="PT_NAME">
+          <ds t="NM_MAIN">
+            <v>NA</v>
+          </ds>
+          <de t="NM_LANG" s="LNG_cze"/>
+          <de t="NM_TYPE" s="NT_ACRONYM"/>
+        </frg>
+        <frg fid="937821db-614d-481c-8031-b431eebdea6d" t="PT_IDENT">
+          <de t="IDN_TYPE" s="IC"/>
+          <ds t="IDN_VALUE">
+            <v>100000010</v>
+          </ds>
+          <db t="IDN_VERIFIED" v="true"/>
+        </frg>
+      </frgs>
+    </ap>
+    <ap>
+      <ape id="c4b13fa0-89a2-44a2-954f-e281934c3dcf" uuid="c4b13fa0-89a2-44a2-954f-e281934c3dcf" t="PUBLIC_ADMINISTRATION"/>
+      <frgs>
+        <frg fid="8ab53f80-e098-4943-93b2-1833dcdd42bb" t="PT_NAME">
+          <ds t="NM_MAIN">
+            <v>Firma 2</v>
+          </ds>
+          <de t="NM_LANG" s="LNG_cze"/>
+        </frg>
+        <frg fid="8b8e1722-2259-482f-8b5e-af2f2c1402dd" t="PT_NAME">
+          <ds t="NM_MAIN">
+            <v>ABS</v>
+          </ds>
+          <de t="NM_LANG" s="LNG_cze"/>
+          <de t="NM_TYPE" s="NT_ACRONYM"/>
+        </frg>
+        <frg fid="15af8860-1d04-4b79-a5de-6d72d84d3f2a" t="PT_IDENT">
+          <de t="IDN_TYPE" s="IC"/>
+          <ds t="IDN_VALUE">
+            <v>100000020</v>
+          </ds>
+          <db t="IDN_VERIFIED" v="true"/>
+        </frg>
+      </frgs>
+    </ap>
+  </aps>
+  <inss>
+    <inst c="000000010" paid="b50776b9-8d76-4688-ad15-9358b59d057b" t="DEFAULT"/>
+  </inss>
 </ns2:edx>
