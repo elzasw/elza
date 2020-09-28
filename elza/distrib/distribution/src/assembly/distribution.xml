@@ -30,20 +30,20 @@
 		<moduleSet>
 			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
-				<include>cz.tacr.elza:elza-war</include>
+				<include>cz.tacr.elza:elza-tomcat:jar:</include>
 			</includes>
 			<binaries>
 				<includeDependencies>false</includeDependencies>
 				<outputDirectory>server</outputDirectory>
 				<unpack>false</unpack>
-				<outputFileNameMapping>ROOT.${module.extension}</outputFileNameMapping>
+<!--				<outputFileNameMapping>ROOT.${module.extension}</outputFileNameMapping>-->
 			</binaries>
 		</moduleSet>
 		<!-- Append all-institutions-import.xml -->
 		<moduleSet>
 			<useAllReactorProjects>true</useAllReactorProjects>
 			<includes>
-				<include>cz.tacr.elza:package-cz-base</include>
+				<include>cz.tacr.elza:package-cz-base:zip:</include>
 			</includes>
 			<sources>
 				<includeModuleDirectory>false</includeModuleDirectory>

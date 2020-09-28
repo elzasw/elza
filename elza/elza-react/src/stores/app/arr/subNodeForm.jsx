@@ -16,7 +16,7 @@ import {DisplayType} from '../../../constants.tsx';
 import {buildIgnoreMap, endWith, startWith} from '../../../components/Utils';
 import {cloneDeep} from 'lodash-es';
 import {prepareNextFormKey} from './subNodeFormUtils';
-import {validateUnitDate} from "../../../components/registry/field/UnitdateField";
+import {validateUnitDate} from '../../../components/registry/field/UnitdateField';
 
 const FORM_KEY = 'formKey'; // klíč verze formuláře
 const UID = '_uid'; // virtuální identifikátor hodnoty atributu (jedná se buď o objectId a nebo virtuální klíč v případě, že ještě hodnota atributu nebyla uložena na serveru)
@@ -40,9 +40,9 @@ function setLoc(state, valueLocation, loc, descItemType = true, descItem = true)
     const newState = {
         ...state,
         formData: {
-            ...state.formData
-        }
-    }
+            ...state.formData,
+        },
+    };
 
     newState.formData.descItemGroups = [...newState.formData.descItemGroups];
     newState.formData.descItemGroups[valueLocation.descItemGroupIndex] = loc.descItemGroup;
@@ -88,8 +88,8 @@ function getLoc(state, valueLocation) {
     return {
         descItemGroup,
         descItemType,
-        descItem
-    }
+        descItem,
+    };
 }
 
 const initialState = {
@@ -111,7 +111,7 @@ const initialState = {
 };
 
 export function validate(descItem, refType, valueServerError) {
-    var error = {};
+    const error = {};
 
     // Specifikace
     if (refType.useSpecification) {
@@ -160,6 +160,11 @@ export function validate(descItem, refType, valueServerError) {
         case 'TEXT':
         case 'STRING':
             if (!descItem.value || descItem.value.length === 0) {
+                error.value = i18n('subNodeForm.validate.value.notEmpty');
+            }
+            break;
+        case 'BIT':
+            if (descItem.value === undefined || descItem.value === null) {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
             }
             break;

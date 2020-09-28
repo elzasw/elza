@@ -13,10 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -25,6 +23,7 @@ import javax.transaction.Transactional;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
+import cz.tacr.elza.asynchactions.RequestQueue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -476,7 +475,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         /**
          * Fronta čekajících požadavků.
          */
-        final Queue<AsyncRequest> queue;
+        final RequestQueue<AsyncRequest> queue;
 
         /**
          * Seznam přeskočených požadavků na smazání.
@@ -495,7 +494,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
         AsyncExecutor(final AsyncTypeEnum type,
                       final ThreadPoolTaskExecutor executor,
-                      final Queue<AsyncRequest> queue,
+                      final RequestQueue<AsyncRequest> queue,
                       final PlatformTransactionManager txManager,
                       final ArrAsyncRequestRepository asyncRequestRepository,
                       final ApplicationContext appCtx,
@@ -817,7 +816,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             if (request.getType() != getType()) {
                 throw new IllegalStateException("Neplatný typ požadavku");
             }
-            // detekci, zda-li se má požadavek přidat nebo přeskočit
+            // detekce, zda-li se má požadavek přidat nebo přeskočit
             if (skip(request)) {
                 skipped.add(request); // přidání do fronty na přeskočení
             } else {
@@ -957,7 +956,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         private final BulkActionRunRepository bulkActionRepository;
 
         AsyncBulkExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund, final BulkActionRunRepository bulkActionRepository) {
-            super(AsyncTypeEnum.BULK, executor, new LinkedList<>(), txManager, asyncRequestRepository, appCtx, maxPerFund);
+            super(AsyncTypeEnum.BULK, executor, RequestQueue.of(new LinkedList<>()), txManager, asyncRequestRepository, appCtx, maxPerFund);
             this.bulkActionRepository = bulkActionRepository;
         }
 
@@ -985,7 +984,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private static class AsyncNodeExecutor extends AsyncExecutor {
 
         AsyncNodeExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund) {
-            super(AsyncTypeEnum.NODE, executor, new PriorityQueue<>(1000, new NodePriorityComparator()), txManager, asyncRequestRepository, appCtx, maxPerFund);
+            super(AsyncTypeEnum.NODE, executor, RequestQueue.of(new PriorityQueue<>(1000, new NodePriorityComparator()), AsyncRequest::getNodeId), txManager, asyncRequestRepository, appCtx, maxPerFund);
         }
 
         @Override
@@ -995,9 +994,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
         @Override
         protected boolean skip(final AsyncRequest request) {
-            Map<Integer, AsyncRequest> queuedNodeIds = queue.stream()
-                    .collect(Collectors.toMap(AsyncRequest::getNodeId, Function.identity()));
-            AsyncRequest existAsyncRequest = queuedNodeIds.get(request.getNodeId());
+            AsyncRequest existAsyncRequest = queue.findById(request.getNodeId());
             if (existAsyncRequest == null) {
                 // neexistuje ve frontě, chceme přidat
                 return false;
@@ -1022,7 +1019,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         private final OutputRepository outputRepository;
 
         AsyncOutputExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund, final OutputRepository outputRepository) {
-            super(AsyncTypeEnum.OUTPUT, executor, new LinkedList<>(), txManager, asyncRequestRepository, appCtx, maxPerFund);
+            super(AsyncTypeEnum.OUTPUT, executor, RequestQueue.of(new LinkedList<>()), txManager, asyncRequestRepository, appCtx, maxPerFund);
             this.outputRepository = outputRepository;
         }
 
@@ -1049,7 +1046,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private static class AsyncAccessPointExecutor extends AsyncExecutor {
 
         AsyncAccessPointExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx) {
-            super(AsyncTypeEnum.AP, executor, new LinkedList<>(), txManager, asyncRequestRepository, appCtx, Integer.MAX_VALUE);
+            super(AsyncTypeEnum.AP, executor, RequestQueue.of(new LinkedList<>(), AsyncRequest::getAccessPointId), txManager, asyncRequestRepository, appCtx, Integer.MAX_VALUE);
         }
 
         @Override
@@ -1057,16 +1054,9 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
             return AsyncAccessPointWorker.class;
         }
 
-        /*
-         V pripade spusteni revalidace velkeho mnozstvi entit (100k+)
-         je velmi pomale volani Map<Integer, AsyncRequest> queuedNodeIds = queue.stream()...
-         muselo by se prepracovat na trvalejsi mapu pozadavku
-         
         @Override
         protected boolean skip(final AsyncRequest request) {
-            Map<Integer, AsyncRequest> queuedNodeIds = queue.stream()
-                    .collect(Collectors.toMap(AsyncRequest::getAccessPointId, Function.identity()));
-            AsyncRequest existAsyncRequest = queuedNodeIds.get(request.getAccessPointId());
+            AsyncRequest existAsyncRequest = queue.findById(request.getAccessPointId());
             if (existAsyncRequest == null) {
                 // neexistuje ve frontě, chceme přidat
                 return false;
@@ -1084,6 +1074,5 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                 }
             }
         }
-        */
     }
 }

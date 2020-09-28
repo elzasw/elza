@@ -8,11 +8,15 @@ import DescItemLabel from './DescItemLabel.jsx';
 import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
 import './DescItemCoordinates.scss';
+import {DescItemComponentProps} from './DescItemTypes';
+
+type Props = DescItemComponentProps<string> & {onUpload: Function; onDownload: Function};
+type State = {type: null | string; data: null | string};
 
 /**
  * Input prvek pro desc item - typ STRING.
  */
-class DescItemCoordinates extends AbstractReactComponent {
+class DescItemCoordinates extends AbstractReactComponent<Props, State> {
     private readonly focusEl: React.RefObject<HTMLInputElement>;
     private readonly uploadInput: React.RefObject<React.ComponentClass<typeof FormInput>>;
 
@@ -108,7 +112,7 @@ class DescItemCoordinates extends AbstractReactComponent {
                             accept="application/vnd.google-earth.kml+xml"
                             type="file"
                             ref={this.uploadInput}
-                            onChange={onUpload}
+                            onChange={onUpload as any}
                         />
                     </div>
                 )}

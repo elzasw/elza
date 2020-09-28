@@ -434,4 +434,12 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZVEREJNENO" data-type="BIT">
+        <name>Zveřejněno</name>
+        <shortcut>Zveřejněno</shortcut>
+        <description>Zveřejněná jednotka popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
 </item-types>

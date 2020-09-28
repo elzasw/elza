@@ -19,6 +19,8 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.service.GroovyService;
 import org.apache.commons.lang3.Validate;
 import org.xml.sax.SAXException;
 
@@ -58,6 +60,8 @@ public class CamExportBuilder implements ExportBuilder {
 
     private StaticDataService staticDataService;
 
+    private GroovyService groovyService;
+
     protected CamExportBuilder getExportBuilder() {
         return this;
     }
@@ -84,8 +88,9 @@ public class CamExportBuilder implements ExportBuilder {
 
     };
 
-    public CamExportBuilder(StaticDataService staticDataService) {
+    public CamExportBuilder(StaticDataService staticDataService, GroovyService groovyService) {
         this.staticDataService = staticDataService;
+        this.groovyService = groovyService;
         initBuilder();
     }
 
@@ -99,13 +104,14 @@ public class CamExportBuilder implements ExportBuilder {
         EntityXmlBuilder exb = new EntityXmlBuilder(
                 staticDataService.getData(),
                 apInfo.getAccessPoint(),
-                apInfo.getApState());
+                apInfo.getApState(),
+                groovyService);
 
         Map<Integer, Collection<ApItem>> items = apInfo.getItems();
         final Map<Integer, List<ApItem>> itemsConv = new HashMap<>();
         items.forEach((a, b) -> itemsConv.put(a, new ArrayList<>(b)));
 
-        EntityXml ent = exb.build(apInfo.getParts(), itemsConv);
+        EntityXml ent = exb.build(apInfo.getParts(), itemsConv, ApExternalSystemType.CAM.toString());
         this.entities.getList().add(ent);
     }
 

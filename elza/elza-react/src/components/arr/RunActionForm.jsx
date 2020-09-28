@@ -5,16 +5,15 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
+import {connect} from 'react-redux';
 import {reduxForm} from 'redux-form';
 import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx';
+import FF from '../shared/form/FF';
 
-/**
- * Validace formuláře.
- */
 const validate = (values, props) => {
     const errors = {};
 
@@ -25,11 +24,12 @@ const validate = (values, props) => {
     return errors;
 };
 
-const RunActionForm = class RunActionForm extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-        this.state = {};
-    }
+class RunActionForm extends AbstractReactComponent {
+    static propTypes = {
+        initData: PropTypes.object,
+        onSubmitForm: PropTypes.func.isRequired,
+        versionId: PropTypes.number.isRequired,
+    };
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(fundActionFetchConfigIfNeeded(nextProps.versionId));
@@ -47,33 +47,19 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
         submitForm(validate, values, this.props, this.props.onSubmitForm, dispatch, this.submitOptions);
 
     render() {
-        const {
-            fields: {code},
-            handleSubmit,
-            onClose,
-            actionConfig,
-            submitting,
-        } = this.props;
+        const {handleSubmit, onClose, actionConfig, submitting} = this.props;
         return (
             <div className="run-action-form-container">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FormInput
-                            as="select"
-                            label={i18n('arr.fundAction.form.type')}
-                            key="code-action"
-                            ref="code-action"
-                            className="form-control"
-                            {...code}
-                            {...decorateFormField(code)}
-                        >
+                        <FF name="code" as="select" label={i18n('arr.fundAction.form.type')} className="form-control">
                             <option key="novalue" value={null} />
                             {actionConfig.map(item => (
                                 <option key={item.code} value={item.code}>
                                     {item.name}
                                 </option>
                             ))}
-                        </FormInput>
+                        </FF>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary" disabled={submitting}>
@@ -87,38 +73,30 @@ const RunActionForm = class RunActionForm extends AbstractReactComponent {
             </div>
         );
     }
-};
+}
 
-RunActionForm.propTypes = {
-    initData: PropTypes.object,
-    onSubmitForm: PropTypes.func.isRequired,
-    versionId: PropTypes.number.isRequired,
-};
+const form = reduxForm({
+    form: 'RunActionForm',
+    validate,
+})(RunActionForm);
 
-export default reduxForm(
-    {
-        form: 'RunActionForm',
-        fields: ['code'],
-    },
-    (state, props) => {
+export default connect((state, props) => {
+    const {
+        arrRegion: {funds, activeIndex},
+    } = state;
+
+    let actionConfig = null;
+    if (activeIndex !== null && funds[activeIndex].fundAction) {
         const {
-            arrRegion: {funds, activeIndex},
-        } = state;
-
-        let actionConfig = null;
-        if (activeIndex !== null && funds[activeIndex].fundAction) {
-            const {
-                fundAction: {
-                    config: {fetched, data},
-                },
-            } = funds[activeIndex];
-            if (fetched) {
-                actionConfig = data;
-            }
+            fundAction: {
+                config: {fetched, data},
+            },
+        } = funds[activeIndex];
+        if (fetched) {
+            actionConfig = data;
         }
-        return {
-            actionConfig,
-        };
-    },
-    {},
-)(RunActionForm);
+    }
+    return {
+        actionConfig,
+    };
+})(form);

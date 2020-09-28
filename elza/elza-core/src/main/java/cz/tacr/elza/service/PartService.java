@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -442,12 +443,13 @@ public class PartService {
     private void checkReferredRecords(ApAccessPoint accessPoint) {
         List<Integer> dataIdsList = dataRecordRefRepository.findIdsByRecord(accessPoint);
 
-        if(CollectionUtils.isNotEmpty(dataIdsList)) {
-            List<Integer> accessPointIds = accessPointRepository.findAccessPointIdsByRefDataId(dataIdsList);
+        if (CollectionUtils.isNotEmpty(dataIdsList)) {
+            List<Integer> accessPointIds = ObjectListIterator.findIterable(dataIdsList, accessPointRepository::findAccessPointIdsByRefDataId);
             if (accessPointIds.remove(accessPoint.getAccessPointId())) {
                 logger.warn("Archivní entita id " + accessPoint.getAccessPointId() + " má referenci sama na sebe!");
             }
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
+                ObjectListIterator.forEachPage(accessPointIds, accessPointRepository::updateToInit);
                 asyncRequestService.enqueue(accessPointIds);
             }
         }

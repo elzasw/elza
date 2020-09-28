@@ -71,6 +71,9 @@ public class GroovyService {
     @Autowired
     private ResourcePathResolver resourcePathResolver;
 
+    private static final String ITEM_TYPE_MAP = "ITEM_TYPE_MAP";
+    private static final String ITEM_SPEC_MAP = "ITEM_SPEC_MAP";
+
     @PostConstruct
     public void setStatic() {
         _self = this;
@@ -238,6 +241,14 @@ public class GroovyService {
         return _self.findAllParents(recordId, itemType);
     }
 
+    public String findItemTypeCode(String extSystemType, String itemTypeCode) {
+        return groovyScriptService.findItemTypeCode(extSystemType, itemTypeCode, getGroovyFilePath(ITEM_TYPE_MAP));
+    }
+
+    public String findItemSpecCode(String extSystemType, String itemSpecCode) {
+        return groovyScriptService.findItemSpecCode(extSystemType, itemSpecCode, getGroovyFilePath(ITEM_SPEC_MAP));
+    }
+
     public String getGroovyFilePath(GroovyPart part) {
         StaticDataProvider sdp = staticDataService.getData();
 
@@ -276,6 +287,30 @@ public class GroovyService {
                 throw new SystemException("Strukturovaný typ '" + structType.getCode()
                         + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
             }
+        }
+
+        return resourcePathResolver.getGroovyDir(rulPackage)
+                .resolve(component.getFilename())
+                .toString();
+    }
+
+    public String getGroovyFilePath(String structuredTypeCode) {
+        StaticDataProvider sdp = staticDataService.getData();
+
+        RulComponent component;
+        RulPackage rulPackage;
+
+        StructType structType = sdp.getStructuredTypeByCode(structuredTypeCode);
+
+        List<RulStructureDefinition> structureDefinitions = structType
+                .getDefsByType(RulStructureDefinition.DefType.SERIALIZED_VALUE);
+        if (structureDefinitions.size() > 0) {
+            RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
+            component = structureDefinition.getComponent();
+            rulPackage = structureDefinition.getRulPackage();
+        } else {
+            throw new SystemException("Strukturovaný typ '" + structType.getCode()
+                    + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
         }
 
         return resourcePathResolver.getGroovyDir(rulPackage)

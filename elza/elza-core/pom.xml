@@ -406,6 +406,7 @@
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>add-gen-sources</id>
                         <phase>generate-resources</phase>
                         <goals>
                             <goal>add-source</goal>
@@ -415,6 +416,18 @@
                                 <source>${project.build.directory}/generated-sources/jaxb</source>
                                 <source>${project.build.directory}/generated-sources/cam</source>
                                 <!--<source>${project.build.directory}/generated-sources/api/rest</source>-->
+                            </sources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>add-gen-test-sources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-test-sources/api/rest/src/main/java</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -526,10 +539,10 @@
             <plugin>
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
-                <version>4.2.3</version>
+                <version>4.3.1</version>
                 <executions>
                     <execution>
-                        <id>openapi-eskartace-spring</id>
+                        <id>openapi-spring</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>generate</goal>
@@ -538,17 +551,14 @@
                             <generatorName>spring</generatorName>
                             <inputSpec>${project.basedir}/src/main/resources/rest/elza-openapi.yml</inputSpec>
                             <output>${project.build.directory}/generated-sources/api/rest</output>
-                            <generateSupportingFiles>false</generateSupportingFiles>
                             <apiPackage>cz.tacr.elza.controller</apiPackage>
                             <modelPackage>cz.tacr.elza.controller.vo</modelPackage>
+                            <generateSupportingFiles>true</generateSupportingFiles>
+                            <generateApiTests>false</generateApiTests>
+                            <!--<supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>-->
                             <configOptions>
                                 <!--<sourceFolder>/</sourceFolder>-->
                                 <interfaceOnly>true</interfaceOnly>
-                                <dateLibrary>java8-localdatetime</dateLibrary>
-                                <!--
-                                 use java8-localdatetime instead of java8 when java8 is false
-                                -->
-                                <java8>false</java8>
                                 <!--  disables default interface methods for testing  -->
                                 <useTags>true</useTags>
                             </configOptions>
@@ -570,6 +580,21 @@
                             <!--<configOptions>
                                 <library>resttemplate</library>
                             </configOptions>-->
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>openapi-test-client</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>java</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/rest/elza-openapi.yml</inputSpec>
+                            <output>${project.build.directory}/generated-test-sources/api/rest</output>
+                            <apiPackage>cz.tacr.elza.test.controller</apiPackage>
+                            <modelPackage>cz.tacr.elza.test.controller.vo</modelPackage>
+                            <generateApiTests>false</generateApiTests>
                         </configuration>
                     </execution>
                 </executions>
