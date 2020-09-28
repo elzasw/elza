@@ -22,13 +22,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.controller.vo.ap.item.*;
-import cz.tacr.elza.controller.vo.nodes.*;
-import cz.tacr.elza.controller.vo.nodes.descitems.*;
-import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.domain.UsrAuthentication;
-import io.restassured.http.Header;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -41,21 +34,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
-import io.restassured.RestAssured;
-import io.restassured.config.EncoderConfig;
-import io.restassured.config.RestAssuredConfig;
-import io.restassured.internal.support.Prettifier;
-import io.restassured.response.Response;
-import io.restassured.response.ResponseBody;
-import io.restassured.response.ResponseOptions;
-import io.restassured.specification.RequestSpecification;
-
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.controller.ArrangementController.FaFilteredFulltextParam;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApEidTypeVO;
+import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
@@ -66,15 +51,22 @@ import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
+import cz.tacr.elza.controller.vo.CreateFund;
 import cz.tacr.elza.controller.vo.CreateUserVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.FindFundsResult;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
+import cz.tacr.elza.controller.vo.Fund;
+import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
@@ -85,6 +77,7 @@ import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulDescItemTypeVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
@@ -104,13 +97,64 @@ import cz.tacr.elza.controller.vo.WfIssueListVO;
 import cz.tacr.elza.controller.vo.WfIssueStateVO;
 import cz.tacr.elza.controller.vo.WfIssueTypeVO;
 import cz.tacr.elza.controller.vo.WfIssueVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemDateVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemDecimalVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemEnumVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemIntVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemJsonTableVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemTextVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemUnitdateVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemUnitidVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
+import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.NodeData;
+import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemBitVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemDecimalVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemFormattedTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemJsonTableVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemRecordRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
+import cz.tacr.elza.test.ApiClient;
+import cz.tacr.elza.test.controller.AccesspointsApi;
+import cz.tacr.elza.test.controller.FundsApi;
+import io.restassured.RestAssured;
+import io.restassured.config.EncoderConfig;
+import io.restassured.config.RestAssuredConfig;
+import io.restassured.http.Header;
+import io.restassured.internal.support.Prettifier;
+import io.restassured.response.Response;
+import io.restassured.response.ResponseBody;
+import io.restassured.response.ResponseOptions;
+import io.restassured.specification.RequestSpecification;
 
 public abstract class AbstractControllerTest extends AbstractTest {
 
@@ -126,6 +170,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     private static final Header JSON_CT_HEADER = new Header(CONTENT_TYPE_HEADER, JSON_CONTENT_TYPE);
     private static final Header WWW_FORM_CT_HEADER = new Header(CONTENT_TYPE_HEADER, WWW_FORM_CONTENT_TYPE);
     private static final Header MULTIPART_HEADER = new Header(CONTENT_TYPE_HEADER, MediaType.MULTIPART_FORM_DATA_VALUE);
+
+    protected static final String REST_CONTROLLER_URL = "/api/v1";
 
     protected static final String ADMIN_CONTROLLER_URL = "/api/admin";
     protected static final String ARRANGEMENT_CONTROLLER_URL = "/api/arrangement";
@@ -275,7 +321,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String GET_RECORD = AP_CONTROLLER_URL + "/{recordId}";
     protected static final String CREATE_ACCESS_POINT = AP_CONTROLLER_URL + "/";
     protected static final String UPDATE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
-    protected static final String DELETE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
     protected static final String USAGES_RECORD = AP_CONTROLLER_URL + "/{recordId}/usage";
     protected static final String REPLACE_RECORD = AP_CONTROLLER_URL + "/{recordId}/replace";
 
@@ -382,6 +427,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
     private List<RulDataTypeVO> dataTypes = null;
     private List<RulDescItemTypeExtVO> descItemTypes = null;
 
+    private ApiClient elzaApiClient;
+
+    protected FundsApi fundsApi;
+
+    protected AccesspointsApi accesspointsApi;
+
     private static Map<String, String> cookies = null;
 
     @Override
@@ -390,7 +441,24 @@ public abstract class AbstractControllerTest extends AbstractTest {
         super.setUp();
         RestAssured.port = port;                        // nastavi default port pro REST-assured
         RestAssured.baseURI = RestAssured.DEFAULT_URI;  // nastavi default URI pro REST-assured. Nejcasteni localhost
+
+        // Inicializace openapi clienta
+        elzaApiClient = new ApiClient();
+        elzaApiClient.setBasePath(RestAssured.DEFAULT_URI + ":" + port + REST_CONTROLLER_URL);
+        elzaApiClient.setConnectTimeout(5 * 60 * 1000);
+        elzaApiClient.setReadTimeout(5 * 60 * 1000);
+        elzaApiClient.setWriteTimeout(5 * 60 * 1000);
+
+        fundsApi = new cz.tacr.elza.test.controller.FundsApi(elzaApiClient);
+        accesspointsApi = new cz.tacr.elza.test.controller.AccesspointsApi(elzaApiClient);
+
         loginAsAdmin();
+
+        // Nastaveni autentizace
+        cookies.forEach((name, value) -> {
+            elzaApiClient.addDefaultCookie(name, value);
+        });
+
         if (loadInstitutions) {
             importXmlFile(null, 1, getResourceFile(XML_INSTITUTION));
         }
@@ -658,13 +726,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
         Response response = post(spec -> spec
                 .body(fund), CREATE_FUND_V1);
         return response.getBody().as(Fund.class);
-    }
-
-    protected FundDetail updateFundV1(final Integer id, final UpdateFund fund) {
-        Response response = put(spec ->
-                spec.pathParameter("id", id)
-                        .body(fund), UPDATE_FUND_V1);
-        return response.getBody().as(FundDetail.class);
     }
 
     protected FundDetail getFundV1(final Integer id) {
@@ -1963,15 +2024,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
      */
     protected ApAccessPointVO updateRecord(final ApAccessPointVO record) {
         return put(spec -> spec.pathParam("recordId", record.getId()).body(record), UPDATE_RECORD).getBody().as(ApAccessPointVO.class);
-    }
-
-    /**
-     * Smazání rejstříkového hesla.
-     *
-     * @param recordId id rejstříkového hesla
-     */
-    protected Response deleteRecord(final Integer recordId) {
-        return delete(spec -> spec.pathParam("recordId", recordId), DELETE_RECORD);
     }
 
     /**
