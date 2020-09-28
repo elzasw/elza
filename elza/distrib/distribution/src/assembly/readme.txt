@@ -10,50 +10,62 @@ Podporované systémy:
  * Postgresql
  * Microsoft SQL Server
 
+V adresáři `server` je uložen hlavní soubor JAR a vzorová konfigurace.
+Do souboru JAR je vložen webový server a aplikaci je možné spouštět
+bez nutnosti instalace a konfigurace samostatného aplikačního serveru.
+
+Podporované možnosti instalace jsou:
+ * Linux/Unix - init.d služba (System V)
+ * Linux/Unix - systemd služba
+ * služba systému Windows
+
+Podrobný seznam možností konfigurace zde:
+https://docs.spring.io/spring-boot/docs/current/reference/html/deployment.html#deployment-install
+
 Postup instalace Elza
 =====================
 
 Předpoklady:
  - nainstalována databáze Postgresql
 
-Vhodné znalosti:
- - způsob administrace Apache Tomcat
+Aplikace Elza vyžaduje instalační a pracovní adresář.
+Příklad cílového rozložení na disku:
+..../elza/server - adresář s nainstalovanou aplikací (JAR + konfigurační soubor)
+..../elza/work - pracovní adresář
 
-1) Nainstalujte Apache Tomcat. Ke stažení zde: https://tomcat.apache.org/
-   Elza v tuto chvíli musí být nainstalována jako kořenová aplikace v Tomcat
+1) Vytvořte uživatele v Postgres pro přístup k databází. Například: 'elza'
 
-2) Vytvořte uživatele v Postgres pro přístup k databází. Například: 'elza'
-
-3) Vytvořte prázdnou databázi, vlastníkem databáze nastavte uživatel z bodu 2)
+2) Vytvořte prázdnou databázi, vlastníkem databáze nastavte uživatel z bodu 1)
    create database elza owner = 'elza';
 
-4) Přidejte do databáze možnost používat rozšíření PostGIS:
+3) Přidejte do databáze možnost používat rozšíření PostGIS:
    create extension postgis;
 
-5) Připravte pracovní adresář pro Elzu. Do adresáře se budou ukládat 
+4) Připravte pracovní adresář pro Elzu. Do adresáře se budou ukládat 
    pravidla popisu, tiskové šablony, vygenerované tisky a další.
    Například: D:\Elza\work
+   Je vhodné vytvořit rovnou adresář pro zápis logu, např: D:\Elza\work\log
 
-6) V adresáři server je vzorový soubor elza-ui.yaml. Ten otevřete a upravte 
+5) Připravte instalační adresář pro Elzu. Do adresáře zkopírujte
+   JAR a vzorovou konfiguraci.
+   Příklad výsledné podoby:
+   D:\Elza\server\elza.jar
+   D:\Elza\server\config\elza.yaml
+
+6) V adresáři servery je vzorový soubor elza.yaml. Ten otevřete a upravte 
    dle nastavení v předchozích bodech. Minimálně je nutné nastavit:
    - připojení k databázi (sekce elza: data:)
    - cestu k pracovnímu adresáři (workingDir:)
 
-7) Upravený soubor elza-ui.yaml nahrajte do souboru ROOT.war do adresáře
-   WEB-INF/classes 
-   Soubor ROOT.war je standardní ZIP souboru a je možné s ním pracovat pomocí
-   běžných nástrojů pro práci se ZIP soubory. Ve Windows je nutné mu před úpravou
-   změnit koncovku na .zip.
+7) Ověřovací spuštění aplikace Elza
+   Pro ověření lze aplikaci přímo spustit příkazem
+   java -jar elza.jar
 
-8) V připravené instalaci Tomcat smažte adresář webapps/ROOT a upravený ROOT.war
-   nahrajte do adresáře webapps
+8) Nakonfigurujte automatické spouštění jako služba
+   a službu spusťte
 
-9) Spusťte Tomcat
-   V případě správné konfigurace dojde k vytvoření tabulek v databázi a nastartování
-   aplikace.
-
-10) Prvotní konfigurace Elza
+9) Prvotní konfigurace Elza
     - ve správě balíčků do aplikace nahrajte balíček packages/package-cz-base.zip 
     - ve správě balíčků do aplikace nahrajte balíček packages/rules-cz-zp2015.zip
-    - proveďte import paměťových institucí volbou Osoby / Import osob 
+    - proveďte import paměťových institucí volbou Archivní entity / Import 
       ze souboru data/all-institutions-import.xml
