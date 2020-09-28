@@ -1,14 +1,20 @@
 package cz.tacr.elza.controller;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.tacr.elza.controller.vo.DeleteAccessPointDetail;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 
 public class AccessPointControllerTest extends AbstractControllerTest {
 
@@ -18,23 +24,27 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     @Autowired
     ApStateRepository stateRepository; 
     
+    @Autowired
+    ApAccessPointRepository apRepository;
+
     @Test
-    public void deleteAccessPointTest() {
+    public void deleteAccessPointTest() throws ApiException {
 
-        ApState state = stateRepository.findById(2).orElse(null);
+        List<ApAccessPoint> aps = apRepository.findAll();
 
-        assertTrue(state != null);
-        assertTrue(state.getAccessPointId() == 2);
-        assertTrue(state.getReplacedBy() == null);
+        ApAccessPoint ap1 = apRepository.findApAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
+        assertNotNull(ap1);
+        ApAccessPoint ap2 = apRepository.findApAccessPointByUuid("c4b13fa0-89a2-44a2-954f-e281934c3dcf");
+        assertNotNull(ap2);
 
         DeleteAccessPointDetail deleteAPDetail = new DeleteAccessPointDetail();
-        deleteAPDetail.setReplacedBy("3");
+        deleteAPDetail.setReplacedBy(ap2.getAccessPointId().toString());
 
-        delete(spec -> spec.pathParam("id", 2).body(deleteAPDetail), DELETE_ACCESSPOINTS_ID);
+        accesspointsApi.deleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
 
-        state = stateRepository.findById(2).orElse(null);
-
-        assertTrue(state.getReplacedBy().getAccessPointId() == 3);
+        Optional<ApState> state = stateRepository.findById(ap1.getAccessPointId());
+        assertNotNull(state);
+        assertTrue(state.get().getReplacedBy().getAccessPointId().equals(ap2.getAccessPointId()));
     }
 
 }
