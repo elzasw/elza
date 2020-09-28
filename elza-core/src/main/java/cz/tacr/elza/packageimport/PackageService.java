@@ -31,6 +31,7 @@ import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -640,6 +641,7 @@ public class PackageService {
         IssueStates issueStates = pkgCtx.convertXmlStreamToObject(IssueStates.class, ISSUE_STATE_XML);
         processIssueStates(issueStates, rulPackage);
 
+        ObjectListIterator.forEachPage(accessPoints, accessPointRepository::updateToInit);
         asyncRequestService.enqueue(accessPoints);
 
         entityManager.flush();
@@ -2970,8 +2972,12 @@ public class PackageService {
     }
 
     private void enqueueAccessPoints(RulStructureDefinition rulStructureDefinition) {
-        String apTypeCode = null;
-        enqueueAccessPoints(apTypeCode);
+        StaticDataProvider sdp = staticDataService.getData();
+        RulPartType partType = sdp.getPartTypeByCode(rulStructureDefinition.getStructuredType().getCode());
+        if (partType != null) {
+            String apTypeCode = null;
+            enqueueAccessPoints(apTypeCode);
+        }
     }
 
     public void enqueueAccessPoints(RulStructureExtensionDefinition rulStructureExtensionDefinition) {

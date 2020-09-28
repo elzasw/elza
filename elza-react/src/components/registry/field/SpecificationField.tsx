@@ -1,32 +1,33 @@
 import React, {FC} from 'react';
-import {connect} from "react-redux";
-import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
-import {FormInput} from "../../index";
+import {connect} from 'react-redux';
+import {RulDescItemTypeExtVO} from '../../../api/RulDescItemTypeExtVO';
+import {FormInput} from '../../index';
 
 interface Props {
     itemTypeId: number;
-    refTables: any;
-    itemSpecIds?: Array<number>;  // pokud je uvedeno, bere se v7běr z nich, jinak se bere z item type
+    itemsMap: {[key: number]: RulDescItemTypeExtVO};
+    itemSpecIds?: Array<number>; // pokud je uvedeno, bere se v7běr z nich, jinak se bere z item type
 }
 
-const SpecificationField: FC<Props> = ({refTables, itemTypeId, itemSpecIds, ...rest}) => {
-    const itemType = refTables.descItemTypes.itemsMap[itemTypeId] as RulDescItemTypeExtVO;
+const SpecificationField: FC<Props> = ({itemsMap, itemTypeId, itemSpecIds, ...rest}) => {
+    const itemType = itemsMap[itemTypeId] as RulDescItemTypeExtVO;
 
-    let itemSpecsList = itemType.descItemSpecs
-        .sort((a, b) => a.name.localeCompare(b.name));
-
+    let itemSpecsList = itemType.descItemSpecs;
     if (itemSpecIds) {
         itemSpecsList = itemSpecsList.filter(x => itemSpecIds.includes(x.id));
     }
 
+    itemSpecsList = itemSpecsList.sort((a, b) => a.viewOrder - b.viewOrder);
+
     return (
-        <FormInput
-            as={'select'}
-            {...rest}
-        >
-            <option key={""}></option>
-            {itemSpecsList.map((spec) => {
-                return <option key={spec.id} value={spec.id}>{spec.name}</option>
+        <FormInput as={'select'} {...rest}>
+            <option key={''}></option>
+            {itemSpecsList.map(spec => {
+                return (
+                    <option key={spec.id} value={spec.id}>
+                        {spec.name}
+                    </option>
+                );
             })}
         </FormInput>
     );
@@ -34,8 +35,8 @@ const SpecificationField: FC<Props> = ({refTables, itemTypeId, itemSpecIds, ...r
 
 const mapStateToProps = (state: any) => {
     return {
-        refTables: state.refTables,
-    }
+        itemsMap: state.refTables?.descItemTypes?.itemsMap as any,
+    };
 };
 
 export default connect(mapStateToProps)(SpecificationField);

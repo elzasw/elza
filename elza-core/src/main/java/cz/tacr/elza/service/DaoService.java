@@ -18,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -58,6 +60,7 @@ import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
+import cz.tacr.elza.repository.vo.DaoExternalSystemVO;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -134,7 +137,12 @@ public class DaoService {
     public List<ArrDao> findDaos(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                  @Nullable final ArrNode node, final Integer index, final Integer maxResults) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
-        return daoRepository.findByFundAndNodePaginating(fundVersion, node, index, maxResults);
+        Pageable pageable = PageRequest.of(index, maxResults);  
+        if (node == null) {
+            return daoRepository.findDettachedByFund(fundVersion.getFund(), pageable).toList();
+        } else {
+            return daoRepository.findAttachedByNode(node, pageable).toList();
+        }
     }
 
     /**
@@ -150,10 +158,16 @@ public class DaoService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrDao> findDaosByPackage(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId,
                                           final ArrDaoPackage daoPackage,
-                                          final Integer index, final Integer maxResults, final boolean unassigned) {
+                                          final Integer index, final Integer maxResults, 
+                                          final boolean unassigned) {
         Validate.notNull(fundId, "Verze AS musí být vyplněna");
         Validate.notNull(daoPackage, "DAO obal musí být vyplněn");
-        return daoRepository.findByFundAndPackagePaginating(fundId, daoPackage, index, maxResults, unassigned);
+        Pageable pageable = PageRequest.of(index, maxResults);  
+        if (unassigned) {
+            return daoRepository.findDettachedByPackage(daoPackage, pageable).toList();
+        } else {
+            return daoRepository.findByPackage(daoPackage, pageable).toList();
+        }
     }
 
     /**

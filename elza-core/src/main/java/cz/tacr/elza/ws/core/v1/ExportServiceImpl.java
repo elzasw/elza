@@ -13,6 +13,7 @@ import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.mail.util.ByteArrayDataSource;
 
+import cz.tacr.elza.service.GroovyService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -83,6 +84,9 @@ public class ExportServiceImpl implements ExportService {
 
     @Autowired
     StaticDataService staticDataService;
+
+    @Autowired
+    GroovyService groovyService;
 
     public ExportServiceImpl() {
 
@@ -170,7 +174,7 @@ public class ExportServiceImpl implements ExportService {
         } else
         if (CamUtils.CAM_SCHEMA.equals(format)) {
             // fomat CAM
-            exportBuilder = new CamExportBuilder(staticDataService);
+            exportBuilder = new CamExportBuilder(staticDataService, groovyService);
         } else {
             throw new ExportRequestException("Unrecognized schema: " + format);
         }

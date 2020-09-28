@@ -25,7 +25,7 @@ public class ArrDataBit extends ArrData {
         this.value = value;
     }
 
-    public ArrDataBit(ArrDataBit src) {
+    protected ArrDataBit(ArrDataBit src) {
         super(src);
         copyValue(src);
     }

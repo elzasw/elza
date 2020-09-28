@@ -1,24 +1,31 @@
 package cz.tacr.elza.service.cam;
 
+import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.schema.cam.BatchEntityRecordRevXml;
 import cz.tacr.cam.schema.cam.BatchInfoXml;
 import cz.tacr.cam.schema.cam.BatchUpdateErrorXml;
 import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
 import cz.tacr.cam.schema.cam.BatchUpdateSavedXml;
 import cz.tacr.cam.schema.cam.BatchUpdateXml;
+import cz.tacr.cam.schema.cam.EntityRecordRevInfoXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.ErrorMessageXml;
 import cz.tacr.cam.schema.cam.LongStringXml;
 import cz.tacr.cam.schema.cam.PartXml;
+import cz.tacr.cam.schema.cam.UpdatesFromXml;
+import cz.tacr.cam.schema.cam.UpdatesXml;
 import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApBindingSync;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
@@ -28,12 +35,14 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApBindingSyncRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -43,6 +52,7 @@ import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.vo.DataRef;
@@ -51,6 +61,7 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -112,6 +123,18 @@ public class CamService {
     @Autowired
     private AsyncRequestService asyncRequestService;
 
+    @Autowired
+    private GroovyService groovyService;
+
+    @Autowired
+    private CamConnector camConnector;
+
+    @Autowired
+    private ApBindingSyncRepository bindingSyncRepository;
+
+    private final String TRANSACTION_UUID = "91812cb8-3519-4f78-b0ec-df6e951e2c7c";
+    private final Integer PAGE_SIZE = 1000;
+
 
     public List<ApState> createAccessPoints(final ProcessingContext procCtx,
                                             final List<EntityXml> entities) {
@@ -167,8 +190,9 @@ public class CamService {
         }
         dataRecordRefRepository.saveAll(dataRecordRefList);
         if (CollectionUtils.isNotEmpty(dataRecordRefList)) {
-            List<Integer> accessPointIds = accessPointRepository.findAccessPointIdsByRefData(dataRecordRefList);
+            List<Integer> accessPointIds = ObjectListIterator.findIterable(dataRecordRefList, accessPointRepository::findAccessPointIdsByRefData);
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
+                ObjectListIterator.forEachPage(accessPointIds, accessPointRepository::updateToInit);
                 asyncRequestService.enqueue(accessPointIds);
             }
         }
@@ -390,14 +414,18 @@ public class CamService {
         batchUpdate.setInf(createBatchInfo(userDetail));
         CreateEntityBuilder ceb = new CreateEntityBuilder(this.externalSystemService,
                 this.staticDataService.getData(),
-                accessPoint, binding, state);
-        batchUpdate.getChanges().add(ceb.build(partList, itemMap));
+                accessPoint,
+                binding,
+                state,
+                this.groovyService);
+        batchUpdate.getChanges().add(ceb.build(partList, itemMap, apExternalSystem.getType().toString()));
         return batchUpdate;
     }
 
     public BatchUpdateXml createUpdateEntityBatchUpdate(final ApAccessPoint accessPoint,
                                                         final ApBindingState bindingState,
-                                                        final EntityXml entityXml) {
+                                                        final EntityXml entityXml,
+                                                        final ApExternalSystem apExternalSystem) {
         ApState state = accessPointService.getState(accessPoint);
         UserDetail userDetail = userService.getLoggedUserDetail();
 
@@ -413,9 +441,10 @@ public class CamService {
                 this.bindingItemRepository,
                 this.staticDataService.getData(),
                 state,
-                bindingState);
+                bindingState,
+                this.groovyService);
 
-        ueb.build(batchUpdate.getChanges(), entityXml, partList, itemMap, bindingParts);
+        ueb.build(batchUpdate.getChanges(), entityXml, partList, itemMap, bindingParts, apExternalSystem.getType().toString());
         return batchUpdate;
     }
 
@@ -424,6 +453,89 @@ public class CamService {
         batchInfo.setBatchUserInfo(new LongStringXml(userDetail.getUsername()));
         batchInfo.setBid(new UuidXml(UUID.randomUUID().toString()));
         return batchInfo;
+    }
+
+    @Transactional
+    public void synchronizeAccessPointsForExternalSystem(final ApExternalSystem externalSystem) {
+        ApBindingSync apBindingSync = bindingSyncRepository.findByApExternalSystem(externalSystem);
+        if (apBindingSync == null) {
+            apBindingSync = createApBindingSync(externalSystem);
+        }
+
+        List<EntityRecordRevInfoXml> entityRecordRevInfoXmls;
+        String lastTransaction;
+
+        try {
+            UpdatesFromXml updatesFromXml = camConnector.getUpdatesFrom(apBindingSync.getLastTransaction(), externalSystem.getCode());
+            if (updatesFromXml.getUps() != null && CollectionUtils.isNotEmpty(updatesFromXml.getUps().getRevisions())) {
+                entityRecordRevInfoXmls = updatesFromXml.getUps().getRevisions();
+                lastTransaction = updatesFromXml.getInf().getTo().getValue();
+            } else {
+                entityRecordRevInfoXmls = new ArrayList<>();
+                lastTransaction = updatesFromXml.getInf().getTo().getValue();
+                int count = updatesFromXml.getInf().getCnt().getValue().intValue();
+                int page = 1;
+
+                while (count > 0) {
+                    UpdatesXml updatesXml = camConnector.getUpdatesFromTo(apBindingSync.getLastTransaction(), lastTransaction, page, PAGE_SIZE, externalSystem.getCode());
+                    entityRecordRevInfoXmls.addAll(updatesXml.getRevisions());
+
+                    page++;
+                    count = count - PAGE_SIZE;
+                }
+            }
+        } catch (ApiException e) {
+            throw prepareSystemException(e);
+        }
+
+        synchronizeAccessPointsForExternalSystem(externalSystem, entityRecordRevInfoXmls);
+        apBindingSync.setLastTransaction(lastTransaction);
+        bindingSyncRepository.save(apBindingSync);
+    }
+
+    private void synchronizeAccessPointsForExternalSystem(ApExternalSystem externalSystem, List<EntityRecordRevInfoXml> entityRecordRevInfoXmls) {
+        List<String> recordCodes = getRecordCodes(entityRecordRevInfoXmls);
+        if (CollectionUtils.isNotEmpty(recordCodes)) {
+            List<ApBindingState> bindingStateList = externalSystemService.findByRecordCodesAndExternalSystem(recordCodes, externalSystem);
+
+            if (CollectionUtils.isNotEmpty(bindingStateList)) {
+                for (ApBindingState bindingState : bindingStateList) {
+                    ApState state = accessPointService.getState(bindingState.getAccessPoint());
+                    EntityXml entity;
+                    try {
+                        entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()), externalSystem.getCode());
+                    } catch (ApiException e) {
+                        throw prepareSystemException(e);
+                    }
+                    ProcessingContext procCtx = new ProcessingContext(state.getScope(), externalSystem);
+                    synchronizeAccessPoint(procCtx, state, entity, bindingState, true);
+                }
+            }
+        }
+    }
+
+    private List<String> getRecordCodes(List<EntityRecordRevInfoXml> entityRecordRevInfoXmls) {
+        List<String> recordCodes = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(entityRecordRevInfoXmls)) {
+            for (EntityRecordRevInfoXml entityRecordRevInfoXml : entityRecordRevInfoXmls) {
+                recordCodes.add(Long.toString(entityRecordRevInfoXml.getEid().getValue()));
+            }
+        }
+        return recordCodes;
+    }
+
+    private ApBindingSync createApBindingSync(final ApExternalSystem externalSystem) {
+        ApBindingSync apBindingSync = new ApBindingSync();
+        apBindingSync.setApExternalSystem(externalSystem);
+        apBindingSync.setLastTransaction(TRANSACTION_UUID);
+        return bindingSyncRepository.save(apBindingSync);
+    }
+
+    private AbstractException prepareSystemException(ApiException e) {
+        return new SystemException("Došlo k chybě při komunikaci s externím systémem.", e)
+                .set("responseBody", e.getResponseBody())
+                .set("responseCode", e.getCode())
+                .set("responseHeaders", e.getResponseHeaders());
     }
 
     public void synchronizeAccessPoint(ProcessingContext procCtx, ApState state, EntityXml entity,

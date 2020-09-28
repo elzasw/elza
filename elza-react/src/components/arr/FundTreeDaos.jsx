@@ -20,6 +20,7 @@ import {
 
 import {contextMenuShow} from 'actions/global/contextMenu.jsx';
 import FundTreeLazy from './FundTreeLazy';
+import './FundTreeDaos.scss';
 
 class FundTreeDaos extends AbstractReactComponent {
     constructor(props) {
@@ -103,6 +104,7 @@ class FundTreeDaos extends AbstractReactComponent {
         return (
             <FundTreeLazy
                 {...this.props}
+                className="fund-tree-daos"
                 cutLongLabels={true}
                 onOpenCloseNode={(node, expand) => {
                     expand

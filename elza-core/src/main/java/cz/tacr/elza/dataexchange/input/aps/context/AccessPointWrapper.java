@@ -2,15 +2,15 @@ package cz.tacr.elza.dataexchange.input.aps.context;
 
 import java.util.Collection;
 
-import cz.tacr.elza.domain.ApBindingState;
 import org.apache.commons.lang3.Validate;
+import org.drools.core.util.StringUtils;
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.service.ArrangementService;
@@ -114,7 +114,9 @@ public class AccessPointWrapper implements EntityWrapper {
     @Override
     public void beforeEntitySave(Session session) {
         // generate UUID
-        entity.setUuid(arrangementService.generateUuid());
+        if (StringUtils.isEmpty(entity.getUuid())) {
+            entity.setUuid(arrangementService.generateUuid());
+        }
     }
 
     @Override

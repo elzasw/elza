@@ -885,4 +885,40 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="20200922132200" author="slapa">
+        <update tableName="ap_access_point">
+            <column name="state" value="ERROR" />
+            <column name="error_description" value="Původní AP s TEMP state" />
+            <where>state='TEMP'</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="20200923154100" author="fantis">
+        <createTable tableName="ap_binding_sync">
+            <column name="binding_sync_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_ap_binding_sync"/>
+            </column>
+            <column name="last_transaction" type="nvarchar(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="external_system_id" type="int">
+                <constraints foreignKeyName="fk_binding_sync_external_system"
+                             referencedTableName="ap_external_system"
+                             referencedColumnNames="external_system_id"
+                             nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20200924104900" author="sergey.iryupin">
+      <addColumn tableName="ap_state">
+        <column name="replaced_by" type="int">
+            <constraints foreignKeyName="fk_ar_state_replaced_by"
+                         referencedTableName="ap_access_point"
+                         referencedColumnNames="access_point_id"
+                         nullable="true" />
+        </column>
+      </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

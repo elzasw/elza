@@ -367,20 +367,6 @@ public class ApController {
     }
 
     /**
-     * Smazání přístupového bodu.
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     */
-    @Transactional
-    @RequestMapping(value = "/{accessPointId}", method = RequestMethod.DELETE)
-    public void deleteAccessPoint(@PathVariable final Integer accessPointId) {
-        Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState apState = accessPointService.getState(accessPoint);
-        accessPointService.deleteAccessPoint(apState, true);
-    }
-
-    /**
      * Vrátí seznam typů rejstříku (typů hesel).
      *
      * @return  seznam typů rejstříku (typů hesel)
@@ -1007,7 +993,7 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        BatchUpdateXml batchUpdate = camService.createUpdateEntityBatchUpdate(accessPoint, bindingState, entity);
+        BatchUpdateXml batchUpdate = camService.createUpdateEntityBatchUpdate(accessPoint, bindingState, entity, apExternalSystem);
         try {
             BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
             camService.updateBindingAfterUpdate(batchUpdateResult, accessPoint, apExternalSystem);

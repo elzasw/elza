@@ -1,5 +1,8 @@
 package cz.tacr.elza.controller.config;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -433,6 +436,11 @@ public class ClientFactoryVO {
         return fundVO;
     }
 
+    public OffsetDateTime convertDateTime(LocalDateTime localDateTime) {
+        ZoneOffset offset = OffsetDateTime.now().getOffset();
+        return localDateTime.atOffset(offset);
+    }
+
     /**
      * Vytvoření ArrFund a načtení verzí.
      *
@@ -442,8 +450,14 @@ public class ClientFactoryVO {
      */
     public Fund createFund(final ArrFund arrFund, UserDetail user) {
         Assert.notNull(arrFund, "AS musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        Fund fund = mapper.map(arrFund, Fund.class);
+
+        Fund fund = new Fund();
+        fund.setId(arrFund.getFundId());
+
+        // get current offset
+        OffsetDateTime createDateTime = convertDateTime(arrFund.getCreateDate());
+        fund.setCreateDate(createDateTime);
+
         fund.setInstitutionIdentifier(arrFund.getInstitution().getInternalCode());
         fund.setFundNumber(arrFund.getFundNumber());
         fund.setName(arrFund.getName());
@@ -455,8 +469,10 @@ public class ClientFactoryVO {
 
     public FundDetail createFundDetail(final ArrFund arrFund, UserDetail user) {
         Assert.notNull(arrFund, "AS musí být vyplněn");
-        MapperFacade mapper = mapperFactory.getMapperFacade();
-        FundDetail fundDetail = mapper.map(arrFund, FundDetail.class);
+
+        FundDetail fundDetail = new FundDetail();
+        fundDetail.setId(arrFund.getFundId());
+        fundDetail.setCreateDate(convertDateTime(arrFund.getCreateDate()));
         fundDetail.setInstitutionIdentifier(arrFund.getInstitution().getInternalCode());
         fundDetail.setFundNumber(arrFund.getFundNumber());
         fundDetail.setName(arrFund.getName());

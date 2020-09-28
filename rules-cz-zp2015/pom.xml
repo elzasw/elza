@@ -28,7 +28,6 @@
             <!-- Create own package -->
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.6</version>
                 <executions>
                     <execution>
                         <id>rules-cz-zp2015</id> <!-- this is used for inheritance merges -->

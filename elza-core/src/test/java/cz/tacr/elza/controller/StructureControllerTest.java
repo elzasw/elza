@@ -12,12 +12,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.controller.vo.*;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrStructureDataVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.Fund;
+import cz.tacr.elza.controller.vo.RulStructureTypeVO;
+import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
@@ -219,7 +223,10 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertEquals(10, structureTypes.size()); // SRD_PACKET, STAT_ZASTUPCE, SRD_*
 
         // check name and id
-        RulStructureTypeVO structureType = structureTypes.get(7);
+        RulStructureTypeVO structureType = structureTypes.stream()
+                .filter(
+                        st -> st.getCode().equals(STRUCTURE_TYPE_CODE))
+                .findFirst().get();
         assertEquals(STRUCTURE_TYPE_CODE, structureType.getCode());
         assertNotNull(structureType.getId());
         assertNotNull(structureType.getName());

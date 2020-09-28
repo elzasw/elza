@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.14.0.final using JasperReports Library version 6.14.0-2ab0d8625be255bf609c78e1181801213e51db8f  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="registryGeo" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="3f43110c-223f-408d-9478-6c840e9ddba1">
+<!-- Created with Jaspersoft Studio version 6.13.0.final using JasperReports Library version 6.13.0-46ada4d1be8f3c5985fd0b6146f3ed44caed6f05  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="registryGeo" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="3f43110c-223f-408d-9478-6c840e9ddba1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
 	<style name="Text" isDefault="true" hTextAlign="Justified" fontName="DejaVu Sans" fontSize="10"/>
 	<style name="Heading 1" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="16" isBold="true"/>
 	<style name="Heading 2" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="12" isBold="true" isItalic="false"/>
 	<style name="Heading 3" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="10" isBold="true" isItalic="false"/>
+	<style name="HeaderText" forecolor="#999999" fontName="DejaVu Sans" fontSize="8"/>
 	<parameter name="registryName" class="java.lang.String"/>
 	<queryString>
 		<![CDATA[]]>
@@ -16,10 +26,10 @@
 		<fieldDescription><![CDATA[_THIS]]></fieldDescription>
 	</field>
 	<title>
-		<band height="25">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+		<band height="50">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField bookmarkLevel="1">
-				<reportElement style="Heading 1" x="0" y="0" width="455" height="25" uuid="1ab7fb0a-bb11-4204-b817-2063d8908b56">
+				<reportElement style="Heading 1" x="0" y="25" width="455" height="25" uuid="1ab7fb0a-bb11-4204-b817-2063d8908b56">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
@@ -96,16 +106,17 @@
 		</band>
 	</detail>
 	<pageFooter>
-		<band height="29" splitType="Stretch">
+		<band height="15" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField evaluationTime="Master">
-				<reportElement style="Text" x="0" y="10" width="455" height="19" uuid="ee5be658-0c4c-473d-8395-b7e5b2c24b1d">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				<reportElement style="HeaderText" x="0" y="1" width="455" height="14" uuid="d4b5f7e0-b184-417e-badd-a3a50a5984c2">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<box>
-					<topPen lineWidth="1.0"/>
+					<topPen lineWidth="0.5" lineColor="#CCCCCC"/>
 				</box>
-				<textElement textAlignment="Right"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
 				<textFieldExpression><![CDATA[$V{MASTER_CURRENT_PAGE}]]></textFieldExpression>
 			</textField>
 		</band>

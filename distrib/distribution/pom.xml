@@ -22,9 +22,9 @@
 				<!-- Set dependency on all partialy generated ZIP files -->
 				<dependency>
 					<groupId>cz.tacr.elza</groupId>
-					<artifactId>elza-war</artifactId>
+					<artifactId>elza-tomcat</artifactId>
 					<version>${project.parent.version}</version>
-					<type>war</type>
+<!--					<type>jar</type>-->
 <!--					<classifier>distribution</classifier>-->
 				</dependency>
 				<dependency>

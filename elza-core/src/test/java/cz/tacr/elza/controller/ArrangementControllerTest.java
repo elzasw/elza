@@ -1,5 +1,11 @@
 package cz.tacr.elza.controller;
 
+import static cz.tacr.elza.repository.ExceptionThrow.output;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,21 +25,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
-import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
-import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
-import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
-import cz.tacr.elza.controller.vo.Fund;
-import cz.tacr.elza.controller.vo.FundDetail;
-import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.UpdateFund;
-import cz.tacr.elza.controller.vo.nodes.*;
-import cz.tacr.elza.domain.RulItemSpec;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,29 +39,40 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.ArrangementController.CopySiblingResult;
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
-import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
+import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemBitVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -74,9 +80,6 @@ import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.utils.CsvUtils;
-
-import static cz.tacr.elza.repository.ExceptionThrow.output;
-import static org.junit.Assert.*;
 
 public class ArrangementControllerTest extends AbstractControllerTest {
 
@@ -90,7 +93,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     private static final String JSON_TABLE_CSV = "jsontable/jsontable.csv";
 
     public static final String NAME_AP = "UseCase ščřžý";
-    public static final String RENAME_AP = "Renamed UseCase";
     public static final Integer LIMIT = 100;
 
     // maximální počet položek pro načtení
@@ -102,10 +104,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // vytvoření
         Fund fund = createdFund();
 
-        // přejmenování
         helperTestService.waitForWorkers();
-        updatedFund(fund);
-
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
         // uzavření verze
@@ -954,29 +953,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         return newFundVersion;
     }
 
-    /**
-     * Upravení AP.
-     *
-     * @param fund archivní pomůcka
-     */
-    private FundDetail updatedFund(final Fund fund) {
-        UpdateFund updateFund = new UpdateFund();
-        updateFund.setFundNumber(fund.getFundNumber());
-        updateFund.setInstitutionIdentifier(fund.getInstitutionIdentifier());
-        updateFund.setInternalCode(fund.getInternalCode());
-        updateFund.setMark(fund.getMark());
-        updateFund.setName(RENAME_AP);
-        // fixme: na openapi nemáme nikde kód pravidel u fundu...
-        List<RulRuleSetVO> ruleSets = getRuleSets();
-        RulRuleSetVO ruleSet = ruleSets.get(1);
-        updateFund.setRuleSetCode(ruleSet.getCode());
-        updateFund.setUnitdate(fund.getUnitdate());
-        FundDetail updatedFund = updateFundV1(fund.getId(), updateFund);
-        // "Jméno AP musí být stejné"
-        assertEquals(RENAME_AP, updatedFund.getName());
-        return updatedFund;
-    }
-
     private void deleteFund(final Fund fund) {
         deleteFund(fund.getId());
 
@@ -1262,6 +1238,27 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         deleteRefTemplate(refTemplateVO.getId());
 
+    }
+
+
+    @Test
+    public void createDescItemBit() {
+        Fund fundSource = createdFund();
+        ArrFundVersionVO fundVersion = getOpenVersion(fundSource);
+
+        List<ArrNodeVO> nodesSource = createLevels(fundVersion);
+        ArrNodeVO node1 = nodesSource.get(1);
+
+        // vytvoření itemu typu bit
+        RulDescItemTypeExtVO type = findDescItemTypeByCode("ZVEREJNENO");
+        ArrItemVO descItem = buildDescItem(type.getCode(), null, true, null, null);
+        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node1,
+                type);
+        ArrItemVO descItemCreated = descItemResult.getItem();
+
+        assertEquals(((ArrItemBitVO) descItem).isValue(), ((ArrItemBitVO) descItemCreated).isValue());
+        assertNotNull(descItemCreated.getPosition());
+        assertNotNull(descItemCreated.getDescItemObjectId());
     }
 
 }
