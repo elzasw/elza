@@ -2248,6 +2248,7 @@ public class PackageService {
             exportExternalIdTypes(rulPackage, zos);
             exportIssueTypes(rulPackage, zos);
             exportIssueStates(rulPackage, zos);
+            exportPartTypes(rulPackage, zos);
         }
     }
 
@@ -2913,6 +2914,75 @@ public class PackageService {
             actionRecommended.setOutputType(rulActionRecommended.getOutputType().getCode());
             actionRecommendedList.add(actionRecommended);
         }
+    }
+
+    /**
+     * Exportování typů částí přístupových bodů
+     *
+     * @param rulPackage balíček
+     * @param zos stream zip souboru
+     * @throws IOException
+     */
+    private void exportPartTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        List<RulPartType> rulPartTypes = partTypeRepository.findByRulPackage(rulPackage);
+
+        if (CollectionUtils.isNotEmpty(rulPartTypes)) {
+            PartTypes partTypes = new PartTypes();
+            List<PartType> partTypeList = new ArrayList<>(rulPartTypes.size());
+            partTypes.setPartTypes(partTypeList);
+
+            for (RulPartType rulPartType : rulPartTypes) {
+                PartType partType = new PartType();
+                convertPartType(rulPartType, partType);
+                partTypeList.add(partType);
+            }
+            processRulPartTypesChildPart(rulPartTypes, partTypeList);
+
+            addObjectToZipFile(partTypes, zos, PART_TYPE_XML);
+        }
+    }
+
+    /**
+     * Převod DAO na VO typů částí přístupových bodů
+     *
+     * @param rulPartType DAO typu části přístupových bodů
+     * @param partType VO typu části přístupových bodů
+     */
+    private void convertPartType(RulPartType rulPartType, PartType partType) {
+        partType.setCode(rulPartType.getCode());
+        partType.setName(rulPartType.getName());
+    }
+
+    private void processRulPartTypesChildPart(List<RulPartType> rulPartTypes, List<PartType> partTypes) {
+        if (CollectionUtils.isNotEmpty(rulPartTypes) && CollectionUtils.isNotEmpty(partTypes)) {
+            for (RulPartType rulPartType : rulPartTypes) {
+                if (rulPartType.getChildPart() != null) {
+                    PartType partType = findPartTypeByCode(partTypes, rulPartType.getCode());
+                    if (partType == null) {
+                        throw new IllegalStateException("Nenalezen typ části s kódem: " + rulPartType.getCode());
+                    }
+
+                    PartType childPartType = findPartTypeByCode(partTypes, rulPartType.getChildPart().getCode());
+                    if (childPartType == null) {
+                        throw new IllegalStateException("Nenalezen typ podřízené části s kódem: " + rulPartType.getChildPart().getCode());
+                    }
+
+                    partType.setChildPart(childPartType.getCode());
+                }
+            }
+        }
+    }
+
+    @Nullable
+    private PartType findPartTypeByCode(final List<PartType> partTypes, final String code) {
+        if (CollectionUtils.isNotEmpty(partTypes)) {
+            for (PartType partType : partTypes) {
+                if (partType.getCode().equals(code)) {
+                    return partType;
+                }
+            }
+        }
+        return null;
     }
 
     /**
