@@ -26,7 +26,6 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.domain.ApScope;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.Validate;
@@ -1065,15 +1064,14 @@ public class RuleService {
 
     @Transactional
     public ModelAvailable executeAvailable(final ApAccessPointCreateVO form) {
-        if (form == null || form.getTypeId() == null || form.getPartForm() == null || form.getScopeId() == null) {
-            throw new IllegalArgumentException("Třída entity, část a oblast musí být vyplněny");
+        if (form == null || form.getTypeId() == null || form.getPartForm() == null) {
+            throw new IllegalArgumentException("Třída entity a část musí být vyplněny");
         }
 
         StaticDataProvider sdp = staticDataService.getData();
 
         Integer apTypeId = form.getTypeId();
         Integer accessPointId = form.getAccessPointId();
-        ApScope scope = accessPointService.getScope(form.getScopeId());
 
         Integer preferredPartId = null;
         List<Part> parts = new ArrayList<>();
@@ -1139,14 +1137,13 @@ public class RuleService {
 
         ModelAvailable modelAvailable = new ModelAvailable(ae, part, modelItems, modelItemTypes);
 
-        return executeAvailable(PartType.fromValue(partForm.getPartTypeCode()), modelAvailable, scope.getRulRuleSet());
+        return executeAvailable(PartType.fromValue(partForm.getPartTypeCode()), modelAvailable);
     }
 
     @Transactional
     public ApValidationErrorsVO executeValidation(final Integer accessPointId) {
         ApAccessPoint apAccessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState apState = accessPointService.getState(apAccessPoint);
-        RulRuleSet rulRuleSet = apState.getScope().getRulRuleSet();
         List<ApPart> parts = partService.findPartsByAccessPoint(apAccessPoint);
         Integer preferredPartId = apAccessPoint.getPreferredPart().getPartId();
         List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
@@ -1174,7 +1171,7 @@ public class RuleService {
 
         List<AbstractItem> items = createAbstractItemList(partList);
         ModelValidation modelValidation = new ModelValidation(ap, geoModel, createModelParts(indexMap), new ApValidationErrors(), items);
-        ModelValidation validationResult = executeValidation(modelValidation, rulRuleSet);
+        ModelValidation validationResult = executeValidation(modelValidation);
         // validace opakovatelnosti partů
         validatePartRepeatability(validationResult);
         // validace opakovatelnosti indexů přes party se stejným part typem
@@ -1188,7 +1185,7 @@ public class RuleService {
 
         for (Part part : ap.getParts()) {
             ModelAvailable modelAvailable = new ModelAvailable(ap, part, part.getItems(), createModelItemTypes());
-            ModelAvailable availableResult = executeAvailable(PartType.fromValue(part.getType().value()), modelAvailable, rulRuleSet);
+            ModelAvailable availableResult = executeAvailable(PartType.fromValue(part.getType().value()), modelAvailable);
 
             // validace možných itemů
             List<String> availableErrors = validateAvailableItems(availableResult, part);
@@ -1767,8 +1764,7 @@ public class RuleService {
     }
 
     private ModelAvailable executeAvailable(@NotNull final PartType partType,
-                                            @NotNull final ModelAvailable modelAvailable,
-                                            @NotNull final RulRuleSet rulRuleSet) {
+                                           @NotNull final ModelAvailable modelAvailable) {
         StaticDataProvider sdp = staticDataService.getData();
         DrlType drlType = DrlType.AVAILABLE_ITEMS;
 
@@ -1786,8 +1782,9 @@ public class RuleService {
         executeDrls.add(drlType.value() + "/" + partType.value());
         executeDrls.add(drlType.value());
 
-        RuleSet ruleSet = sdp.getRuleSetByCode(rulRuleSet.getCode());
-        List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSet);
+        // TODO: change to only one ruleset
+        List<RuleSet> ruleSets = sdp.getRuleSets();
+        List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSets);
 
         try {
             availableItemsRules.execute(rules, modelAvailable);
@@ -1798,8 +1795,7 @@ public class RuleService {
         return modelAvailable;
     }
 
-    private ModelValidation executeValidation(@NotNull final ModelValidation modelValidation,
-                                              @NotNull final RulRuleSet rulRuleSet) {
+    private ModelValidation executeValidation(@NotNull final ModelValidation modelValidation) {
         StaticDataProvider sdp = staticDataService.getData();
         DrlType drlType = DrlType.VALIDATION;
 
@@ -1821,15 +1817,19 @@ public class RuleService {
         }
         executeDrls.add(drlType.value());
 
-        RuleSet ruleSet = sdp.getRuleSetByCode(rulRuleSet.getCode());
-        List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSet);
+        // TODO: change to only one ruleset
+        List<RuleSet> ruleSets = sdp.getRuleSets();
+        List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSets);
         new ArrayList<>(executeDrls.size());
         for (String extCode : executeDrls) {
-            RuleSetExtension ruleSetExt = ruleSet.getExtByCode(extCode);
-            if (ruleSetExt != null) {
-                List<RulExtensionRule> extRules = ruleSetExt
-                        .getRulesByType(RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
-                rules.addAll(extRules);
+            // check all rules (invalid, only Ap related rules should be checked
+            for (RuleSet ruleSet : sdp.getRuleSets()) {
+                RuleSetExtension ruleSetExt = ruleSet.getExtByCode(extCode);
+                if (ruleSetExt != null) {
+                    List<RulExtensionRule> extRules = ruleSetExt
+                            .getRulesByType(RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
+                    rules.addAll(extRules);
+                }
             }
         }
 
@@ -1843,16 +1843,19 @@ public class RuleService {
     }
 
     private List<RulExtensionRule> prepareExtRuleList(@NotNull final ArrayList<String> executeDrls,
-                                                      @NotNull final RuleSet ruleSet) {
+                                                      @NotNull final List<RuleSet> ruleSets) {
         // add in reverse order
         List<RulExtensionRule> rules = new ArrayList<>(executeDrls.size());
         for (int pos = executeDrls.size() - 1; pos >= 0; pos--) {
             String extCode = executeDrls.get(pos);
-            RuleSetExtension ruleSetExt = ruleSet.getExtByCode(extCode);
-            if (ruleSetExt != null) {
-                List<RulExtensionRule> extRules = ruleSetExt
-                        .getRulesByType(RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
-                rules.addAll(extRules);
+            // check all rules (invalid, only Ap related rules should be checked
+            for (RuleSet ruleSet : ruleSets) {
+                RuleSetExtension ruleSetExt = ruleSet.getExtByCode(extCode);
+                if (ruleSetExt != null) {
+                    List<RulExtensionRule> extRules = ruleSetExt
+                            .getRulesByType(RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
+                    rules.addAll(extRules);
+                }
             }
         }
         return rules;
