@@ -53,7 +53,6 @@ public interface ApAccessPointRepository
             " WHERE rr.record.accessPointId = ?1")
     List<Integer> findItemIdByAccessPointIdOverDataRecordRef(Integer accessPointId);
 
-
     @Query("SELECT ap.accessPointId FROM ap_access_point ap " +
             "JOIN ApPart part ON ap.accessPointId = part.accessPoint.accessPointId " +
             "JOIN ApItem item ON part.partId = item.part.partId " +
@@ -75,4 +74,23 @@ public interface ApAccessPointRepository
     @Modifying
     @Query("UPDATE ap_access_point SET state = 'INIT' WHERE accessPointId IN :accessPointIds AND state <> 'INIT'")
     void updateToInit(@Param("accessPointIds") Collection<Integer> accessPointIds);
+
+    @Query(value = 
+            "SELECT ap.uuid FROM ap_state s" + 
+            "  JOIN ap_access_point ap ON s.access_point_id = ap.access_point_id" + 
+            "  WHERE s.create_change_id > :fromId OR s.delete_change_id > :fromId" + 
+            " UNION " + 
+            "SELECT ap.uuid FROM ap_part p" + 
+            "  JOIN ap_access_point ap ON p.access_point_id = ap.access_point_id" + 
+            "  WHERE p.create_change_id > :fromId OR p.delete_change_id > :fromId" + 
+            " UNION " + 
+            "SELECT ap.uuid FROM ap_item i" + 
+            "  JOIN ap_part p ON i.part_id = p.part_id" + 
+            "  JOIN ap_access_point ap ON p.access_point_id = ap.access_point_id" + 
+            "  WHERE i.create_change_id > :fromId OR i.delete_change_id > :fromId" + 
+            " UNION " + 
+            "SELECT ap.uuid FROM ap_binding_state b" + 
+            "  JOIN ap_access_point ap ON b.access_point_id = ap.access_point_id" + 
+            "  WHERE b.create_change_id > :fromId OR b.delete_change_id > :fromId", nativeQuery = true)
+    List<String> findAccessPointUuidChangedOrDeleted(Integer fromId);
 }
