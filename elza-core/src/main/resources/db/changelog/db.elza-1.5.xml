@@ -921,4 +921,9 @@
       </addColumn>
     </changeSet>
 
+    <changeSet id="20200929022654" author="ppyt">
+        <delete tableName="ui_settings">
+            <where>settings_type='PARTY_PIN'</where>
+        </delete>
+    </changeSet>
 </databaseChangeLog>
