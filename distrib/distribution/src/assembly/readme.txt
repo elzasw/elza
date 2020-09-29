@@ -10,8 +10,14 @@ Podporované systémy:
  * Postgresql
  * Microsoft SQL Server
 
-V adresáři `server` je uložen hlavní soubor JAR a vzorová konfigurace.
-Do souboru JAR je vložen webový server a aplikaci je možné spouštět
+Standardní binární distribuce obsahuje:
+
+ - soubor :file:`readme.txt` - stručný popis instalace
+ - adresář :file:`packages` - výchozí data pro aplikaci
+ - adresář :file:`server` - hlavní spustitelný soubor :file:`elza-tomcat-verze.jar` 
+   a vzorovou konfiguraci
+
+Součástí hlavního souboru JAR je vložen webový server a aplikaci je možné spouštět
 bez nutnosti instalace a konfigurace samostatného aplikačního serveru.
 
 Podporované možnosti instalace jsou:
