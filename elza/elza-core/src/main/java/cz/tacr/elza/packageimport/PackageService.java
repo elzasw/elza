@@ -32,6 +32,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.repository.ScopeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -164,7 +166,6 @@ import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.repository.WfIssueStateRepository;
 import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.search.IndexWorkProcessor;
-import cz.tacr.elza.service.AccessPointGeneratorService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.CacheService;
 import cz.tacr.elza.service.SettingsService;
@@ -432,7 +433,7 @@ public class PackageService {
     private AsyncRequestService asyncRequestService;
 
     @Autowired
-    private AccessPointGeneratorService accessPointGeneratorService;
+    private ScopeRepository scopeRepository;
 
     private Set<Integer> accessPoints;
 
@@ -1843,6 +1844,9 @@ public class PackageService {
         List<RulRuleSet> rulRuleSets = ruleSetRepository.findByRulPackage(rulPackage);
         List<RulRuleSet> rulRuleSetsNew = new ArrayList<>();
 
+        RulRuleSet entityRuleSet = null;
+
+
         if (xmlRulesets != null && !CollectionUtils.isEmpty(xmlRulesets.getRuleSets())) {
             for (RuleSetXml ruleSet : xmlRulesets.getRuleSets()) {
                 // find ruleset in DB
@@ -1853,6 +1857,9 @@ public class PackageService {
 
                 convertRuleSet(rulPackage, ruleSet, item);
                 rulRuleSetsNew.add(item);
+                if (item.getRuleType() == RulRuleSet.RuleType.ENTITY) {
+                    entityRuleSet = item;
+                }
 
                 RuleUpdateContext ruc = new RuleUpdateContext(RuleState.UPDATE, pkgCtx,
                         item, this.resourcePathResolver);
@@ -1862,6 +1869,17 @@ public class PackageService {
 
         // Uložení pravidel
         rulRuleSetsNew = ruleSetRepository.saveAll(rulRuleSetsNew);
+
+        //nastavení pravidel pro entity u oblastí, které žádné nemají
+        if (entityRuleSet != null) {
+            List<ApScope> scopes = scopeRepository.findScopeByRuleSetIdIsNull();
+            if (CollectionUtils.isNotEmpty(scopes)) {
+                for (ApScope scope : scopes) {
+                    scope.setRulRuleSet(entityRuleSet);
+                }
+                scopeRepository.saveAll(scopes);
+            }
+        }
 
         // Naplnění pravidel ke smazání, které již nejsou v xml
         for (RulRuleSet dbRuleset : rulRuleSets) {
