@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.service.GroovyService;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -33,6 +34,7 @@ abstract public class CamXmlBuilder {
 
     protected final StaticDataProvider sdp;
     protected final ApAccessPoint accessPoint;
+    protected final ApScope scope;
 
     protected final EntityRefHandler entityRefHandler;
     protected final GroovyService groovyService;
@@ -42,11 +44,13 @@ abstract public class CamXmlBuilder {
     CamXmlBuilder(final StaticDataProvider sdp,
                   final ApAccessPoint accessPoint,
                   final EntityRefHandler entityRefHandler,
-                  final GroovyService groovyService) {
+                  final GroovyService groovyService,
+                  final ApScope scope) {
         this.sdp = sdp;
         this.accessPoint = accessPoint;
         this.entityRefHandler = entityRefHandler;
         this.groovyService = groovyService;
+        this.scope = scope;
     }
 
     protected NewItemsXml createNewItems(ApBindingItem changedPart, Collection<ApItem> itemList, String externalSystemTypeCode) {
@@ -128,7 +132,7 @@ abstract public class CamXmlBuilder {
     public void createXmlItems(Collection<ApItem> itemList, List<Object> trgList, String externalSystemTypeCode) {
         for (ApItem item : itemList) {
             String uuid = UUID.randomUUID().toString();
-            Object i = CamXmlFactory.createItem(sdp, item, uuid, entityRefHandler, groovyService, externalSystemTypeCode);
+            Object i = CamXmlFactory.createItem(sdp, item, uuid, entityRefHandler, groovyService, externalSystemTypeCode, scope);
             if (i != null) {
                 onItemCreated(item, uuid);
                 trgList.add(i);

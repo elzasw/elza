@@ -154,6 +154,8 @@ public class RulArrangementRule {
         CONFORMITY_INFO,
         CONFORMITY_IMPACT,
         ATTRIBUTE_TYPES,
-        NEW_LEVEL
+        NEW_LEVEL,
+        AP_MAPPING_TYPE,
+        AP_MAPPING_SPEC
     }
 }

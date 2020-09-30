@@ -417,7 +417,8 @@ public class CamService {
                 accessPoint,
                 binding,
                 state,
-                this.groovyService);
+                this.groovyService,
+                state.getScope());
         batchUpdate.getChanges().add(ceb.build(partList, itemMap, apExternalSystem.getType().toString()));
         return batchUpdate;
     }
@@ -442,7 +443,8 @@ public class CamService {
                 this.staticDataService.getData(),
                 state,
                 bindingState,
-                this.groovyService);
+                this.groovyService,
+                state.getScope());
 
         ueb.build(batchUpdate.getChanges(), entityXml, partList, itemMap, bindingParts, apExternalSystem.getType().toString());
         return batchUpdate;

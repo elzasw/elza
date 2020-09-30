@@ -1,4 +1,4 @@
-package scripts
+package rul_rule_set.CAM.rules
 
 import cz.tacr.elza.api.ApExternalSystemType
 import groovy.transform.Field
