@@ -105,7 +105,8 @@ public class CamExportBuilder implements ExportBuilder {
                 staticDataService.getData(),
                 apInfo.getAccessPoint(),
                 apInfo.getApState(),
-                groovyService);
+                groovyService,
+                apInfo.getApState().getScope());
 
         Map<Integer, Collection<ApItem>> items = apInfo.getItems();
         final Map<Integer, List<ApItem>> itemsConv = new HashMap<>();

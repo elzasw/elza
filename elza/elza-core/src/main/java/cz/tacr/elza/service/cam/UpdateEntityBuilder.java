@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.service.GroovyService;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -49,8 +50,9 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
                                StaticDataProvider sdp,
                                final ApState state,
                                ApBindingState bindingState,
-                               GroovyService groovyService) {
-        super(sdp, bindingState.getAccessPoint(), new BindingRecordRefHandler(bindingState.getBinding()), groovyService);
+                               GroovyService groovyService,
+                               ApScope scope) {
+        super(sdp, bindingState.getAccessPoint(), new BindingRecordRefHandler(bindingState.getBinding()), groovyService, scope);
         this.bindingItemRepository = bindingItemRepository;
         this.bindingState = bindingState;
         this.apState = state;
@@ -64,7 +66,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         updateItemsXml.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
 
         for (ApBindingItem bindingItem : changedItems) {
-            Object i = CamXmlFactory.createItem(sdp, bindingItem.getItem(), bindingItem.getValue(), entityRefHandler, groovyService, externalSystemTypeCode);
+            Object i = CamXmlFactory.createItem(sdp, bindingItem.getItem(), bindingItem.getValue(), entityRefHandler, groovyService, externalSystemTypeCode, scope);
             if (i != null) {
                 updateItemsXml.getItems().add(i);
             }

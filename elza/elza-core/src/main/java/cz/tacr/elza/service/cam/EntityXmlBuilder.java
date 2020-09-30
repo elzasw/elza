@@ -18,6 +18,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.SystemException;
@@ -30,8 +31,9 @@ public class EntityXmlBuilder extends CamXmlBuilder {
     public EntityXmlBuilder(StaticDataProvider sdp,
                             ApAccessPoint accessPoint,
                             ApState apState,
-                            GroovyService groovyService) {
-        super(sdp, accessPoint, new ApUuidRecordRefHandler(), groovyService);
+                            GroovyService groovyService,
+                            ApScope scope) {
+        super(sdp, accessPoint, new ApUuidRecordRefHandler(), groovyService, scope);
         this.apState = apState;
     }
 

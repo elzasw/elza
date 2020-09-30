@@ -1,0 +1,10 @@
+<arrangement-rules>
+    <arrangement-rule filename="ItemTypeMap.groovy">
+        <rule-type>AP_MAPPING_TYPE</rule-type>
+        <priority>100</priority>
+    </arrangement-rule>
+    <arrangement-rule filename="ItemSpecMap.groovy">
+        <rule-type>AP_MAPPING_SPEC</rule-type>
+        <priority>100</priority>
+    </arrangement-rule>
+</arrangement-rules>
