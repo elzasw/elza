@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
 import cz.tacr.elza.domain.ApIndex;
@@ -273,7 +274,7 @@ public class ApFactory {
             Map<Integer, List<ApItem>> items = itemRepository.findValidItemsByAccessPoint(ap).stream()
                     .collect(Collectors.groupingBy(i -> i.getPartId()));
 
-            Map<Integer, List<ApIndex>> indices = indexRepository.findByPartsAndIndexType(parts, DISPLAY_NAME).stream()
+            Map<Integer, List<ApIndex>> indices = ObjectListIterator.findIterable(parts, p -> indexRepository.findByPartsAndIndexType(p, DISPLAY_NAME)).stream()
                     .collect(Collectors.groupingBy(i -> i.getPart().getPartId()));
 
             //comments
@@ -460,7 +461,8 @@ public class ApFactory {
         Map<Integer, ApState> apStateMap = stateRepository.findLastByAccessPoints(accessPoints).stream()
                 .collect(Collectors.toMap(o -> o.getAccessPointId(), Function.identity()));
 
-        Map<Integer, ApIndex> nameMap = indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(accessPoints, DISPLAY_NAME).stream()
+        Map<Integer, ApIndex> nameMap = ObjectListIterator.findIterable(accessPoints,
+                ap -> indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(ap, DISPLAY_NAME)).stream()
                 .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
 
         for (ApAccessPoint accessPoint : accessPoints) {

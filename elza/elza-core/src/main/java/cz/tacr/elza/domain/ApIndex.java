@@ -15,6 +15,9 @@ import javax.persistence.ManyToOne;
 @Entity(name = "ap_index")
 public class ApIndex {
 
+    public static final String VALUE = "value";
+    public static final String INDEX_TYPE = "indexType";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)

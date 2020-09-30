@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
 import cz.tacr.elza.domain.ApIndex;
@@ -1610,7 +1611,13 @@ public class AccessPointService {
 //        PageRequest pageRequest = new PageRequest(from, max);
 //        Page<ApState> pageResult = stateRepository.findAll(stateSpecification, pageRequest);
 
-        return searchFilterFactory.createArchiveEntityResultListVO(stateList, stateList.size());
+        final List<ApAccessPoint> accessPoints = stateList.stream()
+                .map(ApState::getAccessPoint)
+                .collect(Collectors.toList());
+
+        final Map<Integer, ApIndex> nameMap = findPreferredPartIndexMap(accessPoints);
+
+        return searchFilterFactory.createArchiveEntityResultListVO(stateList, stateList.size(), nameMap);
     }
 
     public Resource exportCoordinates(FileType fileType, Integer itemId) {
@@ -1780,8 +1787,13 @@ public class AccessPointService {
     }
 
     public Map<Integer, ApIndex> findPreferredPartIndexMap(List<ApAccessPoint> accessPoints) {
-        return indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(accessPoints, DISPLAY_NAME).stream()
+        return ObjectListIterator.findIterable(accessPoints,
+                ap -> indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(ap, DISPLAY_NAME)).stream()
                 .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
+    }
+
+    public ApIndex findPreferredPartIndex(ApAccessPoint accessPoint) {
+        return indexRepository.findPreferredPartIndexByAccessPointAndIndexType(accessPoint, DISPLAY_NAME);
     }
 
     /**

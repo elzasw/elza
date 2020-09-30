@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.repository.ApIndexRepository;
 import org.apache.commons.lang.Validate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.pdfbox.io.MemoryUsageSetting;
@@ -86,6 +87,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                           ApPartRepository partRepository,
                           ApItemRepository itemRepository,
                           ApBindingStateRepository bindingStateRepository,
+                          ApIndexRepository indexRepository,
                           EntityManager em,
                           DmsService dmsService,
                           DaoLinkRepository daoLinkRepository) {
@@ -99,7 +101,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                 fundTreeProvider, nodeCacheService, institutionRepository,
                 apStateRepository, bindingRepository,
                 pdfAttProvider, structObjRepos, structItemRepos, partRepository, itemRepository, bindingStateRepository,
-                daoLinkRepository);
+                indexRepository, daoLinkRepository);
         pdfAttProvider.setOutput(outputModel);
     }
 
