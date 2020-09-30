@@ -8,6 +8,7 @@ public class GroovyResult {
 
     public static final String PT_PREFER_NAME = "PT_PREFER_NAME";
     public static final String DISPLAY_NAME = "DISPLAY_NAME";
+    public static final String DISPLAY_NAME_LOWER = "DISPLAY_NAME_LOWER";
 
     private GroovyKeyValue keyValue;
 
@@ -27,6 +28,7 @@ public class GroovyResult {
 
     public void setDisplayName(@NotNull final String value) {
         indexes.put(DISPLAY_NAME, value);
+        indexes.put(DISPLAY_NAME_LOWER, value.toLowerCase());
     }
 
     public GroovyKeyValue getKeyValue() {

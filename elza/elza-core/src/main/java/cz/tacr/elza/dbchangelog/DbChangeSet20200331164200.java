@@ -1047,11 +1047,10 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
     private Integer createApPart(Integer accessPointId, Integer rulPartTypeId, Integer partParentId) throws DatabaseException, SQLException {
         Integer partId = nextId("ap_part", "part_id");
-        PreparedStatement ps = conn.prepareStatement("INSERT INTO ap_part(part_id, value, error_description, state, part_type_id, parent_part_id, access_point_id, create_change_id, delete_change_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);");
+        PreparedStatement ps = conn.prepareStatement("INSERT INTO ap_part(part_id, error_description, state, part_type_id, parent_part_id, access_point_id, create_change_id, delete_change_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
         int i = 1;
         ps.setInt(i++, partId);
-        ps.setString(i++, "Bude generováno");
         ps.setNull(i++, Types.VARCHAR);
         ps.setString(i++, "OK");
         ps.setInt(i++, rulPartTypeId);

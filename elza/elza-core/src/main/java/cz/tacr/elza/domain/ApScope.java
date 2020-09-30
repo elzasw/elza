@@ -41,6 +41,13 @@ public class ApScope implements IApScope {
     @Column(insertable = false, updatable = false)
     private Integer languageId;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
+    @JoinColumn(name = "ruleSetId")
+    private RulRuleSet rulRuleSet;
+
+    @Column(insertable = false, updatable = false)
+    private Integer ruleSetId;
+
     @Override
     public Integer getScopeId() {
         return scopeId;
@@ -98,6 +105,19 @@ public class ApScope implements IApScope {
     
     public Integer getLanguageId() {
         return languageId;
+    }
+
+    public RulRuleSet getRulRuleSet() {
+        return rulRuleSet;
+    }
+
+    public void setRulRuleSet(RulRuleSet rulRuleSet) {
+        this.rulRuleSet = rulRuleSet;
+        this.ruleSetId = rulRuleSet != null ? rulRuleSet.getRuleSetId() : null;
+    }
+
+    public Integer getRuleSetId() {
+        return ruleSetId;
     }
 
     @Override

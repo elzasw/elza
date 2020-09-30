@@ -9,6 +9,7 @@ import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -354,27 +355,28 @@ public class SearchFilterFactory {
         return highlight;
     }
 
-    public ArchiveEntityResultListVO createArchiveEntityResultListVO(List<ApState> apStateList, Integer totalElements) {
+    public ArchiveEntityResultListVO createArchiveEntityResultListVO(List<ApState> apStateList, Integer totalElements, Map<Integer, ApIndex> nameMap) {
         ArchiveEntityResultListVO archiveEntityVOListResult = new ArchiveEntityResultListVO();
         archiveEntityVOListResult.setTotal(totalElements);
-        archiveEntityVOListResult.setData(createArchiveEntityVOList(apStateList));
+        archiveEntityVOListResult.setData(createArchiveEntityVOList(apStateList, nameMap));
         return archiveEntityVOListResult;
     }
 
-    private List<ArchiveEntityVO> createArchiveEntityVOList(List<ApState> apStateList) {
+    private List<ArchiveEntityVO> createArchiveEntityVOList(List<ApState> apStateList, Map<Integer, ApIndex> nameMap) {
         List<ArchiveEntityVO> archiveEntityVOList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(apStateList)) {
             for (ApState apState : apStateList) {
-                archiveEntityVOList.add(createArchiveEntityVO(apState));
+                ApIndex nameIndex = nameMap.getOrDefault(apState.getAccessPointId(), null);
+                archiveEntityVOList.add(createArchiveEntityVO(apState, nameIndex));
             }
         }
         return archiveEntityVOList;
     }
 
-    private ArchiveEntityVO createArchiveEntityVO(ApState apState) {
+    private ArchiveEntityVO createArchiveEntityVO(ApState apState, ApIndex nameIndex) {
         ArchiveEntityVO archiveEntityVO = new ArchiveEntityVO();
         archiveEntityVO.setId(apState.getAccessPointId());
-        archiveEntityVO.setName(apState.getAccessPoint().getPreferredPart().getValue());
+        archiveEntityVO.setName(nameIndex != null ? nameIndex.getValue() : null);
         archiveEntityVO.setAeTypeId(apState.getApTypeId());
         return archiveEntityVO;
     }

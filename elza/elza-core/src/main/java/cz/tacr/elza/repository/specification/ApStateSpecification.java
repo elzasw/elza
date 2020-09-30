@@ -50,11 +50,11 @@ public class ApStateSpecification implements Specification<ApState> {
         condition = cb.and(condition, process(cb.conjunction(), ctx));
 
         // atribut, podle kterého se výsledek seřadí - dle "sort value" preferovaného jména archivní entity
-        Path<ApPart> sortingBySortValue = ctx.getPreferredPartJoin().get(ApPart.VALUE);
+        //Path<ApPart> sortingBySortValue = ctx.getPreferredPartJoin().get(ApPart.VALUE);
         // každý nález ae pouze jednou
-        q.groupBy(stateRoot, sortingBySortValue);
+        //q.groupBy(stateRoot, sortingBySortValue);
         // seřazení
-        q.orderBy(cb.asc(sortingBySortValue));
+        //.orderBy(cb.asc(sortingBySortValue));
 
 
         return condition;

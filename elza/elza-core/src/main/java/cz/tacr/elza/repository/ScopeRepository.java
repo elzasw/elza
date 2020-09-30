@@ -98,4 +98,6 @@ public interface ScopeRepository extends ElzaJpaRepository<ApScope, Integer>, Sc
      */
     @Query("SELECT r.connectedScope FROM ap_scope_relation r WHERE r.scope = ?1")
     List<ApScope> findConnectedByScope(final ApScope scope);
+
+    List<ApScope> findScopeByRuleSetIdIsNull();
 }

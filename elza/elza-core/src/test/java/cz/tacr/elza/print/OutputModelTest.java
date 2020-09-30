@@ -10,6 +10,7 @@ import java.util.List;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.repository.ApIndexRepository;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,6 +88,9 @@ public class OutputModelTest extends AbstractServiceTest {
     @Autowired
     DaoLinkRepository daoLinkRepository;
 
+    @Autowired
+    ApIndexRepository indexRepository;
+
     // test output with structObjs
     @Test
     @Ignore // TODO: je třeba dořešit, proč neprojde
@@ -157,7 +161,7 @@ public class OutputModelTest extends AbstractServiceTest {
         OutputModel outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
                 bindingRepository, null, structObjRepos, structItemRepos, partRepository, itemRepository,
-                bindingStateRepository,
+                bindingStateRepository, indexRepository,
                 daoLinkRepository);
 
         ArrOutput output = new ArrOutput();
