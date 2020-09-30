@@ -326,27 +326,24 @@ public class AccessPointService {
      * Kontrola, jestli je používán přístupový bod v navázaných tabulkách.
      *
      * @param accessPoint přístupový bod
-     * @param replacedBy  přístupový bod pro výměnu 
      * @throws BusinessException napojení na jinou tabulku
      */
-    public void checkDeletion(final ApAccessPoint accessPoint, final ApAccessPoint replacedBy) {
+    public void checkDeletion(final ApAccessPoint accessPoint) {
         // arr_data_record_ref
         if (institutionRepository.existsByAccessPointId(accessPoint.getAccessPointId())) {
             throw new BusinessException("Nelze smazat/zneplatnit přístupový bod, který je institucí.",
                                         RegistryCode.EXIST_INSTITUCI);
         }
-        if (replacedBy == null) {
-            List<ArrDescItem> arrRecordItems = descItemRepository.findArrItemByRecord(accessPoint);
-            if (CollectionUtils.isNotEmpty(arrRecordItems)) {
-                throw new BusinessException(
-                        "Nelze smazat/zneplatnit přístupový bod, který má hodnotu v jednotce archivního popisu.",
-                        RegistryCode.EXIST_FOREIGN_DATA)
-                                .set("accessPointId", accessPoint.getAccessPointId())
-                                .set("arrItems", arrRecordItems.stream().map(ArrItem::getItemId).collect(Collectors
-                                        .toList()))
-                                .set("fundIds", arrRecordItems.stream().map(ArrItem::getFundId).collect(Collectors
-                                        .toList()));
-            }
+        List<ArrDescItem> arrRecordItems = descItemRepository.findArrItemByRecord(accessPoint);
+        if (CollectionUtils.isNotEmpty(arrRecordItems)) {
+            throw new BusinessException(
+                    "Nelze smazat/zneplatnit přístupový bod, který má hodnotu v jednotce archivního popisu.",
+                    RegistryCode.EXIST_FOREIGN_DATA)
+                            .set("accessPointId", accessPoint.getAccessPointId())
+                            .set("arrItems", arrRecordItems.stream().map(ArrItem::getItemId).collect(Collectors
+                                    .toList()))
+                            .set("fundIds", arrRecordItems.stream().map(ArrItem::getFundId).collect(Collectors
+                                    .toList()));
         }
     }
 
@@ -360,7 +357,6 @@ public class AccessPointService {
         apDataService.validationNotDeleted(apState);
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
-        checkDeletion(accessPoint, replacedBy);
 
         if (replacedBy != null) {
             ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
@@ -368,6 +364,7 @@ public class AccessPointService {
             replace(apState, replacementState);
             apState.setReplacedBy(replacedBy);
         }
+        checkDeletion(accessPoint);
         ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
         apState.setDeleteChange(change);
         apStateRepository.save(apState);
