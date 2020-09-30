@@ -29,7 +29,7 @@ public interface ApAccessPointRepository
      *            UUID
      * @return rejstříkové heslo
      */
-    ApAccessPoint findApAccessPointByUuid(String uuid);
+    ApAccessPoint findApAccessPointByUuid(String uuid); // TODO přejmenovat
 
     @Query("SELECT ap FROM ap_access_point ap WHERE ap.uuid IN :uuids")
     List<ApAccessPoint> findApAccessPointsByUuids(@Param("uuids") Collection<String> uuids);

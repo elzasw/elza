@@ -1,4 +1,4 @@
-import {FundsApi} from "elza-api";
+import {AccesspointsApi, FundsApi} from "elza-api";
 import globalAxios, {AxiosRequestConfig, AxiosResponse, AxiosError} from "axios";
 import i18n from '../components/i18n';
 import {createException} from 'components/ExceptionUtils.jsx';
@@ -135,5 +135,6 @@ export const continueRequests = () => {
 }
 
 export const Api = {
-    funds: new FundsApi({ basePath }, undefined, globalAxios)
+    accesspoints: new AccesspointsApi({ basePath }, undefined, globalAxios),
+    funds: new FundsApi({ basePath }, undefined, globalAxios),
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 
 import {WebApi} from 'actions/index.jsx';
+import {Api} from "../../api";
 import {SimpleListActions} from 'shared/list';
 import {DetailActions} from '../../shared/detail';
 import {indexById, storeFromArea} from 'shared/utils';
@@ -173,7 +174,7 @@ export function registryUpdate(id, typeId, callback = null) {
 
 export function registryDelete(id) {
     return (dispatch, getState) => {
-        WebApi.deleteAccessPoint(id).then(() => {
+        Api.accesspoints.deleteAccessPoint(id).then(() => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
             const list = storeFromArea(store, AREA_REGISTRY_LIST);

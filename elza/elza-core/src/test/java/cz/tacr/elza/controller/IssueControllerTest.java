@@ -1,5 +1,10 @@
 package cz.tacr.elza.controller;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -7,17 +12,23 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.controller.vo.*;
-import cz.tacr.elza.domain.UsrAuthentication;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ArrFundBaseVO;
+import cz.tacr.elza.controller.vo.Fund;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
+import cz.tacr.elza.controller.vo.WfCommentVO;
+import cz.tacr.elza.controller.vo.WfIssueListVO;
+import cz.tacr.elza.controller.vo.WfIssueStateVO;
+import cz.tacr.elza.controller.vo.WfIssueTypeVO;
+import cz.tacr.elza.controller.vo.WfIssueVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-
-import static cz.tacr.elza.domain.UsrPermission.Permission;
-import static org.junit.Assert.*;
+import cz.tacr.elza.domain.UsrAuthentication;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 
 public class IssueControllerTest extends AbstractControllerTest {
 
