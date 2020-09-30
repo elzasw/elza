@@ -1,7 +1,6 @@
 package cz.tacr.elza.service;
 
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
-import static cz.tacr.elza.groovy.GroovyResult.PT_PREFER_NAME;
+import static cz.tacr.elza.groovy.GroovyResult.*;
 import static cz.tacr.elza.repository.ExceptionThrow.part;
 
 import java.util.ArrayList;
@@ -314,11 +313,6 @@ public class PartService {
             throw new SystemException("Povinný index typu [" + DISPLAY_NAME + "] není vyplněn");
         }
 
-        if (!displayName.equals(apPart.getValue())) {
-            apPart.setValue(displayName);
-            partRepository.save(apPart);
-        }
-
         GroovyKeyValue keyValue = result.getKeyValue();
         String keyType = null;
 
@@ -415,7 +409,7 @@ public class PartService {
                 }
             }
 
-            if (!success && keyType.equals(PT_PREFER_NAME) && indexType.equals(DISPLAY_NAME)) {
+            if (!success && keyType.equals(PT_PREFER_NAME) && (indexType.equals(DISPLAY_NAME) || indexType.equals(DISPLAY_NAME_LOWER))) {
                 value = value + DUPLICITA + accessPointId;
             }
 

@@ -22,8 +22,12 @@ public class ApFulltextProviderImpl implements ApFulltextProvider {
         if (apState.getDeleteChangeId() != null) {
             return null;
         }
+        ApIndex index = apService.findPreferredPartIndex(accessPoint);
+        if (index == null) {
+            return null;
+        }
 
-        return accessPoint.getPreferredPart().getValue();
+        return index.getValue();
     }
 
 }

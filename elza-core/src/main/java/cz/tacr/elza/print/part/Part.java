@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.ApIndex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
@@ -30,10 +31,10 @@ public class Part {
 
     private List<Part> parts = Collections.emptyList();
 
-    public Part(ApPart apPart, StaticDataProvider staticData) {
+    public Part(ApPart apPart, StaticDataProvider staticData, ApIndex index) {
         this.partId = apPart.getPartId();
         this.accessPointId = apPart.getAccessPointId();
-        this.value = apPart.getValue();
+        this.value = index != null ? index.getValue() : null;
         this.parentPartId = apPart.getParentPart() != null ? apPart.getParentPart().getPartId() : null;
         this.partType = new PartType(staticData.getPartTypeById(apPart.getPartTypeId()));
     }

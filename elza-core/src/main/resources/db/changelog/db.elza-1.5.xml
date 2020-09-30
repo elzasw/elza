@@ -934,4 +934,8 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20200925153000" author="fantis">
+        <dropColumn tableName="ap_part" columnName="value"/>
+    </changeSet>
+
 </databaseChangeLog>

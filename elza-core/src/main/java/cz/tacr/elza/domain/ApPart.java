@@ -20,18 +20,13 @@ public class ApPart {
     public static final String ACCESS_POINT_ID = "accessPointId";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
     public static final String PARENT_PART = "parentPart";
-    public static final String VALUE = "value";
     public static final String ITEMS = "items";
+    public static final String INDICES = "indices";
 
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
     private Integer partId;
-
-    @Column
-    @Lob
-    @Type(type = "org.hibernate.type.TextType")
-    private String value;
 
     @Enumerated(EnumType.STRING)
     @Column(length = StringLength.LENGTH_ENUM)
@@ -78,20 +73,15 @@ public class ApPart {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "part")
     private List<ApItem> items;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "part")
+    private List<ApIndex> indices;
+
     public Integer getPartId() {
         return partId;
     }
 
     public void setPartId(final Integer partId) {
         this.partId = partId;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(final String value) {
-        this.value = value;
     }
 
     public ApStateEnum getState() {
