@@ -23,6 +23,7 @@
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
+<!-- Skript by měl být součástí pravidel, lze zavést speciální typ rozšíření
     <structure-definition structure-type="ITEM_TYPE_MAP" filename="ItemTypeMap.groovy" compatibility-rul-package="33">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
@@ -31,4 +32,5 @@
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
+-->
 </structure-definitions>

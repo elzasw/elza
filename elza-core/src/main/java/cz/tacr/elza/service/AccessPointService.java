@@ -29,9 +29,9 @@ import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApPartRepository;
-import liquibase.util.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -303,6 +303,25 @@ public class AccessPointService {
     }
 
     /**
+     * Získání objektu pomocí id nebo uuid
+     * 
+     * @param id řetězec znaků, id nebo uuid
+     * @return ApAccessPoint
+     */
+    public ApAccessPoint findAccessPointByIdOrUuid(String id) {
+        ApAccessPoint accessPoint;
+        if (!StringUtils.isNumeric(id)) {
+            accessPoint = apAccessPointRepository.findApAccessPointByUuid(id);
+        } else {
+            accessPoint = apAccessPointRepository.findById(Integer.valueOf(id)).orElse(null);
+        }
+        if (accessPoint == null) {
+            throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST);
+        }
+        return accessPoint;
+    }
+
+    /**
      * Kontrola, jestli je používán přístupový bod v navázaných tabulkách.
      *
      * @param accessPoint přístupový bod
@@ -331,17 +350,19 @@ public class AccessPointService {
      * Smaže rej. heslo a jeho variantní hesla. Předpokládá, že již proběhlo ověření, že je možné ho smazat (vazby atd...).
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
-    public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState, final boolean checkUsage) {
+    public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState,
+                                  final ApAccessPoint replacedBy) {
 
         apDataService.validationNotDeleted(apState);
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
-        if (checkUsage) {
-            checkDeletion(accessPoint);
-        }
+        checkDeletion(accessPoint);
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
         apState.setDeleteChange(change);
+        if (replacedBy != null) {
+            apState.setReplacedBy(replacedBy);
+        }
         apStateRepository.save(apState);
 
         saveWithLock(accessPoint);
