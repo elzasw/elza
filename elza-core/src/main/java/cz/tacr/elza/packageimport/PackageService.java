@@ -32,6 +32,8 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.repository.ScopeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -164,7 +166,6 @@ import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.repository.WfIssueStateRepository;
 import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.search.IndexWorkProcessor;
-import cz.tacr.elza.service.AccessPointGeneratorService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.CacheService;
 import cz.tacr.elza.service.SettingsService;
@@ -432,7 +433,7 @@ public class PackageService {
     private AsyncRequestService asyncRequestService;
 
     @Autowired
-    private AccessPointGeneratorService accessPointGeneratorService;
+    private ScopeRepository scopeRepository;
 
     private Set<Integer> accessPoints;
 
@@ -1843,6 +1844,9 @@ public class PackageService {
         List<RulRuleSet> rulRuleSets = ruleSetRepository.findByRulPackage(rulPackage);
         List<RulRuleSet> rulRuleSetsNew = new ArrayList<>();
 
+        RulRuleSet entityRuleSet = null;
+
+
         if (xmlRulesets != null && !CollectionUtils.isEmpty(xmlRulesets.getRuleSets())) {
             for (RuleSetXml ruleSet : xmlRulesets.getRuleSets()) {
                 // find ruleset in DB
@@ -1853,6 +1857,9 @@ public class PackageService {
 
                 convertRuleSet(rulPackage, ruleSet, item);
                 rulRuleSetsNew.add(item);
+                if (item.getRuleType() == RulRuleSet.RuleType.ENTITY) {
+                    entityRuleSet = item;
+                }
 
                 RuleUpdateContext ruc = new RuleUpdateContext(RuleState.UPDATE, pkgCtx,
                         item, this.resourcePathResolver);
@@ -1862,6 +1869,17 @@ public class PackageService {
 
         // Uložení pravidel
         rulRuleSetsNew = ruleSetRepository.saveAll(rulRuleSetsNew);
+
+        //nastavení pravidel pro entity u oblastí, které žádné nemají
+        if (entityRuleSet != null) {
+            List<ApScope> scopes = scopeRepository.findScopeByRuleSetIdIsNull();
+            if (CollectionUtils.isNotEmpty(scopes)) {
+                for (ApScope scope : scopes) {
+                    scope.setRulRuleSet(entityRuleSet);
+                }
+                scopeRepository.saveAll(scopes);
+            }
+        }
 
         // Naplnění pravidel ke smazání, které již nejsou v xml
         for (RulRuleSet dbRuleset : rulRuleSets) {
@@ -2248,6 +2266,7 @@ public class PackageService {
             exportExternalIdTypes(rulPackage, zos);
             exportIssueTypes(rulPackage, zos);
             exportIssueStates(rulPackage, zos);
+            exportPartTypes(rulPackage, zos);
         }
     }
 
@@ -2913,6 +2932,75 @@ public class PackageService {
             actionRecommended.setOutputType(rulActionRecommended.getOutputType().getCode());
             actionRecommendedList.add(actionRecommended);
         }
+    }
+
+    /**
+     * Exportování typů částí přístupových bodů
+     *
+     * @param rulPackage balíček
+     * @param zos stream zip souboru
+     * @throws IOException
+     */
+    private void exportPartTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        List<RulPartType> rulPartTypes = partTypeRepository.findByRulPackage(rulPackage);
+
+        if (CollectionUtils.isNotEmpty(rulPartTypes)) {
+            PartTypes partTypes = new PartTypes();
+            List<PartType> partTypeList = new ArrayList<>(rulPartTypes.size());
+            partTypes.setPartTypes(partTypeList);
+
+            for (RulPartType rulPartType : rulPartTypes) {
+                PartType partType = new PartType();
+                convertPartType(rulPartType, partType);
+                partTypeList.add(partType);
+            }
+            processRulPartTypesChildPart(rulPartTypes, partTypeList);
+
+            addObjectToZipFile(partTypes, zos, PART_TYPE_XML);
+        }
+    }
+
+    /**
+     * Převod DAO na VO typů částí přístupových bodů
+     *
+     * @param rulPartType DAO typu části přístupových bodů
+     * @param partType VO typu části přístupových bodů
+     */
+    private void convertPartType(RulPartType rulPartType, PartType partType) {
+        partType.setCode(rulPartType.getCode());
+        partType.setName(rulPartType.getName());
+    }
+
+    private void processRulPartTypesChildPart(List<RulPartType> rulPartTypes, List<PartType> partTypes) {
+        if (CollectionUtils.isNotEmpty(rulPartTypes) && CollectionUtils.isNotEmpty(partTypes)) {
+            for (RulPartType rulPartType : rulPartTypes) {
+                if (rulPartType.getChildPart() != null) {
+                    PartType partType = findPartTypeByCode(partTypes, rulPartType.getCode());
+                    if (partType == null) {
+                        throw new IllegalStateException("Nenalezen typ části s kódem: " + rulPartType.getCode());
+                    }
+
+                    PartType childPartType = findPartTypeByCode(partTypes, rulPartType.getChildPart().getCode());
+                    if (childPartType == null) {
+                        throw new IllegalStateException("Nenalezen typ podřízené části s kódem: " + rulPartType.getChildPart().getCode());
+                    }
+
+                    partType.setChildPart(childPartType.getCode());
+                }
+            }
+        }
+    }
+
+    @Nullable
+    private PartType findPartTypeByCode(final List<PartType> partTypes, final String code) {
+        if (CollectionUtils.isNotEmpty(partTypes)) {
+            for (PartType partType : partTypes) {
+                if (partType.getCode().equals(code)) {
+                    return partType;
+                }
+            }
+        }
+        return null;
     }
 
     /**

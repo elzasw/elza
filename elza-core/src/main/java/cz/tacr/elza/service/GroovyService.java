@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.domain.ApIndex;
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -165,7 +166,7 @@ public class GroovyService {
                         String value;
                         Integer intValue;
                         if (dataTmp.getRecord() != null) {
-                            value = dataTmp.getRecord().getPreferredPart().getValue();
+                            value = dataTmp.getFulltextValue();
                             intValue = dataTmp.getRecordId();
                         } else {
                             value = dataTmp.getBinding().getValue();

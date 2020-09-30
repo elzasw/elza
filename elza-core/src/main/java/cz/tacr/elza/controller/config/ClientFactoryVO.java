@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.repository.ApIndexRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -187,6 +189,8 @@ import cz.tacr.elza.service.attachment.AttachmentService;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+
 
 /**
  * Tovární třída pro vytváření VO objektů a jejich seznamů.
@@ -275,6 +279,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private AuthenticationRepository authenticationRepository;
+
+    @Autowired
+    private ApIndexRepository indexRepository;
 
 
     /**
@@ -1180,9 +1187,11 @@ public class ClientFactoryVO {
     public ParInstitutionVO createInstitution(final ParInstitution institution) {
         Assert.notNull(institution, "Instituce musí být vyplněny");
         MapperFacade mapper = mapperFactory.getMapperFacade();
+        ApIndex displayName = indexRepository.findByPartAndIndexType(institution.getAccessPoint().getPreferredPart(), DISPLAY_NAME);
+
         ParInstitutionVO institutionVO = mapper.map(institution, ParInstitutionVO.class);
         institutionVO.setAccessPointId(institution.getAccessPointId());
-        institutionVO.setName(institution.getAccessPoint().getPreferredPart().getValue());
+        institutionVO.setName(displayName != null ? displayName.getValue() : null);
         institutionVO.setCode(institution.getInternalCode());
 
         return institutionVO;
@@ -1330,7 +1339,8 @@ public class ClientFactoryVO {
             accessPointVO.setId(user.getAccessPoint().getAccessPointId());
             accessPointVO.setUuid(user.getAccessPoint().getUuid());
             if (user.getAccessPoint().getPreferredPart() != null) {
-                accessPointVO.setName(user.getAccessPoint().getPreferredPart().getValue());
+                ApIndex displayName = indexRepository.findByPartAndIndexType(user.getAccessPoint().getPreferredPart(), DISPLAY_NAME);
+                accessPointVO.setName(displayName != null ? displayName.getValue() : null);
             }
         }
         UsrUserVO result = new UsrUserVO(user, accessPointVO);

@@ -104,18 +104,4 @@ public class ApPartVO {
     public void setItems(List<ApItemVO> items) {
         this.items = items;
     }
-
-    /**
-     * Creates value object from AP part.
-     */
-    public static ApPartVO newInstance(ApPart src) {
-        ApPartVO vo = new ApPartVO();
-        vo.setId(src.getPartId());
-        vo.setValue(src.getValue());
-        vo.setTypeId(src.getPartType().getPartTypeId());
-        vo.setState(ApStateVO.valueOf(src.getState().name()));
-        vo.setErrorDescription(src.getErrorDescription());
-        vo.setPartParentId(src.getParentPart() != null ? src.getParentPart().getPartId() : null);
-        return vo;
-    }
 }

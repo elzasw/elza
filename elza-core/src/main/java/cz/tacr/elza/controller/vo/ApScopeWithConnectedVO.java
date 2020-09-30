@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.SysLanguage;
@@ -33,6 +34,10 @@ public class ApScopeWithConnectedVO extends ApScopeVO {
         if (src.getLanguageId() != null) {
             SysLanguage lang = staticData.getSysLanguageById(src.getLanguageId());
             vo.setLanguage(lang.getCode());
+        }
+        if (src.getRulRuleSet() != null) {
+            RuleSet ruleSet = staticData.getRuleSetById(src.getRuleSetId());
+            vo.setRuleSetCode(ruleSet.getCode());
         }
         if (CollectionUtils.isNotEmpty(connectedScopes)) {
             vo.connectedScopes = connectedScopes.stream().map(s -> ApScopeVO.newInstance(s, staticData)).collect(Collectors.toList());

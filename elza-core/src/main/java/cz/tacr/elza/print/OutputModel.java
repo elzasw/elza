@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.repository.ApIndexRepository;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -137,6 +138,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final ApBindingStateRepository bindingStateRepository;
 
+    private final ApIndexRepository indexRepository;
+
     private final StructuredObjectRepository structObjRepos;
 
     private final DaoLinkRepository daoLinkRepository;
@@ -172,6 +175,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final ApPartRepository partRepository,
                        final ApItemRepository itemRepository,
                        final ApBindingStateRepository bindingStateRepository,
+                       final ApIndexRepository indexRepository,
                        final DaoLinkRepository daoLinkRepository) {
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
@@ -186,6 +190,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
+        this.indexRepository = indexRepository;
         this.daoLinkRepository = daoLinkRepository;
     }
 
@@ -556,7 +561,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         RecordType type = getAPType(apState.getApTypeId());
         record = new Record(ap, type, staticData, apStateRepository,
                 bindingRepository, partRepository, itemRepository,
-                bindingStateRepository,
+                bindingStateRepository, indexRepository,
                 itemConvertor
                 );
 

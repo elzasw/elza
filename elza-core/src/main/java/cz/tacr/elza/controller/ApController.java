@@ -462,9 +462,15 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/scopes", method = RequestMethod.POST)
     public ApScopeVO createScope() {
+        List<RulRuleSet> rulRuleSets = ruleService.findAllApRules();
+        if (CollectionUtils.isEmpty(rulRuleSets)) {
+            throw new SystemException("Neexistují žádná pravidla pro archivní entity");
+        }
+
         ApScope apScope = new ApScope();
         apScope.setCode(UUID.randomUUID().toString());
         apScope.setName("NewScope");
+        apScope.setRulRuleSet(rulRuleSets.get(0));
         apScope = accessPointService.saveScope(apScope);
         StaticDataProvider staticData = staticDataService.getData();
         return ApScopeVO.newInstance(apScope, staticData);

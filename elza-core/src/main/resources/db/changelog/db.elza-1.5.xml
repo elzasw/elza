@@ -921,6 +921,23 @@
       </addColumn>
     </changeSet>
 
+    <changeSet id="20200925131800" author="fantis">
+        <addColumn tableName="ap_scope">
+            <column name="rule_set_id" type="int">
+                <constraints foreignKeyName="fk_scope_rul_rule_set"
+                             referencedTableName="rul_rule_set"
+                             referencedColumnNames="rule_set_id"/>
+            </column>
+        </addColumn>
+        <sql>UPDATE ap_scope SET rule_set_id = (SELECT rul_rule_set.rule_set_id FROM rul_rule_set WHERE
+            rul_rule_set.rule_type = 'ENTITY' LIMIT 1)
+        </sql>
+    </changeSet>
+
+    <changeSet id="20200925153000" author="fantis">
+        <dropColumn tableName="ap_part" columnName="value"/>
+    </changeSet>
+
     <changeSet id="20200929022654" author="ppyt">
         <delete tableName="ui_settings">
             <where>settings_type='PARTY_PIN'</where>

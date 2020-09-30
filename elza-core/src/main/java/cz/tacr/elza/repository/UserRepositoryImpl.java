@@ -12,6 +12,8 @@ import javax.persistence.criteria.CriteriaBuilder.In;
 import java.util.ArrayList;
 import java.util.List;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
+
 /**
  * Rozšířené repository pro uživatele.
  *
@@ -45,7 +47,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                     nameJoin.get(ApPart.PART_ID));
             Predicate activeNameCond = nameJoin.get(ApPart.DELETE_CHANGE_ID).isNull();
             nameJoin.on(builder.and(nameFkCond, activeNameCond));
-            accessPointName = nameJoin.get(ApPart.VALUE);
+            Join<ApIndex, ApPart> indexJoin = nameJoin.join(ApPart.INDICES, JoinType.INNER);
+            indexJoin.on(builder.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
+            accessPointName = indexJoin.get(ApIndex.VALUE);
         }
 
         Predicate nameLikeCond = null;
@@ -207,7 +211,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                     nameJoin.get(ApPart.PART_ID));
             Predicate activeNameCond = nameJoin.get(ApPart.DELETE_CHANGE_ID).isNull();
             nameJoin.on(builder.and(nameFkCond, activeNameCond));
-            accessPointName = nameJoin.get(ApPart.VALUE);
+            Join<ApIndex, ApPart> indexJoin = nameJoin.join(ApPart.INDICES, JoinType.INNER);
+            indexJoin.on(builder.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
+            accessPointName = indexJoin.get(ApIndex.VALUE);
         }
 
         Predicate nameLikeCond = null;
