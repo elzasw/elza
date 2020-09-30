@@ -364,6 +364,7 @@ public class AccessPointService {
 
         if (replacedBy != null) {
             ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
+            apDataService.validationNotDeleted(replacementState);
             replace(apState, replacementState);
             apState.setReplacedBy(replacedBy);
         }
