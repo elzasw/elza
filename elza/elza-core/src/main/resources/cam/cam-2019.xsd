@@ -4,7 +4,8 @@
 		<xs:documentation>Schéma dat pro systém CAM. Programátorské rozhraní je založeno na REST službách s možností přenosu dat v XML formátu. Služby jsou popsány formou OpenAPI rozhraní. Toto schéma slouží pro definici struktury přenášených dat.
 
 Změny:
-	- 4.3.2020 - Oprava povinnosti atributů EntityIdGroup, nově jsou nepovinné</xs:documentation>
+	- 4.3.2020 - Oprava povinnosti atributů EntityIdGroup, nově jsou nepovinné
+	- 1.10.2020 - Doplnění volitelného atributu reud k Entity pro předání UUID nahrazující entity</xs:documentation>
 	</xs:annotation>
 	<xs:element name="bu" type="s1:BatchUpdate"/>
 	<xs:element name="bue" type="s1:BatchUpdateError"/>
@@ -337,6 +338,11 @@ Vrací se seznam informací o revizích entit. U každé revize je vyplněno:
 		<xs:attribute name="reid" use="optional" type="s1:EntityId">
 			<xs:annotation>
 				<xs:documentation>Identifikátor nahrazují entity. Uvádí se při stavu APS_REPLACED.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="reud" use="optional" type="s1:UUID">
+			<xs:annotation>
+				<xs:documentation>UUID nahrazují entity. Uvádí se při stavu APS_REPLACED.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
