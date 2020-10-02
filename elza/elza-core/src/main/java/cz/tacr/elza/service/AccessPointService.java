@@ -24,12 +24,6 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
-import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.repository.ApIndexRepository;
-import cz.tacr.elza.repository.ApPartRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -46,10 +40,13 @@ import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
+import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
+import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.usage.FundVO;
@@ -70,6 +67,7 @@ import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
@@ -107,7 +105,9 @@ import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -120,6 +120,7 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.DataRef;
@@ -1856,5 +1857,37 @@ public class AccessPointService {
     public List<ApAccessPoint> findAccessPointsBySinglePartValues(List<Object> criterias) {
 
         return apAccessPointRepository.findAccessPointsBySinglePartValues(criterias);
+    }
+
+    /**
+     * Get access point state by string
+     * 
+     * @param accessPointId
+     * @return
+     */
+    public ApState getApState(String accessPointId) {
+
+        Validate.notNull(accessPointId, "Identifikátor rejstříkového hesla musí být vyplněn");
+
+        ApAccessPoint ap;
+        if (accessPointId.length() == 36) {
+            ap = getAccessPointByUuid(accessPointId);
+        } else {
+            Integer apId;
+            try {
+                apId = Integer.parseInt(accessPointId);
+            } catch (NumberFormatException nfe) {
+                throw new SystemException("Unrecognized ID format")
+                        .set("ID", accessPointId);
+            }
+            ap = getAccessPointInternal(apId);
+        }
+        ApState apState = getState(ap);
+        // check permissions
+        AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.AP_SCOPE_RD_ALL)
+                .or(UsrPermission.Permission.AP_SCOPE_RD, apState.getScopeId());
+        userService.authorizeRequest(authRequest);
+
+        return apState;
     }
 }

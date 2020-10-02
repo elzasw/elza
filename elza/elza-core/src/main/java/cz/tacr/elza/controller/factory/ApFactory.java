@@ -16,17 +16,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
-import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApIndexRepository;
-import cz.tacr.elza.repository.ApTypeRepository;
-import cz.tacr.elza.repository.vo.TypeRuleSet;
-import cz.tacr.elza.repository.UserRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -36,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.connector.CamInstance;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
@@ -47,7 +37,9 @@ import cz.tacr.elza.controller.vo.ApPartVO;
 import cz.tacr.elza.controller.vo.ApRecordSimple;
 import cz.tacr.elza.controller.vo.ApStateHistoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.LanguageVO;
+import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
 import cz.tacr.elza.controller.vo.UserVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
@@ -77,6 +69,7 @@ import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalIdType;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
@@ -84,6 +77,7 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrUser;
@@ -92,10 +86,14 @@ import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.repository.vo.TypeRuleSet;
 
 @Service
 public class ApFactory {
@@ -661,9 +659,7 @@ public class ApFactory {
         return result;
     }
 
-    public ApValidationErrorsVO createVO(Integer accessPointId) {
-        ApAccessPoint accessPoint = apRepository.findById(accessPointId)
-                .orElseThrow(() -> new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(accessPointId));
+    public ApValidationErrorsVO createValidationVO(ApAccessPoint accessPoint) {
         List<ApPart> partList = partRepository.findValidPartByAccessPoint(accessPoint);
 
         String[] errorsArray = StringUtils.split(accessPoint.getErrorDescription(), "\n");
