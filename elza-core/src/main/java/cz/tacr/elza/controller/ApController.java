@@ -321,14 +321,16 @@ public class ApController {
         ApState apState = accessPointService.createAccessPoint(scope, type, language, accessPoint.getPartForm());
         ApAccessPointVO apAccessPointVO = apFactory.createVO(apState, true);
 
-        if (type.getCode().equals("PERSON")) {
+        if (createEntityRequest.getEntityClass() != null) {
             String response = createEntityRequest.getResponse();
             if (response != null) {
                 response = response.replace("{status}", "SUCCESS")
                             .replace("{entityUuid}", apAccessPointVO.getUuid())
                             .replace("{entityId}", String.valueOf(apAccessPointVO.getId()));
             }
-            return new ModelAndView("redirect:/" + response);
+            createEntityRequest.setEntityClass(null);
+            createEntityRequest.setResponse(null);
+            return new ModelAndView("redirect:" + response);
         }
 
         ModelAndView modelAndView = new ModelAndView("viewPage");
