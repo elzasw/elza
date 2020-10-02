@@ -1,9 +1,11 @@
 package cz.tacr.elza.web.controller;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Controller;
@@ -11,6 +13,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import cz.tacr.elza.controller.vo.OrigCreateEntityRequest;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.repository.ApTypeRepository;
 
 /**
  * Kontroler pro ELZA UI - React stránky.
@@ -25,6 +31,12 @@ public class ElzaWebController {
     /** Logger. */
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    @Autowired
+    OrigCreateEntityRequest createEntityRequest;
+    
+    @Autowired
+    ApTypeRepository apTypeRepository;
+    
     @Value("${spring.app.buildType}")
     private String buildType;
 
@@ -104,6 +116,30 @@ public class ElzaWebController {
     @RequestMapping(value = "/entity/**", method = RequestMethod.GET)
     public String entityPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);
+        return "web";
+    }
+
+    @RequestMapping(value = "/entity-create", method = RequestMethod.GET)
+    public String entityCreatePage(final HttpServletRequest request, final Model model) {
+        initDefaults(request, model);
+
+        String entityClass = request.getParameter("entity-class");
+        String response = request.getParameter("response");
+
+        if (entityClass != null) {
+            ApType apType = apTypeRepository.findApTypeByCode(entityClass);
+            if (apType == null) {
+                response = response.replace("{status}", "CANCEL")
+                            .replace("{entityUuid}", "")
+                            .replace("{entityId}", "");
+                logger.error("Entity-class {} not found in ap_type.code", entityClass);
+                return "redirect:" + response;
+            }
+        }
+
+        createEntityRequest.setEntityClass(entityClass);
+        createEntityRequest.setResponce(response);
+
         return "web";
     }
 
