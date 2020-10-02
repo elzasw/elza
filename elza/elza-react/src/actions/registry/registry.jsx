@@ -106,10 +106,12 @@ export function registryDetailFetchIfNeeded(id, force = false) {
                         dispatch(registryDetailClear());
                         throw error;
                     });
-            }, force),
+            }, force)
+            // Pravdepodobne neni potrebne, validace se vola z ApDetailPageWrapper
+            /*,
             dispatch(DetailActions.fetchIfNeeded(AP_VALIDATION, id, (id) => {
                 return WebApi.validateAccessPoint(id)
-            }, true))
+            }, true))*/
         );
     };
 }
