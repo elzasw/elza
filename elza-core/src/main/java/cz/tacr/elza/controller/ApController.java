@@ -308,7 +308,7 @@ public class ApController {
      * @param accessPoint zakládaný přístupový bod
      * @return přístupový bod nebo přesměrování
      */
-    @Transactional
+    /*@Transactional
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public ModelAndView createAccessPointWithRedirect(@RequestBody final ApAccessPointCreateVO accessPoint) {
         Integer typeId = accessPoint.getTypeId();
@@ -334,7 +334,7 @@ public class ApController {
         ModelAndView modelAndView = new ModelAndView("viewPage");
         modelAndView.addObject("ApAccessPointVO", apAccessPointVO);
         return modelAndView;
-    }
+    }*/
 
     /**
      * Nastaví pravidla přístupovému bodu podle typu.
