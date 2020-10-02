@@ -17,8 +17,9 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.hibernate.annotations.Type;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.api.interfaces.IApAccessPoint;
 import cz.tacr.elza.domain.enumeration.StringLength;
@@ -64,6 +65,9 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApPart.class)
     @JoinColumn(name = "preferred_part_id")
     private ApPart preferredPart;
+
+    @Column(name = "preferred_part_id", updatable = false, insertable = false)
+    private Integer preferredPartId;
 
     @OneToMany(fetch = FetchType.LAZY, targetEntity = UsrUser.class)
     @JoinColumn(name= "accessPointId")
@@ -133,12 +137,17 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
         this.lastUpdate = lastUpdate;
     }
 
+    public Integer getPreferredPartId() {
+        return preferredPartId;
+    }
+
     public ApPart getPreferredPart() {
         return preferredPart;
     }
 
     public void setPreferredPart(ApPart preferredPart) {
         this.preferredPart = preferredPart;
+        this.preferredPartId = (preferredPart != null) ? preferredPart.getPartId() : null;
     }
 
     @Override

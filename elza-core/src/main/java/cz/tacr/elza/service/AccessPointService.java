@@ -871,7 +871,7 @@ public class AccessPointService {
 
             partService.changeParentPart(apPart, newPart);
 
-            if (apAccessPoint.getPreferredPart().getPartId().equals(apPart.getPartId())) {
+            if (apAccessPoint.getPreferredPartId().equals(apPart.getPartId())) {
                 apAccessPoint.setPreferredPart(newPart);
                 saveWithLock(apAccessPoint);
             }
@@ -915,12 +915,12 @@ public class AccessPointService {
                                     final Map<Integer, List<ApItem>> itemMap,
                                     final boolean async) {
         boolean success = true;
-        ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
+        Integer prefPartId = state.getAccessPoint().getPreferredPartId();
         for (ApPart part : partList) {
             List<ApPart> childrenParts = findChildrenParts(part, partList);
             List<ApItem> items = getItemsForParts(part, childrenParts, itemMap);
 
-            boolean preferred = preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), part.getPartId());
+            boolean preferred = prefPartId == null || Objects.equals(prefPartId, part.getPartId());
             GroovyResult result = groovyService.processGroovy(state, part, childrenParts, items, preferred);
             if (!partService.updatePartValue(part, result, state, async)) {
                 success = false;

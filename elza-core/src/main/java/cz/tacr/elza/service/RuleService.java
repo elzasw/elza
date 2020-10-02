@@ -26,7 +26,6 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.domain.ApScope;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.Validate;
@@ -69,6 +68,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrChange;
@@ -1080,7 +1080,7 @@ public class RuleService {
 
         if (accessPointId != null) {
             ApAccessPoint apAccessPoint = accessPointService.getAccessPoint(accessPointId);
-            preferredPartId = apAccessPoint.getPreferredPart().getPartId();
+            preferredPartId = apAccessPoint.getPreferredPartId();
             List<ApPart> partList = partService.findPartsByAccessPoint(apAccessPoint);
             List<ApItem> itemList = accessPointItemService.findItemsByParts(partList);
 
@@ -1148,7 +1148,7 @@ public class RuleService {
         ApState apState = accessPointService.getState(apAccessPoint);
         RulRuleSet rulRuleSet = apState.getScope().getRulRuleSet();
         List<ApPart> parts = partService.findPartsByAccessPoint(apAccessPoint);
-        Integer preferredPartId = apAccessPoint.getPreferredPart().getPartId();
+        Integer preferredPartId = apAccessPoint.getPreferredPartId();
         List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
 
         List<Part> partList = new ArrayList<>();

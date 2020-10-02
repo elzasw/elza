@@ -9,10 +9,6 @@ import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.domain.RulArrangementRule;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.repository.ArrangementRuleRepository;
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,10 +33,12 @@ import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.exception.SystemException;
@@ -51,6 +49,7 @@ import cz.tacr.elza.groovy.GroovyItems;
 import cz.tacr.elza.groovy.GroovyPart;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.ArrangementRuleRepository;
 
 @Service
 public class GroovyService {
@@ -89,7 +88,7 @@ public class GroovyService {
         StaticDataProvider sdp = staticDataService.getData();
         ApType apType = sdp.getApTypeById(state.getApTypeId());
         List<GroovyPart> groovyParts = new ArrayList<>(parts.size());
-        ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
+        Integer preferredPartId = state.getAccessPoint().getPreferredPartId();
         for (ApPart part : parts) {
             List<ApPart> childrenParts = new ArrayList<>();
             for (ApPart p : parts) {
@@ -98,7 +97,7 @@ public class GroovyService {
                 }
             }
 
-            boolean preferred = preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), part.getPartId());
+            boolean preferred = Objects.equals(preferredPartId, part.getPartId());
             groovyParts.add(convertPart(state, part, childrenParts, items, preferred));
         }
         return new GroovyAe(apType.getCode(), groovyParts);
