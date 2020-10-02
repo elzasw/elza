@@ -46,7 +46,7 @@ public interface ApIndexRepository extends JpaRepository<ApIndex, Integer> {
             "JOIN p.accessPoint ap " +
             "WHERE ap IN :accessPoints AND p.partType IN :partTypes AND i.indexType = :indexType")
     List<ApIndex> findIndexByAccessPointsAndPartTypeAndIndexType(@Param("accessPoints") Collection<ApAccessPoint> accessPoints,
-                                                                 @Param("partType") Collection<RulPartType> partTypes,
+                                                                 @Param("partTypes") Collection<RulPartType> partTypes,
                                                                  @Param("indexType") String indexType);
 
     @Query("SELECT i FROM ap_index i JOIN FETCH i.part p JOIN p.accessPoint ap WHERE ap = :accessPoint AND p = ap.preferredPart AND i.indexType = :indexType")
