@@ -30,6 +30,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.ModelMap;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
@@ -68,6 +70,7 @@ import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.LanguageVO;
+import cz.tacr.elza.controller.vo.OrigCreateEntityRequest;
 import cz.tacr.elza.controller.vo.RequiredType;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
@@ -174,6 +177,9 @@ public class ApController {
 
     @Autowired
     private CamService camService;
+
+    @Autowired
+    OrigCreateEntityRequest createEntityRequest;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -294,6 +300,40 @@ public class ApController {
 
         ApState apState = accessPointService.createAccessPoint(scope, type, language, accessPoint.getPartForm());
         return apFactory.createVO(apState, true);
+    }
+
+    /**
+     * Vytvoření přístupového bodu s přesměrováním
+     *
+     * @param accessPoint zakládaný přístupový bod
+     * @return přístupový bod nebo přesměrování
+     */
+    @Transactional
+    @RequestMapping(value = "/", method = RequestMethod.POST)
+    public ModelAndView createAccessPointWithRedirect(@RequestBody final ApAccessPointCreateVO accessPoint) {
+        Integer typeId = accessPoint.getTypeId();
+        Integer scopeId = accessPoint.getScopeId();
+
+        ApScope scope = accessPointService.getScope(scopeId);
+        ApType type = accessPointService.getType(typeId);
+        SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
+
+        ApState apState = accessPointService.createAccessPoint(scope, type, language, accessPoint.getPartForm());
+        ApAccessPointVO apAccessPointVO = apFactory.createVO(apState, true);
+
+        if (type.getCode().equals("PERSON")) {
+            String response = createEntityRequest.getResponse();
+            if (response != null) {
+                response = response.replace("{status}", "SUCCESS")
+                            .replace("{entityUuid}", apAccessPointVO.getUuid())
+                            .replace("{entityId}", String.valueOf(apAccessPointVO.getId()));
+            }
+            return new ModelAndView("redirect:/" + response);
+        }
+
+        ModelAndView modelAndView = new ModelAndView("viewPage");
+        modelAndView.addObject("ApAccessPointVO", apAccessPointVO);
+        return modelAndView;
     }
 
     /**

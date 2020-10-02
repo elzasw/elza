@@ -138,7 +138,7 @@ public class ElzaWebController {
         }
 
         createEntityRequest.setEntityClass(entityClass);
-        createEntityRequest.setResponce(response);
+        createEntityRequest.setResponse(response);
 
         return "web";
     }
