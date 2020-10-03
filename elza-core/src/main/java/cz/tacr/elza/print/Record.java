@@ -1,5 +1,7 @@
 package cz.tacr.elza.print;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,14 +11,13 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.repository.ApIndexRepository;
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.exception.BusinessException;
@@ -27,11 +28,10 @@ import cz.tacr.elza.print.item.convertors.OutputItemConvertor;
 import cz.tacr.elza.print.part.Part;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
-
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
 /**
  * One record from registry
@@ -124,7 +124,7 @@ public class Record {
                 subParts.add(part);
             } else {
                 // set preferred part
-                if (ap.getPreferredPart().getPartId() == apPart.getPartId()) {
+                if (ap.getPreferredPartId().equals(apPart.getPartId())) {
                     preferredPart = part;
                 }
                 parts.add(part);
