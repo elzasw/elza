@@ -30,7 +30,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.ModelMap;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,7 +37,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
 
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
@@ -70,7 +68,6 @@ import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.LanguageVO;
-import cz.tacr.elza.controller.vo.OrigCreateEntityRequest;
 import cz.tacr.elza.controller.vo.RequiredType;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
@@ -177,9 +174,6 @@ public class ApController {
 
     @Autowired
     private CamService camService;
-
-    @Autowired
-    OrigCreateEntityRequest createEntityRequest;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
