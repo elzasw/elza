@@ -360,6 +360,7 @@ public class AccessPointService {
         checkDeletion(accessPoint);
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
+        partService.deleteParts(accessPoint, change);
         apState.setDeleteChange(change);
         if (replacedBy != null) {
             apState.setReplacedBy(replacedBy);
