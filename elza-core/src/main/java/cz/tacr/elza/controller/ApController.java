@@ -342,7 +342,7 @@ public class ApController {
     public void setRuleAccessPoint(@PathVariable final Integer accessPointId) {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState apState = accessPointService.getState(accessPoint);
+        ApState apState = accessPointService.getStateInternal(accessPoint);
         accessPointService.setRuleAccessPoint(apState);
     }
 
@@ -375,7 +375,7 @@ public class ApController {
         Validate.notNull(editVo);
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState oldState = accessPointService.getState(accessPoint);
+        ApState oldState = accessPointService.getStateInternal(accessPoint);
         ApState newState = accessPointService.changeApType(accessPointId, editVo.getTypeId());
         accessPointService.generateSync(accessPointId);
         return apFactory.createVO(newState, true);
@@ -607,8 +607,8 @@ public class ApController {
         final ApAccessPoint replaced = accessPointService.getAccessPointInternal(accessPointId);
         final ApAccessPoint replacement = accessPointService.getAccessPointInternal(replacedId);
 
-        ApState replacedState = accessPointService.getState(replaced);
-        ApState replacementState = accessPointService.getState(replacement);
+        ApState replacedState = accessPointService.getStateInternal(replaced);
+        ApState replacementState = accessPointService.getStateInternal(replacement);
         accessPointService.replace(replacedState, replacementState);
     }
 
@@ -747,7 +747,7 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "{accessPointId}/validate", method = RequestMethod.GET)
-    public ApValidationErrorsVO validateAccessPoint(@PathVariable final String accessPointId) {
+    public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId) {
         ApState apState = accessPointService.getApState(accessPointId);
 
         return apFactory.createValidationVO(apState.getAccessPoint());
@@ -933,7 +933,7 @@ public class ApController {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu není vyplněn");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
-        ApState state = accessPointService.getState(accessPoint);
+        ApState state = accessPointService.getStateInternal(accessPoint);
         ApScope scope = state.getScope();
         accessPointService.checkUniqueBinding(scope, archiveEntityId.toString(), externalSystemCode);
         accessPointService.checkUniqueExtSystem(accessPoint, externalSystemCode);
@@ -981,7 +981,7 @@ public class ApController {
     public void synchronizeAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                        @RequestParam final String externalSystemCode) {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
-        ApState state = accessPointService.getState(accessPoint);
+        ApState state = accessPointService.getStateInternal(accessPoint);
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
 
@@ -1056,7 +1056,7 @@ public class ApController {
     public void takeRelArchiveEntities(@PathVariable("accessPointId") final Integer accessPointId,
                                        @RequestParam final String externalSystemCode) {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
-        ApState state = accessPointService.getState(accessPoint);
+        ApState state = accessPointService.getStateInternal(accessPoint);
 
         List<Integer> archiveEntities = accessPointService.findRelArchiveEntities(accessPoint);
         List<EntityXml> entities = new ArrayList<>();

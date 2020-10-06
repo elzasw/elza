@@ -1145,7 +1145,7 @@ public class RuleService {
     @Transactional
     public ApValidationErrorsVO executeValidation(final Integer accessPointId) {
         ApAccessPoint apAccessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState apState = accessPointService.getState(apAccessPoint);
+        ApState apState = accessPointService.getStateInternal(apAccessPoint);
         RulRuleSet rulRuleSet = apState.getScope().getRulRuleSet();
         List<ApPart> parts = partService.findPartsByAccessPoint(apAccessPoint);
         Integer preferredPartId = apAccessPoint.getPreferredPartId();
