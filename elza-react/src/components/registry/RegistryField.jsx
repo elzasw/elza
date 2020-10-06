@@ -96,7 +96,8 @@ class RegistryField extends AbstractReactComponent {
             onSelectModule({
                 onSelect: data => {
                     this.handleChange(data);
-                    this.handleBlur(data);
+                    // TODO kvůli setState v DescItemType nutno zpozdit aby stihl uložit hodnotu a uložil tu co potřebujeme
+                    setTimeout(() => this.handleBlur(data), 200);
                 },
                 filterText: searchText,
                 value,
