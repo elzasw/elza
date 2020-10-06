@@ -1,6 +1,5 @@
 package cz.tacr.elza.web.controller;
 
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -15,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import cz.tacr.elza.controller.vo.OrigCreateEntityRequest;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.service.AccessPointService;
 
 /**
  * Kontroler pro ELZA UI - React stránky.
@@ -37,6 +38,9 @@ public class ElzaWebController {
     @Autowired
     ApTypeRepository apTypeRepository;
     
+    @Autowired
+    AccessPointService accessPointService;
+
     @Value("${spring.app.buildType}")
     private String buildType;
 
@@ -115,6 +119,18 @@ public class ElzaWebController {
 
     @RequestMapping(value = "/entity/**", method = RequestMethod.GET)
     public String entityPage(final HttpServletRequest request, final Model model) {
+        // check entity id
+        String path = request.getRequestURI();
+        String pathItems[] = path.split("/");
+        String requestedItemId = pathItems[pathItems.length - 1];
+
+        ApAccessPoint ap = accessPointService.getAccessPointByIdOrUuid(requestedItemId);
+        String itemId = ap.getAccessPointId().toString();
+        if (!itemId.equals(requestedItemId)) {
+            return "redirect:" + itemId;
+        }
+
+        // prepare model
         initDefaults(request, model);
         return "web";
     }
@@ -145,12 +161,6 @@ public class ElzaWebController {
 
     @RequestMapping(value = "/registry", method = RequestMethod.GET)
     public String recordPage(final HttpServletRequest request, final Model model) {
-        initDefaults(request, model);
-        return "web";
-    }
-
-    @RequestMapping(value = "/party", method = RequestMethod.GET)
-    public String partyPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);
         return "web";
     }
