@@ -17,6 +17,8 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
         border: 1px solid #DDDDDD;
         display:flex;
         flex-direction:column;
+        // force flex recalc
+        min-height: 0;
     }
     .fa-tree-lazy-container {
         flex-grow:1;
