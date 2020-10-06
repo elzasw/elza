@@ -236,17 +236,33 @@ public class PartService {
      * @param apChange změna
      */
     public void deleteParts(List<ApPart> partList, ApChange apChange) {
-        for (ApPart part : partList) {
-            part.setDeleteChange(apChange);
+        if (CollectionUtils.isNotEmpty(partList)) {
+            List<ApKeyValue> keyValues = new ArrayList<>();
+            for (ApPart part : partList) {
+                if (part.getKeyValue() != null) {
+                    keyValues.add(part.getKeyValue());
+                }
+                part.setDeleteChange(apChange);
+                part.setKeyValue(null);
+            }
+            partRepository.saveAll(partList);
+            if (CollectionUtils.isNotEmpty(keyValues)) {
+                keyValueRepository.deleteAll(keyValues);
+            }
         }
-        partRepository.saveAll(partList);
     }
 
     public void deleteParts(final ApAccessPoint accessPoint, final ApChange apChange) {
         List<ApPart> partList = partRepository.findValidPartByAccessPoint(accessPoint);
-        for (ApPart part : partList) {
-            apItemService.deletePartItems(part, apChange);
-            deletePart(part, apChange);
+        if (CollectionUtils.isNotEmpty(partList)) {
+            for (ApPart part : partList) {
+                apItemService.deletePartItems(part, apChange);
+                ApKeyValue keyValue = part.getKeyValue();
+                deletePart(part, apChange);
+                if (keyValue != null) {
+                    keyValueRepository.delete(keyValue);
+                }
+            }
         }
     }
 
@@ -267,9 +283,14 @@ public class PartService {
         }
 
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_DELETE);
+        ApKeyValue keyValue = apPart.getKeyValue();
         apItemService.deletePartItems(apPart, apChange);
         apPart.setDeleteChange(apChange);
+        apPart.setKeyValue(null);
         partRepository.save(apPart);
+        if (keyValue != null) {
+            keyValueRepository.delete(keyValue);
+        }
     }
 
     public List<ApPart> findPartsByAccessPoint(ApAccessPoint accessPoint) {
