@@ -1020,7 +1020,7 @@ public class AccessPointService {
     }
 
     public boolean updatePartValue(final ApPart apPart) {
-        ApState state = getState(apPart.getAccessPoint());
+        ApState state = getStateInternal(apPart.getAccessPoint());
         ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
         List<ApPart> childrenParts = partService.findPartsByParentPart(apPart);
 
@@ -1065,7 +1065,7 @@ public class AccessPointService {
 
         // get ap
         ApAccessPoint accessPoint = getAccessPoint(accessPointId);
-        ApState oldState = getState(accessPoint);
+        ApState oldState = getStateInternal(accessPoint);
 
         // todo[ELZA-1727]
         // return updateState(accessPoint, oldState.getStateApproval(), oldState.getComment(), apTypeId, oldState.getScopeId());
@@ -1222,11 +1222,14 @@ public class AccessPointService {
 
     /**
      * Získání stavu přístupového bodu.
+     * 
+     * Metoda neověřuje uživatelská oprávnění
      *
-     * @param accessPoint přístupový bod
+     * @param accessPoint
+     *            přístupový bod
      * @return stav přístupového bodu
      */
-    public ApState getState(final ApAccessPoint accessPoint) {
+    public ApState getStateInternal(final ApAccessPoint accessPoint) {
         final ApState state = stateRepository.findLastByAccessPoint(accessPoint);
         if (state == null) {
             throw new ObjectNotFoundException("Stav pro přístupový bod neexistuje", BaseCode.INVALID_STATE)
@@ -1389,7 +1392,7 @@ public class AccessPointService {
 
         Validate.notNull(newStateApproval, "AP State is null");
 
-        ApState oldApState = getState(accessPoint);
+        ApState oldApState = getStateInternal(accessPoint);
         apDataService.validationNotDeleted(oldApState);
 
         boolean update = false;
@@ -1704,7 +1707,7 @@ public class AccessPointService {
 
     public void generateSync(final Integer accessPointId) {
         ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
-        ApState apState = getState(accessPoint);
+        ApState apState = getStateInternal(accessPoint);
         List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
@@ -1867,27 +1870,51 @@ public class AccessPointService {
      */
     public ApState getApState(String accessPointId) {
 
-        Validate.notNull(accessPointId, "Identifikátor rejstříkového hesla musí být vyplněn");
+        Validate.notNull(accessPointId, "Identifikátor archivní entity musí být vyplněn");
 
-        ApAccessPoint ap;
         if (accessPointId.length() == 36) {
-            ap = getAccessPointByUuid(accessPointId);
+            ApAccessPoint ap = getAccessPointByUuid(accessPointId);
+            return getApState(ap);
         } else {
-            Integer apId;
             try {
-                apId = Integer.parseInt(accessPointId);
+                Integer apId = Integer.parseInt(accessPointId);
+                return getApState(apId);
             } catch (NumberFormatException nfe) {
                 throw new SystemException("Unrecognized ID format")
                         .set("ID", accessPointId);
             }
-            ap = getAccessPointInternal(apId);
         }
-        ApState apState = getState(ap);
+    }
+
+    /**
+     * Získání stavu přístupového bodu.
+     * 
+     * Metoda ověřuje uživatelská oprávnění
+     * 
+     * @param accessPoint
+     * @return
+     */
+    public ApState getApState(ApAccessPoint accessPoint) {
+        ApState apState = getStateInternal(accessPoint);
         // check permissions
         AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.AP_SCOPE_RD_ALL)
                 .or(UsrPermission.Permission.AP_SCOPE_RD, apState.getScopeId());
         userService.authorizeRequest(authRequest);
 
         return apState;
+
+    }
+
+    /**
+     * Získání stavu přístupového bodu.
+     * 
+     * Metoda ověřuje uživatelská oprávnění
+     * 
+     * @param accessPointId
+     * @return
+     */
+    public ApState getApState(Integer accessPointId) {
+        ApAccessPoint ap = getAccessPointInternal(accessPointId);
+        return getApState(ap);
     }
 }

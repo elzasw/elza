@@ -24,7 +24,7 @@ public class AccessPointController implements AccesspointsApi {
     @Transactional
     public ResponseEntity<Void> deleteAccessPoint(String id, @Valid DeleteAccessPointDetail deleteAccessPointDetail) {
         ApAccessPoint accessPoint = accessPointService.getAccessPointByIdOrUuid(id);
-        ApState apState = accessPointService.getState(accessPoint);
+        ApState apState = accessPointService.getStateInternal(accessPoint);
         ApAccessPoint replacedBy = null;
         if (deleteAccessPointDetail != null && deleteAccessPointDetail.getReplacedBy() != null) {
             replacedBy = accessPointService.getAccessPointByIdOrUuid(deleteAccessPointDetail.getReplacedBy());

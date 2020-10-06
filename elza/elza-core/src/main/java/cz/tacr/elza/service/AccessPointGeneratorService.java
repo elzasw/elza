@@ -44,7 +44,7 @@ public class AccessPointGeneratorService {
      */
     public void processRequest(final Integer accessPointId) {
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState apState = accessPointService.getState(accessPoint);
+        ApState apState = accessPointService.getStateInternal(accessPoint);
         logger.info("Asynchronní zpracování AP={}", accessPoint.getAccessPointId());
         generateAndSetResult(apState);
         logger.info("Asynchronní zpracování AP={} - END", accessPoint.getAccessPointId());

@@ -248,7 +248,7 @@ public class ExportServiceImpl implements ExportService {
 
         SearchEntityResult result = new SearchEntityResult();
         if (ap != null) {
-            ApState apState = accessPointService.getState(ap);
+            ApState apState = accessPointService.getStateInternal(ap);
             ApFactory apFactory = appCtx.getBean(ApFactory.class);
             ApAccessPointVO apVo = apFactory.createVO(apState, true);
 

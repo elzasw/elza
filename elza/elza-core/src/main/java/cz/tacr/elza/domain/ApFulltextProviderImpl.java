@@ -18,7 +18,7 @@ public class ApFulltextProviderImpl implements ApFulltextProvider {
     @Override
     public String getFulltext(ApAccessPoint accessPoint) {
         // Fulltext can be generated only for non deleted accessPoints
-    	ApState apState = apService.getState(accessPoint);
+    	ApState apState = apService.getStateInternal(accessPoint);
         if (apState.getDeleteChangeId() != null) {
             return null;
         }
