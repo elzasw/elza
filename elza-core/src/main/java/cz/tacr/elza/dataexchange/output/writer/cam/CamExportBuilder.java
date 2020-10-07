@@ -19,13 +19,12 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import cz.tacr.elza.api.ApExternalSystemType;
-import cz.tacr.elza.service.GroovyService;
 import org.apache.commons.lang3.Validate;
 import org.xml.sax.SAXException;
 
 import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityXml;
+import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.output.aps.ApInfo;
@@ -37,6 +36,7 @@ import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.cam.CamXmlFactory;
 import cz.tacr.elza.service.cam.EntityXmlBuilder;
 
@@ -108,9 +108,11 @@ public class CamExportBuilder implements ExportBuilder {
                 groovyService,
                 apInfo.getApState().getScope());
 
-        Map<Integer, Collection<ApItem>> items = apInfo.getItems();
         final Map<Integer, List<ApItem>> itemsConv = new HashMap<>();
-        items.forEach((a, b) -> itemsConv.put(a, new ArrayList<>(b)));
+        Map<Integer, Collection<ApItem>> items = apInfo.getItems();
+        if (items != null) {
+            items.forEach((a, b) -> itemsConv.put(a, new ArrayList<>(b)));
+        }
 
         EntityXml ent = exb.build(apInfo.getParts(), itemsConv, ApExternalSystemType.CAM.toString());
         this.entities.getList().add(ent);
