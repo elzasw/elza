@@ -13,7 +13,11 @@ public class ArrFundBaseVO {
     private String name;
 
     public ArrFundBaseVO() {
+    }
 
+    public ArrFundBaseVO(Integer id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
     public ArrFundBaseVO(ArrFund fund) {
@@ -49,6 +53,10 @@ public class ArrFundBaseVO {
         return entity;
     }
 
+    public static ArrFundBaseVO newInstance(Integer id, String name) {
+        return new ArrFundBaseVO(id, name);
+    }
+
     public static ArrFundBaseVO newInstance(ArrFund fund) {
         return new ArrFundBaseVO(fund);
     }
@@ -56,5 +64,6 @@ public class ArrFundBaseVO {
     public static ArrFundBaseVO newInstance(Fund fund) {
         return new ArrFundBaseVO(fund);
     }
+
 
 }

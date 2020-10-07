@@ -7,19 +7,19 @@ import java.util.List;
 
 import org.junit.Test;
 
-import cz.tacr.elza.controller.vo.CreateFund;
 import cz.tacr.elza.controller.vo.FindFundsResult;
-import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.CreateFund;
+import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.UpdateFund;
 
 public class FundControllerTest extends AbstractControllerTest {
 
     @Test
-    public void createFund() {
+    public void createFund() throws ApiException {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
         ParInstitutionVO institution = getInstitutions().get(0);
@@ -34,7 +34,7 @@ public class FundControllerTest extends AbstractControllerTest {
         List<String> scopes = new ArrayList<>();
         scopes.add("GLOBAL");
         cf.setScopes(scopes);
-        Fund fund = createFundV1(cf);
+        Fund fund = fundsApi.createFund(cf);
         logger.info("Vytvořen AS : " + fund.getId());
     }
 
@@ -53,7 +53,7 @@ public class FundControllerTest extends AbstractControllerTest {
         List<String> scopes = new ArrayList<>();
         scopes.add("GLOBAL");
         cf.setScopes(scopes);
-        Fund fund = createFundV1(cf);
+        Fund fund = fundsApi.createFund(cf);
         logger.info("Vytvořen AS : " + fund.getId());
 
         UpdateFund uf = new cz.tacr.elza.test.controller.vo.UpdateFund();
@@ -90,7 +90,7 @@ public class FundControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void getFund() {
+    public void getFund() throws ApiException {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
         ParInstitutionVO institution = getInstitutions().get(0);
@@ -104,7 +104,7 @@ public class FundControllerTest extends AbstractControllerTest {
         List<String> scopes = new ArrayList<>();
         scopes.add("GLOBAL");
         cf.setScopes(scopes);
-        Fund fund = createFundV1(cf);
+        Fund fund = fundsApi.createFund(cf);
         logger.info("Vytvořen AS : " + fund.getId());
 
         FundDetail fundDetail = getFundV1(fund.getId());
@@ -112,7 +112,7 @@ public class FundControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void findFunds() {
+    public void findFunds() throws ApiException {
 
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
@@ -128,7 +128,7 @@ public class FundControllerTest extends AbstractControllerTest {
         List<String> scopes = new ArrayList<>();
         scopes.add("GLOBAL");
         cf.setScopes(scopes);
-        createFundV1(cf);
+        fundsApi.createFund(cf);
 
         cf = new CreateFund();
         cf.setInternalCode("fundUpd6");
@@ -139,14 +139,12 @@ public class FundControllerTest extends AbstractControllerTest {
         scopes = new ArrayList<>();
         scopes.add("GLOBAL");
         cf.setScopes(scopes);
-        createFundV1(cf);
+        fundsApi.createFund(cf);
 
         FindFundsResult funds = findFunds("fundUpd6", null, 10,0);
         logger.info("Nalezeno AS : " + funds.getTotalCount());
         funds = findFunds(null, "in1", 10,0);
         logger.info("Nalezeno AS: " + funds.getTotalCount());
-
-
     }
 
 }
