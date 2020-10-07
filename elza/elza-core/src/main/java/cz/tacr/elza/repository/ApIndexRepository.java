@@ -1,15 +1,17 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.domain.ApPart;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.RulPartType;
 
 @Repository
 public interface ApIndexRepository extends JpaRepository<ApIndex, Integer> {
@@ -29,6 +31,23 @@ public interface ApIndexRepository extends JpaRepository<ApIndex, Integer> {
 
     @Query("SELECT i FROM ap_index i JOIN FETCH i.part p JOIN p.accessPoint ap WHERE ap IN :accessPoints AND p = ap.preferredPart AND i.indexType = :indexType")
     List<ApIndex> findPreferredPartIndexByAccessPointsAndIndexType(@Param("accessPoints") Collection<ApAccessPoint> accessPoints, @Param("indexType") String indexType);
+
+    /**
+     * Vyhledani vice typu partu a daneho indexu
+     * 
+     * Obvykle se pouzije pro zobrazeni nazvu a description k AP
+     * 
+     * @param accessPoints
+     * @param partTypes
+     * @param indexType
+     * @return
+     */
+    @Query("SELECT i FROM ap_index i JOIN FETCH i.part p " +
+            "JOIN p.accessPoint ap " +
+            "WHERE ap IN :accessPoints AND p.partType IN :partTypes AND i.indexType = :indexType")
+    List<ApIndex> findIndexByAccessPointsAndPartTypeAndIndexType(@Param("accessPoints") Collection<ApAccessPoint> accessPoints,
+                                                                 @Param("partTypes") Collection<RulPartType> partTypes,
+                                                                 @Param("indexType") String indexType);
 
     @Query("SELECT i FROM ap_index i JOIN FETCH i.part p JOIN p.accessPoint ap WHERE ap = :accessPoint AND p = ap.preferredPart AND i.indexType = :indexType")
     ApIndex findPreferredPartIndexByAccessPointAndIndexType(@Param("accessPoint") ApAccessPoint accessPoint, @Param("indexType") String indexType);

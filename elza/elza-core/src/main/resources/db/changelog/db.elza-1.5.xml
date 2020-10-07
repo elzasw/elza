@@ -938,4 +938,18 @@
         <dropColumn tableName="ap_part" columnName="value"/>
     </changeSet>
 
+    <changeSet id="20200929022654" author="ppyt">
+        <delete tableName="ui_settings">
+            <where>settings_type='PARTY_PIN'</where>
+        </delete>
+    </changeSet>
+
+    <changeSet id="20200929022655" author="ppyt">
+        <update tableName="ap_part">
+            <column name="state" value="ERROR" />
+            <column name="error_description" value="Původní part s TEMP state" />
+            <where>state='TEMP'</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>

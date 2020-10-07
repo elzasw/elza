@@ -178,13 +178,19 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
             .filter(value => value.partParentId && parentIds.includes(value.partParentId));
     };
 
-    const isFetchingPartyTypes = !props.refTables.partTypes.fetched && props.refTables.partTypes.isFetching;
+    // TODO: find better way to check if all reftables are fetched
+    const isFetchingPartyTypes = !props.refTables.partTypes.fetched || props.refTables.partTypes.isFetching;
 
-    const isFetching = !props.detail.fetched && props.detail.isFetching;
+    const isFetchingApTypes = !props.refTables.apTypes.fetched || props.refTables.apTypes.isFetching ||
+        !props.refTables.recordTypes.fetched || props.refTables.recordTypes.isFetching;
+
+    const isFetchingItemTypes = !props.refTables.descItemTypes.fetched || props.refTables.descItemTypes.isFetching;
+
+    const isFetching = !props.detail.fetched || props.detail.isFetching;
 
     const isFetchingViewSettings = props.apViewSettings.isFetching;
 
-    if (isFetchingPartyTypes || isFetching || isFetchingViewSettings) {
+    if (isFetchingPartyTypes || isFetching || isFetchingViewSettings || isFetchingApTypes || isFetchingItemTypes) {
         return (
             <div className={'detail-page-wrapper'}>
                 <Loading />
@@ -192,7 +198,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         );
     }
 
-    if (!isFetching && (!props.detail.id || !props.detail.data)) {
+    if (!props.detail.id || !props.detail.data) {
         return <div className={'detail-page-wrapper'} />;
     }
 

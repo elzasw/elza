@@ -1,6 +1,8 @@
 package cz.tacr.elza.service;
 
-import static cz.tacr.elza.groovy.GroovyResult.*;
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
+import static cz.tacr.elza.groovy.GroovyResult.PT_PREFER_NAME;
 import static cz.tacr.elza.repository.ExceptionThrow.part;
 
 import java.util.ArrayList;
@@ -12,7 +14,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.common.ObjectListIterator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
@@ -271,7 +273,7 @@ public class PartService {
      * @param partId identifikátor části
      */
     public void deletePart(final ApAccessPoint accessPoint, final Integer partId) {
-        if (accessPoint.getPreferredPart().getPartId().equals(partId)) {
+        if (accessPoint.getPreferredPartId().equals(partId)) {
             throw new IllegalArgumentException("Preferované jméno nemůže být odstraněno");
         }
         ApPart apPart = getPart(partId);

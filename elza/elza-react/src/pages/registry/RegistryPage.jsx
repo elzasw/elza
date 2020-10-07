@@ -34,6 +34,8 @@ import {Area} from '../../api/Area';
 import ApPushToExt from '../../components/registry/modal/ApPushToExt';
 import ExtSyncsModal from '../../components/registry/modal/ExtSyncsModal';
 import {objectById} from '../../shared/utils';
+import RegistryUsageForm from '../../components/form/RegistryUsageForm';
+import {AccessPointDeleteForm} from '../../components/form/AccesspointDeleteForm';
 
 /**
  * Stránka rejstříků.
@@ -327,6 +329,14 @@ class RegistryPage extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(this, i18n('ap.history.title'), form, 'dialog-lg'));
     };
 
+    handleRegistryShowUsage = data => {
+        this.props.dispatch(modalDialogShow(this, i18n('registry.registryUsage'), <RegistryUsageForm detail={data} />));
+    };
+
+    handleDeleteAccessPoint = data => {
+        this.props.dispatch(modalDialogShow(this, i18n('accesspoint.removeDuplicity.title'), <AccessPointDeleteForm detail={data} />));
+    };
+
     handleChangeApState = () => {
         const {
             registryDetail: {
@@ -439,15 +449,23 @@ class RegistryPage extends AbstractReactComponent {
                 );
             }
 
-            this.props.onShowUsage &&
-                itemActions.push(
-                    <Button key="registryShow" onClick={() => this.props.onShowUsage(registryDetail)}>
-                        <Icon glyph="fa-search" />
-                        <div>
-                            <span className="btnText">{i18n('registry.registryUsage')}</span>
-                        </div>
-                    </Button>,
-                );
+            itemActions.push(
+                <Button key="registryShow" onClick={() => this.handleRegistryShowUsage(registryDetail)}>
+                    <Icon glyph="fa-search" />
+                    <div>
+                        <span className="btnText">{i18n('registry.registryUsage')}</span>
+                    </div>
+                </Button>,
+            );
+
+            itemActions.push(
+                <Button key="deleteReplaceAccessPoint" onClick={() => this.handleDeleteAccessPoint(registryDetail)}>
+                    <Icon glyph="fa-trash" />
+                    <div>
+                        <span className="btnText">{i18n('accesspoint.removeDuplicity')}</span>
+                    </div>
+                </Button>,
+            );
         }
 
         if (id && data) {
