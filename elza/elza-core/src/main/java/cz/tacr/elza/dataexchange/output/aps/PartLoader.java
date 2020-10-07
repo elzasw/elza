@@ -1,15 +1,15 @@
 package cz.tacr.elza.dataexchange.output.aps;
 
-import cz.tacr.elza.dataexchange.input.parts.context.PartInfo;
-import cz.tacr.elza.dataexchange.output.context.ExportContext;
-import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
-import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
-import cz.tacr.elza.domain.ApPart;
-
 import javax.persistence.EntityManager;
+import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
+
+import cz.tacr.elza.dataexchange.output.context.ExportContext;
+import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
+import cz.tacr.elza.domain.ApPart;
 
 public class PartLoader extends AbstractEntityLoader<ApPart, ApPart> {
 
@@ -24,7 +24,8 @@ public class PartLoader extends AbstractEntityLoader<ApPart, ApPart> {
     }
 
     @Override
-    protected Predicate createQueryCondition(Path<? extends ApPart> root, CriteriaBuilder cb) {
+    protected Predicate createQueryCondition(CriteriaQuery<Tuple> cq,
+                                             Path<? extends ApPart> root, CriteriaBuilder cb) {
         return root.get(ApPart.DELETE_CHANGE_ID).isNull();
     }
 
