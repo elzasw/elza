@@ -2,13 +2,13 @@ package cz.tacr.elza.service.cam;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.Validate;
 
 import cz.tacr.cam.schema.cam.ItemsXml;
 import cz.tacr.cam.schema.cam.NewItemsXml;
@@ -66,23 +66,37 @@ abstract public class CamXmlBuilder {
     protected PartsXml createParts(Collection<ApPart> partList,
                                    Map<Integer, List<ApItem>> itemMap,
                                    String externalSystemTypeCode) {
-        // if no parts available -> create item without parts
+        // if no parts available -> return null
         if (CollectionUtils.isEmpty(partList)) {
             // schema allows empty element prts
             return null;
-        }
-        PartsXml parts = new PartsXml();
+        }        
 
-        ApPart preferPart = accessPoint.getPreferredPart();
-        if (preferPart != null) {
-            parts.getList().add(createPart(preferPart, itemMap, externalSystemTypeCode));
-            if (CollectionUtils.isNotEmpty(partList)) {
-                for (ApPart part : partList) {
-                    if (!part.getPartId().equals(preferPart.getPartId())) {
-                        parts.getList().add(createPart(part, itemMap, externalSystemTypeCode));
-                    }
+        Collection<ApPart> adjustedPartList = partList;
+        // check if prefered part is first
+        ApPart preferedPart = accessPoint.getPreferredPart();
+        if (preferedPart != null) {
+            // prepare list with first pref.part
+            adjustedPartList = new ArrayList<>(partList.size());
+            adjustedPartList.add(preferedPart);
+            for (ApPart part : partList) {
+                if (!part.getPartId().equals(preferedPart.getPartId())) {
+                    adjustedPartList.add(part);
                 }
             }
+        }
+        
+        // if no parts available -> create item without parts
+        List<PartXml> partxmlList = createPartList(adjustedPartList, itemMap, externalSystemTypeCode);
+        // if no parts available -> return null
+        if (CollectionUtils.isEmpty(partxmlList)) {
+            // schema allows empty element prts
+            return null;
+        }
+
+        PartsXml parts = new PartsXml();
+        for (PartXml part : partxmlList) {
+            parts.getList().add(part);
         }
         return parts;
     }
@@ -93,13 +107,19 @@ abstract public class CamXmlBuilder {
         List<PartXml> partXmlList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(partList)) {
             for (ApPart part : partList) {
-                partXmlList.add(createPart(part, itemMap, externalSystemTypeCode));
+                List<ApItem> partItems = itemMap.get(part.getPartId());
+                if (CollectionUtils.isEmpty(partItems)) {
+                    continue;
+                }
+                partXmlList.add(createPart(part, partItems, externalSystemTypeCode));
             }
         }
         return partXmlList;
     }
 
-    private PartXml createPart(ApPart apPart, Map<Integer, List<ApItem>> itemMap, String externalSystemTypeCode) {
+    private PartXml createPart(ApPart apPart, List<ApItem> partItems, String externalSystemTypeCode) {
+        Validate.isTrue(partItems.size() > 0, "Empty part list, entityId: {}", apPart.getAccessPointId());
+
         String uuid = UUID.randomUUID().toString();
 
         String parentUuid;
@@ -113,8 +133,7 @@ abstract public class CamXmlBuilder {
 
         onPartCreated(apPart, uuid);
 
-        Collection<ApItem> itemList = itemMap.getOrDefault(apPart.getPartId(), Collections.emptyList());
-        part.setItms(createItems(apPart, itemList, externalSystemTypeCode));
+        part.setItms(createItems(apPart, partItems, externalSystemTypeCode));
         return part;
     }
 

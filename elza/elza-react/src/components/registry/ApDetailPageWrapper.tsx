@@ -333,13 +333,13 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
                     scopeId={scopeId}
                     initialValues={{
                         partForm: {
-                            items: sortItems(
+                            items: part.items?sortItems(
                                 partType,
                                 part.items,
                                 refTables,
                                 descItemTypesMap,
                                 apViewSettings.data!.rules[ruleSetId],
-                            ),
+                            ):[],
                         },
                     }}
                     formData={
@@ -347,13 +347,13 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
                             partId: part.id,
                             parentPartId: part.partParentId,
                             partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
-                            items: sortItems(
+                            items: part.items?sortItems(
                                 partType,
                                 part.items,
                                 refTables,
                                 descItemTypesMap,
                                 apViewSettings.data!.rules[ruleSetId],
-                            ),
+                            ):[],
                         } as ApPartFormVO
                     }
                     parentPartId={part.partParentId}
