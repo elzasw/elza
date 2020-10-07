@@ -403,8 +403,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String EXPORT_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}/export";
 
     //FUND
-    protected static final String CREATE_FUND_V1 = FUND_CONTROLLER_URL + "/fund";
-    protected static final String UPDATE_FUND_V1 = FUND_CONTROLLER_URL + "/fund/{id}";
     protected static final String FUND_V1 = FUND_CONTROLLER_URL + "/fund/{id}";
     protected static final String FUNDS_V1 = FUND_CONTROLLER_URL + "/fund";
 
@@ -713,18 +711,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         return fundsApi.createFund(createFund);
     }
-
-//     /**
-//     * Vytvoření archivní pomůcky.
-//     *
-//     * @param fund parametry pro založení
-//     * @return ap
-//     */
-//    protected Fund createFundV1(final CreateFund fund) {
-//        Response response = post(spec -> spec
-//                .body(fund), CREATE_FUND_V1);
-//        return response.getBody().as(Fund.class);
-//    }
 
     protected FundDetail getFundV1(final Integer id) {
         Response response = get(spec ->
