@@ -70,7 +70,7 @@ abstract public class CamXmlBuilder {
         if (CollectionUtils.isEmpty(partList)) {
             // schema allows empty element prts
             return null;
-        }        
+        }
 
         Collection<ApPart> adjustedPartList = partList;
         // check if prefered part is first
