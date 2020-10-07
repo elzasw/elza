@@ -725,7 +725,8 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
                     Integer dataId = createArrData(dataTypeId);
                     createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
 
-                    String dataTypeCode = rulItemType.getDataTypeCode();
+                    RulDataType rulDataType = getRulDataType(dataTypeId);
+                    String dataTypeCode = rulDataType.getCode();
                     if (dataTypeCode.equalsIgnoreCase("INT")) {
                         try {
                             storeIntegerValue(dataId, dataTypeId, Integer.parseInt(complement));
@@ -1037,6 +1038,15 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
             }
         }
         return null;
+    }
+
+    private RulDataType getRulDataType(final Integer dataTypeId) {
+        for (RulDataType rulDataType : rulDataTypes) {
+            if (rulDataType.getDataTypeId().equals(dataTypeId)) {
+                return rulDataType;
+            }
+        }
+        throw new IllegalArgumentException("Nenalezen rulDataType podle id: " + dataTypeId);
     }
 
     private String getDataStorageTable(Integer dataTypeId) {
