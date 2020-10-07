@@ -58,14 +58,12 @@ import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
-import cz.tacr.elza.controller.vo.CreateFund;
 import cz.tacr.elza.controller.vo.CreateUserVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.FindFundsResult;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
-import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.LanguageVO;
@@ -144,8 +142,11 @@ import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.ApiClient;
+import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.AccesspointsApi;
 import cz.tacr.elza.test.controller.FundsApi;
+import cz.tacr.elza.test.controller.vo.CreateFund;
+import cz.tacr.elza.test.controller.vo.Fund;
 import io.restassured.RestAssured;
 import io.restassured.config.EncoderConfig;
 import io.restassured.config.RestAssuredConfig;
@@ -693,8 +694,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
      *
      * @param name název AP
      * @return ap
+     * @throws ApiException 
      */
-    protected Fund createFund(final String name, final String internalCode) {
+    protected Fund createFund(final String name, final String internalCode) throws ApiException {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(1);
         ParInstitutionVO institution = getInstitutions().get(0);
@@ -709,24 +711,20 @@ public abstract class AbstractControllerTest extends AbstractTest {
         scopes.add("GLOBAL");
         createFund.setScopes(scopes);
 
-        return createFundV1(createFund);
+        return fundsApi.createFund(createFund);
     }
 
-    /**
-     * Vytvoření archivní pomůcky.
-     *
-
-     /**
-     * Vytvoření archivní pomůcky.
-     *
-     * @param fund parametry pro založení
-     * @return ap
-     */
-    protected Fund createFundV1(final CreateFund fund) {
-        Response response = post(spec -> spec
-                .body(fund), CREATE_FUND_V1);
-        return response.getBody().as(Fund.class);
-    }
+//     /**
+//     * Vytvoření archivní pomůcky.
+//     *
+//     * @param fund parametry pro založení
+//     * @return ap
+//     */
+//    protected Fund createFundV1(final CreateFund fund) {
+//        Response response = post(spec -> spec
+//                .body(fund), CREATE_FUND_V1);
+//        return response.getBody().as(Fund.class);
+//    }
 
     protected FundDetail getFundV1(final Integer id) {
         Response response = get(spec ->

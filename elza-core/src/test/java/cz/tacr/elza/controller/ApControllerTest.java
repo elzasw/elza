@@ -8,9 +8,11 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.Fund;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
@@ -18,10 +20,13 @@ import org.junit.Test;
 
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApPartFormVO;
+import cz.tacr.elza.controller.vo.ApPartVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
@@ -340,7 +345,7 @@ public class ApControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void registerReplaceTest() {
+    public void registerReplaceTest() throws ApiException {
         // Vytvoření fund
         Fund fund = createFund("RegisterLinks Test AP", "IC3");
         ArrFundVersionVO fundVersion = getOpenVersion(fund);

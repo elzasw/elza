@@ -36,22 +36,19 @@ public class StructuredObjectServiceTest extends AbstractControllerTest {
 
         Fund fundCreate = new Fund();
         fundCreate.setFundName("Test fund XYZ");
-        fundCreate.setRulesetCode("SIMPLE-DEV");
+        fundCreate.setRulesetCode("SIMPLE-DEV"); 
         fundCreate.setInstitutionIdentifier("in1");
 
         FundIdentifiers fundIdents = fundServiceClient.createFund(fundCreate);
-        
-        cz.tacr.elza.controller.vo.Fund fundVO = new cz.tacr.elza.controller.vo.Fund();
+
+        cz.tacr.elza.test.controller.vo.Fund fundVO = new cz.tacr.elza.test.controller.vo.Fund();
         fundVO.setId(Integer.valueOf(fundIdents.getId()));
         ArrFundVersionVO fundVersionVO = getOpenVersion(fundVO);
 
         String addressSOService = RestAssured.baseURI + ":" + RestAssured.port
                 + "/services"
                 + WebServiceConfig.STRUCT_OBJ_SERVICE_URL;
-        StructuredObjectService structObjServiceClient = DaoServiceClientFactory.createStructuredObjectService(
-                                                                                                               addressSOService,
-                                                                                                               "admin",
-                                                                                                               "admin");
+        StructuredObjectService structObjServiceClient = DaoServiceClientFactory.createStructuredObjectService(addressSOService,"admin", "admin");
 
         // create using id
         StructuredObject createStructuredObject = createPacket(fundIdents, "v1");
