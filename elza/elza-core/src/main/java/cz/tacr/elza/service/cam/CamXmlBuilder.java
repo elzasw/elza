@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.service.GroovyService;
 import org.apache.commons.collections4.CollectionUtils;
 
 import cz.tacr.cam.schema.cam.ItemsXml;
@@ -23,6 +21,8 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.cam.CamXmlFactory.EntityRefHandler;
 
 /**
@@ -66,6 +66,11 @@ abstract public class CamXmlBuilder {
     protected PartsXml createParts(Collection<ApPart> partList,
                                    Map<Integer, List<ApItem>> itemMap,
                                    String externalSystemTypeCode) {
+        // if no parts available -> create item without parts
+        if (CollectionUtils.isEmpty(partList)) {
+            // schema allows empty element prts
+            return null;
+        }
         PartsXml parts = new PartsXml();
 
         ApPart preferPart = accessPoint.getPreferredPart();
