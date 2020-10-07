@@ -13,7 +13,6 @@ import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.mail.util.ByteArrayDataSource;
 
-import cz.tacr.elza.service.GroovyService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -49,6 +48,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker.ErrorHandler;
 import cz.tacr.elza.ws.types.v1.EntityInfo;
@@ -152,13 +152,13 @@ public class ExportServiceImpl implements ExportService {
         
         List<String> missing = subList.stream().filter(e -> !foundItems.contains(e)).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(missing)) {
-            log.info("Missing items in export request: {}", missing);
-            cz.tacr.elza.ws.types.v1.ErrorDescription ed = WSHelper.prepareErrorDescription("Missing some items",
+            log.info("Cannot find some of requested entities: {}", missing);
+            cz.tacr.elza.ws.types.v1.ErrorDescription ed = WSHelper.prepareErrorDescription("Failed to find requested entities.",
                                                                                             "Missing items: " + String
                                                                                                     .join(",",
                                                                                                           missing));
 
-            throw new ExportRequestException("Missing some items", ed);
+            throw new ExportRequestException(ed.getUserMessage(), ed);
         }
     }
 
