@@ -156,13 +156,13 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
     public static void addAllNodesIn(RecursiveQueryBuilder<?> rqBuilder, final String nodeIdsParamName) {
         // select recursively all relevant nodes
         rqBuilder.addSqlPart(
-                             "WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS ")
+                             "WITH RECURSIVE levelTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position) AS ")
                 .addSqlPart("(SELECT t.* FROM arr_level t WHERE t.node_id IN (:").addSqlPart(nodeIdsParamName)
                 .addSqlPart(" ) ")
                 .addSqlPart("UNION ALL ")
-                .addSqlPart("SELECT t.* FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent) ")
+                .addSqlPart("SELECT t.* FROM arr_level t JOIN levelTree td ON td.node_id = t.node_id_parent) ")
 
-                .addSqlPart("SELECT DISTINCT n.node_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
+                .addSqlPart("SELECT DISTINCT n.node_id FROM levelTree t JOIN arr_node n ON n.node_id = t.node_id ")
                 .addSqlPart("WHERE t.delete_change_id IS NULL");
     }
 }

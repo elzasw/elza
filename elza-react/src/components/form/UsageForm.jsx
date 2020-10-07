@@ -26,7 +26,17 @@ import {FUND_TREE_AREA_MAIN} from '../../actions/constants/ActionTypes';
 class RegistryUsageForm extends React.Component {
     static propTypes = {
         detail: PropTypes.object,
+        replaceText: PropTypes.string,
+        replaceButtonText: PropTypes.string,
+        replaceType: PropTypes.string,
+        nameLabel: PropTypes.string,
     };
+
+    static defaultProps = {
+        replaceText: i18n("registry.replaceText"),
+        replaceButtonText: i18n('registry.replace'),
+        replaceType: "replace",
+    }
 
     rootFundIdfOffset = 0.1;
     manyItemsIdOffset = 0.4;
@@ -237,11 +247,37 @@ class RegistryUsageForm extends React.Component {
         };
     }
 
-    render() {
-        const {detail, fundTreeUsage, onReplace} = this.props;
+    renderReplaceField = () => {
+        const { type, replaceButtonText, onReplace} = this.props;
         const {selectedReplacementNode} = this.state;
         return (
+            <div className="field-container">
+                {type === 'registry' && (
+                    <RegistryField
+                        value={selectedReplacementNode}
+                        onChange={this.handleChoose}
+                        onBlur={() => {}}
+                    />
+                )}
+                <Button
+                    onClick={() => onReplace(selectedReplacementNode)}
+                    disabled={!this.canReplace() || !onReplace}
+                >
+                    {replaceButtonText}
+                </Button>
+            </div>
+        )
+    }
+
+
+    render() {
+        const {detail, fundTreeUsage, replaceType, onReplace, nameLabel} = this.props;
+
+        const canReplace = (replaceType === "replace" && this.state.usageCount > 0);
+        const canDelete = replaceType === "delete";
+        return (
             <Modal.Body className="reg-usage-form">
+                {nameLabel && <div className="name-label">{nameLabel}</div>}
                 <h4>{detail && detail.data && detail.data.name}</h4>
                 <label>
                     {i18n('registry.registryUsageCount')} {this.state.usageCount}
@@ -257,29 +293,19 @@ class RegistryUsageForm extends React.Component {
                         {...fundTreeUsage}
                     />
                 )}
-                {this.state.usageCount > 0 && (
-                    <ToggleContent withText text={this.props.replaceText}>
-                        <Row>
-                            <Col xs={10}>
-                                {this.props.type === 'registry' && (
-                                    <RegistryField
-                                        value={this.state.selectedReplacementNode}
-                                        onChange={this.handleChoose}
-                                        onBlur={() => {}}
-                                    />
-                                )}
-                            </Col>
-                            <Col xs={2}>
-                                <Button
-                                    onClick={() => onReplace(selectedReplacementNode)}
-                                    disabled={!this.canReplace()}
-                                >
-                                    {i18n('registry.replace')}
-                                </Button>
-                            </Col>
-                        </Row>
+                { onReplace && (canDelete ? 
+                    <div className="actions-container">
+                        <div className="actions-text">{this.props.replaceText}</div>
+                        {this.renderReplaceField()}
+                    </div> : 
+                    canReplace && (
+                    <ToggleContent 
+                        withText 
+                        text={this.props.replaceText} 
+                    >
+                        {this.renderReplaceField()}
                     </ToggleContent>
-                )}
+                ))}
             </Modal.Body>
         );
     }

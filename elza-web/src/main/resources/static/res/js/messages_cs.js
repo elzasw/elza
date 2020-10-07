@@ -1622,6 +1622,12 @@ var messages = {
     "accesspoint.description": "Popis",
     "accesspoint.update.description": "Úprava popisu",
 
+    "accesspoint.removeDuplicity": "Odstranit duplicitu",
+    "accesspoint.removeDuplicity.title": "Odstranění duplicity",
+    "accesspoint.removeDuplicity.replacingAccesspoint": "Nahrazující přístupový bod",
+    "accesspoint.removeDuplicity.replacedAccesspoint": "K nahrazení",
+    "accesspoint.removeDuplicity.resolve": "Vyřešit duplicitu",
+
     "accesspoint.scope.management.title": "Správa oblastí archivních entit",
     "accesspoint.scope.list": "Seznam oblastí",
     "accesspoint.scope.code": "Kód",

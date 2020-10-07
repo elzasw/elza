@@ -8,8 +8,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.service.GroovyService;
 import org.apache.commons.collections4.CollectionUtils;
 
 import cz.tacr.cam.schema.cam.BatchEntityRecordRevXml;
@@ -30,10 +28,12 @@ import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.GroovyService;
 
 public class UpdateEntityBuilder extends CamXmlBuilder {
 
@@ -194,7 +194,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
 
         //TODO dodělat změnu preferovaného partu
         ApBindingItem preferPart = CamUtils.findBindingItemById(bindingParts,
-                                                                accessPoint.getPreferredPart().getPartId());
+                                                                accessPoint.getPreferredPartId());
         
     }
 

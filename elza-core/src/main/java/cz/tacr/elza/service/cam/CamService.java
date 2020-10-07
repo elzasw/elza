@@ -397,7 +397,7 @@ public class CamService {
 
     public BatchUpdateXml createCreateEntityBatchUpdate(final Integer accessPointId, final String externalSystemCode) {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
-        ApState state = accessPointService.getState(accessPoint);
+        ApState state = accessPointService.getStateInternal(accessPoint);
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
         UserDetail userDetail = userService.getLoggedUserDetail();
@@ -427,7 +427,7 @@ public class CamService {
                                                         final ApBindingState bindingState,
                                                         final EntityXml entityXml,
                                                         final ApExternalSystem apExternalSystem) {
-        ApState state = accessPointService.getState(accessPoint);
+        ApState state = accessPointService.getStateInternal(accessPoint);
         UserDetail userDetail = userService.getLoggedUserDetail();
 
         List<ApPart> partList = partService.findPartsByAccessPoint(state.getAccessPoint());
@@ -502,7 +502,7 @@ public class CamService {
 
             if (CollectionUtils.isNotEmpty(bindingStateList)) {
                 for (ApBindingState bindingState : bindingStateList) {
-                    ApState state = accessPointService.getState(bindingState.getAccessPoint());
+                    ApState state = accessPointService.getStateInternal(bindingState.getAccessPoint());
                     EntityXml entity;
                     try {
                         entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()), externalSystem.getCode());

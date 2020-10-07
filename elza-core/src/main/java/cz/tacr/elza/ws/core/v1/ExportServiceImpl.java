@@ -47,6 +47,7 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker.ErrorHandler;
@@ -81,12 +82,15 @@ public class ExportServiceImpl implements ExportService {
 
     @Autowired
     AccessPointService accessPointService;
-
+    
     @Autowired
     StaticDataService staticDataService;
 
     @Autowired
     GroovyService groovyService;
+
+    @Autowired
+    ApChangeRepository changeRepository;
 
     public ExportServiceImpl() {
 
@@ -244,7 +248,7 @@ public class ExportServiceImpl implements ExportService {
 
         SearchEntityResult result = new SearchEntityResult();
         if (ap != null) {
-            ApState apState = accessPointService.getState(ap);
+            ApState apState = accessPointService.getStateInternal(ap);
             ApFactory apFactory = appCtx.getBean(ApFactory.class);
             ApAccessPointVO apVo = apFactory.createVO(apState, true);
 
@@ -262,7 +266,24 @@ public class ExportServiceImpl implements ExportService {
 
     @Override
     public EntityUpdates searchEntityUpdates(SearchEntityUpdates request) throws CoreServiceException {
-        // TODO Auto-generated method stub
-        return null;
+        int fromId;
+        if (request == null || request.getFromTrans() == null) {
+            fromId = 0;
+        } else {
+            fromId = Integer.valueOf(request.getFromTrans());
+        }
+        int toId = changeRepository.findTop1ByOrderByChangeIdDesc().getChangeId();
+
+        List<String> uuids = accessPointRepository.findAccessPointUuidChangedOrDeleted(fromId);
+
+        IdentifierList identifierList = new IdentifierList();
+        identifierList.getIdentifier().addAll(uuids);
+
+        EntityUpdates updates = new EntityUpdates();
+        updates.setFromTrans(String.valueOf(fromId));
+        updates.setToTrans(String.valueOf(toId));
+        updates.setEntityIds(identifierList);
+
+        return updates;
     }
 }
