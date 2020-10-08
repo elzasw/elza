@@ -455,6 +455,7 @@ export default function subNodeForm(state = initialState, action = {}) {
         case types.CHANGE_NODES:
         case types.OUTPUT_CHANGES_DETAIL:
         case types.OUTPUT_CHANGES:
+        case types.OUTPUT_STATE_CHANGE:
         case types.CHANGE_OUTPUTS:
         case types.CHANGE_STRUCTURE:
         case types.FUND_INVALID:

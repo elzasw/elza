@@ -52,7 +52,6 @@ class SubNodeForm extends AbstractReactComponent {
             'handleDescItemTypeCopyFromPrev',
             'handleDescItemTypeLock',
             'handleDescItemTypeCopy',
-            'handleCreateRecord',
             'handleCreatedRecord',
             'trySetFocus',
             'initFocus',
@@ -75,7 +74,7 @@ class SubNodeForm extends AbstractReactComponent {
     static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
-        routingKey: PropTypes.string,
+        routingKey: PropTypes.oneOfType(PropTypes.string, PropTypes.number),
         nodeSetting: PropTypes.object,
         rulDataTypes: PropTypes.object.isRequired,
         calendarTypes: PropTypes.object.isRequired,
@@ -89,7 +88,7 @@ class SubNodeForm extends AbstractReactComponent {
         focus: PropTypes.object,
         formActions: PropTypes.object.isRequired,
         showNodeAddons: PropTypes.bool.isRequired,
-        arrPerm: PropTypes.bool.isRequired,
+        arrPerm: PropTypes.bool,
     };
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -895,7 +894,7 @@ class SubNodeForm extends AbstractReactComponent {
         if (unusedItemTypeIds && unusedItemTypeIds.length > 0) {
             unusedGeneratedItems = (
                 <Accordion>
-                    <Card eventKey="1">
+                    <Card>
                         <Card.Header>
                             {i18n('arr.output.title.unusedGeneratedItems', unusedItemTypeIds.length)}
                         </Card.Header>

@@ -12,7 +12,7 @@ class AddRemoveList extends AbstractReactComponent {
         items: PropTypes.array.isRequired,
         label: PropTypes.string, // pokud je uvedeno, zobrazí se jako nadpis celé sekce
         addInLabel: PropTypes.bool, // pokud je true, je akce přidání zobrazena u labelu - tedy nahoře
-        onAdd: PropTypes.func.isRequired,
+        onAdd: PropTypes.func,
         onRemove: PropTypes.func.isRequired,
         renderItem: PropTypes.func.isRequired,
         addTitle: PropTypes.string,
@@ -70,7 +70,7 @@ class AddRemoveList extends AbstractReactComponent {
                   });
 
         let addAction;
-        if (!readOnly  && onAdd) {
+        if (!readOnly && onAdd) {
             addAction = (
                 <div className="actions-container">
                     <NoFocusButton onClick={onAdd} title={i18n(addTitle)}>
