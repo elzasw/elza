@@ -14,7 +14,7 @@ class FormDescItemGroup extends AbstractReactComponent {
 
         subNodeForm: PropTypes.object.isRequired,
         typePrefix: PropTypes.string.isRequired,
-        arrPerm: PropTypes.bool.isRequired,
+        arrPerm: PropTypes.bool,
         fundId: PropTypes.number.isRequired,
         strictMode: PropTypes.bool.isRequired,
         showNodeAddons: PropTypes.bool.isRequired,

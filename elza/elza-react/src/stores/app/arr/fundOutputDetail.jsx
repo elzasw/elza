@@ -2,6 +2,7 @@ import * as types from '../../../actions/constants/ActionTypes';
 import subNodeForm from './subNodeForm.jsx';
 import {outputFormActions} from '../../../actions/arr/subNodeForm.jsx';
 import {consolidateState} from '../../../components/Utils.jsx';
+import {OutputState} from '../../../typings/Outputs';
 
 const initialState = {
     id: null,
@@ -37,12 +38,21 @@ export default function fundOutputDetail(state = initialState, action = {}) {
             };
         }
         case types.OUTPUT_STATE_CHANGE: {
-            if (state.fetched && action.outputId) {
-                return {
-                    ...state,
-                    currentDataKey: '',
-                    state: action.state,
-                };
+            if (state.fetched && action.outputId === state.id) {
+                if (state.state === OutputState.COMPUTING && action.state === OutputState.OPEN) {
+                    return {
+                        ...state,
+                        currentDataKey: '',
+                        subNodeForm: subNodeForm(state.subNodeForm, action),
+                        state: action.state,
+                    };
+                } else {
+                    return {
+                        ...state,
+                        currentDataKey: '',
+                        state: action.state,
+                    };
+                }
             }
             return state;
         }
@@ -91,7 +101,6 @@ export default function fundOutputDetail(state = initialState, action = {}) {
             };
         }
         case types.CHANGE_OUTPUTS:
-            console.warn(action.outputIds, state.id);
             if (action.outputIds && action.outputIds.indexOf(state.id) >= 0) {
                 return {
                     ...state,

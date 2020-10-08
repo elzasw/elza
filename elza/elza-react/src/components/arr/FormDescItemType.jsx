@@ -26,7 +26,7 @@ class FormDescItemType extends AbstractReactComponent {
         infoType: PropTypes.object.isRequired,
         typePrefix: PropTypes.string.isRequired,
         singleDescItemTypeEdit: PropTypes.bool.isRequired,
-        arrPerm: PropTypes.bool.isRequired,
+        arrPerm: PropTypes.bool,
         fundId: PropTypes.number.isRequired,
         strictMode: PropTypes.bool.isRequired,
         showNodeAddons: PropTypes.bool.isRequired,
