@@ -24,6 +24,10 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
+import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
+import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
+import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1803,6 +1807,15 @@ public class AccessPointService {
 
     public ApIndex findPreferredPartIndex(ApAccessPoint accessPoint) {
         return indexRepository.findPreferredPartIndexByAccessPointAndIndexType(accessPoint, DISPLAY_NAME);
+    }
+
+    public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max, SyncsFilterVO filter) {
+        ExtSyncsQueueResultListVO result = new ExtSyncsQueueResultListVO();
+        List<ExtSyncsQueueItemVO> items = new ArrayList<>();
+
+        result.setTotal(items.size());
+        result.setData(items.subList(from, Math.min(from + max, items.size())));
+        return result;
     }
 
     /**
