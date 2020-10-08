@@ -1,15 +1,15 @@
-import {AccesspointsApi, FundsApi} from "elza-api";
-import globalAxios, {AxiosRequestConfig, AxiosResponse, AxiosError} from "axios";
+import {AccesspointsApi, FundsApi} from 'elza-api';
+import globalAxios, {AxiosRequestConfig, AxiosResponse, AxiosError} from 'axios';
 import i18n from '../components/i18n';
 import {createException} from 'components/ExceptionUtils.jsx';
-import {logout} from "actions/global/login";
+import {logout} from 'actions/global/login';
 import {store} from 'stores/index.jsx';
 
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
 
-const baseApiPath = "/api";
-const v1ApiPath = "/v1";
+const baseApiPath = '/api';
+const v1ApiPath = '/v1';
 const basePath = `${serverContextPath}${baseApiPath}${v1ApiPath}`;
 
 let pendingRequests: (() => void)[] = [];
@@ -20,13 +20,13 @@ globalAxios.interceptors.request.use((config) => {
 })
 */
 
-globalAxios.interceptors.response.use(undefined, (error) => {
+globalAxios.interceptors.response.use(undefined, error => {
     const exception = resolveException(error);
-    if(exception.unauthorized && !error.config.noPending){
+    if (exception.unauthorized && !error.config.noPending) {
         return createPendingPromise(error.config);
     }
     return exception;
-})
+});
 
 interface IError {
     type: string;
@@ -45,10 +45,10 @@ interface IError {
 
 function resolveException(error: AxiosError) {
     let result: IError = {
-        type: "unknown"
+        type: 'unknown',
     };
 
-    if(error.response){
+    if (error.response) {
         const {status, data, statusText} = error.response;
 
         if (status == 422) {
@@ -94,14 +94,14 @@ function resolveException(error: AxiosError) {
             };
         }
     }
-    console.error("ERROR", result)
+    console.error('ERROR', result);
 
-    if(store){
+    if (store) {
         if (result.createToaster) {
             store.dispatch(createException(result));
         }
 
-        if(result.unauthorized){
+        if (result.unauthorized) {
             store.dispatch(logout());
         }
     }
@@ -113,28 +113,33 @@ function resolveException(error: AxiosError) {
  * Creates a new promise and stores it as a funcion in pending requests array
  */
 const createPendingPromise = (config: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
-    console.log("create pending promise");
+    console.log('create pending promise');
     return new Promise((resolve, reject) => {
         pendingRequests.push(() => {
-            globalAxios.request(config).then((response) => {
-                resolve(response);
-            }).catch((error) => {
-                reject(error)
-            })
+            globalAxios
+                .request(config)
+                .then(response => {
+                    resolve(response);
+                })
+                .catch(error => {
+                    reject(error);
+                });
         });
-    })
-}
+    });
+};
 
 /**
  * Resumes all promises in pending requests array
  */
 export const continueRequests = () => {
-    console.log("continue requests", pendingRequests.length);
-    pendingRequests.forEach((resolve) => { resolve() })
+    console.log('continue requests', pendingRequests.length);
+    pendingRequests.forEach(resolve => {
+        resolve();
+    });
     pendingRequests = [];
-}
+};
 
-export const Api = {
-    accesspoints: new AccesspointsApi({ basePath }, undefined, globalAxios),
-    funds: new FundsApi({ basePath }, undefined, globalAxios),
-}
+export const Api: {accesspoints: AccesspointsApi; funds: FundsApi} = {
+    accesspoints: new AccesspointsApi({basePath}, undefined, globalAxios),
+    funds: new FundsApi({basePath}, undefined, globalAxios),
+};
