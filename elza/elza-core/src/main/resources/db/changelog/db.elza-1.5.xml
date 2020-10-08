@@ -952,4 +952,14 @@
         </update>
     </changeSet>
 
+    <changeSet id="20201006152100" author="fantis">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sqlCheck expectedResult="0">SELECT count(*) FROM rul_rule_set r WHERE r.rule_type = 'ENTITY'</sqlCheck>
+            </not>
+        </preConditions>
+        <sql>INSERT INTO arr_async_request (async_request_id, type, priority, access_point_id)
+            SELECT ap.access_point_id, 'AP', 1, ap.access_point_id FROM ap_access_point ap</sql>
+    </changeSet>
+
 </databaseChangeLog>
