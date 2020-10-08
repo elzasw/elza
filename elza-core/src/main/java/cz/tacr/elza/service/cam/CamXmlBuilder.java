@@ -59,6 +59,9 @@ abstract public class CamXmlBuilder {
         newItems.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
 
         createXmlItems(itemList, newItems.getItems(), externalSystemTypeCode);
+        if (newItems.getItems().size() == 0) {
+            return null;
+        }
 
         return newItems;
     }
@@ -111,7 +114,11 @@ abstract public class CamXmlBuilder {
                 if (CollectionUtils.isEmpty(partItems)) {
                     continue;
                 }
-                partXmlList.add(createPart(part, partItems, externalSystemTypeCode));
+                PartXml partXml = createPart(part, partItems, externalSystemTypeCode);
+                if (partXml == null) {
+                    continue;
+                }
+                partXmlList.add(partXml);
             }
         }
         return partXmlList;
@@ -133,7 +140,14 @@ abstract public class CamXmlBuilder {
 
         onPartCreated(apPart, uuid);
 
-        part.setItms(createItems(apPart, partItems, externalSystemTypeCode));
+        ItemsXml itemsXml = createItems(apPart, partItems, externalSystemTypeCode);
+
+        // check if anything to export
+        if (itemsXml.getItems().size() == 0) {
+            return null;
+        }
+
+        part.setItms(itemsXml);
         return part;
     }
 
