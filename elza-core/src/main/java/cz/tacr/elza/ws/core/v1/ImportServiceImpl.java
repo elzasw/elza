@@ -25,6 +25,7 @@ import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.ObjectFactory;
 import cz.tacr.elza.common.XmlUtils;
+import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
@@ -69,6 +70,9 @@ public class ImportServiceImpl implements ImportService {
     @Autowired
     private CamService camService;
 
+    @Autowired
+    private SchemaManager schemaManager;
+
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(EntitiesXml.class);
 
     final protected static ObjectFactory objectcFactory = CamUtils.getObjectFactory();
@@ -82,7 +86,7 @@ public class ImportServiceImpl implements ImportService {
                         request.getRequestId());
 
             switch (request.getDataFormat()) {
-            case CamUtils.CAM_SCHEMA:
+            case SchemaManager.CAM_SCHEMA_URL:
                 importCamSchema(request);
                 break;
             default:
@@ -100,6 +104,7 @@ public class ImportServiceImpl implements ImportService {
     private void importCamSchema(ImportRequest request) throws JAXBException, IOException {
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
+        unmarshaller.setSchema(schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL));
         DataHandler binData = request.getBinData();
         // read CAM xml
         Object obj = unmarshaller.unmarshal(binData.getInputStream());

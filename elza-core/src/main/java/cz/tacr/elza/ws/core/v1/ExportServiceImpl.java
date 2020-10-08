@@ -35,6 +35,7 @@ import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.db.HibernateConfiguration;
+import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamExportBuilder;
@@ -88,6 +89,9 @@ public class ExportServiceImpl implements ExportService {
 
     @Autowired
     GroovyService groovyService;
+
+    @Autowired
+    SchemaManager schemaManager;
 
     @Autowired
     ApChangeRepository changeRepository;
@@ -178,7 +182,7 @@ public class ExportServiceImpl implements ExportService {
         } else
         if (CamUtils.CAM_SCHEMA.equals(format)) {
             // fomat CAM
-            exportBuilder = new CamExportBuilder(staticDataService, groovyService);
+            exportBuilder = new CamExportBuilder(staticDataService, groovyService, schemaManager);
         } else {
             throw new ExportRequestException("Unrecognized schema: " + format);
         }
