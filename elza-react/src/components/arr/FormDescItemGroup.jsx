@@ -28,7 +28,6 @@ class FormDescItemGroup extends AbstractReactComponent {
         customActions: PropTypes.func,
         descItemRef: PropTypes.func.isRequired, // (key, ref) => void
 
-        onCreateRecord: PropTypes.func.isRequired,
         onDetailRecord: PropTypes.func.isRequired,
         onCreateFile: PropTypes.func.isRequired,
         onFundFiles: PropTypes.func.isRequired,
@@ -77,7 +76,6 @@ class FormDescItemGroup extends AbstractReactComponent {
         } = this.props;
 
         const {
-            onCreateRecord,
             onDetailRecord,
             onCreateFile,
             onFundFiles,
@@ -101,7 +99,6 @@ class FormDescItemGroup extends AbstractReactComponent {
         } = this.props;
 
         const onFuncs = {
-            onCreateRecord,
             onDetailRecord,
             onCreateFile,
             onFundFiles,

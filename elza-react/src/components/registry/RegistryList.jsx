@@ -2,7 +2,6 @@
  * Komponenta list rejstříků
  */
 import PropTypes from 'prop-types';
-
 import React from 'react';
 import {connect} from 'react-redux';
 import {
@@ -22,12 +21,10 @@ import {
     registryListFetchIfNeeded,
     registryListFilter,
     registryListInvalidate,
-    registrySetFolder,
 } from 'actions/registry/registry.jsx';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import {getTreeItemById} from './../../components/registry/registryUtils';
-import * as StateApproval from './../../components/enum/StateApproval';
-
+import {StateApproval, StateApprovalCaption} from '../../api/StateApproval';
 import './RegistryList.scss';
 import RegistryListItem from './RegistryListItem';
 import ListPager from '../shared/listPager/ListPager';
@@ -190,14 +187,6 @@ class RegistryList extends AbstractReactComponent {
         this.props.dispatch(registryDetailFetchIfNeeded(item.id));
     };
 
-    handleRegistryNavigation = recordIdForOpen => {
-        this.props.dispatch(registrySetFolder(recordIdForOpen));
-    };
-
-    handleRegistryTypesSelectNavigation = id => {
-        this.handleFilterRegistryType({id});
-    };
-
     renderListItem = props => {
         const {item} = props;
         const {eidTypes, apTypeIdMap} = this.props;
@@ -253,10 +242,10 @@ class RegistryList extends AbstractReactComponent {
         const defaultValue = {name: i18n('party.apState')};
         return [
             defaultValue,
-            ...StateApproval.values.map(item => {
+            ...Object.values(StateApproval).map(item => {
                 return {
                     id: item,
-                    name: StateApproval.getCaption(item),
+                    name: StateApprovalCaption(item),
                 };
             }),
         ];
