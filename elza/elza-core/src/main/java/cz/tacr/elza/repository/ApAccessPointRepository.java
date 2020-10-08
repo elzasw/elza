@@ -90,5 +90,5 @@ public interface ApAccessPointRepository
             "SELECT ap.uuid FROM ap_binding_state b" + 
             "  JOIN ap_access_point ap ON b.access_point_id = ap.access_point_id" + 
             "  WHERE b.create_change_id > :fromId OR b.delete_change_id > :fromId", nativeQuery = true)
-    List<String> findAccessPointUuidChangedOrDeleted(Integer fromId);
+            List<String> findAccessPointUuidChangedOrDeleted(@Param("fromId") Integer fromId);
 }
