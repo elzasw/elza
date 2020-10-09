@@ -134,7 +134,9 @@ public class ImportServiceImpl implements ImportService {
         importCam(request, scope, externalSystem, ents);
     }
 
-    private void importCam(ImportRequest request, ApScope scope, ApExternalSystem externalSystem, EntitiesXml ents) {
+    private void importCam(ImportRequest request, ApScope scope,
+                           ApExternalSystem externalSystem,
+                           EntitiesXml ents) {
         List<EntityXml> entities = ents.getList();
 
         Map<String, EntityXml> uuids = CamHelper.getEntitiesByUuid(entities);
