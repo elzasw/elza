@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toMap;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +29,8 @@ import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
+import cz.tacr.elza.domain.ExtSyncsQueueItem;
+import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -249,6 +252,9 @@ public class AccessPointService {
     
     @Autowired
     InstitutionRepository institutionRepository;
+
+    @Autowired
+    private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
 
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
@@ -1809,13 +1815,55 @@ public class AccessPointService {
         return indexRepository.findPreferredPartIndexByAccessPointAndIndexType(accessPoint, DISPLAY_NAME);
     }
 
-    public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max, SyncsFilterVO filter) {
+    public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max, String externalSystemCode, SyncsFilterVO filter) {
         ExtSyncsQueueResultListVO result = new ExtSyncsQueueResultListVO();
-        List<ExtSyncsQueueItemVO> items = new ArrayList<>();
+        List<ExtSyncsQueueItem> items = extSyncsQueueItemRepository.findExtSyncsQueueItemsByExternalSystemAndScopesAndState(externalSystemCode, filter.getStates(), filter.getScopes(), from, max);
 
         result.setTotal(items.size());
-        result.setData(items.subList(from, Math.min(from + max, items.size())));
+        result.setData(createExtSyncsQueueItemVOList(items));
         return result;
+    }
+
+    private List<ExtSyncsQueueItemVO> createExtSyncsQueueItemVOList(List<ExtSyncsQueueItem> items) {
+        List<ExtSyncsQueueItemVO> extSyncsQueueItemVOList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(items)) {
+
+            final List<ApAccessPoint> accessPoints = items.stream()
+                    .map(ExtSyncsQueueItem::getAccessPoint)
+                    .collect(Collectors.toList());
+            final Map<Integer, ApIndex> nameMap = findPreferredPartIndexMap(accessPoints);
+            final Map<Integer, ApState> stateMap = apStateRepository.findLastByAccessPoints(accessPoints).stream()
+                    .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
+
+            for (ExtSyncsQueueItem extSyncsQueueItem : items) {
+                String name = nameMap.get(extSyncsQueueItem.getAccessPointId()) != null ? nameMap.get(extSyncsQueueItem.getAccessPointId()).getValue() : null;
+                ApState state = stateMap.get(extSyncsQueueItem.getAccessPointId());
+                extSyncsQueueItemVOList.add(createExtSyncsQueueItemVO(extSyncsQueueItem, name, state.getScopeId()));
+            }
+        }
+        return extSyncsQueueItemVOList;
+    }
+
+    private ExtSyncsQueueItemVO createExtSyncsQueueItemVO(ExtSyncsQueueItem extSyncsQueueItem, String name, Integer scopeId) {
+        ExtSyncsQueueItemVO extSyncsQueueItemVO = new ExtSyncsQueueItemVO();
+        extSyncsQueueItemVO.setId(extSyncsQueueItem.getExtSyncsQueueItemId());
+        extSyncsQueueItemVO.setAccessPointId(extSyncsQueueItem.getAccessPoint().getAccessPointId());
+        extSyncsQueueItemVO.setAccessPointName(name);
+        extSyncsQueueItemVO.setScopeId(scopeId);
+        extSyncsQueueItemVO.setState(ExtAsyncQueueState.fromValue(extSyncsQueueItem.getState().name()));
+        extSyncsQueueItemVO.setStateMessage(extSyncsQueueItem.getStateMessage());
+        extSyncsQueueItemVO.setDate(extSyncsQueueItem.getDate().toLocalDateTime());
+        return extSyncsQueueItemVO;
+    }
+
+    public ExtSyncsQueueItem createExtSyncsQueueItem(ApAccessPoint accessPoint, ApExternalSystem apExternalSystem, String stateMessage, ExtSyncsQueueItem.ExtAsyncQueueState state, OffsetDateTime date) {
+        ExtSyncsQueueItem extSyncsQueueItem = new ExtSyncsQueueItem();
+        extSyncsQueueItem.setAccessPoint(accessPoint);
+        extSyncsQueueItem.setApExternalSystem(apExternalSystem);
+        extSyncsQueueItem.setStateMessage(stateMessage);
+        extSyncsQueueItem.setState(state);
+        extSyncsQueueItem.setDate(date);
+        return extSyncsQueueItem;
     }
 
     /**

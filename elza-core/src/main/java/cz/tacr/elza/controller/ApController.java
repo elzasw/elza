@@ -62,8 +62,6 @@ import cz.tacr.elza.controller.vo.ApStateHistoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
-import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
-import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
@@ -863,7 +861,7 @@ public class ApController {
         if (from < 0) {
             throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
         }
-        return accessPointService.findExternalSyncs(from, max, filter);
+        return accessPointService.findExternalSyncs(from, max, externalSystemCode, filter);
     }
 
     /**
