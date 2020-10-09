@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Order;
@@ -35,7 +37,8 @@ public class StructItemLoader extends AbstractEntityLoader<ArrStructuredItem, Ar
     }
 
     @Override
-    protected Predicate createQueryCondition(Path<? extends ArrStructuredItem> root, CriteriaBuilder cb) {
+    protected Predicate createQueryCondition(CriteriaQuery<Tuple> cq,
+                                             Path<? extends ArrStructuredItem> root, CriteriaBuilder cb) {
         return root.get(ArrItem.FIELD_DELETE_CHANGE_ID).isNull();
     }
 

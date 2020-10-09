@@ -53,7 +53,6 @@ import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
-import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
@@ -79,6 +78,8 @@ import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
+import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.utils.CsvUtils;
 
 public class ArrangementControllerTest extends AbstractControllerTest {
@@ -99,7 +100,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     public static final int MAX_SIZE = 999;
 
     @Test
-    public void arrangementTest() throws IOException, InterruptedException {
+    public void arrangementTest() throws IOException, InterruptedException, ApiException {
 
         // vytvoření
         Fund fund = createdFund();
@@ -148,7 +149,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     //TODO: odkomentovat po změně importu institucí @Test
-    public void fundFulltextTest() throws InterruptedException {
+    public void fundFulltextTest() throws InterruptedException, ApiException {
 
         final String value = "aaa";
         final int count = 2;
@@ -194,7 +195,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         }
     }
 
-    private Fund createFundFulltext(int i, int count, String value) throws InterruptedException {
+    private Fund createFundFulltext(int i, int count, String value) throws InterruptedException, ApiException {
 
         Fund fund = createFund("Test fulltext " + i, "TST" + 1);
 
@@ -213,7 +214,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void revertingChangeTest() throws IOException, InterruptedException {
+    public void revertingChangeTest() throws IOException, InterruptedException, ApiException {
 
         Fund fund = createdFund();
 
@@ -964,8 +965,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     /**
      * Vytvoření AP.
+     * @throws ApiException 
      */
-    private Fund createdFund() {
+    private Fund createdFund() throws ApiException {
         Fund fund = createFund(NAME_AP, "IC1");
         assertNotNull(fund);
 
@@ -1001,7 +1003,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void replaceDataValuesTest() throws InterruptedException {
+    public void replaceDataValuesTest() throws InterruptedException, ApiException {
 
         // vytvoření
         ArrFundVersionVO fundVersion = getOpenVersion(createdFund());
@@ -1077,7 +1079,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void filterUniqueValuesTest() throws InterruptedException {
+    public void filterUniqueValuesTest() throws InterruptedException, ApiException {
         // vytvoření
         ArrFundVersionVO fundVersion = getOpenVersion(createdFund());
 
@@ -1117,9 +1119,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     /**
      * Test method copyOlderSiblingAttribute
+     * @throws ApiException 
      */
     @Test
-    public void copyOlderSiblingAttribute() throws InterruptedException {
+    public void copyOlderSiblingAttribute() throws InterruptedException, ApiException {
         Fund fundSource = createdFund();
         ArrFundVersionVO fundVersion = getOpenVersion(fundSource);
 
@@ -1155,7 +1158,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void copyLevelsTest() throws InterruptedException {
+    public void copyLevelsTest() throws InterruptedException, ApiException {
         Fund fundSource = createdFund();
         ArrFundVersionVO fundVersionSource = getOpenVersion(fundSource);
         List<ArrNodeVO> nodesSource = createLevels(fundVersionSource);
@@ -1194,7 +1197,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void refTemplatesTest() {
+    public void refTemplatesTest() throws ApiException {
         Fund fund = createdFund();
         ArrRefTemplateVO refTemplateVO = createRefTemplate(fund.getId());
 
@@ -1242,7 +1245,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
 
     @Test
-    public void createDescItemBit() {
+    public void createDescItemBit() throws ApiException {
         Fund fundSource = createdFund();
         ArrFundVersionVO fundVersion = getOpenVersion(fundSource);
 

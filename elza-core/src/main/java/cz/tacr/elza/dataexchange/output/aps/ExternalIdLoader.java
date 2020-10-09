@@ -1,7 +1,9 @@
 package cz.tacr.elza.dataexchange.output.aps;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 
@@ -15,7 +17,8 @@ public class ExternalIdLoader extends AbstractEntityLoader<ApBindingState, ApBin
     }
 
     @Override
-    protected Predicate createQueryCondition(Path<? extends ApBindingState> root, CriteriaBuilder cb) {
+    protected Predicate createQueryCondition(CriteriaQuery<Tuple> cq,
+                                             Path<? extends ApBindingState> root, CriteriaBuilder cb) {
         return root.get(ApBindingState.DELETE_CHANGE_ID).isNull();
     }
 }

@@ -19,15 +19,15 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
-import cz.tacr.elza.api.ApExternalSystemType;
-import cz.tacr.elza.service.GroovyService;
 import org.apache.commons.lang3.Validate;
 import org.xml.sax.SAXException;
 
 import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityXml;
+import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.dataexchange.output.aps.ApInfo;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.sections.SectionContext;
@@ -37,20 +37,11 @@ import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.cam.CamXmlFactory;
 import cz.tacr.elza.service.cam.EntityXmlBuilder;
 
 public class CamExportBuilder implements ExportBuilder {
-
-    static Schema camSchema;
-    {
-        SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        try (InputStream is = CamExportBuilder.class.getClassLoader().getResourceAsStream("cam/cam-2019.xsd")) {
-            camSchema = sf.newSchema(new StreamSource(is));
-        } catch (IOException | SAXException e) {
-            throw new RuntimeException("Failed to load internal XSD", e);
-        }
-    }
 
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(EntitiesXml.class);
 
@@ -58,9 +49,11 @@ public class CamExportBuilder implements ExportBuilder {
 
     private ApStream apStream;
 
-    private StaticDataService staticDataService;
+    final private StaticDataService staticDataService;
 
-    private GroovyService groovyService;
+    final private GroovyService groovyService;
+
+    final private SchemaManager schemaManager;
 
     protected CamExportBuilder getExportBuilder() {
         return this;
@@ -88,9 +81,12 @@ public class CamExportBuilder implements ExportBuilder {
 
     };
 
-    public CamExportBuilder(StaticDataService staticDataService, GroovyService groovyService) {
+    public CamExportBuilder(final StaticDataService staticDataService,
+                            final GroovyService groovyService,
+                            final SchemaManager schemaManager) {
         this.staticDataService = staticDataService;
         this.groovyService = groovyService;
+        this.schemaManager = schemaManager;
         initBuilder();
     }
 
@@ -108,9 +104,11 @@ public class CamExportBuilder implements ExportBuilder {
                 groovyService,
                 apInfo.getApState().getScope());
 
-        Map<Integer, Collection<ApItem>> items = apInfo.getItems();
         final Map<Integer, List<ApItem>> itemsConv = new HashMap<>();
-        items.forEach((a, b) -> itemsConv.put(a, new ArrayList<>(b)));
+        Map<Integer, Collection<ApItem>> items = apInfo.getItems();
+        if (items != null) {
+            items.forEach((a, b) -> itemsConv.put(a, new ArrayList<>(b)));
+        }
 
         EntityXml ent = exb.build(apInfo.getParts(), itemsConv, ApExternalSystemType.CAM.toString());
         this.entities.getList().add(ent);
@@ -140,7 +138,7 @@ public class CamExportBuilder implements ExportBuilder {
         try {
             Marshaller marshaller = jaxbContext.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            marshaller.setSchema(camSchema);
+            marshaller.setSchema(schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL));
             marshaller.marshal(jaxbEnts, os);
         } catch (JAXBException e) {
             throw new XMLStreamException("Failed to save with JAXB", e);

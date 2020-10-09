@@ -7,13 +7,21 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.*;
 
-import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.UsrAuthentication;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ArrFundBaseVO;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.Fund;
 
 
 /**
@@ -39,7 +47,7 @@ public class UserControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void usersTest() {
+    public void usersTest() throws ApiException {
 
         Fund fund = createFund("Test", "TST");
 
@@ -123,7 +131,7 @@ public class UserControllerTest extends AbstractControllerTest {
         permissionVOs.add(permissionVO);
 
         permissionVO = new UsrPermissionVO();
-        permissionVO.setFund(ArrFundBaseVO.newInstance(fund));
+        permissionVO.setFund(ArrFundBaseVO.newInstance(fund.getId(), fund.getName()));
         permissionVO.setPermission(UsrPermission.Permission.FUND_ARR);
         permissionVOs.add(permissionVO);
 
@@ -167,7 +175,7 @@ public class UserControllerTest extends AbstractControllerTest {
         permissionVOs.clear();
 
         permissionVO = new UsrPermissionVO();
-        permissionVO.setFund(ArrFundBaseVO.newInstance(fund));
+        permissionVO.setFund(ArrFundBaseVO.newInstance(fund.getId(), fund.getName()));
         permissionVO.setPermission(UsrPermission.Permission.FUND_RD);
         permissionVOs.add(permissionVO);
 

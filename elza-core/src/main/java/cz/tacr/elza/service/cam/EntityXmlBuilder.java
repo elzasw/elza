@@ -47,16 +47,27 @@ public class EntityXmlBuilder extends CamXmlBuilder {
 
         // set state
         EntityRecordStateXml ens;
-        switch (apState.getStateApproval()) {
-        case NEW:
-        case TO_AMEND:
-        case TO_APPROVE:
-            ens = EntityRecordStateXml.ERS_NEW;
-        case APPROVED:
-            ens = EntityRecordStateXml.ERS_APPROVED;
-            break;
-        default:
-            throw new SystemException("Missing mapping of internal state to CAM state");
+        if (apState.getDeleteChangeId() != null) {
+            if (apState.getReplacedBy() != null) {
+                // TODO: set ID/UUID if available in binding
+                ens = EntityRecordStateXml.ERS_REPLACED;
+                ent.setReud(new UuidXml(apState.getReplacedBy().getUuid()));
+            } else {
+                ens = EntityRecordStateXml.ERS_INVALID;
+            }
+        } else {
+            switch (apState.getStateApproval()) {
+            case NEW:
+            case TO_AMEND:
+            case TO_APPROVE:
+                ens = EntityRecordStateXml.ERS_NEW;
+                break;
+            case APPROVED:
+                ens = EntityRecordStateXml.ERS_APPROVED;
+                break;
+            default:
+                throw new SystemException("Missing mapping of internal state to CAM state");
+            }
         }
         ent.setEns(ens);
 

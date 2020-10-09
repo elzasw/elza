@@ -3,7 +3,6 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
@@ -13,6 +12,9 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.Fund;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -65,7 +67,7 @@ public class RuleControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void visiblePolicy() {
+    public void visiblePolicy() throws ApiException {
         Fund test = createFund("Test", null);
         ArrFundVersionVO fundVersion = getOpenVersion(test);
 

@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrFundBaseVO;
-import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.WfCommentVO;
@@ -29,6 +28,8 @@ import cz.tacr.elza.controller.vo.WfIssueVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.Fund;
 
 public class IssueControllerTest extends AbstractControllerTest {
 
@@ -286,8 +287,9 @@ public class IssueControllerTest extends AbstractControllerTest {
 
     /**
      * Zalozeni testovaciho AS
+     * @throws ApiException 
      */
-    private Fund createFund() {
+    private Fund createFund() throws ApiException {
         Fund fund = createFund("Test issue", "TST1");
         RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
         return fund;
