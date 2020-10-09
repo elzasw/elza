@@ -7,7 +7,7 @@ import {connect} from 'react-redux';
 import {Accordion, Card} from 'react-bootstrap';
 import {indexById} from 'stores/app/utils.jsx';
 import DescItemType from './nodeForm/DescItemType.jsx';
-import {registryAdd, registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx';
+import {registryDetailFetchIfNeeded} from 'actions/registry/registry.jsx';
 import {routerNavigate} from 'actions/router.jsx';
 import {setInputFocus} from 'components/Utils.jsx';
 import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx';
@@ -52,7 +52,6 @@ class SubNodeForm extends AbstractReactComponent {
             'handleDescItemTypeCopyFromPrev',
             'handleDescItemTypeLock',
             'handleDescItemTypeCopy',
-            'handleCreateRecord',
             'handleCreatedRecord',
             'trySetFocus',
             'initFocus',
@@ -75,7 +74,7 @@ class SubNodeForm extends AbstractReactComponent {
     static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
-        routingKey: PropTypes.string,
+        routingKey: PropTypes.oneOfType(PropTypes.string, PropTypes.number),
         nodeSetting: PropTypes.object,
         rulDataTypes: PropTypes.object.isRequired,
         calendarTypes: PropTypes.object.isRequired,
@@ -89,7 +88,7 @@ class SubNodeForm extends AbstractReactComponent {
         focus: PropTypes.object,
         formActions: PropTypes.object.isRequired,
         showNodeAddons: PropTypes.bool.isRequired,
-        arrPerm: PropTypes.bool.isRequired,
+        arrPerm: PropTypes.bool,
     };
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -101,7 +100,7 @@ class SubNodeForm extends AbstractReactComponent {
             return true;
         } else {
             const log = false;
-            return !objectEqualsDiff(this.props, nextProps, {}, '', log)
+            return !objectEqualsDiff(this.props, nextProps, {}, '', log);
 
             return (
                 !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, SUB_NODE_FORM_CMP, '', log) ||
@@ -250,7 +249,6 @@ class SubNodeForm extends AbstractReactComponent {
                 descItemFactory={descItemFactory}
                 customActions={customActions}
                 descItemRef={this.descItemRef}
-                onCreateRecord={this.handleCreateRecord}
                 onDetailRecord={this.handleDetailRecord}
                 onCreateFile={this.handleCreateFile}
                 onFundFiles={this.handleFundFiles}
@@ -519,23 +517,6 @@ class SubNodeForm extends AbstractReactComponent {
                 file,
             ),
         );
-    }
-
-    /**
-     * Vytvoření nového hesla.
-     *
-     * @param descItemGroupIndex {Integer} index skupiny atributů v seznamu
-     * @param descItemTypeIndex {Integer} index atributu v seznamu
-     * @param descItemIndex {Integer} index honodty atributu v seznamu
-     */
-    handleCreateRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex) {
-        const {versionId} = this.props;
-        const valueLocation = {
-            descItemGroupIndex,
-            descItemTypeIndex,
-            descItemIndex,
-        };
-        this.props.dispatch(registryAdd(versionId, this.handleCreatedRecord.bind(this, valueLocation), true));
     }
 
     /**
@@ -913,7 +894,7 @@ class SubNodeForm extends AbstractReactComponent {
         if (unusedItemTypeIds && unusedItemTypeIds.length > 0) {
             unusedGeneratedItems = (
                 <Accordion>
-                    <Card eventKey="1">
+                    <Card>
                         <Card.Header>
                             {i18n('arr.output.title.unusedGeneratedItems', unusedItemTypeIds.length)}
                         </Card.Header>

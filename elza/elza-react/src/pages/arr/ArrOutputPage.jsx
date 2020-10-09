@@ -51,7 +51,7 @@ import {FOCUS_KEYS} from '../../constants.tsx';
 import FundNodesSelectForm from '../../components/arr/FundNodesSelectForm';
 import {fundOutputAddNodes} from '../../actions/arr/fundOutput';
 import {versionValidate} from '../../actions/arr/versionValidation';
-import {structureTypesFetchIfNeeded} from "../../actions/refTables/structureTypes";
+import {structureTypesFetchIfNeeded} from '../../actions/refTables/structureTypes';
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -581,7 +581,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         return (
             <div className="fund-output-list-container">
-                <FormInput as="select" onChange={this.handleOutputStateSearch} value={fundOutput.filterState}>
+                <FormInput as="select" onChange={this.handleOutputStateSearch} value={fundOutput.filterState || -1}>
                     <option value={-1} key="no-filter">
                         {i18n('arr.output.list.state.all')}
                     </option>

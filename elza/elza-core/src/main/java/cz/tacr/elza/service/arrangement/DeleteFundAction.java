@@ -1,10 +1,12 @@
 package cz.tacr.elza.service.arrangement;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.*;
+import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.slf4j.Logger;
@@ -20,6 +22,7 @@ import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 import java.util.List;
+import java.util.Set;
 
 import static cz.tacr.elza.repository.ExceptionThrow.fund;
 
@@ -176,6 +179,9 @@ public class DeleteFundAction {
     @Autowired
     private PermissionRepository permissionRepository;
 
+    @Autowired
+    private NodeCacheService nodeCacheService;
+
     /**
      * Prepare fund deletion
      */
@@ -233,7 +239,7 @@ public class DeleteFundAction {
         fundVersionRepository.deleteByFund(fund);
 
         // Remove from URI-REF
-        dataUriRefRepository.updateByNodesIdIn(nodeRepository.findNodeIdsByFund(fund));
+        updateUriRefs();
 
         nodeRepository.deleteByFund(fund);
 
@@ -258,6 +264,15 @@ public class DeleteFundAction {
 
     }
 
+    private void updateUriRefs() {
+        Set<Integer> nodeIds = nodeRepository.findNodeIdsByFund(fund);
+        if (!nodeIds.isEmpty()) {
+            // dohledání JP, ze kterých se odkazovalo na JP z mazaného AS
+            Set<Integer> referralNodeIds = ObjectListIterator.findIterableSet(nodeIds, dataUriRefRepository::findReferralNodeIdsByNodesIdIn);
+            ObjectListIterator.forEachPage(nodeIds, dataUriRefRepository::updateByNodesIdIn);
+            nodeCacheService.removeReferralNodeIds(nodeIds, referralNodeIds);
+        }
+    }
 
     private void dropStructObjs() {
 
