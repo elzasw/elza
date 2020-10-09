@@ -2342,8 +2342,8 @@
     </item-spec>
     <!-- Role entit -->
     <item-spec code="ZP2015_ENTITY_ROLE_73">
-        <name>státní vyznamenání / cena</name>
-        <description>státní vyznamenání / cena</description>
+        <name>vyznamenání / cena</name>
+        <description>vyznamenání / cena</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="ARTWORK"/>
@@ -2352,7 +2352,7 @@
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_74">
         <name>nositel</name>
-        <description>nositel státního vyznamenání / ceny</description>
+        <description>nositel vyznamenání / ceny</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
@@ -3564,7 +3564,7 @@
         <shortcut>jin</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
-    <!-- Prvky popisu pro státní vyznamenání -->
+    <!-- Prvky popisu pro vyznamenání -->
     <item-spec code="ZP2015_AWARD_LEVEL_CLASS">
         <name>třída</name>
         <description>třída</description>
