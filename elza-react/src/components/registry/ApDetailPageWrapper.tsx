@@ -110,6 +110,12 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
 
     useEffect(() => {
+        if (props.id) {
+            props.refreshDetail(props.id, false);
+        }
+    }, []);
+
+    useEffect(() => {
         props.fetchViewSettings();
         props.refreshValidation(props.id);
     }, [props.id]);
@@ -181,8 +187,11 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
     // TODO: find better way to check if all reftables are fetched
     const isFetchingPartyTypes = !props.refTables.partTypes.fetched || props.refTables.partTypes.isFetching;
 
-    const isFetchingApTypes = !props.refTables.apTypes.fetched || props.refTables.apTypes.isFetching ||
-        !props.refTables.recordTypes.fetched || props.refTables.recordTypes.isFetching;
+    const isFetchingApTypes =
+        !props.refTables.apTypes.fetched ||
+        props.refTables.apTypes.isFetching ||
+        !props.refTables.recordTypes.fetched ||
+        props.refTables.recordTypes.isFetching;
 
     const isFetchingItemTypes = !props.refTables.descItemTypes.fetched || props.refTables.descItemTypes.isFetching;
 
@@ -190,6 +199,15 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
 
     const isFetchingViewSettings = props.apViewSettings.isFetching;
 
+    console.warn(
+        isFetchingPartyTypes,
+        props.detail.fetched,
+        props.detail.isFetching,
+        isFetching,
+        isFetchingViewSettings,
+        isFetchingApTypes,
+        isFetchingItemTypes,
+    );
     if (isFetchingPartyTypes || isFetching || isFetchingViewSettings || isFetchingApTypes || isFetchingItemTypes) {
         return (
             <div className={'detail-page-wrapper'}>
@@ -452,8 +470,8 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
             ),
         );
     },
-    refreshDetail: (apId: number) => {
-        dispatch(registryDetailFetchIfNeeded(apId, true));
+    refreshDetail: (apId: number, force: boolean = true) => {
+        dispatch(registryDetailFetchIfNeeded(apId, force));
     },
     fetchViewSettings: () => {
         dispatch(
@@ -471,7 +489,6 @@ const mapStateToProps = (state: any, props: OwnProps) => {
         apViewSettings: storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>,
         descItemTypesMap: state.refTables.descItemTypes.itemsMap,
         refTables: state.refTables,
-        editMode: true,
     };
 };
 

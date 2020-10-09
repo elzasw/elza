@@ -62,8 +62,6 @@ import cz.tacr.elza.controller.vo.ApStateHistoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
-import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
-import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
@@ -863,24 +861,7 @@ public class ApController {
         if (from < 0) {
             throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
         }
-        // TODO fantis: dopsat implementaci, smazat mockup data
-        ExtSyncsQueueResultListVO result = new ExtSyncsQueueResultListVO();
-        List<ExtSyncsQueueItemVO> items = new ArrayList<>();
-        for (int i = 1; i < 233; i++) {
-            ExtSyncsQueueItemVO item = new ExtSyncsQueueItemVO();
-            item.setId(i);
-            item.setAccessPointId(i);
-            item.setAccessPointName("Test " + i);
-            item.setDate(LocalDateTime.now());
-            item.setScopeId(1);
-            item.setState(ExtAsyncQueueState.NEW);
-            item.setStateMessage("Poznámka ke stavu");
-            items.add(item);
-        }
-
-        result.setTotal(items.size());
-        result.setData(items.subList(from, Math.min(from + max, items.size())));
-        return result;
+        return accessPointService.findExternalSyncs(from, max, externalSystemCode, filter);
     }
 
     /**

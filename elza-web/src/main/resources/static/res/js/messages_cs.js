@@ -1039,6 +1039,7 @@ var messages = {
     "ap.state.title.type": "Třída archivní entity",
     "ap.state.title.state": "Stav",
     "ap.state.title.comment": "Komentář",
+    "ap.state.state.insufficient.right": "Nemáte oprávnění pro schválení AP.",
     "ap.connect": "Propojení s externím systémem",
 
     "registryField.noItemsFound": "Záznamy nebyly nalezeny.",

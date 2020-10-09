@@ -54,7 +54,6 @@ class DescItemType extends AbstractReactComponent {
         onCoordinatesDownload: PropTypes.func.isRequired,
         onJsonTableDownload: PropTypes.func.isRequired,
         onCoordinatesUpload: PropTypes.func.isRequired,
-        onCreateRecord: PropTypes.func.isRequired,
         onDetailRecord: PropTypes.func.isRequired,
         onCreatePacket: PropTypes.func.isRequired,
         onCreateFile: PropTypes.func.isRequired,
@@ -74,7 +73,7 @@ class DescItemType extends AbstractReactComponent {
         locked: PropTypes.bool.isRequired,
         hideDelete: PropTypes.bool,
         readMode: PropTypes.bool.isRequired,
-        arrPerm: PropTypes.bool.isRequired,
+        arrPerm: PropTypes.bool,
         notIdentified: PropTypes.bool,
         onDescItemNotIdentified: PropTypes.func,
         closed: PropTypes.bool,
@@ -119,7 +118,6 @@ class DescItemType extends AbstractReactComponent {
             'handleChangeSpec',
             'handleCoordinatesUpload',
             'handleCoordinatesUploadButtonClick',
-            'handleCreateRecord',
             'handleDescItemShortcuts',
             'handleDescItemTypeCopy',
             'handleDescItemTypeCopyFromPrev',
@@ -330,15 +328,6 @@ class DescItemType extends AbstractReactComponent {
             formKey: descItem.formKey,
             error,
         });
-    }
-
-    /**
-     * Vytvoření nového hesla.
-     *
-     * @param descItemIndex {number} index hodnoty atributu v seznamu
-     */
-    handleCreateRecord(descItemIndex) {
-        this.props.onCreateRecord(descItemIndex);
     }
 
     /**
@@ -658,9 +647,6 @@ class DescItemType extends AbstractReactComponent {
                 itemTypeId: refType.id,
                 onDetail: value => {
                     this.handleDetailRecord(descItemIndex, value);
-                },
-                onCreateRecord: value => {
-                    this.handleCreateRecord(descItemIndex);
                 },
             },
             STRUCTURED: {

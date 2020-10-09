@@ -33,6 +33,7 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.exception.AbstractException;
@@ -46,6 +47,7 @@ import cz.tacr.elza.repository.ApBindingSyncRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointItemService;
@@ -62,6 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -131,6 +134,9 @@ public class CamService {
 
     @Autowired
     private ApBindingSyncRepository bindingSyncRepository;
+
+    @Autowired
+    private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
 
     private final String TRANSACTION_UUID = "91812cb8-3519-4f78-b0ec-df6e951e2c7c";
     private final Integer PAGE_SIZE = 1000;
@@ -341,6 +347,9 @@ public class CamService {
             bindingState.setExtRevision(batchEntityRecordRev.getRev().getValue());
             binding.setValue(String.valueOf(batchEntityRecordRev.getEid().getValue()));
 
+            ExtSyncsQueueItem extSyncsQueueItem = accessPointService.createExtSyncsQueueItem(accessPoint, apExternalSystem, null, ExtSyncsQueueItem.ExtAsyncQueueState.OK, OffsetDateTime.now());
+            extSyncsQueueItemRepository.save(extSyncsQueueItem);
+
             bindingStateRepository.save(bindingState);
             bindingRepository.save(binding);
         } else {
@@ -354,6 +363,8 @@ public class CamService {
                 for (ErrorMessageXml errorMessage : batchUpdateErrorXml.getMessages()) {
                     message.append(errorMessage.getMsg().getValue()).append("\n");
                 }
+                ExtSyncsQueueItem extSyncsQueueItem = accessPointService.createExtSyncsQueueItem(accessPoint, apExternalSystem, message.toString(), ExtSyncsQueueItem.ExtAsyncQueueState.ERROR, OffsetDateTime.now());
+                extSyncsQueueItemRepository.save(extSyncsQueueItem);
                 throw new SystemException(message.toString(), ExternalCode.EXTERNAL_SYSTEM_ERROR);
             }
         }
@@ -369,6 +380,9 @@ public class CamService {
 
             ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
             externalSystemService.createNewApBindingState(bindingState, change, batchEntityRecordRev.getRev().getValue());
+
+            ExtSyncsQueueItem extSyncsQueueItem = accessPointService.createExtSyncsQueueItem(accessPoint, apExternalSystem, null, ExtSyncsQueueItem.ExtAsyncQueueState.OK, OffsetDateTime.now());
+            extSyncsQueueItemRepository.save(extSyncsQueueItem);
         } else {
             BatchUpdateErrorXml batchUpdateErrorXml = (BatchUpdateErrorXml) batchUpdateResult;
             List<ApBindingItem> bindingItemList = bindingItemRepository.findByBinding(binding);
@@ -390,6 +404,8 @@ public class CamService {
                 for (ErrorMessageXml errorMessage : batchUpdateErrorXml.getMessages()) {
                     message.append(errorMessage.getMsg().getValue()).append("\n");
                 }
+                ExtSyncsQueueItem extSyncsQueueItem = accessPointService.createExtSyncsQueueItem(accessPoint, apExternalSystem, message.toString(), ExtSyncsQueueItem.ExtAsyncQueueState.ERROR, OffsetDateTime.now());
+                extSyncsQueueItemRepository.save(extSyncsQueueItem);
                 throw new SystemException(message.toString(), ExternalCode.EXTERNAL_SYSTEM_ERROR);
             }
         }
