@@ -348,45 +348,45 @@
     
     <!-- Podtyp/Subtype -->
     <item-spec code="ZP2015_UNIT_SUBTYPE_MTR">
-        <name>Matrika</name>
-        <description>Matrika</description>
+        <name>matrika</name>
+        <description>matrika</description>
         <shortcut>mtr</shortcut>
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_HDB">
-        <name>Hudebnina</name>
-        <description>Hudebnina</description>
+        <name>hudebnina</name>
+        <description>hudebnina</description>
         <shortcut>hdb</shortcut>
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_STV">
-        <name>Státní vyznamenání / cena</name>
-        <description>Státní vyznamenání nebo cena</description>
+        <name>vyznamenání / cena</name>
+        <description>vyznamenání nebo cena</description>
         <shortcut>stv</shortcut>
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_PA">
-        <name>Právní akt</name>
-        <description>Právní akt</description>
+        <name>právní akt</name>
+        <description>právní akt</description>
         <shortcut>pa</shortcut>
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_STVR">
-        <name>Udělení / propůjčení státního vyznamenání / ceny</name>
-        <description>Udělení / propůjčení státního vyznamenání / ceny</description>
+        <name>udělení / propůjčení vyznamenání / ceny</name>
+        <description>udělení / propůjčení vyznamenání / ceny</description>
         <shortcut>stvr</shortcut>
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_JMF">
-        <name>Jmenování nebo ustanovení do veřejné funkce</name>
-        <description>Jmenování nebo ustanovení do veřejné funkce</description>
+        <name>jmenování nebo ustanovení do funkce</name>
+        <description>jmenování nebo ustanovení do funkce</description>
         <shortcut>jmf</shortcut>
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
     </item-spec>
     <!-- Nepoužívat, zastaralá specifikace -->
     <item-spec code="ZP2015_UNIT_SUBTYPE_LST">
-        <name>List</name>
-        <description>List</description>
+        <name>list</name>
+        <description>list</description>
         <shortcut>lst</shortcut>
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
     </item-spec>
