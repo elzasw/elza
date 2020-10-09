@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
@@ -28,6 +27,8 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.repository.SobjVrequestRepository;
+import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.Fund;
 
 
 /**
@@ -51,7 +52,7 @@ public class StructureControllerTest extends AbstractControllerTest {
     protected SobjVrequestRepository sobjVrequestRepository;
 
     @Test
-    public void structureTest() {
+    public void structureTest() throws ApiException {
         Fund fund = createFund(NAME_AS, CODE_AS);
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
@@ -69,7 +70,7 @@ public class StructureControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void structureBatchTest() {
+    public void structureBatchTest() throws ApiException {
         Fund fund = createFund(NAME_AS, CODE_AS);
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 

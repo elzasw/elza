@@ -134,7 +134,7 @@ const DetailPart: FC<Props> = ({
         return result;
     };
 
-    const sortedItems = part.items.sort((a, b) => {
+    const sortedItems = part.items?part.items.sort((a, b) => {
         const aItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[a.typeId].code, 'code');
         const bItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[b.typeId].code, 'code');
         if (aItemType == null && bItemType == null) {
@@ -148,7 +148,7 @@ const DetailPart: FC<Props> = ({
             const bPos = bItemType.position || 9999;
             return aPos - bPos;
         }
-    });
+    }):[];
 
     const showValidationError = () => {
         if (partValidationError && partValidationError.errors && partValidationError.errors.length > 0) {

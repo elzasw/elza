@@ -1,11 +1,7 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.repository.vo.DaoExternalSystemVO;
+import java.util.Collection;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,8 +10,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
-import java.util.List;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoPackage;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.repository.vo.DaoExternalSystemVO;
 
 /**
  * @author Martin Šlapa
@@ -79,7 +79,7 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
             "  AND dl.node = :node" +
             "  AND dl.deleteChange IS NULL" +
             " ORDER BY d.label ASC, d.code ASC")
-    Page<ArrDao> findAttachedByNode(ArrNode node, Pageable pageable);
+    Page<ArrDao> findAttachedByNode(@Param("node") ArrNode node, Pageable pageable);
 
     @Query("SELECT d FROM arr_dao d" +
             " JOIN d.daoPackage p" +
@@ -89,7 +89,7 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
             "  WHERE dl.dao = d" +
             "  AND dl.deleteChange IS NULL)" +
             " ORDER BY d.label ASC, d.code ASC")
-    Page<ArrDao> findDettachedByFund(ArrFund fund, Pageable pageable);
+    Page<ArrDao> findDettachedByFund(@Param("fund") ArrFund fund, Pageable pageable);
 
     @Query("SELECT d FROM arr_dao d" +
             " JOIN d.daoPackage p" +
@@ -98,5 +98,5 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
             "  WHERE dl.dao = d" +
             "  AND dl.deleteChange IS NULL)" +
             " ORDER BY d.label ASC, d.code ASC")
-    Page<ArrDao> findDettachedByPackage(ArrDaoPackage daoPackage, Pageable pageable);    
+    Page<ArrDao> findDettachedByPackage(@Param("daoPackage") ArrDaoPackage daoPackage, Pageable pageable);
 }

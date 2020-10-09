@@ -16,6 +16,7 @@ import cz.tacr.cam.schema.cam.DeletePartXml;
 import cz.tacr.cam.schema.cam.EntityIdXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
+import cz.tacr.cam.schema.cam.NewItemsXml;
 import cz.tacr.cam.schema.cam.PartTypeXml;
 import cz.tacr.cam.schema.cam.SetRecordStateXml;
 import cz.tacr.cam.schema.cam.UpdateEntityXml;
@@ -137,7 +138,11 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         }
 
         if (CollectionUtils.isNotEmpty(itemList)) {
-            changes.add(createNewItems(changedPart, itemList, externalSystemTypeCode));
+            NewItemsXml newItems = createNewItems(changedPart, itemList, externalSystemTypeCode);
+            // some new items does not have to be created
+            if (newItems != null) {
+                changes.add(newItems);
+            }
         }
         if (CollectionUtils.isNotEmpty(changedItems)) {
             changes.add(createUpdateItems(changedPart, changedItems, externalSystemTypeCode));

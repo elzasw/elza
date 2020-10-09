@@ -4,10 +4,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
 
 import org.apache.commons.lang.Validate;
 
@@ -60,8 +63,17 @@ public class ApInfoLoader extends AbstractEntityLoader<ApInfo, ApState> {
     }
 
     @Override
-    protected Predicate createQueryCondition(Path<? extends ApState> root, CriteriaBuilder cb) {
-        return root.get(ApState.FIELD_DELETE_CHANGE_ID).isNull();
+    protected Predicate createQueryCondition(CriteriaQuery<Tuple> cq,
+                                             Path<? extends ApState> root, CriteriaBuilder cb) {
+        //SELECT max(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s.accessPoint
+        Subquery<Integer> subquery = cq.subquery(Integer.class);
+        //CriteriaQuery<Integer> subquery = cb.createQuery(Integer.class);
+        Root<ApState> sr = subquery.from(ApState.class);
+        subquery.select(cb.max(sr.get(ApState.FIELD_CREATE_CHANGE_ID)))
+                .where(cb.equal(sr.get(ApState.FIELD_ACCESS_POINT_ID), root.get(ApState.FIELD_ACCESS_POINT_ID)));
+
+        return root.get(ApState.FIELD_CREATE_CHANGE_ID).in(subquery);
+        //return root.get(ApState.FIELD_DELETE_CHANGE_ID).isNull();
     }
 
     @Override

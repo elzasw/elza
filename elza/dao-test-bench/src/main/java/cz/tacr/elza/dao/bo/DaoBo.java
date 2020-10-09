@@ -2,10 +2,10 @@ package cz.tacr.elza.dao.bo;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 
 import org.springframework.util.Assert;
 
@@ -31,7 +31,7 @@ public class DaoBo {
 
 	private final DaoConfigResource configResource;
 
-	private final Map<String, DaoFileBo> daoFiles = new HashMap<>();
+	private final Map<String, DaoFileBo> daoFiles = new TreeMap<>();
 
 	private boolean allFileInitialized;
 
