@@ -4545,32 +4545,45 @@ end
 // Státní vyznamenání
 //-----------------
 
-rule "Možné prvky pro podtyp státní vyznamenání"
+rule "Doporučené prvky pro podtyp státní vyznamenání"
 no-loop
 when $activeLevel: ActiveLevel( $items: descItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $items
     $itemType: RulItemTypeExt( code in (
     	"ZP2015_AWARD_LEVEL",
     	"ZP2015_AWARD_GROUP",
-        "ZP2015_DATE_OTHER"
+        "ZP2015_DATE_OTHER",
+        "ZP2015_OTHER_ID"
        ) )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
+rule "Doporučené specifikace pro podtyp státní vyznamenání"
+no-loop
+when $activeLevel: ActiveLevel( $items: descItems )
+    $itemType: RulItemTypeExt( code in (
+        "ZP2015_DATE_OTHER",
+        "ZP2015_OTHER_ID"))
+    $itemSpec: RulItemSpecExt( code in ( 
+        "ZP2015_OTHERID_MATRIXID",
+        "ZP2015_DATE_AWARDING"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
+end
+
+
 rule "Možné specifikace pro podtyp státní vyznamenání"
 no-loop
 when $activeLevel: ActiveLevel( $items: descItems )
     $itemType: RulItemTypeExt( code in (
-    	"ZP2015_AWARD_LEVEL",
-        "ZP2015_OTHER_ID", 
+    	"ZP2015_AWARD_LEVEL", 
         "ZP2015_DATE_OTHER"
        ) )
     $itemSpec: RulItemSpecExt( code in ( 
         "ZP2015_AWARD_LEVEL_CLASS",
-        "ZP2015_AWARD_LEVEL_DEGREE",
-        "ZP2015_OTHERID_MATRIXID", 
-        "ZP2015_DATE_AWARDING",
+        "ZP2015_AWARD_LEVEL_DEGREE",         
         "ZP2015_DATE_AWARD_CER",
         "ZP2015_DATE_WITHDRAWAL"       
      ) ) from $itemType.rulItemSpecList
