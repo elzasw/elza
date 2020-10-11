@@ -226,52 +226,52 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
 
     protected ArrData createItemData(ItemType itemType, String itemSpecCode, String value) {
         DescriptionItem descriptionItem = null;
-        switch (itemType.getDataType().getCode()) {
-            case "FORMATTED_TEXT":
-            case "TEXT":
-            case "STRING":
-            case "UNITID":
-            case "COORDINATES":
+        switch (itemType.getDataType()) {
+        case FORMATTED_TEXT:
+        case TEXT:
+        case STRING:
+        case UNITID:
+        case COORDINATES:
                 DescriptionItemString descriptionItemString = new DescriptionItemStringImpl();
                 descriptionItemString.setV(value);
                 descriptionItem = descriptionItemString;
                 break;
-            case "INT":
+            case INT:
                 DescriptionItemInteger descriptionItemInteger = new DescriptionItemIntegerImpl();
                 descriptionItemInteger.setV(BigInteger.valueOf(Integer.parseInt(value)));
                 descriptionItem = descriptionItemInteger;
                 break;
-            case "DATE":
+            case DATE:
                 ArrDataDate dataDate = new ArrDataDate();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 LocalDate localDate = LocalDate.parse(value, formatter);
                 dataDate.setValue(localDate);
                 dataDate.setDataType(DataType.DATE.getEntity());
                 return dataDate;
-            case "RECORD_REF":
+            case RECORD_REF:
                 DescriptionItemAPRef descriptionItemAPRef = new DescriptionItemAPRefImpl();
                 descriptionItemAPRef.setApid(value);
                 descriptionItem = descriptionItemAPRef;
                 break;
-            case "BIT":
+            case BIT:
                 DescriptionItemBit descriptionItemBit = new DescriptionItemBitImpl();
                 descriptionItemBit.setV(Boolean.valueOf(value));
                 descriptionItem = descriptionItemBit;
                 break;
-            case "DECIMAL":
+            case DECIMAL:
                 DescriptionItemDecimal descriptionItemDecimal = new DescriptionItemDecimalImpl();
                 descriptionItemDecimal.setV(BigDecimal.valueOf(Double.parseDouble(value)));
                 descriptionItem = descriptionItemDecimal;
                 break;
-            case "STRUCTURED":
+            case STRUCTURED:
                 DescriptionItemStructObjectRef descriptionItemStructObjectRef = new DescriptionItemStructObjectRefImpl();
                 descriptionItemStructObjectRef.setSoid(value);
                 descriptionItem = descriptionItemStructObjectRef;
                 break;
-            case "ENUM":
+            case ENUM:
                 descriptionItem = new DescriptionItemEnumImpl();
                 break;
-            case "FILE_REF":
+            case FILE_REF:
                 DescriptionItemFileRef descriptionItemFileRef = new DescriptionItemFileRefImpl();
                 descriptionItemFileRef.setFid(value);
                 descriptionItem = descriptionItemFileRef;
