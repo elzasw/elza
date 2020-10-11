@@ -989,4 +989,12 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="20201010154500" author="fantis">
+        <addColumn tableName="ext_syncs_queue_item">
+            <column name="username" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
