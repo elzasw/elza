@@ -7,8 +7,11 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
@@ -116,6 +119,15 @@ public class XmlUtils {
         }
     }
 
+    public static LocalDate convertToLocalDate(XMLGregorianCalendar v) {
+        if (v == null) {
+            return null;
+        }
+        TimeZone tz = v.getTimezone() == DatatypeConstants.FIELD_UNDEFINED ? UTC_TIMEZONE : null;
+        GregorianCalendar gc = v.toGregorianCalendar(tz, null, null);
+        return gc.toZonedDateTime().toLocalDate();
+    }
+
     /**
      * Converts {@link XMLGregorianCalendar} to {@link LocalDateTime}.<br>
      * Xml calendar with undefined timezone is converted without time shift.<br>
@@ -132,6 +144,23 @@ public class XmlUtils {
         GregorianCalendar gc = calendar.toGregorianCalendar(tz, null, null);
         Instant instant = Instant.ofEpochMilli(gc.getTimeInMillis());
         return LocalDateTime.ofEpochSecond(instant.getEpochSecond(), instant.getNano(), ZoneOffset.UTC);
+    }
+
+    public static XMLGregorianCalendar convertDate(Date localDate) {
+        if (localDate == null) {
+            return null;
+        }
+        GregorianCalendar gcal = new GregorianCalendar();
+        gcal.setTime(localDate);
+        return DATATYPE_FACTORY.newXMLGregorianCalendar(
+                                                        gcal.get(Calendar.YEAR),
+                                                        gcal.get(Calendar.MONTH),
+                                                        gcal.get(Calendar.DAY_OF_MONTH),
+                                                        DatatypeConstants.FIELD_UNDEFINED,
+                                                        DatatypeConstants.FIELD_UNDEFINED,
+                                                        DatatypeConstants.FIELD_UNDEFINED,
+                                                        DatatypeConstants.FIELD_UNDEFINED,
+                                                        DatatypeConstants.FIELD_UNDEFINED);
     }
 
     /**
@@ -264,4 +293,5 @@ public class XmlUtils {
     private XmlUtils() {
 
     }
+
 }
