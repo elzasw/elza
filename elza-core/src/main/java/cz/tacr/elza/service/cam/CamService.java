@@ -38,7 +38,6 @@ import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
@@ -334,8 +333,7 @@ public class CamService {
         }
     }
 
-    public void updateBindingAfterSave(BatchUpdateResultXml batchUpdateResult, Integer accessPointId, String externalSystemCode) {
-        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+    public void updateBindingAfterSave(BatchUpdateResultXml batchUpdateResult, ApAccessPoint accessPoint, String externalSystemCode, ExtSyncsQueueItem extSyncsQueueItem) {
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
         ApBinding binding = bindingState.getBinding();
@@ -347,7 +345,8 @@ public class CamService {
             bindingState.setExtRevision(batchEntityRecordRev.getRev().getValue());
             binding.setValue(String.valueOf(batchEntityRecordRev.getEid().getValue()));
 
-            ExtSyncsQueueItem extSyncsQueueItem = accessPointService.createExtSyncsQueueItem(accessPoint, apExternalSystem, null, ExtSyncsQueueItem.ExtAsyncQueueState.OK, OffsetDateTime.now());
+            extSyncsQueueItem.setState(ExtSyncsQueueItem.ExtAsyncQueueState.OK);
+            extSyncsQueueItem.setDate(OffsetDateTime.now());
             extSyncsQueueItemRepository.save(extSyncsQueueItem);
 
             bindingStateRepository.save(bindingState);
@@ -358,19 +357,21 @@ public class CamService {
             bindingStateRepository.delete(bindingState);
             bindingRepository.delete(binding);
 
+            StringBuilder message = new StringBuilder();
             if (CollectionUtils.isNotEmpty(batchUpdateErrorXml.getMessages())) {
-                StringBuilder message = new StringBuilder();
                 for (ErrorMessageXml errorMessage : batchUpdateErrorXml.getMessages()) {
                     message.append(errorMessage.getMsg().getValue()).append("\n");
                 }
-                ExtSyncsQueueItem extSyncsQueueItem = accessPointService.createExtSyncsQueueItem(accessPoint, apExternalSystem, message.toString(), ExtSyncsQueueItem.ExtAsyncQueueState.ERROR, OffsetDateTime.now());
-                extSyncsQueueItemRepository.save(extSyncsQueueItem);
-                throw new SystemException(message.toString(), ExternalCode.EXTERNAL_SYSTEM_ERROR);
             }
+
+            extSyncsQueueItem.setState(ExtSyncsQueueItem.ExtAsyncQueueState.ERROR);
+            extSyncsQueueItem.setDate(OffsetDateTime.now());
+            extSyncsQueueItem.setStateMessage(message.toString());
+            extSyncsQueueItemRepository.save(extSyncsQueueItem);
         }
     }
 
-    public void updateBindingAfterUpdate(BatchUpdateResultXml batchUpdateResult, ApAccessPoint accessPoint, ApExternalSystem apExternalSystem) {
+    public void updateBindingAfterUpdate(BatchUpdateResultXml batchUpdateResult, ApAccessPoint accessPoint, ApExternalSystem apExternalSystem, ExtSyncsQueueItem extSyncsQueueItem) {
         ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
         ApBinding binding = bindingState.getBinding();
 
@@ -381,7 +382,8 @@ public class CamService {
             ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
             externalSystemService.createNewApBindingState(bindingState, change, batchEntityRecordRev.getRev().getValue());
 
-            ExtSyncsQueueItem extSyncsQueueItem = accessPointService.createExtSyncsQueueItem(accessPoint, apExternalSystem, null, ExtSyncsQueueItem.ExtAsyncQueueState.OK, OffsetDateTime.now());
+            extSyncsQueueItem.setState(ExtSyncsQueueItem.ExtAsyncQueueState.OK);
+            extSyncsQueueItem.setDate(OffsetDateTime.now());
             extSyncsQueueItemRepository.save(extSyncsQueueItem);
         } else {
             BatchUpdateErrorXml batchUpdateErrorXml = (BatchUpdateErrorXml) batchUpdateResult;
@@ -399,24 +401,23 @@ public class CamService {
                 }
             }
 
+            StringBuilder message = new StringBuilder();
             if (CollectionUtils.isNotEmpty(batchUpdateErrorXml.getMessages())) {
-                StringBuilder message = new StringBuilder();
                 for (ErrorMessageXml errorMessage : batchUpdateErrorXml.getMessages()) {
                     message.append(errorMessage.getMsg().getValue()).append("\n");
                 }
-                ExtSyncsQueueItem extSyncsQueueItem = accessPointService.createExtSyncsQueueItem(accessPoint, apExternalSystem, message.toString(), ExtSyncsQueueItem.ExtAsyncQueueState.ERROR, OffsetDateTime.now());
-                extSyncsQueueItemRepository.save(extSyncsQueueItem);
-                throw new SystemException(message.toString(), ExternalCode.EXTERNAL_SYSTEM_ERROR);
             }
+            extSyncsQueueItem.setState(ExtSyncsQueueItem.ExtAsyncQueueState.ERROR);
+            extSyncsQueueItem.setDate(OffsetDateTime.now());
+            extSyncsQueueItem.setStateMessage(message.toString());
+            extSyncsQueueItemRepository.save(extSyncsQueueItem);
         }
     }
 
-    public BatchUpdateXml createCreateEntityBatchUpdate(final Integer accessPointId, final String externalSystemCode) {
-        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+    public BatchUpdateXml createCreateEntityBatchUpdate(final ApAccessPoint accessPoint, final String externalSystemCode, final String userName) {
         ApState state = accessPointService.getStateInternal(accessPoint);
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
-        UserDetail userDetail = userService.getLoggedUserDetail();
 
         List<ApPart> partList = partService.findPartsByAccessPoint(state.getAccessPoint());
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
@@ -424,10 +425,10 @@ public class CamService {
 
         ApBinding binding = externalSystemService.createApBinding(state.getScope(), null, apExternalSystem);
         ApBindingState bindingState = externalSystemService.createApBindingState(binding, accessPoint, change,
-                EntityRecordStateXml.ERS_NEW.value(), null, userDetail.getUsername(), null);
+                EntityRecordStateXml.ERS_NEW.value(), null, userName, null);
 
         BatchUpdateXml batchUpdate = new BatchUpdateXml();
-        batchUpdate.setInf(createBatchInfo(userDetail));
+        batchUpdate.setInf(createBatchInfo(userName));
         CreateEntityBuilder ceb = new CreateEntityBuilder(this.externalSystemService,
                 this.staticDataService.getData(),
                 accessPoint,
@@ -442,9 +443,9 @@ public class CamService {
     public BatchUpdateXml createUpdateEntityBatchUpdate(final ApAccessPoint accessPoint,
                                                         final ApBindingState bindingState,
                                                         final EntityXml entityXml,
-                                                        final ApExternalSystem apExternalSystem) {
+                                                        final ApExternalSystem apExternalSystem,
+                                                        final String userName) {
         ApState state = accessPointService.getStateInternal(accessPoint);
-        UserDetail userDetail = userService.getLoggedUserDetail();
 
         List<ApPart> partList = partService.findPartsByAccessPoint(state.getAccessPoint());
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
@@ -452,7 +453,7 @@ public class CamService {
         List<ApBindingItem> bindingParts = bindingItemRepository.findPartsByBinding(bindingState.getBinding());
 
         BatchUpdateXml batchUpdate = new BatchUpdateXml();
-        batchUpdate.setInf(createBatchInfo(userDetail));
+        batchUpdate.setInf(createBatchInfo(userName));
 
         UpdateEntityBuilder ueb = new UpdateEntityBuilder(this.externalSystemService,
                 this.bindingItemRepository,
@@ -466,9 +467,9 @@ public class CamService {
         return batchUpdate;
     }
 
-    private BatchInfoXml createBatchInfo(UserDetail userDetail) {
+    private BatchInfoXml createBatchInfo(String userName) {
         BatchInfoXml batchInfo = new BatchInfoXml();
-        batchInfo.setBatchUserInfo(new LongStringXml(userDetail.getUsername()));
+        batchInfo.setBatchUserInfo(new LongStringXml(userName));
         batchInfo.setBid(new UuidXml(UUID.randomUUID().toString()));
         return batchInfo;
     }
@@ -733,4 +734,43 @@ public class CamService {
         }
     }
 
+    /**
+     * Založí nebo upraví entitu v externím systému
+     *
+     * @param extSyncsQueueItem info o ap pro synchronizaci
+     * @param apExternalSystem externí systém
+     */
+    @Transactional
+    public void synchronizeExtItem(ExtSyncsQueueItem extSyncsQueueItem, ApExternalSystem apExternalSystem) {
+        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(extSyncsQueueItem.getAccessPointId());
+        ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
+        String externalSystemCode = apExternalSystem.getCode();
+        String userName = extSyncsQueueItem.getUsername();
+
+        if (bindingState == null) {
+            // založení nové entity
+            BatchUpdateXml batchUpdate = createCreateEntityBatchUpdate(accessPoint, externalSystemCode, userName);
+            try {
+                BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
+                updateBindingAfterSave(batchUpdateResult, accessPoint, externalSystemCode, extSyncsQueueItem);
+            } catch (ApiException e) {
+                throw prepareSystemException(e);
+            }
+        } else {
+            // update entity
+            EntityXml entity;
+            try {
+                entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()), externalSystemCode);
+            } catch (ApiException e) {
+                throw prepareSystemException(e);
+            }
+            BatchUpdateXml batchUpdate = createUpdateEntityBatchUpdate(accessPoint, bindingState, entity, apExternalSystem, userName);
+            try {
+                BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
+                updateBindingAfterUpdate(batchUpdateResult, accessPoint, apExternalSystem, extSyncsQueueItem);
+            } catch (ApiException e) {
+                throw prepareSystemException(e);
+            }
+        }
+    }
 }
