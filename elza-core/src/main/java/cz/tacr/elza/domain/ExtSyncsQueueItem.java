@@ -37,6 +37,9 @@ public class ExtSyncsQueueItem {
     @Column(nullable = false)
     private OffsetDateTime date;
 
+    @Column(length = StringLength.LENGTH_250, nullable = false)
+    private String username;
+
     public Integer getExtSyncsQueueItemId() {
         return extSyncsQueueItemId;
     }
@@ -88,6 +91,14 @@ public class ExtSyncsQueueItem {
 
     public void setDate(OffsetDateTime date) {
         this.date = date;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public enum ExtAsyncQueueState {

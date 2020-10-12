@@ -67,6 +67,8 @@ public class StartupService implements SmartLifecycle {
 
     private final AsyncRequestService asyncRequestService;
 
+    private final ExtSyncsProcessor extSyncsProcessor;
+
     private boolean running;
 
     @Autowired
@@ -86,7 +88,8 @@ public class StartupService implements SmartLifecycle {
                           final VisiblePolicyRepository visiblePolicyRepository,
                           IndexWorkProcessor indexWorkProcessor,
                           final ApplicationContext applicationContext,
-                          final AsyncRequestService asyncRequestService) {
+                          final AsyncRequestService asyncRequestService,
+                          final ExtSyncsProcessor extSyncsProcessor) {
         this.nodeRepository = nodeRepository;
         this.arrangementService = arrangementService;
         this.bulkActionRunRepository = bulkActionRunRepository;
@@ -104,6 +107,7 @@ public class StartupService implements SmartLifecycle {
         this.indexWorkProcessor = indexWorkProcessor;
         this.applicationContext = applicationContext;
         this.asyncRequestService = asyncRequestService;
+        this.extSyncsProcessor = extSyncsProcessor;
     }
 
     @Autowired
@@ -169,6 +173,7 @@ public class StartupService implements SmartLifecycle {
         syncNodeCacheService();
         structureDataService.startGenerator();
         indexWorkProcessor.startIndexing();
+        extSyncsProcessor.startExtSyncs();
 
         // je třeba volat mimo současnou transakci
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
