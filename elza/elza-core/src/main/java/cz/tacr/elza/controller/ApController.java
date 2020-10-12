@@ -941,13 +941,7 @@ public class ApController {
     @RequestMapping(value = "/external/save/{accessPointId}", method = RequestMethod.POST)
     public void saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                 @RequestParam final String externalSystemCode) {
-        BatchUpdateXml batchUpdate = camService.createCreateEntityBatchUpdate(accessPointId, externalSystemCode);
-        try {
-            BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
-            camService.updateBindingAfterSave(batchUpdateResult, accessPointId, externalSystemCode);
-        } catch (ApiException e) {
-            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
-        }
+        accessPointService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
     }
 
 
@@ -986,24 +980,7 @@ public class ApController {
     @RequestMapping(value = "/external/update/{accessPointId}", method = RequestMethod.POST)
     public void updateArchiveEntity(@PathVariable("accessPointId") final Integer accessPointId,
                                     @RequestParam final String externalSystemCode) {
-        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
-
-        EntityXml entity;
-        try {
-            entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()),
-                                                          externalSystemCode);
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
-        BatchUpdateXml batchUpdate = camService.createUpdateEntityBatchUpdate(accessPoint, bindingState, entity, apExternalSystem);
-        try {
-            BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
-            camService.updateBindingAfterUpdate(batchUpdateResult, accessPoint, apExternalSystem);
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
+        accessPointService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
     }
 
     private AbstractException prepareSystemException(ApiException e) {

@@ -31,6 +31,7 @@ import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
+import cz.tacr.elza.security.UserDetail;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1856,13 +1857,28 @@ public class AccessPointService {
         return extSyncsQueueItemVO;
     }
 
-    public ExtSyncsQueueItem createExtSyncsQueueItem(ApAccessPoint accessPoint, ApExternalSystem apExternalSystem, String stateMessage, ExtSyncsQueueItem.ExtAsyncQueueState state, OffsetDateTime date) {
+    public void createExtSyncsQueueItem(Integer accessPointId, String externalSystemCode) {
+        ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        ExtSyncsQueueItem extSyncsQueueItem = createExtSyncsQueueItem(accessPoint, apExternalSystem, null,
+                ExtSyncsQueueItem.ExtAsyncQueueState.NEW, OffsetDateTime.now(), userDetail.getUsername());
+        extSyncsQueueItemRepository.save(extSyncsQueueItem);
+    }
+
+    public ExtSyncsQueueItem createExtSyncsQueueItem(final ApAccessPoint accessPoint,
+                                                     final ApExternalSystem apExternalSystem,
+                                                     final String stateMessage,
+                                                     final ExtSyncsQueueItem.ExtAsyncQueueState state,
+                                                     final OffsetDateTime date,
+                                                     final String userName) {
         ExtSyncsQueueItem extSyncsQueueItem = new ExtSyncsQueueItem();
         extSyncsQueueItem.setAccessPoint(accessPoint);
         extSyncsQueueItem.setApExternalSystem(apExternalSystem);
         extSyncsQueueItem.setStateMessage(stateMessage);
         extSyncsQueueItem.setState(state);
         extSyncsQueueItem.setDate(date);
+        extSyncsQueueItem.setUsername(userName);
         return extSyncsQueueItem;
     }
 
