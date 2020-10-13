@@ -96,9 +96,9 @@ export function createFund(data) {
     data.fundAdmins &&
         data.fundAdmins.forEach(i => {
             if (i.user) {
-                formData.adminUsers.push(i.user);
+                formData.adminUsers.push(i.user.id);
             } else if (i.group) {
-                formData.adminGroups.push(i.group);
+                formData.adminGroups.push(i.group.id);
             }
         });
 
