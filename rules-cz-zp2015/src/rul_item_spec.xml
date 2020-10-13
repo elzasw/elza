@@ -378,8 +378,8 @@
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_JMF">
-        <name>jmenování nebo ustanovení do funkce</name>
-        <description>jmenování nebo ustanovení do funkce</description>
+        <name>jmenování / ustanovení do funkce</name>
+        <description>jmenování / ustanovení do funkce</description>
         <shortcut>jmf</shortcut>
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
     </item-spec>
@@ -2383,6 +2383,42 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_77">
+        <name>osoba jmenovaná / ustanovená do funkce</name>
+        <description>osoba jmenovaná / ustanovená do funkce</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_78">
+        <name>funkce</name>
+        <description>funkce</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_79">
+        <name>korporace výkonu funkce</name>
+        <description>korporace výkonu funkce</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_80">
+        <name>místo výkonu funkce</name>
+        <description>místo výkonu funkce</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>
     <!-- zastaralé, nově většinou autor textu (ZP2015_ENTITY_ROLE_11),
           používá se nyní již jen u technických výkresů, asi by mohlo být 
           přejmenováno na "autor výkresu" -->
@@ -3092,7 +3128,7 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- Poslední role entity: ZP2015_ENTITY_ROLE_77 -->    
+    <!-- Poslední role entity: ZP2015_ENTITY_ROLE_80 -->    
     <!-- Nezjištěné hodnoty -->
     <item-spec code="ZP2015_UNKNOWN_AUTHOR">
         <name>autor</name>
@@ -3214,6 +3250,66 @@
         <name>Fascikl</name>
         <description>Fascikl</description>
         <shortcut>fas</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_SVZ">
+        <name>Svazek</name>
+        <description>Svazek</description>
+        <shortcut>svz</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_ETJ">
+        <name>Etuje</name>
+        <description>Etuje</description>
+        <shortcut>etj</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_KTZ">
+        <name>Kartotéční zásuvka</name>
+        <description>Kartotéční zásuvka</description>
+        <shortcut>ktz</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_TBS">
+        <name>Tubus</name>
+        <description>Tubus</description>
+        <shortcut>tbs</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_AKA">
+        <name>Audiokazeta</name>
+        <description>Audiokazeta</description>
+        <shortcut>aka</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_KDI">
+        <name>Kompaktní disk</name>
+        <description>Kompaktní disk</description>
+        <shortcut>kdi</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_VKA">
+        <name>Videokazeta</name>
+        <description>Videokazeta</description>
+        <shortcut>vka</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_DDI">
+        <name>Digitální disk</name>
+        <description>Digitální disk</description>
+        <shortcut>ddi</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_BOX">
+        <name>Krabička</name>
+        <description>Krabička</description>
+        <shortcut>box</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_OTH">
+        <name>Jiné</name>
+        <description>Jiné</description>
+        <shortcut>oth</shortcut>
         <item-type-assign code="ZP2015_PACKET_TYPE"/>
     </item-spec>
 
@@ -3563,6 +3659,43 @@
         <description>Jiné</description>
         <shortcut>jin</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+    <!-- Prvky popisu pro matriku -->
+    <item-spec code="ZP2015_RECORD_TYPE_BORN">
+        <name>Záznamy narozených</name>
+        <description>Záznamy narozených</description>
+        <shortcut>nrz</shortcut>
+        <item-type-assign code="ZP2015_RECORD_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_RECORD_TYPE_DIED">
+        <name>Záznamy zemřelých</name>
+        <description>Záznamy zemřelých</description>
+        <shortcut>zrl</shortcut>
+        <item-type-assign code="ZP2015_RECORD_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_RECORD_TYPE_MARRIED">
+        <name>Záznamy oddaných</name>
+        <description>Záznamy oddaných</description>
+        <shortcut>odd</shortcut>
+        <item-type-assign code="ZP2015_RECORD_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_RECORD_TYPE_INDEX_BORN">
+        <name>Rejstřík narozených</name>
+        <description>Rejstřík narozených</description>
+        <shortcut>inrz</shortcut>
+        <item-type-assign code="ZP2015_RECORD_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_RECORD_TYPE_INDEX_DIED">
+        <name>Rejstřík zemřelých</name>
+        <description>Rejstřík zemřelých</description>
+        <shortcut>izrl</shortcut>
+        <item-type-assign code="ZP2015_RECORD_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_RECORD_TYPE_INDEX_MARRIED">
+        <name>Rejstřík oddaných</name>
+        <description>Rejstřík oddaných</description>
+        <shortcut>iodd</shortcut>
+        <item-type-assign code="ZP2015_RECORD_TYPE"/>
     </item-spec>
     <!-- Prvky popisu pro vyznamenání -->
     <item-spec code="ZP2015_AWARD_LEVEL_CLASS">
