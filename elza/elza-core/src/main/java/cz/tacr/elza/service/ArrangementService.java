@@ -955,9 +955,6 @@ public class ArrangementService {
         ArrFundToNodeList fundToNodeList = getFundToNodeListFromSession(fundId);
         if (fundToNodeList != null) {
             List<Integer> nodeIdList = fundToNodeList.getNodeIdList();
-            if (nodeIdList.size() > 20) {
-                nodeIdList = nodeIdList.subList(0, 20);
-            }
             ArrFundVersion fundVersion = getOpenVersionByFundId(fundToNodeList.getFundId());
             List<Integer> sortedList = levelTreeCacheService.sortNodesByTreePosition(nodeIdList, fundVersion);
             return levelTreeCacheService.getNodesByIds(sortedList, fundVersion.getFundVersionId());
