@@ -34,6 +34,7 @@ import {
     HomePage,
     NodePage,
     RegistryPage,
+    EntityCreatePage,
     EntityPage,
 } from 'pages';
 
@@ -152,6 +153,7 @@ class Layout extends AbstractReactComponent {
                             <Route path="/fund" component={FundPage} />
                             <Route path="/node/:uuid" component={NodePage} />
                             <Route path="/entity/:uuid" component={EntityPage} />
+                            <Route path="/entity-create" component={EntityCreatePage} />
                             <Route path="/arr">
                                 <Switch>
                                     <Route path="/arr/dataGrid" component={ArrDataGridPage} />
