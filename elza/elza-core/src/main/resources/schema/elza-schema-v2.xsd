@@ -51,7 +51,7 @@
 					<xs:documentation>Characteristics of record</xs:documentation>
 				</xs:annotation>
 			</xs:element>
-			<xs:element name="nms" type="e:AccessPointNames" minOccurs="1" maxOccurs="1">
+			<xs:element name="nms" type="e:AccessPointNames" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
 					<xs:documentation>Names of accesspoint
 
