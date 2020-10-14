@@ -285,8 +285,8 @@
         <use-specification>true</use-specification>
     </item-type>
     <item-type code="ZP2015_RESTRICTION_ACCESS_DATE" data-type="DATE">
-        <name>Datum zveřejnění</name>
-        <shortcut>Datum zveřejnění</shortcut>
+        <name>Datum zpřístupnění</name>
+        <shortcut>Datum zpřístupnění</shortcut>
         <description>ZP4.4.2 Možnost zveřejnění informací o jednotce popisu</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
@@ -908,6 +908,15 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <!-- Prvky popisu pro matriku -->
+    <item-type code="ZP2015_RECORD_TYPE" data-type="ENUM">
+        <name>Typ záznamu</name>
+        <shortcut>Typ záznamu</shortcut>
+        <description>Typ záznamu v matrice</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
     <!-- Přepracováno na role entit, nebude dále využito -->
     <item-type code="ZP2015_GEO_REF" data-type="RECORD_REF">
         <name>Lokalita</name>
@@ -920,6 +929,19 @@
             <item-aptype register-type="GEO"/>
         </item-aptypes>
     </item-type>
+    <item-type code="ZP2015_LEGALACT_REF" data-type="RECORD_REF">
+        <name>Právní akt</name>
+        <shortcut>Právní akt</shortcut>
+        <description>Odkaz druh právního aktu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+        <item-aptypes>
+            <item-aptype register-type="TERM_ABSTRACT"/>
+            <item-aptype register-type="TERM_GENERAL"/>
+        </item-aptypes>
+    </item-type>
+
     <item-type code="ZP2015_ITEM_LINK" data-type="URI_REF">
         <name>Pevné spojení</name>
         <shortcut>Spojeno s</shortcut>
@@ -953,9 +975,9 @@
         <use-specification>true</use-specification>
     </item-type>
     <item-type code="ZP2015_PUBLISH_EVENT_DATE" data-type="DATE">
-        <name>datum spouštěcí událost</name>
-        <shortcut>datum spouštěcí událost</shortcut>
-        <description>datum spouštěcí událost</description>
+        <name>datum spouštěcí události</name>
+        <shortcut>datum spouštěcí události</shortcut>
+        <description>datum spouštěcí události</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>

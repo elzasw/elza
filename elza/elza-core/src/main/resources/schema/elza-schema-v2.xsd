@@ -184,6 +184,21 @@ At least one name have to be defined.</xs:documentation>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
+	<xs:complexType name="DescriptionItemDate">
+		<xs:annotation>
+			<xs:documentation>Standard date</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="e:DescriptionItem">
+				<xs:sequence/>
+				<xs:attribute name="v" use="optional" type="xs:date">
+					<xs:annotation>
+						<xs:documentation>Date value</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
 	<xs:complexType name="DescriptionItemDecimal">
 		<xs:annotation>
 			<xs:documentation>Description Item for single decimal value</xs:documentation>
@@ -491,6 +506,7 @@ Each file has name and its content - binary data.</xs:documentation>
 				<xs:element name="df" type="e:DescriptionItemFileRef" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="db" type="e:DescriptionItemBit" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="dl" type="e:DescriptionItemUriRef" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="ddt" type="e:DescriptionItemDate" minOccurs="1" maxOccurs="1"/>
 			</xs:choice>
 		</xs:sequence>
 		<xs:attribute name="fid" use="optional" type="e:Id">
@@ -613,6 +629,7 @@ Each file has name and its content - binary data.</xs:documentation>
 				<xs:element name="df" type="e:DescriptionItemFileRef" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="db" type="e:DescriptionItemBit" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="dl" type="e:DescriptionItemUriRef" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="ddt" type="e:DescriptionItemDate" minOccurs="1" maxOccurs="1"/>
 			</xs:choice>
 			<xs:element name="aprs" type="e:AccessPointRefs" minOccurs="0" maxOccurs="1">
 				<xs:annotation>
@@ -1079,6 +1096,7 @@ This is ID of the created party</xs:documentation>
 				<xs:element name="df" type="e:DescriptionItemFileRef" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="db" type="e:DescriptionItemBit" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="dl" type="e:DescriptionItemUriRef" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="ddt" type="e:DescriptionItemDate" minOccurs="1" maxOccurs="1"/>
 			</xs:choice>
 		</xs:sequence>
 		<xs:attribute name="id" use="required" type="e:Id">
@@ -1125,7 +1143,7 @@ Allows to represent single time point and also interval</xs:documentation>
 		<xs:sequence/>
 		<xs:attribute name="ct" use="optional" type="xs:string">
 			<xs:annotation>
-				<xs:documentation>Calendar type. If calendar type is not present then Gregorian calendar is used. Typical values are:
+				<xs:documentation>Calendar type. If calendar type is not present then Gregorian calendar is used. Typical values are: 
 G - Gregorian calendar
 J - Julian calendar</xs:documentation>
 			</xs:annotation>

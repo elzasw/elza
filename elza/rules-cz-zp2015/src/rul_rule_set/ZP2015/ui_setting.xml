@@ -94,7 +94,7 @@
                 <type code="ZP2015_UNIT_DATE_BULK" width="1"/>
                 <type code="ZP2015_UNIT_DATE_TEXT" width="2"/>
                 <!-- 5.2.1 Jiné datace jednotky popisu než datace vzniku jednotky popisu - specifikace a hodnota -->
-                <type code="ZP2015_DATE_OTHER" width="2"/>
+                <type code="ZP2015_DATE_OTHER" width="3"/>
                 <!-- 5.2.2 Název autorského díla -->
                 <type code="ZP2015_ITEM_TITLE" width="0"/>
                 <type code="ZP2015_ITEM_TITLE_REF" width="0"/>

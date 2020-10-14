@@ -122,24 +122,6 @@ function getViewStartIndex(index, pageSize) {
     }
 }
 
-// TODO @randak | getViewStartIndex | při změně getViewStartIndex na novou funkci nebyla refaktorována část kodu v akci FUND_FUND_SELECT_SUBNODE
-function getViewStartIndexOld(state, selectedId) {
-    const {pageSize, viewStartIndex, nodeIndex} = state;
-    const index = nodeIndex;
-    if (index >= 0) {
-        // -1 může být, pokud nejsou data seznamu položek accordionu (childNodes) ještě načtena
-        if (index < viewStartIndex || index >= viewStartIndex + pageSize) {
-            let newIndex = index - Math.floor(pageSize / 2);
-            /*let lastPageIndex = childNodeIds.length - pageSize;
-            if(newIndex > lastPageIndex){
-                newIndex = lastPageIndex;
-            }*/
-            return Math.max(newIndex, 0);
-        }
-    }
-    return state.viewStartIndex;
-}
-
 const nodeInitialState = {
     id: null,
     name: null,
@@ -462,8 +444,7 @@ export function node(state = nodeInitialState, action) {
 
             // Změna view tak, aby byla daná položka vidět
             if (action.subNodeId !== null) {
-                // TODO @randak | getViewStartIndex | při změně getViewStartIndex na novou funkci nebyla refaktorována tato část kódu
-                result.viewStartIndex = getViewStartIndexOld(result, action.subNodeId);
+                result.viewStartIndex = getViewStartIndex(result.nodeIndex, state.pageSize / 2);
             }
 
             // Data vztahující se k vybranému ID

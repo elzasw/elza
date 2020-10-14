@@ -83,7 +83,8 @@ public abstract class Rules {
         KieBuilder kBuilder = ks.newKieBuilder(kfs);
         kBuilder.buildAll();
         if (kBuilder.getResults().hasMessages(Message.Level.ERROR)) {
-            throw new SystemException("Drl pravidlo není validní, file: " + path.toString());
+            throw new SystemException("Drl pravidlo není validní, file: " + path.toString())
+                    .set("detail", kBuilder.getResults().getMessages());
         }
         KieContainer kc = ks.newKieContainer(ks.getRepository().getDefaultReleaseId());
         FileTime ft = Files.getLastModifiedTime(path);
