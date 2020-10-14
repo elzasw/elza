@@ -218,6 +218,9 @@ public class DEImportService {
     private void restoreNodeUriRefs() {
         int page = 0;
         Page<ArrDataUriRef> dataPage;
+        // JP, které nemají odkazující propojení na JP
+        Set<Integer> nodeIds = dataUriRefRepository.findReferralNodeIds();
+        Map<String, ArrNode> uuidNodeMap = new HashMap<>();
         do {
             dataPage = dataUriRefRepository.findByUnresolvedNodeRefs(PageRequest.of(page, MAX_IN_SIZE));
             List<ArrDataUriRef> uriRefs = dataPage.getContent();
@@ -225,10 +228,14 @@ public class DEImportService {
                 break;
             }
             Map<String, List<ArrDataUriRef>> uuidDataUriRefMap = createUuidDataUriRefMap(uriRefs);
-            connectNodes(uuidDataUriRefMap);
+            List<ArrNode> nodes = connectNodes(uuidDataUriRefMap);
+            for (ArrNode node : nodes) {
+                uuidNodeMap.put(node.getUuid(), node);
+            }
             dataUriRefRepository.saveAll(uriRefs);
             page++;
         } while (page < dataPage.getTotalPages());
+        nodeCacheService.restoreReferralNodeIds(nodeIds, uuidNodeMap);
     }
 
     /**
@@ -236,13 +243,14 @@ public class DEImportService {
      *
      * @param uuidDataUriRefMap mapa uuid -> list uri refs
      */
-    private void connectNodes(final Map<String, List<ArrDataUriRef>> uuidDataUriRefMap) {
+    private List<ArrNode> connectNodes(final Map<String, List<ArrDataUriRef>> uuidDataUriRefMap) {
         Set<String> uuids = uuidDataUriRefMap.keySet();
         List<ArrNode> nodes = nodeRepository.findAllByUuidIn(uuids);
         for (ArrNode node : nodes) {
             List<ArrDataUriRef> refs = uuidDataUriRefMap.get(node.getUuid());
             refs.forEach(r -> r.setArrNode(node));
         }
+        return nodes;
     }
 
     /**
