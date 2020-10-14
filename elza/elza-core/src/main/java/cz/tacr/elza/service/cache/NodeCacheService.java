@@ -2,6 +2,7 @@ package cz.tacr.elza.service.cache;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +22,7 @@ import javax.transaction.Transactional.TxType;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.castor.core.util.Assert;
@@ -183,6 +185,24 @@ public class NodeCacheService {
     }
 
     /**
+     * Obnovení u JP okazující JP.
+     *
+     * @param nodeIds     restorované JP
+     * @param uuidNodeMap mapa JP podle UUID
+     */
+    @Transactional
+    public void restoreReferralNodeIds(final Set<Integer> nodeIds, final Map<String, ArrNode> uuidNodeMap) {
+        writeLock.lock();
+        try {
+            logger.debug(">restoreReferralNodeIds(nodeIds:{}, uuidNodeMap:{})", nodeIds, uuidNodeMap);
+            restoreReferralNodeIdsInternal(nodeIds, uuidNodeMap);
+            logger.debug("<restoreReferralNodeIds(nodeIds:{}, uuidNodeMap:{})", nodeIds, uuidNodeMap);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    /**
      * Získání sestavené cachované JP.
      *
      * @param nodeId identifikátor JP
@@ -330,7 +350,51 @@ public class NodeCacheService {
             }
 
             if (change) {
-                cachedNode.setData(serialize(result, false)); // není třeba validovat, protože použe mažeme odkaz na JP
+                cachedNode.setData(serialize(result, false)); // není třeba validovat, protože pouze mažeme odkaz na JP
+                cachedNodesUpdated.add(cachedNode);
+            }
+        }
+        if (cachedNodesUpdated.size() > 0) {
+            cachedNodeRepository.saveAll(cachedNodesUpdated);
+        }
+    }
+
+    /**
+     * Obnovení u JP okazující JP.
+     *
+     * @param nodeIds     restorované JP
+     * @param uuidNodeMap mapa JP podle UUID
+     */
+    private void restoreReferralNodeIdsInternal(final Set<Integer> nodeIds, final Map<String, ArrNode> uuidNodeMap) {
+        List<ArrCachedNode> cachedNodes = ObjectListIterator.findIterable(nodeIds, cachedNodeRepository::findByNodeIdIn);
+        List<ArrCachedNode> cachedNodesUpdated = new ArrayList<>();
+        for (ArrCachedNode cachedNode : cachedNodes) {
+            RestoredNode result = deserialize(cachedNode);
+            boolean change = false;
+
+            List<ArrDescItem> descItems = result.getDescItems();
+            if (CollectionUtils.isNotEmpty(descItems)) {
+                for (ArrDescItem descItem : descItems) {
+                    ArrData data = descItem.getData();
+
+                    if (data instanceof ArrDataUriRef) {
+                        ArrDataUriRef dataRef = (ArrDataUriRef) data;
+                        Integer nodeId = dataRef.getNodeId();
+                        URI tempUri = URI.create(dataRef.getValue()).normalize();
+                        if (nodeId == null && DescItemFactory.ELZA_NODE.equalsIgnoreCase(tempUri.getScheme())) {
+                            String nodeUuid = tempUri.getAuthority();
+                            ArrNode node = uuidNodeMap.get(nodeUuid);
+                            if (node != null) { // může to být odkaz z jiného AS, takže teoreticky může se stát, že se nenajde JP
+                                change = true;
+                                dataRef.setArrNode(node);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (change) {
+                cachedNode.setData(serialize(result, false)); // není třeba validovat, protože pouze připojujeme odkaz na JP
                 cachedNodesUpdated.add(cachedNode);
             }
         }
