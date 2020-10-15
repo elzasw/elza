@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import cz.tacr.elza.controller.vo.OrigCreateEntityRequest;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.repository.ApTypeRepository;
@@ -22,19 +21,14 @@ import cz.tacr.elza.service.AccessPointService;
 /**
  * Kontroler pro ELZA UI - React stránky.
  *
- * @since 02.12.2015
- * @author Pavel Stánek [pavel.stanek@marbes.cz]
  */
 @Controller
 @PropertySource(value = "classpath:/META-INF/maven/cz.tacr.elza/elza-core/pom.properties", ignoreResourceNotFound = true)
 public class ElzaWebController {
 
     /** Logger. */
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    static private final Logger logger = LoggerFactory.getLogger(ElzaWebController.class);
 
-    @Autowired
-    OrigCreateEntityRequest createEntityRequest;
-    
     @Autowired
     ApTypeRepository apTypeRepository;
     
@@ -152,9 +146,6 @@ public class ElzaWebController {
                 return "redirect:" + response;
             }
         }
-
-        createEntityRequest.setEntityClass(entityClass);
-        createEntityRequest.setResponse(response);
 
         return "web";
     }
