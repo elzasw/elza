@@ -1623,6 +1623,8 @@ var messages = {
     "accesspoint.description": "Popis",
     "accesspoint.update.description": "Úprava popisu",
 
+    "accesspoint.create.titleMessage": "Nejprve vyberte třídu a oblast nové archivní entity. Dle typu vybrané třídy se zobrazí příslušné atributy, které vyplňte. Poté můžete novou archivní entitu založit.",
+
     "accesspoint.removeDuplicity": "Odstranit duplicitu",
     "accesspoint.removeDuplicity.title": "Odstranění duplicity",
     "accesspoint.removeDuplicity.replacingAccesspoint": "Nahrazující přístupový bod",

@@ -1,5 +1,6 @@
 package cz.tacr.elza.core.schema;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,7 +56,14 @@ public class SchemaManager {
                     .set("schema", urlSchema);
         }
         try {
-            Schema schema = schemaFactory.newSchema(getClass().getResource(fileSchema));
+            URL rsrc = getClass().getResource(fileSchema);
+            if (rsrc == null) {
+                logger.error("Failed to read schema from resource: {}", fileSchema);
+                throw new SystemException("Failed to read schema", BaseCode.INVALID_STATE)
+                        .set("schema", urlSchema)
+                        .set("file", fileSchema);
+            }
+            Schema schema = schemaFactory.newSchema(rsrc);
             schemaMap.put(urlSchema, schema);
             return schema;
         } catch (SAXException e) {
@@ -73,9 +81,9 @@ public class SchemaManager {
     public String schemaUrlToFile(String url) {
         switch (url) {
         case EAD3_SCHEMA_URL:
-            return "schema/ead3.xsd";
+            return "/schema/ead3.xsd";
         case CAM_SCHEMA_URL:
-            return "cam/cam-2019.xsd";
+            return "/cam/cam-2019.xsd";
         default:
             return null;
         }
