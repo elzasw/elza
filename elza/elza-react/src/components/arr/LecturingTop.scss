@@ -51,9 +51,9 @@
 
     .list-container {
         display: flex;
+        flex-direction: column;
         flex: 1;
         .listbox-wrapper {
-            height: 100%;
             max-width: 100%;
             .item {
                 padding: 3px 5px;
