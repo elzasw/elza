@@ -657,12 +657,12 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             arrRegion: {activeIndex},
             templates,
         } = this.props;
-        const templateId = arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.templateId;
+        const templateIds = arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.templateIds;
         const outputId = arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.id;
         const outputSettings = JSON.parse(arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.outputSettings);
 
         const template = templates.items.null.items.find(templateItem => {
-            return templateItem.id === templateId;
+            return templateIds.indexOf(templateItem.id) !== -1;
         });
 
         return (

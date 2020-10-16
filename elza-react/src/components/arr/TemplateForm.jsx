@@ -1,9 +1,11 @@
 import React from 'react';
-import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
-import {Col, Form, FormCheck, Modal, Row} from 'react-bootstrap';
+import {Field, formValueSelector, reduxForm} from 'redux-form';
+import {AbstractReactComponent, i18n} from 'components/shared';
+import {Col, Form, Modal, Row} from 'react-bootstrap';
 import {Button} from '../ui';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
+import {submitForm} from 'components/form/FormUtils.jsx';
+import {connect} from "react-redux";
+import FormInputField from "../shared/form/FormInputField";
 
 export const NEW_TEMPLATE = 'new';
 export const EXISTS_TEMPLATE = 'exists';
@@ -39,20 +41,22 @@ class TemplateForm extends AbstractReactComponent {
 
     static propTypes = {};
 
-    UNSAFE_componentWillReceiveProps(nextProps) {}
+    UNSAFE_componentWillReceiveProps(nextProps) {
+    }
 
-    componentDidMount() {}
+    componentDidMount() {
+    }
 
     submitReduxForm = (values, dispatch) =>
         submitForm(TemplateForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
         const {
-            fields: {name, type, withValues},
             handleSubmit,
             onClose,
             submitting,
             templates,
+            type,
         } = this.props;
         return (
             <div className="todo">
@@ -60,44 +64,44 @@ class TemplateForm extends AbstractReactComponent {
                     <Modal.Body>
                         <Row>
                             <Col xs={2}>
-                                <FormCheck
-                                    type={'radio'}
+                                <Field
                                     disabled={submitting}
-                                    {...type}
-                                    inline
+                                    component={FormInputField}
+                                    type="radio"
+                                    name="type"
                                     value={NEW_TEMPLATE}
-                                    checked={type.value === NEW_TEMPLATE}
                                     label={i18n('arr.fund.addTemplate.new')}
+                                    inline
                                 />
                             </Col>
-                            <Col md={3}>
-                                <FormCheck
-                                    type={'radio'}
+                            <Col md={8}>
+                                <Field
                                     disabled={submitting}
-                                    {...type}
-                                    inline
+                                    component={FormInputField}
+                                    type="radio"
+                                    name="type"
                                     value={EXISTS_TEMPLATE}
-                                    checked={type.value === EXISTS_TEMPLATE}
                                     label={i18n('arr.fund.addTemplate.exists')}
+                                    inline
                                 />
                             </Col>
                         </Row>
-                        {type.value === NEW_TEMPLATE && (
-                            <FormInput
+                        {type === NEW_TEMPLATE && (
+                            <Field
                                 disabled={submitting}
+                                name="name"
                                 type="text"
+                                component={FormInputField}
                                 label={i18n('arr.fund.addTemplate.name')}
-                                {...name}
-                                {...decorateFormField(name)}
                             />
                         )}
-                        {type.value === EXISTS_TEMPLATE && (
-                            <FormInput
+                        {type === EXISTS_TEMPLATE && (
+                            <Field
                                 disabled={submitting}
-                                as="select"
+                                name="name"
+                                type="select"
+                                component={FormInputField}
                                 label={i18n('arr.fund.addTemplate.name')}
-                                {...name}
-                                {...decorateFormField(name)}
                             >
                                 <option value={''} key="no-select">
                                     {i18n('global.action.select')}
@@ -107,9 +111,16 @@ class TemplateForm extends AbstractReactComponent {
                                         {template}
                                     </option>
                                 ))}
-                            </FormInput>
+                            </Field>
                         )}
-                        <FormCheck disabled={submitting} {...withValues} inline label={i18n('arr.fund.addTemplate.withValues')} />
+                        <Field
+                            name="withValues"
+                            type="checkbox"
+                            component={FormInputField}
+                            label={i18n('arr.fund.addTemplate.withValues')}
+                            inline
+                            disabled={submitting}
+                        />
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary">{i18n('global.action.add')}</Button>
@@ -127,6 +138,19 @@ TemplateForm.defaultProps = {
     templates: [],
 };
 
-export default reduxForm({form: 'templateForm', fields: ['name', 'type', 'withValues']}, null, {
-    load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'templateForm', data}),
+//
+// export default reduxForm({form: 'templateForm'}, null, {
+//     load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'templateForm', data}),
+// })(TemplateForm);
+
+const form = reduxForm({
+    form: 'templateForm',
 })(TemplateForm);
+
+const selector = formValueSelector('templateForm');
+
+export default connect((state, props) => {
+    return {
+        type: selector(state, 'type'),
+    };
+})(form);
