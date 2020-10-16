@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import UsageForm from './UsageForm';
+import UsageFormUntyped from './UsageForm';
 import * as types from 'actions/constants/ActionTypes';
 import {i18n} from 'components/shared';
 import {WebApi} from '../../actions/WebApi';
@@ -29,6 +29,11 @@ interface RegistryUsage {
     nodeCount: number;
     nodes: Node[];
 }
+
+// Workaround pro rozbite typy v kombinaci 
+// typovaneho 'withRouter' z 'react-router' 
+// a netypovaneho 'UsageForm.jsx'
+const UsageForm = UsageFormUntyped as any;
 
 export const AccessPointDeleteForm:FC<{
     detail: ApAccessPointVO;
