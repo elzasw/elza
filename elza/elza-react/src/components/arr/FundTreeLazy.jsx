@@ -341,7 +341,7 @@ class FundTreeLazy extends AbstractReactComponent {
                         )}
                         {actionAddons}
                     </div>
-                    <div className="fa-tree-lazy-container" ref={ref => this.treeContainerRef = ref}>
+                    <div className="fa-tree-lazy-container referenceMark" ref={ref => this.treeContainerRef = ref}>
                         <StoreHorizontalLoader store={{fetched, isFetching}} />
                         {this.state.treeContainer && (
                             <VirtualList
