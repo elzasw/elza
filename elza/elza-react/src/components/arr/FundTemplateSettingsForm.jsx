@@ -1,5 +1,5 @@
 import React from 'react';
-import {reduxForm} from 'redux-form';
+import {Field, FieldArray, reduxForm} from 'redux-form';
 import {connect} from 'react-redux';
 import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 import {Accordion, Card, Form, Modal} from 'react-bootstrap';
@@ -13,6 +13,7 @@ import FormInput from '../shared/form/FormInput';
 
 import './FundTemplateSettingsForm.scss';
 import {JAVA_ATTR_CLASS} from '../../constants';
+import FormInputField from "../shared/form/FormInputField";
 
 class FundTemplateSettingsForm extends AbstractReactComponent {
     /**
@@ -48,7 +49,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
         const results = [];
         let i = 0;
         Object.keys(formData).forEach(itemTypeId => {
-            const itemType = descItemTypes.items[indexById(descItemTypes.items, itemTypeId)];
+            const itemType = descItemTypes.items[indexById(descItemTypes.items, parseInt(itemTypeId))];
             const items = formData[itemTypeId];
             items.forEach(item => {
                 results.push(this.renderItem(i++, itemType, item));
@@ -100,7 +101,6 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
 
     render() {
         const {
-            fields: {templates},
             handleSubmit,
             onClose,
             error,
@@ -111,83 +111,88 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
             <Form className="templates-form" onSubmit={handleSubmit(this.submitReduxForm)}>
                 {error && <div className="form-error">{error}</div>}
                 <Modal.Body className="template-items">
-                    {templates &&
-                        templates.map((val, index) => {
-                            const header = (
-                                <div
-                                    onClick={e => {
-                                        if (edit[index]) {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                        }
-                                    }}
-                                    className="pull-left template-name"
-                                >
-                                    {edit[index] ? (
-                                        <FormInput
-                                            type="text"
-                                            label={false}
-                                            {...val.name}
-                                            {...decorateFormField(val.name)}
-                                        />
-                                    ) : (
-                                        val.name.value
-                                    )}
-                                </div>
-                            );
-                            return (
-                                <Accordion
-                                    activeKey={open[index]}
-                                    onClick={() => {
-                                        open[index] = !open[index];
-                                        this.setState({open});
-                                    }}
-                                    accordion
-                                >
-                                    <Card
-                                        eventKey={true}
-                                        header={
-                                            <div className="clearfix">
-                                                {header}
-                                                <div className="pull-right">
-                                                    <NoFocusButton
-                                                        className={'btn-action'}
-                                                        onClick={e => {
-                                                            const newEdit = {};
-                                                            newEdit[index] = !edit[index];
-                                                            this.setState({edit: newEdit});
-                                                            e.stopPropagation();
-                                                        }}
-                                                    >
-                                                        <Icon glyph="fa-edit" />
-                                                    </NoFocusButton>
-                                                    <NoFocusButton
-                                                        className={'btn-action'}
-                                                        onClick={e => {
-                                                            this.setState({edit: {}});
-                                                            templates.removeField(index);
-                                                            e.stopPropagation();
-                                                        }}
-                                                    >
-                                                        <Icon glyph="fa-trash" />
-                                                    </NoFocusButton>
-                                                </div>
-                                            </div>
-                                        }
-                                    >
-                                        <div
-                                            onClick={e => {
+                    <FieldArray
+                        name={'templates'}
+                        component={({fields, meta}) => {
+                            if (fields.length === 0) {
+                                return <div>{i18n('arr.fund.template.empty')}</div>
+                            }
+
+                            return fields.map((item, index, fields) => {
+                                const header = (
+                                    <div
+                                        onClick={e => {
+                                            if (edit[index]) {
                                                 e.preventDefault();
                                                 e.stopPropagation();
-                                            }}
-                                        >
-                                            {this.renderItems(val.formData.initialValue)}
-                                        </div>
-                                    </Card>
-                                </Accordion>
-                            );
-                        })}
-                    {(!templates || templates.length === 0) && <div>{i18n('arr.fund.template.empty')}</div>}
+                                            }
+                                        }}
+                                        className="pull-left template-name"
+                                    >
+                                        {edit[index] ? (
+                                                <Field
+                                                    name={`${item}.name`}
+                                                    type="text"
+                                                    component={FormInputField}
+                                                    label={false}
+                                                />
+                                        ) : (
+                                            fields.get(index).name.value
+                                        )}
+                                    </div>
+                                );
+                                return (
+                                    <Accordion
+                                        activeKey={open[index]}
+                                        onClick={() => {
+                                            open[index] = !open[index];
+                                            this.setState({open});
+                                        }}
+                                        accordion
+                                    >
+                                        <Card>
+                                            <Card.Header>
+                                                <div className="clearfix">
+                                                    {header}
+                                                    <div className="pull-right">
+                                                        <NoFocusButton
+                                                            className={'btn-action'}
+                                                            onClick={e => {
+                                                                const newEdit = {};
+                                                                newEdit[index] = !edit[index];
+                                                                this.setState({edit: newEdit});
+                                                                e.stopPropagation();
+                                                            }}
+                                                        >
+                                                            <Icon glyph="fa-edit" />
+                                                        </NoFocusButton>
+                                                        <NoFocusButton
+                                                            className={'btn-action'}
+                                                            onClick={e => {
+                                                                this.setState({edit: {}});
+                                                                fields.remove(index);
+                                                                e.stopPropagation();
+                                                            }}
+                                                        >
+                                                            <Icon glyph="fa-trash" />
+                                                        </NoFocusButton>
+                                                    </div>
+                                                </div>
+                                            </Card.Header>
+                                            <div
+                                                onClick={e => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                }}
+                                            >
+                                                {this.renderItems(fields.get(index).formData)}
+                                            </div>
+                                        </Card>
+                                    </Accordion>
+                                );
+                            });
+                        }}
+                    />
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary">
@@ -214,5 +219,4 @@ const connector = connect(mapState);
 
 export default reduxForm({
     form: 'fundTemplateSettingsForm',
-    fields: ['templates[].formData', 'templates[].withValues', 'templates[].name'],
 })(connector(FundTemplateSettingsForm));
