@@ -80,12 +80,13 @@ class ArrStructurePanel extends AbstractReactComponent {
                     i18n('arr.structure.modal.settings.title', name),
                     <StructureExtensionsForm
                         initialValues={{extensions}}
-                        onSubmit={data =>
-                            WebApi.updateFundStructureExtension(
+                        onSubmit={data => {
+                            return WebApi.updateFundStructureExtension(
                                 fundVersionId,
                                 code,
                                 data.extensions.filter(i => i.active).map(i => i.code),
-                            )
+                            );
+                        }
                         }
                         onSubmitSuccess={() => {
                             this.props.dispatch(modalDialogHide());

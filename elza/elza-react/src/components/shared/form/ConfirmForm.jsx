@@ -52,5 +52,4 @@ class ConfirmForm extends AbstractReactComponent {
 
 export default reduxForm({
     form: 'confirmForm',
-    fields: [],
 })(ConfirmForm);
