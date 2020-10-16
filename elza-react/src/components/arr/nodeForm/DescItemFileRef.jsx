@@ -38,7 +38,7 @@ class DescItemFileRef extends AbstractReactComponent {
 
     handleFundFiles = () => {
         if (this.props.onFundFiles) {
-            this.refs.autocomplete.closeMenu();
+            this.focusEl.closeMenu();
             this.props.onFundFiles();
         } else {
             console.warn('undefined handleFundFiles');
@@ -47,7 +47,7 @@ class DescItemFileRef extends AbstractReactComponent {
 
     handleCreateFile = () => {
         if (this.props.onCreateFile) {
-            this.refs.autocomplete.closeMenu();
+            this.focusEl.closeMenu();
             this.props.onCreateFile();
         } else {
             console.warn('undefined handleCreateFile');
@@ -57,11 +57,11 @@ class DescItemFileRef extends AbstractReactComponent {
     renderFooter = () => {
         return (
             <div className="create-file">
-                <Button onClick={this.handleCreateFile}>
-                    <Icon glyph="fa-plus" />
+                <Button variant="outline-secondary" onClick={this.handleCreateFile}>
+                    <Icon glyph="fa-plus" className="mr-1" />
                     {i18n('arr.fund.files.action.add')}
                 </Button>
-                <Button onClick={this.handleFundFiles}>{i18n('arr.panel.title.files')}</Button>
+                <Button variant="outline-secondary" className="ml-1" onClick={this.handleFundFiles}>{i18n('arr.panel.title.files')}</Button>
             </div>
         );
     };
