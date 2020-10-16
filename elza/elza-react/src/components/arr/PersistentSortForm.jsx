@@ -5,18 +5,17 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {reduxForm} from 'redux-form';
-import {Form, FormCheck} from 'react-bootstrap';
+import {Field, formValueSelector, reduxForm} from 'redux-form';
+import {Form} from 'react-bootstrap';
 import AbstractReactComponent from '../AbstractReactComponent';
-import FormInput from 'components/shared/form/FormInput';
 import i18n from '../i18n';
-import {Autocomplete} from '../shared';
 import {connect} from 'react-redux';
 import {WebApi} from '../../actions/WebApi';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {PERSISTENT_SORT_CODE} from '../../constants.tsx';
 import {modalDialogHide} from '../../actions/global/modalDialog';
 import {refRulDataTypesFetchIfNeeded} from '../../actions/refTables/rulDataTypes';
+import FormInputField from "../shared/form/FormInputField";
 
 const transformSubmitData = values => {
     return {
@@ -45,6 +44,8 @@ class PersistentSortForm extends AbstractReactComponent {
         node: PropTypes.object,
     };
 
+    static FORM = 'persistentSortForm';
+
     componentDidMount = () => {
         this.props.dispatch(descItemTypesFetchIfNeeded());
         this.props.dispatch(refRulDataTypesFetchIfNeeded());
@@ -66,66 +67,77 @@ class PersistentSortForm extends AbstractReactComponent {
 
     render() {
         const {
-            fields: {itemType, itemSpec, direction, sortChildren},
             descItemTypes,
             rulDataTypes,
+            itemType,
+            submitting
         } = this.props;
 
         const filteredDescItems = this.filterDescItems(descItemTypes.items, rulDataTypes.items, allowedDatatypes);
 
         return (
             <Form>
-                <Autocomplete
-                    name="itemType"
+
+                <Field
                     alwaysExpanded
                     label={i18n('arr.fund.bulkModifications.descItemType')}
-                    {...itemType}
                     items={filteredDescItems}
-                    onBlur={() => {}}
+                    name="itemType"
+                    disabled={submitting}
+                    type="autocomplete"
+                    component={FormInputField}
                 />
 
-                {itemType.value.useSpecification === true && (
-                    <Autocomplete
+                {itemType && itemType.useSpecification === true && (
+                    <Field
                         name="itemSpec"
                         alwaysExpanded
                         label={i18n('arr.functions.persistentSort.spec')}
-                        {...itemSpec}
-                        items={itemType.value.descItemSpecs}
+                        items={itemType.descItemSpecs}
                         getItemRenderClass={item => item.name.toLowerCase()}
-                        onBlur={() => {}}
+                        disabled={submitting}
+                        type="autocomplete"
+                        component={FormInputField}
                     />
                 )}
 
-                <FormInput
+                <Field
                     type="radio"
                     name="direction"
-                    {...direction}
-                    checked={direction.value === DIRECTION.ASC}
+                    disabled={submitting}
+                    component={FormInputField}
                     value={DIRECTION.ASC}
                     label={i18n('arr.functions.persistentSort.direction.asc')}
                     inline
                 />
 
-                <FormInput
+                <Field
                     type="radio"
                     name="direction"
-                    {...direction}
-                    checked={direction.value === DIRECTION.DESC}
+                    disabled={submitting}
+                    component={FormInputField}
                     value={DIRECTION.DESC}
                     label={i18n('arr.functions.persistentSort.direction.desc')}
                     inline
                 />
 
-                <FormCheck type="checkbox" name="sortChildren" {...sortChildren} value={sortChildren.checked} label={i18n('arr.functions.persistentSort.sortChildren')} />
+                <Field
+                    name="sortChildren"
+                    type="checkbox"
+                    component={FormInputField}
+                    label={i18n('arr.functions.persistentSort.sortChildren')}
+                    disabled={submitting}
+                />
             </Form>
         );
     }
 }
 
 const formComponent = reduxForm({
-    form: 'persistentSortForm',
-    fields: ['itemType', 'itemSpec', 'direction', 'sortChildren'],
+    form: PersistentSortForm.FORM
 })(PersistentSortForm);
+
+const selector = formValueSelector(PersistentSortForm.FORM);
 
 export default connect((state, props) => {
     const {initialValues} = props;
@@ -154,6 +166,7 @@ export default connect((state, props) => {
     return {
         descItemTypes,
         rulDataTypes,
+        itemType: selector(state, 'itemType'),
         onSubmit: (values, dispatch) =>
             props.onSubmit
                 ? props.onSubmit(props.versionId, transformSubmitData(values))
