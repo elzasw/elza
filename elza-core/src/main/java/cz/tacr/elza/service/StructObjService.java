@@ -359,7 +359,6 @@ public class StructObjService {
         for (ArrStructuredItem structureItem : structureItems) {
             // make copy without data and item_id
             ArrStructuredItem newStructureItem = structureItem.makeCopy();
-            newStructureItem.setData(null);
             newStructureItem.setItemId(null);
 
             structureItem.setDeleteChange(change);
