@@ -1,42 +1,31 @@
 package cz.tacr.elza.service;
 
-import com.google.common.collect.Iterables;
-import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.controller.ArrangementController;
-import cz.tacr.elza.controller.ArrangementController.Depth;
-import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
-import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
-import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
-import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.filter.SearchParam;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.core.db.HibernateConfiguration;
-import cz.tacr.elza.core.security.AuthMethod;
-import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.core.security.AuthParam.Type;
-import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.ArrNodeConformity.State;
-import cz.tacr.elza.domain.vo.ArrFundToNodeList;
-import cz.tacr.elza.domain.vo.NodeTypeOperation;
-import cz.tacr.elza.domain.vo.RelatedNodeDirection;
-import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
-import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.exception.*;
-import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.*;
-import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.arrangement.DeleteFundAction;
-import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
-import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
-import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventFund;
-import cz.tacr.elza.service.eventnotification.events.EventType;
+import java.text.Normalizer;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
+import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -50,18 +39,76 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
-import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
-import java.text.Normalizer;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import com.google.common.collect.Iterables;
+
+import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.controller.ArrangementController;
+import cz.tacr.elza.controller.ArrangementController.Depth;
+import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
+import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
+import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.filter.SearchParam;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.core.security.AuthParam.Type;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundRegisterScope;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformity.State;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UIVisiblePolicy;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.vo.ArrFundToNodeList;
+import cz.tacr.elza.domain.vo.NodeTypeOperation;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
+import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.drools.DirectionLevel;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ConcurrentUpdateException;
+import cz.tacr.elza.exception.InvalidQueryException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityErrorRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.VisiblePolicyRepository;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.arrangement.DeleteFundAction;
+import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
+import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
+import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventFund;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
  * Main arrangement service.
@@ -1457,11 +1504,6 @@ public class ArrangementService {
 
         // zjištění všech uzlů, které nemají validaci
         List<ArrNode> nodes = nodeRepository.findByNodeConformityIsNull();
-
-        //pridani uzlu, u kterých byla validace chybná
-        if(onStart) {
-            nodes.addAll(nodeRepository.findNodesByConformityState(State.ERR));
-        }
 
         // roztřídění podle AF
         for (ArrNode node : nodes) {
