@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import cz.tacr.cam._2019.BatchUpdate;
 import cz.tacr.cam._2019.Entities;
 import cz.tacr.cam._2019.ObjectFactory;
 import cz.tacr.elza.common.XmlUtils;
@@ -23,6 +22,7 @@ import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.ws.types.v1.ImportDisposition;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
+import cz.tacr.elza.ws.types.v1.RequestStatusInfo;
 
 @Component
 @javax.jws.WebService(serviceName = "CoreService", portName = "ImportService", targetNamespace = "http://elza.tacr.cz/ws/core/v1",
@@ -43,7 +43,7 @@ public class ImportServiceImpl implements ImportService {
     @Transactional
     public void importData(ImportRequest request) throws CoreServiceException {
         try {
-            switch (request.getRequiredFormat()) {
+            switch (request.getDataFormat()) {
             case CamUtils.CAM_SCHEMA:
                 importCamSchema(request.getDisposition(), request.getBinData());
                 break;
@@ -64,15 +64,21 @@ public class ImportServiceImpl implements ImportService {
 
         // read CAM xml
         Object obj = unmarshaller.unmarshal(binData.getInputStream());
-        if (obj instanceof BatchUpdate) {
-            BatchUpdate bu = (BatchUpdate) obj;
-            importCam(disposition, bu);
+        if (obj instanceof Entities) {
+            Entities ents = (Entities) obj;
+            importCam(disposition, ents);
         } else {
             throw new IllegalStateException("Unrecognized object type: " + obj);
         }
     }
 
-    private void importCam(ImportDisposition disposition, BatchUpdate bu) {
+    private void importCam(ImportDisposition disposition, Entities ents) {
         throw new IllegalStateException("Not implemented");
+    }
+
+    @Override
+    public RequestStatusInfo getImportStatus(String requestId) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
