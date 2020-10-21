@@ -1534,6 +1534,24 @@ public class AccessPointService {
     }
 
     /**
+     * Ověří jestli přihlášený uživatel má právo upravovat schválenou entitu.
+     *
+     * @param state state entity
+     */
+    public void hasPermissionForEditingConfirmed(final ApState state) {
+        if (state.getStateApproval() == StateApproval.APPROVED) {
+
+            if (!userService.hasPermission(Permission.ADMIN)
+                    && !userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
+                    && !userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId())) {
+                throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
+                        .set("accessPointId", state.getAccessPointId())
+                        .set("scopeId", state.getScopeId());
+            }
+        }
+    }
+
+    /**
      * Nastaví část přístupového bodu na preferovanou
      *
      * @param accessPoint přístupový bod
