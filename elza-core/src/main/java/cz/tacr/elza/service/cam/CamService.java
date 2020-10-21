@@ -557,6 +557,15 @@ public class CamService {
                 .set("responseHeaders", e.getResponseHeaders());
     }
 
+    /**
+     * Synchronizace přístupového bodu z externího systému
+     *
+     * @param procCtx context
+     * @param state stav přístupového bodu
+     * @param entity entita z externího systému
+     * @param bindingState stav propojení s externím systémem
+     * @param syncQueue zda-li se jedná o volání z časovače
+     */
     public void synchronizeAccessPoint(ProcessingContext procCtx, ApState state, EntityXml entity,
                                        ApBindingState bindingState, boolean syncQueue) {
         if (syncQueue && checkLocalChanges(state, bindingState)) {
@@ -592,6 +601,17 @@ public class CamService {
         }
     }
 
+    /**
+     * Synchronizace částí přístupového bodu z externího systému
+     *
+     * @param procCtx context
+     * @param entity entita z externího systému
+     * @param bindingState stav propojení s externím systémem
+     * @param apChange změna
+     * @param accessPoint přístupový bod
+     * @param partList přidané nebo změněné části
+     * @param itemMap prvky popisu přidaných nebo změněných částí
+     */
     private void synchronizeParts(final ProcessingContext procCtx,
                                   final EntityXml entity,
                                   final ApBindingState bindingState,
