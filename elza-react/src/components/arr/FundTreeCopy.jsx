@@ -27,10 +27,7 @@ class FundTreeCopy extends AbstractReactComponent {
         super(props);
 
         this.bindMethods(
-            'callFundSelectSubNode',
             'handleNodeClick',
-            'handleSelectInNewTab',
-            'handleContextMenu',
             'handleFulltextChange',
             'handleFulltextSearch',
             'handleFulltextPrevItem',
@@ -179,7 +176,6 @@ class FundTreeCopy extends AbstractReactComponent {
                               fundTreeNodeCollapse(types.FUND_TREE_AREA_COPY, this.props.versionId, node),
                           );
                 }}
-                onContextMenu={this.handleContextMenu}
                 onNodeClick={this.handleNodeClick}
                 onCollapse={this.handleCollapse}
                 onFulltextChange={this.handleFulltextChange}
