@@ -8,7 +8,7 @@ import {WebApi} from '../../actions/WebApi';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 
 import './TemplateSettingsForm.scss';
-import FormInputField from "../shared/form/FormInputField";
+import FormInputField from '../shared/form/FormInputField';
 
 class TemplateSettingsForm extends React.Component {
     static propTypes = {
@@ -25,12 +25,7 @@ class TemplateSettingsForm extends React.Component {
     };
 
     render() {
-        const {
-            handleSubmit,
-            submitting,
-            engine,
-            readMode,
-        } = this.props;
+        const {handleSubmit, submitting, engine, readMode} = this.props;
 
         const commonProps = {
             disabled: readMode || submitting,
@@ -85,13 +80,6 @@ class TemplateSettingsForm extends React.Component {
     }
 }
 
-export default reduxForm(
-    {
-        form: 'templateSettingsForm',
-    },
-    (state, {outputSettings}) => {
-        return {
-            initialValues: outputSettings,
-        };
-    },
-)(TemplateSettingsForm);
+export default reduxForm({
+    form: 'templateSettingsForm',
+})(TemplateSettingsForm);
