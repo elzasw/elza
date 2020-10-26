@@ -709,17 +709,33 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
                 String code = rs.getString("code");
+                String complement = rs.getString("complement");
                 if (code.equals("INITIALS") || code.equals("ROMAN_NUM")) {
                     String arrTableName = getDataStorageTable(nmMainDataTypeId);
-                    ps = conn.prepareStatement("UPDATE " + arrTableName + " SET value = value || ' ' || " + dbString(rs.getString("complement")) + " WHERE data_id = " + nmMainDataId);
+                    ps = conn.prepareStatement("UPDATE " + arrTableName + " SET value = value || ' ' || " + dbString(complement) + " WHERE data_id = " + nmMainDataId);
                     ps.executeUpdate();
                 } else {
                     //zpracování complement
                     String itemTypeCode = convertComplementMap.get(code);
-                    Integer dataTypeId = getRulItemTypeDataTypeId(itemTypeCode);
+                    RulItemType rulItemType = getRulItemType(itemTypeCode);
+                    if (rulItemType == null) {
+                        throw new IllegalArgumentException("Nebyl nalezen RulItemType podle kódu: " + itemTypeCode);
+                    }
+                    Integer dataTypeId = rulItemType.getDataTypeId();
                     Integer dataId = createArrData(dataTypeId);
                     createApItem(partId, dataId, rulItemTypeMap.get(itemTypeCode), null);
-                    storeStringValue(dataId, dataTypeId, rs.getString("complement"));
+
+                    RulDataType rulDataType = getRulDataType(dataTypeId);
+                    String dataTypeCode = rulDataType.getCode();
+                    if (dataTypeCode.equalsIgnoreCase("INT")) {
+                        try {
+                            storeIntegerValue(dataId, dataTypeId, Integer.parseInt(complement));
+                        } catch (NumberFormatException e) {
+                            logger.warn("U zpracování complement - {} -> {} nastal problém při parsování hodnoty '{}' na číslo a hodnota nebude migrována!", code, itemTypeCode, complement);
+                        }
+                    } else {
+                        storeStringValue(dataId, dataTypeId, complement);
+                    }
                 }
             }
         }
@@ -1015,6 +1031,24 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         return null;
     }
 
+    private RulItemType getRulItemType(String code) {
+        for (RulItemType rulItemType : rulItemTypes) {
+            if (rulItemType.getCode().equals(code)) {
+                return rulItemType;
+            }
+        }
+        return null;
+    }
+
+    private RulDataType getRulDataType(final Integer dataTypeId) {
+        for (RulDataType rulDataType : rulDataTypes) {
+            if (rulDataType.getDataTypeId().equals(dataTypeId)) {
+                return rulDataType;
+            }
+        }
+        throw new IllegalArgumentException("Nenalezen rulDataType podle id: " + dataTypeId);
+    }
+
     private String getDataStorageTable(Integer dataTypeId) {
         for (RulDataType rulDataType : rulDataTypes) {
             if (rulDataType.getDataTypeId().equals(dataTypeId)) {
@@ -1047,11 +1081,10 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
     private Integer createApPart(Integer accessPointId, Integer rulPartTypeId, Integer partParentId) throws DatabaseException, SQLException {
         Integer partId = nextId("ap_part", "part_id");
-        PreparedStatement ps = conn.prepareStatement("INSERT INTO ap_part(part_id, value, error_description, state, part_type_id, parent_part_id, access_point_id, create_change_id, delete_change_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);");
+        PreparedStatement ps = conn.prepareStatement("INSERT INTO ap_part(part_id, error_description, state, part_type_id, parent_part_id, access_point_id, create_change_id, delete_change_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
         int i = 1;
         ps.setInt(i++, partId);
-        ps.setString(i++, "Bude generováno");
         ps.setNull(i++, Types.VARCHAR);
         ps.setString(i++, "OK");
         ps.setInt(i++, rulPartTypeId);
@@ -1088,6 +1121,18 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
             int i = 1;
             ps.setInt(i++, dataId);
             ps.setString(i++, value);
+            ps.executeUpdate();
+        }
+    }
+
+    private void storeIntegerValue(Integer dataId, Integer dataTypeId, Integer value) throws DatabaseException, SQLException {
+        if (value != null) {
+            String table = getDataStorageTable(dataTypeId);
+            PreparedStatement ps = conn.prepareStatement("INSERT INTO " + table + "(data_id, value) " +
+                    "VALUES(?,?)");
+            int i = 1;
+            ps.setInt(i++, dataId);
+            ps.setInt(i++, value);
             ps.executeUpdate();
         }
     }

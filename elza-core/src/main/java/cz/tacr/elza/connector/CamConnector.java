@@ -59,7 +59,6 @@ public class CamConnector {
         return JaxbUtils.unmarshal(EntityXml.class, fileApiResponse.getData());
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
     public BatchUpdateResultXml postNewBatch(final BatchUpdateXml batchUpdate,
                                              final String externalSystemCode) throws ApiException {
         ApiResponse<File> fileApiResponse = getBatchUpdatesApiByCode(externalSystemCode).postNewBatchWithHttpInfo(JaxbUtils.asFile(batchUpdate));

@@ -51,7 +51,7 @@ import {FOCUS_KEYS} from '../../constants.tsx';
 import FundNodesSelectForm from '../../components/arr/FundNodesSelectForm';
 import {fundOutputAddNodes} from '../../actions/arr/fundOutput';
 import {versionValidate} from '../../actions/arr/versionValidation';
-import {structureTypesFetchIfNeeded} from "../../actions/refTables/structureTypes";
+import {structureTypesFetchIfNeeded} from '../../actions/refTables/structureTypes';
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -581,7 +581,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         return (
             <div className="fund-output-list-container">
-                <FormInput as="select" onChange={this.handleOutputStateSearch} value={fundOutput.filterState}>
+                <FormInput as="select" onChange={this.handleOutputStateSearch} value={fundOutput.filterState || -1}>
                     <option value={-1} key="no-filter">
                         {i18n('arr.output.list.state.all')}
                     </option>
@@ -657,12 +657,12 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             arrRegion: {activeIndex},
             templates,
         } = this.props;
-        const templateId = arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.templateId;
+        const templateIds = arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.templateIds;
         const outputId = arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.id;
         const outputSettings = JSON.parse(arrRegion.funds[activeIndex].fundOutput.fundOutputDetail.outputSettings);
 
         const template = templates.items.null.items.find(templateItem => {
-            return templateItem.id === templateId;
+            return templateIds.indexOf(templateItem.id) !== -1;
         });
 
         return (

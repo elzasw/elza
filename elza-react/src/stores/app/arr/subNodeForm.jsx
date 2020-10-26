@@ -397,9 +397,18 @@ export default function subNodeForm(state = initialState, action = {}) {
 
             descItems.splice(action.index, 0, descItems.splice(action.valueLocation.descItemIndex, 1)[0]);
 
+            // přepočítání pozice
+            for (let i = 0; i < descItems.length; i++) {
+                descItems[i].position = i + 1;
+            }
+
             loc.descItemType.descItems = descItems;
 
-            return setLoc(state, action.valueLocation, loc);
+            // je třeba upravit index (původní index určuje původní pozici descItemu, nový indexu určuje novou pozici)
+            return setLoc(state, {
+                ...action.valueLocation,
+                descItemIndex: action.index,
+            }, loc);
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
             const {valueLocation} = action;
@@ -455,6 +464,7 @@ export default function subNodeForm(state = initialState, action = {}) {
         case types.CHANGE_NODES:
         case types.OUTPUT_CHANGES_DETAIL:
         case types.OUTPUT_CHANGES:
+        case types.OUTPUT_STATE_CHANGE:
         case types.CHANGE_OUTPUTS:
         case types.CHANGE_STRUCTURE:
         case types.FUND_INVALID:

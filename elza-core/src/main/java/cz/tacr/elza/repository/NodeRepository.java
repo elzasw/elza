@@ -42,7 +42,7 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
     */
     @Query("SELECT distinct n.nodeId FROM arr_node n " +
             "WHERE n.fund = ?1")
-    List<Integer> findNodeIdsByFund(ArrFund fund);
+    Set<Integer> findNodeIdsByFund(ArrFund fund);
 
     @Query("SELECT distinct n.nodeId FROM arr_node n " +
             "LEFT JOIN n.levels l " +

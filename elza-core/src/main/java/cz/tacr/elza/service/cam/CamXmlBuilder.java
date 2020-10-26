@@ -2,14 +2,13 @@ package cz.tacr.elza.service.cam;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import cz.tacr.elza.service.GroovyService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.Validate;
 
 import cz.tacr.cam.schema.cam.ItemsXml;
 import cz.tacr.cam.schema.cam.NewItemsXml;
@@ -22,6 +21,8 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.cam.CamXmlFactory.EntityRefHandler;
 
 /**
@@ -33,6 +34,7 @@ abstract public class CamXmlBuilder {
 
     protected final StaticDataProvider sdp;
     protected final ApAccessPoint accessPoint;
+    protected final ApScope scope;
 
     protected final EntityRefHandler entityRefHandler;
     protected final GroovyService groovyService;
@@ -42,11 +44,13 @@ abstract public class CamXmlBuilder {
     CamXmlBuilder(final StaticDataProvider sdp,
                   final ApAccessPoint accessPoint,
                   final EntityRefHandler entityRefHandler,
-                  final GroovyService groovyService) {
+                  final GroovyService groovyService,
+                  final ApScope scope) {
         this.sdp = sdp;
         this.accessPoint = accessPoint;
         this.entityRefHandler = entityRefHandler;
         this.groovyService = groovyService;
+        this.scope = scope;
     }
 
     protected NewItemsXml createNewItems(ApBindingItem changedPart, Collection<ApItem> itemList, String externalSystemTypeCode) {
@@ -55,6 +59,9 @@ abstract public class CamXmlBuilder {
         newItems.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
 
         createXmlItems(itemList, newItems.getItems(), externalSystemTypeCode);
+        if (newItems.getItems().size() == 0) {
+            return null;
+        }
 
         return newItems;
     }
@@ -62,18 +69,37 @@ abstract public class CamXmlBuilder {
     protected PartsXml createParts(Collection<ApPart> partList,
                                    Map<Integer, List<ApItem>> itemMap,
                                    String externalSystemTypeCode) {
-        PartsXml parts = new PartsXml();
+        // if no parts available -> return null
+        if (CollectionUtils.isEmpty(partList)) {
+            // schema allows empty element prts
+            return null;
+        }
 
-        ApPart preferPart = accessPoint.getPreferredPart();
-        if (preferPart != null) {
-            parts.getList().add(createPart(preferPart, itemMap, externalSystemTypeCode));
-            if (CollectionUtils.isNotEmpty(partList)) {
-                for (ApPart part : partList) {
-                    if (!part.getPartId().equals(preferPart.getPartId())) {
-                        parts.getList().add(createPart(part, itemMap, externalSystemTypeCode));
-                    }
+        Collection<ApPart> adjustedPartList = partList;
+        // check if prefered part is first
+        ApPart preferedPart = accessPoint.getPreferredPart();
+        if (preferedPart != null) {
+            // prepare list with first pref.part
+            adjustedPartList = new ArrayList<>(partList.size());
+            adjustedPartList.add(preferedPart);
+            for (ApPart part : partList) {
+                if (!part.getPartId().equals(preferedPart.getPartId())) {
+                    adjustedPartList.add(part);
                 }
             }
+        }
+        
+        // if no parts available -> create item without parts
+        List<PartXml> partxmlList = createPartList(adjustedPartList, itemMap, externalSystemTypeCode);
+        // if no parts available -> return null
+        if (CollectionUtils.isEmpty(partxmlList)) {
+            // schema allows empty element prts
+            return null;
+        }
+
+        PartsXml parts = new PartsXml();
+        for (PartXml part : partxmlList) {
+            parts.getList().add(part);
         }
         return parts;
     }
@@ -84,13 +110,23 @@ abstract public class CamXmlBuilder {
         List<PartXml> partXmlList = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(partList)) {
             for (ApPart part : partList) {
-                partXmlList.add(createPart(part, itemMap, externalSystemTypeCode));
+                List<ApItem> partItems = itemMap.get(part.getPartId());
+                if (CollectionUtils.isEmpty(partItems)) {
+                    continue;
+                }
+                PartXml partXml = createPart(part, partItems, externalSystemTypeCode);
+                if (partXml == null) {
+                    continue;
+                }
+                partXmlList.add(partXml);
             }
         }
         return partXmlList;
     }
 
-    private PartXml createPart(ApPart apPart, Map<Integer, List<ApItem>> itemMap, String externalSystemTypeCode) {
+    private PartXml createPart(ApPart apPart, List<ApItem> partItems, String externalSystemTypeCode) {
+        Validate.isTrue(partItems.size() > 0, "Empty part list, entityId: {}", apPart.getAccessPointId());
+
         String uuid = UUID.randomUUID().toString();
 
         String parentUuid;
@@ -104,8 +140,14 @@ abstract public class CamXmlBuilder {
 
         onPartCreated(apPart, uuid);
 
-        Collection<ApItem> itemList = itemMap.getOrDefault(apPart.getPartId(), Collections.emptyList());
-        part.setItms(createItems(apPart, itemList, externalSystemTypeCode));
+        ItemsXml itemsXml = createItems(apPart, partItems, externalSystemTypeCode);
+
+        // check if anything to export
+        if (itemsXml.getItems().size() == 0) {
+            return null;
+        }
+
+        part.setItms(itemsXml);
         return part;
     }
 
@@ -128,7 +170,7 @@ abstract public class CamXmlBuilder {
     public void createXmlItems(Collection<ApItem> itemList, List<Object> trgList, String externalSystemTypeCode) {
         for (ApItem item : itemList) {
             String uuid = UUID.randomUUID().toString();
-            Object i = CamXmlFactory.createItem(sdp, item, uuid, entityRefHandler, groovyService, externalSystemTypeCode);
+            Object i = CamXmlFactory.createItem(sdp, item, uuid, entityRefHandler, groovyService, externalSystemTypeCode, scope);
             if (i != null) {
                 onItemCreated(item, uuid);
                 trgList.add(i);

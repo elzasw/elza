@@ -17,6 +17,7 @@ import cz.tacr.elza.ws.types.v1.FundIdentifiers;
 import io.restassured.RestAssured;
 
 public class FundServiceTest extends AbstractControllerTest {
+
     @Test
     public void fundTest() {
 

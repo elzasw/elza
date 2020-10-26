@@ -23,7 +23,7 @@ function initNodeChild(node) {
         referenceMark: [],
         version: 0,
         ...node,
-    }
+    };
 }
 
 export function nodeInitState(node, prevNodesNode) {
@@ -106,19 +106,19 @@ export function nodeInitState(node, prevNodesNode) {
 function getViewStartIndex(index, pageSize) {
     // -1 může být, pokud nejsou data seznamu položek accordionu (childNodes) ještě načtena
     if (index === undefined || index < 0) {
-        throw new Error("invalid index provided");
+        throw new Error('invalid index provided');
     }
     // Zajisteni ze "okno" je cele cislo
     const view = Math.floor(pageSize);
 
     // Ziskani v kolikatem "okne" se polozka nachazi.
-    const startIndex = Math.floor(index/view)*view;
+    const startIndex = Math.floor(index / view) * view;
 
     // Posunuti o "okno" zpet pokud se polozka nachazi v jeho prvni polovine
-    if(index - startIndex > view/2){
-        return Math.max(startIndex,0);
+    if (index - startIndex > view / 2) {
+        return Math.max(startIndex, 0);
     } else {
-        return Math.max(startIndex-view,0);
+        return Math.max(startIndex - view, 0);
     }
 }
 
@@ -402,10 +402,10 @@ export function node(state = nodeInitialState, action) {
 
             // Změna view tak, aby byla daná položka vidět
             if (state.selectedSubNodeId !== null && !action.viewStartIndexInvalidate) {
-                result.viewStartIndex = getViewStartIndex(action.nodeIndex, state.pageSize/2);
+                result.viewStartIndex = getViewStartIndex(action.nodeIndex, state.pageSize / 2);
 
                 // zneplatneni state, aby se data nacetla znovu se spravnymi hodnotami
-                if(state.viewStartIndex !== result.viewStartIndex || state.nodeIndex !== action.nodeIndex ){
+                if (state.viewStartIndex !== result.viewStartIndex || state.nodeIndex !== action.nodeIndex) {
                     result.nodeInfoDirty = true;
                     result.dirty = true;
                 }
@@ -444,7 +444,7 @@ export function node(state = nodeInitialState, action) {
 
             // Změna view tak, aby byla daná položka vidět
             if (action.subNodeId !== null) {
-                result.viewStartIndex = getViewStartIndex(result, action.subNodeId);
+                result.viewStartIndex = getViewStartIndex(result.nodeIndex, state.pageSize / 2);
             }
 
             // Data vztahující se k vybranému ID
@@ -504,8 +504,7 @@ export function node(state = nodeInitialState, action) {
                                 };
                             }
                             case 'CHILD': {
-                                let childNodes = [...state.childNodes, initNodeChild(action.newNode),
-                                ];
+                                let childNodes = [...state.childNodes, initNodeChild(action.newNode)];
 
                                 return {
                                     ...state,

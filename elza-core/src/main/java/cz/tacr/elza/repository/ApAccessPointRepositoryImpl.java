@@ -22,6 +22,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Subquery;
 
+import cz.tacr.elza.domain.ApIndex;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -41,6 +42,8 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.ws.types.v1.ItemEnum;
 import cz.tacr.elza.ws.types.v1.ItemString;
+
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
 /**
  * Implementace respozitory pro aprecord.
@@ -168,7 +171,9 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
                     nameJoin.get(ApPart.PART_ID));
             Predicate activeNameCond = nameJoin.get(ApPart.DELETE_CHANGE_ID).isNull();
             nameJoin.on(cb.and(nameFkCond, activeNameCond));
-            accessPointName = nameJoin.get(ApPart.VALUE);
+            Join<ApIndex, ApPart> indexJoin = nameJoin.join(ApPart.INDICES, JoinType.INNER);
+            indexJoin.on(cb.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
+            accessPointName = indexJoin.get(ApIndex.VALUE);
             if (accessPointNameCallback != null) {
                 accessPointNameCallback.accept(cb.asc(accessPointName));
             }

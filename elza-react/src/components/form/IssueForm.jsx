@@ -3,10 +3,11 @@ import * as React from 'react';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {AbstractReactComponent} from 'components/shared';
-import {reduxForm} from 'redux-form';
-import FormInput from 'components/shared/form/FormInput';
+import {Field, reduxForm} from 'redux-form';
 import i18n from '../i18n';
 import * as issueTypesActions from '../../actions/refTables/issueTypes';
+import {connect} from "react-redux";
+import {FormInputField} from "../shared";
 
 const basicOptionMap = i => (
     <option key={i.id} value={i.id}>
@@ -36,16 +37,24 @@ class IssueForm extends AbstractReactComponent {
             handleSubmit,
             onClose,
             issueTypes,
-            fields: {description, issueTypeId},
             update,
         } = this.props;
         return (
             <Form onSubmit={handleSubmit}>
                 <Modal.Body>
-                    <FormInput as="select" label={i18n('issue.type')} {...issueTypeId}>
+                    <Field
+                        name="issueTypeId"
+                        type="select"
+                        component={FormInputField}
+                        label={i18n('issue.type')}>
                         {issueTypes.fetched && issueTypes.data.map(basicOptionMap)}
-                    </FormInput>
-                    <FormInput as="textarea" label={i18n('issue.text')} {...description} />
+                    </Field>
+                    <Field
+                        name="description"
+                        as="textarea"
+                        component={FormInputField}
+                        label={i18n('issue.text')}
+                    />
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary">{i18n(update ? 'global.action.update' : 'global.action.add')}</Button>
@@ -58,17 +67,18 @@ class IssueForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm(
-    {
-        fields: ['issueTypeId', 'description'],
-        validate: (values, props) => {
-            return IssueForm.requireFields('issueTypeId', 'description')(values);
-        },
-        form: 'issueForm',
-    },
-    state => {
-        return {
-            issueTypes: state.refTables.issueTypes,
-        };
-    },
-)(IssueForm);
+function mapStateToProps(state) {
+    const {refTables} = state;
+    return {
+        issueTypes: refTables.issueTypes,
+    };
+}
+
+const form = reduxForm({
+    form: 'issueForm',
+    validate: (values, props) => {
+        return IssueForm.requireFields('issueTypeId', 'description')(values);
+    }
+})(IssueForm);
+
+export default connect(mapStateToProps)(form);

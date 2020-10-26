@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.repository.ApIndexRepository;
 import org.springframework.context.ApplicationContext;
 
 import cz.tacr.elza.core.ElzaLocale;
@@ -51,6 +52,7 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                               ApPartRepository partRepository,
                               ApItemRepository itemRepository,
                               ApBindingStateRepository bindingStateRepository,
+                              ApIndexRepository indexRepository,
                               EntityManager em,
                               DmsService dmsService,
                               DaoLinkRepository daoLinkRepository) {
@@ -62,7 +64,7 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
         outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
                 bindingRepository, null, structObjRepos, structItemRepos, partRepository, itemRepository,
-                bindingStateRepository,
+                bindingStateRepository, indexRepository,
                 daoLinkRepository);
     }
 

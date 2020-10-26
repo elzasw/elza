@@ -921,4 +921,80 @@
       </addColumn>
     </changeSet>
 
+    <changeSet id="20200925131800" author="fantis">
+        <addColumn tableName="ap_scope">
+            <column name="rule_set_id" type="int">
+                <constraints foreignKeyName="fk_scope_rul_rule_set"
+                             referencedTableName="rul_rule_set"
+                             referencedColumnNames="rule_set_id"/>
+            </column>
+        </addColumn>
+        <sql>UPDATE ap_scope SET rule_set_id = (SELECT rul_rule_set.rule_set_id FROM rul_rule_set WHERE
+            rul_rule_set.rule_type = 'ENTITY' LIMIT 1)
+        </sql>
+    </changeSet>
+
+    <changeSet id="20200925153000" author="fantis">
+        <dropColumn tableName="ap_part" columnName="value"/>
+    </changeSet>
+
+    <changeSet id="20200929022654" author="ppyt">
+        <delete tableName="ui_settings">
+            <where>settings_type='PARTY_PIN'</where>
+        </delete>
+    </changeSet>
+
+    <changeSet id="20200929022655" author="ppyt">
+        <update tableName="ap_part">
+            <column name="state" value="ERROR" />
+            <column name="error_description" value="Původní part s TEMP state" />
+            <where>state='TEMP'</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="20201006152100" author="fantis">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sqlCheck expectedResult="0">SELECT count(*) FROM rul_rule_set r WHERE r.rule_type = 'ENTITY'</sqlCheck>
+            </not>
+        </preConditions>
+        <sql>INSERT INTO arr_async_request (async_request_id, type, priority, access_point_id)
+            SELECT ap.access_point_id, 'AP', 1, ap.access_point_id FROM ap_access_point ap</sql>
+    </changeSet>
+
+    <changeSet id="20201009124500" author="fantis">
+        <createTable tableName="ext_syncs_queue_item">
+            <column name="ext_syncs_queue_item_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_ext_syncs_queue_item"/>
+            </column>
+            <column name="access_point_id" type="int">
+                <constraints foreignKeyName="fk_ext_syncs_queue_item_access_point"
+                             referencedTableName="ap_access_point"
+                             referencedColumnNames="access_point_id"
+                             nullable="false"/>
+            </column>
+            <column name="external_system_id" type="int">
+                <constraints foreignKeyName="fk_ext_syncs_queue_item_external_system"
+                             referencedTableName="ap_external_system"
+                             referencedColumnNames="external_system_id"
+                             nullable="false"/>
+            </column>
+            <column name="state_message" type="nvarchar(4000)"/>
+            <column name="state" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20201010154500" author="fantis">
+        <addColumn tableName="ext_syncs_queue_item">
+            <column name="username" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

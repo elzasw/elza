@@ -209,9 +209,14 @@ export function consolidateDescItems(resultDescItemType, infoType, refType, adde
         });
     }
 
-    resultDescItemType.descItems.forEach((descItem, index) => {
-        descItem.position = index + 1;
-    });
+    // je třeba seřadit itemy podle position, protože ze serveru mohou přijít v nahodilém pořadí
+    resultDescItemType.descItems.sort((a, b) => {
+        if (a.position && b.position) {
+            return a.position - b.position;
+        } else {
+            return 0;
+        }
+    })
 }
 
 /**

@@ -21,6 +21,7 @@ export {default as FundPage} from 'pages/fund/FundPage.jsx';
 
 export {default as NodePage} from 'pages/node/NodePage.jsx';
 export {default as EntityPage} from 'pages/entity/EntityPage.jsx';
+export {EntityCreatePage} from 'pages/entity/EntityCreatePage';
 
 export {default as RegistrySelectPage} from 'pages/select/RegistrySelectPage';
 export {default as SelectPage} from 'pages/select/SelectPage';

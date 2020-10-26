@@ -10,7 +10,6 @@ import java.util.List;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -33,6 +32,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
@@ -87,9 +87,11 @@ public class OutputModelTest extends AbstractServiceTest {
     @Autowired
     DaoLinkRepository daoLinkRepository;
 
+    @Autowired
+    ApIndexRepository indexRepository;
+
     // test output with structObjs
     @Test
-    @Ignore // TODO: je třeba dořešit, proč neprojde
     @Transactional(TxType.REQUIRES_NEW)
     public void outputStructObjs() {
         authorizeAsAdmin();
@@ -157,7 +159,7 @@ public class OutputModelTest extends AbstractServiceTest {
         OutputModel outputModel = new OutputModel(staticDataService, elzaLocale,
                 fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
                 bindingRepository, null, structObjRepos, structItemRepos, partRepository, itemRepository,
-                bindingStateRepository,
+                bindingStateRepository, indexRepository,
                 daoLinkRepository);
 
         ArrOutput output = new ArrOutput();

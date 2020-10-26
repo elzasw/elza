@@ -2,6 +2,7 @@ package cz.tacr.elza.service.cache;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,6 +19,10 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.castor.core.util.Assert;
@@ -155,7 +160,43 @@ public class NodeCacheService {
         try {
             logger.debug(">syncNodes(nodeIds:" + nodeIds + ")");
             syncNodesInternal(nodeIds);
-            logger.debug(">syncNodes(nodeIds:" + nodeIds + ")");
+            logger.debug("<syncNodes(nodeIds:" + nodeIds + ")");
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    /**
+     * Odstranění u JP okazující JP.
+     *
+     * @param nodeIds odebírané JP
+     * @param referralNodeIds zdrojové-odkazující JP ve který je třeba odebrat JP
+     */
+    @Transactional
+    public void removeReferralNodeIds(final Set<Integer> nodeIds, final Set<Integer> referralNodeIds) {
+        writeLock.lock();
+        try {
+            logger.debug(">removeReferralNodeIds(nodeIds:{}, referralNodeIds:{})", nodeIds, referralNodeIds);
+            removeReferralNodeIdsInternal(nodeIds, referralNodeIds);
+            logger.debug("<removeReferralNodeIds(nodeIds:{}, referralNodeIds:{})", nodeIds, referralNodeIds);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    /**
+     * Obnovení u JP okazující JP.
+     *
+     * @param nodeIds     restorované JP
+     * @param uuidNodeMap mapa JP podle UUID
+     */
+    @Transactional
+    public void restoreReferralNodeIds(final Set<Integer> nodeIds, final Map<String, ArrNode> uuidNodeMap) {
+        writeLock.lock();
+        try {
+            logger.debug(">restoreReferralNodeIds(nodeIds:{}, uuidNodeMap:{})", nodeIds, uuidNodeMap);
+            restoreReferralNodeIdsInternal(nodeIds, uuidNodeMap);
+            logger.debug("<restoreReferralNodeIds(nodeIds:{}, uuidNodeMap:{})", nodeIds, uuidNodeMap);
         } finally {
             writeLock.unlock();
         }
@@ -276,6 +317,89 @@ public class NodeCacheService {
             logger.debug("Sestavuji JP " + ((i - 1) * SYNC_BATCH_NODE_SIZE + 1) + "-" + ((i * SYNC_BATCH_NODE_SIZE) < nodeIds.size() ? (i * SYNC_BATCH_NODE_SIZE) : nodeIds.size()));
 			List<ArrCachedNode> updatedNodes = updateCachedNodes(partCachedNodes);
 			cachedNodeRepository.saveAll(updatedNodes);
+        }
+    }
+
+    /**
+     * Odstranění u JP okazující JP.
+     *
+     * @param nodeIds odebírané JP
+     * @param referralNodeIds zdrojové-odkazující JP ve který je třeba odebrat JP
+     */
+    private void removeReferralNodeIdsInternal(final Set<Integer> nodeIds, final Set<Integer> referralNodeIds) {
+        List<ArrCachedNode> cachedNodes = ObjectListIterator.findIterable(referralNodeIds, cachedNodeRepository::findByNodeIdIn);
+        List<ArrCachedNode> cachedNodesUpdated = new ArrayList<>();
+        for (ArrCachedNode cachedNode : cachedNodes) {
+            RestoredNode result = deserialize(cachedNode);
+            boolean change = false;
+
+            List<ArrDescItem> descItems = result.getDescItems();
+            if (CollectionUtils.isNotEmpty(descItems)) {
+                for (ArrDescItem descItem : descItems) {
+                    ArrData data = descItem.getData();
+
+                    if (data instanceof ArrDataUriRef) {
+                        ArrDataUriRef dataRef = (ArrDataUriRef) data;
+                        Integer nodeId = dataRef.getNodeId();
+                        if (nodeId != null && nodeIds.contains(nodeId)) {
+                            change = true;
+                            dataRef.setArrNode(null);
+                        }
+                    }
+                }
+            }
+
+            if (change) {
+                cachedNode.setData(serialize(result, false)); // není třeba validovat, protože pouze mažeme odkaz na JP
+                cachedNodesUpdated.add(cachedNode);
+            }
+        }
+        if (cachedNodesUpdated.size() > 0) {
+            cachedNodeRepository.saveAll(cachedNodesUpdated);
+        }
+    }
+
+    /**
+     * Obnovení u JP okazující JP.
+     *
+     * @param nodeIds     restorované JP
+     * @param uuidNodeMap mapa JP podle UUID
+     */
+    private void restoreReferralNodeIdsInternal(final Set<Integer> nodeIds, final Map<String, ArrNode> uuidNodeMap) {
+        List<ArrCachedNode> cachedNodes = ObjectListIterator.findIterable(nodeIds, cachedNodeRepository::findByNodeIdIn);
+        List<ArrCachedNode> cachedNodesUpdated = new ArrayList<>();
+        for (ArrCachedNode cachedNode : cachedNodes) {
+            RestoredNode result = deserialize(cachedNode);
+            boolean change = false;
+
+            List<ArrDescItem> descItems = result.getDescItems();
+            if (CollectionUtils.isNotEmpty(descItems)) {
+                for (ArrDescItem descItem : descItems) {
+                    ArrData data = descItem.getData();
+
+                    if (data instanceof ArrDataUriRef) {
+                        ArrDataUriRef dataRef = (ArrDataUriRef) data;
+                        Integer nodeId = dataRef.getNodeId();
+                        URI tempUri = URI.create(dataRef.getValue()).normalize();
+                        if (nodeId == null && DescItemFactory.ELZA_NODE.equalsIgnoreCase(tempUri.getScheme())) {
+                            String nodeUuid = tempUri.getAuthority();
+                            ArrNode node = uuidNodeMap.get(nodeUuid);
+                            if (node != null) { // může to být odkaz z jiného AS, takže teoreticky může se stát, že se nenajde JP
+                                change = true;
+                                dataRef.setArrNode(node);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (change) {
+                cachedNode.setData(serialize(result, false)); // není třeba validovat, protože pouze připojujeme odkaz na JP
+                cachedNodesUpdated.add(cachedNode);
+            }
+        }
+        if (cachedNodesUpdated.size() > 0) {
+            cachedNodeRepository.saveAll(cachedNodesUpdated);
         }
     }
 
@@ -514,8 +638,20 @@ public class NodeCacheService {
      * @return výsledek serializace
      */
     private String serialize(final CachedNode cachedNode) {
-        // Validate that node contains all required data
-        cachedNode.validate();
+        return serialize(cachedNode, true);
+    }
+
+    /**
+     * Serializace objektu.
+     *
+     * @param cachedNode serializovaný objekt
+     * @return výsledek serializace
+     */
+    private String serialize(final CachedNode cachedNode, final boolean validate) {
+        if (validate) {
+            // Validate that node contains all required data
+            cachedNode.validate();
+        }
         try {
             return mapper.writeValueAsString(cachedNode);
         } catch (JsonProcessingException e) {

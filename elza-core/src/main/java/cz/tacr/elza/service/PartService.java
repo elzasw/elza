@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 import static cz.tacr.elza.groovy.GroovyResult.PT_PREFER_NAME;
 import static cz.tacr.elza.repository.ExceptionThrow.part;
 
@@ -13,7 +14,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.common.ObjectListIterator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
@@ -235,17 +236,33 @@ public class PartService {
      * @param apChange změna
      */
     public void deleteParts(List<ApPart> partList, ApChange apChange) {
-        for (ApPart part : partList) {
-            part.setDeleteChange(apChange);
+        if (CollectionUtils.isNotEmpty(partList)) {
+            List<ApKeyValue> keyValues = new ArrayList<>();
+            for (ApPart part : partList) {
+                if (part.getKeyValue() != null) {
+                    keyValues.add(part.getKeyValue());
+                }
+                part.setDeleteChange(apChange);
+                part.setKeyValue(null);
+            }
+            partRepository.saveAll(partList);
+            if (CollectionUtils.isNotEmpty(keyValues)) {
+                keyValueRepository.deleteAll(keyValues);
+            }
         }
-        partRepository.saveAll(partList);
     }
 
     public void deleteParts(final ApAccessPoint accessPoint, final ApChange apChange) {
         List<ApPart> partList = partRepository.findValidPartByAccessPoint(accessPoint);
-        for (ApPart part : partList) {
-            apItemService.deletePartItems(part, apChange);
-            deletePart(part, apChange);
+        if (CollectionUtils.isNotEmpty(partList)) {
+            for (ApPart part : partList) {
+                apItemService.deletePartItems(part, apChange);
+                ApKeyValue keyValue = part.getKeyValue();
+                deletePart(part, apChange);
+                if (keyValue != null) {
+                    keyValueRepository.delete(keyValue);
+                }
+            }
         }
     }
 
@@ -256,7 +273,7 @@ public class PartService {
      * @param partId identifikátor části
      */
     public void deletePart(final ApAccessPoint accessPoint, final Integer partId) {
-        if (accessPoint.getPreferredPart().getPartId().equals(partId)) {
+        if (accessPoint.getPreferredPartId().equals(partId)) {
             throw new IllegalArgumentException("Preferované jméno nemůže být odstraněno");
         }
         ApPart apPart = getPart(partId);
@@ -266,9 +283,14 @@ public class PartService {
         }
 
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_DELETE);
+        ApKeyValue keyValue = apPart.getKeyValue();
         apItemService.deletePartItems(apPart, apChange);
         apPart.setDeleteChange(apChange);
+        apPart.setKeyValue(null);
         partRepository.save(apPart);
+        if (keyValue != null) {
+            keyValueRepository.delete(keyValue);
+        }
     }
 
     public List<ApPart> findPartsByAccessPoint(ApAccessPoint accessPoint) {
@@ -312,11 +334,6 @@ public class PartService {
         String displayName = indexMap != null ? indexMap.get(DISPLAY_NAME) : null;
         if (displayName == null) {
             throw new SystemException("Povinný index typu [" + DISPLAY_NAME + "] není vyplněn");
-        }
-
-        if (!displayName.equals(apPart.getValue())) {
-            apPart.setValue(displayName);
-            partRepository.save(apPart);
         }
 
         GroovyKeyValue keyValue = result.getKeyValue();
@@ -415,7 +432,7 @@ public class PartService {
                 }
             }
 
-            if (!success && keyType.equals(PT_PREFER_NAME) && indexType.equals(DISPLAY_NAME)) {
+            if (!success && keyType.equals(PT_PREFER_NAME) && (indexType.equals(DISPLAY_NAME) || indexType.equals(DISPLAY_NAME_LOWER))) {
                 value = value + DUPLICITA + accessPointId;
             }
 

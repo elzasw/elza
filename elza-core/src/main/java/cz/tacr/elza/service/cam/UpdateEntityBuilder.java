@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.service.GroovyService;
 import org.apache.commons.collections4.CollectionUtils;
 
 import cz.tacr.cam.schema.cam.BatchEntityRecordRevXml;
@@ -17,6 +16,7 @@ import cz.tacr.cam.schema.cam.DeletePartXml;
 import cz.tacr.cam.schema.cam.EntityIdXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
+import cz.tacr.cam.schema.cam.NewItemsXml;
 import cz.tacr.cam.schema.cam.PartTypeXml;
 import cz.tacr.cam.schema.cam.SetRecordStateXml;
 import cz.tacr.cam.schema.cam.UpdateEntityXml;
@@ -29,10 +29,12 @@ import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.GroovyService;
 
 public class UpdateEntityBuilder extends CamXmlBuilder {
 
@@ -49,8 +51,9 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
                                StaticDataProvider sdp,
                                final ApState state,
                                ApBindingState bindingState,
-                               GroovyService groovyService) {
-        super(sdp, bindingState.getAccessPoint(), new BindingRecordRefHandler(bindingState.getBinding()), groovyService);
+                               GroovyService groovyService,
+                               ApScope scope) {
+        super(sdp, bindingState.getAccessPoint(), new BindingRecordRefHandler(bindingState.getBinding()), groovyService, scope);
         this.bindingItemRepository = bindingItemRepository;
         this.bindingState = bindingState;
         this.apState = state;
@@ -64,7 +67,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         updateItemsXml.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
 
         for (ApBindingItem bindingItem : changedItems) {
-            Object i = CamXmlFactory.createItem(sdp, bindingItem.getItem(), bindingItem.getValue(), entityRefHandler, groovyService, externalSystemTypeCode);
+            Object i = CamXmlFactory.createItem(sdp, bindingItem.getItem(), bindingItem.getValue(), entityRefHandler, groovyService, externalSystemTypeCode, scope);
             if (i != null) {
                 updateItemsXml.getItems().add(i);
             }
@@ -135,7 +138,11 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         }
 
         if (CollectionUtils.isNotEmpty(itemList)) {
-            changes.add(createNewItems(changedPart, itemList, externalSystemTypeCode));
+            NewItemsXml newItems = createNewItems(changedPart, itemList, externalSystemTypeCode);
+            // some new items does not have to be created
+            if (newItems != null) {
+                changes.add(newItems);
+            }
         }
         if (CollectionUtils.isNotEmpty(changedItems)) {
             changes.add(createUpdateItems(changedPart, changedItems, externalSystemTypeCode));
@@ -192,7 +199,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
 
         //TODO dodělat změnu preferovaného partu
         ApBindingItem preferPart = CamUtils.findBindingItemById(bindingParts,
-                                                                accessPoint.getPreferredPart().getPartId());
+                                                                accessPoint.getPreferredPartId());
         
     }
 

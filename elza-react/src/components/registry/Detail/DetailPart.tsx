@@ -1,22 +1,22 @@
 import React, {FC, useEffect, useState} from 'react';
 import {Col, Row} from 'react-bootstrap';
 import DetailItem from './DetailItem';
-import classNames from "classnames";
-import "./DetailPart.scss";
-import {connect} from "react-redux";
-import DetailMultipleItem from "./DetailMultipleItem";
+import classNames from 'classnames';
+import './DetailPart.scss';
+import {connect} from 'react-redux';
+import DetailMultipleItem from './DetailMultipleItem';
 import Icon from '../../shared/icon/Icon';
-import {ApPartVO} from "../../../api/ApPartVO";
-import {RulPartTypeVO} from "../../../api/RulPartTypeVO";
-import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
-import {PartValidationErrorsVO} from "../../../api/PartValidationErrorsVO";
+import {ApPartVO} from '../../../api/ApPartVO';
+import {RulPartTypeVO} from '../../../api/RulPartTypeVO';
+import {RulDescItemTypeExtVO} from '../../../api/RulDescItemTypeExtVO';
+import {PartValidationErrorsVO} from '../../../api/PartValidationErrorsVO';
 import ValidationResultIcon from 'components/ValidationResultIcon';
-import {Bindings} from "../../../types";
-import i18n from "../../i18n";
-import {ItemType} from "../../../api/ApViewSettings";
-import {objectById} from "../../../shared/utils";
-import {ApItemVO} from "../../../api/ApItemVO";
-import {findViewItemType} from "../../../utils/ItemInfo";
+import {Bindings} from '../../../types';
+import i18n from '../../i18n';
+import {ItemType} from '../../../api/ApViewSettings';
+import {objectById} from '../../../shared/utils';
+import {ApItemVO} from '../../../api/ApItemVO';
+import {findViewItemType} from '../../../utils/ItemInfo';
 
 type Props = {
     label: string;
@@ -35,7 +35,24 @@ type Props = {
     itemTypeSettings: ItemType[];
 } & ReturnType<typeof mapStateToProps>;
 
-const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePart, onDelete, onEdit, globalCollapsed, preferred, onAddRelated, globalEntity, partValidationError, descItemTypesMap, partTypesMap, bindings, itemTypeSettings}) => {
+const DetailPart: FC<Props> = ({
+    label,
+    part,
+    editMode,
+    onSetPreferred,
+    singlePart,
+    onDelete,
+    onEdit,
+    globalCollapsed,
+    preferred,
+    onAddRelated,
+    globalEntity,
+    partValidationError,
+    descItemTypesMap,
+    partTypesMap,
+    bindings,
+    itemTypeSettings,
+}) => {
     const [collapsed, setCollapsed] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
     const partType = partTypesMap[part.typeId];
@@ -44,24 +61,17 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
         setCollapsed(globalCollapsed);
     }, [globalCollapsed]);
 
-    const classNameHeader = classNames(
-        "detail-part",
-        "detail-part-header",
-        {
-            "pb-1": collapsed,
-            "detail-part-preferred": preferred,
-            "detail-part-expanded": !collapsed
-        }
-    );
+    const classNameHeader = classNames('detail-part', 'detail-part-header', {
+        'pb-1': collapsed,
+        'detail-part-preferred': preferred,
+        'detail-part-expanded': !collapsed,
+    });
 
     // Rozbalený content
-    const classNameContent = classNames(
-        "detail-part mb-4 pt-1",
-        {
-            "detail-part-preferred": preferred,
-            "detail-part-expanded": !collapsed
-        }
-    );
+    const classNameContent = classNames('detail-part mb-4 pt-1', {
+        'detail-part-preferred': preferred,
+        'detail-part-expanded': !collapsed,
+    });
 
     let showPreferredSwitch = false;
     if (partType.code === 'PT_NAME') {
@@ -70,7 +80,11 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
 
     const renderItems = (items: ApItemVO[]) => {
         if (items.length === 0) {
-            return <Col className={"mt-1"}><i>Nejsou definovány žádné hodnoty atributů</i></Col>;
+            return (
+                <Col className={'mt-1'}>
+                    <i>Nejsou definovány žádné hodnoty atributů</i>
+                </Col>
+            );
         }
 
         let result: any = [];
@@ -96,20 +110,31 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
 
             let rows: any = [];
             if (sameItems.length > 1) {
-                rows.push(<DetailMultipleItem key={index} items={sameItems} globalEntity={globalEntity} bindings={bindings}/>);
+                rows.push(
+                    <DetailMultipleItem
+                        key={index}
+                        items={sameItems}
+                        globalEntity={globalEntity}
+                        bindings={bindings}
+                    />,
+                );
             } else {
-                rows.push(<DetailItem key={index} item={sameItems[0]} globalEntity={globalEntity} bindings={bindings}/>);
+                rows.push(
+                    <DetailItem key={index} item={sameItems[0]} globalEntity={globalEntity} bindings={bindings} />,
+                );
             }
 
-            result.push(<Col key={index} xs={width <= 0 ? 12 : width}>
-                {rows}
-            </Col>);
+            result.push(
+                <Col key={index} xs={width <= 0 ? 12 : width}>
+                    {rows}
+                </Col>,
+            );
         }
 
         return result;
     };
 
-    const sortedItems = part.items.sort((a, b) => {
+    const sortedItems = part.items?part.items.sort((a, b) => {
         const aItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[a.typeId].code, 'code');
         const bItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[b.typeId].code, 'code');
         if (aItemType == null && bItemType == null) {
@@ -123,74 +148,97 @@ const DetailPart: FC<Props> = ({label, part, editMode, onSetPreferred, singlePar
             const bPos = bItemType.position || 9999;
             return aPos - bPos;
         }
-    });
+    }):[];
 
     const showValidationError = () => {
         if (partValidationError && partValidationError.errors && partValidationError.errors.length > 0) {
-            return <ValidationResultIcon message={partValidationError.errors} />
+            return <ValidationResultIcon message={partValidationError.errors} />;
         }
     };
 
     const partBinding = bindings.partsMap[part.id];
 
-    return <div className="detail-part ml-4 mb-2 pt-3">
-        <Row className={classNameHeader + " align-items-center"}>
-            <Col>
-                <div
-                    className={'detail-part-label d-inline-block'}
-                    onClick={() => setCollapsed(!collapsed)}
-                    title={collapsed ? "Zobrazit podrobnosti" : "Skrýt podrobnosti"}
-                >
-                <span
-                    className={classNames('detail-part-label', preferred ? 'preferred' : 'mr-2', collapsed ? false : 'opened')}>
-                    {label || <i>Popis záznamu entity</i>}
-                </span>
-                    {preferred && <span
-                        className={classNames("detail-part-label-alt mr-2", collapsed ? false : 'opened')}> (preferované)</span>}
-                </div>
+    return (
+        <div className="detail-part ml-4 mb-2 pt-3">
+            <Row className={classNameHeader + ' align-items-center'}>
+                <Col>
+                    <div
+                        className={'detail-part-label d-inline-block'}
+                        onClick={() => setCollapsed(!collapsed)}
+                        title={collapsed ? 'Zobrazit podrobnosti' : 'Skrýt podrobnosti'}
+                    >
+                        <span
+                            className={classNames(
+                                'detail-part-label',
+                                preferred ? 'preferred' : 'mr-2',
+                                collapsed ? false : 'opened',
+                            )}
+                        >
+                            {label || <i>Popis záznamu entity</i>}
+                        </span>
+                        {preferred && (
+                            <span className={classNames('detail-part-label-alt mr-2', collapsed ? false : 'opened')}>
+                                {' '}
+                                (preferované)
+                            </span>
+                        )}
+                    </div>
 
-                {partBinding != null && <Icon glyph="fa-refresh" title={i18n('ap.binding.syncState.' + (partBinding ? 'SYNC_OK' : 'NOT_SYNCED'))} className={partBinding ? 'mr-2 ' : 'mr-2 disabled'} />}
+                    {partBinding != null && (
+                        <Icon
+                            glyph="fa-refresh"
+                            title={i18n('ap.binding.syncState.' + (partBinding ? 'SYNC_OK' : 'NOT_SYNCED'))}
+                            className={partBinding ? 'mr-2 ' : 'mr-2 disabled'}
+                        />
+                    )}
 
-                {showPreferredSwitch && !preferred && <Icon
-                    className={'mr-2 cursor-pointer'}
-                    glyph={'fa-star'}
-                    onClick={() => onSetPreferred && onSetPreferred(part)}
-                    style={{visibility: preferred ? "hidden" : "inherit"}}
-                />}
+                    {showPreferredSwitch && !preferred && (
+                        <Icon
+                            className={'mr-2 cursor-pointer'}
+                            glyph={'fa-star'}
+                            onClick={() => onSetPreferred && onSetPreferred(part)}
+                            style={{visibility: preferred ? 'hidden' : 'inherit'}}
+                        />
+                    )}
 
-                <Icon
-                    className={'mr-2 cursor-pointer'}
-                    glyph={'fa-pencil'}
-                    onClick={() => onEdit && onEdit(part)}
-                />
+                    {editMode && (
+                        <Icon
+                            className={'mr-2 cursor-pointer'}
+                            glyph={'fa-pencil'}
+                            onClick={() => onEdit && onEdit(part)}
+                        />
+                    )}
 
-                {!preferred && <Icon
-                    className={'mr-2 cursor-pointer'}
-                    glyph={'fa-trash'}
-                    onClick={() => onDelete && onDelete(part)}
-                />}
-                {onAddRelated && <Icon
-                    className={'mr-2 cursor-pointer'}
-                    glyph={'fa-plus'}
-                    onClick={() => onAddRelated(part.id)}
-                />}
-                {showValidationError()}
-            </Col>
-        </Row>
-
-        {!collapsed && <div className={classNameContent}>
-            <Row>
-                {renderItems(sortedItems)}
+                    {!preferred && editMode && (
+                        <Icon
+                            className={'mr-2 cursor-pointer'}
+                            glyph={'fa-trash'}
+                            onClick={() => onDelete && onDelete(part)}
+                        />
+                    )}
+                    {onAddRelated && editMode && (
+                        <Icon
+                            className={'mr-2 cursor-pointer'}
+                            glyph={'fa-plus'}
+                            onClick={() => onAddRelated(part.id)}
+                        />
+                    )}
+                    {showValidationError()}
+                </Col>
             </Row>
-        </div>}
-    </div>
+
+            {!collapsed && (
+                <div className={classNameContent}>
+                    <Row>{renderItems(sortedItems)}</Row>
+                </div>
+            )}
+        </div>
+    );
 };
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
     partTypesMap: state.refTables.partTypes.itemsMap as Record<number, RulPartTypeVO>,
     descItemTypesMap: state.refTables.descItemTypes.itemsMap as Record<number, RulDescItemTypeExtVO>,
 });
 
-export default connect(
-    mapStateToProps
-)(DetailPart);
+export default connect(mapStateToProps)(DetailPart);

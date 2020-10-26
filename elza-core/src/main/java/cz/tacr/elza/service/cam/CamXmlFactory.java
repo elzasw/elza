@@ -23,6 +23,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrDataBit;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -66,10 +67,11 @@ public class CamXmlFactory {
                                     String uuid,
                                     EntityRefHandler entityRefHandler,
                                     GroovyService groovyService,
-                                    String externalSystemTypeCode) {
+                                    String externalSystemTypeCode,
+                                    ApScope scope) {
         ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
 
-        String camItemTypeCode = groovyService.findItemTypeCode(externalSystemTypeCode, itemType.getCode());
+        String camItemTypeCode = groovyService.findItemTypeCode(externalSystemTypeCode, itemType.getCode(), scope.getRuleSetId());
         if (camItemTypeCode == null) {
             return null;
         }
@@ -78,7 +80,7 @@ public class CamXmlFactory {
         CodeXml itemSpecCode;
         if (item.getItemSpecId() != null) {
             RulItemSpec itemSpec = itemType.getItemSpecById(item.getItemSpecId());
-            String camItemSpecCode = groovyService.findItemSpecCode(externalSystemTypeCode, itemSpec.getCode());
+            String camItemSpecCode = groovyService.findItemSpecCode(externalSystemTypeCode, itemSpec.getCode(), scope.getRuleSetId());
             if (camItemSpecCode == null) {
                 return null;
             }

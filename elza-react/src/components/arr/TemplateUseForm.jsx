@@ -1,9 +1,10 @@
 import React from 'react';
-import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
-import {Form, FormCheck, Modal} from 'react-bootstrap';
+import {Field, reduxForm} from 'redux-form';
+import {AbstractReactComponent, i18n} from 'components/shared';
+import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
-import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
+import {submitForm} from 'components/form/FormUtils.jsx';
+import FormInputField from "../shared/form/FormInputField";
 
 export const NEW_TEMPLATE = 'new';
 export const EXISTS_TEMPLATE = 'exists';
@@ -36,7 +37,6 @@ class TemplateUseForm extends AbstractReactComponent {
 
     render() {
         const {
-            fields: {name, replaceValues},
             handleSubmit,
             onClose,
             submitting,
@@ -46,12 +46,12 @@ class TemplateUseForm extends AbstractReactComponent {
             <div className="todo">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FormInput
+                        <Field
                             disabled={submitting}
-                            as="select"
+                            name="name"
+                            type="select"
+                            component={FormInputField}
                             label={i18n('arr.fund.useTemplate.name')}
-                            {...name}
-                            {...decorateFormField(name)}
                         >
                             <option value={''} key="no-select">
                                 {i18n('global.action.select')}
@@ -61,8 +61,15 @@ class TemplateUseForm extends AbstractReactComponent {
                                     {template}
                                 </option>
                             ))}
-                        </FormInput>
-                        <FormCheck disabled={submitting} {...replaceValues} inline label={i18n('arr.fund.useTemplate.replaceValues')} />
+                        </Field>
+                        <Field
+                            name="replaceValues"
+                            type="checkbox"
+                            component={FormInputField}
+                            label={i18n('arr.fund.useTemplate.replaceValues')}
+                            inline
+                            disabled={submitting}
+                        />
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary">{i18n('global.action.use')}</Button>
@@ -80,6 +87,6 @@ TemplateUseForm.defaultProps = {
     templates: [],
 };
 
-export default reduxForm({form: 'templateUseForm', fields: ['name', 'replaceValues']}, null, {
+export default reduxForm({form: 'templateUseForm'}, null, {
     load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'templateUseForm', data}),
 })(TemplateUseForm);

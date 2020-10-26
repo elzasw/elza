@@ -4,4 +4,36 @@
         border: none;
         border-color: transparent;
     }
+
+    .name-label {
+        margin-top: 5px;
+        margin-bottom: 5px;
+        font-weight: bold;
+        font-size: 1.2em;
+    }
+
+    .actions-container {
+        .actions-text {
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+    }
+
+    .field-container{
+        display: flex;
+
+        .btn {
+            flex-shrink: 0;
+            background-color: #eee;
+            color: currentColor;
+            border-color: #bbb;
+
+            &:disabled {
+                background-color: #ddd;
+                color: #888;
+            }
+        }
+    }
 }

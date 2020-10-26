@@ -91,6 +91,5 @@ class PasswordForm extends AbstractReactComponent {
 }
 
 export default reduxForm({
-    form: 'passwordForm',
-    fields: ['oldPassword', 'password', 'passwordAgain'],
+    form: 'passwordForm'
 })(PasswordForm);

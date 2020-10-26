@@ -1,9 +1,6 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ArrDataUriRef;
-
-import cz.tacr.elza.domain.RulPackage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import static cz.tacr.elza.domain.factory.DescItemFactory.ELZA_NODE;
 
@@ -23,8 +21,20 @@ import static cz.tacr.elza.domain.factory.DescItemFactory.ELZA_NODE;
 public interface DataUriRefRepository extends JpaRepository<ArrDataUriRef, Integer> {
 
     @Modifying
-    @Query("UPDATE ArrDataUriRef ur SET ur.nodeId=null WHERE ur.nodeId in ?1")
-    void updateByNodesIdIn(Collection<Integer> nodeIds);
+    @Query("UPDATE ArrDataUriRef ur SET ur.nodeId = null WHERE ur.nodeId IN :nodeIds")
+    void updateByNodesIdIn(@Param("nodeIds") Collection<Integer> nodeIds);
+
+    @Query("SELECT DISTINCT di.nodeId FROM ArrDataUriRef ur " +
+            "JOIN arr_item ai ON ai.dataId = ur.dataId " +
+            "JOIN arr_desc_item di ON di.itemId = ai.itemId " +
+            "WHERE ur.nodeId IN :nodeIds")
+    Set<Integer> findReferralNodeIdsByNodesIdIn(@Param("nodeIds") Collection<Integer> nodeIds);
+
+    @Query("SELECT DISTINCT di.nodeId FROM ArrDataUriRef ur " +
+            "JOIN arr_item ai ON ai.dataId = ur.dataId " +
+            "JOIN arr_desc_item di ON di.itemId = ai.itemId " +
+            "WHERE ur.nodeId IS NULL AND ur.schema = '" + ELZA_NODE + "'")
+    Set<Integer> findReferralNodeIds();
 
     @Query("SELECT ur FROM ArrDataUriRef ur WHERE ur.value = ?1")
     List<ArrDataUriRef> findAllByNodeUUID(String value);

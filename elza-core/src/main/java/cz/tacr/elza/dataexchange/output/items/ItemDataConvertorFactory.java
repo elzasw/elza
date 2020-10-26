@@ -63,6 +63,10 @@ public class ItemDataConvertorFactory {
         return new BitValueConvertor();
     }
 
+    private ItemDataConvertor createDateConvertor() {
+        return new DateValueConvertor();
+    }
+
     public final Map<DataType, ItemDataConvertor> createAll() {
         Map<DataType, ItemDataConvertor> map = new EnumMap<>(DataType.class);
         map.put(DataType.STRING, createStringValueConvertor());
@@ -80,6 +84,8 @@ public class ItemDataConvertorFactory {
         map.put(DataType.FILE_REF, createFileRefConvertor());
         map.put(DataType.URI_REF, createUriRefConvertor());
         map.put(DataType.BIT, createBitConvertor());
+        map.put(DataType.DATE, createDateConvertor());
         return map;
     }
+
 }

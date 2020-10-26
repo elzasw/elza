@@ -114,7 +114,6 @@ class SearchWithGoto extends AbstractReactComponent {
         const {onFulltextSearch} = this.props;
 
         this.handleFulltextChange('');
-        onFulltextSearch('');
     };
 
     render() {

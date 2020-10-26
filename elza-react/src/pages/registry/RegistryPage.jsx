@@ -17,7 +17,7 @@ import {PropTypes} from 'prop-types';
 import './RegistryPage.scss';
 import PageLayout from '../shared/layout/PageLayout';
 import defaultKeymap from './RegistryPageKeymap.jsx';
-import {AP_VIEW_SETTINGS, FOCUS_KEYS} from '../../constants.tsx';
+import {AP_VIEW_SETTINGS, FOCUS_KEYS, MODAL_DIALOG_SIZE} from '../../constants.tsx';
 import * as eidTypes from '../../actions/refTables/eidTypes';
 import ScopeLists from '../../components/arr/ScopeLists';
 import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
@@ -34,6 +34,9 @@ import {Area} from '../../api/Area';
 import ApPushToExt from '../../components/registry/modal/ApPushToExt';
 import ExtSyncsModal from '../../components/registry/modal/ExtSyncsModal';
 import {objectById} from '../../shared/utils';
+import RegistryUsageForm from '../../components/form/RegistryUsageForm';
+import {AccessPointDeleteForm} from '../../components/form/AccesspointDeleteForm';
+import {StateApproval} from '../../api/StateApproval';
 
 /**
  * Stránka rejstříků.
@@ -135,13 +138,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleAddRegistry = () => {
-        const {
-            registryList: {
-                filter: {versionId},
-                parents,
-            },
-            dispatch,
-        } = this.props;
+        const {dispatch} = this.props;
 
         dispatch(
             modalDialogShow(
@@ -151,15 +148,15 @@ class RegistryPage extends AbstractReactComponent {
                     initialValues={{}}
                     onSubmit={formData => {
                         if (!formData.partForm) {
-                            return Promise.reject("");
+                            return Promise.reject('');
                         }
                         const data = {
                             ...formData,
                             partForm: {
                                 ...formData.partForm,
-                                items: formData.partForm.items.filter(i => i.value != null)
-                            }
-                        }
+                                items: formData.partForm.items.filter(i => i.value != null),
+                            },
+                        };
                         const submitData = {
                             partForm: data.partForm,
                             accessPointId: null,
@@ -175,7 +172,7 @@ class RegistryPage extends AbstractReactComponent {
                         this.props.dispatch(registryListInvalidate());
                     }}
                 />,
-                'dialog-lg',
+                MODAL_DIALOG_SIZE.LG,
                 () => {},
             ),
         );
@@ -210,7 +207,7 @@ class RegistryPage extends AbstractReactComponent {
                 this,
                 i18n('ap.ext-search.title'),
                 <ApExtSearchModal itemType={TypeModal.SEARCH} initialValues={initialValues} extSystems={extSystems} />,
-                'dialog-xl',
+                MODAL_DIALOG_SIZE.XL,
             ),
         );
     };
@@ -233,7 +230,7 @@ class RegistryPage extends AbstractReactComponent {
                     initialValues={initialValues}
                     extSystems={extSystems}
                 />,
-                'dialog-xl',
+                MODAL_DIALOG_SIZE.XL,
             ),
         );
     };
@@ -271,7 +268,7 @@ class RegistryPage extends AbstractReactComponent {
                     initialValues={initialValues}
                     extSystems={filteredExtSystems}
                 />,
-                'dialog-xl',
+                MODAL_DIALOG_SIZE.XL,
             ),
         );
     };
@@ -308,7 +305,7 @@ class RegistryPage extends AbstractReactComponent {
                     initialValues={initialValues}
                     extSystems={filteredExtSystems}
                 />,
-                'dialog-sm',
+                MODAL_DIALOG_SIZE.SM,
             ),
         );
     };
@@ -323,19 +320,36 @@ class RegistryPage extends AbstractReactComponent {
                 data: {id},
             },
         } = this.props;
-        const form = <ApStateHistoryForm accessPointId={id} />;
-        this.props.dispatch(modalDialogShow(this, i18n('ap.history.title'), form, 'dialog-lg'));
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('ap.history.title'),
+                <ApStateHistoryForm accessPointId={id} />,
+                MODAL_DIALOG_SIZE.LG,
+            ),
+        );
+    };
+
+    handleRegistryShowUsage = data => {
+        this.props.dispatch(modalDialogShow(this, i18n('registry.registryUsage'), <RegistryUsageForm detail={data} />));
+    };
+
+    handleDeleteAccessPoint = data => {
+        this.props.dispatch(
+            modalDialogShow(this, i18n('accesspoint.removeDuplicity.title'), <AccessPointDeleteForm detail={data} />),
+        );
     };
 
     handleChangeApState = () => {
         const {
             registryDetail: {
-                data: {id, typeId, scopeId},
+                data: {id, typeId, scopeId, stateApproval},
             },
         } = this.props;
         const form = (
             <ApStateChangeForm
                 initialValues={{
+                    state: stateApproval,
                     typeId: typeId,
                     scopeId: scopeId,
                 }}
@@ -439,15 +453,23 @@ class RegistryPage extends AbstractReactComponent {
                 );
             }
 
-            this.props.onShowUsage &&
-                itemActions.push(
-                    <Button key="registryShow" onClick={() => this.props.onShowUsage(registryDetail)}>
-                        <Icon glyph="fa-search" />
-                        <div>
-                            <span className="btnText">{i18n('registry.registryUsage')}</span>
-                        </div>
-                    </Button>,
-                );
+            itemActions.push(
+                <Button key="registryShow" onClick={() => this.handleRegistryShowUsage(registryDetail)}>
+                    <Icon glyph="fa-search" />
+                    <div>
+                        <span className="btnText">{i18n('registry.registryUsage')}</span>
+                    </div>
+                </Button>,
+            );
+
+            itemActions.push(
+                <Button key="deleteReplaceAccessPoint" onClick={() => this.handleDeleteAccessPoint(registryDetail)}>
+                    <Icon glyph="fa-trash" />
+                    <div>
+                        <span className="btnText">{i18n('accesspoint.removeDuplicity')}</span>
+                    </div>
+                </Button>,
+            );
         }
 
         if (id && data) {
@@ -460,7 +482,6 @@ class RegistryPage extends AbstractReactComponent {
                 </Button>,
             );
 
-            // TODO: oprávnění
             itemActions.push(
                 <Button key="change-state" onClick={this.handleChangeApState}>
                     <Icon glyph="fa-pencil" />
@@ -512,10 +533,30 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     render() {
-        const {splitter, status, registryDetail} = this.props;
+        const {splitter, status, registryDetail, userDetail} = this.props;
+
+        let editMode = false;
+        if (registryDetail.id && registryDetail.data) {
+            const apState = registryDetail.data.stateApproval;
+            if (apState !== StateApproval.TO_APPROVE) {
+                if (apState === StateApproval.APPROVED) {
+                    editMode = userDetail.hasOne(perms.AP_EDIT_CONFIRMED_ALL, {
+                        type: perms.AP_EDIT_CONFIRMED,
+                        id: registryDetail.data.scopeId,
+                    });
+                } else {
+                    editMode = userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+                        type: perms.AP_SCOPE_WR_ALL,
+                        id: registryDetail.data.scopeId,
+                    });
+                }
+            }
+        }
 
         const centerPanel = (
-            <div className="registry-page">{registryDetail.id && <ApDetailPageWrapper id={registryDetail.id} />}</div>
+            <div className="registry-page">
+                {registryDetail.id && <ApDetailPageWrapper id={registryDetail.id} editMode={editMode} />}
+            </div>
         );
 
         // const rightPanel = registryDetail.fetched ? (

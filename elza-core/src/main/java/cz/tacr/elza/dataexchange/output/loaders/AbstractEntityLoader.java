@@ -16,7 +16,6 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import cz.tacr.elza.domain.ApItem;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
@@ -24,6 +23,7 @@ import org.hibernate.Session;
 import org.hibernate.query.Query;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.domain.ApItem;
 
 /**
  * Abstract implementation for entity batch loader.
@@ -123,8 +123,12 @@ public abstract class AbstractEntityLoader<RES, ENT> extends AbstractBatchLoader
     /**
      * Creates query condition which is used as conjunction with id search. Default
      * implementation returns null.
+     * 
+     * @param criteriaQuery
      */
-    protected Predicate createQueryCondition(Path<? extends ENT> root, CriteriaBuilder cb) {
+    protected Predicate createQueryCondition(CriteriaQuery<Tuple> criteriaQuery,
+                                             Path<? extends ENT> root,
+                                             CriteriaBuilder cb) {
         return null;
     }
 
@@ -162,7 +166,7 @@ public abstract class AbstractEntityLoader<RES, ENT> extends AbstractBatchLoader
 
         // prepare where
         Path<?> jpaPath = getJpaPath(root, entityIdPath);
-        Predicate cond = createQueryCondition(root, cb);
+        Predicate cond = createQueryCondition(cq, root, cb);
         if (cond != null) {
             cond = cb.and(jpaPath.in(entityIds), cond);
         } else {
@@ -189,7 +193,7 @@ public abstract class AbstractEntityLoader<RES, ENT> extends AbstractBatchLoader
 
         // prepare where
         Path<?> jpaPath = getJpaPath(root, entityIdPath);
-        Predicate cond = createQueryCondition(root, cb);
+        Predicate cond = createQueryCondition(cq, root, cb);
         if (cond != null) {
             cond = cb.and(jpaPath.in(entityIds), cond);
         } else {

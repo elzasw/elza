@@ -2,7 +2,6 @@ package cz.tacr.elza.controller;
 
 import java.util.Collection;
 
-import cz.tacr.elza.controller.vo.Fund;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -14,6 +13,8 @@ import cz.tacr.elza.service.ClientEventDispatcher;
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.Fund;
 
 
 /**
@@ -25,7 +26,7 @@ public class ClientEventTest extends AbstractControllerTest {
     private ClientEventDispatcher clientEventDispatcher;
 
     @Test
-    public void testEventPublish() {
+    public void testEventPublish() throws ApiException {
         SimpleClientEventDispatcher testDispatcher = (SimpleClientEventDispatcher) clientEventDispatcher;
         testDispatcher.clearFiredEvents();
 
