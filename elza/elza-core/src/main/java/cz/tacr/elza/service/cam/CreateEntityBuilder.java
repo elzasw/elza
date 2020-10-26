@@ -11,6 +11,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
@@ -26,8 +27,9 @@ public class CreateEntityBuilder extends CamXmlBuilder {
                                final ApAccessPoint accessPoint,
                                final ApBinding binding,
                                final ApState state,
-                               final GroovyService groovyService) {
-        super(sdp, accessPoint, new BindingRecordRefHandler(binding), groovyService);
+                               final GroovyService groovyService,
+                               final ApScope scope) {
+        super(sdp, accessPoint, new BindingRecordRefHandler(binding), groovyService, scope);
         this.apState = state;
         this.externalSystemService = externalSystemService;
         this.binding = binding;

@@ -20,9 +20,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.service.cam.CamService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -65,8 +62,6 @@ import cz.tacr.elza.controller.vo.ApStateHistoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
-import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
-import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
@@ -86,6 +81,7 @@ import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
@@ -93,9 +89,9 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.drools.model.ItemSpec;
 import cz.tacr.elza.drools.model.ModelAvailable;
 import cz.tacr.elza.exception.AbstractException;
@@ -110,13 +106,13 @@ import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.cam.CamService;
 import cz.tacr.elza.service.cam.ProcessingContext;
 
 
@@ -299,6 +295,42 @@ public class ApController {
     }
 
     /**
+     * Vytvoření přístupového bodu s přesměrováním
+     *
+     * @param accessPoint zakládaný přístupový bod
+     * @return přístupový bod nebo přesměrování
+     */
+    /*@Transactional
+    @RequestMapping(value = "/", method = RequestMethod.POST)
+    public ModelAndView createAccessPointWithRedirect(@RequestBody final ApAccessPointCreateVO accessPoint) {
+        Integer typeId = accessPoint.getTypeId();
+        Integer scopeId = accessPoint.getScopeId();
+
+        ApScope scope = accessPointService.getScope(scopeId);
+        ApType type = accessPointService.getType(typeId);
+        SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
+
+        ApState apState = accessPointService.createAccessPoint(scope, type, language, accessPoint.getPartForm());
+        ApAccessPointVO apAccessPointVO = apFactory.createVO(apState, true);
+
+        if (createEntityRequest.getEntityClass() != null) {
+            String response = createEntityRequest.getResponse();
+            if (response != null) {
+                response = response.replace("{status}", "SUCCESS")
+                            .replace("{entityUuid}", apAccessPointVO.getUuid())
+                            .replace("{entityId}", String.valueOf(apAccessPointVO.getId()));
+            }
+            createEntityRequest.setEntityClass(null);
+            createEntityRequest.setResponse(null);
+            return new ModelAndView("redirect:" + response);
+        }
+
+        ModelAndView modelAndView = new ModelAndView("viewPage");
+        modelAndView.addObject("ApAccessPointVO", apAccessPointVO);
+        return modelAndView;
+    }*/
+
+    /**
      * Nastaví pravidla přístupovému bodu podle typu.
      *
      * @param accessPointId identifikátor přístupového bodu
@@ -308,7 +340,7 @@ public class ApController {
     public void setRuleAccessPoint(@PathVariable final Integer accessPointId) {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState apState = accessPointService.getState(accessPoint);
+        ApState apState = accessPointService.getStateInternal(accessPoint);
         accessPointService.setRuleAccessPoint(apState);
     }
 
@@ -320,26 +352,7 @@ public class ApController {
 	@Transactional
     @RequestMapping(value = "/{accessPointId}", method = RequestMethod.GET)
     public ApAccessPointVO getAccessPoint(@PathVariable final String accessPointId) {
-        Assert.notNull(accessPointId, "Identifikátor rejstříkového hesla musí být vyplněn");
-
-        ApAccessPoint ap;
-        if (accessPointId.length() == 36) {
-            ap = accessPointService.getAccessPointByUuid(accessPointId);
-        } else {
-            Integer apId;
-            try {
-                apId = Integer.parseInt(accessPointId);
-            } catch (NumberFormatException nfe) {
-                throw new SystemException("Unrecognized ID format")
-                        .set("ID", accessPointId);
-            }
-            ap = accessPointService.getAccessPointInternal(apId);
-        }
-        ApState apState = accessPointService.getState(ap);
-        // check permissions
-        AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.AP_SCOPE_RD_ALL)
-                .or(UsrPermission.Permission.AP_SCOPE_RD, apState.getScopeId());
-        userService.authorizeRequest(authRequest);
+        ApState apState = accessPointService.getApState(accessPointId);
 
         ApAccessPointVO vo = apFactory.createVO(apState, true);
         return vo;
@@ -360,7 +373,7 @@ public class ApController {
         Validate.notNull(editVo);
 
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState oldState = accessPointService.getState(accessPoint);
+        ApState oldState = accessPointService.getStateInternal(accessPoint);
         ApState newState = accessPointService.changeApType(accessPointId, editVo.getTypeId());
         accessPointService.generateSync(accessPointId);
         return apFactory.createVO(newState, true);
@@ -462,9 +475,15 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/scopes", method = RequestMethod.POST)
     public ApScopeVO createScope() {
+        List<RulRuleSet> rulRuleSets = ruleService.findAllApRules();
+        if (CollectionUtils.isEmpty(rulRuleSets)) {
+            throw new SystemException("Neexistují žádná pravidla pro archivní entity");
+        }
+
         ApScope apScope = new ApScope();
         apScope.setCode(UUID.randomUUID().toString());
         apScope.setName("NewScope");
+        apScope.setRulRuleSet(rulRuleSets.get(0));
         apScope = accessPointService.saveScope(apScope);
         StaticDataProvider staticData = staticDataService.getData();
         return ApScopeVO.newInstance(apScope, staticData);
@@ -586,8 +605,8 @@ public class ApController {
         final ApAccessPoint replaced = accessPointService.getAccessPointInternal(accessPointId);
         final ApAccessPoint replacement = accessPointService.getAccessPointInternal(replacedId);
 
-        ApState replacedState = accessPointService.getState(replaced);
-        ApState replacementState = accessPointService.getState(replacement);
+        ApState replacedState = accessPointService.getStateInternal(replaced);
+        ApState replacementState = accessPointService.getStateInternal(replacement);
         accessPointService.replace(replacedState, replacementState);
     }
 
@@ -727,7 +746,9 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "{accessPointId}/validate", method = RequestMethod.GET)
     public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId) {
-        return apFactory.createVO(accessPointId);
+        ApState apState = accessPointService.getApState(accessPointId);
+
+        return apFactory.createValidationVO(apState.getAccessPoint());
     }
 
     /**
@@ -840,24 +861,7 @@ public class ApController {
         if (from < 0) {
             throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
         }
-        // TODO fantis: dopsat implementaci, smazat mockup data
-        ExtSyncsQueueResultListVO result = new ExtSyncsQueueResultListVO();
-        List<ExtSyncsQueueItemVO> items = new ArrayList<>();
-        for (int i = 1; i < 233; i++) {
-            ExtSyncsQueueItemVO item = new ExtSyncsQueueItemVO();
-            item.setId(i);
-            item.setAccessPointId(i);
-            item.setAccessPointName("Test " + i);
-            item.setDate(LocalDateTime.now());
-            item.setScopeId(1);
-            item.setState(ExtAsyncQueueState.NEW);
-            item.setStateMessage("Poznámka ke stavu");
-            items.add(item);
-        }
-
-        result.setTotal(items.size());
-        result.setData(items.subList(from, Math.min(from + max, items.size())));
-        return result;
+        return accessPointService.findExternalSyncs(from, max, externalSystemCode, filter);
     }
 
     /**
@@ -910,7 +914,7 @@ public class ApController {
         Assert.notNull(accessPointId, "Identifikátor přístupového bodu není vyplněn");
 
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
-        ApState state = accessPointService.getState(accessPoint);
+        ApState state = accessPointService.getStateInternal(accessPoint);
         ApScope scope = state.getScope();
         accessPointService.checkUniqueBinding(scope, archiveEntityId.toString(), externalSystemCode);
         accessPointService.checkUniqueExtSystem(accessPoint, externalSystemCode);
@@ -937,13 +941,7 @@ public class ApController {
     @RequestMapping(value = "/external/save/{accessPointId}", method = RequestMethod.POST)
     public void saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                 @RequestParam final String externalSystemCode) {
-        BatchUpdateXml batchUpdate = camService.createCreateEntityBatchUpdate(accessPointId, externalSystemCode);
-        try {
-            BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
-            camService.updateBindingAfterSave(batchUpdateResult, accessPointId, externalSystemCode);
-        } catch (ApiException e) {
-            throw new SystemException("Došlo k chybě při komunikaci s externím systémem.");
-        }
+        accessPointService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
     }
 
 
@@ -958,7 +956,7 @@ public class ApController {
     public void synchronizeAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                        @RequestParam final String externalSystemCode) {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
-        ApState state = accessPointService.getState(accessPoint);
+        ApState state = accessPointService.getStateInternal(accessPoint);
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
 
@@ -982,24 +980,7 @@ public class ApController {
     @RequestMapping(value = "/external/update/{accessPointId}", method = RequestMethod.POST)
     public void updateArchiveEntity(@PathVariable("accessPointId") final Integer accessPointId,
                                     @RequestParam final String externalSystemCode) {
-        ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
-
-        EntityXml entity;
-        try {
-            entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()),
-                                                          externalSystemCode);
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
-        BatchUpdateXml batchUpdate = camService.createUpdateEntityBatchUpdate(accessPoint, bindingState, entity, apExternalSystem);
-        try {
-            BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
-            camService.updateBindingAfterUpdate(batchUpdateResult, accessPoint, apExternalSystem);
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
+        accessPointService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
     }
 
     private AbstractException prepareSystemException(ApiException e) {
@@ -1033,7 +1014,7 @@ public class ApController {
     public void takeRelArchiveEntities(@PathVariable("accessPointId") final Integer accessPointId,
                                        @RequestParam final String externalSystemCode) {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
-        ApState state = accessPointService.getState(accessPoint);
+        ApState state = accessPointService.getStateInternal(accessPoint);
 
         List<Integer> archiveEntities = accessPointService.findRelArchiveEntities(accessPoint);
         List<EntityXml> entities = new ArrayList<>();

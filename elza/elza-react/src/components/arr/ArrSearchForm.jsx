@@ -1,5 +1,5 @@
 import React from 'react';
-import {reduxForm} from 'redux-form';
+import {Field, FieldArray, formValueSelector, reduxForm} from 'redux-form';
 import {AbstractReactComponent, FormInput, i18n, Icon} from 'components/shared';
 import DatationField from '../party/DatationField';
 import {Col, Form, Modal, Row} from 'react-bootstrap';
@@ -8,6 +8,8 @@ import {submitForm} from 'components/form/FormUtils.jsx';
 import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 
 import './ArrSearchForm.scss';
+import FormInputField from "../shared/form/FormInputField";
+import {connect} from "react-redux";
 
 const TYPE_TEXT = 'TEXT';
 const TYPE_UNITDATE = 'UNITDATE';
@@ -23,6 +25,8 @@ const CONTAINS = 'CONTAINS';
  * Formulář zobrazení historie.
  */
 class ArrSearchForm extends AbstractReactComponent {
+    static FORM = 'searchForm';
+
     static propTypes = {};
 
     static validate(values, props) {
@@ -59,21 +63,34 @@ class ArrSearchForm extends AbstractReactComponent {
         this.props.dispatch(calendarTypesFetchIfNeeded());
     }
 
-    renderFormItem = (condition, index) => {
+    renderFormItem = (item, index, fields) => {
         const {
             refTables: {calendarTypes},
+            submitting
         } = this.props;
 
-        switch (condition.type.value) {
+        switch (fields.get(index).type) {
             case TYPE_TEXT: {
-                return <FormInput type="text" {...condition.value} />;
+                return <Field
+                    disabled={submitting}
+                    name={`${item}.value`}
+                    type="text"
+                    component={FormInputField}
+                    label={false}
+                />;
             }
 
             case TYPE_UNITDATE: {
                 return (
                     <div className="unitdate">
                         <div className="field">
-                            <FormInput as="select" {...condition.condition}>
+                            <Field
+                                disabled={submitting}
+                                name={`${item}.condition`}
+                                type="select"
+                                component={FormInputField}
+                                label={false}
+                            >
                                 <option value={GE} key={GE}>
                                     {i18n('search.extended.form.unitdate.type.ge')}
                                 </option>
@@ -83,24 +100,34 @@ class ArrSearchForm extends AbstractReactComponent {
                                 <option value={CONTAINS} key={CONTAINS}>
                                     {i18n('search.extended.form.unitdate.type.contains')}
                                 </option>
-                            </FormInput>
+                            </Field>
                         </div>
                         <div className="field">
-                            <FormInput as="select" {...condition.calendarTypeId}>
+                            <Field
+                                disabled={submitting}
+                                name={`${item}.calendarTypeId`}
+                                type="select"
+                                component={FormInputField}
+                                label={false}
+                            >
                                 {calendarTypes &&
-                                    calendarTypes.fetched &&
-                                    calendarTypes.items.map((calendar, index) => {
-                                        return (
-                                            <option value={calendar.id} key={calendar.id}>
-                                                {i18n('search.extended.form.unitdate.calendar.' + calendar.code)}
-                                            </option>
-                                        );
-                                    })}
-                            </FormInput>
+                                calendarTypes.fetched &&
+                                calendarTypes.items.map((calendar, index) => {
+                                    return (
+                                        <option value={calendar.id} key={calendar.id}>
+                                            {i18n('search.extended.form.unitdate.calendar.' + calendar.code)}
+                                        </option>
+                                    );
+                                })}
+                            </Field>
                         </div>
-                        <div className="text">
-                            <FormInput type="text" {...condition.value} />
-                        </div>
+                        <Field
+                            disabled={submitting}
+                            name={`${item}.value`}
+                            type="text"
+                            component={FormInputField}
+                            label={false}
+                        />
                     </div>
                 );
             }
@@ -114,40 +141,57 @@ class ArrSearchForm extends AbstractReactComponent {
 
     render() {
         const {
-            fields: {type, text, condition},
             handleSubmit,
             submitting,
             onClose,
+            type,
         } = this.props;
 
         const formForm = (
             <div className="arr-search-form-container">
-                <Button className="action-button" onClick={() => condition.addField({type: TYPE_TEXT})}>
-                    <Icon glyph="fa-plus" /> {i18n('search.extended.form.text')}
-                </Button>
-                <Button
-                    className="action-button"
-                    onClick={() => condition.addField({type: TYPE_UNITDATE, calendarTypeId: 1, condition: GE})}
-                >
-                    <Icon glyph="fa-plus" /> {i18n('search.extended.form.unitdate')}
-                </Button>
+                <FieldArray
+                    name={'condition'}
+                    component={({fields, meta}) => {
+                        return (
+                            <>
+                                <Button variant="outline-secondary"  className="action-button" onClick={() => fields.push({type: TYPE_TEXT})}>
+                                    <Icon glyph="fa-plus" /> {i18n('search.extended.form.text')}
+                                </Button>
+                                <Button
+                                    variant="outline-secondary"
+                                    className="action-button"
+                                    onClick={() => fields.push({type: TYPE_UNITDATE, calendarTypeId: 1, condition: GE})}
+                                >
+                                    <Icon glyph="fa-plus" /> {i18n('search.extended.form.unitdate')}
+                                </Button>
 
-                <div className="items">
-                    {condition.map((conditionRow, index, self) => (
-                        <div className="condition" key={'condition' + index}>
-                            {this.renderFormItem(conditionRow, index)}
-                            <Button className="delete" variant="action" onClick={() => self.removeField(index)}>
-                                <Icon glyph="fa-times" />
-                            </Button>
-                        </div>
-                    ))}
-                </div>
+                                <div className="items">
+                                    {fields.map((item, index, fields) => {
+                                        return (
+                                            <div className="condition" key={'condition' + index}>
+                                                {this.renderFormItem(item, index, fields)}
+                                                <Button className="delete" variant="action" onClick={() => fields.remove(index)}>
+                                                    <Icon glyph="fa-times" />
+                                                </Button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </>);
+                    }}
+                />
             </div>
         );
 
         const textForm = (
             <div>
-                <FormInput as="textarea" label={i18n('search.extended.input.text')} {...text} />
+                <Field
+                    name="text"
+                    as="textarea"
+                    component={FormInputField}
+                    label={i18n('search.extended.input.text')}
+                    disabled={submitting}
+                />
             </div>
         );
 
@@ -155,29 +199,27 @@ class ArrSearchForm extends AbstractReactComponent {
             <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                 <Modal.Body>
                     <Row>
-                        <Col xs={4}>
-                            <FormInput
+                        <Col xs={6}>
+                            <Field
+                                component={FormInputField}
                                 type="radio"
                                 label={i18n('search.extended.type.form')}
-                                {...type}
+                                name="type"
                                 value={FORM_FORM}
-                                checked={type.value === FORM_FORM}
-                                onBlur={() => {}}
                             />
                         </Col>
-                        <Col xs={4}>
-                            <FormInput
+                        <Col xs={6}>
+                            <Field
+                                component={FormInputField}
                                 type="radio"
                                 label={i18n('search.extended.type.text')}
-                                {...type}
+                                name="type"
                                 value={FORM_TEXT}
-                                checked={type.value === FORM_TEXT}
-                                onBlur={() => {}}
                             />
                         </Col>
                     </Row>
-                    {type.value === FORM_FORM && formForm}
-                    {type.value === FORM_TEXT && textForm}
+                    {type === FORM_FORM && formForm}
+                    {type === FORM_TEXT && textForm}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" disabled={submitting}>
@@ -192,19 +234,17 @@ class ArrSearchForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm(
+const form = reduxForm(
     {
-        form: 'searchForm',
-        fields: [
-            'type',
-            'text',
-            'condition[].type',
-            'condition[].condition',
-            'condition[].calendarTypeId',
-            'condition[].value',
-        ],
+        form: ArrSearchForm.FORM
     },
-    state => ({
-        refTables: state.refTables,
-    }),
 )(ArrSearchForm);
+
+const selector = formValueSelector(ArrSearchForm.FORM);
+
+export default connect(state => {
+    return {
+        refTables: state.refTables,
+        type: selector(state, 'type'),
+    };
+})(form);

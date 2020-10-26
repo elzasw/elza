@@ -33,10 +33,12 @@ import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.exception.SystemException;
@@ -47,6 +49,7 @@ import cz.tacr.elza.groovy.GroovyItems;
 import cz.tacr.elza.groovy.GroovyPart;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.ArrangementRuleRepository;
 
 @Service
 public class GroovyService {
@@ -71,8 +74,8 @@ public class GroovyService {
     @Autowired
     private ResourcePathResolver resourcePathResolver;
 
-    private static final String ITEM_TYPE_MAP = "ITEM_TYPE_MAP";
-    private static final String ITEM_SPEC_MAP = "ITEM_SPEC_MAP";
+    @Autowired
+    protected ArrangementRuleRepository arrangementRuleRepository;
 
     @PostConstruct
     public void setStatic() {
@@ -85,7 +88,7 @@ public class GroovyService {
         StaticDataProvider sdp = staticDataService.getData();
         ApType apType = sdp.getApTypeById(state.getApTypeId());
         List<GroovyPart> groovyParts = new ArrayList<>(parts.size());
-        ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
+        Integer preferredPartId = state.getAccessPoint().getPreferredPartId();
         for (ApPart part : parts) {
             List<ApPart> childrenParts = new ArrayList<>();
             for (ApPart p : parts) {
@@ -94,7 +97,7 @@ public class GroovyService {
                 }
             }
 
-            boolean preferred = preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), part.getPartId());
+            boolean preferred = Objects.equals(preferredPartId, part.getPartId());
             groovyParts.add(convertPart(state, part, childrenParts, items, preferred));
         }
         return new GroovyAe(apType.getCode(), groovyParts);
@@ -165,7 +168,7 @@ public class GroovyService {
                         String value;
                         Integer intValue;
                         if (dataTmp.getRecord() != null) {
-                            value = dataTmp.getRecord().getPreferredPart().getValue();
+                            value = dataTmp.getFulltextValue();
                             intValue = dataTmp.getRecordId();
                         } else {
                             value = dataTmp.getBinding().getValue();
@@ -241,12 +244,12 @@ public class GroovyService {
         return _self.findAllParents(recordId, itemType);
     }
 
-    public String findItemTypeCode(String extSystemType, String itemTypeCode) {
-        return groovyScriptService.findItemTypeCode(extSystemType, itemTypeCode, getGroovyFilePath(ITEM_TYPE_MAP));
+    public String findItemTypeCode(String extSystemType, String itemTypeCode, Integer ruleSetId) {
+        return groovyScriptService.findItemTypeCode(extSystemType, itemTypeCode, getGroovyFilePath(RulArrangementRule.RuleType.AP_MAPPING_TYPE, ruleSetId));
     }
 
-    public String findItemSpecCode(String extSystemType, String itemSpecCode) {
-        return groovyScriptService.findItemSpecCode(extSystemType, itemSpecCode, getGroovyFilePath(ITEM_SPEC_MAP));
+    public String findItemSpecCode(String extSystemType, String itemSpecCode, Integer ruleSetId) {
+        return groovyScriptService.findItemSpecCode(extSystemType, itemSpecCode, getGroovyFilePath(RulArrangementRule.RuleType.AP_MAPPING_SPEC, ruleSetId));
     }
 
     public String getGroovyFilePath(GroovyPart part) {
@@ -294,27 +297,23 @@ public class GroovyService {
                 .toString();
     }
 
-    public String getGroovyFilePath(String structuredTypeCode) {
+    public String getGroovyFilePath(RulArrangementRule.RuleType ruleType, Integer ruleSetId) {
         StaticDataProvider sdp = staticDataService.getData();
+        RulRuleSet rulRuleSet = sdp.getRuleSetById(ruleSetId).getEntity();
 
-        RulComponent component;
-        RulPackage rulPackage;
+        RulArrangementRule arrangementRule;
 
-        StructType structType = sdp.getStructuredTypeByCode(structuredTypeCode);
+        List<RulArrangementRule> rulArrangementRules = arrangementRuleRepository.findByRuleSetAndRuleTypeOrderByPriorityAsc(
+                rulRuleSet, ruleType);
 
-        List<RulStructureDefinition> structureDefinitions = structType
-                .getDefsByType(RulStructureDefinition.DefType.SERIALIZED_VALUE);
-        if (structureDefinitions.size() > 0) {
-            RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
-            component = structureDefinition.getComponent();
-            rulPackage = structureDefinition.getRulPackage();
+        if (rulArrangementRules.size() > 0) {
+            arrangementRule = rulArrangementRules.get(0);
         } else {
-            throw new SystemException("Strukturovaný typ '" + structType.getCode()
-                    + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
+            throw new SystemException("Neexistuje žádné pravidlo typu '" + ruleType.toString()
+                    + "' pro výpočet hodnoty", BaseCode.INVALID_STATE);
         }
 
-        return resourcePathResolver.getGroovyDir(rulPackage)
-                .resolve(component.getFilename())
+        return resourcePathResolver.getDroolFile(arrangementRule)
                 .toString();
     }
 }

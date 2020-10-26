@@ -15,6 +15,7 @@ import PageLayout from '../shared/layout/PageLayout';
 import './HomePage.scss';
 import {FOCUS_KEYS} from '../../constants.tsx';
 import SearchFundsForm from '../../components/arr/SearchFundsForm';
+import {WebApi} from "../../actions/WebApi";
 
 // Testování
 // import AutocompleteTest from "./test/AutocompleteTest";
@@ -68,19 +69,22 @@ class HomePage extends AbstractReactComponent {
         if (!userDetail.hasOne(perms.ADMIN, perms.FUND_ADMIN)) {
             initData.fundAdmins = [{id: 'default', user: userDetail}];
         }
-        this.props.dispatch(
-            modalDialogShow(
-                this,
-                i18n('arr.fund.title.add'),
-                <FundForm
-                    create
-                    initialValues={initData}
-                    onSubmitForm={data => {
-                        return this.props.dispatch(createFund(data));
-                    }}
-                />,
-            ),
-        );
+        WebApi.getAllScopes().then(scopes => {
+            this.props.dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('arr.fund.title.add'),
+                    <FundForm
+                        create
+                        initialValues={initData}
+                        scopeList={scopes}
+                        onSubmitForm={data => {
+                            return this.props.dispatch(createFund(data));
+                        }}
+                    />,
+                ),
+            );
+        });
     };
 
     buildRibbon = () => {

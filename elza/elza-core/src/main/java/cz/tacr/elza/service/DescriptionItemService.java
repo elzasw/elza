@@ -956,6 +956,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 			ArrDescItem descItemNew = prepareNewDescItem(descItemMove, trgData, change);
 			descItemNew.setPosition(descItemMove.getPosition() + diff);
 			descItemNew = descItemRepository.save(descItemNew);
+            descItemNews.add(descItemNew);
         }
 
         if (CollectionUtils.isNotEmpty(descItemNews)) {
@@ -1168,7 +1169,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             saveNode(node, change);
 
 			descItemUpdated = updateItemValueAsNewVersion(fundVersion, change, descItemDB, descItem.getItemSpec(),
-                                                          descItem.getData(), changeContext);
+                                                          descItem.getData(), descItem.getPosition(), changeContext);
 		} else {
             descItemUpdated = updateValue(fundVersion, descItem, changeContext);
         }
@@ -1178,6 +1179,50 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         return descItemUpdated;
     }
 
+    /**
+     * Posunutí itemů při změně pozice.
+     *
+     * @param fundVersion        verze AS
+     * @param change             změna
+     * @param descItemDB         přesouvaný item
+     * @param newPosition        nová pozice
+     * @param batchChangeContext kontext
+     */
+    private void updateItemPosition(final ArrFundVersion fundVersion,
+                                    final ArrChange change,
+                                    final ArrDescItem descItemDB,
+                                    final int newPosition,
+                                    final BatchChangeContext batchChangeContext) {
+
+        List<ArrDescItem> descItemsMove;
+        int diff;
+        int oldPosition = descItemDB.getPosition();
+        if (newPosition < oldPosition) {
+            diff = 1;
+            descItemsMove = findDescItemsBetweenPosition(descItemDB, newPosition, oldPosition - 1);
+        } else {
+            diff = -1;
+            descItemsMove = findDescItemsBetweenPosition(descItemDB, oldPosition + 1, newPosition);
+        }
+
+        copyDescItemsWithData(change, descItemsMove, diff, fundVersion, batchChangeContext);
+    }
+
+    /**
+     * Vyhledá všechny hodnoty atributu mezi pozicemi.
+     *
+     * @param descItem     hodnota atributu
+     * @param positionFrom od pozice (včetně›)
+     * @param positionTo   do pozice (včetně›)
+     * @return seznam nalezených hodnot atributů
+     */
+    private List<ArrDescItem> findDescItemsBetweenPosition(final ArrDescItem descItem,
+                                                           final int positionFrom,
+                                                           final int positionTo) {
+
+        return descItemRepository.findOpenDescItemsBetweenPositions(descItem.getItemType(),
+                descItem.getNode(), positionFrom, positionTo);
+    }
 
     /**
      * Najde scénář podle názvu.
@@ -1389,7 +1434,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		ArrData dataCurr = descItem.getData();
 
         return updateItemValueAsNewVersion(fundVersion, change, descItemCurr, descItem.getItemSpec(), dataCurr,
-                                           batchChangeContext);
+                descItem.getPosition(), batchChangeContext);
 	}
 
     /**
@@ -1400,14 +1445,24 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param descItemDB
      * @param itemSpec
      * @param srcData
+     * @param newPosition
      * @return
      */
-	private ArrDescItem updateItemValueAsNewVersion(final ArrFundVersion version, final ArrChange change,
-	        /*final*/ ArrDescItem descItemDB, RulItemSpec itemSpec,
-                                                    ArrData srcData,
-                                                    BatchChangeContext batchChangeContext) {
+	private ArrDescItem updateItemValueAsNewVersion(final ArrFundVersion version,
+                                                    final ArrChange change,
+                                                    ArrDescItem descItemDB,
+                                                    RulItemSpec itemSpec,
+                                                    final ArrData srcData,
+                                                    final Integer newPosition,
+                                                    final BatchChangeContext batchChangeContext) {
+        Integer oldPosition = descItemDB.getPosition();
+        boolean move = false;
+        if (!Objects.equal(oldPosition, newPosition)) {
+            updateItemPosition(version, change, descItemDB, newPosition, batchChangeContext);
+            move = true;
+        }
 
-		ArrData dataNew = descItemFactory.saveData(descItemDB.getItemType(), srcData);
+        ArrData dataNew = descItemFactory.saveData(descItemDB.getItemType(), srcData);
 
 		// create new item based on source
         descItemDB = HibernateUtils.unproxy(descItemDB);
@@ -1415,6 +1470,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		descItemNew.setItemId(null);
 		descItemNew.setCreateChange(change);
 		descItemNew.setItemType(descItemDB.getItemType());
+        descItemNew.setPosition(newPosition);
 
 		// mark current item as deleted and save
 		descItemDB.setDeleteChange(change);
@@ -1432,8 +1488,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         // update value in node cache
 
-        arrangementCacheService.changeDescItem(result.getNodeId(), result, false,
-                                               batchChangeContext);
+        arrangementCacheService.changeDescItem(result.getNodeId(), result, move, batchChangeContext);
 
         batchChangeContext.addUpdatedItem(result);
 
@@ -1779,7 +1834,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         for (ArrDescItem descItem : descItems) {
 			ArrDescItem updatedDescItem = updateItemValueAsNewVersion(fundVersion, change, descItem, setSpecification,
-                                                                      descItem.getData(), changeContext);
+                                                                      descItem.getData(), descItem.getPosition(), changeContext);
             nodeIdsToAdd.remove(updatedDescItem.getNodeId());
         }
 

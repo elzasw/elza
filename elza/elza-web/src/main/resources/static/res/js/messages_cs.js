@@ -162,7 +162,7 @@ var messages = {
         "Nelze přepnout způsob vyplňování, protože neexistuje žádná hodnota generovaná funkcí",
     "exception.out.ITEM_TYPE_CALC": "Tento atribut je počítán automaticky a nemůže být ručně editován",
     "exception.out.INVALID_FORMAT": "Formát výsledného souboru neodpovídá schématu",
-	"exception.out.SCHEMA_NOT_FOUND": "Schéma ověření nebylo nalezeno",
+    "exception.out.SCHEMA_NOT_FOUND": "Schéma ověření nebylo nalezeno",
 
     "exception.pkg.FILE_NOT_FOUND": "Nenalezen soubor '{file}'",
     "exception.pkg.CODE_NOT_FOUND": "Nenalezena entita podle kódu '{code}' v souboru '{file}'",
@@ -1039,6 +1039,7 @@ var messages = {
     "ap.state.title.type": "Třída archivní entity",
     "ap.state.title.state": "Stav",
     "ap.state.title.comment": "Komentář",
+    "ap.state.state.insufficient.right": "Nemáte oprávnění pro schválení AP.",
     "ap.connect": "Propojení s externím systémem",
 
     "registryField.noItemsFound": "Záznamy nebyly nalezeny.",
@@ -1622,9 +1623,18 @@ var messages = {
     "accesspoint.description": "Popis",
     "accesspoint.update.description": "Úprava popisu",
 
+    "accesspoint.create.titleMessage": "Nejprve vyberte třídu a oblast nové archivní entity. Dle typu vybrané třídy se zobrazí příslušné atributy, které vyplňte. Poté můžete novou archivní entitu založit.",
+
+    "accesspoint.removeDuplicity": "Odstranit duplicitu",
+    "accesspoint.removeDuplicity.title": "Odstranění duplicity",
+    "accesspoint.removeDuplicity.replacingAccesspoint": "Nahrazující přístupový bod",
+    "accesspoint.removeDuplicity.replacedAccesspoint": "K nahrazení",
+    "accesspoint.removeDuplicity.resolve": "Vyřešit duplicitu",
+
     "accesspoint.scope.management.title": "Správa oblastí archivních entit",
     "accesspoint.scope.list": "Seznam oblastí",
     "accesspoint.scope.code": "Kód",
+    "accesspoint.scope.ruleSetCode": "Pravidla popisu",
     "accesspoint.scope.language": "Jazyk",
     "accesspoint.scope.name": "Jméno",
     "accesspoint.scope.relatedScopes": "Návazné oblasti",

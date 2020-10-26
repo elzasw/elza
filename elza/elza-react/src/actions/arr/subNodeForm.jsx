@@ -567,6 +567,7 @@ export class ItemFormActions {
                     subNodeForm,
                     versionId,
                     subNodeForm.data.parent.version,
+                    subNodeForm.data.parent.id,
                     descItem,
                 ).then(json => {
                     const newValueLocation = {...valueLocation, descItemIndex: index};

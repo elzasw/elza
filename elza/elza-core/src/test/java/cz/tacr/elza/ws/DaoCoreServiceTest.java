@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.Fund;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -28,6 +27,8 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.ws.core.v1.DaoService;
 import cz.tacr.elza.ws.types.v1.Dao;
 import cz.tacr.elza.ws.types.v1.DaoImport;
@@ -61,7 +62,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     }
 
     @Test
-    public void importTest() {
+    public void importTest() throws ApiException {
         createDigitalRepo();
 
         String address = RestAssured.baseURI + ":" + RestAssured.port + "/services"

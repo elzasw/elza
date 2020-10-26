@@ -47,3 +47,26 @@ export interface TreeNodeVO {
     version: number;
     arrPerm: boolean;
 }
+
+export enum OutputState {
+    /**
+     * Rozpracovaný
+     */
+    OPEN = 'OPEN',
+    /**
+     * Běží hromadná akce
+     */
+    COMPUTING = 'COMPUTING',
+    /**
+     * Generování
+     */
+    GENERATING = 'GENERATING',
+    /**
+     * Vygenerovaný
+     */
+    FINISHED = 'FINISHED',
+    /**
+     * Vygenerovaný neaktuální
+     */
+    OUTDATED = 'OUTDATED',
+}

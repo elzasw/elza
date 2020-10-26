@@ -1,18 +1,23 @@
 package cz.tacr.elza.print;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.exception.BusinessException;
@@ -23,6 +28,7 @@ import cz.tacr.elza.print.item.convertors.OutputItemConvertor;
 import cz.tacr.elza.print.part.Part;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
@@ -50,6 +56,8 @@ public class Record {
 
     private final ApItemRepository itemRepository;
 
+    private final ApIndexRepository indexRepository;
+
     private List<ExternalId> eids;
 
     private List<Part> parts;
@@ -66,6 +74,7 @@ public class Record {
                   final ApPartRepository partRepository,
                   final ApItemRepository itemRepository,
                   final ApBindingStateRepository bindingStateRepository,
+                  final ApIndexRepository indexRepository,
                   final OutputItemConvertor outputItemConvertor) {
         this.ap = ap;
         this.type = type;
@@ -75,6 +84,7 @@ public class Record {
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
+        this.indexRepository = indexRepository;
         this.outputItemConvertor = outputItemConvertor;
     }
 
@@ -93,10 +103,11 @@ public class Record {
         this.preferredPart = src.preferredPart;
         this.parts = src.parts;
         this.bindingStateRepository = src.bindingStateRepository;
+        this.indexRepository = src.indexRepository;
         this.outputItemConvertor = src.outputItemConvertor;
     }
 
-    public void loadData(List<ApPart> apParts, List<ApItem> apItems) {
+    public void loadData(List<ApPart> apParts, List<ApItem> apItems, Map<Integer, ApIndex> indexMap) {
 
         List<Part> subParts = new ArrayList<>();
         Map<Integer, Part> partIdMap = new HashMap<>();
@@ -104,7 +115,8 @@ public class Record {
         // prepare parts
         parts = new ArrayList<>(apParts.size());
         for (ApPart apPart : apParts) {
-            Part part = new Part(apPart, staticData);
+            ApIndex index = indexMap.getOrDefault(apPart.getPartId(), null);
+            Part part = new Part(apPart, staticData, index);
 
             partIdMap.put(apPart.getPartId(), part);
 
@@ -112,7 +124,7 @@ public class Record {
                 subParts.add(part);
             } else {
                 // set preferred part
-                if (ap.getPreferredPart().getPartId() == apPart.getPartId()) {
+                if (ap.getPreferredPartId().equals(apPart.getPartId())) {
                     preferredPart = part;
                 }
                 parts.add(part);
@@ -147,7 +159,9 @@ public class Record {
 
         List<ApPart> apParts = partRepository.findValidPartByAccessPoint(ap);
         List<ApItem> apItems = itemRepository.findValidItemsByAccessPoint(ap);
-        loadData(apParts, apItems);
+        Map<Integer, ApIndex> indexMap = ObjectListIterator.findIterable(apParts, p -> indexRepository.findByPartsAndIndexType(p, DISPLAY_NAME)).stream()
+                .collect(Collectors.toMap(i -> i.getPart().getPartId(), Function.identity()));
+        loadData(apParts, apItems, indexMap);
     }
 
     public Integer getId() {

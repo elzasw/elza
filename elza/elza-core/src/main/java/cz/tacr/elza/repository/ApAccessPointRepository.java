@@ -2,17 +2,15 @@ package cz.tacr.elza.repository;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ArrDataRecordRef;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 
 /**
@@ -44,7 +42,7 @@ public interface ApAccessPointRepository
             " FROM ap_state s" +
             " JOIN s.accessPoint ap" +
             " WHERE s.accessPoint.uuid IN (:uuids)" +
-            " AND s.deleteChangeId IS NULL")
+            " AND s.createChangeId in (SELECT max(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s.accessPoint)")
     List<ApAccessPointInfo> findActiveInfoByUuids(@Param("uuids") Collection<String> uuids);
 
     @Query("SELECT distinct i.itemId" +
@@ -52,7 +50,6 @@ public interface ApAccessPointRepository
             " JOIN arr_data_record_ref rr ON (rr.dataId = i.dataId)" +
             " WHERE rr.record.accessPointId = ?1")
     List<Integer> findItemIdByAccessPointIdOverDataRecordRef(Integer accessPointId);
-
 
     @Query("SELECT ap.accessPointId FROM ap_access_point ap " +
             "JOIN ApPart part ON ap.accessPointId = part.accessPoint.accessPointId " +
@@ -75,4 +72,23 @@ public interface ApAccessPointRepository
     @Modifying
     @Query("UPDATE ap_access_point SET state = 'INIT' WHERE accessPointId IN :accessPointIds AND state <> 'INIT'")
     void updateToInit(@Param("accessPointIds") Collection<Integer> accessPointIds);
+
+    @Query(value = 
+            "SELECT ap.uuid FROM ap_state s" + 
+            "  JOIN ap_access_point ap ON s.access_point_id = ap.access_point_id" + 
+            "  WHERE s.create_change_id > :fromId OR s.delete_change_id > :fromId" + 
+            " UNION " + 
+            "SELECT ap.uuid FROM ap_part p" + 
+            "  JOIN ap_access_point ap ON p.access_point_id = ap.access_point_id" + 
+            "  WHERE p.create_change_id > :fromId OR p.delete_change_id > :fromId" + 
+            " UNION " + 
+            "SELECT ap.uuid FROM ap_item i" + 
+            "  JOIN ap_part p ON i.part_id = p.part_id" + 
+            "  JOIN ap_access_point ap ON p.access_point_id = ap.access_point_id" + 
+            "  WHERE i.create_change_id > :fromId OR i.delete_change_id > :fromId" + 
+            " UNION " + 
+            "SELECT ap.uuid FROM ap_binding_state b" + 
+            "  JOIN ap_access_point ap ON b.access_point_id = ap.access_point_id" + 
+            "  WHERE b.create_change_id > :fromId OR b.delete_change_id > :fromId", nativeQuery = true)
+            List<String> findAccessPointUuidChangedOrDeleted(@Param("fromId") Integer fromId);
 }

@@ -1,36 +1,26 @@
 <structure-definitions>
-    <structure-definition structure-type="PT_BODY" filename="PT_BODY.groovy" compatibility-rul-package="31">
+    <structure-definition structure-type="PT_BODY" filename="PT_BODY.groovy" compatibility-rul-package="35">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
-    <structure-definition structure-type="PT_CRE" filename="PT_CRE.groovy" compatibility-rul-package="31">
+    <structure-definition structure-type="PT_CRE" filename="PT_CRE.groovy" compatibility-rul-package="35">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
-    <structure-definition structure-type="PT_EVENT" filename="PT_EVENT.groovy" compatibility-rul-package="31">
+    <structure-definition structure-type="PT_EVENT" filename="PT_EVENT.groovy" compatibility-rul-package="35">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
-    <structure-definition structure-type="PT_EXT" filename="PT_EXT.groovy" compatibility-rul-package="31">
+    <structure-definition structure-type="PT_EXT" filename="PT_EXT.groovy" compatibility-rul-package="35">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
-    <structure-definition structure-type="PT_IDENT" filename="PT_IDENT.groovy" compatibility-rul-package="31">
+    <structure-definition structure-type="PT_IDENT" filename="PT_IDENT.groovy" compatibility-rul-package="35">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
-    <structure-definition structure-type="PT_REL" filename="PT_REL.groovy" compatibility-rul-package="31">
+    <structure-definition structure-type="PT_REL" filename="PT_REL.groovy" compatibility-rul-package="35">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
-<!-- Skript by měl být součástí pravidel, lze zavést speciální typ rozšíření
-    <structure-definition structure-type="ITEM_TYPE_MAP" filename="ItemTypeMap.groovy" compatibility-rul-package="33">
-        <def-type>SERIALIZED_VALUE</def-type>
-        <priority>100</priority>
-    </structure-definition>
-    <structure-definition structure-type="ITEM_SPEC_MAP" filename="ItemSpecMap.groovy" compatibility-rul-package="34">
-        <def-type>SERIALIZED_VALUE</def-type>
-        <priority>100</priority>
-    </structure-definition>
--->
 </structure-definitions>

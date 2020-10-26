@@ -110,6 +110,12 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
 
     useEffect(() => {
+        if (props.id) {
+            props.refreshDetail(props.id, false);
+        }
+    }, []);
+
+    useEffect(() => {
         props.fetchViewSettings();
         props.refreshValidation(props.id);
     }, [props.id]);
@@ -178,13 +184,31 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
             .filter(value => value.partParentId && parentIds.includes(value.partParentId));
     };
 
-    const isFetchingPartyTypes = !props.refTables.partTypes.fetched && props.refTables.partTypes.isFetching;
+    // TODO: find better way to check if all reftables are fetched
+    const isFetchingPartyTypes = !props.refTables.partTypes.fetched || props.refTables.partTypes.isFetching;
 
-    const isFetching = !props.detail.fetched && props.detail.isFetching;
+    const isFetchingApTypes =
+        !props.refTables.apTypes.fetched ||
+        props.refTables.apTypes.isFetching ||
+        !props.refTables.recordTypes.fetched ||
+        props.refTables.recordTypes.isFetching;
+
+    const isFetchingItemTypes = !props.refTables.descItemTypes.fetched || props.refTables.descItemTypes.isFetching;
+
+    const isFetching = !props.detail.fetched || props.detail.isFetching;
 
     const isFetchingViewSettings = props.apViewSettings.isFetching;
 
-    if (isFetchingPartyTypes || isFetching || isFetchingViewSettings) {
+    console.warn(
+        isFetchingPartyTypes,
+        props.detail.fetched,
+        props.detail.isFetching,
+        isFetching,
+        isFetchingViewSettings,
+        isFetchingApTypes,
+        isFetchingItemTypes,
+    );
+    if (isFetchingPartyTypes || isFetching || isFetchingViewSettings || isFetchingApTypes || isFetchingItemTypes) {
         return (
             <div className={'detail-page-wrapper'}>
                 <Loading />
@@ -192,7 +216,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         );
     }
 
-    if (!isFetching && (!props.detail.id || !props.detail.data)) {
+    if (!props.detail.id || !props.detail.data) {
         return <div className={'detail-page-wrapper'} />;
     }
 
@@ -327,13 +351,13 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
                     scopeId={scopeId}
                     initialValues={{
                         partForm: {
-                            items: sortItems(
+                            items: part.items?sortItems(
                                 partType,
                                 part.items,
                                 refTables,
                                 descItemTypesMap,
                                 apViewSettings.data!.rules[ruleSetId],
-                            ),
+                            ):[],
                         },
                     }}
                     formData={
@@ -341,13 +365,13 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
                             partId: part.id,
                             parentPartId: part.partParentId,
                             partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
-                            items: sortItems(
+                            items: part.items?sortItems(
                                 partType,
                                 part.items,
                                 refTables,
                                 descItemTypesMap,
                                 apViewSettings.data!.rules[ruleSetId],
-                            ),
+                            ):[],
                         } as ApPartFormVO
                     }
                     parentPartId={part.partParentId}
@@ -446,8 +470,8 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
             ),
         );
     },
-    refreshDetail: (apId: number) => {
-        dispatch(registryDetailFetchIfNeeded(apId, true));
+    refreshDetail: (apId: number, force: boolean = true) => {
+        dispatch(registryDetailFetchIfNeeded(apId, force));
     },
     fetchViewSettings: () => {
         dispatch(
@@ -465,7 +489,6 @@ const mapStateToProps = (state: any, props: OwnProps) => {
         apViewSettings: storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>,
         descItemTypesMap: state.refTables.descItemTypes.itemsMap,
         refTables: state.refTables,
-        editMode: true,
     };
 };
 

@@ -11,7 +11,6 @@ import FormInputField from '../shared/form/FormInputField';
 class FundSettingsForm extends AbstractReactComponent {
     /**
      * Validace formuláře.
-     * @todo šlapa odstranit
      */
     static validate = (values, props) => {
         const errors = {};
@@ -104,15 +103,4 @@ class FundSettingsForm extends AbstractReactComponent {
 
 export default reduxForm({
     form: 'fundSettingsForm',
-    fields: [
-        'rightPanel.tabs[].checked',
-        'rightPanel.tabs[].key',
-        'rightPanel.tabs[].name',
-        'centerPanel.panels[].checked',
-        'centerPanel.panels[].key',
-        'centerPanel.panels[].name',
-        'strictMode.value',
-        'strictMode.key',
-        'strictMode.name',
-    ],
 })(FundSettingsForm);

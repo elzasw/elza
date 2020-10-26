@@ -15,8 +15,6 @@ import Tags from "components/form/Tags";
  * Formulář inline editace výstupu.
  */
 class OutputInlineForm extends AbstractReactComponent {
-    static fields = ['name', 'outputTypeId', 'internalCode', 'templateId', 'anonymizedAp'];
-
     static FORM = 'outputEditForm';
 
     /**
@@ -39,10 +37,6 @@ class OutputInlineForm extends AbstractReactComponent {
     };
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        const {
-            fields: {outputTypeId},
-            outputTypes,
-        } = nextProps;
         this.props.dispatch(outputTypesFetchIfNeeded());
         if (nextProps.outputTypeId) {
             const index = indexById(nextProps.outputTypes, parseInt(nextProps.outputTypeId));
@@ -172,7 +166,6 @@ class OutputInlineForm extends AbstractReactComponent {
 
 const form = reduxForm({
     form: OutputInlineForm.FORM,
-    fields: OutputInlineForm.fields,
     validate: OutputInlineForm.validate,
     asyncBlurFields: OutputInlineForm.fields,
     asyncValidate: (values, dispatch, props, blurredField) => {

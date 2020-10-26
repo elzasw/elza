@@ -26,7 +26,7 @@ class FormDescItemType extends AbstractReactComponent {
         infoType: PropTypes.object.isRequired,
         typePrefix: PropTypes.string.isRequired,
         singleDescItemTypeEdit: PropTypes.bool.isRequired,
-        arrPerm: PropTypes.bool.isRequired,
+        arrPerm: PropTypes.bool,
         fundId: PropTypes.number.isRequired,
         strictMode: PropTypes.bool.isRequired,
         showNodeAddons: PropTypes.bool.isRequired,
@@ -39,7 +39,6 @@ class FormDescItemType extends AbstractReactComponent {
         descItemFactory: PropTypes.func.isRequired,
         customActions: PropTypes.object,
         descItemRef: PropTypes.func.isRequired, // (key, ref) => void
-        onCreateRecord: PropTypes.func.isRequired,
         onDetailRecord: PropTypes.func.isRequired,
         onCreateFile: PropTypes.func.isRequired,
         onFundFiles: PropTypes.func.isRequired,
@@ -101,7 +100,6 @@ class FormDescItemType extends AbstractReactComponent {
         // console.log('[FormDescItemType] RENDER', refType.name);
 
         const {
-            onCreateRecord,
             onDetailRecord,
             onCreateFile,
             onFundFiles,
@@ -169,7 +167,6 @@ class FormDescItemType extends AbstractReactComponent {
                 rulDataType={rulDataType}
                 calendarTypes={calendarTypes}
                 structureTypes={structureTypes}
-                onCreateRecord={descItemIndex => onCreateRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex)}
                 onDetailRecord={(descItemIndex, recordId) =>
                     onDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId)
                 }

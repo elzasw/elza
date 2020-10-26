@@ -120,8 +120,8 @@ class UserAndGroupField extends React.Component<Props, State> {
         const findUser =
             searchTypeParty !== undefined || searchTypeUsername !== undefined
                 ? findUserApi(text, true, false, DEFAULT_LIST_SIZE, null, searchTypeParty, searchTypeUsername)
-                : Promise.resolve({data: {data: []}});
-        const findGroup = searchGroup ? findGroupApi(text) : Promise.resolve({data: {groups: []}});
+                : Promise.resolve({data: []});
+        const findGroup = searchGroup ? findGroupApi(text) : Promise.resolve({groups: []});
 
         Utils.barrier(findUser, findGroup)
             .then((data: [{data: {data: UsrUserVO[]}}, {data: {groups: UsrGroupVO[]}}]) => ({

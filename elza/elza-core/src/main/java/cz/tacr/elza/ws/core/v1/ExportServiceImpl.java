@@ -13,7 +13,6 @@ import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.mail.util.ByteArrayDataSource;
 
-import cz.tacr.elza.service.GroovyService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -36,6 +35,7 @@ import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.db.HibernateConfiguration;
+import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamExportBuilder;
@@ -47,7 +47,9 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker.ErrorHandler;
 import cz.tacr.elza.ws.types.v1.EntityInfo;
@@ -81,12 +83,18 @@ public class ExportServiceImpl implements ExportService {
 
     @Autowired
     AccessPointService accessPointService;
-
+    
     @Autowired
     StaticDataService staticDataService;
 
     @Autowired
     GroovyService groovyService;
+
+    @Autowired
+    SchemaManager schemaManager;
+
+    @Autowired
+    ApChangeRepository changeRepository;
 
     public ExportServiceImpl() {
 
@@ -148,13 +156,13 @@ public class ExportServiceImpl implements ExportService {
         
         List<String> missing = subList.stream().filter(e -> !foundItems.contains(e)).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(missing)) {
-            log.info("Missing items in export request: {}", missing);
-            cz.tacr.elza.ws.types.v1.ErrorDescription ed = WSHelper.prepareErrorDescription("Missing some items",
+            log.info("Cannot find some of requested entities: {}", missing);
+            cz.tacr.elza.ws.types.v1.ErrorDescription ed = WSHelper.prepareErrorDescription("Failed to find requested entities.",
                                                                                             "Missing items: " + String
                                                                                                     .join(",",
                                                                                                           missing));
 
-            throw new ExportRequestException("Missing some items", ed);
+            throw new ExportRequestException(ed.getUserMessage(), ed);
         }
     }
 
@@ -174,7 +182,7 @@ public class ExportServiceImpl implements ExportService {
         } else
         if (CamUtils.CAM_SCHEMA.equals(format)) {
             // fomat CAM
-            exportBuilder = new CamExportBuilder(staticDataService, groovyService);
+            exportBuilder = new CamExportBuilder(staticDataService, groovyService, schemaManager);
         } else {
             throw new ExportRequestException("Unrecognized schema: " + format);
         }
@@ -244,7 +252,7 @@ public class ExportServiceImpl implements ExportService {
 
         SearchEntityResult result = new SearchEntityResult();
         if (ap != null) {
-            ApState apState = accessPointService.getState(ap);
+            ApState apState = accessPointService.getStateInternal(ap);
             ApFactory apFactory = appCtx.getBean(ApFactory.class);
             ApAccessPointVO apVo = apFactory.createVO(apState, true);
 
@@ -262,7 +270,24 @@ public class ExportServiceImpl implements ExportService {
 
     @Override
     public EntityUpdates searchEntityUpdates(SearchEntityUpdates request) throws CoreServiceException {
-        // TODO Auto-generated method stub
-        return null;
+        int fromId;
+        if (request == null || request.getFromTrans() == null) {
+            fromId = 0;
+        } else {
+            fromId = Integer.valueOf(request.getFromTrans());
+        }
+        int toId = changeRepository.findTop1ByOrderByChangeIdDesc().getChangeId();
+
+        List<String> uuids = accessPointRepository.findAccessPointUuidChangedOrDeleted(fromId);
+
+        IdentifierList identifierList = new IdentifierList();
+        identifierList.getIdentifier().addAll(uuids);
+
+        EntityUpdates updates = new EntityUpdates();
+        updates.setFromTrans(String.valueOf(fromId));
+        updates.setToTrans(String.valueOf(toId));
+        updates.setEntityIds(identifierList);
+
+        return updates;
     }
 }

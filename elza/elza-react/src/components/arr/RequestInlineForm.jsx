@@ -1,15 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
-import {decorateFormField} from 'components/form/FormUtils.jsx';
+import {Field, reduxForm} from 'redux-form';
+import {AbstractReactComponent, i18n} from 'components/shared';
 import {initForm} from 'actions/form/inlineForm.jsx';
+import FormInputField from "../shared/form/FormInputField";
 
 /**
  * Formulář inline editace požadavku na externí systém.
  */
 class RequestInlineForm extends AbstractReactComponent {
-    static fields = ['description'];
 
     /**
      * Validace formuláře.
@@ -33,19 +32,18 @@ class RequestInlineForm extends AbstractReactComponent {
 
     render() {
         const {
-            fields: {description},
             disabled,
         } = this.props;
 
         return (
             <div className="edit-request-form-container">
                 <form>
-                    <FormInput
+                    <Field
+                        name="description"
                         as="textarea"
+                        component={FormInputField}
                         label={i18n('arr.request.title.description')}
                         disabled={disabled}
-                        {...description}
-                        {...decorateFormField(description, true)}
                     />
                 </form>
             </div>
@@ -56,7 +54,6 @@ class RequestInlineForm extends AbstractReactComponent {
 export default reduxForm(
     {
         form: 'requestEditForm',
-        fields: RequestInlineForm.fields,
         validate: RequestInlineForm.validate,
     },
     (state, props) => {

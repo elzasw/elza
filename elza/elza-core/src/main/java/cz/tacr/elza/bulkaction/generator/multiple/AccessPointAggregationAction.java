@@ -1,5 +1,6 @@
 package cz.tacr.elza.bulkaction.generator.multiple;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 import static cz.tacr.elza.repository.ExceptionThrow.ap;
 
 import java.time.LocalDate;
@@ -9,8 +10,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.repository.ApIndexRepository;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -67,6 +73,9 @@ public class AccessPointAggregationAction extends Action {
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
+
+    @Autowired
+    private ApIndexRepository indexRepository;
 
     /**
      * Vstupní atributy
@@ -150,18 +159,22 @@ public class AccessPointAggregationAction extends Action {
         ApAccessPoint ap = apAccessPointRepository.findById(apId).orElseThrow(ap(apId));
         List<ApPart> parts = partRepository.findValidPartByAccessPoint(ap);
         List<ApItem> items = itemRepository.findValidItemsByAccessPointMultiFetch(ap);
+        ApIndex index = indexRepository.findPreferredPartIndexByAccessPointAndIndexType(ap, DISPLAY_NAME);
+        Map<Integer, ApIndex> indexMap = ObjectListIterator.findIterable(parts, p -> indexRepository.findByPartsAndIndexType(p, DISPLAY_NAME)).stream()
+                .collect(Collectors.toMap(i -> i.getPart().getPartId(), Function.identity()));
+        String apName = index != null ? index.getValue() : null;
 
         apResult = new ApResult();
         apStructItems.put(ap.getAccessPointId(), apResult);
 
         // Procházení prvků PART_VALUE
-        createPartValueResults(apResult, ap, parts);
+        createPartValueResults(apResult, parts, apName, indexMap);
 
         //Procházení prvků PART_ITEM
-        createPartItemResults(apResult, ap, items);
+        createPartItemResults(apResult, items, apName);
 
         //Procházení prvků PART_ITEMS
-        createPartItemsResults(apResult, ap, items);
+        createPartItemsResults(apResult, items, apName);
 
         //Vložení odkazu na zdrojový AP
         createApRefItem(apResult, ap);
@@ -169,7 +182,7 @@ public class AccessPointAggregationAction extends Action {
         logger.debug("Konec zpracování AP : " + ap.getAccessPointId());
     }
 
-    private void createPartValueResults(final ApResult apResult, ApAccessPoint ap, List<ApPart> parts) {
+    private void createPartValueResults(final ApResult apResult, List<ApPart> parts, String apName, Map<Integer, ApIndex> indexMap) {
         if (config.getMappingPartValue() == null) {
             return;
         }
@@ -177,14 +190,21 @@ public class AccessPointAggregationAction extends Action {
             RulPartType fromPart = ruleSystem.getPartTypeByCode(partConfig.getFromPart());
             // pro value jen z fromPrefferedName
             if (partConfig.fromPrefferedName) {
-                createResultItem(apResult, partConfig.getToItem(), ap.getPreferredPart().getValue());
+                createResultItem(apResult, partConfig.getToItem(), apName);
             }
             //pro všechny value z Partů daného typu
             else {
-                List<String> foundPartValues = parts.stream()
-                        .filter(apPart -> apPart.getPartType().getPartTypeId().equals(fromPart.getPartTypeId()))
-                        .map(ApPart::getValue)
-                        .collect(Collectors.toList());
+                List<String> foundPartValues = new ArrayList<>();
+                if (CollectionUtils.isNotEmpty(parts)) {
+                    for (ApPart part : parts) {
+                        if (part.getPartType().getPartTypeId().equals(fromPart.getPartTypeId())) {
+                            ApIndex index = indexMap.getOrDefault(part.getPartId(), null);
+                            if (index != null) {
+                                foundPartValues.add(index.getValue());
+                            }
+                        }
+                    }
+                }
                 if (partConfig.group && foundPartValues.size() > 0) {
                     createResultItem(apResult, partConfig.getToItem(), String.join(partConfig.groupSeparator, foundPartValues));
                 } else if (foundPartValues.size() > 0) {
@@ -196,14 +216,14 @@ public class AccessPointAggregationAction extends Action {
         }
     }
 
-    private void createPartItemResults(final ApResult apResult, ApAccessPoint ap, List<ApItem> items) {
+    private void createPartItemResults(final ApResult apResult, List<ApItem> items, String apName) {
         if (config.getMappingPartItem() == null) {
             return;
         }
         for (ApAggregationItemConfig itemConfig : config.getMappingPartItem()) {
             // pro value jen z fromPrefferedName
             if (itemConfig.fromPrefferedName) {
-                createResultItem(apResult, itemConfig.getToItem(), ap.getPreferredPart().getValue());
+                createResultItem(apResult, itemConfig.getToItem(), apName);
             }
             //pro všechny value z Itemů daného typu
             else {
@@ -226,7 +246,7 @@ public class AccessPointAggregationAction extends Action {
         }
     }
 
-    private void createPartItemsResults(final ApResult apResult, ApAccessPoint ap, List<ApItem> items) {
+    private void createPartItemsResults(final ApResult apResult, List<ApItem> items, String apName) {
         if (config.getMappingPartItems() == null) {
             return;
         }
@@ -234,7 +254,7 @@ public class AccessPointAggregationAction extends Action {
         for (ApAggregationItemsConfig itemsConfig : config.getMappingPartItems()) {
             // pro value jen z fromPrefferedName
             if (itemsConfig.fromPrefferedName) {
-                createResultItem(apResult, itemsConfig.getToItem(), ap.getPreferredPart().getValue());
+                createResultItem(apResult, itemsConfig.getToItem(), apName);
             }
             //pro všechny value z Itemů daných typu
             else {

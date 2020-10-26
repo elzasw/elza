@@ -32,21 +32,30 @@ class DescItemStructureRef extends React.Component {
     constructor(props) {
         super(props);
         if (props.anonymous && !props.structureNodeForm) {
-            if (props.descItem.value) {
-                props.dispatch(structureNodeFormSelectId(props.versionId, props.descItem.value));
-                props.dispatch(structureNodeFormFetchIfNeeded(props.versionId, props.descItem.value));
-            } else {
-                const {structureTypeCode, versionId} = props;
-                WebApi.createStructureData(versionId, structureTypeCode, this.findValue()).then(structureData => {
-                    this.props.onChange({id: structureData.id});
-                    props.dispatch(structureNodeFormSelectId(props.versionId, structureData.id));
-                });
-            }
+            this.initAnonym(props);
+        }
+    }
+
+    initAnonym(props) {
+        if (props.descItem.value) {
+            props.dispatch(structureNodeFormSelectId(props.versionId, props.descItem.value));
+            props.dispatch(structureNodeFormFetchIfNeeded(props.versionId, props.descItem.value));
+        } else if (props.cal) {
+            // skip init - calc
+        } else {
+            const {structureTypeCode, versionId} = props;
+            WebApi.createStructureData(versionId, structureTypeCode, this.findValue()).then(structureData => {
+                this.props.onChange({id: structureData.id});
+                props.dispatch(structureNodeFormSelectId(props.versionId, structureData.id));
+            });
         }
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        const {descItem, structureId, anonymous, structureNodeForm} = this.props;
+        const {descItem, structureId, anonymous, structureNodeForm, cal} = this.props;
+        if (prevProps.cal && !cal) {
+            this.initAnonym(this.props);
+        }
         if (((descItem && descItem.value) || structureId) && anonymous && structureNodeForm) {
             const {
                 versionId,
@@ -194,8 +203,9 @@ class DescItemStructureRef extends React.Component {
             descItemFactory,
         } = this.props;
         const structureData = descItem.structureData;
-        if (readMode || descItem.undefined) {
-            const calValue = cal && structureData === null ? i18n('subNodeForm.descItemType.calculable') : '';
+        if (readMode || descItem.undefined || (!descItem.value && cal)) {
+            const calValue =
+                cal && (structureData === null || !descItem.value) ? i18n('subNodeForm.descItemType.calculable') : '';
             return (
                 <DescItemLabel
                     value={structureData ? structureData.value : calValue}
@@ -243,10 +253,7 @@ class DescItemStructureRef extends React.Component {
                         disabled={locked}
                         items={this.state.data}
                         onSearchChange={this.handleSearchChange}
-                        onChange={(...x) => {
-                            console.log(x);
-                            onChange(...x);
-                        }}
+                        onChange={onChange}
                         renderItem={
                             descItem.undefined
                                 ? {name: i18n('subNodeForm.descItemType.notIdentified')}

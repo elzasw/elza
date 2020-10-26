@@ -1,16 +1,14 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {reduxForm} from 'redux-form';
+import {Field, reduxForm} from 'redux-form';
 import {i18n} from 'components/shared';
 import {Form} from 'react-bootstrap';
 import {Button} from '../ui';
-import FormInput from '../shared/form/FormInput';
 import {WebApi} from '../../actions/WebApi';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 
 import './TemplateSettingsForm.scss';
-
-const fields = ['evenPageOffsetX', 'evenPageOffsetY', 'oddPageOffsetX', 'oddPageOffsetY'];
+import FormInputField from "../shared/form/FormInputField";
 
 class TemplateSettingsForm extends React.Component {
     static propTypes = {
@@ -30,7 +28,6 @@ class TemplateSettingsForm extends React.Component {
         const {
             handleSubmit,
             submitting,
-            fields: {evenPageOffsetX, evenPageOffsetY, oddPageOffsetX, oddPageOffsetY},
             engine,
             readMode,
         } = this.props;
@@ -42,25 +39,33 @@ class TemplateSettingsForm extends React.Component {
         if (engine && engine === 'JASPER') {
             return (
                 <Form onSubmit={handleSubmit(this.handleSubmit)}>
-                    <FormInput
-                        {...evenPageOffsetX}
-                        {...commonProps}
+                    <Field
+                        name="evenPageOffsetX"
+                        type="text"
+                        component={FormInputField}
                         label={i18n('arr.output.template.oddPageOffsetX')}
-                    />
-                    <FormInput
-                        {...evenPageOffsetY}
                         {...commonProps}
+                    />
+                    <Field
+                        name="evenPageOffsetY"
+                        type="text"
+                        component={FormInputField}
                         label={i18n('arr.output.template.oddPageOffsetY')}
-                    />
-                    <FormInput
-                        {...oddPageOffsetX}
                         {...commonProps}
+                    />
+                    <Field
+                        name="oddPageOffsetX"
+                        type="text"
+                        component={FormInputField}
                         label={i18n('arr.output.template.evenPageOffsetX')}
-                    />
-                    <FormInput
-                        {...oddPageOffsetY}
                         {...commonProps}
+                    />
+                    <Field
+                        name="oddPageOffsetY"
+                        type="text"
+                        component={FormInputField}
                         label={i18n('arr.output.template.evenPageOffsetY')}
+                        {...commonProps}
                     />
                     {!readMode && (
                         <Button
@@ -83,7 +88,6 @@ class TemplateSettingsForm extends React.Component {
 export default reduxForm(
     {
         form: 'templateSettingsForm',
-        fields,
     },
     (state, {outputSettings}) => {
         return {

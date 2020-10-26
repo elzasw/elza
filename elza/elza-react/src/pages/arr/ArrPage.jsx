@@ -200,7 +200,7 @@ class ArrPage extends ArrParentPage {
     wrappedFocus = ref => {
         if (this.refObjects[ref]) {
             this.setState({}, () => {
-                if (this.refObjects[ref].getWrappedInstance().focus()) {
+                if (this.refObjects[ref].focus()) {
                     focusWasSet();
                 }
             });
@@ -1098,7 +1098,11 @@ class ArrPage extends ArrParentPage {
     renderFundFiles(activeFund, readMode) {
         return (
             <FundFiles
-                ref={ref => (this.refObjects['fundFiles'] = ref)}
+                ref={ref => {
+                    if (ref !== null) {
+                        this.refObjects['fundFiles'] = ref;
+                    }
+                }}
                 versionId={activeFund.versionId}
                 fundId={activeFund.id}
                 fundFiles={activeFund.fundFiles}

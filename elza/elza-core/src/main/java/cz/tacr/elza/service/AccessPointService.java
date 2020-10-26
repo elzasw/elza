@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toMap;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,11 +25,13 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
-import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.repository.ApIndexRepository;
-import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
+import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
+import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
+import cz.tacr.elza.controller.vo.SyncsFilterVO;
+import cz.tacr.elza.domain.ExtSyncsQueueItem;
+import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
+import cz.tacr.elza.security.UserDetail;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,10 +48,13 @@ import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
+import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
+import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.usage.FundVO;
@@ -69,6 +75,7 @@ import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
@@ -106,7 +113,9 @@ import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -119,6 +128,7 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.DataRef;
@@ -244,6 +254,9 @@ public class AccessPointService {
     @Autowired
     InstitutionRepository institutionRepository;
 
+    @Autowired
+    private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
+
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
 
@@ -308,7 +321,7 @@ public class AccessPointService {
      * @param id řetězec znaků, id nebo uuid
      * @return ApAccessPoint
      */
-    public ApAccessPoint findAccessPointByIdOrUuid(String id) {
+    public ApAccessPoint getAccessPointByIdOrUuid(String id) {
         ApAccessPoint accessPoint;
         if (!StringUtils.isNumeric(id)) {
             accessPoint = apAccessPointRepository.findApAccessPointByUuid(id);
@@ -316,7 +329,8 @@ public class AccessPointService {
             accessPoint = apAccessPointRepository.findById(Integer.valueOf(id)).orElse(null);
         }
         if (accessPoint == null) {
-            throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST);
+            logger.error("Přístupový bod neexistuje id={}", id);
+            throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).set("id", id);
         }
         return accessPoint;
     }
@@ -356,13 +370,17 @@ public class AccessPointService {
         apDataService.validationNotDeleted(apState);
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
-        checkDeletion(accessPoint);
 
-        ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
-        apState.setDeleteChange(change);
         if (replacedBy != null) {
+            ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
+            apDataService.validationNotDeleted(replacementState);
+            replace(apState, replacementState);
             apState.setReplacedBy(replacedBy);
         }
+        checkDeletion(accessPoint);
+        ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
+        partService.deleteParts(accessPoint, change);
+        apState.setDeleteChange(change);
         apStateRepository.save(apState);
 
         saveWithLock(accessPoint);
@@ -865,7 +883,7 @@ public class AccessPointService {
 
             partService.changeParentPart(apPart, newPart);
 
-            if (apAccessPoint.getPreferredPart().getPartId().equals(apPart.getPartId())) {
+            if (apAccessPoint.getPreferredPartId().equals(apPart.getPartId())) {
                 apAccessPoint.setPreferredPart(newPart);
                 saveWithLock(apAccessPoint);
             }
@@ -909,12 +927,12 @@ public class AccessPointService {
                                     final Map<Integer, List<ApItem>> itemMap,
                                     final boolean async) {
         boolean success = true;
-        ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
+        Integer prefPartId = state.getAccessPoint().getPreferredPartId();
         for (ApPart part : partList) {
             List<ApPart> childrenParts = findChildrenParts(part, partList);
             List<ApItem> items = getItemsForParts(part, childrenParts, itemMap);
 
-            boolean preferred = preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), part.getPartId());
+            boolean preferred = prefPartId == null || Objects.equals(prefPartId, part.getPartId());
             GroovyResult result = groovyService.processGroovy(state, part, childrenParts, items, preferred);
             if (!partService.updatePartValue(part, result, state, async)) {
                 success = false;
@@ -1014,7 +1032,7 @@ public class AccessPointService {
     }
 
     public boolean updatePartValue(final ApPart apPart) {
-        ApState state = getState(apPart.getAccessPoint());
+        ApState state = getStateInternal(apPart.getAccessPoint());
         ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
         List<ApPart> childrenParts = partService.findPartsByParentPart(apPart);
 
@@ -1059,7 +1077,7 @@ public class AccessPointService {
 
         // get ap
         ApAccessPoint accessPoint = getAccessPoint(accessPointId);
-        ApState oldState = getState(accessPoint);
+        ApState oldState = getStateInternal(accessPoint);
 
         // todo[ELZA-1727]
         // return updateState(accessPoint, oldState.getStateApproval(), oldState.getComment(), apTypeId, oldState.getScopeId());
@@ -1216,11 +1234,14 @@ public class AccessPointService {
 
     /**
      * Získání stavu přístupového bodu.
+     * 
+     * Metoda neověřuje uživatelská oprávnění
      *
-     * @param accessPoint přístupový bod
+     * @param accessPoint
+     *            přístupový bod
      * @return stav přístupového bodu
      */
-    public ApState getState(final ApAccessPoint accessPoint) {
+    public ApState getStateInternal(final ApAccessPoint accessPoint) {
         final ApState state = stateRepository.findLastByAccessPoint(accessPoint);
         if (state == null) {
             throw new ObjectNotFoundException("Stav pro přístupový bod neexistuje", BaseCode.INVALID_STATE)
@@ -1383,7 +1404,7 @@ public class AccessPointService {
 
         Validate.notNull(newStateApproval, "AP State is null");
 
-        ApState oldApState = getState(accessPoint);
+        ApState oldApState = getStateInternal(accessPoint);
         apDataService.validationNotDeleted(oldApState);
 
         boolean update = false;
@@ -1610,7 +1631,13 @@ public class AccessPointService {
 //        PageRequest pageRequest = new PageRequest(from, max);
 //        Page<ApState> pageResult = stateRepository.findAll(stateSpecification, pageRequest);
 
-        return searchFilterFactory.createArchiveEntityResultListVO(stateList, stateList.size());
+        final List<ApAccessPoint> accessPoints = stateList.stream()
+                .map(ApState::getAccessPoint)
+                .collect(Collectors.toList());
+
+        final Map<Integer, ApIndex> nameMap = findPreferredPartIndexMap(accessPoints);
+
+        return searchFilterFactory.createArchiveEntityResultListVO(stateList, stateList.size(), nameMap);
     }
 
     public Resource exportCoordinates(FileType fileType, Integer itemId) {
@@ -1692,7 +1719,7 @@ public class AccessPointService {
 
     public void generateSync(final Integer accessPointId) {
         ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
-        ApState apState = getState(accessPoint);
+        ApState apState = getStateInternal(accessPoint);
         List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
@@ -1780,8 +1807,79 @@ public class AccessPointService {
     }
 
     public Map<Integer, ApIndex> findPreferredPartIndexMap(List<ApAccessPoint> accessPoints) {
-        return indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(accessPoints, DISPLAY_NAME).stream()
+        return ObjectListIterator.findIterable(accessPoints,
+                ap -> indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(ap, DISPLAY_NAME)).stream()
                 .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
+    }
+
+    public ApIndex findPreferredPartIndex(ApAccessPoint accessPoint) {
+        return indexRepository.findPreferredPartIndexByAccessPointAndIndexType(accessPoint, DISPLAY_NAME);
+    }
+
+    public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max, String externalSystemCode, SyncsFilterVO filter) {
+        ExtSyncsQueueResultListVO result = new ExtSyncsQueueResultListVO();
+        List<ExtSyncsQueueItem> items = extSyncsQueueItemRepository.findExtSyncsQueueItemsByExternalSystemAndScopesAndState(externalSystemCode, filter.getStates(), filter.getScopes(), from, max);
+
+        result.setTotal(items.size());
+        result.setData(createExtSyncsQueueItemVOList(items));
+        return result;
+    }
+
+    private List<ExtSyncsQueueItemVO> createExtSyncsQueueItemVOList(List<ExtSyncsQueueItem> items) {
+        List<ExtSyncsQueueItemVO> extSyncsQueueItemVOList = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(items)) {
+
+            final List<ApAccessPoint> accessPoints = items.stream()
+                    .map(ExtSyncsQueueItem::getAccessPoint)
+                    .collect(Collectors.toList());
+            final Map<Integer, ApIndex> nameMap = findPreferredPartIndexMap(accessPoints);
+            final Map<Integer, ApState> stateMap = apStateRepository.findLastByAccessPoints(accessPoints).stream()
+                    .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
+
+            for (ExtSyncsQueueItem extSyncsQueueItem : items) {
+                String name = nameMap.get(extSyncsQueueItem.getAccessPointId()) != null ? nameMap.get(extSyncsQueueItem.getAccessPointId()).getValue() : null;
+                ApState state = stateMap.get(extSyncsQueueItem.getAccessPointId());
+                extSyncsQueueItemVOList.add(createExtSyncsQueueItemVO(extSyncsQueueItem, name, state.getScopeId()));
+            }
+        }
+        return extSyncsQueueItemVOList;
+    }
+
+    private ExtSyncsQueueItemVO createExtSyncsQueueItemVO(ExtSyncsQueueItem extSyncsQueueItem, String name, Integer scopeId) {
+        ExtSyncsQueueItemVO extSyncsQueueItemVO = new ExtSyncsQueueItemVO();
+        extSyncsQueueItemVO.setId(extSyncsQueueItem.getExtSyncsQueueItemId());
+        extSyncsQueueItemVO.setAccessPointId(extSyncsQueueItem.getAccessPoint().getAccessPointId());
+        extSyncsQueueItemVO.setAccessPointName(name);
+        extSyncsQueueItemVO.setScopeId(scopeId);
+        extSyncsQueueItemVO.setState(ExtAsyncQueueState.fromValue(extSyncsQueueItem.getState().name()));
+        extSyncsQueueItemVO.setStateMessage(extSyncsQueueItem.getStateMessage());
+        extSyncsQueueItemVO.setDate(extSyncsQueueItem.getDate().toLocalDateTime());
+        return extSyncsQueueItemVO;
+    }
+
+    public void createExtSyncsQueueItem(Integer accessPointId, String externalSystemCode) {
+        ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        ExtSyncsQueueItem extSyncsQueueItem = createExtSyncsQueueItem(accessPoint, apExternalSystem, null,
+                ExtSyncsQueueItem.ExtAsyncQueueState.NEW, OffsetDateTime.now(), userDetail.getUsername());
+        extSyncsQueueItemRepository.save(extSyncsQueueItem);
+    }
+
+    public ExtSyncsQueueItem createExtSyncsQueueItem(final ApAccessPoint accessPoint,
+                                                     final ApExternalSystem apExternalSystem,
+                                                     final String stateMessage,
+                                                     final ExtSyncsQueueItem.ExtAsyncQueueState state,
+                                                     final OffsetDateTime date,
+                                                     final String userName) {
+        ExtSyncsQueueItem extSyncsQueueItem = new ExtSyncsQueueItem();
+        extSyncsQueueItem.setAccessPoint(accessPoint);
+        extSyncsQueueItem.setApExternalSystem(apExternalSystem);
+        extSyncsQueueItem.setStateMessage(stateMessage);
+        extSyncsQueueItem.setState(state);
+        extSyncsQueueItem.setDate(date);
+        extSyncsQueueItem.setUsername(userName);
+        return extSyncsQueueItem;
     }
 
     /**
@@ -1840,5 +1938,61 @@ public class AccessPointService {
     public List<ApAccessPoint> findAccessPointsBySinglePartValues(List<Object> criterias) {
 
         return apAccessPointRepository.findAccessPointsBySinglePartValues(criterias);
+    }
+
+    /**
+     * Get access point state by string
+     * 
+     * @param accessPointId
+     * @return
+     */
+    public ApState getApState(String accessPointId) {
+
+        Validate.notNull(accessPointId, "Identifikátor archivní entity musí být vyplněn");
+
+        if (accessPointId.length() == 36) {
+            ApAccessPoint ap = getAccessPointByUuid(accessPointId);
+            return getApState(ap);
+        } else {
+            try {
+                Integer apId = Integer.parseInt(accessPointId);
+                return getApState(apId);
+            } catch (NumberFormatException nfe) {
+                throw new SystemException("Unrecognized ID format")
+                        .set("ID", accessPointId);
+            }
+        }
+    }
+
+    /**
+     * Získání stavu přístupového bodu.
+     * 
+     * Metoda ověřuje uživatelská oprávnění
+     * 
+     * @param accessPoint
+     * @return
+     */
+    public ApState getApState(ApAccessPoint accessPoint) {
+        ApState apState = getStateInternal(accessPoint);
+        // check permissions
+        AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.AP_SCOPE_RD_ALL)
+                .or(UsrPermission.Permission.AP_SCOPE_RD, apState.getScopeId());
+        userService.authorizeRequest(authRequest);
+
+        return apState;
+
+    }
+
+    /**
+     * Získání stavu přístupového bodu.
+     * 
+     * Metoda ověřuje uživatelská oprávnění
+     * 
+     * @param accessPointId
+     * @return
+     */
+    public ApState getApState(Integer accessPointId) {
+        ApAccessPoint ap = getAccessPointInternal(accessPointId);
+        return getApState(ap);
     }
 }

@@ -54,7 +54,6 @@ class DescItemType extends AbstractReactComponent {
         onCoordinatesDownload: PropTypes.func.isRequired,
         onJsonTableDownload: PropTypes.func.isRequired,
         onCoordinatesUpload: PropTypes.func.isRequired,
-        onCreateRecord: PropTypes.func.isRequired,
         onDetailRecord: PropTypes.func.isRequired,
         onCreatePacket: PropTypes.func.isRequired,
         onCreateFile: PropTypes.func.isRequired,
@@ -74,7 +73,7 @@ class DescItemType extends AbstractReactComponent {
         locked: PropTypes.bool.isRequired,
         hideDelete: PropTypes.bool,
         readMode: PropTypes.bool.isRequired,
-        arrPerm: PropTypes.bool.isRequired,
+        arrPerm: PropTypes.bool,
         notIdentified: PropTypes.bool,
         onDescItemNotIdentified: PropTypes.func,
         closed: PropTypes.bool,
@@ -119,7 +118,6 @@ class DescItemType extends AbstractReactComponent {
             'handleChangeSpec',
             'handleCoordinatesUpload',
             'handleCoordinatesUploadButtonClick',
-            'handleCreateRecord',
             'handleDescItemShortcuts',
             'handleDescItemTypeCopy',
             'handleDescItemTypeCopyFromPrev',
@@ -333,15 +331,6 @@ class DescItemType extends AbstractReactComponent {
     }
 
     /**
-     * Vytvoření nového hesla.
-     *
-     * @param descItemIndex {number} index hodnoty atributu v seznamu
-     */
-    handleCreateRecord(descItemIndex) {
-        this.props.onCreateRecord(descItemIndex);
-    }
-
-    /**
      * Zobrazení detailu rejstříku
      *
      * @param descItemIndex {number} index hodnoty atributu v seznamu
@@ -450,6 +439,11 @@ class DescItemType extends AbstractReactComponent {
     handleDragStart(e) {
         const {fundId, userDetail} = this.props;
 
+        const itemTypeId = parseInt(e.currentTarget.dataset.itemTypeId);
+        if (this.props.descItemType.id === itemTypeId) {
+            e.stopPropagation();
+        }
+
         // Pokud nemá právo na pořádání, nelze provádět akci
         if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId})) {
             return this.cancelDragging(e);
@@ -462,7 +456,13 @@ class DescItemType extends AbstractReactComponent {
 
         // Pokud nekliknul na dragger, nelze přesouvat
         const drgs = e.target.getElementsByClassName('dragger');
-        if (drgs.length !== 1) {
+        const drgsFilter = [];
+        for (const drg of drgs) {
+            if (parseInt(drg.dataset.itemTypeId) === this.props.descItemType.id) {
+                drgsFilter.push(drg);
+            }
+        }
+        if (drgsFilter.length !== 1) {
             return this.cancelDragging(e);
         }
 
@@ -491,10 +491,18 @@ class DescItemType extends AbstractReactComponent {
     }
 
     handleDragEnd(e) {
-        //this.dragged.style.display = "block";
-        this.dragged.style.display = this.prevDraggedStyleDisplay;
 
-        this.removePlaceholder();
+        const itemTypeId = parseInt(e.currentTarget.dataset.itemTypeId);
+        if (this.props.descItemType.id !== itemTypeId) {
+            return;
+        }
+        console.log('continue', this.props.descItemType.id, this.dragged)
+
+        if (this.dragged) {
+            //this.dragged.style.display = "block";
+            this.dragged.style.display = this.prevDraggedStyleDisplay;
+            this.removePlaceholder();
+        }
 
         if (!this.over || !this.dragged) {
             return;
@@ -532,6 +540,13 @@ class DescItemType extends AbstractReactComponent {
 
     handleDragLeave(e) {
         e.preventDefault();
+
+        const itemTypeId = parseInt(e.currentTarget.dataset.itemTypeId);
+        if (this.props.descItemType.id === itemTypeId) {
+            e.stopPropagation();
+            return;
+        }
+
         this.over = null;
         this.dragged && this.removePlaceholder();
         return;
@@ -659,9 +674,6 @@ class DescItemType extends AbstractReactComponent {
                 onDetail: value => {
                     this.handleDetailRecord(descItemIndex, value);
                 },
-                onCreateRecord: value => {
-                    this.handleCreateRecord(descItemIndex);
-                },
             },
             STRUCTURED: {
                 singleDescItemTypeEdit: singleDescItemTypeEdit,
@@ -766,6 +778,8 @@ class DescItemType extends AbstractReactComponent {
         } else {
             dragProps = {
                 'data-id': descItemIndex,
+                'data-item-type-id': descItemType.id,
+                'data-data-type-code': rulDataType.code, // pouze pro orientaci v DOM
                 draggable: infoType.rep === 1,
                 onDragStart: this.handleDragStart,
                 onDragEnd: this.handleDragEnd,
@@ -794,7 +808,7 @@ class DescItemType extends AbstractReactComponent {
                     }}
                 >
                     {!readMode && infoType.rep == 1 && draggable && (
-                        <div className="dragger">
+                        <div className={"dragger"} data-item-type-id={descItemType.id}>
                             <Icon className="up" glyph="fa-angle-up" />
                             <Icon className="down" glyph="fa-angle-down" />
                             &nbsp;
@@ -1264,6 +1278,7 @@ class DescItemType extends AbstractReactComponent {
                 <div
                     ref={ref => (this.refDragOverContainer = ref)}
                     className="desc-item-type-desc-items"
+                    data-item-type-id={descItemType.id}
                     onDragOver={this.handleDragOver}
                     onDragLeave={this.handleDragLeave}
                 >
