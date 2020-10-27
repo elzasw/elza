@@ -3,17 +3,17 @@
  */
 
 import React from 'react';
-import {dateTimeToString} from 'components/Utils.jsx';
+import {dateTimeToString} from '../../components/Utils';
 import {connect} from 'react-redux';
 import {AbstractReactComponent, i18n, StoreHorizontalLoader, Utils} from 'components/shared';
 import FundNodesSelectForm from './FundNodesSelectForm';
 import FundNodesList from './FundNodesList';
 import NodeLabel from './NodeLabel';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx';
-import * as arrRequestActions from 'actions/arr/arrRequestActions';
+import {modalDialogShow} from '../../actions/global/modalDialog';
+import * as arrRequestActions from '../../actions/arr/arrRequestActions';
 import RequestInlineForm from './RequestInlineForm';
 import {DAO, DAO_LINK, DIGITIZATION, getRequestType} from './ArrUtils.jsx';
-import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
+import {refExternalSystemsFetchIfNeeded} from '../../actions/refTables/externalSystems';
 import {FormLabel} from 'react-bootstrap';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
@@ -79,6 +79,7 @@ class ArrRequestDetail extends AbstractReactComponent {
     handleSaveRequest = data => {
         const {versionId, requestDetail} = this.props;
         this.props.dispatch(arrRequestActions.requestEdit(versionId, requestDetail.id, data));
+        return Promise.resolve();
     };
 
     handleAddNodes = () => {
@@ -245,9 +246,8 @@ class ArrRequestDetail extends AbstractReactComponent {
                     {reqType !== DAO_LINK && (
                         <RequestInlineForm
                             disabled={req.state !== 'OPEN'}
-                            reqType={reqType}
-                            initData={req}
-                            onSave={this.handleSaveRequest}
+                            initialValues={req}
+                            asyncValidate={this.handleSaveRequest}
                         />
                     )}
 

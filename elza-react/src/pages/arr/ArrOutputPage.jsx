@@ -672,7 +672,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                     readMode={readMode}
                     outputId={outputId}
                     engine={template.engine}
-                    outputSettings={outputSettings}
+                    initialValues={outputSettings}
                 />
             )
         );

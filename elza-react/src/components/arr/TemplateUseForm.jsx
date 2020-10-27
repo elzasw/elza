@@ -4,7 +4,7 @@ import {AbstractReactComponent, i18n} from 'components/shared';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
-import FormInputField from "../shared/form/FormInputField";
+import FormInputField from '../shared/form/FormInputField';
 
 export const NEW_TEMPLATE = 'new';
 export const EXISTS_TEMPLATE = 'exists';
@@ -28,20 +28,13 @@ class TemplateUseForm extends AbstractReactComponent {
 
     static propTypes = {};
 
-    UNSAFE_componentWillReceiveProps(nextProps) {}
-
     componentDidMount() {}
 
     submitReduxForm = (values, dispatch) =>
         submitForm(TemplateUseForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-        const {
-            handleSubmit,
-            onClose,
-            submitting,
-            templates,
-        } = this.props;
+        const {handleSubmit, onClose, submitting, templates} = this.props;
         return (
             <div className="todo">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
@@ -72,7 +65,9 @@ class TemplateUseForm extends AbstractReactComponent {
                         />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" variant="outline-secondary">{i18n('global.action.use')}</Button>
+                        <Button type="submit" variant="outline-secondary">
+                            {i18n('global.action.use')}
+                        </Button>
                         <Button variant="link" onClick={onClose}>
                             {i18n('global.action.cancel')}
                         </Button>
@@ -87,6 +82,4 @@ TemplateUseForm.defaultProps = {
     templates: [],
 };
 
-export default reduxForm({form: 'templateUseForm'}, null, {
-    load: data => ({type: 'GLOBAL_INIT_FORM_DATA', form: 'templateUseForm', data}),
-})(TemplateUseForm);
+export default reduxForm({form: 'templateUseForm'})(TemplateUseForm);
