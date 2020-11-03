@@ -111,7 +111,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
                     .getBinding()).stream()
                     .collect(Collectors.groupingBy(i -> i.getItem().getPartId()));
             for (ApBindingItem changedPart : changedParts) {
-                Collection<ApItem> itemList = itemMap.getOrDefault(changedPart.getPart().getPartId(), Collections
+                List<ApItem> itemList = itemMap.getOrDefault(changedPart.getPart().getPartId(), Collections
                         .emptyList());
                 List<ApBindingItem> bindingItemList = bindingItemMap.getOrDefault(changedPart.getPart().getPartId(),
                                                                                   new ArrayList<>());
@@ -122,7 +122,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
     }
 
     private List<Object> createChangedPartList(ApBindingItem changedPart,
-                                               Collection<ApItem> itemList,
+                                               List<ApItem> itemList,
                                                List<ApBindingItem> bindingItemList,
                                                String externalSystemTypeCode) {
         List<Object> changes = new ArrayList<>();
@@ -137,6 +137,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
             }
         }
 
+        itemList = filterOutItemsWithoutExtSysMapping(itemList, externalSystemTypeCode);
         if (CollectionUtils.isNotEmpty(itemList)) {
             NewItemsXml newItems = createNewItems(changedPart, itemList, externalSystemTypeCode);
             // some new items does not have to be created
@@ -144,6 +145,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
                 changes.add(newItems);
             }
         }
+        changedItems = filterOutBindingItemsWithoutExtSysMapping(changedItems, externalSystemTypeCode);
         if (CollectionUtils.isNotEmpty(changedItems)) {
             changes.add(createUpdateItems(changedPart, changedItems, externalSystemTypeCode));
         }
