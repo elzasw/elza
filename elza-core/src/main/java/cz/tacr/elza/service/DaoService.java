@@ -175,11 +175,12 @@ public class DaoService {
      *
      * @param dao  digitalizát
      * @param node node
+     * @param scenario jak se připojit k DAO
      * @return nalezené nebo vytvořené propojení
      */
     @Transactional(value = TxType.MANDATORY)
     private ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                          final ArrDao dao, final ArrNode node) {
+                                          final ArrDao dao, final ArrNode node, final String scenario) {
         if (!dao.getValid()) {
             throw new BusinessException("Nelze připojit digitální entitu k JP, protože je nevalidní", ArrangementCode.INVALID_DAO).level(Level.WARNING);
         }
@@ -545,6 +546,6 @@ public class DaoService {
         default:
             throw new SystemException("Unrecognized dao type");
         }
-        return createOrFindDaoLink(fundVersion, dao, linkNode);
+        return createOrFindDaoLink(fundVersion, dao, linkNode, null); // TODO to finished
     }
 }
