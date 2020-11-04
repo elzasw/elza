@@ -183,9 +183,10 @@ public class DaoSyncService {
         public void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
                             MultiplItemChangeContext changeContext) {
             String filtredScenario = getFirstOrGivenScenario(items, scenario);
+            // zadaný scenario nebyl nalezen
             if (scenario != null && filtredScenario == null) {
                 logger.error("Specified scenario={} not found.", scenario);
-                throw new RuntimeException("Specified scenario not found");
+                throw new BusinessException("Specified scenario not found", PackageCode.SCENARIO_NOT_FOUND);
             }
 
             for (Object item : getFiltredItems(items, filtredScenario)) {
@@ -203,14 +204,16 @@ public class DaoSyncService {
         }
 
         private List<Object> getFiltredItems(Items items, String scenario) {
+            // items neobsahují scenario
             if (scenario == null) {
                 return items.getStrOrLongOrEnm();
             }
+            // vybereme items daného scénáře
             boolean filterOn = false;
             List<Object> filtredItems = new ArrayList<>();
             for (Object item : items.getStrOrLongOrEnm()) {
                 if (isScenario(item)) {
-                    filterOn = getScenarioValue(item).equals(scenario);
+                    filterOn = getItemStringValue(item).equals(scenario);
                 }
                 if (filterOn) {
                     filtredItems.add(item);
@@ -223,9 +226,9 @@ public class DaoSyncService {
             for (Object item : items.getStrOrLongOrEnm()) {
                 if (isScenario(item)) {
                     if (scenario == null) {
-                        return getScenarioValue(item);
+                        return getItemStringValue(item);
                     } else {
-                        if (getScenarioValue(item).equals(scenario)) {
+                        if (getItemStringValue(item).equals(scenario)) {
                             return scenario;
                         }
                     }
@@ -241,7 +244,7 @@ public class DaoSyncService {
             return false;
         }
 
-        private String getScenarioValue(Object item) {
+        private String getItemStringValue(Object item) {
             if (item instanceof ItemString) {
                 return ((ItemString) item).getValue();
             }
