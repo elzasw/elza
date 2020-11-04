@@ -236,21 +236,6 @@ public class DaoSyncService {
             }
             return null;
         }
-
-        private boolean isScenario(Object item) {
-            if (item instanceof ItemString) {
-                return ((ItemString) item).getType().equals("_ELZA_SCENARIO");
-            }
-            return false;
-        }
-
-        private String getItemStringValue(Object item) {
-            if (item instanceof ItemString) {
-                return ((ItemString) item).getValue();
-            }
-            return null;
-        }
-
     }
 
     // --- methods ---
@@ -642,18 +627,50 @@ public class DaoSyncService {
     }
 
     public DesctItemProvider createDescItemProvider(ArrDao dao) {
-        String attrs = dao.getAttributes();
+        Items items = unmarshalItemsFromAttributes(dao.getAttributes(), dao.getDaoId());
+        if (items == null) {
+            return null;
+        }
+        return new DaoDesctItemProvider(items, null); // TODO use scenario
+    }
+
+    public Items unmarshalItemsFromAttributes(String attrs, Integer daoId) {
         if (StringUtils.isBlank(attrs)) {
             return null;
         }
         try (StringReader reader = new StringReader(attrs)) {
             Unmarshaller unmar = jaxItemsContext.createUnmarshaller();
             JAXBElement<Items> items = unmar.unmarshal(new StreamSource(reader), Items.class);
-            return new DaoDesctItemProvider(items.getValue(), null); // TODO use scenario
+            return items.getValue();
         } catch (JAXBException e) {
             logger.error("Failed to unmarshall attributes: {}, exception: ", attrs, e);
             throw new BusinessException("Neplatné atributy dao objektu", PackageCode.PARSE_ERROR)
-                    .set("attributes", attrs).set("daoId", dao.getDaoId());
+                    .set("attributes", attrs).set("daoId", daoId);
         }
     }
+
+    public List<String> findAllScenarios(Items items) {
+        List<String> scenarios = new ArrayList<>();
+        for (Object item : items.getStrOrLongOrEnm()) {
+            if (isScenario(item)) {
+                scenarios.add(getItemStringValue(item));
+            }
+        }
+        return scenarios;
+    }
+
+    private boolean isScenario(Object item) {
+        if (item instanceof ItemString) {
+            return ((ItemString) item).getType().equals("_ELZA_SCENARIO");
+        }
+        return false;
+    }
+
+    private String getItemStringValue(Object item) {
+        if (item instanceof ItemString) {
+            return ((ItemString) item).getValue();
+        }
+        return null;
+    }
+
 }
