@@ -204,7 +204,7 @@ public class DaoSyncService {
         }
 
         private List<Object> getFiltredItems(Items items, String scenario) {
-            // items neobsahují scenario
+            // items neobsahují název scénáře
             if (scenario == null) {
                 return items.getStrOrLongOrEnm();
             }
@@ -214,9 +214,10 @@ public class DaoSyncService {
             for (Object item : items.getStrOrLongOrEnm()) {
                 if (isScenario(item)) {
                     filterOn = getItemStringValue(item).equals(scenario);
-                }
-                if (filterOn) {
-                    filtredItems.add(item);
+                } else { // název scénáře se neuloží do seznamu
+                    if (filterOn) {
+                        filtredItems.add(item);
+                    }
                 }
             }
             return filtredItems;
