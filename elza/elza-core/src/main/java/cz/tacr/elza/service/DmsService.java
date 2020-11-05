@@ -55,7 +55,6 @@ import cz.tacr.elza.service.exception.DeleteFailedException;
 /**
  * Dms Service
  *
- * @author Petr Compel <petr.compel@marbes.cz>
  * @since 20.6.2016
  */
 @Service
@@ -77,9 +76,6 @@ public class DmsService {
 
     @Autowired
     private OutputFileRepository outputFileRepository;
-
-    @Autowired
-    private OutputResultRepository outputResultRepository;
 
     @Autowired
     private EventNotificationService eventNotificationService;
