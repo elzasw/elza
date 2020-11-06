@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -295,15 +296,8 @@ public class DmsService {
 
         fileRepository.delete(dmsFile);
 
-        deleteFileFS(dmsFile);
+        deleteFilesAfterCommit(Arrays.asList((ArrOutputFile) dmsFile));
         publishFileChange(dmsFile);
-    }
-
-    public void deleteFileFS(final DmsFile dmsFile) {
-        File outputFile = getFilePath(dmsFile).toFile();
-        if (outputFile.exists() && !outputFile.delete()) {
-            throw new SystemException("Nelze odstranit existující soubor");
-        }
     }
 
     /**
@@ -311,7 +305,7 @@ public class DmsService {
      * 
      * @param files seznam souborů ke smazání
      */
-    public void deleteFilesAfterCommit(List<DmsFile> files) {
+    public void deleteFilesAfterCommit(List<ArrOutputFile> files) {
 
         // prepare list of files
         List<File> filesToDelete = files.stream()
