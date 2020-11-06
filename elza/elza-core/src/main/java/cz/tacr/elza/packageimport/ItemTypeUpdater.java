@@ -145,15 +145,19 @@ public class ItemTypeUpdater {
     /**
      * Porovnávání typů sloupců.
      *
-     * @param elzaColumnList porovnávaný list ElzaColumn
-     * @param columnList     porovnávaný list Column
+     * @param elzaColumnList
+     *            porovnávaný list ElzaColumn (stávající v DB)
+     * @param columnList
+     *            porovnávaný list Column
      * @return jsou změněný neměnitelný položky?
      */
-    private boolean equalsColumns(final List<ElzaColumn> elzaColumnList, final List<Column> columnList) {
-        if (elzaColumnList.size() != columnList.size()) {
+    private boolean canUpdateColumns(final List<ElzaColumn> elzaColumnList, final List<Column> columnList) {
+        // kontrola, zda sloupce neubyly
+        if (elzaColumnList.size() > columnList.size()) {
             return false;
         }
 
+        // porovnání stávající definice
         for (int i = 0; i < elzaColumnList.size(); i++) {
             ElzaColumn elzaColumn = elzaColumnList.get(i);
             Column column = columnList.get(i);
@@ -461,7 +465,7 @@ public class ItemTypeUpdater {
         if (viewDefinition != null) {
             switch (currDataType) {
                 case JSON_TABLE: {
-                    if (!equalsColumns((List<ElzaColumn>) viewDefinition, itemType.getColumnsDefinition())) {
+                    if (!canUpdateColumns((List<ElzaColumn>) viewDefinition, itemType.getColumnsDefinition())) {
                         long countDescItems = countUsage(dbItemType);
                         if (countDescItems > 0L) {
                             throw new SystemException("Nelze změnit definici sloupců (datový typ a kód) u typu "
