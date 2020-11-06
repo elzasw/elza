@@ -648,9 +648,7 @@ public class OutputServiceInternal {
         for (ArrOutputResult outputResult : outputResults) {
             List<ArrOutputFile> outputFiles = outputResult.getOutputFiles();
             if (outputFiles != null && !outputFiles.isEmpty()) {
-                for (ArrOutputFile outputFile : outputFiles) {
-                    dmsService.deleteFileFS(outputFile);
-                }
+                dmsService.deleteFilesAfterCommit(outputFiles);
                 outputFileRepository.deleteAll(outputFiles);
             }
             outputResultRepository.delete(outputResult);
