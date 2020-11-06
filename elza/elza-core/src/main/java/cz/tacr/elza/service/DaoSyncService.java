@@ -9,6 +9,7 @@ import static java.util.stream.Collectors.toSet;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +81,7 @@ import cz.tacr.elza.ws.types.v1.File;
 import cz.tacr.elza.ws.types.v1.FileGroup;
 import cz.tacr.elza.ws.types.v1.Folder;
 import cz.tacr.elza.ws.types.v1.FolderGroup;
+import cz.tacr.elza.ws.types.v1.ItemString;
 import cz.tacr.elza.ws.types.v1.Items;
 import cz.tacr.elza.ws.types.v1.NonexistingDaos;
 import cz.tacr.elza.ws.types.v1.ObjectFactory;
@@ -169,15 +172,24 @@ public class DaoSyncService {
     protected class DaoDesctItemProvider implements DesctItemProvider {
 
         private Items items;
+        private String scenario;
 
-        public DaoDesctItemProvider(Items items) {
+        public DaoDesctItemProvider(Items items, String scenario) {
             this.items = items;
+            this.scenario = scenario;
         }
 
         @Override
         public void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
                             MultiplItemChangeContext changeContext) {
-            for (Object item : items.getStrOrLongOrEnm()) {
+            String filtredScenario = getFirstOrGivenScenario(items, scenario);
+            // zadaný scenario nebyl nalezen
+            if (scenario != null && filtredScenario == null) {
+                logger.error("Specified scenario={} not found.", scenario);
+                throw new BusinessException("Specified scenario not found", PackageCode.SCENARIO_NOT_FOUND);
+            }
+
+            for (Object item : getFiltredItems(items, filtredScenario)) {
                 ArrDescItem descItem = prepare(item);
                 descriptionItemService.createDescriptionItemInBatch(descItem,
                                                                     level.getNode(), fundVersion, change,
@@ -191,7 +203,41 @@ public class DaoSyncService {
             return di;
         }
 
-    };
+        private List<Object> getFiltredItems(Items items, String scenario) {
+            // items neobsahují název scénáře
+            if (scenario == null) {
+                return items.getStrOrLongOrEnm();
+            }
+            // vybereme items daného scénáře
+            boolean filterOn = false;
+            List<Object> filtredItems = new ArrayList<>();
+            for (Object item : items.getStrOrLongOrEnm()) {
+                if (isScenario(item)) {
+                    filterOn = getItemStringValue(item).equals(scenario);
+                } else { // název scénáře se neuloží do seznamu
+                    if (filterOn) {
+                        filtredItems.add(item);
+                    }
+                }
+            }
+            return filtredItems;
+        }
+
+        private String getFirstOrGivenScenario(Items items, String scenario) {
+            for (Object item : items.getStrOrLongOrEnm()) {
+                if (isScenario(item)) {
+                    if (scenario == null) {
+                        return getItemStringValue(item);
+                    } else {
+                        if (getItemStringValue(item).equals(scenario)) {
+                            return scenario;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+    }
 
     // --- methods ---
 
@@ -582,18 +628,50 @@ public class DaoSyncService {
     }
 
     public DesctItemProvider createDescItemProvider(ArrDao dao) {
-        String attrs = dao.getAttributes();
+        Items items = unmarshalItemsFromAttributes(dao.getAttributes(), dao.getDaoId());
+        if (items == null) {
+            return null;
+        }
+        return new DaoDesctItemProvider(items, null); // TODO use scenario
+    }
+
+    public Items unmarshalItemsFromAttributes(String attrs, Integer daoId) {
         if (StringUtils.isBlank(attrs)) {
             return null;
         }
         try (StringReader reader = new StringReader(attrs)) {
             Unmarshaller unmar = jaxItemsContext.createUnmarshaller();
             JAXBElement<Items> items = unmar.unmarshal(new StreamSource(reader), Items.class);
-            return new DaoDesctItemProvider(items.getValue());
+            return items.getValue();
         } catch (JAXBException e) {
             logger.error("Failed to unmarshall attributes: {}, exception: ", attrs, e);
             throw new BusinessException("Neplatné atributy dao objektu", PackageCode.PARSE_ERROR)
-                    .set("attributes", attrs).set("daoId", dao.getDaoId());
+                    .set("attributes", attrs).set("daoId", daoId);
         }
     }
+
+    public List<String> findAllScenarios(Items items) {
+        List<String> scenarios = new ArrayList<>();
+        for (Object item : items.getStrOrLongOrEnm()) {
+            if (isScenario(item)) {
+                scenarios.add(getItemStringValue(item));
+            }
+        }
+        return scenarios;
+    }
+
+    private boolean isScenario(Object item) {
+        if (item instanceof ItemString) {
+            return ((ItemString) item).getType().equals("_ELZA_SCENARIO");
+        }
+        return false;
+    }
+
+    private String getItemStringValue(Object item) {
+        if (item instanceof ItemString) {
+            return ((ItemString) item).getValue();
+        }
+        return null;
+    }
+
 }

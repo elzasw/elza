@@ -640,6 +640,34 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
+rule "Druh archiválie možný u logické podřízené složky pod mnozstevni"
+no-loop
+when 
+    $activeLevel: ActiveLevel( )
+    // jedna se o logickou slozku
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_LOGICAL" ) from $activeLevel.ownDescItems
+    // je pod hromadnou slozkou
+    $level : Level( this!=$activeLevel )
+    DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS" ) ) ) from $level.descItems
+    $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_TYPE") )
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Počet ej povinný na složce s uvedením druhu archivalie"
+salience -100
+no-loop
+when 
+    $activeLevel: ActiveLevel( )
+    // jedna se o logickou slozku
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode=="ZP2015_FOLDER_LOGICAL" ) from $activeLevel.ownDescItems
+    // ma uveden typ archivalie
+    DescItem(type=="ZP2015_UNIT_TYPE" ) from $activeLevel.ownDescItems
+    $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_COUNT") )
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
 // U složky man. seznamu lze vybrat skoro libovolny typ jendotlivosti
 // Nelze vybrat cast jednotlivosti
 rule "Druh archiválie - složka MAN a Starsi pomucky"

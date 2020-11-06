@@ -997,4 +997,10 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20201016163000" author="sergey.iryupin">
+      <addColumn tableName="arr_dao_link">
+        <column name="scenario" type="nvarchar(250)" />
+      </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

@@ -9,15 +9,22 @@ import cz.tacr.elza.domain.ArrDaoLink;
 public class ArrDaoLinkVO {
     private Integer id;
     private TreeNodeVO treeNodeClient;
+    private String scenario;
 
     public ArrDaoLinkVO() {
-
     }
 
     public ArrDaoLinkVO(final Integer id,
                         final TreeNodeVO treeNodeClient) {
         this.id = id;
         this.treeNodeClient = treeNodeClient;
+    }
+
+    public ArrDaoLinkVO(final Integer id,
+                        final TreeNodeVO treeNodeClient, final String scenario) {
+        this.id = id;
+        this.treeNodeClient = treeNodeClient;
+        this.scenario = scenario;
     }
 
     public ArrDaoLinkVO(final ArrDaoLink daoLink) {
@@ -38,6 +45,14 @@ public class ArrDaoLinkVO {
 
     public void setTreeNodeClient(TreeNodeVO treeNodeClient) {
         this.treeNodeClient = treeNodeClient;
+    }
+
+    public String getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(String scenario) {
+        this.scenario = scenario;
     }
 
     public static ArrDaoLinkVO newInstance(ArrDaoLink daoLink) {

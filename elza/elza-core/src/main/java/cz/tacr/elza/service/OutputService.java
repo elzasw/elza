@@ -267,14 +267,7 @@ public class OutputService {
         // reset previous error
         output.setError(null);
 
-        List<ArrOutputResult> outputResults = output.getOutputResults();
-        for (ArrOutputResult outputResult : outputResults) {
-            List<ArrOutputFile> outputFiles = outputResult.getOutputFiles();
-            if (outputFiles != null && !outputFiles.isEmpty()) {
-                outputFileRepository.deleteAll(outputFiles);
-            }
-            outputResultRepository.delete(outputResult);
-        }
+        outputServiceInternal.deleteOutputResults(output);
 
         EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, output.getOutputId());
         eventNotificationService.publishEvent(event);
