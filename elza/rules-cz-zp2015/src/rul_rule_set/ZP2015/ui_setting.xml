@@ -193,6 +193,8 @@
                 <type code="ZP2015_NOTE" width="0"/>
                 <type code="ZP2015_ATTACHMENT" width="2"/>
                 <type code="ZP2015_ITEM_LINK" width="0"/>
+                <!-- Prvky pro vystup -->
+                <type code="ZP2015_UNIT_COUNT_TABLE" width="3"/>
             </group>
             <!-- Items from CAM -->
             <group code="09_CAM">
