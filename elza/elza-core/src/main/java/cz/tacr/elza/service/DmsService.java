@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -22,8 +23,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.common.AutoDeletingTempFile;
@@ -56,6 +61,8 @@ import cz.tacr.elza.service.exception.DeleteFailedException;
  */
 @Service
 public class DmsService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DaoSyncService.class);
 
     public static final String MIME_TYPE_APPLICATION_PDF = "application/pdf";
 
@@ -297,6 +304,31 @@ public class DmsService {
         if (outputFile.exists() && !outputFile.delete()) {
             throw new SystemException("Nelze odstranit existující soubor");
         }
+    }
+
+    /**
+     * Smazání seznam souborů po commitu
+     * 
+     * @param files seznam souborů ke smazání
+     */
+    public void deleteFilesAfterCommit(List<DmsFile> files) {
+
+        // prepare list of files
+        List<File> filesToDelete = files.stream()
+            .map(p -> getFilePath(p).toFile())
+            .collect(Collectors.toList());
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                for (File file : filesToDelete) {
+                    logger.debug("Mažu soubor na disku: {}", file);
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                }
+            }
+        });
     }
 
     /**
