@@ -34,7 +34,6 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.SystemException;
@@ -44,8 +43,6 @@ import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputFileRepository;
-import cz.tacr.elza.repository.OutputResultRepository;
-import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStringInVersion;
@@ -80,9 +77,6 @@ public class DmsService {
     @Autowired
     private EventNotificationService eventNotificationService;
     
-    @Autowired
-    private UserService userService;
-
     /**
      * Uloží DMS soubor se streamem a publishne event
      *
@@ -260,7 +254,9 @@ public class DmsService {
      * @param fund archivní soubor
      * @throws IOException
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR,
+            UsrPermission.Permission.FUND_ARR_ALL,
+            UsrPermission.Permission.FUND_ADMIN })
     public void deleteArrFile(final ArrFile file,
                               @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) throws IOException {
         deleteFile(file);
@@ -273,8 +269,12 @@ public class DmsService {
      * @param outputFileId ID
      * @throws IOException
      */
-    public void deleteOutputFile(final Integer outputFileId) throws IOException {
-        deleteFile(outputFileRepository.getOneCheckExist(outputFileId));
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR,
+            UsrPermission.Permission.FUND_ARR_ALL,
+            UsrPermission.Permission.FUND_ADMIN })
+    public void deleteOutputFile(final ArrOutputFile outputFile,
+                                 @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) throws IOException {
+        deleteFile(outputFile);
     }
 
     /**
@@ -283,7 +283,7 @@ public class DmsService {
      * @param dmsFile DMS soubor ke smazání
      * @throws IOException
      */
-    public void deleteFile(final DmsFile dmsFile) throws IOException {
+    public void deleteFile(final DmsFile dmsFile) {
         Assert.notNull(dmsFile, "Soubor musí být vyplněn");
 
         fileRepository.delete(dmsFile);
@@ -482,14 +482,14 @@ public class DmsService {
         return fundFileRepository.getOneCheckExist(fileId);
     }
 
+    public ArrOutputFile getOutputFile(Integer fileId) {
+        return outputFileRepository.getOneCheckExist(fileId);
+    }
+
     public void deleteFilesByFund(final ArrFund fund) {
         List<ArrFile> files = fundFileRepository.findByFund(fund);
         for (ArrFile file : files) {
-            try {
-                deleteFile(file);
-            } catch (IOException e) {
-                throw new DeleteFailedException("Nepodařilo se smazat přílohu: " + file.getName(), e);
-            }
+            deleteFile(file);
         }
     }
 }
