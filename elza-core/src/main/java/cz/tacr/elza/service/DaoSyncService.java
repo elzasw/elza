@@ -183,9 +183,10 @@ public class DaoSyncService {
         public void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
                             MultiplItemChangeContext changeContext) {
             String filtredScenario = getFirstOrGivenScenario(items, scenario);
+            // zadaný scenario nebyl nalezen
             if (scenario != null && filtredScenario == null) {
                 logger.error("Specified scenario={} not found.", scenario);
-                throw new RuntimeException("Specified scenario not found");
+                throw new BusinessException("Specified scenario not found", PackageCode.SCENARIO_NOT_FOUND);
             }
 
             for (Object item : getFiltredItems(items, filtredScenario)) {
@@ -203,17 +204,20 @@ public class DaoSyncService {
         }
 
         private List<Object> getFiltredItems(Items items, String scenario) {
+            // items neobsahují název scénáře
             if (scenario == null) {
                 return items.getStrOrLongOrEnm();
             }
+            // vybereme items daného scénáře
             boolean filterOn = false;
             List<Object> filtredItems = new ArrayList<>();
             for (Object item : items.getStrOrLongOrEnm()) {
                 if (isScenario(item)) {
-                    filterOn = getScenarioValue(item).equals(scenario);
-                }
-                if (filterOn) {
-                    filtredItems.add(item);
+                    filterOn = getItemStringValue(item).equals(scenario);
+                } else { // název scénáře se neuloží do seznamu
+                    if (filterOn) {
+                        filtredItems.add(item);
+                    }
                 }
             }
             return filtredItems;
@@ -223,9 +227,9 @@ public class DaoSyncService {
             for (Object item : items.getStrOrLongOrEnm()) {
                 if (isScenario(item)) {
                     if (scenario == null) {
-                        return getScenarioValue(item);
+                        return getItemStringValue(item);
                     } else {
-                        if (getScenarioValue(item).equals(scenario)) {
+                        if (getItemStringValue(item).equals(scenario)) {
                             return scenario;
                         }
                     }
@@ -233,21 +237,6 @@ public class DaoSyncService {
             }
             return null;
         }
-
-        private boolean isScenario(Object item) {
-            if (item instanceof ItemString) {
-                return ((ItemString) item).getType().equals("_ELZA_SCENARIO");
-            }
-            return false;
-        }
-
-        private String getScenarioValue(Object item) {
-            if (item instanceof ItemString) {
-                return ((ItemString) item).getValue();
-            }
-            return null;
-        }
-
     }
 
     // --- methods ---
@@ -639,18 +628,50 @@ public class DaoSyncService {
     }
 
     public DesctItemProvider createDescItemProvider(ArrDao dao) {
-        String attrs = dao.getAttributes();
+        Items items = unmarshalItemsFromAttributes(dao.getAttributes(), dao.getDaoId());
+        if (items == null) {
+            return null;
+        }
+        return new DaoDesctItemProvider(items, null); // TODO use scenario
+    }
+
+    public Items unmarshalItemsFromAttributes(String attrs, Integer daoId) {
         if (StringUtils.isBlank(attrs)) {
             return null;
         }
         try (StringReader reader = new StringReader(attrs)) {
             Unmarshaller unmar = jaxItemsContext.createUnmarshaller();
             JAXBElement<Items> items = unmar.unmarshal(new StreamSource(reader), Items.class);
-            return new DaoDesctItemProvider(items.getValue(), null); // TODO use scenario
+            return items.getValue();
         } catch (JAXBException e) {
             logger.error("Failed to unmarshall attributes: {}, exception: ", attrs, e);
             throw new BusinessException("Neplatné atributy dao objektu", PackageCode.PARSE_ERROR)
-                    .set("attributes", attrs).set("daoId", dao.getDaoId());
+                    .set("attributes", attrs).set("daoId", daoId);
         }
     }
+
+    public List<String> findAllScenarios(Items items) {
+        List<String> scenarios = new ArrayList<>();
+        for (Object item : items.getStrOrLongOrEnm()) {
+            if (isScenario(item)) {
+                scenarios.add(getItemStringValue(item));
+            }
+        }
+        return scenarios;
+    }
+
+    private boolean isScenario(Object item) {
+        if (item instanceof ItemString) {
+            return ((ItemString) item).getType().equals("_ELZA_SCENARIO");
+        }
+        return false;
+    }
+
+    private String getItemStringValue(Object item) {
+        if (item instanceof ItemString) {
+            return ((ItemString) item).getValue();
+        }
+        return null;
+    }
+
 }
