@@ -1,6 +1,3 @@
-/**
- * Formulář synchronizace DAOS na AS.
- */
 import React from 'react';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {Form, Modal} from 'react-bootstrap';

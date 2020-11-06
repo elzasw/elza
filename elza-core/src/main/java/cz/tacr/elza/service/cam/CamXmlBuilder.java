@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.domain.RulItemSpec;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
 
@@ -111,6 +113,7 @@ abstract public class CamXmlBuilder {
         if (CollectionUtils.isNotEmpty(partList)) {
             for (ApPart part : partList) {
                 List<ApItem> partItems = itemMap.get(part.getPartId());
+                partItems = filterOutItemsWithoutExtSysMapping(partItems, externalSystemTypeCode);
                 if (CollectionUtils.isEmpty(partItems)) {
                     continue;
                 }
@@ -209,5 +212,74 @@ abstract public class CamXmlBuilder {
             onPartCreated(apPart, uuid);
         }
         return uuid;
+    }
+
+    /**
+     * Metoda odfiltruje itemy, které nemají mapování v externím systému
+     *
+     * @param itemList itemy k filtrování
+     * @param externalSystemTypeCode kód typu externího systému
+     * @return kolekce itemů k poslání do externího systému
+     */
+    protected List<ApItem> filterOutItemsWithoutExtSysMapping(List<ApItem> itemList, String externalSystemTypeCode) {
+        List<ApItem> filteredItems = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(itemList)) {
+            for (ApItem item : itemList) {
+                if (doesItemHaveExtSysMapping(item, externalSystemTypeCode)) {
+                    filteredItems.add(item);
+                }
+            }
+        }
+
+        return filteredItems;
+    }
+
+    /**
+     * Metoda odfiltruje itemy, které nemají mapování v externím systému
+     *
+     * @param itemList itemy k filtrování
+     * @param externalSystemTypeCode kód typu externího systému
+     * @return kolekce itemů k poslání do externího systému
+     */
+    protected List<ApBindingItem> filterOutBindingItemsWithoutExtSysMapping(List<ApBindingItem> itemList, String externalSystemTypeCode) {
+        List<ApBindingItem> filteredItems = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(itemList)) {
+            for (ApBindingItem bindingItem : itemList) {
+                ApItem item = bindingItem.getItem();
+                if (doesItemHaveExtSysMapping(item, externalSystemTypeCode)) {
+                    filteredItems.add(bindingItem);
+                }
+            }
+        }
+
+        return filteredItems;
+    }
+
+    /**
+     * Metoda ověří zda-li má typ a specifikace itemu mapování do externího systému
+     *
+     * @param item item k filtrování
+     * @param externalSystemTypeCode kód typu externího systému
+     * @return
+     */
+    protected boolean doesItemHaveExtSysMapping(ApItem item, String externalSystemTypeCode) {
+        ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
+
+        String camItemTypeCode = groovyService.findItemTypeCode(externalSystemTypeCode, itemType.getCode(), scope.getRuleSetId());
+        if (camItemTypeCode == null) {
+            return false;
+        }
+
+        if (item.getItemSpecId() != null) {
+            RulItemSpec itemSpec = itemType.getItemSpecById(item.getItemSpecId());
+            String camItemSpecCode = groovyService.findItemSpecCode(externalSystemTypeCode, itemSpec.getCode(), scope.getRuleSetId());
+            if (camItemSpecCode == null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

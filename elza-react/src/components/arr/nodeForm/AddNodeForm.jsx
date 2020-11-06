@@ -765,7 +765,6 @@ class AddNodeForm extends AbstractReactComponent {
                         fund={fund}
                         cutLongLabels={true}
                         versionId={fund.versions[0].id || 0}
-                        ref="treeCopy"
                         {...fundTreeCopy}
                     />
                 )}

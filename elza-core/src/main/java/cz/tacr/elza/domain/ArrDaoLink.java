@@ -11,6 +11,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import cz.tacr.elza.domain.enumeration.StringLength;
+
 
 /**
  * Digitální archivní objekt (digitalizát).
@@ -60,6 +62,9 @@ public class ArrDaoLink {
 
     @Column(name = FIELD_DELETE_CHANGE_ID, updatable = false, insertable = false)
     private Integer deleteChangeId;
+
+    @Column(length = StringLength.LENGTH_250)
+    private String scenario;
 
     public Integer getDaoLinkId() {
         return daoLinkId;
@@ -141,5 +146,13 @@ public class ArrDaoLink {
                                 final Integer createChangeId) {
         this.createChange = createChange;
         this.createChangeId = createChangeId;
+    }
+
+    public String getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(String scenario) {
+        this.scenario = scenario;
     }
 }

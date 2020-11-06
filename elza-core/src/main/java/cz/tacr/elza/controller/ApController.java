@@ -681,6 +681,8 @@ public class ApController {
                            @RequestBody final ApPartFormVO apPartFormVO) {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
+        ApState state = accessPointService.getStateInternal(apAccessPoint);
+        accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
         accessPointService.generateSync(accessPointId, apPart);
     }
@@ -699,6 +701,8 @@ public class ApController {
                            @RequestBody final ApPartFormVO apPartFormVO) {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
+        ApState state = accessPointService.getStateInternal(apAccessPoint);
+        accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.getPart(partId);
         accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO);
     }
@@ -716,6 +720,8 @@ public class ApController {
                            @PathVariable final Integer partId) {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
+        ApState state = accessPointService.getStateInternal(apAccessPoint);
+        accessPointService.hasPermissionForEditingConfirmed(state);
         partService.deletePart(apAccessPoint, partId);
         accessPointService.generateSync(accessPointId);
     }
@@ -733,6 +739,8 @@ public class ApController {
                               @PathVariable final Integer partId) {
         ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
                 .orElseThrow(ap(accessPointId));
+        ApState state = accessPointService.getStateInternal(apAccessPoint);
+        accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.getPart(partId);
         accessPointService.setPreferName(apAccessPoint, apPart);
     }
