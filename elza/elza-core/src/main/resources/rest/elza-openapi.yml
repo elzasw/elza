@@ -150,31 +150,6 @@ paths:
           description: Potvrzení o úspěšném odstranění
         404:
           description: AP neexistuje
-  /daos/{id}/scenarios/:
-    get:
-      summary: Získání možných scénářů pro napojení dao
-      operationId: getLinkScenarios
-      tags:
-        - daos
-      parameters:
-        - name: id
-          description: Identifikátor dao
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-      responses:
-        200:
-          description: Seznam scénářů
-          content:
-            'application/json':
-              schema:
-                type: array
-                items:
-                  type: string  
-        404:
-          description: Dao neexistuje
   /daos/{id}/change-scenario:
     post:
       summary: Změna scénáře napojení dao
