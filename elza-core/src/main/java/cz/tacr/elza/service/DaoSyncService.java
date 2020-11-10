@@ -650,7 +650,7 @@ public class DaoSyncService {
         }
     }
 
-    public List<String> findAllScenarios(Items items) {
+    public List<String> getAllScenarioNames(Items items) {
         List<String> scenarios = new ArrayList<>();
         for (Object item : items.getStrOrLongOrEnm()) {
             if (isScenario(item)) {

@@ -182,10 +182,12 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.DaoService;
+import cz.tacr.elza.service.DaoSyncService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.attachment.AttachmentService;
+import cz.tacr.elza.ws.types.v1.Items;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
@@ -204,6 +206,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private DaoService daoService;
+
+    @Autowired
+    private DaoSyncService daoSyncService;
 
     @Autowired
     private ScopeRepository scopeRepository;
@@ -1856,10 +1861,19 @@ public class ClientFactoryVO {
      * @param version
      * @return vo
      */
-    private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail, final ArrFundVersion version) {
-        MapperFacade mapper = mapperFactory.getMapperFacade();
+    private ArrDaoVO createDao(final ArrDao arrDao, final boolean detail,
+                               final ArrFundVersion version) {
+        // read scenarios
+        String attrs = arrDao.getAttributes();
+        List<String> scenarios = null;
+        if (attrs != null) {
+            Items items = daoSyncService.unmarshalItemsFromAttributes(attrs, arrDao.getDaoId());
+            if (items != null) {
+                scenarios = daoSyncService.getAllScenarioNames(items);
+            }
+        }
 
-        ArrDaoVO vo = ArrDaoVO.newInstance(arrDao);
+        ArrDaoVO vo = ArrDaoVO.newInstance(arrDao, scenarios);
 
         ArrDigitalRepository digitalRepository = arrDao.getDaoPackage().getDigitalRepository();
         String url = daoService.getDaoUrl(arrDao, digitalRepository);
@@ -1902,17 +1916,23 @@ public class ClientFactoryVO {
     }
 
     public ArrDaoLinkVO createDaoLink(ArrDaoLink daoLink, ArrFundVersion version) {
-        return createDaoLink(daoLink.getDaoLinkId(), daoLink.getNodeId(), version.getFundVersionId());
+        return createDaoLink(daoLink.getDaoLinkId(),
+                             daoLink.getNodeId(),
+                             daoLink.getScenario(),
+                             version.getFundVersionId());
     }
 
     @Transactional
-    public ArrDaoLinkVO createDaoLink(Integer daoLinkId, Integer nodeId, Integer fundVersionId) {
+    public ArrDaoLinkVO createDaoLink(Integer daoLinkId,
+                                      Integer nodeId,
+                                      String scenario,
+                                      Integer fundVersionId) {
 
         final List<TreeNodeVO> nodesByIds = levelTreeCacheService
                 .getNodesByIds(Collections.singletonList(nodeId),
                                fundVersionId);
 
-        return new ArrDaoLinkVO(daoLinkId, nodesByIds.get(0));
+        return new ArrDaoLinkVO(daoLinkId, nodesByIds.get(0), scenario);
     }
 
     public ArrayList<ArrDaoPackageVO> createDaoPackageList(final List<ArrDaoPackage> arrDaoList, final Boolean unassigned) {
