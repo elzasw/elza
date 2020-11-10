@@ -36,16 +36,22 @@ public class ArrDaoVO {
 
     private ArrDaoLinkVO daoLink; // null pokud vazba neexistuje
 
+    /**
+     * Collection of scenarios for the link
+     */
+    private List<String> scenarios;
+
 
     public ArrDaoVO() {
     }
 
-    public ArrDaoVO(final ArrDao dao) {
+    public ArrDaoVO(final ArrDao dao, final List<String> scenarios) {
         this.id = dao.getDaoId();
         this.valid = dao.getValid();
         this.code = dao.getCode();
         this.label = dao.getLabel();
         this.daoType = dao.getDaoType();
+        this.scenarios = scenarios;
     }
 
     /**
@@ -102,6 +108,10 @@ public class ArrDaoVO {
 
     public ArrDao.DaoType getDaoType() {
         return daoType;
+    }
+
+    public List<String> getScenarios() {
+        return scenarios;
     }
 
     public void setDaoType(ArrDao.DaoType daoType) {
@@ -172,8 +182,8 @@ public class ArrDaoVO {
         this.existInArrDaoRequest = existInArrDaoRequest;
     }
 
-    public static ArrDaoVO newInstance(ArrDao dao) {
-        ArrDaoVO daoVo = new ArrDaoVO(dao);
+    public static ArrDaoVO newInstance(ArrDao dao, final List<String> scenarios) {
+        ArrDaoVO daoVo = new ArrDaoVO(dao, scenarios);
         return daoVo;
     }
 }
