@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import React, {memo, MouseEvent, PropsWithChildren} from 'react';
+import React, {forwardRef, memo, MouseEvent, RefObject} from 'react';
 import {Button as BootstrapButton, ButtonProps} from 'react-bootstrap';
 import styles from './Button.module.scss';
 
@@ -8,15 +8,22 @@ interface IProps extends ButtonProps {
     onClick?: (e: MouseEvent<HTMLButtonElement>) => void;
 }
 
-export const Button: React.FC<PropsWithChildren<IProps & any>> = memo(({children, className, ...buttonProps}) => {
+export const Button = memo(forwardRef<
+    RefObject<HTMLButtonElement>, 
+    IProps & any
+>(({
+    children, 
+    className, 
+    ...buttonProps
+}, ref) => {
     const buttonClass = classNames({
         [`${styles.button}`]: true,
         [`${className}`]: className,
     });
 
     return (
-        <BootstrapButton {...buttonProps} className={buttonClass} variant={buttonProps.variant || 'secondary'}>
+        <BootstrapButton {...buttonProps} ref={ref} className={buttonClass} variant={buttonProps.variant || 'secondary'}>
             {children}
         </BootstrapButton>
     );
-});
+}));

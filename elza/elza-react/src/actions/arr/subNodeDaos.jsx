@@ -1,6 +1,7 @@
 import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes';
 import {findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx';
+import { Api } from "api";
 
 export function isSubNodeDaosAction(action) {
     switch (action.type) {
@@ -72,6 +73,15 @@ export function fundSubNodeDaosRequest(versionId, nodeId, routingKey) {
         dataKey: nodeId,
         routingKey,
     };
+}
+
+export function fundSubNodeDaoChangeScenario(daoId, scenario, versionId, nodeId) {
+    return (dispatch) => {
+        return Api.daos.changeLinkScenario(daoId, scenario).then((response)=>{
+            dispatch(fundSubNodeDaosInvalidate(versionId, [nodeId]));
+            return response;
+        });
+    }
 }
 
 function getSubNodeDaos(state, versionId, routingKey) {
