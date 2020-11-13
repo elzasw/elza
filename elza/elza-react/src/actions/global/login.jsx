@@ -19,8 +19,9 @@ export function checkUserLogged(callback = () => {}) {
                 if (userDetail && !state.login.logged) {
                     // fake local login if user is logged on server
                     dispatch(loginSuccess(userDetail));
-                    callback(true);
                 }
+                // we are logged -> continue with callback
+                callback(true);
             },
             error => {
                 dispatch(userDetailChange(null));
