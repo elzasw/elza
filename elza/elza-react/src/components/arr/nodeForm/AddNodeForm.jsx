@@ -52,6 +52,10 @@ class AddNodeForm extends AbstractReactComponent {
         valid: true,
         //AKA refTemplateId
         templateId: undefined,
+        refTemplatesLoad: {
+            loaded: false,
+            data: []
+        }
     };
 
     validate = (props, state) => {
@@ -733,7 +737,7 @@ class AddNodeForm extends AbstractReactComponent {
     }
 
     renderCreateFromOther() {
-        const {value, submitting} = this.state;
+        const {value, submitting, refTemplatesLoad} = this.state;
         const {fundTreeCopy, fund, activeFund, versionId} = this.props;
 
         return [
@@ -770,12 +774,17 @@ class AddNodeForm extends AbstractReactComponent {
                 )}
             </div>,
             <FormGroup>
-                <FormLabel>{i18n('arr.fund.addNode.refTemplate')}</FormLabel>
+                {refTemplatesLoad.loaded && refTemplatesLoad.data.length > 0 && <FormLabel>{i18n('arr.fund.addNode.refTemplate')}</FormLabel>}
                 <RefTemplateField
                     fundId={activeFund.id}
                     useIdAsValue
+                    hide={!refTemplatesLoad.loaded || refTemplatesLoad.data.length === 0}
                     onChange={templateId => this.setState({templateId})}
                     value={this.state.templateId}
+                    onLoadTemplates={templates => {
+                        console.log("onLoadTemplates", templates, activeFund.id);
+                        this.setState({refTemplatesLoad: {loaded: true, data: templates}});
+                    }}
                 />
             </FormGroup>,
         ];

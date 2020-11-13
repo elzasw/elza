@@ -10,13 +10,22 @@ type Props = {
     useIdAsValue?: boolean;
     fundId: number;
     value: string | number | object;
+    onLoadTemplates?: (temlates: ArrRefTemplateVO[]) => void;
+    hide?: boolean
 };
 
-const RefTemplateField: React.FC<Props> = ({onChange, useIdAsValue, fundId, value, ...other}) => {
+const RefTemplateField: React.FC<Props> = ({onChange, useIdAsValue, fundId, value, onLoadTemplates, hide, ...other}) => {
     const [items, setItems] = React.useState<ArrRefTemplateVO[] | null>(null);
     React.useEffect(() => {
-        WebApi.getRefTemplates(fundId).then(setItems);
+        WebApi.getRefTemplates(fundId).then(templates => {
+            setItems(templates);
+            onLoadTemplates && onLoadTemplates(templates);
+        });
     }, []);
+
+    if (hide) {
+        return <></>
+    }
 
     if (items === null) {
         return <Loading />;
