@@ -119,7 +119,7 @@ class SearchFundsForm extends AbstractReactComponent {
                 activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
             }
 
-            let parentNode = getParentNode(activeNode, activeFund.nodes.nodes);
+            let parentNode = activeNode ? getParentNode(activeNode, activeFund.nodes.nodes) : null;
             if (parentNode === null) {
                 parentNode = createFundRoot(activeFund);
             }
