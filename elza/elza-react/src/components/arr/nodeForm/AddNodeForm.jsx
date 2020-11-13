@@ -342,15 +342,17 @@ class AddNodeForm extends AbstractReactComponent {
             const sourceNodes = [];
 
             for (let nodeItem in fundTreeCopy.selectedIds) {
-                const n = fundTreeCopy.nodes.forEach(i => {
-                    if (i.id == nodeItem) {
-                        return i;
+                const nodeId = parseInt(nodeItem);
+                let node;
+                fundTreeCopy.nodes.forEach(i => {
+                    if (i.id === nodeId) {
+                        node = i;
                     }
                 });
-                if (n) {
+                if (node) {
                     sourceNodes.push({
-                        id: n.id,
-                        version: n.version,
+                        id: node.id,
+                        version: node.version,
                     });
                 }
             }
