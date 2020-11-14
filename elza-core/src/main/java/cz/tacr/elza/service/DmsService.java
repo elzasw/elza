@@ -53,7 +53,6 @@ import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.exception.DeleteFailedException;
 
 /**
  * Dms Service
@@ -63,7 +62,7 @@ import cz.tacr.elza.service.exception.DeleteFailedException;
 @Service
 public class DmsService {
 
-    private static final Logger logger = LoggerFactory.getLogger(DaoSyncService.class);
+    private static final Logger logger = LoggerFactory.getLogger(DmsService.class);
 
     public static final String MIME_TYPE_APPLICATION_PDF = "application/pdf";
 
