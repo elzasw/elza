@@ -33,7 +33,7 @@ import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping("/api/v1")
-public class DaoController extends DaoSyncService implements DaosApi {
+public class DaoController implements DaosApi {
 
     @Autowired
     DaoRepository daoRepository;
@@ -72,7 +72,7 @@ public class DaoController extends DaoSyncService implements DaosApi {
                 // TODO delete or setDeleteChange()? 
 
                 // vytváření nových záznamů
-                DaoDesctItemProvider daoDesctItemProvider = new DaoDesctItemProvider(items, body);
+                // DaoDesctItemProvider daoDesctItemProvider = new DaoDesctItemProvider(items, body);
                 // kde získat data?
 //                daoDesctItemProvider.provide(
 //                                             level, 
