@@ -7,6 +7,8 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.schema.v2.DescriptionItem;
 import cz.tacr.elza.schema.v2.ObjectFactory;
 import org.apache.commons.lang.Validate;
@@ -42,7 +44,12 @@ public class ItemApConvertor {
         ItemType itemType = staticDataProvider.getItemTypeById(item.getItemTypeId());
         converted.setT(itemType.getCode());
         if (item.getItemSpecId() != null) {
-            RulItemSpec itemSpec = itemType.getItemSpecById(item.getItemSpecId());
+            RulItemSpec itemSpec = staticDataProvider.getItemSpecById(item.getItemSpecId());
+            if (itemSpec == null) {
+                throw new BusinessException("Missing item specification: " + item.getItemSpecId(),
+                        BaseCode.DB_INTEGRITY_PROBLEM)
+                                .set("ITEM_SPEC_ID", item.getItemSpecId());
+            }
             converted.setS(itemSpec.getCode());
         }
         return converted;
