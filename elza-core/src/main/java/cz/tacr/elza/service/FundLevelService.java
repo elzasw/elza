@@ -651,8 +651,8 @@ public class FundLevelService {
      * @param staticNode statický uzel (pod který přidáváme)
      * @return přidaný uzel
      */
-    private ArrLevel addLevelUnder(final ArrFundVersion version,
-                                   final ArrNode staticNode) {
+    public ArrLevel addLevelUnder(final ArrFundVersion version,
+                                  final ArrNode staticNode) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
 

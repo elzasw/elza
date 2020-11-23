@@ -9,12 +9,14 @@ import static java.util.stream.Collectors.toSet;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -30,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.google.common.collect.Lists;
 
@@ -57,15 +60,18 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DaoFileGroupRepository;
 import cz.tacr.elza.repository.DaoFileRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
 import cz.tacr.elza.ws.WsClient;
@@ -86,6 +92,7 @@ import cz.tacr.elza.ws.types.v1.Items;
 import cz.tacr.elza.ws.types.v1.NonexistingDaos;
 import cz.tacr.elza.ws.types.v1.ObjectFactory;
 import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
+import io.swagger.annotations.ApiParam;
 
 /**
  * Servisní metody pro synchronizaci digitizátů.
@@ -126,6 +133,12 @@ public class DaoSyncService {
     @Autowired
     private DaoFileGroupRepository daoFileGroupRepository;
 
+    @Autowired
+    DescItemRepository descItemRepository;
+
+    @Autowired
+    private ChangeRepository changeRepository;
+
     // --- services ---
 
     @Autowired
@@ -145,6 +158,9 @@ public class DaoSyncService {
 
     @Autowired
     private GroovyScriptService groovyScriptService;
+
+    @Autowired
+    FundLevelService fundLevelService;
 
     @Autowired
     private WSHelper wsHelper;
@@ -240,6 +256,49 @@ public class DaoSyncService {
     }
 
     // --- methods ---
+
+    /**
+     * Změnit scénář
+     * 
+     * @param daoId
+     * @param scenario
+     */
+    public void changeScenario(Integer daoId, String scenario) {
+        ArrDao dao = daoRepository.getOne(daoId);
+        if (dao == null) {
+            throw new ObjectNotFoundException("ArrDao ID=" + daoId + " not found", DigitizationCode.DAO_NOT_FOUND).set("daoId", daoId);
+        }
+
+        List<String> scenarios = null;
+        Items items = unmarshalItemsFromAttributes(dao.getAttributes(), daoId);
+        if (items != null) {
+            scenarios = getAllScenarioNames(items);
+        }
+        if (!CollectionUtils.isEmpty(scenarios)) {
+            if (scenarios.contains(scenario)) {
+                // vyhledávání a mazání starých záznamů
+                ArrFund fund = dao.getDaoPackage().getFund();
+                ArrNode node = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId()).getRootNode();
+                ArrChange deleteChange = arrangementService.createChange(ArrChange.Type.DELETE_SCENARIO_ITEMS, node);
+                List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
+                for (ArrDescItem item : descItems) {
+                    item.setDeleteChange(deleteChange);
+                }
+
+                // vytváření nových záznamů
+                DaoDesctItemProvider daoDesctItemProvider = new DaoDesctItemProvider(items, scenario);
+                ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
+                ArrLevel level = fundLevelService.addLevelUnder(fundVersion, node);
+                ArrChange change = arrangementService.createChange(ArrChange.Type.CREATE_SCENARIO_ITEMS, node);
+                MultiplItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
+                daoDesctItemProvider.provide(level, change, fundVersion, changeContext);
+            } else {
+                throw new BusinessException("Specified scenario not found", PackageCode.SCENARIO_NOT_FOUND).set("scenario", scenario);
+            }
+        } else {
+            throw new BusinessException("Scenario list is empty", PackageCode.SCENARIO_NOT_FOUND);
+        }
+    }
 
     /**
      * Zavolá WS pro synchronizaci digitalizátů a aktualizuje metadata pro daný node a DAO.
