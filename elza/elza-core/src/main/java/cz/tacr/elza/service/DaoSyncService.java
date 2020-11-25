@@ -279,7 +279,7 @@ public class DaoSyncService {
                 // vyhledávání a mazání starých záznamů
                 ArrFund fund = dao.getDaoPackage().getFund();
                 ArrNode node = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId()).getRootNode();
-                ArrChange deleteChange = arrangementService.createChange(ArrChange.Type.DELETE_SCENARIO_ITEMS, node);
+                ArrChange deleteChange = arrangementService.createChange(ArrChange.Type.CHANGE_SCENARIO_ITEMS, node);
                 List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
                 for (ArrDescItem item : descItems) {
                     item.setDeleteChange(deleteChange);
@@ -289,7 +289,7 @@ public class DaoSyncService {
                 DaoDesctItemProvider daoDesctItemProvider = new DaoDesctItemProvider(items, scenario);
                 ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
                 ArrLevel level = fundLevelService.addLevelUnder(fundVersion, node);
-                ArrChange change = arrangementService.createChange(ArrChange.Type.CREATE_SCENARIO_ITEMS, node);
+                ArrChange change = arrangementService.createChange(ArrChange.Type.CHANGE_SCENARIO_ITEMS, node);
                 MultiplItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
                 daoDesctItemProvider.provide(level, change, fundVersion, changeContext);
             } else {
