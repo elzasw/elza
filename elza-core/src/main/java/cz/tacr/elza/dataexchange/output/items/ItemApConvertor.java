@@ -1,6 +1,5 @@
 package cz.tacr.elza.dataexchange.output.items;
 
-import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -11,8 +10,6 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.schema.v2.DescriptionItem;
 import cz.tacr.elza.schema.v2.ObjectFactory;
-import org.apache.commons.lang.Validate;
-import org.hibernate.Hibernate;
 
 import java.util.Map;
 
