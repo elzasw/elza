@@ -175,11 +175,12 @@ public class DaoService {
      *
      * @param dao  digitalizát
      * @param node node
+     * @param scenario jak se připojit k DAO
      * @return nalezené nebo vytvořené propojení
      */
     @Transactional(value = TxType.MANDATORY)
     private ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                          final ArrDao dao, final ArrNode node) {
+                                           final ArrDao dao, final ArrNode node, final String scenario) {
         if (!dao.getValid()) {
             throw new BusinessException("Nelze připojit digitální entitu k JP, protože je nevalidní", ArrangementCode.INVALID_DAO).level(Level.WARNING);
         }
@@ -197,7 +198,7 @@ public class DaoService {
             }
         }
 
-        final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, dao, node);
+        final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, dao, node, scenario);
 
         nodeIds.add(node.getNodeId());
         updateNodeCacheDaoLinks(nodeIds);
@@ -205,7 +206,8 @@ public class DaoService {
         return resultDaoLink;
     }
 
-    private ArrDaoLink createArrDaoLink(ArrFundVersion fundVersion, ArrDao dao, ArrNode node) {
+    private ArrDaoLink createArrDaoLink(ArrFundVersion fundVersion, ArrDao dao,
+                                        ArrNode node, String scenario) {
         // vytvořit změnu
         final ArrChange createChange = arrangementService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
 
@@ -214,6 +216,7 @@ public class DaoService {
         daoLink.setCreateChange(createChange);
         daoLink.setDao(dao);
         daoLink.setNode(node);
+        daoLink.setScenario(scenario);
 
         logger.debug("Založeno nové propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
         ArrDaoLink resultDaoLink = daoLinkRepository.save(daoLink);
@@ -330,7 +333,6 @@ public class DaoService {
      *            seznam dao pro zneplatnění
      */
     public void deleteDaosWithoutLinks(ArrFund fund, final List<ArrDao> arrDaos) {
-        List<ArrDao> result = new ArrayList<>();
 
         // kontrola, že neexistuje DAO navázané na požadavek ve stavu Příprava, Odesílaný, Odeslaný
         final List<ArrDaoLinkRequest> daoLinkRequests = daoLinkRequestRepository.findByDaosAndStates(arrDaos,
@@ -545,6 +547,6 @@ public class DaoService {
         default:
             throw new SystemException("Unrecognized dao type");
         }
-        return createOrFindDaoLink(fundVersion, dao, linkNode);
+        return createOrFindDaoLink(fundVersion, dao, linkNode, null); // TODO to finished
     }
 }

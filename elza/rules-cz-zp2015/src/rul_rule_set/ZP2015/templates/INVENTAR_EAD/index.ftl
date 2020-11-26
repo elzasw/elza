@@ -35,8 +35,18 @@
 <#list ejTables as ejTable>
   <#list ejTable.table.rows as row>    
   <ead:localcontrol localtype="DECLARED_UNITS">
-    <ead:term encodinganalog="${row.values["NAME"]}">${row.values["COUNT"]}</ead:term>
+    <ead:term encodinganalog="${row.values["NAME"]}">${row.values["COUNT"]}</ead:term>    
   </ead:localcontrol>
+  <#if row.values["DATE_RANGE"]?? >
+  <ead:localcontrol localtype="DECLARED_UNITS_DATES">
+    <ead:term encodinganalog="${row.values["NAME"]}">${row.values["DATE_RANGE"]}</ead:term>    
+  </ead:localcontrol>
+  </#if>
+  <#if row.values["LENGTH"]?? >
+  <ead:localcontrol localtype="DECLARED_UNITS_LENGTH">
+    <ead:term encodinganalog="${row.values["NAME"]}">${row.values["LENGTH"]}</ead:term>    
+  </ead:localcontrol>
+  </#if>
   </#list>
 </#list>    
 </#macro>

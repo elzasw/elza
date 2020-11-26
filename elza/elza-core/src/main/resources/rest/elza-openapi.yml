@@ -150,6 +150,32 @@ paths:
           description: Potvrzení o úspěšném odstranění
         404:
           description: AP neexistuje
+  /daos/{id}/change-scenario:
+    post:
+      summary: Změna scénáře napojení dao
+      operationId: changeLinkScenario
+      tags:
+        - daos
+      parameters:
+        - name: id
+          description: Identifikátor dao
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        description: Nový scénář
+        required: true
+        content:
+          'application/json':
+            schema:
+              type: string
+      responses:
+        200:
+          description: Změna scénáře provedena
+        404:
+          description: Dao neexistuje
 components:
   schemas:
     CreateFund:

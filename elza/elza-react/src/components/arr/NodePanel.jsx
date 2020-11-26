@@ -8,7 +8,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
 import {AbstractReactComponent, HorizontalLoader, i18n, Icon, ListBox, TooltipTrigger, Utils} from 'components/shared';
-import SubNodeDao from './SubNodeDao';
+import {SubNodeDao} from './sub-node-dao';
 import NodeActionsBar from './NodeActionsBar';
 import NodeSubNodeForm from './NodeSubNodeForm';
 import {Button} from '../ui';

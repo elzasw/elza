@@ -44,6 +44,7 @@ import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
+import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrOutputRestrictionScope;
 import cz.tacr.elza.domain.ArrOutputResult;
@@ -63,6 +64,7 @@ import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
+import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
@@ -84,9 +86,9 @@ public class OutputServiceInternal {
     private final TaskExecutor taskExecutor = new TaskExecutor(2);
 
     private final PlatformTransactionManager transactionManager;
-
-    private final OutputGeneratorFactory outputGeneratorFactory;
     
+    private final OutputFileRepository outputFileRepository;
+
     private final OutputTemplateRepository outputTemplateRepository;
 
     private final IEventNotificationService eventNotificationService;
@@ -99,11 +101,7 @@ public class OutputServiceInternal {
 
     private final OutputItemRepository outputItemRepository;
 
-    private final FundLevelServiceInternal fundLevelServiceInternal;
-
     private final EntityManager em;
-
-    private final ResourcePathResolver resourcePathResolver;
 
     private final ItemService itemService;
 
@@ -132,40 +130,38 @@ public class OutputServiceInternal {
     @Lazy
     private AsyncRequestService asyncRequestService;
 
+    private final DmsService dmsService;
+
     @Autowired
     public OutputServiceInternal(final PlatformTransactionManager transactionManager,
-    		final OutputGeneratorFactory outputGeneratorFactory,
-    		final IEventNotificationService eventNotificationService,
-    		final FundLevelServiceInternal fundLevelServiceInternal,
-    		final OutputRepository outputRepository,
-    		final OutputResultRepository outputResultRepository,
-    		final NodeOutputRepository nodeOutputRepository,
-    		final OutputItemRepository outputItemRepository,
-    		final EntityManager em,
-    		final ResourcePathResolver resourcePathResolver,
-    		final ItemService itemService,
-    		final ArrangementService arrangementService,
-    		final StaticDataService staticDataService,
-    		final ItemSettingsRepository itemSettingsRepository,
-    		final RuleService ruleService,
-    		final ActionRepository actionRepository,
-    		final BulkActionRunRepository bulkActionRunRepository,
-    		final RevertingChangesService revertingChangesService,
-    		final OutputRestrictionScopeRepository outputRestrictionScopeRepository,
-    		final ApStateRepository stateRepository,
-    		final StructObjService structObjService,
-    		final OutputTemplateRepository outputTemplateRepository,
-    		final TemplateRepository templateRepository) {
+                                 final IEventNotificationService eventNotificationService,
+                                 final OutputRepository outputRepository,
+                                 final OutputResultRepository outputResultRepository,
+                                 final NodeOutputRepository nodeOutputRepository,
+                                 final OutputItemRepository outputItemRepository,
+                                 final EntityManager em,
+                                 final ItemService itemService,
+                                 final ArrangementService arrangementService,
+                                 final StaticDataService staticDataService,
+                                 final ItemSettingsRepository itemSettingsRepository,
+                                 final RuleService ruleService,
+                                 final ActionRepository actionRepository,
+                                 final BulkActionRunRepository bulkActionRunRepository,
+                                 final RevertingChangesService revertingChangesService,
+                                 final OutputRestrictionScopeRepository outputRestrictionScopeRepository,
+                                 final ApStateRepository stateRepository,
+                                 final StructObjService structObjService,
+                                 final OutputTemplateRepository outputTemplateRepository,
+                                 final TemplateRepository templateRepository,
+                                 final OutputFileRepository outputFileRepository,
+                                 final DmsService dmsService) {
         this.transactionManager = transactionManager;
-        this.outputGeneratorFactory = outputGeneratorFactory;
         this.eventNotificationService = eventNotificationService;
-        this.fundLevelServiceInternal = fundLevelServiceInternal;
         this.outputRepository = outputRepository;
         this.outputResultRepository = outputResultRepository;
         this.nodeOutputRepository = nodeOutputRepository;
         this.outputItemRepository = outputItemRepository;
         this.em = em;
-        this.resourcePathResolver = resourcePathResolver;
         this.itemService = itemService;
         this.arrangementService = arrangementService;
         this.staticDataService = staticDataService;
@@ -179,6 +175,8 @@ public class OutputServiceInternal {
         this.structObjService = structObjService;
         this.outputTemplateRepository = outputTemplateRepository;
         this.templateRepository = templateRepository;
+        this.outputFileRepository = outputFileRepository;
+        this.dmsService = dmsService;
     }
 
     /**
@@ -639,4 +637,22 @@ public class OutputServiceInternal {
 	public List<ArrOutputTemplate> getOutputTemplates(ArrOutput output) {
 		return outputTemplateRepository.findAllByOutputFetchTemplate(output);
 	}
+
+    /**
+     * Odstraneni vysledku
+     * 
+     * @param output
+     */
+    public void deleteOutputResults(ArrOutput output) {
+        List<ArrOutputResult> outputResults = output.getOutputResults();
+        for (ArrOutputResult outputResult : outputResults) {
+            List<ArrOutputFile> outputFiles = outputResult.getOutputFiles();
+            if (outputFiles != null && !outputFiles.isEmpty()) {
+                dmsService.deleteFilesAfterCommit(outputFiles);
+                outputFileRepository.deleteAll(outputFiles);
+            }
+            outputResultRepository.delete(outputResult);
+        }
+        outputResults.clear();
+    }
 }

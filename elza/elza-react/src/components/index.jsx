@@ -46,7 +46,7 @@ export {default as FundTreeLazy} from 'components/arr/FundTreeLazy';
 export {default as NodeSubNodeForm} from 'components/arr/NodeSubNodeForm';
 export {default as NodeActionsBar} from 'components/arr/NodeActionsBar';
 export {default as OutputSubNodeForm} from 'components/arr/OutputSubNodeForm';
-export {default as SubNodeDao} from 'components/arr/SubNodeDao';
+export {SubNodeDao} from 'components/arr/sub-node-dao';
 export {default as FundForm} from 'components/arr/FundForm';
 export {default as FundSettingsForm} from 'components/arr/FundSettingsForm';
 export {default as NodeSettingsForm} from 'components/arr/NodeSettingsForm';

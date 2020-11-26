@@ -629,10 +629,18 @@
         <columns-definitions>
             <column code="NAME" data-type="TEXT">
                 <name>EJ</name>
-                <width>40</width>
+                <width>20</width>
             </column>
             <column code="COUNT" data-type="INTEGER">
                 <name>Počet</name>
+                <width>20</width>
+            </column>
+            <column code="DATE_RANGE" data-type="TEXT">
+                <name>Datace</name>
+                <width>30</width>
+            </column>
+            <column code="LENGTH" data-type="TEXT">
+                <name>Metráž</name>
                 <width>30</width>
             </column>
         </columns-definitions>
