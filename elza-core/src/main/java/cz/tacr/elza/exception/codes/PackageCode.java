@@ -58,4 +58,8 @@ public enum PackageCode implements ErrorCode {
      */
     FOREIGN_PACKAGES_NOT_EXIST,
 
+    /**
+     * Scenario nebyl nalezen
+     */
+    SCENARIO_NOT_FOUND,
 }

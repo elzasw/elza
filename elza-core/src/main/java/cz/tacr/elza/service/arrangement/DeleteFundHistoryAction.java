@@ -261,15 +261,7 @@ public class DeleteFundHistoryAction {
         nodeOutputRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
         outputTemplateRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
         List<ArrOutputFile> outputFiles = outputFileRepository.findByFundAndDeleteChangeIsNotNull(fund);
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
-            @Override
-            public void afterCommit() {
-                for (ArrOutputFile outputFile : outputFiles) {
-                    logger.debug("Mažu soubor na disku: {}", outputFile.getFile());
-                    dmsService.deleteFileFS(outputFile);
-                }
-            }
-        });
+        dmsService.deleteFilesAfterCommit(outputFiles);
         outputFileRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
 
         outputResultRepository.deleteByFundAndDeleteChangeIsNotNull(fund);

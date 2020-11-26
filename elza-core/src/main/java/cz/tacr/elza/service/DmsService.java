@@ -10,8 +10,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -22,8 +24,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.common.AutoDeletingTempFile;
@@ -34,7 +40,6 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.SystemException;
@@ -44,22 +49,20 @@ import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputFileRepository;
-import cz.tacr.elza.repository.OutputResultRepository;
-import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventStringInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.exception.DeleteFailedException;
 
 /**
  * Dms Service
  *
- * @author Petr Compel <petr.compel@marbes.cz>
  * @since 20.6.2016
  */
 @Service
 public class DmsService {
+
+    private static final Logger logger = LoggerFactory.getLogger(DmsService.class);
 
     public static final String MIME_TYPE_APPLICATION_PDF = "application/pdf";
 
@@ -79,14 +82,8 @@ public class DmsService {
     private OutputFileRepository outputFileRepository;
 
     @Autowired
-    private OutputResultRepository outputResultRepository;
-
-    @Autowired
     private EventNotificationService eventNotificationService;
     
-    @Autowired
-    private UserService userService;
-
     /**
      * Uloží DMS soubor se streamem a publishne event
      *
@@ -264,7 +261,9 @@ public class DmsService {
      * @param fund archivní soubor
      * @throws IOException
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR,
+            UsrPermission.Permission.FUND_ARR_ALL,
+            UsrPermission.Permission.FUND_ADMIN })
     public void deleteArrFile(final ArrFile file,
                               @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) throws IOException {
         deleteFile(file);
@@ -277,8 +276,12 @@ public class DmsService {
      * @param outputFileId ID
      * @throws IOException
      */
-    public void deleteOutputFile(final Integer outputFileId) throws IOException {
-        deleteFile(outputFileRepository.getOneCheckExist(outputFileId));
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR,
+            UsrPermission.Permission.FUND_ARR_ALL,
+            UsrPermission.Permission.FUND_ADMIN })
+    public void deleteOutputFile(final ArrOutputFile outputFile,
+                                 @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) throws IOException {
+        deleteFile(outputFile);
     }
 
     /**
@@ -287,20 +290,38 @@ public class DmsService {
      * @param dmsFile DMS soubor ke smazání
      * @throws IOException
      */
-    public void deleteFile(final DmsFile dmsFile) throws IOException {
+    public void deleteFile(final DmsFile dmsFile) {
         Assert.notNull(dmsFile, "Soubor musí být vyplněn");
 
         fileRepository.delete(dmsFile);
 
-        deleteFileFS(dmsFile);
+        deleteFilesAfterCommit(Arrays.asList((ArrOutputFile) dmsFile));
         publishFileChange(dmsFile);
     }
 
-    public void deleteFileFS(final DmsFile dmsFile) {
-        File outputFile = getFilePath(dmsFile).toFile();
-        if (outputFile.exists() && !outputFile.delete()) {
-            throw new SystemException("Nelze odstranit existující soubor");
-        }
+    /**
+     * Smazání seznam souborů po commitu
+     * 
+     * @param files seznam souborů ke smazání
+     */
+    public void deleteFilesAfterCommit(List<ArrOutputFile> files) {
+
+        // prepare list of files
+        List<File> filesToDelete = files.stream()
+            .map(p -> getFilePath(p).toFile())
+            .collect(Collectors.toList());
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                for (File file : filesToDelete) {
+                    logger.debug("Mažu soubor na disku: {}", file);
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -486,14 +507,14 @@ public class DmsService {
         return fundFileRepository.getOneCheckExist(fileId);
     }
 
+    public ArrOutputFile getOutputFile(Integer fileId) {
+        return outputFileRepository.getOneCheckExist(fileId);
+    }
+
     public void deleteFilesByFund(final ArrFund fund) {
         List<ArrFile> files = fundFileRepository.findByFund(fund);
         for (ArrFile file : files) {
-            try {
-                deleteFile(file);
-            } catch (IOException e) {
-                throw new DeleteFailedException("Nepodařilo se smazat přílohu: " + file.getName(), e);
-            }
+            deleteFile(file);
         }
     }
 }

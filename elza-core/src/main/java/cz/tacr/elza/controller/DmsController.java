@@ -588,6 +588,7 @@ public class DmsController {
     @Transactional
     @RequestMapping(value = "/api/dms/output/{fileId}", method = RequestMethod.DELETE)
     public void deleteOutputFile(@PathVariable(value = "fileId") Integer fileId) throws IOException {
-        dmsService.deleteOutputFile(fileId);
+        ArrOutputFile outputFile = dmsService.getOutputFile(fileId);
+        dmsService.deleteOutputFile(outputFile, outputFile.getOutputResult().getOutput().getFund());
     }
 }

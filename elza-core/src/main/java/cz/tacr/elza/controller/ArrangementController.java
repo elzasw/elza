@@ -455,7 +455,10 @@ public class ArrangementController {
 
         // we are outside transaction
         // only initialized fields might be touched on daoLink
-        return factoryVo.createDaoLink(daoLink.getDaoLinkId(), daoLink.getNodeId(), fundVersionId);
+        return factoryVo.createDaoLink(daoLink.getDaoLinkId(),
+                                       daoLink.getNodeId(),
+                                       daoLink.getScenario(),
+                                       fundVersionId);
     }
 
     /**

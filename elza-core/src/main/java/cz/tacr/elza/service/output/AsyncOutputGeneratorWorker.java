@@ -158,6 +158,9 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         ArrOutput output = outputServiceInternal.getOutputForGenerator(outputId);
         List<ArrOutputTemplate> templates = outputTemplateRepository.findAllByOutputFetchTemplate(output);
 
+        // Drop any old output
+        outputServiceInternal.deleteOutputResults(output);
+
         SecurityContext secCtx = userService.createSecurityContext(userId);
         SecurityContextHolder.setContext(secCtx);
 
