@@ -19,6 +19,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.lang3.Validate;
 import org.xml.sax.SAXException;
 
@@ -53,6 +54,8 @@ public class CamExportBuilder implements ExportBuilder {
 
     final private GroovyService groovyService;
 
+    final private AccessPointDataService apDataService;
+
     final private SchemaManager schemaManager;
 
     protected CamExportBuilder getExportBuilder() {
@@ -83,10 +86,12 @@ public class CamExportBuilder implements ExportBuilder {
 
     public CamExportBuilder(final StaticDataService staticDataService,
                             final GroovyService groovyService,
-                            final SchemaManager schemaManager) {
+                            final SchemaManager schemaManager,
+                            final AccessPointDataService apDataService) {
         this.staticDataService = staticDataService;
         this.groovyService = groovyService;
         this.schemaManager = schemaManager;
+        this.apDataService = apDataService;
         initBuilder();
     }
 
@@ -102,6 +107,7 @@ public class CamExportBuilder implements ExportBuilder {
                 apInfo.getAccessPoint(),
                 apInfo.getApState(),
                 groovyService,
+                apDataService,
                 apInfo.getApState().getScope());
 
         final Map<Integer, List<ApItem>> itemsConv = new HashMap<>();

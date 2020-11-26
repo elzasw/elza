@@ -1,9 +1,11 @@
 package cz.tacr.elza.service.cam;
 
+import cz.tacr.cam.schema.cam.BinaryStreamXml;
 import cz.tacr.cam.schema.cam.BooleanXml;
 import cz.tacr.cam.schema.cam.CodeXml;
 import cz.tacr.cam.schema.cam.EntityRecordRefXml;
 import cz.tacr.cam.schema.cam.IntegerXml;
+import cz.tacr.cam.schema.cam.ItemBinaryXml;
 import cz.tacr.cam.schema.cam.ItemBooleanXml;
 import cz.tacr.cam.schema.cam.ItemEntityRefXml;
 import cz.tacr.cam.schema.cam.ItemEnumXml;
@@ -36,6 +38,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.GroovyService;
 
 /**
@@ -67,6 +70,7 @@ public class CamXmlFactory {
                                     String uuid,
                                     EntityRefHandler entityRefHandler,
                                     GroovyService groovyService,
+                                    AccessPointDataService apDataService,
                                     String externalSystemTypeCode,
                                     ApScope scope) {
         ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
@@ -105,7 +109,7 @@ public class CamXmlFactory {
             ArrDataUriRef dataUriRef = (ArrDataUriRef) item.getData();
             ItemLinkXml itemLink = new ItemLinkXml();
             itemLink.setUrl(new StringXml(dataUriRef.getValue()));
-            itemLink.setNm(new StringXml(dataUriRef.getDescription()));
+            itemLink.setNm(new StringXml(dataUriRef.getDescription() != null ? dataUriRef.getDescription() : ""));
             itemLink.setT(itemTypeCode);
             itemLink.setS(itemSpecCode);
             itemLink.setUuid(uuidXml);
@@ -165,8 +169,8 @@ public class CamXmlFactory {
             return itemEntityRef;
         case COORDINATES:
             ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) item.getData();
-            ItemStringXml itemCoordinates = new ItemStringXml();
-            itemCoordinates.setValue(new StringXml(GeometryConvertor.convert(dataCoordinates.getValue())));
+            ItemBinaryXml itemCoordinates = new ItemBinaryXml();
+            itemCoordinates.setValue(new BinaryStreamXml(apDataService.convertGeometryToWKB(dataCoordinates.getValue())));
             itemCoordinates.setT(itemTypeCode);
             itemCoordinates.setS(itemSpecCode);
             itemCoordinates.setUuid(uuidXml);
