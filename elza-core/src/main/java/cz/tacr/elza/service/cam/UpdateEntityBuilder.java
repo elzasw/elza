@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.collections4.CollectionUtils;
 
 import cz.tacr.cam.schema.cam.BatchEntityRecordRevXml;
@@ -52,8 +53,9 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
                                final ApState state,
                                ApBindingState bindingState,
                                GroovyService groovyService,
+                               AccessPointDataService apDataService,
                                ApScope scope) {
-        super(sdp, bindingState.getAccessPoint(), new BindingRecordRefHandler(bindingState.getBinding()), groovyService, scope);
+        super(sdp, bindingState.getAccessPoint(), new BindingRecordRefHandler(bindingState.getBinding()), groovyService, apDataService, scope);
         this.bindingItemRepository = bindingItemRepository;
         this.bindingState = bindingState;
         this.apState = state;
@@ -67,7 +69,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         updateItemsXml.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
 
         for (ApBindingItem bindingItem : changedItems) {
-            Object i = CamXmlFactory.createItem(sdp, bindingItem.getItem(), bindingItem.getValue(), entityRefHandler, groovyService, externalSystemTypeCode, scope);
+            Object i = CamXmlFactory.createItem(sdp, bindingItem.getItem(), bindingItem.getValue(), entityRefHandler, groovyService, apDataService, externalSystemTypeCode, scope);
             if (i != null) {
                 updateItemsXml.getItems().add(i);
             }

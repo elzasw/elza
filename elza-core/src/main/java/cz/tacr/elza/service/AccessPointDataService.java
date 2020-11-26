@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,6 +155,14 @@ public class AccessPointDataService {
 
     public String convertCoordinatesToGml(Integer dataId) {
         return dataCoordinatesRepository.convertCoordinatesToGml(dataId);
+    }
+
+    public String convertCoordinatesToEWKT(byte[] coordinates) {
+        return dataCoordinatesRepository.convertCoordinatesToEWKT(coordinates);
+    }
+
+    public byte[] convertGeometryToWKB(Geometry geometry) {
+        return dataCoordinatesRepository.convertGeometryToWKB(geometry);
     }
 
 }

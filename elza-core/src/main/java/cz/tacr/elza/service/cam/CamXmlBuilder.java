@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
 
@@ -40,6 +41,7 @@ abstract public class CamXmlBuilder {
 
     protected final EntityRefHandler entityRefHandler;
     protected final GroovyService groovyService;
+    protected final AccessPointDataService apDataService;
 
     protected final Map<Integer, String> partUuidMap = new HashMap<>();
 
@@ -47,11 +49,13 @@ abstract public class CamXmlBuilder {
                   final ApAccessPoint accessPoint,
                   final EntityRefHandler entityRefHandler,
                   final GroovyService groovyService,
+                  final AccessPointDataService apDataService,
                   final ApScope scope) {
         this.sdp = sdp;
         this.accessPoint = accessPoint;
         this.entityRefHandler = entityRefHandler;
         this.groovyService = groovyService;
+        this.apDataService = apDataService;
         this.scope = scope;
     }
 
@@ -173,7 +177,7 @@ abstract public class CamXmlBuilder {
     public void createXmlItems(Collection<ApItem> itemList, List<Object> trgList, String externalSystemTypeCode) {
         for (ApItem item : itemList) {
             String uuid = UUID.randomUUID().toString();
-            Object i = CamXmlFactory.createItem(sdp, item, uuid, entityRefHandler, groovyService, externalSystemTypeCode, scope);
+            Object i = CamXmlFactory.createItem(sdp, item, uuid, entityRefHandler, groovyService, apDataService, externalSystemTypeCode, scope);
             if (i != null) {
                 onItemCreated(item, uuid);
                 trgList.add(i);
