@@ -22,6 +22,7 @@ import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.GroovyService;
 
 public class EntityXmlBuilder extends CamXmlBuilder {
@@ -32,8 +33,9 @@ public class EntityXmlBuilder extends CamXmlBuilder {
                             ApAccessPoint accessPoint,
                             ApState apState,
                             GroovyService groovyService,
+                            AccessPointDataService apDataService,
                             ApScope scope) {
-        super(sdp, accessPoint, new ApUuidRecordRefHandler(), groovyService, scope);
+        super(sdp, accessPoint, new ApUuidRecordRefHandler(), groovyService, apDataService, scope);
         this.apState = apState;
     }
 
