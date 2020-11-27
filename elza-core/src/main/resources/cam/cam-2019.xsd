@@ -5,7 +5,8 @@
 
 Změny:
 	- 4.3.2020 - Oprava povinnosti atributů EntityIdGroup, nově jsou nepovinné
-	- 1.10.2020 - Doplnění volitelného atributu reud k Entity pro předání UUID nahrazující entity</xs:documentation>
+	- 1.10.2020 - Doplnění volitelného atributu reud k Entity pro předání UUID nahrazující entity
+	- 6.11.2020 -Doplnění ItemBinary pro přenos binárních dat</xs:documentation>
 	</xs:annotation>
 	<xs:element name="bu" type="s1:BatchUpdate"/>
 	<xs:element name="bue" type="s1:BatchUpdateError"/>
@@ -29,6 +30,12 @@ Změny:
 	</xs:element>
 	<xs:element name="ups" type="s1:Updates"/>
 	<xs:element name="upsf" type="s1:UpdatesFrom"/>
+	<xs:simpleType name="BinaryStream">
+		<xs:annotation>
+			<xs:documentation>Binární data</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:base64Binary"/>
+	</xs:simpleType>
 	<xs:simpleType name="Boolean">
 		<xs:annotation>
 			<xs:documentation>Logická hodnota</xs:documentation>
@@ -495,6 +502,16 @@ Vrací se seznam informací o revizích entit. U každé revize je vyplněno:
 			</xs:annotation>
 		</xs:attribute>
 	</xs:complexType>
+	<xs:complexType name="ItemBinary">
+		<xs:annotation>
+			<xs:documentation>Binární data</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="s1:BinaryStream">
+				<xs:attributeGroup ref="s1:ItemAttributes"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
 	<xs:complexType name="ItemBoolean">
 		<xs:annotation>
 			<xs:documentation>Prvek popisu s logickou hodnotou</xs:documentation>
@@ -573,6 +590,7 @@ Vrací se seznam informací o revizích entit. U každé revize je vyplněno:
 		</xs:annotation>
 		<xs:sequence>
 			<xs:choice minOccurs="1" maxOccurs="unbounded">
+				<xs:element name="ci" type="s1:ItemBinary" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="bi" type="s1:ItemBoolean" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="ai" type="s1:ItemEntityRef" minOccurs="1" maxOccurs="1"/>
 				<xs:element name="ei" type="s1:ItemEnum" minOccurs="1" maxOccurs="1"/>

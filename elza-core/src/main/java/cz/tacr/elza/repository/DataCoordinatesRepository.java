@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -25,5 +26,11 @@ public interface DataCoordinatesRepository extends JpaRepository<ArrDataCoordina
 
     @Query(value = "SELECT ST_AsText(ST_GeomFromGML(:coordinates))", nativeQuery = true)
     String convertCoordinatesFromGml(String coordinates);
+
+    @Query(value = "SELECT ST_AsEWKT(ST_GeomFromWKB(:coordinates))", nativeQuery = true)
+    String convertCoordinatesToEWKT(byte[] coordinates);
+
+    @Query(value = "SELECT ST_AsBinary(:geometry)", nativeQuery = true)
+    byte[] convertGeometryToWKB(Geometry geometry);
 
 }

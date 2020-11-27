@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
+import cz.tacr.cam.schema.cam.ItemBinaryXml;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
@@ -79,6 +80,7 @@ public class AccessPointItemService {
     private final ExternalSystemService externalSystemService;
     private final ApBindingItemRepository bindingItemRepository;
     private final ApBindingRepository bindingRepository;
+    private final AccessPointDataService accessPointDataService;
 
     public AccessPointItemService(final EntityManager em,
                                   final StaticDataService staticDataService,
@@ -87,7 +89,8 @@ public class AccessPointItemService {
                                   final SequenceService sequenceService,
                                   final ExternalSystemService externalSystemService,
                                   final ApBindingItemRepository bindingItemRepository,
-                                  final ApBindingRepository bindingRepository) {
+                                  final ApBindingRepository bindingRepository,
+                                  final AccessPointDataService accessPointDataService) {
         this.em = em;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
@@ -96,6 +99,7 @@ public class AccessPointItemService {
         this.externalSystemService = externalSystemService;
         this.bindingItemRepository = bindingItemRepository;
         this.bindingRepository = bindingRepository;
+        this.accessPointDataService = accessPointDataService;
     }
 
     @FunctionalInterface
@@ -301,16 +305,14 @@ public class AccessPointItemService {
                                     final ApBinding binding,
                                     final List<DataRef> dataRefList,
                                     final CreateFunction create) {
-        List<ArrData> dataToSave = new ArrayList<>(createItems.size());
         List<ApItem> itemsCreated = new ArrayList<>();
         Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
 
         for (Object createItem : createItems) {
 
-            ApItem itemCreated = createItem(createItem, change, create, typeIdItemsMap, dataToSave, binding, dataRefList);
+            ApItem itemCreated = createItem(createItem, change, create, typeIdItemsMap, binding, dataRefList);
             itemsCreated.add(itemCreated);
         }
-        dataRepository.saveAll(dataToSave);
         return itemsCreated;
     }
 
@@ -333,7 +335,6 @@ public class AccessPointItemService {
                               final ApChange change,
                               final CreateFunction create,
                               final Map<Integer, List<ApItem>> typeIdItemsMap,
-                              final List<ArrData> dataToSave,
                               final ApBinding binding,
                               final List<DataRef> dataRefList) {
         StaticDataProvider sdp = staticDataService.getData();
@@ -341,8 +342,19 @@ public class AccessPointItemService {
         RulItemSpec itemSpec;
         String uuid;
         ArrData data;
+        if (createItem instanceof ItemBinaryXml) {
+            ItemBinaryXml itemBinary = (ItemBinaryXml) createItem;
 
-        if (createItem instanceof ItemBooleanXml) {
+            itemType = sdp.getItemType(itemBinary.getT().getValue());
+            itemSpec = itemBinary.getS() == null ? null : sdp.getItemSpec(itemBinary.getS().getValue());
+            uuid = CamHelper.getUuid(itemBinary.getUuid());
+
+            ArrDataCoordinates dataCoordinates = new ArrDataCoordinates();
+            String value = accessPointDataService.convertCoordinatesToEWKT(itemBinary.getValue().getValue());
+            dataCoordinates.setValue(GeometryConvertor.convert(value));
+            dataCoordinates.setDataType(DataType.COORDINATES.getEntity());
+            data = dataCoordinates;
+        } else if (createItem instanceof ItemBooleanXml) {
             ItemBooleanXml itemBoolean = (ItemBooleanXml) createItem;
 
             itemType = sdp.getItemType(itemBoolean.getT().getValue());
@@ -486,13 +498,14 @@ public class AccessPointItemService {
 
 
         ApItem itemCreated = create.apply(itemType, itemSpec, change, nextItemObjectId(), position);
+        dataRepository.save(data);
         itemCreated.setData(data);
+        itemRepository.save(itemCreated);
 
         if (binding != null) {
             externalSystemService.createApBindingItem(binding, uuid, null, itemCreated);
         }
 
-        dataToSave.add(data);
         existsItems.add(itemCreated);
         return itemCreated;
     }
@@ -514,7 +527,27 @@ public class AccessPointItemService {
         List<Object> changedItems = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(items)) {
             for (Object item : items) {
-                if (item instanceof ItemBooleanXml) {
+                if (item instanceof ItemBinaryXml) {
+                    ItemBinaryXml itemBinary = (ItemBinaryXml) item;
+                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemBinary.getUuid().getValue());
+
+                    if (bindingItem == null) {
+                        changedItems.add(itemBinary);
+                    } else {
+                        ApItem is = bindingItem.getItem();
+                        ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) is.getData();
+                        String value = GeometryConvertor.convert(dataCoordinates.getValue());
+                        String xmlValue = accessPointDataService.convertCoordinatesToEWKT(itemBinary.getValue().getValue());
+                        if (!(is.getItemType().getCode().equals(itemBinary.getT().getValue()) &&
+                                compareItemSpec(is.getItemSpec(), itemBinary.getS()) &&
+                                xmlValue.equals(value))) {
+                            changedItems.add(itemBinary);
+                        } else {
+                            notChangeItems.add(bindingItem);
+                            bindingItems.remove(bindingItem);
+                        }
+                    }
+                } else if (item instanceof ItemBooleanXml) {
                     ItemBooleanXml itemBoolean = (ItemBooleanXml) item;
                     ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemBoolean.getUuid().getValue());
 
