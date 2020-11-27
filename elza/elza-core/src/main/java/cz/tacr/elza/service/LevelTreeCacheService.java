@@ -283,8 +283,6 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         List<TreeNodeVO> result = new LinkedList<>();
         ViewTitles viewTitles = configView.getViewTitles(version.getRuleSetId(), version.getFund().getFundId());
 
-        Integer levelTypeId = viewTitles.getLevelTypeId();
-
         for (Integer nodeId : nodeIds) {
             TreeNode treeNode = versionTreeCache.get(nodeId);
             if(treeNode != null){
@@ -646,48 +644,60 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
     @Subscribe
     public void onDataUpdate(final EventChangeMessage changeMessage) {
+        Validate.notNull(changeMessage);
 
-        List<AbstractEventSimple> events = changeMessage.getEvents();
-        for (AbstractEventSimple event : events) {
-            logger.debug("Zpracování události "+event.getEventType());
-            //projdeme všechny změny, které jsou změny ve stromu uzlů verze a aktualizujeme cache verzí
-            if (EventVersion.class.isAssignableFrom(event.getClass())) {
+        try {
 
-                switch (event.getEventType()) {
-                    case NODE_DELETE:
-                        break;
-                    case ADD_LEVEL_AFTER:
-                    case ADD_LEVEL_BEFORE:
-                    case ADD_LEVEL_UNDER:
-                        EventAddNode eventAddNode = (EventAddNode) event;
-                        actionAddLevel(eventAddNode.getNode().getNodeId(), eventAddNode.getStaticNode().getNodeId(),
-                                       eventAddNode.getVersionId(), event.getEventType());
-                        break;
-                    case MOVE_LEVEL_AFTER:
-                    case MOVE_LEVEL_BEFORE:
-                    case MOVE_LEVEL_UNDER:
-                        EventNodeMove eventNodeMove = (EventNodeMove) event;
-                        List<Integer> transportIds = eventNodeMove.getTransportLevels().stream()
-                                .map(n -> n.getNodeId()).collect(Collectors.toList());
-                        actionMoveLevel(eventNodeMove.getStaticLevel().getNodeId(), transportIds,
-                                        eventNodeMove.getVersionId(), event.getEventType());
+            List<AbstractEventSimple> events = changeMessage.getEvents();
+            for (AbstractEventSimple event : events) {
+                logger.debug("Zpracování události " + event.getEventType());
 
-                        break;
-                    case DELETE_LEVEL:
-                        EventDeleteNode eventIdInVersion = (EventDeleteNode) event;
-                        actionDeleteLevel(eventIdInVersion.getNodeId(), eventIdInVersion.getVersionId());
-                        break;
-                    case BULK_ACTION_STATE_CHANGE:
-                        EventIdInVersion bulkActionStateChangeEvent = (EventIdInVersion) event;
-                        if (bulkActionStateChangeEvent.getState().equals(ArrBulkActionRun.State.FINISHED.toString())) {
-                            if (bulkActionStateChangeEvent.getCode().equals("PERZISTENTNI_RAZENI")) {
-                                refreshFundVersion(bulkActionStateChangeEvent.getVersionId());
-                            }
-                        }
-                        break;
-                }
-
+                processEvent(event);
             }
+        } catch (Exception e) {
+            logger.error("Exception during onDataUpdate", e);
+            throw e;
+        }
+    }
+
+private void processEvent(AbstractEventSimple event) {
+    //projdeme všechny změny, které jsou změny ve stromu uzlů verze a aktualizujeme cache verzí
+    if (EventVersion.class.isAssignableFrom(event.getClass())) {
+
+        switch (event.getEventType()) {
+        case NODE_DELETE:
+            break;
+        case ADD_LEVEL_AFTER:
+        case ADD_LEVEL_BEFORE:
+        case ADD_LEVEL_UNDER:
+            EventAddNode eventAddNode = (EventAddNode) event;
+            actionAddLevel(eventAddNode.getNode().getNodeId(), eventAddNode.getStaticNode().getNodeId(),
+                           eventAddNode.getVersionId(), event.getEventType());
+            break;
+        case MOVE_LEVEL_AFTER:
+        case MOVE_LEVEL_BEFORE:
+        case MOVE_LEVEL_UNDER:
+            EventNodeMove eventNodeMove = (EventNodeMove) event;
+            List<Integer> transportIds = eventNodeMove.getTransportLevels().stream()
+                    .map(n -> n.getNodeId()).collect(Collectors.toList());
+            actionMoveLevel(eventNodeMove.getStaticLevel().getNodeId(), transportIds,
+                            eventNodeMove.getVersionId(), event.getEventType());
+
+            break;
+        case DELETE_LEVEL:
+            EventDeleteNode eventIdInVersion = (EventDeleteNode) event;
+            actionDeleteLevel(eventIdInVersion.getNodeId(), eventIdInVersion.getVersionId());
+            break;
+        case BULK_ACTION_STATE_CHANGE:
+            EventIdInVersion bulkActionStateChangeEvent = (EventIdInVersion) event;
+            if (bulkActionStateChangeEvent.getState().equals(ArrBulkActionRun.State.FINISHED.toString())) {
+                if (bulkActionStateChangeEvent.getCode().equals("PERZISTENTNI_RAZENI")) {
+                    refreshFundVersion(bulkActionStateChangeEvent.getVersionId());
+                        }
+            }
+            break;
+        }
+
         }
     }
 
@@ -1982,7 +1992,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     }
 
     private String createRootTitle(ArrFund fund, ViewTitles viewTitles, Integer id) {
-        // try to creatae from node
+        // try to create from node
         List<String> detailList = new ArrayList<>();
         if (fund.getFundNumber() != null) {
             detailList.add(fund.getFundNumber().toString());

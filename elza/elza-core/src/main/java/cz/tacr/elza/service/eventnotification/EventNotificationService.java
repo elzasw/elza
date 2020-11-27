@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -29,6 +31,8 @@ import cz.tacr.elza.service.eventnotification.events.EventVersion;
 @Service
 public class EventNotificationService implements IEventNotificationService {
 
+    private static final Logger logger = LoggerFactory.getLogger(EventNotificationService.class);
+
     @Autowired
     private ClientEventDispatcher eventDispatcher;
 
@@ -40,6 +44,7 @@ public class EventNotificationService implements IEventNotificationService {
     @Override
     public void publishEvent(final AbstractEventSimple event) {
         Validate.notNull(event);
+        logger.debug("Publish event: {}", event.getEventType());
 
         AfterTransactionListener listener = null;
         for (TransactionSynchronization synchronization : TransactionSynchronizationManager.getSynchronizations()) {
@@ -187,6 +192,8 @@ public class EventNotificationService implements IEventNotificationService {
 
         @Override
         public void afterCommit() {
+            logger.debug("Publishing events in afterCommit: {}", uncommittedEvents.size());
+
             commitEvents(uncommittedEvents);
         }
     }
