@@ -62,6 +62,9 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDao.DaoType;
+import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -75,6 +78,7 @@ import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LevelRepositoryCustom;
@@ -102,13 +106,19 @@ import cz.tacr.elza.service.vo.TitleItemsByType;
 @EventBusListener
 public class LevelTreeCacheService implements NodePermissionChecker {
 
+    private static final Logger logger = LoggerFactory.getLogger(LevelTreeCacheService.class);
+
     /**
      * Maximální počet verzí stromů ukládaných současně v paměti.
      */
     @Value("${elza.levelTreeCache.size:30}")
     private int maxCacheSize = 30;
 
-    private static final Logger logger = LoggerFactory.getLogger(LevelTreeCacheService.class);
+    /**
+     * Maximální počet verzí stromů ukládaných současně v paměti.
+     */
+    @Value("${elza.levelTreeCache.display.daoId:true}")
+    private boolean displayDaoId = true;
 
     @Autowired
     private LevelRepository levelRepository;
@@ -151,6 +161,9 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private DaoLinkRepository daoLinkRepository;
 
     /**
      * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel).
@@ -759,6 +772,8 @@ private void processEvent(AbstractEventSimple event) {
         Assert.notNull(treeNodeMap, "Mapa nesmí být null");
         Assert.notNull(version, "Verze AS musí být vyplněna");
 
+        Map<Integer, ArrDao> daoLevelMap = new HashMap<>();
+        // read nodes
         List<ArrNode> nodes = new ArrayList<>(treeNodeMap.size());
         Set<Integer> nodeIds = treeNodeMap.keySet();
         ObjectListIterator<Integer> iterator = new ObjectListIterator<>(nodeIds);
@@ -766,12 +781,22 @@ private void processEvent(AbstractEventSimple event) {
             List<Integer> nodeIdsSublist = iterator.next();
 
             nodes.addAll(nodeRepository.findAllById(nodeIdsSublist));
+            // read dao links
+            if (displayDaoId) {
+                List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIdsSublist);
+                for (ArrDaoLink daoLink : daoLinks) {
+                    if (daoLink.getDao().getDaoType().equals(DaoType.LEVEL)) {
+                        daoLevelMap.put(daoLink.getNodeId(), daoLink.getDao());
+                    }
+                }
+            }
         }
         Map<Integer, ArrNode> nodeMap = new HashMap<>(nodes.size());
         for (ArrNode node : nodes) {
             nodeMap.put(node.getNodeId(), node);
         }
 
+        // create titles
         ViewTitles viewTitles = configView
                 .getViewTitles(version.getRuleSetId(), version.getFundId());
         Map<Integer, TitleItemsByType> valuesMap = valuesMapParam;
@@ -819,7 +844,8 @@ private void processEvent(AbstractEventSimple event) {
 
         for (TreeNodeVO treeNodeClient : result.values()) {
             TitleItemsByType descItemCodeToValueMap = valuesMap.get(treeNodeClient.getId());
-            fillValues(version, descItemCodeToValueMap, viewTitles, treeNodeClient);
+            ArrDao dao = daoLevelMap.get(treeNodeClient.getId());
+            fillValues(version, descItemCodeToValueMap, viewTitles, treeNodeClient, dao);
         }
 
         return result;
@@ -846,11 +872,11 @@ private void processEvent(AbstractEventSimple event) {
         return result;
     }
 
-    private String createTitle(final List<Integer> itemTypeIds, final TitleItemsByType descItemCodeToValueMap,
-                               final boolean useDefaultTitle, final String defaultNodeTitle) {
-        List<String> titles = new ArrayList<String>();
-
-        if (itemTypeIds != null) {
+    private void createTitle(final List<String> titleParts,
+                                     final List<Integer> itemTypeIds,
+                             final TitleItemsByType descItemCodeToValueMap,
+                             ArrDao dao) {
+        if (itemTypeIds != null && descItemCodeToValueMap != null) {
             for (Integer itemTypeId : itemTypeIds) {
                 TitleValues titleValues = descItemCodeToValueMap.getTitles(itemTypeId);
                 if (titleValues != null) {
@@ -858,23 +884,28 @@ private void processEvent(AbstractEventSimple event) {
 
                     String value = titleValue.getValue();
                     if (StringUtils.isNotBlank(value)) {
-                        titles.add(value);
+                        titleParts.add(value);
                     }
                 }
             }
         }
-
-        String title;
-        if (titles.isEmpty()) {
-            if (useDefaultTitle) {
-                title = defaultNodeTitle;
-            } else {
-                title = null;
-            }
-        } else {
-            title = StringUtils.join(titles, " ");
+        if (dao != null && this.displayDaoId) {
+            titleParts.add("(dao: " + dao.getDaoId().toString() + ")");
         }
+    }
 
+    private String createTitle(final List<Integer> itemTypeIds,
+                               final TitleItemsByType descItemCodeToValueMap,
+                               final ArrDao dao,
+                               final String defaultNodeTitle) {
+
+        List<String> titleParts = new ArrayList<String>();
+        createTitle(titleParts, itemTypeIds, descItemCodeToValueMap, dao);
+
+        if (titleParts.size() == 0 && StringUtils.isNotEmpty(defaultNodeTitle)) {
+            titleParts.add(defaultNodeTitle);
+        }
+        String title = StringUtils.join(titleParts, " ");
         return title;
     }
 
@@ -885,25 +916,35 @@ private void processEvent(AbstractEventSimple event) {
      * @param descItemCodeToValueMap
      * @param viewTitles
      * @param treeNodeClient
+     * @param dao
+     *            Volitelný hlavní dao, může být null
      */
-    private void fillValues(final ArrFundVersion version, final TitleItemsByType descItemCodeToValueMap,
-                            final ViewTitles viewTitles, final TreeNodeVO treeNodeClient) {
-        String defaultTitle;
-        if (treeNodeClient.getDepth() > 1) {
-            defaultTitle = createDefaultTitle(viewTitles, treeNodeClient.getId());
-        } else {
-            defaultTitle = createRootTitle(version.getFund(), viewTitles, treeNodeClient.getId());
-        }
+    private void fillValues(final ArrFundVersion version,
+                            final TitleItemsByType descItemCodeToValueMap,
+                            final ViewTitles viewTitles,
+                            final TreeNodeVO treeNodeClient,
+                            final ArrDao dao) {
 
         if (descItemCodeToValueMap != null) {
-            treeNodeClient
-                    .setName(createTitle(viewTitles.getTreeItemIds(), descItemCodeToValueMap, true, defaultTitle));
-
             String icon = getIcon(descItemCodeToValueMap, viewTitles);
             treeNodeClient.setIcon(icon);
-        } else {
-            treeNodeClient.setName(defaultTitle);
         }
+
+        List<String> titles = new ArrayList<>();
+        createTitle(titles, viewTitles.getTreeItemIds(), descItemCodeToValueMap, dao);
+        if (titles.size() == 0) {
+            String defaultTitle;
+            if (treeNodeClient.getDepth() > 1) {
+                defaultTitle = createDefaultTitle(viewTitles, treeNodeClient.getId());
+            } else {
+                defaultTitle = createRootTitle(version.getFund(), viewTitles, treeNodeClient.getId());
+            }
+
+            titles.add(defaultTitle);
+        }
+        String title = StringUtils.join(titles, " ");
+
+        treeNodeClient.setName(title);
     }
 
     /**
@@ -1867,6 +1908,21 @@ private void processEvent(AbstractEventSimple event) {
         GetNodesCtx getNodesCtx = new GetNodesCtx(param, fundVersion, viewTitles, arrNodeMap);
 
         Map<Integer, TitleItemsByType> nodeValueMap = createValuesMap(treeNodeMap, fundVersion, subtreeRoot);
+        Map<Integer, ArrDao> daoLevelMap = new HashMap<>();
+        // read dao links
+        if (displayDaoId && (param.isName() || param.isAccordion())) {
+            ObjectListIterator<Integer> iteratorNodeIds = new ObjectListIterator<>(nodeIds);
+
+            while (iteratorNodeIds.hasNext()) {
+                List<Integer> partNodeIds = iteratorNodeIds.next();
+                List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(partNodeIds);
+                for (ArrDaoLink daoLink : daoLinks) {
+                    if (daoLink.getDao().getDaoType().equals(DaoType.LEVEL)) {
+                        daoLevelMap.put(daoLink.getNodeId(), daoLink.getDao());
+                    }
+                }
+            }
+        }
 
         Map<Integer, ArrNodeConformityExt> conformityInfoForNodes = Collections.emptyMap();
         List<Integer> conformityNodeIds = Collections.emptyList();
@@ -1891,8 +1947,9 @@ private void processEvent(AbstractEventSimple event) {
             Integer id = treeNode.getId();
 
             ArrNode arrNode = arrNodeMap.get(id);
+            ArrDao dao = daoLevelMap.get(id);
 
-            Node node = prepareNode(getNodesCtx, treeNode, arrNode, nodeValueMap, subtreeRoot);
+            Node node = prepareNode(getNodesCtx, treeNode, arrNode, nodeValueMap, subtreeRoot, dao);
             getNodesCtx.addNode(node);
 
             if (param.isNodeConformity()) {
@@ -1929,11 +1986,13 @@ private void processEvent(AbstractEventSimple event) {
      * @param treeNode
      * @param arrNode
      * @param nodeValueMap
+     * @param dao
      * @return
      */
     private Node prepareNode(GetNodesCtx requestCtx, TreeNode treeNode, ArrNode arrNode,
                              Map<Integer, TitleItemsByType> nodeValueMap,
-                             TreeNode subtreeRoot) {
+                             TreeNode subtreeRoot,
+                             ArrDao dao) {
         final Integer id = treeNode.getId();
         final ViewTitles viewTitles = requestCtx.getViewTitles();
         final NodeParam param = requestCtx.getParam();
@@ -1950,24 +2009,20 @@ private void processEvent(AbstractEventSimple event) {
         } else {
             defaultTitle = createDefaultTitle(viewTitles, id);
         }
-        if (descItemCodeToValueMap != null) {
-            if (param.isName()) {
-                node.setName(createTitle(viewTitles.getTreeItemIds(), descItemCodeToValueMap, true,
-                                         defaultTitle));
-            }
-            if (param.isAccordion()) {
-                node.setAccordionLeft(createTitle(viewTitles.getAccordionLeftIds(), descItemCodeToValueMap, true,
-                                                  defaultTitle));
-                node.setAccordionRight(createTitle(viewTitles.getAccordionRightIds(), descItemCodeToValueMap, false,
-                                                   defaultTitle));
-            }
-            if (param.isIcon()) {
+
+        if (param.isName()) {
+            node.setName(createTitle(viewTitles.getTreeItemIds(), descItemCodeToValueMap, dao, defaultTitle));
+        }
+        if (param.isAccordion()) {
+            node.setAccordionLeft(createTitle(viewTitles.getAccordionLeftIds(), descItemCodeToValueMap, dao,
+                                              defaultTitle));
+            node.setAccordionRight(createTitle(viewTitles.getAccordionRightIds(), descItemCodeToValueMap,
+                                               null, null));
+        }
+        if (param.isIcon()) {
+            if (descItemCodeToValueMap != null) {
                 String iconName = getIcon(descItemCodeToValueMap, viewTitles);
                 node.setIcon(iconName);
-            }
-        } else {
-            if (param.isName()) {
-                node.setName(defaultTitle);
             }
         }
 
