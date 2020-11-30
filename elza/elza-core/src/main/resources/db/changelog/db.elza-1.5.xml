@@ -1005,7 +1005,7 @@
     </changeSet>
     
     <changeSet id="20201114011400" author="ppyt" dbms="postgresql">
-      <preConditions>
+      <preConditions onFail="MARK_RAN" onError="MARK_RAN">
        <dbms type="postgresql"/>
        <sqlCheck expectedResult="arr_output_result_output_definition_id_key">select constraint_name from information_schema.constraint_column_usage 
               where table_name = 'arr_output_result' and constraint_name = 'arr_output_result_output_definition_id_key'</sqlCheck>
