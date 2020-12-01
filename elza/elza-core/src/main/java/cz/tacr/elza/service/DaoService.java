@@ -61,6 +61,7 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.vo.DaoExternalSystemVO;
+import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -529,17 +530,19 @@ public class DaoService {
     public ArrDaoLink createDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
                                     ArrDao dao,
                                     @AuthParam(type = AuthParam.Type.NODE) ArrNode node) {
+        String scenario = null;
         ArrNode linkNode;
         // specializace dle typu DAO
         switch (dao.getDaoType()) {
         case LEVEL:
             DaoSyncService daoSyncService = appCtx.getBean(DaoSyncService.class);
-            DesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
+            DaoDesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
             FundLevelService fundLevelService = appCtx.getBean(FundLevelService.class);
             ArrLevel level = fundLevelService.addNewLevel(fundVersion, node, node,
                                                           AddLevelDirection.CHILD, null, null,
                                                           descItemProvider);
             linkNode = level.getNode();
+            scenario = descItemProvider.getScenario();
             break;
         case ATTACHMENT:
             linkNode = node;
@@ -547,6 +550,6 @@ public class DaoService {
         default:
             throw new SystemException("Unrecognized dao type");
         }
-        return createOrFindDaoLink(fundVersion, dao, linkNode, null); // TODO to finished
+        return createOrFindDaoLink(fundVersion, dao, linkNode, scenario);
     }
 }

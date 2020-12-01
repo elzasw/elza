@@ -92,7 +92,6 @@ import cz.tacr.elza.ws.types.v1.Items;
 import cz.tacr.elza.ws.types.v1.NonexistingDaos;
 import cz.tacr.elza.ws.types.v1.ObjectFactory;
 import cz.tacr.elza.ws.types.v1.UnitOfMeasure;
-import io.swagger.annotations.ApiParam;
 
 /**
  * Servisní metody pro synchronizaci digitizátů.
@@ -199,7 +198,7 @@ public class DaoSyncService {
         public void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
                             MultiplItemChangeContext changeContext) {
             String filtredScenario = getFirstOrGivenScenario(items, scenario);
-            // zadaný scenario nebyl nalezen
+            // zadaný scenar nebyl nalezen
             if (scenario != null && filtredScenario == null) {
                 logger.error("Specified scenario={} not found.", scenario);
                 throw new BusinessException("Specified scenario not found", PackageCode.SCENARIO_NOT_FOUND);
@@ -252,6 +251,10 @@ public class DaoSyncService {
                 }
             }
             return null;
+        }
+
+        public String getScenario() {
+            return scenario;
         }
     }
 
@@ -686,12 +689,19 @@ public class DaoSyncService {
         return null;
     }
 
-    public DesctItemProvider createDescItemProvider(ArrDao dao) {
+    public DaoDesctItemProvider createDescItemProvider(ArrDao dao) {
         Items items = unmarshalItemsFromAttributes(dao.getAttributes(), dao.getDaoId());
         if (items == null) {
             return null;
         }
-        return new DaoDesctItemProvider(items, null); // TODO use scenario
+        List<String> scenarios = this.getAllScenarioNames(items);
+        String scenario;
+        if (CollectionUtils.isNotEmpty(scenarios)) {
+            scenario = scenarios.get(0);
+        } else {
+            scenario = null;
+        }
+        return new DaoDesctItemProvider(items, scenario);
     }
 
     public Items unmarshalItemsFromAttributes(String attrs, Integer daoId) {
