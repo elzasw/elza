@@ -13,6 +13,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -212,6 +213,42 @@ public class DaoSyncService {
             }
         }
 
+        public void remove(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
+                           MultiplItemChangeContext changeContext) {
+            String filtredScenario = getFirstOrGivenScenario(items, scenario);
+            // zadaný scenar nebyl nalezen
+            if (scenario != null && filtredScenario == null) {
+                logger.error("Specified scenario={} not found.", scenario);
+                throw new BusinessException("Specified scenario not found", PackageCode.SCENARIO_NOT_FOUND);
+            }
+
+            // prepare old items
+            List<ArrDescItem> prevScenarioItems = new ArrayList<>();
+            for (Object item : getFiltredItems(items, filtredScenario)) {
+                ArrDescItem descItem = prepare(item);
+                prevScenarioItems.add(descItem);
+            }
+
+            List<ArrDescItem> dbItems = descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode());
+            for (ArrDescItem dbItem : dbItems) {
+                // check if item from scenario
+                if (isItemFromScenario(dbItem, prevScenarioItems)) {
+                    descriptionItemService.deleteDescriptionItem(dbItem, fundVersion, change, false, changeContext);
+                }
+            }
+        }
+
+        private boolean isItemFromScenario(ArrDescItem dbItem, List<ArrDescItem> scenarioItems) {
+            for (ArrDescItem scenarioItem : scenarioItems) {
+                if (scenarioItem.getItemTypeId().equals(dbItem.getItemTypeId()) &&
+                        Objects.equals(scenarioItem.getItemSpecId(), dbItem.getItemSpecId())) {
+                    // TODO: check value of item
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private ArrDescItem prepare(Object item) {
             ArrDescItem di = new ArrDescItem();
             wsHelper.convertItem(di, item);
@@ -256,6 +293,7 @@ public class DaoSyncService {
         public String getScenario() {
             return scenario;
         }
+
     }
 
     // --- methods ---
@@ -271,36 +309,33 @@ public class DaoSyncService {
         if (dao == null) {
             throw new ObjectNotFoundException("ArrDao ID=" + daoId + " not found", DigitizationCode.DAO_NOT_FOUND).set("daoId", daoId);
         }
-
-        List<String> scenarios = null;
+        List<ArrDaoLink> daoLinks = daoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
+        if (daoLinks.size() != 1) {
+            throw new ObjectNotFoundException("ArrDao ID=" + daoId + " missing single dao link",
+                    DigitizationCode.DAO_NOT_FOUND).set("daoId", daoId);
+        }
+        ArrDaoLink daoLink = daoLinks.get(0);
+        ArrNode node = daoLink.getNode();        
+        ArrFund fund = node.getFund();
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
+        ArrLevel level = fundLevelService.findLevelByNode(node);
+        
+        ArrChange change = arrangementService.createChange(ArrChange.Type.CHANGE_SCENARIO_ITEMS, node);
+        
         Items items = unmarshalItemsFromAttributes(dao.getAttributes(), daoId);
-        if (items != null) {
-            scenarios = getAllScenarioNames(items);
-        }
-        if (!CollectionUtils.isEmpty(scenarios)) {
-            if (scenarios.contains(scenario)) {
-                // vyhledávání a mazání starých záznamů
-                ArrFund fund = dao.getDaoPackage().getFund();
-                ArrNode node = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId()).getRootNode();
-                ArrChange deleteChange = arrangementService.createChange(ArrChange.Type.CHANGE_SCENARIO_ITEMS, node);
-                List<ArrDescItem> descItems = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
-                for (ArrDescItem item : descItems) {
-                    item.setDeleteChange(deleteChange);
-                }
 
-                // vytváření nových záznamů
-                DaoDesctItemProvider daoDesctItemProvider = new DaoDesctItemProvider(items, scenario);
-                ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
-                ArrLevel level = fundLevelService.addLevelUnder(fundVersion, node);
-                ArrChange change = arrangementService.createChange(ArrChange.Type.CHANGE_SCENARIO_ITEMS, node);
-                MultiplItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
-                daoDesctItemProvider.provide(level, change, fundVersion, changeContext);
-            } else {
-                throw new BusinessException("Specified scenario not found", PackageCode.SCENARIO_NOT_FOUND).set("scenario", scenario);
-            }
-        } else {
-            throw new BusinessException("Scenario list is empty", PackageCode.SCENARIO_NOT_FOUND);
-        }
+        MultiplItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
+        // odstraneni puvodnich zaznamu
+        DaoDesctItemProvider daoDesctItemProviderOrig = new DaoDesctItemProvider(items, daoLink.getScenario());
+        daoDesctItemProviderOrig.remove(level, change, fundVersion, changeContext);
+        
+        DaoDesctItemProvider daoDesctItemProviderNew = new DaoDesctItemProvider(items, scenario);
+        daoDesctItemProviderNew.provide(level, change, fundVersion, changeContext);
+        
+        // store new scenario
+        daoLink.setScenario(scenario);
+        
+        changeContext.flush();
     }
 
     /**
