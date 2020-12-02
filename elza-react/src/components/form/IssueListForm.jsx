@@ -62,10 +62,14 @@ class IssueListForm extends AbstractReactComponent {
     }
 
     addUser = target => value => {
-        if (!value || target.filter(i => i.id.value === value.id).length > 0) {
+        if (!value) {
             return;
         }
-        target.add(value);
+        var curValues = target.getAll();
+        if(curValues && curValues.filter(i => i.id === value.id).length > 0) {
+            return;
+        }
+        target.push(value);
     };
 
     deleteUser = (target, index, e) => {
@@ -75,7 +79,7 @@ class IssueListForm extends AbstractReactComponent {
     renderUser = target => ({item, index}) => {
         return (
             <div key={item.username}>
-                {item.username.value}{' '}
+                {item.username}{' '}
                 <Button
                     variant="action"
                     bsSize="xs"
