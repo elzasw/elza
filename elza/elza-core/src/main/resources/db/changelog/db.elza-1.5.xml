@@ -599,7 +599,7 @@
         <dropTable tableName="ap_rule_system" />
     </changeSet>
 
-    <changeSet id="20200731143500" author="sergey.iryupin">
+    <changeSet id="20200731143500" author="sergey.iryupin">        
     	<sql dbms="postgresql">UPDATE arr_fund f SET fund_number = t1.value
 			FROM (SELECT f.fund_id, dai.value AS value FROM arr_fund f
 			JOIN arr_fund_version v ON v.fund_id = f.fund_id
@@ -612,8 +612,9 @@
 	</changeSet>
 
     <changeSet id="20200803162500" author="sergey.iryupin">
+        <validCheckSum>ANY</validCheckSum>
     	<sql dbms="postgresql">UPDATE arr_fund f SET mark = t1.fund_number
-			FROM (SELECT f.fund_id, das.value as fund_number FROM arr_fund f
+			FROM (SELECT f.fund_id, substr(das.value, 1, 50) as fund_number FROM arr_fund f
 			JOIN arr_fund_version v ON v.fund_id = f.fund_id
 			JOIN arr_desc_item di ON di.node_id = v.root_node_id
 			JOIN arr_item i ON i.item_id = di.item_id
@@ -1001,6 +1002,19 @@
       <addColumn tableName="arr_dao_link">
         <column name="scenario" type="nvarchar(250)" />
       </addColumn>
+    </changeSet>
+    
+    <changeSet id="20201114011400" author="ppyt" dbms="postgresql">
+      <preConditions onFail="MARK_RAN" onError="MARK_RAN">
+       <dbms type="postgresql"/>
+       <sqlCheck expectedResult="arr_output_result_output_definition_id_key">select constraint_name from information_schema.constraint_column_usage 
+              where table_name = 'arr_output_result' and constraint_name = 'arr_output_result_output_definition_id_key'</sqlCheck>
+      </preConditions>
+      <dropUniqueConstraint tableName="arr_output_result" constraintName="arr_output_result_output_definition_id_key"/>
+    </changeSet>
+    <changeSet id="20201114011401" author="ppyt">
+      <sql>UPDATE db_hibernate_sequences SET next_val =(select (coalesce(max(state_id), 0)+20) as v from ap_state) 
+           where sequence_name = 'ap_state|state_id'</sql>
     </changeSet>
 
 </databaseChangeLog>

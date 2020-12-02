@@ -201,9 +201,8 @@ public class PartService {
                                         final List<Object> itemList,
                                         final ApBinding binding,
                                         final List<DataRef> dataRefList) {
-        List<ApItem> items = apItemService.createItems(itemList, apChange, binding, dataRefList, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
+        return apItemService.createItems(itemList, apChange, binding, dataRefList, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createPartItem(apPart, it, is, c, objectId, position));
-        return itemRepository.saveAll(items);
     }
 
     private ApItem createPartItem(final ApPart part, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {

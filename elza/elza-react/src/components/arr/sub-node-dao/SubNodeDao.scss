@@ -1,4 +1,4 @@
-@import "../../variables.scss";
+@import "../../../variables.scss";
 
 .node-dao-dialog {
     .daos-container {
@@ -23,7 +23,11 @@
             border: none;
             flex-shrink: 0;
             height: 100%;
-            &:hover {
+
+            &:disabled {
+                color: #666;
+            }
+            &:hover, &:focus {
                 background: $button-bg-hover;
             }
         }

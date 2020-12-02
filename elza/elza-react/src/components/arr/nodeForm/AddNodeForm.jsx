@@ -52,6 +52,10 @@ class AddNodeForm extends AbstractReactComponent {
         valid: true,
         //AKA refTemplateId
         templateId: undefined,
+        refTemplatesLoad: {
+            loaded: false,
+            data: []
+        }
     };
 
     validate = (props, state) => {
@@ -338,15 +342,17 @@ class AddNodeForm extends AbstractReactComponent {
             const sourceNodes = [];
 
             for (let nodeItem in fundTreeCopy.selectedIds) {
-                const n = fundTreeCopy.nodes.forEach(i => {
-                    if (i.id == nodeItem) {
-                        return i;
+                const nodeId = parseInt(nodeItem);
+                let node;
+                fundTreeCopy.nodes.forEach(i => {
+                    if (i.id === nodeId) {
+                        node = i;
                     }
                 });
-                if (n) {
+                if (node) {
                     sourceNodes.push({
-                        id: n.id,
-                        version: n.version,
+                        id: node.id,
+                        version: node.version,
                     });
                 }
             }
@@ -733,7 +739,7 @@ class AddNodeForm extends AbstractReactComponent {
     }
 
     renderCreateFromOther() {
-        const {value, submitting} = this.state;
+        const {value, submitting, refTemplatesLoad} = this.state;
         const {fundTreeCopy, fund, activeFund, versionId} = this.props;
 
         return [
@@ -770,12 +776,17 @@ class AddNodeForm extends AbstractReactComponent {
                 )}
             </div>,
             <FormGroup>
-                <FormLabel>{i18n('arr.fund.addNode.refTemplate')}</FormLabel>
+                {refTemplatesLoad.loaded && refTemplatesLoad.data.length > 0 && <FormLabel>{i18n('arr.fund.addNode.refTemplate')}</FormLabel>}
                 <RefTemplateField
                     fundId={activeFund.id}
                     useIdAsValue
+                    hide={!refTemplatesLoad.loaded || refTemplatesLoad.data.length === 0}
                     onChange={templateId => this.setState({templateId})}
                     value={this.state.templateId}
+                    onLoadTemplates={templates => {
+                        console.log("onLoadTemplates", templates, activeFund.id);
+                        this.setState({refTemplatesLoad: {loaded: true, data: templates}});
+                    }}
                 />
             </FormGroup>,
         ];

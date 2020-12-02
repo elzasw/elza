@@ -15,12 +15,6 @@ public class ArrDaoLinkVO {
     }
 
     public ArrDaoLinkVO(final Integer id,
-                        final TreeNodeVO treeNodeClient) {
-        this.id = id;
-        this.treeNodeClient = treeNodeClient;
-    }
-
-    public ArrDaoLinkVO(final Integer id,
                         final TreeNodeVO treeNodeClient, final String scenario) {
         this.id = id;
         this.treeNodeClient = treeNodeClient;
