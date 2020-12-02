@@ -61,6 +61,7 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.repository.vo.DaoExternalSystemVO;
+import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -180,7 +181,7 @@ public class DaoService {
      */
     @Transactional(value = TxType.MANDATORY)
     private ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-                                          final ArrDao dao, final ArrNode node, final String scenario) {
+                                           final ArrDao dao, final ArrNode node, final String scenario) {
         if (!dao.getValid()) {
             throw new BusinessException("Nelze připojit digitální entitu k JP, protože je nevalidní", ArrangementCode.INVALID_DAO).level(Level.WARNING);
         }
@@ -198,7 +199,7 @@ public class DaoService {
             }
         }
 
-        final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, dao, node);
+        final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, dao, node, scenario);
 
         nodeIds.add(node.getNodeId());
         updateNodeCacheDaoLinks(nodeIds);
@@ -206,7 +207,8 @@ public class DaoService {
         return resultDaoLink;
     }
 
-    private ArrDaoLink createArrDaoLink(ArrFundVersion fundVersion, ArrDao dao, ArrNode node) {
+    private ArrDaoLink createArrDaoLink(ArrFundVersion fundVersion, ArrDao dao,
+                                        ArrNode node, String scenario) {
         // vytvořit změnu
         final ArrChange createChange = arrangementService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
 
@@ -215,6 +217,7 @@ public class DaoService {
         daoLink.setCreateChange(createChange);
         daoLink.setDao(dao);
         daoLink.setNode(node);
+        daoLink.setScenario(scenario);
 
         logger.debug("Založeno nové propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
         ArrDaoLink resultDaoLink = daoLinkRepository.save(daoLink);
@@ -331,7 +334,6 @@ public class DaoService {
      *            seznam dao pro zneplatnění
      */
     public void deleteDaosWithoutLinks(ArrFund fund, final List<ArrDao> arrDaos) {
-        List<ArrDao> result = new ArrayList<>();
 
         // kontrola, že neexistuje DAO navázané na požadavek ve stavu Příprava, Odesílaný, Odeslaný
         final List<ArrDaoLinkRequest> daoLinkRequests = daoLinkRequestRepository.findByDaosAndStates(arrDaos,
@@ -528,17 +530,19 @@ public class DaoService {
     public ArrDaoLink createDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
                                     ArrDao dao,
                                     @AuthParam(type = AuthParam.Type.NODE) ArrNode node) {
+        String scenario = null;
         ArrNode linkNode;
         // specializace dle typu DAO
         switch (dao.getDaoType()) {
         case LEVEL:
             DaoSyncService daoSyncService = appCtx.getBean(DaoSyncService.class);
-            DesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
+            DaoDesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
             FundLevelService fundLevelService = appCtx.getBean(FundLevelService.class);
             ArrLevel level = fundLevelService.addNewLevel(fundVersion, node, node,
                                                           AddLevelDirection.CHILD, null, null,
                                                           descItemProvider);
             linkNode = level.getNode();
+            scenario = descItemProvider.getScenario();
             break;
         case ATTACHMENT:
             linkNode = node;
@@ -546,6 +550,6 @@ public class DaoService {
         default:
             throw new SystemException("Unrecognized dao type");
         }
-        return createOrFindDaoLink(fundVersion, dao, linkNode, null); // TODO to finished
+        return createOrFindDaoLink(fundVersion, dao, linkNode, scenario);
     }
 }

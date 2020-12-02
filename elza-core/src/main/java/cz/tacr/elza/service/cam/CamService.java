@@ -390,14 +390,15 @@ public class CamService {
             List<ApBindingItem> bindingItemList = bindingItemRepository.findByBinding(binding);
 
             if (CollectionUtils.isNotEmpty(bindingItemList)) {
+                List<ApBindingItem> deleteBindings = new ArrayList<>(bindingItemList);
                 for (ApBindingItem bindingItem : bindingItemList) {
                     if ((bindingItem.getPart() != null && bindingItem.getPart().getCreateChange().getChangeId() <= bindingState.getSyncChange().getChangeId()) ||
                             bindingItem.getItem() != null && bindingItem.getItem().getCreateChange().getChangeId() <= bindingState.getSyncChange().getChangeId()) {
-                        bindingItemList.remove(bindingItem);
+                        deleteBindings.remove(bindingItem);
                     }
                 }
-                if (CollectionUtils.isNotEmpty(bindingItemList)) {
-                    bindingItemRepository.deleteAll(bindingItemList);
+                if (CollectionUtils.isNotEmpty(deleteBindings)) {
+                    bindingItemRepository.deleteAll(deleteBindings);
                 }
             }
 
@@ -435,6 +436,7 @@ public class CamService {
                 binding,
                 state,
                 this.groovyService,
+                this.apDataService,
                 state.getScope());
         batchUpdate.getChanges().add(ceb.build(partList, itemMap, apExternalSystem.getType().toString()));
         return batchUpdate;
@@ -461,6 +463,7 @@ public class CamService {
                 state,
                 bindingState,
                 this.groovyService,
+                this.apDataService,
                 state.getScope());
 
         ueb.build(batchUpdate.getChanges(), entityXml, partList, itemMap, bindingParts, apExternalSystem.getType().toString());

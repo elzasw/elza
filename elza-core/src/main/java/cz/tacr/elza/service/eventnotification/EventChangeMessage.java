@@ -2,14 +2,14 @@ package cz.tacr.elza.service.eventnotification;
 
 import java.util.List;
 
+import org.apache.commons.lang3.Validate;
+
 import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 
 
 /**
  * Událost odesílaná do kontextu aplikace s události vyvolanými v transakci.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
- * @since 15.01.2016
  */
 public class EventChangeMessage {
 
@@ -22,9 +22,17 @@ public class EventChangeMessage {
      * @param events události v aplikaci.
      */
     public EventChangeMessage(final List<AbstractEventSimple> events) {
+        Validate.notNull(events, "Missing list of events");
         this.events = events;
     }
 
+    /**
+     * Return list of events
+     * 
+     * Return alway non null object
+     * 
+     * @return List of events
+     */
     public List<AbstractEventSimple> getEvents() {
         return events;
     }

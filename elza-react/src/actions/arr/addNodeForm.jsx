@@ -138,7 +138,7 @@ function handleSubmitOther(data, cb) {
                         ),
                     );
                 } else {
-                    dispatch(handleCopySubmit(data, cb));
+                    dispatch(handleCopySubmit(data, null, null, cb));
                 }
             })
             .catch(() => {

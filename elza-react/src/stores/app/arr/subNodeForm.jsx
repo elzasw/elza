@@ -554,6 +554,18 @@ export default function subNodeForm(state = initialState, action = {}) {
         case types.FUND_SUB_NODE_FORM_VALUE_RESPONSE:
             console.log('sub node response', state.data, action);
             let node = action.descItemResult.node || action.descItemResult.parent;
+            if (!state.data || !state.data.parent) {
+                if (state.isFetching) {
+                    // probíhá nahrávání formuláře - změna stavu poslední hodnoty může být ignorována
+                    // čekáme na donahrání dat
+                    return state;
+                }
+                // toto je zvláštní situace a nerozumíme, kdy k ní dochází
+                // data by mela vzdy existovat pri prijmu odpovedi
+                console.error('unexpected state - missing data', state, action);
+                throw new Error(`Neočekávaný stav při akci: FUND_SUB_NODE_FORM_VALUE_RESPONSE\nstate: `
+                            +JSON.stringify(state));
+            }
             if (state.data.parent.id !== node.id) {
                 checkFormData(state.formData);
                 return state;
