@@ -1153,11 +1153,12 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "Podtypy jednotek popisu - pro ZP2015_UNIT_TYPE_OTHER"
+rule "Podtypy jednotek popisu - pro ZP2015_UNIT_TYPE_OTHER a ZP2015_UNIT_TYPE_PART"
 no-loop
 when
     $activeLevel: ActiveLevel( )
-    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_OTHER") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_OTHER",
+    												"ZP2015_UNIT_TYPE_PART") ) from $activeLevel.descItems
     $itemType : RulItemTypeExt(code=="ZP2015_UNIT_SUBTYPE")
     $itemSpec : RulItemSpecExt(code in ("ZP2015_UNIT_SUBTYPE_PA", 
     									"ZP2015_UNIT_SUBTYPE_STVR", "ZP2015_UNIT_SUBTYPE_JMF"
@@ -4587,7 +4588,7 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
-rule "Povinné prvky pro podtyp státní vyznamenání (inventář, katalog)"
+rule "Doporučené prvky pro podtyp vyznamenání (inventář, katalog)"
 salience -100
 no-loop
 when $activeLevel: ActiveLevel( $items: descItems )
@@ -4597,14 +4598,15 @@ when $activeLevel: ActiveLevel( $items: descItems )
     $itemType: RulItemTypeExt( code in (
     	"ZP2015_AWARD_LEVEL",
     	"ZP2015_AWARD_GROUP",
-        "ZP2015_DATE_OTHER"
+        "ZP2015_DATE_OTHER",
+        "ZP2015_OTHER_ID"
        ) )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
 
-rule "Doporučené specifikace pro podtyp státní vyznamenání"
+rule "Doporučené specifikace pro podtyp vyznamenání"
 no-loop
 when $activeLevel: ActiveLevel( $items: descItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $items
@@ -4620,7 +4622,7 @@ then
 end
 
 
-rule "Možné specifikace pro podtyp státní vyznamenání"
+rule "Možné specifikace pro podtyp vyznamenání"
 no-loop
 when $activeLevel: ActiveLevel( $items: descItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $items
@@ -4639,7 +4641,7 @@ then
 end
 
 
-rule "Možné role entit pro státní vyznamenání (vždy)"
+rule "Možné role entit pro vyznamenání (vždy)"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $ownItems
@@ -4656,7 +4658,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "Doporučené role entit pro státní vyznamenání (inventář, katalog)"
+rule "Doporučené role entit pro vyznamenání (inventář, katalog)"
 salience -100
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -4674,7 +4676,7 @@ then
 end
 
 
-rule "Povinné role entit pro státní vyznamenání (inventář, katalog)"
+rule "Povinné role entit pro vyznamenání (inventář, katalog)"
 salience -100
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
