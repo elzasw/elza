@@ -3770,9 +3770,9 @@
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <item-spec code="ZP2015_ACCESS_COPYRIGHT2">
-        <name>autorské právo – osobnostní</name>
-        <description>autorské právo – osobnostní, zákon č. 121/2000 Sb. § 11</description>
-        <shortcut>autorské právo – osobnostní</shortcut>
+        <name>autorská práva – osobnostní</name>
+        <description>autorská práva – osobnostní, zákon č. 121/2000 Sb. § 11</description>
+        <shortcut>autorská práva – osobnostní</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <!-- Druh omezení přístupnosti -->
