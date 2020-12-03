@@ -890,7 +890,20 @@ private void processEvent(AbstractEventSimple event) {
             }
         }
         if (dao != null && this.displayDaoId) {
-            titleParts.add("(dao: " + dao.getDaoId().toString() + ")");
+            StringBuilder sb = new StringBuilder();
+            sb.append("(");
+            if (StringUtils.isNotBlank(dao.getLabel())) {
+                sb.append("dao: ");
+                sb.append(dao.getLabel());
+            } else if (StringUtils.isNotBlank(dao.getCode())) {
+                sb.append("dao: ");
+                sb.append(dao.getCode());
+            } else {
+                sb.append("daoId: ");
+                sb.append(dao.getDaoId().toString());
+            }
+            sb.append(")");
+            titleParts.add(sb.toString());
         }
     }
 
