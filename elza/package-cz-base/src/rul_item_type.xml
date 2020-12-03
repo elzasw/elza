@@ -109,6 +109,17 @@
         <use-specification>false</use-specification>
         <string-length-limit>250</string-length-limit>
     </item-type>
+    <!-- Doplněk umožňuje přidat identifikaci entity jen pro potřeby archivu.
+         Tento prvek se nepřenáší do CAMu -->
+    <item-type code="NM_SUP_PRIV" data-type="STRING">
+        <name>Interní doplněk</name>
+        <shortcut>Interní doplněk</shortcut>
+        <description>Interní doplněk</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+        <string-length-limit>50</string-length-limit>
+    </item-type>
     <item-type code="NM_SUP_GEN" data-type="STRING">
         <name>Obecný doplněk</name>
         <shortcut>Obecný doplněk</shortcut>

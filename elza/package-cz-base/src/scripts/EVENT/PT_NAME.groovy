@@ -13,6 +13,7 @@ static GroovyResult generate(final GroovyPart part) {
     compl.add("NM_SUP_CHRO").withSeparator(" : ")
     compl.add("NM_SUP_GEO").withSeparator(" : ")
     compl.add("NM_SUP_GEN").withSeparator(" : ")
+    compl.add("NM_SUP_PRIV").withSeparator(" : ")
 
     GroovyAppender base = GroovyUtils.createAppender(part)
     base.add("NM_MAIN")
