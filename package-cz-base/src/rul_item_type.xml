@@ -223,6 +223,14 @@
         <use-specification>false</use-specification>
         <string-length-limit>250</string-length-limit>
     </item-type>
+    <item-type code="GENDER" data-type="ENUM">
+        <name>Pohlaví</name>
+        <shortcut>Pohlaví</shortcut>
+        <description>Pohlaví</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
+    </item-type>
     <item-type code="LANG" data-type="ENUM">
         <name>Jazyk díla</name>
         <shortcut>Jazyk díla</shortcut>
