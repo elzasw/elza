@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.6.0.final using JasperReports Library version 6.6.0  -->
+<!-- Created with Jaspersoft Studio version 6.14.0.final using JasperReports Library version 6.14.0-2ab0d8625be255bf609c78e1181801213e51db8f  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="detail" columnCount="2" pageWidth="595" pageHeight="842" columnWidth="297" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="33c094a7-3c36-4bd2-b55d-a9860efff18f">
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<import value="org.apache.commons.lang3.StringUtils"/>
@@ -42,14 +42,14 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getRecord().getPrefName().getFullName()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getRecord().getPreferredPart().getValue()]]></textFieldExpression>
 			</textField>
 			<componentElement>
 				<reportElement x="48" y="225" width="200" height="20" uuid="8d7b7ea3-f582-419d-8e09-7a64d9c15c41">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="false" checksumRequired="false">
-					<jr:codeExpression><![CDATA["ul"+(($P{fund}.getFundNumber())!=null)?$P{fund}.getFundNumber():"")+","+$F{value}]]></jr:codeExpression>
+					<jr:codeExpression><![CDATA["ul"+(($P{fund}.getFundNumber()!=null)?$P{fund}.getFundNumber():"")+","+$F{value}]]></jr:codeExpression>
 				</jr:barbecue>
 			</componentElement>
 			<textField>
