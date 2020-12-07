@@ -2356,6 +2356,7 @@
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
@@ -2365,12 +2366,7 @@
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="PUBLIC_ADMINISTRATION"/>
-            <item-aptype register-type="ARMY"/>
-            <item-aptype register-type="CHURCH"/>
-            <item-aptype register-type="CHARITY"/>
-            <item-aptype register-type="GUILD"/>
-            <item-aptype register-type="CLUB"/>
+            <item-aptype register-type="PARTY_GROUP"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
@@ -2380,6 +2376,7 @@
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
@@ -3773,9 +3770,9 @@
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <item-spec code="ZP2015_ACCESS_COPYRIGHT2">
-        <name>autorské právo – osobnostní</name>
-        <description>autorské právo – osobnostní, zákon č. 121/2000 Sb. § 11</description>
-        <shortcut>autorské právo – osobnostní</shortcut>
+        <name>autorská práva – osobnostní</name>
+        <description>autorská práva – osobnostní, zákon č. 121/2000 Sb. § 11</description>
+        <shortcut>autorská práva – osobnostní</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_REASON"/>
     </item-spec>
     <!-- Druh omezení přístupnosti -->

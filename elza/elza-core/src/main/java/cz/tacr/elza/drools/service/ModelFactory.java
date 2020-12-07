@@ -2,7 +2,6 @@ package cz.tacr.elza.drools.service;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
@@ -38,22 +37,6 @@ import java.util.List;
  */
 public class ModelFactory {
     /**
-     * Vytvoří hodnotu atributu.
-     *
-     * @param descItem atribut
-     * @return vo hodnota atributu
-     */
-    static public DescItem createDescItem(final ArrDescItem descItem) {
-        DescItem item = new DescItem();
-        item.setDescItemId(descItem.getItemId());
-        item.setType(descItem.getItemType().getCode());
-        item.setSpecCode(descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode());
-        item.setDataType(descItem.getItemType().getDataType().getCode());
-		item.setUndefined(descItem.isUndefined());
-        return item;
-    }
-
-    /**
      * Vytvoří level.
      *
      * @param level   level
@@ -83,7 +66,7 @@ public class ModelFactory {
     	}
         List<DescItem> result = new ArrayList<>(descItems.size());
         for (ArrDescItem descItem : descItems) {
-            DescItem voDescItem = createDescItem(descItem);
+            DescItem voDescItem = DescItem.valueOf(descItem);
             result.add(voDescItem);
 
             if (!voDescItem.isUndefined()) {
