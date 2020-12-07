@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.14.0.final using JasperReports Library version 6.14.0-2ab0d8625be255bf609c78e1181801213e51db8f  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="detail" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="33c094a7-3c36-4bd2-b55d-a9860efff18f">
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<import value="org.apache.commons.lang3.StringUtils"/>
+	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
+	<parameter name="output" class="cz.tacr.elza.print.Output"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="value" class="java.lang.String">
+		<fieldDescription><![CDATA[value]]></fieldDescription>
+	</field>
+	<field name="ulozeni" class="cz.tacr.elza.print.Structured">
+		<fieldDescription><![CDATA[_THIS]]></fieldDescription>
+	</field>
+	<variable name="BAND_NUMBER" class="java.lang.Integer" resetType="Page">
+		<variableExpression><![CDATA[$V{BAND_NUMBER}+(($F{ulozeni}.hasItemWithSpec("ZP2015_PACKET_TYPE", "ZP2015_PACKET_TYPE_KAR")||$F{ulozeni}.hasItemWithSpec("ZP2015_PACKET_TYPE", "ZP2015_PACKET_TYPE_FAS"))?1:0)]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="380" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{ulozeni}.hasItemWithSpec("ZP2015_PACKET_TYPE", "ZP2015_PACKET_TYPE_KAR")||$F{ulozeni}.hasItemWithSpec("ZP2015_PACKET_TYPE", "ZP2015_PACKET_TYPE_FAS")]]></printWhenExpression>
+			<rectangle radius="0">
+				<reportElement x="28" y="28" width="542" height="322" uuid="e4c09c7d-dde1-4fed-aa41-af84f13973dc">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+					<property name="com.jaspersoft.studio.unit.y" value="mm"/>
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+				</reportElement>
+			</rectangle>
+			<textField>
+				<reportElement x="28" y="28" width="542" height="20" uuid="a9c7279e-d0de-489f-add5-486585a57a06">
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+				</reportElement>
+				<box leftPadding="3">
+					<bottomPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{fund}.getInstitution().getRecord().getPreferredPart().getValue()]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="340" y="310" width="200" height="20" uuid="8d7b7ea3-f582-419d-8e09-7a64d9c15c41">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="Code128" drawText="false" checksumRequired="false">
+					<jr:codeExpression><![CDATA["ul"+(($P{fund}.getFundNumber()!=null)?$P{fund}.getFundNumber():"")+","+$F{value}]]></jr:codeExpression>
+				</jr:barbecue>
+			</componentElement>
+			<textField>
+				<reportElement x="28" y="48" width="542" height="52" uuid="c5dae977-1604-4c7d-9d48-42bd852f5b8b">
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+					<printWhenExpression><![CDATA[$P{fund}.getFundNumber()!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="16" isBold="true" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(StringUtils.isNotBlank($P{fund}.getInternalCode())?$P{fund}.getInternalCode()+" / ":"") + "NAD " + $P{fund}.getFundNumber()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="28" y="100" width="552" height="70" uuid="9b4f2b25-c813-4a5e-ba06-0f9b593360f1">
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="16" isBold="true" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{fund}.getName()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="28" y="170" width="542" height="120" uuid="d0cec8ad-ebb0-4f71-9146-ed82688e6a02">
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="24" isBold="true" pdfEncoding="Cp1250"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="565" y="370" width="30" height="1" forecolor="#A0A0A0" uuid="ce7e356e-e1fa-4d2a-bea0-8273802adf70">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<printWhenExpression><![CDATA[($V{BAND_NUMBER}%3)!=0]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.3" lineStyle="Dashed"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="0" y="369" width="30" height="1" forecolor="#A0A0A0" uuid="21170fce-8ef2-4e3a-b2fe-994ea8ad36c8">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<printWhenExpression><![CDATA[($V{BAND_NUMBER}%3)!=0]]></printWhenExpression>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.3" lineStyle="Dashed"/>
+				</graphicElement>
+			</line>
+		</band>
+	</detail>
+</jasperReport>

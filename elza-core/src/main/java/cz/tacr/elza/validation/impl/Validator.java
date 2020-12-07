@@ -207,8 +207,10 @@ public class Validator {
                 if (data instanceof ArrDataRecordRef) {
                     ApAccessPoint accessPoint = ((ArrDataRecordRef) data).getRecord();
                     ApState apState = stateRepository.findLastByAccessPoint(accessPoint);
+                    // Kontrola stavu entity
                     if (apState.getStateApproval() != ApState.StateApproval.APPROVED) {
-                        validationResults.createError(descItem, "Prvek " + name + " není schválený.", policyTypeCode);
+                        validationResults.createError(descItem, "Prvek " + name + " odkazuje na neschválenou entitu.",
+                                                      policyTypeCode);
                         continue;
                     }
                 }

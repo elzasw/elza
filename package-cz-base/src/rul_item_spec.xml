@@ -3307,4 +3307,16 @@
             <item-aptype register-type="GEO"/>
         </item-aptypes>
     </item-spec>
+    <item-spec code="GE_MALE">
+        <name>muž</name>
+        <description>muž</description>
+        <shortcut>muž</shortcut>
+        <item-type-assign code="GENDER"/>
+    </item-spec>    
+    <item-spec code="GE_FEMALE">
+        <name>žena</name>
+        <description>žena</description>
+        <shortcut>žena</shortcut>
+        <item-type-assign code="GENDER"/>
+    </item-spec>    
 </item-specs>

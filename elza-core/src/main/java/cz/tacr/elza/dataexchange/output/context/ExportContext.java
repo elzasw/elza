@@ -55,24 +55,6 @@ public class ExportContext {
         apIds.add(apId);
     }
 
-    public Set<Integer> getPartyApIds() {
-        return Collections.unmodifiableSet(partAPIds);
-    }
-
-    public void addPartyApId(Integer partyApId) {
-        Validate.notNull(partyApId);
-        partAPIds.add(partyApId);
-    }
-
-    public Set<Integer> getPartyIds() {
-        return Collections.unmodifiableSet(partIds);
-    }
-
-    public void addPartyId(Integer partyId) {
-        Validate.notNull(partyId);
-        partIds.add(partyId);
-    }
-
     public Collection<FundSections> getFundsSections() {
         return fundsSections;
     }

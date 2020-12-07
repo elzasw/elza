@@ -45,8 +45,8 @@
          Zvláštní použití pro KTT: uvádí se u jednotlivosti a znamená počet zásuvek
       -->
     <item-type code="ZP2015_UNIT_COUNT" data-type="INT">
-        <name>Počet evidenčních jednotek</name>
-        <shortcut>Počet EJ</shortcut>
+        <name>Počet archiválií</name>
+        <shortcut>Počet arch.</shortcut>
         <description>Počet evidenčních jednotek - ZP4.2.8</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
