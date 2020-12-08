@@ -19,7 +19,7 @@ import './StructureSubNodeForm.scss';
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
-class UpdateMultipleSub extends AbstractReactComponent {
+class UpdateMultipleSub extends React.Component {
     static formName = 'UpdateMultipleStructureForm';
 
     static propTypes = {
@@ -33,10 +33,6 @@ class UpdateMultipleSub extends AbstractReactComponent {
         subNodeForm: PropTypes.object,
         focus: PropTypes.object,
         descItemFactory: PropTypes.func.isRequired,
-    };
-
-    initFocus = () => {
-        this.refs.subNodeForm.getWrappedInstance().initFocus();
     };
 
     componentDidMount() {
