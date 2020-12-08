@@ -29,25 +29,8 @@ import {routerNavigate} from 'actions/router.jsx';
 import FundTreeLazy from '../arr/FundTreeLazy';
 import {FOCUS_KEYS} from '../../constants.tsx';
 
-class FundDetailTree extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-
-        this.bindMethods(
-            'callFundSelectSubNode',
-            'handleNodeClick',
-            'handleNodeDoubleClick',
-            'handleSelectInNewTab',
-            'handleSelectInTab',
-            'handleContextMenu',
-            'handleFulltextChange',
-            'handleFulltextSearch',
-            'handleFulltextPrevItem',
-            'handleFulltextNextItem',
-            'handleCollapse',
-            'trySetFocus',
-        );
-    }
+class FundDetailTree extends React.Component {
+    refTree = null;
 
     componentDidMount() {
         const {versionId, expandedIds} = this.props;
@@ -61,27 +44,27 @@ class FundDetailTree extends AbstractReactComponent {
         this.trySetFocus(nextProps);
     }
 
-    trySetFocus(props) {
-        var {focus} = props;
+    trySetFocus = props => {
+        const {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {
                 // focus po ztrátě
-                if (this.refs.tree) {
+                if (this.refTree) {
                     // ještě nemusí existovat
                     this.setState({}, () => {
-                        this.refs.tree.getWrappedInstance().focus();
+                        this.refTree.focus();
                         focusWasSet();
                     });
                 }
             } else if (isFocusFor(focus, FOCUS_KEYS.ARR, 1, 'tree') || isFocusFor(focus, FOCUS_KEYS.ARR, 1)) {
                 this.setState({}, () => {
-                    this.refs.tree.getWrappedInstance().focus();
+                    this.refTree.focus();
                     focusWasSet();
                 });
             }
         }
-    }
+    };
 
     shouldComponentUpdate(nextProps, nextState) {
         return true;
@@ -92,9 +75,9 @@ class FundDetailTree extends AbstractReactComponent {
         // return !propsEquals(this.props, nextProps, eqProps);
     }
 
-    requestFundTreeData(versionId, expandedIds) {
+    requestFundTreeData = (versionId, expandedIds) => {
         this.props.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, versionId, expandedIds));
-    }
+    };
 
     /**
      * Zobrazení kontextového menu pro daný uzel.
@@ -124,28 +107,28 @@ class FundDetailTree extends AbstractReactComponent {
      * Otevření uzlu v nové záložce.
      * @param node {Object} uzel
      */
-    handleSelectInNewTab(node) {
+    handleSelectInNewTab = node => {
         this.props.dispatch(contextMenuHide());
 
         this.callFundSelectSubNode(node, true);
-    }
+    };
 
     /**
      * Otevření uzlu v aktuální záložce.
      * @param node {Object} uzel
      */
-    handleSelectInTab(node) {
+    handleSelectInTab = node => {
         this.props.dispatch(contextMenuHide());
 
         this.callFundSelectSubNode(node, false);
-    }
+    };
 
     /**
      * Otevření uzlu v záložce.
      * @param node {Object} uzel
      * @param openNewTab {Boolean} true, pokud se má otevřít v nové záložce
      */
-    callFundSelectSubNode(node, openNewTab) {
+    callFundSelectSubNode = (node, openNewTab) => {
         // Přepnutí na stránku pořádání
         this.props.dispatch(routerNavigate('/arr'));
 
@@ -161,14 +144,14 @@ class FundDetailTree extends AbstractReactComponent {
             parentNode = createFundRoot(this.props.fund);
         }
         this.props.dispatch(fundSelectSubNode(this.props.versionId, node.id, parentNode, openNewTab, null, false));
-    }
+    };
 
     /**
      * Označení uzlu ve stromu.
      * @param node
      * @param e
      */
-    handleNodeClick(node, ensureItemVisible, e) {
+    handleNodeClick = (node, ensureItemVisible, e) => {
         this.props.dispatch(
             fundTreeSelectNode(
                 types.FUND_TREE_AREA_FUNDS_FUND_DETAIL,
@@ -179,50 +162,50 @@ class FundDetailTree extends AbstractReactComponent {
                 null,
             ),
         );
-    }
+    };
 
     /**
      * Otevření uzlu v aktuální záložce (pokud aktuální není, otevře se v nové).
      * @param node {Object} uzel
      * @param e {Object} event
      */
-    handleNodeDoubleClick(node, ensureItemVisible, e) {
+    handleNodeDoubleClick = (node, ensureItemVisible, e) => {
         this.callFundSelectSubNode(node, false, ensureItemVisible);
-    }
+    };
 
-    handleFulltextChange(value) {
+    handleFulltextChange = value => {
         this.props.dispatch(
             fundTreeFulltextChange(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, value),
         );
-    }
+    };
 
-    handleFulltextSearch() {
+    handleFulltextSearch = () => {
         this.props.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId));
-    }
+    };
 
-    handleFulltextPrevItem() {
+    handleFulltextPrevItem = () => {
         this.props.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId));
-    }
+    };
 
-    handleFulltextNextItem() {
+    handleFulltextNextItem = () => {
         this.props.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId));
-    }
+    };
 
     /**
      * Zabalení stromu
      */
-    handleCollapse() {
+    handleCollapse = () => {
         this.props.dispatch(
             fundTreeCollapse(types.FUND_TREE_AREA_FUNDS_FUND_DETAIL, this.props.versionId, this.props.fund),
         );
-    }
+    };
 
     render() {
         const {cutLongLabels} = this.props;
 
         return (
             <FundTreeLazy
-                ref="tree"
+                ref={ref => (this.refTree = ref)}
                 {...this.props}
                 className={this.props.className}
                 cutLongLabels={cutLongLabels}

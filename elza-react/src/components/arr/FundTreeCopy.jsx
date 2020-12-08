@@ -22,20 +22,8 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import {fundTreeSelectNode} from '../../actions/arr/fundTree';
 import {FOCUS_KEYS} from '../../constants.tsx';
 
-class FundTreeCopy extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-
-        this.bindMethods(
-            'handleNodeClick',
-            'handleFulltextChange',
-            'handleFulltextSearch',
-            'handleFulltextPrevItem',
-            'handleFulltextNextItem',
-            'handleCollapse',
-            'trySetFocus',
-        );
-    }
+class FundTreeCopy extends React.Component {
+    treeRef = null;
 
     componentDidMount() {
         const {versionId, expandedIds} = this.props;
@@ -49,27 +37,27 @@ class FundTreeCopy extends AbstractReactComponent {
         this.trySetFocus(nextProps);
     }
 
-    trySetFocus(props) {
-        var {focus} = props;
+    trySetFocus = props => {
+        const {focus} = props;
 
         if (canSetFocus()) {
             if (isFocusFor(focus, null, 1)) {
                 // focus po ztrátě
-                if (this.refs.treeCopy) {
+                if (this.treeRef) {
                     // ještě nemusí existovat
                     this.setState({}, () => {
-                        this.refs.treeCopy.getWrappedInstance().focus();
+                        this.treeRef.focus();
                         focusWasSet();
                     });
                 }
             } else if (isFocusFor(focus, FOCUS_KEYS.ARR, 1, 'treeCopy') || isFocusFor(focus, FOCUS_KEYS.ARR, 1)) {
                 this.setState({}, () => {
-                    this.refs.treeCopy.getWrappedInstance().focus();
+                    this.treeRef.focus();
                     focusWasSet();
                 });
             }
         }
-    }
+    };
 
     shouldComponentUpdate(nextProps, nextState) {
         return true;
@@ -96,16 +84,16 @@ class FundTreeCopy extends AbstractReactComponent {
         // return !propsEquals(this.props, nextProps, eqProps);
     }
 
-    requestFundTreeData(versionId, expandedIds) {
+    requestFundTreeData = (versionId, expandedIds) => {
         this.props.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_COPY, versionId, expandedIds));
-    }
+    };
 
     /**
      * Klik na uzel.
      * @param node {Object} uzel
      * @param e {Object} event
      */
-    handleNodeClick(node, ensureItemVisible, e) {
+    handleNodeClick = (node, ensureItemVisible, e) => {
         e.shiftKey && this.unFocus();
         this.props.dispatch(
             fundTreeSelectNode(
@@ -118,28 +106,28 @@ class FundTreeCopy extends AbstractReactComponent {
                 ensureItemVisible,
             ),
         );
-    }
+    };
 
-    unFocus() {
+    unFocus = () => {
         if (document.selection) {
             document.selection.empty();
         } else {
             window.getSelection().removeAllRanges();
         }
-    }
+    };
 
     /**
      * Zabalení stromu
      */
-    handleCollapse() {
+    handleCollapse = () => {
         this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_COPY, this.props.versionId, this.props.fund));
-    }
+    };
 
-    handleFulltextChange(value) {
+    handleFulltextChange = value => {
         this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_COPY, this.props.versionId, value));
-    }
+    };
 
-    handleFulltextSearch() {
+    handleFulltextSearch = () => {
         const {searchFormData} = this.props;
 
         this.props.dispatch(
@@ -150,21 +138,21 @@ class FundTreeCopy extends AbstractReactComponent {
                 searchFormData ? searchFormData : {type: 'FORM'},
             ),
         );
-    }
+    };
 
-    handleFulltextPrevItem() {
+    handleFulltextPrevItem = () => {
         this.props.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_COPY, this.props.versionId));
-    }
+    };
 
-    handleFulltextNextItem() {
+    handleFulltextNextItem = () => {
         this.props.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_COPY, this.props.versionId));
-    }
+    };
 
     render() {
         const {actionAddons, className, cutLongLabels} = this.props;
         return (
             <FundTreeLazy
-                ref="treeCopy"
+                ref={ref => (this.treeRef = ref)}
                 className={className}
                 actionAddons={actionAddons}
                 {...this.props}

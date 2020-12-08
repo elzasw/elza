@@ -19,6 +19,7 @@ const BLANK_CONFORMITY_INFO = {missings: [], errors: []};
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
 class StructureSubNodeForm extends React.Component {
+    refForm = null;
     static propTypes = {
         versionId: PropTypes.number.isRequired,
         fundId: PropTypes.number.isRequired,
@@ -39,7 +40,7 @@ class StructureSubNodeForm extends React.Component {
     };
 
     initFocus = () => {
-        this.refs.subNodeForm.getWrappedInstance().initFocus();
+        this.refForm.initFocus();
     };
 
     componentDidMount() {
@@ -150,7 +151,7 @@ class StructureSubNodeForm extends React.Component {
                     </NoFocusButton>
                 )}
                 <SubNodeForm
-                    ref="subNodeForm"
+                    ref={ref => (this.refForm = ref)}
                     typePrefix="structure"
                     versionId={versionId}
                     fundId={fundId}

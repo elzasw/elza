@@ -33,6 +33,7 @@ import PersistentSortForm from '../../components/arr/PersistentSortForm';
 import {descItemTypesFetchIfNeeded} from '../../actions/refTables/descItemTypes';
 
 class FundActionPage extends ArrParentPage {
+    refForm = null;
     static contextTypes = {shortcuts: PropTypes.object};
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
@@ -134,7 +135,8 @@ class FundActionPage extends ArrParentPage {
         if (form.code !== '' && form.nodes && form.nodes.length > 0) {
             if (form.code === PERSISTENT_SORT_CODE) {
                 //zavolá metodu FundActionPage#submitPersistentSortForm
-                this.refs.persistentSortForm.getWrappedInstance().submit();
+                console.log('Aaa', this.refForm);
+                this.refForm.submit();
             } else {
                 this.props.dispatch(fundActionFormSubmit(versionId, form.code));
             }
@@ -468,7 +470,7 @@ class FundActionPage extends ArrParentPage {
                                 <PersistentSortForm
                                     initialValues={detail.data && detail.data.config && JSON.parse(detail.data.config)}
                                     onSubmit={this.submitPersistentSortForm}
-                                    ref={'persistentSortForm'}
+                                    ref={ref => (this.refForm = ref)}
                                     versionId={versionId}
                                 />,
                             ]}
