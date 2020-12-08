@@ -304,7 +304,11 @@ export function fundOutputStateChangeToastr(versionId, entityId, state) {
                 return;
             }
 
-            const showBtn = (
+            var currentLocation = window.location.pathname;
+            // show butten only if on another page
+            var showBtn;
+            if(!currentLocation.endsWith('/arr/output')) {
+                showBtn = (
                 <Button
                     variant="link"
                     onClick={() => {
@@ -314,7 +318,10 @@ export function fundOutputStateChangeToastr(versionId, entityId, state) {
                 >
                     {i18n('change.arr.output.clickToShow')}
                 </Button>
-            );
+                );
+            } else {
+                showBtn = null;
+            }
 
             switch (state) {
                 case 'GENERATING':
