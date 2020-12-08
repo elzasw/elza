@@ -135,7 +135,6 @@ class FundActionPage extends ArrParentPage {
         if (form.code !== '' && form.nodes && form.nodes.length > 0) {
             if (form.code === PERSISTENT_SORT_CODE) {
                 //zavolá metodu FundActionPage#submitPersistentSortForm
-                console.log('Aaa', this.refForm);
                 this.refForm.submit();
             } else {
                 this.props.dispatch(fundActionFormSubmit(versionId, form.code));
