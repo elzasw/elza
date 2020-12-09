@@ -9,12 +9,15 @@ import static java.util.stream.Collectors.toSet;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -30,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.google.common.collect.Lists;
 
@@ -57,15 +61,18 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DaoFileGroupRepository;
 import cz.tacr.elza.repository.DaoFileRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
 import cz.tacr.elza.ws.WsClient;
@@ -126,6 +133,12 @@ public class DaoSyncService {
     @Autowired
     private DaoFileGroupRepository daoFileGroupRepository;
 
+    @Autowired
+    DescItemRepository descItemRepository;
+
+    @Autowired
+    private ChangeRepository changeRepository;
+
     // --- services ---
 
     @Autowired
@@ -145,6 +158,9 @@ public class DaoSyncService {
 
     @Autowired
     private GroovyScriptService groovyScriptService;
+
+    @Autowired
+    FundLevelService fundLevelService;
 
     @Autowired
     private WSHelper wsHelper;
@@ -183,7 +199,7 @@ public class DaoSyncService {
         public void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
                             MultiplItemChangeContext changeContext) {
             String filtredScenario = getFirstOrGivenScenario(items, scenario);
-            // zadaný scenario nebyl nalezen
+            // zadaný scenar nebyl nalezen
             if (scenario != null && filtredScenario == null) {
                 logger.error("Specified scenario={} not found.", scenario);
                 throw new BusinessException("Specified scenario not found", PackageCode.SCENARIO_NOT_FOUND);
@@ -195,6 +211,42 @@ public class DaoSyncService {
                                                                     level.getNode(), fundVersion, change,
                                                                     changeContext);
             }
+        }
+
+        public void remove(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
+                           MultiplItemChangeContext changeContext) {
+            String filtredScenario = getFirstOrGivenScenario(items, scenario);
+            // zadaný scenar nebyl nalezen
+            if (scenario != null && filtredScenario == null) {
+                logger.error("Specified scenario={} not found.", scenario);
+                throw new BusinessException("Specified scenario not found", PackageCode.SCENARIO_NOT_FOUND);
+            }
+
+            // prepare old items
+            List<ArrDescItem> prevScenarioItems = new ArrayList<>();
+            for (Object item : getFiltredItems(items, filtredScenario)) {
+                ArrDescItem descItem = prepare(item);
+                prevScenarioItems.add(descItem);
+            }
+
+            List<ArrDescItem> dbItems = descItemRepository.findByNodeAndDeleteChangeIsNull(level.getNode());
+            for (ArrDescItem dbItem : dbItems) {
+                // check if item from scenario
+                if (isItemFromScenario(dbItem, prevScenarioItems)) {
+                    descriptionItemService.deleteDescriptionItem(dbItem, fundVersion, change, false, changeContext);
+                }
+            }
+        }
+
+        private boolean isItemFromScenario(ArrDescItem dbItem, List<ArrDescItem> scenarioItems) {
+            for (ArrDescItem scenarioItem : scenarioItems) {
+                if (scenarioItem.getItemTypeId().equals(dbItem.getItemTypeId()) &&
+                        Objects.equals(scenarioItem.getItemSpecId(), dbItem.getItemSpecId())) {
+                    // TODO: check value of item
+                    return true;
+                }
+            }
+            return false;
         }
 
         private ArrDescItem prepare(Object item) {
@@ -237,9 +289,54 @@ public class DaoSyncService {
             }
             return null;
         }
+
+        public String getScenario() {
+            return scenario;
+        }
+
     }
 
     // --- methods ---
+
+    /**
+     * Změnit scénář
+     * 
+     * @param daoId
+     * @param scenario
+     */
+    public void changeScenario(Integer daoId, String scenario) {
+        ArrDao dao = daoRepository.getOne(daoId);
+        if (dao == null) {
+            throw new ObjectNotFoundException("ArrDao ID=" + daoId + " not found", DigitizationCode.DAO_NOT_FOUND).set("daoId", daoId);
+        }
+        List<ArrDaoLink> daoLinks = daoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
+        if (daoLinks.size() != 1) {
+            throw new ObjectNotFoundException("ArrDao ID=" + daoId + " missing single dao link",
+                    DigitizationCode.DAO_NOT_FOUND).set("daoId", daoId);
+        }
+        ArrDaoLink daoLink = daoLinks.get(0);
+        ArrNode node = daoLink.getNode();        
+        ArrFund fund = node.getFund();
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
+        ArrLevel level = fundLevelService.findLevelByNode(node);
+        
+        ArrChange change = arrangementService.createChange(ArrChange.Type.CHANGE_SCENARIO_ITEMS, node);
+        
+        Items items = unmarshalItemsFromAttributes(dao.getAttributes(), daoId);
+
+        MultiplItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
+        // odstraneni puvodnich zaznamu
+        DaoDesctItemProvider daoDesctItemProviderOrig = new DaoDesctItemProvider(items, daoLink.getScenario());
+        daoDesctItemProviderOrig.remove(level, change, fundVersion, changeContext);
+        
+        DaoDesctItemProvider daoDesctItemProviderNew = new DaoDesctItemProvider(items, scenario);
+        daoDesctItemProviderNew.provide(level, change, fundVersion, changeContext);
+        
+        // store new scenario
+        daoLink.setScenario(scenario);
+        
+        changeContext.flush();
+    }
 
     /**
      * Zavolá WS pro synchronizaci digitalizátů a aktualizuje metadata pro daný node a DAO.
@@ -627,12 +724,19 @@ public class DaoSyncService {
         return null;
     }
 
-    public DesctItemProvider createDescItemProvider(ArrDao dao) {
+    public DaoDesctItemProvider createDescItemProvider(ArrDao dao) {
         Items items = unmarshalItemsFromAttributes(dao.getAttributes(), dao.getDaoId());
         if (items == null) {
             return null;
         }
-        return new DaoDesctItemProvider(items, null); // TODO use scenario
+        List<String> scenarios = this.getAllScenarioNames(items);
+        String scenario;
+        if (CollectionUtils.isNotEmpty(scenarios)) {
+            scenario = scenarios.get(0);
+        } else {
+            scenario = null;
+        }
+        return new DaoDesctItemProvider(items, scenario);
     }
 
     public Items unmarshalItemsFromAttributes(String attrs, Integer daoId) {

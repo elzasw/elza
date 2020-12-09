@@ -121,9 +121,6 @@ public class DEExportService {
         if (params.getApIds() != null) {
             params.getApIds().forEach(context::addApId);
         }
-        if (params.getPartyIds() != null) {
-            params.getPartyIds().forEach(context::addPartyId);
-        }
 
         // call all readers
         for (ExportPhase phase : ExportPhase.values()) {

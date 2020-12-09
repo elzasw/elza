@@ -169,10 +169,10 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
                 @Override
                 public DescriptionItemAPRef convert(ArrData data, ObjectFactory objectFactory) {
                     DescriptionItemAPRef item = super.convert(data, objectFactory);
-                    if (item != null) {
+                    /*if (item != null) {
                         ArrDataRecordRef apRef = (ArrDataRecordRef) data;
                         context.addApId(apRef.getRecordId());
-                    }
+                    }*/
                     return item;
                 }
             };

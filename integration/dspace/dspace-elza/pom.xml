@@ -3,7 +3,7 @@
     <groupId>org.dspace</groupId>
     <artifactId>dspace-elza</artifactId>
     <packaging>war</packaging>
-    <version>6.4-SNAPSHOT</version>
+    <version>6.3</version>
     <name>DSpace ELZA :: ELZA Integration</name>
     <description>DSpace ELZA Integration</description>
     <url>http://demo.dspace.org</url>
@@ -11,7 +11,7 @@
     <parent>
         <groupId>org.dspace</groupId>
         <artifactId>dspace-parent</artifactId>
-        <version>6.4-SNAPSHOT</version>
+        <version>6.3</version>
         <relativePath>..</relativePath>
     </parent>
 
@@ -19,7 +19,8 @@
         <!-- This is the path to the root [dspace-src] directory. -->
         <root.basedir>${basedir}/..</root.basedir>
         <spring-security.version>3.2.9.RELEASE</spring-security.version>
-        <cxf.version>3.1.11</cxf.version>
+        <cxf.version>3.3.7</cxf.version>
+        <dspace.version>6.3</dspace.version>
     </properties>
     <build>
         <resources>
@@ -111,9 +112,9 @@
             <dependency>
                 <groupId>org.openpreservation.jhove</groupId>
                 <artifactId>jhove-core</artifactId>
-                <version>1.22.1</version>
+                <version>1.24.2</version>
             </dependency>
-            <dependency>
+<!--            <dependency>
                 <groupId>org.openpreservation.jhove</groupId>
                 <artifactId>jhove-modules</artifactId>
                 <version>1.20.1</version>
@@ -123,11 +124,11 @@
                         <artifactId>jhove-core</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
+            </dependency>-->
             <dependency>
                 <groupId>org.openpreservation.jhove</groupId>
                 <artifactId>jhove-ext-modules</artifactId>
-                <version>1.22.1</version>
+                <version>1.24.2</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jwat</groupId>
@@ -154,7 +155,7 @@
             <dependency>
                 <groupId>uk.gov.nationalarchives</groupId>
                 <artifactId>droid-core</artifactId>
-                <version>6.4</version>
+                <version>6.5</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.tukaani</groupId>
@@ -392,10 +393,10 @@
             <groupId>org.openpreservation.jhove</groupId>
             <artifactId>jhove-core</artifactId>
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.openpreservation.jhove</groupId>
             <artifactId>jhove-modules</artifactId>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.openpreservation.jhove</groupId>
             <artifactId>jhove-ext-modules</artifactId>
@@ -407,14 +408,14 @@
         <dependency>
             <groupId>org.dspace</groupId>
             <artifactId>dspace-xmlui</artifactId>
-            <version>6.4-SNAPSHOT</version>
+            <version>${dspace.version}</version>
             <type>jar</type>
             <classifier>classes</classifier>
         </dependency>
         <dependency>
             <groupId>org.dspace</groupId>
             <artifactId>dspace-xmlui</artifactId>
-            <version>6.4-SNAPSHOT</version>
+            <version>${dspace.version}</version>
             <type>war</type>
         </dependency>
         <!-- END Droid a JHove -->
