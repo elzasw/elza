@@ -125,7 +125,7 @@ public class ScriptModelFactory {
 
         List<DescItem> result = new ArrayList<>(descItems.size());
         for (ArrDescItem descItem : descItems) {
-            DescItem item = ModelFactory.createDescItem(descItem);
+            DescItem item = DescItem.valueOf(descItem);
             result.add(item);
             extension.accept(item);
         }

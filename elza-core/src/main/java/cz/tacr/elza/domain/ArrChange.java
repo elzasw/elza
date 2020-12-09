@@ -316,6 +316,11 @@ public class ArrChange {
         /**
          * Synchronizace JP
          */
-        SYNCHRONIZE_JP
+        SYNCHRONIZE_JP,
+
+        /**
+         * Změna záznamu podle scénářů
+         */
+        CHANGE_SCENARIO_ITEMS,
     }
 }

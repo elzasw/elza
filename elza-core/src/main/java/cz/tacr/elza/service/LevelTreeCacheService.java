@@ -62,6 +62,9 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDao.DaoType;
+import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -75,6 +78,7 @@ import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LevelRepositoryCustom;
@@ -102,13 +106,19 @@ import cz.tacr.elza.service.vo.TitleItemsByType;
 @EventBusListener
 public class LevelTreeCacheService implements NodePermissionChecker {
 
+    private static final Logger logger = LoggerFactory.getLogger(LevelTreeCacheService.class);
+
     /**
      * Maximální počet verzí stromů ukládaných současně v paměti.
      */
     @Value("${elza.levelTreeCache.size:30}")
     private int maxCacheSize = 30;
 
-    private static final Logger logger = LoggerFactory.getLogger(LevelTreeCacheService.class);
+    /**
+     * Maximální počet verzí stromů ukládaných současně v paměti.
+     */
+    @Value("${elza.levelTreeCache.display.daoId:true}")
+    private boolean displayDaoId = true;
 
     @Autowired
     private LevelRepository levelRepository;
@@ -151,6 +161,9 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private DaoLinkRepository daoLinkRepository;
 
     /**
      * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel).
@@ -282,8 +295,6 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
         List<TreeNodeVO> result = new LinkedList<>();
         ViewTitles viewTitles = configView.getViewTitles(version.getRuleSetId(), version.getFund().getFundId());
-
-        Integer levelTypeId = viewTitles.getLevelTypeId();
 
         for (Integer nodeId : nodeIds) {
             TreeNode treeNode = versionTreeCache.get(nodeId);
@@ -646,48 +657,60 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
     @Subscribe
     public void onDataUpdate(final EventChangeMessage changeMessage) {
+        Validate.notNull(changeMessage);
 
-        List<AbstractEventSimple> events = changeMessage.getEvents();
-        for (AbstractEventSimple event : events) {
-            logger.debug("Zpracování události "+event.getEventType());
-            //projdeme všechny změny, které jsou změny ve stromu uzlů verze a aktualizujeme cache verzí
-            if (EventVersion.class.isAssignableFrom(event.getClass())) {
+        try {
 
-                switch (event.getEventType()) {
-                    case NODE_DELETE:
-                        break;
-                    case ADD_LEVEL_AFTER:
-                    case ADD_LEVEL_BEFORE:
-                    case ADD_LEVEL_UNDER:
-                        EventAddNode eventAddNode = (EventAddNode) event;
-                        actionAddLevel(eventAddNode.getNode().getNodeId(), eventAddNode.getStaticNode().getNodeId(),
-                                       eventAddNode.getVersionId(), event.getEventType());
-                        break;
-                    case MOVE_LEVEL_AFTER:
-                    case MOVE_LEVEL_BEFORE:
-                    case MOVE_LEVEL_UNDER:
-                        EventNodeMove eventNodeMove = (EventNodeMove) event;
-                        List<Integer> transportIds = eventNodeMove.getTransportLevels().stream()
-                                .map(n -> n.getNodeId()).collect(Collectors.toList());
-                        actionMoveLevel(eventNodeMove.getStaticLevel().getNodeId(), transportIds,
-                                        eventNodeMove.getVersionId(), event.getEventType());
+            List<AbstractEventSimple> events = changeMessage.getEvents();
+            for (AbstractEventSimple event : events) {
+                logger.debug("Zpracování události " + event.getEventType());
 
-                        break;
-                    case DELETE_LEVEL:
-                        EventDeleteNode eventIdInVersion = (EventDeleteNode) event;
-                        actionDeleteLevel(eventIdInVersion.getNodeId(), eventIdInVersion.getVersionId());
-                        break;
-                    case BULK_ACTION_STATE_CHANGE:
-                        EventIdInVersion bulkActionStateChangeEvent = (EventIdInVersion) event;
-                        if (bulkActionStateChangeEvent.getState().equals(ArrBulkActionRun.State.FINISHED.toString())) {
-                            if (bulkActionStateChangeEvent.getCode().equals("PERZISTENTNI_RAZENI")) {
-                                refreshFundVersion(bulkActionStateChangeEvent.getVersionId());
-                            }
-                        }
-                        break;
-                }
-
+                processEvent(event);
             }
+        } catch (Exception e) {
+            logger.error("Exception during onDataUpdate", e);
+            throw e;
+        }
+    }
+
+private void processEvent(AbstractEventSimple event) {
+    //projdeme všechny změny, které jsou změny ve stromu uzlů verze a aktualizujeme cache verzí
+    if (EventVersion.class.isAssignableFrom(event.getClass())) {
+
+        switch (event.getEventType()) {
+        case NODE_DELETE:
+            break;
+        case ADD_LEVEL_AFTER:
+        case ADD_LEVEL_BEFORE:
+        case ADD_LEVEL_UNDER:
+            EventAddNode eventAddNode = (EventAddNode) event;
+            actionAddLevel(eventAddNode.getNode().getNodeId(), eventAddNode.getStaticNode().getNodeId(),
+                           eventAddNode.getVersionId(), event.getEventType());
+            break;
+        case MOVE_LEVEL_AFTER:
+        case MOVE_LEVEL_BEFORE:
+        case MOVE_LEVEL_UNDER:
+            EventNodeMove eventNodeMove = (EventNodeMove) event;
+            List<Integer> transportIds = eventNodeMove.getTransportLevels().stream()
+                    .map(n -> n.getNodeId()).collect(Collectors.toList());
+            actionMoveLevel(eventNodeMove.getStaticLevel().getNodeId(), transportIds,
+                            eventNodeMove.getVersionId(), event.getEventType());
+
+            break;
+        case DELETE_LEVEL:
+            EventDeleteNode eventIdInVersion = (EventDeleteNode) event;
+            actionDeleteLevel(eventIdInVersion.getNodeId(), eventIdInVersion.getVersionId());
+            break;
+        case BULK_ACTION_STATE_CHANGE:
+            EventIdInVersion bulkActionStateChangeEvent = (EventIdInVersion) event;
+            if (bulkActionStateChangeEvent.getState().equals(ArrBulkActionRun.State.FINISHED.toString())) {
+                if (bulkActionStateChangeEvent.getCode().equals("PERZISTENTNI_RAZENI")) {
+                    refreshFundVersion(bulkActionStateChangeEvent.getVersionId());
+                        }
+            }
+            break;
+        }
+
         }
     }
 
@@ -749,6 +772,8 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         Assert.notNull(treeNodeMap, "Mapa nesmí být null");
         Assert.notNull(version, "Verze AS musí být vyplněna");
 
+        Map<Integer, ArrDao> daoLevelMap = new HashMap<>();
+        // read nodes
         List<ArrNode> nodes = new ArrayList<>(treeNodeMap.size());
         Set<Integer> nodeIds = treeNodeMap.keySet();
         ObjectListIterator<Integer> iterator = new ObjectListIterator<>(nodeIds);
@@ -756,12 +781,22 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             List<Integer> nodeIdsSublist = iterator.next();
 
             nodes.addAll(nodeRepository.findAllById(nodeIdsSublist));
+            // read dao links
+            if (displayDaoId) {
+                List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIdsSublist);
+                for (ArrDaoLink daoLink : daoLinks) {
+                    if (daoLink.getDao().getDaoType().equals(DaoType.LEVEL)) {
+                        daoLevelMap.put(daoLink.getNodeId(), daoLink.getDao());
+                    }
+                }
+            }
         }
         Map<Integer, ArrNode> nodeMap = new HashMap<>(nodes.size());
         for (ArrNode node : nodes) {
             nodeMap.put(node.getNodeId(), node);
         }
 
+        // create titles
         ViewTitles viewTitles = configView
                 .getViewTitles(version.getRuleSetId(), version.getFundId());
         Map<Integer, TitleItemsByType> valuesMap = valuesMapParam;
@@ -809,7 +844,8 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
         for (TreeNodeVO treeNodeClient : result.values()) {
             TitleItemsByType descItemCodeToValueMap = valuesMap.get(treeNodeClient.getId());
-            fillValues(version, descItemCodeToValueMap, viewTitles, treeNodeClient);
+            ArrDao dao = daoLevelMap.get(treeNodeClient.getId());
+            fillValues(version, descItemCodeToValueMap, viewTitles, treeNodeClient, dao);
         }
 
         return result;
@@ -836,11 +872,11 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         return result;
     }
 
-    private String createTitle(final List<Integer> itemTypeIds, final TitleItemsByType descItemCodeToValueMap,
-                               final boolean useDefaultTitle, final String defaultNodeTitle) {
-        List<String> titles = new ArrayList<String>();
-
-        if (itemTypeIds != null) {
+    private void createTitle(final List<String> titleParts,
+                                     final List<Integer> itemTypeIds,
+                             final TitleItemsByType descItemCodeToValueMap,
+                             ArrDao dao) {
+        if (itemTypeIds != null && descItemCodeToValueMap != null) {
             for (Integer itemTypeId : itemTypeIds) {
                 TitleValues titleValues = descItemCodeToValueMap.getTitles(itemTypeId);
                 if (titleValues != null) {
@@ -848,23 +884,41 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
                     String value = titleValue.getValue();
                     if (StringUtils.isNotBlank(value)) {
-                        titles.add(value);
+                        titleParts.add(value);
                     }
                 }
             }
         }
-
-        String title;
-        if (titles.isEmpty()) {
-            if (useDefaultTitle) {
-                title = defaultNodeTitle;
+        if (dao != null && this.displayDaoId) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("(");
+            if (StringUtils.isNotBlank(dao.getLabel())) {
+                sb.append("dao: ");
+                sb.append(dao.getLabel());
+            } else if (StringUtils.isNotBlank(dao.getCode())) {
+                sb.append("dao: ");
+                sb.append(dao.getCode());
             } else {
-                title = null;
+                sb.append("daoId: ");
+                sb.append(dao.getDaoId().toString());
             }
-        } else {
-            title = StringUtils.join(titles, " ");
+            sb.append(")");
+            titleParts.add(sb.toString());
         }
+    }
 
+    private String createTitle(final List<Integer> itemTypeIds,
+                               final TitleItemsByType descItemCodeToValueMap,
+                               final ArrDao dao,
+                               final String defaultNodeTitle) {
+
+        List<String> titleParts = new ArrayList<String>();
+        createTitle(titleParts, itemTypeIds, descItemCodeToValueMap, dao);
+
+        if (titleParts.size() == 0 && StringUtils.isNotEmpty(defaultNodeTitle)) {
+            titleParts.add(defaultNodeTitle);
+        }
+        String title = StringUtils.join(titleParts, " ");
         return title;
     }
 
@@ -875,25 +929,35 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @param descItemCodeToValueMap
      * @param viewTitles
      * @param treeNodeClient
+     * @param dao
+     *            Volitelný hlavní dao, může být null
      */
-    private void fillValues(final ArrFundVersion version, final TitleItemsByType descItemCodeToValueMap,
-                            final ViewTitles viewTitles, final TreeNodeVO treeNodeClient) {
-        String defaultTitle;
-        if (treeNodeClient.getDepth() > 1) {
-            defaultTitle = createDefaultTitle(viewTitles, treeNodeClient.getId());
-        } else {
-            defaultTitle = createRootTitle(version.getFund(), viewTitles, treeNodeClient.getId());
-        }
+    private void fillValues(final ArrFundVersion version,
+                            final TitleItemsByType descItemCodeToValueMap,
+                            final ViewTitles viewTitles,
+                            final TreeNodeVO treeNodeClient,
+                            final ArrDao dao) {
 
         if (descItemCodeToValueMap != null) {
-            treeNodeClient
-                    .setName(createTitle(viewTitles.getTreeItemIds(), descItemCodeToValueMap, true, defaultTitle));
-
             String icon = getIcon(descItemCodeToValueMap, viewTitles);
             treeNodeClient.setIcon(icon);
-        } else {
-            treeNodeClient.setName(defaultTitle);
         }
+
+        List<String> titles = new ArrayList<>();
+        createTitle(titles, viewTitles.getTreeItemIds(), descItemCodeToValueMap, dao);
+        if (titles.size() == 0) {
+            String defaultTitle;
+            if (treeNodeClient.getDepth() > 1) {
+                defaultTitle = createDefaultTitle(viewTitles, treeNodeClient.getId());
+            } else {
+                defaultTitle = createRootTitle(version.getFund(), viewTitles, treeNodeClient.getId());
+            }
+
+            titles.add(defaultTitle);
+        }
+        String title = StringUtils.join(titles, " ");
+
+        treeNodeClient.setName(title);
     }
 
     /**
@@ -1857,6 +1921,21 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         GetNodesCtx getNodesCtx = new GetNodesCtx(param, fundVersion, viewTitles, arrNodeMap);
 
         Map<Integer, TitleItemsByType> nodeValueMap = createValuesMap(treeNodeMap, fundVersion, subtreeRoot);
+        Map<Integer, ArrDao> daoLevelMap = new HashMap<>();
+        // read dao links
+        if (displayDaoId && (param.isName() || param.isAccordion())) {
+            ObjectListIterator<Integer> iteratorNodeIds = new ObjectListIterator<>(nodeIds);
+
+            while (iteratorNodeIds.hasNext()) {
+                List<Integer> partNodeIds = iteratorNodeIds.next();
+                List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(partNodeIds);
+                for (ArrDaoLink daoLink : daoLinks) {
+                    if (daoLink.getDao().getDaoType().equals(DaoType.LEVEL)) {
+                        daoLevelMap.put(daoLink.getNodeId(), daoLink.getDao());
+                    }
+                }
+            }
+        }
 
         Map<Integer, ArrNodeConformityExt> conformityInfoForNodes = Collections.emptyMap();
         List<Integer> conformityNodeIds = Collections.emptyList();
@@ -1881,8 +1960,9 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             Integer id = treeNode.getId();
 
             ArrNode arrNode = arrNodeMap.get(id);
+            ArrDao dao = daoLevelMap.get(id);
 
-            Node node = prepareNode(getNodesCtx, treeNode, arrNode, nodeValueMap, subtreeRoot);
+            Node node = prepareNode(getNodesCtx, treeNode, arrNode, nodeValueMap, subtreeRoot, dao);
             getNodesCtx.addNode(node);
 
             if (param.isNodeConformity()) {
@@ -1919,11 +1999,13 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @param treeNode
      * @param arrNode
      * @param nodeValueMap
+     * @param dao
      * @return
      */
     private Node prepareNode(GetNodesCtx requestCtx, TreeNode treeNode, ArrNode arrNode,
                              Map<Integer, TitleItemsByType> nodeValueMap,
-                             TreeNode subtreeRoot) {
+                             TreeNode subtreeRoot,
+                             ArrDao dao) {
         final Integer id = treeNode.getId();
         final ViewTitles viewTitles = requestCtx.getViewTitles();
         final NodeParam param = requestCtx.getParam();
@@ -1940,24 +2022,20 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         } else {
             defaultTitle = createDefaultTitle(viewTitles, id);
         }
-        if (descItemCodeToValueMap != null) {
-            if (param.isName()) {
-                node.setName(createTitle(viewTitles.getTreeItemIds(), descItemCodeToValueMap, true,
-                                         defaultTitle));
-            }
-            if (param.isAccordion()) {
-                node.setAccordionLeft(createTitle(viewTitles.getAccordionLeftIds(), descItemCodeToValueMap, true,
-                                                  defaultTitle));
-                node.setAccordionRight(createTitle(viewTitles.getAccordionRightIds(), descItemCodeToValueMap, false,
-                                                   defaultTitle));
-            }
-            if (param.isIcon()) {
+
+        if (param.isName()) {
+            node.setName(createTitle(viewTitles.getTreeItemIds(), descItemCodeToValueMap, dao, defaultTitle));
+        }
+        if (param.isAccordion()) {
+            node.setAccordionLeft(createTitle(viewTitles.getAccordionLeftIds(), descItemCodeToValueMap, dao,
+                                              defaultTitle));
+            node.setAccordionRight(createTitle(viewTitles.getAccordionRightIds(), descItemCodeToValueMap,
+                                               null, null));
+        }
+        if (param.isIcon()) {
+            if (descItemCodeToValueMap != null) {
                 String iconName = getIcon(descItemCodeToValueMap, viewTitles);
                 node.setIcon(iconName);
-            }
-        } else {
-            if (param.isName()) {
-                node.setName(defaultTitle);
             }
         }
 
@@ -1982,7 +2060,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     }
 
     private String createRootTitle(ArrFund fund, ViewTitles viewTitles, Integer id) {
-        // try to creatae from node
+        // try to create from node
         List<String> detailList = new ArrayList<>();
         if (fund.getFundNumber() != null) {
             detailList.add(fund.getFundNumber().toString());

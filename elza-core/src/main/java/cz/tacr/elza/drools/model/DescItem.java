@@ -1,5 +1,7 @@
 package cz.tacr.elza.drools.model;
 
+import cz.tacr.elza.domain.ArrDescItem;
+
 /**
  * Value object pro hodnotu atributu.
  * Obsahuje pouze typ atributu a typ změny.
@@ -53,9 +55,10 @@ public class DescItem {
      */
     private boolean undefined;
 
-    public DescItem() {
-
-    }
+    /**
+     * Prvek popisu jen pro cteni
+     */
+    private boolean readOnly;
 
     public DescItem(final String type, final String spec) {
         this.type = type;
@@ -75,22 +78,24 @@ public class DescItem {
         this.structured = descItem.structured;
         this.change = descItem.change;
         this.nodeId = descItem.nodeId;
+        this.readOnly = descItem.readOnly;
+    }
+
+    private DescItem(ArrDescItem descItem) {
+        readOnly = descItem.getReadOnly() == null ? false : descItem.getReadOnly();
+        undefined = descItem.isUndefined();
+        descItemId = descItem.getItemId();
+        type = descItem.getItemType().getCode();
+        specCode = descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode();
+        dataType = descItem.getItemType().getDataType().getCode();
     }
 
     public Integer getDescItemId() {
         return descItemId;
     }
 
-    public void setDescItemId(final Integer descItemId) {
-        this.descItemId = descItemId;
-    }
-
     public String getType() {
         return type;
-    }
-
-    public void setType(final String type) {
-        this.type = type;
     }
 
     public DescItemChange getChange() {
@@ -103,10 +108,6 @@ public class DescItem {
 
     public String getSpecCode() {
         return specCode;
-    }
-
-    public void setSpecCode(final String specCode) {
-        this.specCode = specCode;
     }
 
     public Integer getInteger() {
@@ -129,10 +130,6 @@ public class DescItem {
         return dataType;
     }
 
-    public void setDataType(final String dataType) {
-        this.dataType = dataType;
-    }
-
     public Integer getNodeId() {
         return nodeId;
     }
@@ -145,10 +142,6 @@ public class DescItem {
         return undefined;
     }
 
-    public void setUndefined(final boolean undefined) {
-        this.undefined = undefined;
-    }
-
     /**
      * Je atribut označen jako efektivní?
      *
@@ -156,5 +149,20 @@ public class DescItem {
      */
     public boolean isInherited() {
         return nodeId != null;
+    }
+
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    /**
+     * Vytvoří hodnotu atributu.
+     *
+     * @param descItem atribut
+     * @return vo hodnota atributu
+     */
+    static public DescItem valueOf(final ArrDescItem descItem) {
+        DescItem item = new DescItem(descItem);
+        return item;
     }
 }

@@ -11,8 +11,6 @@ public class DEExportParams {
 
     private Collection<Integer> apIds;
 
-    private Collection<Integer> partyIds;
-
     private Collection<FundSections> fundsSections;
 
     public Collection<Integer> getApIds() {
@@ -21,14 +19,6 @@ public class DEExportParams {
 
     public void setApIds(Collection<Integer> apIds) {
         this.apIds = apIds;
-    }
-
-    public Collection<Integer> getPartyIds() {
-        return partyIds;
-    }
-
-    public void setPartyIds(Collection<Integer> partyIds) {
-        this.partyIds = partyIds;
     }
 
     public Collection<FundSections> getFundsSections() {
