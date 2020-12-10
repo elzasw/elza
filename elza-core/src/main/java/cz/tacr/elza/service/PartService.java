@@ -424,8 +424,9 @@ public class PartService {
             ApIndex apIndex = apIndexMapByType.remove(indexType);
 
             if (indexType.equals(DISPLAY_NAME)) {
-                if ((oldPreferredPart && !value.equals(apIndex.getValue())) ||
-                        (preferredPart && (apIndex == null || !value.equals(apIndex.getValue())))) {
+                if ((oldPreferredPart && !value.equals(apIndex.getValue()))
+                        || (preferredPart && (apIndex == null || !value.equals(apIndex.getValue())))
+                        || (preferredPart && !oldPreferredPart)) {
                     //přegenerování entit, které odkazují na entitu, které se mění preferované jméno
                     checkReferredRecords(accessPoint);
                 }

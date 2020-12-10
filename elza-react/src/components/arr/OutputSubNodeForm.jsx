@@ -28,7 +28,7 @@ class OutputSubNodeForm extends AbstractReactComponent {
     };
 
     initFocus = () => {
-        this.refs.subNodeForm.getWrappedInstance().initFocus();
+        this.refs.subNodeForm.initFocus();
     };
 
     render() {
