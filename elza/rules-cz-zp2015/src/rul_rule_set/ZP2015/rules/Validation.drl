@@ -21,13 +21,12 @@ then
 	results.createMissing("ZP2015_STORAGE_ID", "Chybí ukládací jednotka", "ZP2015_POL_STORAGE_ID");
 end
 
-// Kontrola, zda každý list má dataci
-rule "List musí mít dataci směrem ke kořeni"
+rule "List musí mít strojovou dataci směrem ke kořeni"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
 	not ( $level: Level( $items: descItems ) and
 		DescItem(type in
-		  ( "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_TEXT" ) )
+		  ( "ZP2015_UNIT_DATE" ) )
 		  from $items )
 then
 	results.createMissing("ZP2015_UNIT_DATE", "Není uvedena datace", "ZP2015_POL_BASIC");
