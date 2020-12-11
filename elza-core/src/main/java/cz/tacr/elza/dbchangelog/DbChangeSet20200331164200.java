@@ -1281,6 +1281,9 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         convertItemSpecMap.put("SPECIAL", "NT_TERM");
         convertItemSpecMap.put("PLURAL", "NT_PLURAL");
         convertItemSpecMap.put("TERM", "NT_TAKEN");
+        // Tento typ se chybne prevede - viz duplicitni zaznam nize
+        // chyba je zde ponechana, reseno v migracnim skriptu
+        // Vice viz https://bugzilla.lightcomp.cz/show_bug.cgi?id=6742
         convertItemSpecMap.put("MARRIAGE", "NT_ACCEPTED");
         convertItemSpecMap.put("ORDER", "NT_DIRECT");
         convertItemSpecMap.put("PSEUDONYM", "NT_PSEUDONYM");
