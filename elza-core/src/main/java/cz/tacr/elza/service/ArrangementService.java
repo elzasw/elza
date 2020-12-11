@@ -807,6 +807,7 @@ public class ArrangementService {
 
         daoService.deleteDaoLinkByNode(fundVersion, node);
 
+        // vyhledani node, ktere odkazuji na mazany
         List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNode(node);
 
         arrDescItemList = arrDescItemList.stream().map(i -> {
