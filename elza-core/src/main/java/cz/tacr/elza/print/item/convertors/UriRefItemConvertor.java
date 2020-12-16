@@ -23,6 +23,6 @@ public class UriRefItemConvertor extends AbstractItemConvertor {
             node = context.getNode(data.getArrNode());
         }
 
-        return new ItemUriRef(data.getSchema(), data.getValue(), data.getDescription(), node);
+        return new ItemUriRef(data.getSchema(), data.getUriRefValue(), data.getDescription(), node);
     }
 }

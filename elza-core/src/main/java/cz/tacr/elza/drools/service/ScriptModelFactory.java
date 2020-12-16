@@ -183,7 +183,7 @@ public class ScriptModelFactory {
             // set initial value
 			if (descItemRule.getInteger() != null && itemType.getDataType() == DataType.INT) {
                 ArrDataInteger data = new ArrDataInteger();
-                data.setValue(descItemRule.getInteger());
+                data.setIntegerValue(descItemRule.getInteger());
                 descItem.setData(data);
             } else {
 				// This is strange?

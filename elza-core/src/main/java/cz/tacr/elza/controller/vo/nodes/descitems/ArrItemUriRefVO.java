@@ -60,7 +60,7 @@ public class ArrItemUriRefVO extends ArrItemVO {
     @Override
     public ArrData createDataEntity(EntityManager em) {
         ArrDataUriRef data = new ArrDataUriRef();
-        data.setValue(value);
+        data.setUriRefValue(value);
         data.setDescription(description);
         data.setDataType(DataType.URI_REF.getEntity());
         data.setSchema(ArrDataUriRef.createSchema(value));

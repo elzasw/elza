@@ -41,11 +41,15 @@ public class Ctx {
         itemTypeJoin = null;
         itemSpecJoin = null;
         itemPartJoin = null;
+        apPartRoot = null;
+        partTypeJoin = null;
     }
 
     public void resetApIndexRoot() {
         apIndexRoot = null;
         indexPartJoin = null;
+        apPartRoot = null;
+        partTypeJoin = null;
     }
 
     public Join<ApAccessPoint, ApItem> getApItemRoot() {

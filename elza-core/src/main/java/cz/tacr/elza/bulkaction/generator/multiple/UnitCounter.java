@@ -154,7 +154,7 @@ public class UnitCounter {
                     continue;
                 }
                 ArrData data = item.getData();
-                Integer vCnt = ((ArrDataInteger) data).getValue();
+                Integer vCnt = ((ArrDataInteger) data).getIntegerValue();
                 defaultCount = vCnt;
             }
         }
@@ -170,7 +170,7 @@ public class UnitCounter {
                 int count = defaultCount;
                 // read count from int value
                 if (itemType.getDataType() == DataType.INT) {
-                    Integer vCnt = ((ArrDataInteger) item.getData()).getValue();
+                    Integer vCnt = ((ArrDataInteger) item.getData()).getIntegerValue();
                     count = vCnt;
                 }
                 // get mapping

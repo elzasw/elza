@@ -19,15 +19,17 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataString extends ArrData {
 
-    @Column(length = StringLength.LENGTH_1000, nullable = false)
-    private String value;
+    public static final String STRING_VALUE = "stringValue";
+
+    @Column(name = "value", length = StringLength.LENGTH_1000, nullable = false)
+    private String stringValue;
 
 	public ArrDataString() {
 
 	}
 
-    public ArrDataString(final String value) {
-        setValue(value);
+    public ArrDataString(final String stringValue) {
+        setStringValue(stringValue);
     }
 
 	protected ArrDataString(ArrDataString src) {
@@ -36,20 +38,20 @@ public class ArrDataString extends ArrData {
 	}
 
     private void copyValue(ArrDataString src) {
-        this.value = src.value;
+        this.stringValue = src.stringValue;
     }
 
-    public String getValue() {
-        return value;
+    public String getStringValue() {
+        return stringValue;
     }
 
-    public void setValue(final String value) {
-        this.value = value;
+    public void setStringValue(final String stringValue) {
+        this.stringValue = stringValue;
     }
 
     @Override
     public String getFulltextValue() {
-        return value;
+        return stringValue;
     }
 
 	@Override
@@ -60,7 +62,7 @@ public class ArrDataString extends ArrData {
     @Override
     protected boolean isEqualValueInternal(ArrData srcData) {
         ArrDataString src = (ArrDataString)srcData;
-        return value.equals(src.value);
+        return stringValue.equals(src.stringValue);
     }
 
     @Override
@@ -71,6 +73,6 @@ public class ArrDataString extends ArrData {
 
     @Override
     protected void validateInternal() {
-        Validate.notNull(value);
+        Validate.notNull(stringValue);
     }
 }

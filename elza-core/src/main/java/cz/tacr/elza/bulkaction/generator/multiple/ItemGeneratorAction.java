@@ -284,8 +284,8 @@ public class ItemGeneratorAction extends Action {
                     if (data != null) {
                         data = HibernateUtils.unproxy(data);
                         ArrDataInteger di = (ArrDataInteger) data;
-                        if (di.getValue() > cnt) {
-                            cnt = di.getValue();
+                        if (di.getIntegerValue() > cnt) {
+                            cnt = di.getIntegerValue();
                         }
                     }
                 }
@@ -320,7 +320,7 @@ public class ItemGeneratorAction extends Action {
 
             ArrDataString prefixData = new ArrDataString();
             prefixData.setDataType(trgSOPrefixType.getDataType().getEntity());
-            prefixData.setValue(prefix);
+            prefixData.setStringValue(prefix);
 
             prefixItem.setData(prefixData);
             items.add(prefixItem);
@@ -342,7 +342,7 @@ public class ItemGeneratorAction extends Action {
 
                 ArrDataInteger startData = new ArrDataInteger();
                 startData.setDataType(trgSOStartValueType.getDataType().getEntity());
-                startData.setValue(curMaxValue - cnt + 1);
+                startData.setIntegerValue(curMaxValue - cnt + 1);
 
                 startItem.setData(startData);
                 items.add(startItem);
@@ -356,7 +356,7 @@ public class ItemGeneratorAction extends Action {
 
             ArrDataInteger mainData = new ArrDataInteger();
             mainData.setDataType(trgSOValueType.getDataType().getEntity());
-            mainData.setValue(curMaxValue);
+            mainData.setIntegerValue(curMaxValue);
 
             mainItem.setData(mainData);
             items.add(mainItem);

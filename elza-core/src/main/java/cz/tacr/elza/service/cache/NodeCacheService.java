@@ -380,7 +380,7 @@ public class NodeCacheService {
                     if (data instanceof ArrDataUriRef) {
                         ArrDataUriRef dataRef = (ArrDataUriRef) data;
                         Integer nodeId = dataRef.getNodeId();
-                        URI tempUri = URI.create(dataRef.getValue()).normalize();
+                        URI tempUri = URI.create(dataRef.getUriRefValue()).normalize();
                         if (nodeId == null && DescItemFactory.ELZA_NODE.equalsIgnoreCase(tempUri.getScheme())) {
                             String nodeUuid = tempUri.getAuthority();
                             ArrNode node = uuidNodeMap.get(nodeUuid);

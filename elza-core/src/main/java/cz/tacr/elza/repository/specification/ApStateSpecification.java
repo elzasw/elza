@@ -119,10 +119,9 @@ public class ApStateSpecification implements Specification<ApState> {
         String search = searchFilterVO.getSearch();
         Area area = searchFilterVO.getArea();
         if (area != Area.ENTITY_CODE) {
+            Predicate and = cb.conjunction();
             if (StringUtils.isNotEmpty(search)) {
                 List<String> keyWords = getKeyWordsFromSearch(search);
-
-                Predicate and = cb.conjunction();
                 RulPartType defaultPartType = sdp.getDefaultPartType();
                 for (String keyWord : keyWords) {
                     String partTypeCode;
@@ -147,36 +146,36 @@ public class ApStateSpecification implements Specification<ApState> {
                         and = processIndexCondDef(ctx, and, keyWord, partTypeCode, prefPart);
                     }
                 }
-                if (CollectionUtils.isNotEmpty(searchFilterVO.getExtFilters())) {
-                    for (ExtensionFilterVO ext : searchFilterVO.getExtFilters()) {
-                        String itemTypeCode = ext.getItemTypeId() != null ? sdp.getItemTypeById(ext.getItemTypeId()).getCode() : null;
-                        String itemSpecCode = ext.getItemSpecId() != null ? sdp.getItemSpecById(ext.getItemSpecId()).getCode() : null;
-                        and = processValueCondDef(ctx, and, String.valueOf(ext.getValue()), ext.getPartTypeCode(), itemTypeCode,
-                                itemSpecCode, QueryComparator.CONTAIN, false);
-                    }
-                }
-                if (CollectionUtils.isNotEmpty(searchFilterVO.getRelFilters())) {
-                    for (RelationFilterVO rel : searchFilterVO.getRelFilters()) {
-                        if (rel.getCode() != null) {
-                            String itemTypeCode = rel.getRelTypeId() != null ? sdp.getItemTypeById(rel.getRelTypeId()).getCode() : null;
-                            String itemSpecCode = rel.getRelSpecId() != null ? sdp.getItemSpecById(rel.getRelSpecId()).getCode() : null;
-                            and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()), null, itemTypeCode,
-                                    itemSpecCode, QueryComparator.EQ, false);
-                        }
-                    }
-                }
-                if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
-                    ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
-                    String intervalCreation = arrDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
-                    and = processValueCondDef(ctx, and, intervalCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CONTAIN, false);
-                }
-                if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
-                    ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
-                    String intervalExtinction = arrDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
-                    and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
-                }
-                condition = cb.and(condition, and);
             }
+            if (CollectionUtils.isNotEmpty(searchFilterVO.getExtFilters())) {
+                for (ExtensionFilterVO ext : searchFilterVO.getExtFilters()) {
+                    String itemTypeCode = ext.getItemTypeId() != null ? sdp.getItemTypeById(ext.getItemTypeId()).getCode() : null;
+                    String itemSpecCode = ext.getItemSpecId() != null ? sdp.getItemSpecById(ext.getItemSpecId()).getCode() : null;
+                    and = processValueCondDef(ctx, and, String.valueOf(ext.getValue()), ext.getPartTypeCode(), itemTypeCode,
+                            itemSpecCode, QueryComparator.CONTAIN, false);
+                }
+            }
+            if (CollectionUtils.isNotEmpty(searchFilterVO.getRelFilters())) {
+                for (RelationFilterVO rel : searchFilterVO.getRelFilters()) {
+                    if (rel.getCode() != null) {
+                        String itemTypeCode = rel.getRelTypeId() != null ? sdp.getItemTypeById(rel.getRelTypeId()).getCode() : null;
+                        String itemSpecCode = rel.getRelSpecId() != null ? sdp.getItemSpecById(rel.getRelSpecId()).getCode() : null;
+                        and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()), null, itemTypeCode,
+                                itemSpecCode, QueryComparator.EQ, false);
+                    }
+                }
+            }
+            if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
+                ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
+                String intervalCreation = arrDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+                and = processValueCondDef(ctx, and, intervalCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CONTAIN, false);
+            }
+            if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
+                ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
+                String intervalExtinction = arrDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+                and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
+            }
+            condition = cb.and(condition, and);
         }
 
         return condition;

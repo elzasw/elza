@@ -33,7 +33,7 @@ public class ApItemUriRefVO extends ApItemVO {
     public ApItemUriRefVO(final ApItem item) {
         super(item);
         ArrDataUriRef data = (ArrDataUriRef) item.getData();
-        value = data == null ? null : data.getValue();
+        value = data == null ? null : data.getUriRefValue();
         schema = data == null ? null : data.getSchema();
         description  = data == null ? null : data.getDescription();
         nodeId = data == null ? null : data.getNodeId();
@@ -43,7 +43,7 @@ public class ApItemUriRefVO extends ApItemVO {
     public ArrData createDataEntity(EntityManager em) {
        ArrDataUriRef data = new ArrDataUriRef();
        data.setSchema("http");
-       data.setValue(value);
+       data.setUriRefValue(value);
        data.setDescription(description);
 
        if(node != null) {
