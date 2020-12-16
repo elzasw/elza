@@ -23,12 +23,18 @@ import cz.tacr.elza.repository.specification.search.BitComparator;
 import cz.tacr.elza.repository.specification.search.Comparator;
 import cz.tacr.elza.repository.specification.search.CoordinatesComparator;
 import cz.tacr.elza.repository.specification.search.Ctx;
+import cz.tacr.elza.repository.specification.search.DateComparator;
+import cz.tacr.elza.repository.specification.search.DecimalComparator;
+import cz.tacr.elza.repository.specification.search.FileRefComparator;
 import cz.tacr.elza.repository.specification.search.IntegerComparator;
+import cz.tacr.elza.repository.specification.search.JsonTableComparator;
 import cz.tacr.elza.repository.specification.search.LinkComparator;
 import cz.tacr.elza.repository.specification.search.NullComparator;
 import cz.tacr.elza.repository.specification.search.RecordRefComparator;
 import cz.tacr.elza.repository.specification.search.StringComparator;
+import cz.tacr.elza.repository.specification.search.StructuredComparator;
 import cz.tacr.elza.repository.specification.search.TextComparator;
+import cz.tacr.elza.repository.specification.search.UnitIdComparator;
 import cz.tacr.elza.repository.specification.search.UnitdateComparator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -263,6 +269,7 @@ public class ApStateSpecification implements Specification<ApState> {
     private Predicate processValueComparator(final Ctx ctx, final QueryComparator comparator, final String dataTypeCode, final String value) {
         Comparator cmp;
         switch (DataType.fromCode(dataTypeCode)) {
+            case FORMATTED_TEXT:
             case TEXT:
                 cmp = new TextComparator(ctx);
                 break;
@@ -289,6 +296,24 @@ public class ApStateSpecification implements Specification<ApState> {
                 break;
             case ENUM:
                 cmp = new NullComparator(ctx);
+                break;
+            case UNITID:
+                cmp = new UnitIdComparator(ctx);
+                break;
+            case DECIMAL:
+                cmp = new DecimalComparator(ctx);
+                break;
+            case STRUCTURED:
+                cmp = new StructuredComparator(ctx);
+                break;
+            case FILE_REF:
+                cmp = new FileRefComparator(ctx);
+                break;
+            case JSON_TABLE:
+                cmp = new JsonTableComparator(ctx);
+                break;
+            case DATE:
+                cmp = new DateComparator(ctx);
                 break;
             default:
                 throw new IllegalArgumentException("Neplatný datový typ: " + dataTypeCode);
