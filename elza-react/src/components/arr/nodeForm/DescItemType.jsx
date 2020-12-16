@@ -27,6 +27,8 @@ import objectById from '../../../shared/utils/objectById';
 import {validateUnitDate} from '../../registry/field/UnitdateField';
 import {RulItemTypeType} from '../../../api/RulItemTypeType';
 
+import {registerField, unregisterField} from "../text-fragments";
+
 const placeholder = document.createElement('div');
 placeholder.className = 'placeholder';
 
@@ -296,7 +298,7 @@ class DescItemType extends AbstractReactComponent {
      * @param descItemIndex {number} index hodnoty atributu v seznamu
      * @param value {Object} nová hodnota atibutu
      */
-    handleChange(descItemIndex, value) {
+    handleChange(descItemIndex, value, callback) {
         //this.props.onChange(descItemIndex, value);
         // Switched to local value change. Value update in "handleBlur"
 
@@ -327,7 +329,7 @@ class DescItemType extends AbstractReactComponent {
             value: convertedValue,
             formKey: descItem.formKey,
             error,
-        });
+        }, callback);
     }
 
     /**
@@ -415,15 +417,28 @@ class DescItemType extends AbstractReactComponent {
         const itemElement = this.containers[descItemIndex];
         // returns back the "draggable" attribute
         itemElement.setAttribute('draggable', true);
+        unregisterField();
     }
 
     /**
      * Získání focusu na hodnotu atributu.
      * @param descItemIndex {number} index hodnoty atributu v seznamu
      */
-    handleFocus(descItemIndex) {
+    handleFocus(descItemIndex, event) {
         this.props.onFocus(descItemIndex);
         const itemElement = this.containers[descItemIndex];
+        event && registerField(event.currentTarget, (string, field) => {
+
+            const start = field.selectionStart;
+            const end = field.selectionEnd;
+
+            const value = `${field.value.slice(0, start)}${string}${field.value.slice(end)}`;
+
+            this.handleChange(descItemIndex, value, () => {
+                field.selectionStart = start+string.length;
+                field.selectionEnd = start+string.length;
+            });
+        });
         // removes attribute "draggable" due to a bug in Mozilla Firefox,
         // see https://bugzilla.mozilla.org/show_bug.cgi?id=1189486
         // or https://bugzilla.mozilla.org/show_bug.cgi?id=800050
@@ -1248,6 +1263,7 @@ class DescItemType extends AbstractReactComponent {
                         </TooltipTrigger>,
                     );
                 }
+
 
                 let canModifyDescItem = !(locked || closed || descItem.readOnly);
 
