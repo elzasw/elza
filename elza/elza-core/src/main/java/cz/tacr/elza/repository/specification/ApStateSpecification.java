@@ -2,6 +2,8 @@ package cz.tacr.elza.repository.specification;
 
 import cz.tacr.cam.client.controller.vo.QueryComparator;
 import cz.tacr.elza.controller.vo.Area;
+import cz.tacr.elza.controller.vo.ExtensionFilterVO;
+import cz.tacr.elza.controller.vo.RelationFilterVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -11,10 +13,12 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.repository.specification.search.BitComparator;
 import cz.tacr.elza.repository.specification.search.Comparator;
 import cz.tacr.elza.repository.specification.search.CoordinatesComparator;
@@ -36,6 +40,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
 public class ApStateSpecification implements Specification<ApState> {
 
@@ -94,13 +100,10 @@ public class ApStateSpecification implements Specification<ApState> {
 
         condition = cb.and(condition, process(cb.conjunction(), ctx));
 
-        // atribut, podle kterého se výsledek seřadí - dle "sort value" preferovaného jména archivní entity
-        //Path<ApPart> sortingBySortValue = ctx.getPreferredPartJoin().get(ApPart.VALUE);
-        // každý nález ae pouze jednou
-        //q.groupBy(stateRoot, sortingBySortValue);
-        // seřazení
-        //.orderBy(cb.asc(sortingBySortValue));
-
+        Join<ApIndex, ApPart> indexJoin = preferredPartJoin.join(ApPart.INDICES, JoinType.INNER);
+        indexJoin.on(cb.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
+        Path<String> accessPointName = indexJoin.get(ApIndex.VALUE);
+        q.orderBy(cb.asc(accessPointName));
 
         return condition;
     }
@@ -137,6 +140,34 @@ public class ApStateSpecification implements Specification<ApState> {
                     } else {
                         and = processIndexCondDef(ctx, and, keyWord, partTypeCode, prefPart);
                     }
+                }
+                if (CollectionUtils.isNotEmpty(searchFilterVO.getExtFilters())) {
+                    for (ExtensionFilterVO ext : searchFilterVO.getExtFilters()) {
+                        String itemTypeCode = ext.getItemTypeId() != null ? sdp.getItemTypeById(ext.getItemTypeId()).getCode() : null;
+                        String itemSpecCode = ext.getItemSpecId() != null ? sdp.getItemSpecById(ext.getItemSpecId()).getCode() : null;
+                        and = processValueCondDef(ctx, and, String.valueOf(ext.getValue()), ext.getPartTypeCode(), itemTypeCode,
+                                itemSpecCode, QueryComparator.CONTAIN, false);
+                    }
+                }
+                if (CollectionUtils.isNotEmpty(searchFilterVO.getRelFilters())) {
+                    for (RelationFilterVO rel : searchFilterVO.getRelFilters()) {
+                        if (rel.getCode() != null) {
+                            String itemTypeCode = rel.getRelTypeId() != null ? sdp.getItemTypeById(rel.getRelTypeId()).getCode() : null;
+                            String itemSpecCode = rel.getRelSpecId() != null ? sdp.getItemSpecById(rel.getRelSpecId()).getCode() : null;
+                            and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()), null, itemTypeCode,
+                                    itemSpecCode, QueryComparator.EQ, false);
+                        }
+                    }
+                }
+                if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
+                    ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
+                    String intervalCreation = arrDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+                    and = processValueCondDef(ctx, and, intervalCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CONTAIN, false);
+                }
+                if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
+                    ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
+                    String intervalExtinction = arrDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+                    and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
                 }
                 condition = cb.and(condition, and);
             }
