@@ -1639,6 +1639,7 @@ var messages = {
     "accesspoint.scope.name": "Jméno",
     "accesspoint.scope.relatedScopes": "Návazné oblasti",
     "accesspoint.scope.invalid.warning": "Zobrazená třída restříku je neplatná",
+    "textFragments.title": "Speciální znaky",
 
     ____: "",
 };
