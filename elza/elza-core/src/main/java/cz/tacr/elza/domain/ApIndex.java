@@ -17,6 +17,7 @@ public class ApIndex {
 
     public static final String VALUE = "value";
     public static final String INDEX_TYPE = "indexType";
+    public static final String PART = "part";
 
     @Id
     @GeneratedValue

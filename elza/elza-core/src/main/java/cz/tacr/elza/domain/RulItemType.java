@@ -53,6 +53,7 @@ public class RulItemType {
     public static final TypeReference<DisplayType> DISPLAY_TYPE = new TypeReference<DisplayType>(){};
 
     public static final String FIELD_VIEW_ORDER = "viewOrder";
+    public static final String CODE = "code";
 
     @Id
     @GeneratedValue
