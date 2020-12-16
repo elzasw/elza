@@ -1904,8 +1904,9 @@ public class AccessPointService {
     }
 
     public Page<ApState> findApAccessPointBySearchFilter(SearchFilterVO searchFilter, Integer from, Integer count, StaticDataProvider sdp) {
+        int page = from / count;
         ApStateSpecification specification = new ApStateSpecification(searchFilter, sdp);
-        return stateRepository.findAll(specification, PageRequest.of(from, count));
+        return stateRepository.findAll(specification, PageRequest.of(page, count));
     }
 
     /**
