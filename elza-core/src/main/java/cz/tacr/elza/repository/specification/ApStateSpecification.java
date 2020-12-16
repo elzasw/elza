@@ -8,6 +8,7 @@ import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
@@ -18,6 +19,7 @@ import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.repository.specification.search.BitComparator;
 import cz.tacr.elza.repository.specification.search.Comparator;
@@ -39,11 +41,13 @@ import cz.tacr.elza.repository.specification.search.UnitdateComparator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,13 +56,18 @@ import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 public class ApStateSpecification implements Specification<ApState> {
 
     private SearchFilterVO searchFilterVO;
+    private Set<Integer> apTypeIdTree;
+    private Set<Integer> scopeIds;
+    private ApState.StateApproval state;
     private StaticDataProvider sdp;
 
-    public ApStateSpecification(final SearchFilterVO searchFilterVO, final StaticDataProvider sdp) {
+    public ApStateSpecification(final SearchFilterVO searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds, ApState.StateApproval state, final StaticDataProvider sdp) {
         this.searchFilterVO = searchFilterVO;
+        this.apTypeIdTree = apTypeIdTree;
+        this.scopeIds = scopeIds;
+        this.state = state;
         this.sdp = sdp;
     }
-
 
     @Override
     public Predicate toPredicate(Root<ApState> stateRoot, CriteriaQuery<?> q, CriteriaBuilder cb) {
@@ -72,23 +81,25 @@ public class ApStateSpecification implements Specification<ApState> {
 
         Predicate condition = cb.conjunction();
 
-//        String user = params.getUser();
-//        if (StringUtils.isNotEmpty(user)) {
-//            Join<AeRevision, AeChange> aeChangeJoin = aeRevisionRoot.join(AeRevision.CREATE_CHANGE, JoinType.INNER);
-//            condition = cb.and(condition, cb.like(cb.lower(aeChangeJoin.get(AeChange.USERNAME)), "%" + user.toLowerCase() + "%"));
-//        }
-
-        // typ archivní entity
-        List<Integer> aeTypeIdList =  searchFilterVO.getAeTypeIds();
-        if (CollectionUtils.isNotEmpty(aeTypeIdList)) {
-            condition = cb.and(condition, stateRoot.get(ApState.FIELD_AP_TYPE_ID).in(aeTypeIdList));
+        String user = searchFilterVO.getUser();
+        if (StringUtils.isNotEmpty(user)) {
+            Join<ApState, ApChange> apChangeJoin = stateRoot.join(ApState.FIELD_CREATE_CHANGE, JoinType.INNER);
+            condition = cb.and(condition, cb.like(cb.lower(apChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%"));
         }
 
-//        // omezení dle vyjmenovaných stavů
-//        List<QueryParamsDef.StateEnum> states = params.getState();
-//        if (CollectionUtils.isNotEmpty(states)) {
-//            condition = cb.and(condition, aeRevisionRoot.get(AeRevision.STATE).in(convertStates(states)));
-//        }
+        // omezení dle oblasti
+        Validate.isTrue(!scopeIds.isEmpty());
+        condition = cb.and(condition, stateRoot.get(ApState.FIELD_SCOPE_ID).in(scopeIds));
+
+        // typ archivní entity
+        if (CollectionUtils.isNotEmpty(apTypeIdTree)) {
+            condition = cb.and(condition, stateRoot.get(ApState.FIELD_AP_TYPE_ID).in(apTypeIdTree));
+        }
+
+        // omezení dle stavu
+        if (state != null) {
+            condition = cb.and(condition, stateRoot.get(ApState.FIELD_STATE_APPROVAL).in(state));
+        }
 
         // omezení dle konkrétních archivních entit
         String code = searchFilterVO.getCode();

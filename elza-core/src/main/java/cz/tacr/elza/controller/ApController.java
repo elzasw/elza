@@ -208,6 +208,14 @@ public class ApController {
 
         StaticDataProvider sdp = staticDataService.getData();
 
+        ArrFund fund;
+        if (versionId == null) {
+            fund = null;
+        } else {
+            ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
+            fund = version.getFund();
+        }
+
 	    if (searchFilter == null) {
             if (apTypeId != null && (itemSpecId != null || itemTypeId != null)) {
                 throw new SystemException("Nelze použít více kritérií zároveň (specifikace/typ a typ rejstříku).", BaseCode.SYSTEM_ERROR);
@@ -245,14 +253,6 @@ public class ApController {
 
             Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
 
-            ArrFund fund;
-            if (versionId == null) {
-                fund = null;
-            } else {
-                ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-                fund = version.getFund();
-            }
-
             Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
 
             SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
@@ -263,7 +263,15 @@ public class ApController {
             foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from, count, fund, scopeId, states, searchTypeNameFinal, searchTypeUsernameFinal);
 
         } else {
-	        Page<ApState> page = accessPointService.findApAccessPointBySearchFilter(searchFilter, from, count, sdp);
+            Set<Integer> apTypeIds = new HashSet<>();
+            if (apTypeId != null) {
+                apTypeIds.add(apTypeId);
+            }
+            Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
+
+            Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId);
+
+	        Page<ApState> page = accessPointService.findApAccessPointBySearchFilter(searchFilter, apTypeIdTree, scopeIds, state, from, count, sdp);
             foundRecords = page.getContent();
             foundRecordsCount = page.getTotalElements();
         }

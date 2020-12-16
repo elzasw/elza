@@ -27,6 +27,7 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
     public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
     public static final String FIELD_REPLACED_BY = "replacedBy";
+    public static final String FIELD_CREATE_CHANGE = "createChange";
 
     @Id
     @GeneratedValue
