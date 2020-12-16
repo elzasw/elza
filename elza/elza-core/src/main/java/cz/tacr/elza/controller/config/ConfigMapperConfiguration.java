@@ -723,7 +723,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemUriRefVO uriRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(uriRef, uriRefVO, context);
-                        uriRefVO.setValue(uriRef.getValue());
+                        uriRefVO.setValue(uriRef.getUriRefValue());
                         uriRefVO.setDescription(uriRef.getDescription());
                         uriRefVO.setRefTemplateId(uriRef.getRefTemplate() != null ? uriRef.getRefTemplate().getRefTemplateId() : null);
                         uriRefVO.setNodeId(uriRef.getNodeId());
@@ -734,7 +734,7 @@ public class ConfigMapperConfiguration {
                                         final ArrDataUriRef uriRef,
                                         final MappingContext context) {
                         super.mapBtoA(uriRefVO, uriRef, context);
-                        uriRef.setValue(uriRefVO.getValue());
+                        uriRef.setUriRefValue(uriRefVO.getValue());
                         uriRef.setDescription(uriRefVO.getDescription());
                         uriRef.setRefTemplate(uriRefVO.getRefTemplateId() != null ? refTemplateRepository.findById(uriRefVO.getRefTemplateId())
                                 .orElseThrow(refTemplate(uriRefVO.getRefTemplateId())): null);

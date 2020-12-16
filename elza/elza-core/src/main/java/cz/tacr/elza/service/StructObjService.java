@@ -1018,7 +1018,7 @@ public class StructObjService {
                     Integer val = autoincrementMap.get(structureItem.getItemType());
                     if (val != null) {
                         val++;
-                        ((ArrDataInteger) newData).setValue(val);
+                        ((ArrDataInteger) newData).setIntegerValue(val);
                         autoincrementMap.put(structureItem.getItemType(), val);
                     }
                     newDataList.add(newData);
@@ -1168,7 +1168,7 @@ public class StructObjService {
                 newData.setDataType(structureItem.getItemType().getDataType());
                 Integer val = autoincrementMap.get(structureItem.getItemType());
                 if (val != null) {
-                    ((ArrDataInteger) newData).setValue(val);
+                    ((ArrDataInteger) newData).setIntegerValue(val);
                     // Increment for next item
                     val++;
                     autoincrementMap.put(structureItem.getItemType(), val);

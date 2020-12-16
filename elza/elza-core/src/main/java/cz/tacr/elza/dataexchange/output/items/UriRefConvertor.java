@@ -17,7 +17,7 @@ public class UriRefConvertor implements ItemDataConvertor {
         ArrDataUriRef dataRef = (ArrDataUriRef) data;
 
         DescriptionItemUriRef item = objectFactory.createDescriptionItemUriRef();
-        item.setUri(dataRef.getValue());
+        item.setUri(dataRef.getUriRefValue());
         item.setSchm(dataRef.getSchema());
         item.setLbl(dataRef.getDescription());
 

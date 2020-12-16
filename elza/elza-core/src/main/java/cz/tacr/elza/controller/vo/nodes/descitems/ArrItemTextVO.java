@@ -41,7 +41,7 @@ public class ArrItemTextVO extends ArrItemVO {
     @Override
     public ArrData createDataEntity(EntityManager em) {
         ArrDataText data = new ArrDataText();
-        data.setValue(value);
+        data.setTextValue(value);
         data.setDataType(DataType.TEXT.getEntity());
         return data;
     }
@@ -55,7 +55,7 @@ public class ArrItemTextVO extends ArrItemVO {
                         .set("dataClass", data.getClass());
             }
             ArrDataText dataText = (ArrDataText) data;
-            value = dataText.getValue();
+            value = dataText.getTextValue();
         }
         ArrItemTextVO vo = new ArrItemTextVO(item, value);
         return vo;

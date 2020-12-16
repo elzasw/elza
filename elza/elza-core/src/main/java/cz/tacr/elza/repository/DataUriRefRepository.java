@@ -36,8 +36,8 @@ public interface DataUriRefRepository extends JpaRepository<ArrDataUriRef, Integ
             "WHERE ur.nodeId IS NULL AND ur.schema = '" + ELZA_NODE + "'")
     Set<Integer> findReferralNodeIds();
 
-    @Query("SELECT ur FROM ArrDataUriRef ur WHERE ur.value = ?1")
-    List<ArrDataUriRef> findAllByNodeUUID(String value);
+    @Query("SELECT ur FROM ArrDataUriRef ur WHERE ur.uriRefValue = ?1")
+    List<ArrDataUriRef> findAllByNodeUUID(String uriRefValue);
 
     @Query("SELECT ur FROM ArrDataUriRef ur WHERE ur.schema = '" + ELZA_NODE + "' AND ur.arrNode IS NULL")
     Page<ArrDataUriRef> findByUnresolvedNodeRefs(Pageable pageable);

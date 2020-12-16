@@ -289,14 +289,9 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
     private AbstractDescItemDataTypeHelper getDataTypeHelper(final Class<? extends ArrData> dataClassType,
                                                              final Root dataRoot,
                                                              final SpecificationDataTypeHelper specificationDataTypeHelper) {
-        if (dataClassType.equals(ArrDataString.class) ||
-                dataClassType.equals(ArrDataText.class) ||
-                dataClassType.equals(ArrDataCoordinates.class) ||
+        if (dataClassType.equals(ArrDataCoordinates.class) ||
                 dataClassType.equals(ArrDataDecimal.class) ||
-                dataClassType.equals(ArrDataDate.class) ||
-                dataClassType.equals(ArrDataInteger.class) ||
-                dataClassType.equals(ArrDataUriRef.class) ||
-                dataClassType.equals(ArrDataBit.class)) {
+                dataClassType.equals(ArrDataDate.class)) {
             return new AbstractDescItemDataTypeHelper() {
 
                 @Override
@@ -307,6 +302,71 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get("value");
+                }
+            };
+        } else if (dataClassType.equals(ArrDataText.class)) {
+            return new AbstractDescItemDataTypeHelper() {
+
+                @Override
+                protected void init() {
+                    targetJoin = dataRoot;
+                }
+
+                @Override
+                public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
+                    return targetJoin.get(ArrDataText.TEXT_VALUE);
+                }
+            };
+        } else if (dataClassType.equals(ArrDataString.class)) {
+            return new AbstractDescItemDataTypeHelper() {
+
+                @Override
+                protected void init() {
+                    targetJoin = dataRoot;
+                }
+
+                @Override
+                public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
+                    return targetJoin.get(ArrDataString.STRING_VALUE);
+                }
+            };
+        } else if (dataClassType.equals(ArrDataUriRef.class)) {
+            return new AbstractDescItemDataTypeHelper() {
+
+                @Override
+                protected void init() {
+                    targetJoin = dataRoot;
+                }
+
+                @Override
+                public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
+                    return targetJoin.get(ArrDataUriRef.URI_REF_VALUE);
+                }
+            };
+        } else if (dataClassType.equals(ArrDataInteger.class)) {
+            return new AbstractDescItemDataTypeHelper() {
+
+                @Override
+                protected void init() {
+                    targetJoin = dataRoot;
+                }
+
+                @Override
+                public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
+                    return targetJoin.get(ArrDataInteger.INTEGER_VALUE);
+                }
+            };
+        } else if (dataClassType.equals(ArrDataBit.class)) {
+            return new AbstractDescItemDataTypeHelper() {
+
+                @Override
+                protected void init() {
+                    targetJoin = dataRoot;
+                }
+
+                @Override
+                public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
+                    return targetJoin.get(ArrDataBit.BIT_VALUE);
                 }
             };
         } else if (dataClassType.equals(ArrDataUnitid.class)) {

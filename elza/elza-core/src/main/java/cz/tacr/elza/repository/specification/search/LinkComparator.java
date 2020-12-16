@@ -28,22 +28,22 @@ public class LinkComparator implements Comparator {
         switch (comparator) {
             case EQ:
                 return cb.or(
-                        cb.equal(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.VALUE)), lowerValue),
+                        cb.equal(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.URI_REF_VALUE)), lowerValue),
                         cb.equal(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.DESCRIPTION)), lowerValue)
                 );
             case CONTAIN:
                 return cb.or(
-                        cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.VALUE)), "%" + lowerValue + "%"),
+                        cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.URI_REF_VALUE)), "%" + lowerValue + "%"),
                         cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.DESCRIPTION)), "%" + lowerValue + "%")
                 );
             case START_WITH:
                 return cb.or(
-                        cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.VALUE)), lowerValue + "%"),
+                        cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.URI_REF_VALUE)), lowerValue + "%"),
                         cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.DESCRIPTION)), lowerValue + "%")
                 );
             case END_WITH:
                 return cb.or(
-                        cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.VALUE)), "%" + lowerValue),
+                        cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.URI_REF_VALUE)), "%" + lowerValue),
                         cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.DESCRIPTION)), "%" + lowerValue)
                 );
             default:

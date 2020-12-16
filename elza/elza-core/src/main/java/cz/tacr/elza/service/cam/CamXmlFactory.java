@@ -18,7 +18,6 @@ import cz.tacr.cam.schema.cam.PartTypeXml;
 import cz.tacr.cam.schema.cam.PartXml;
 import cz.tacr.cam.schema.cam.StringXml;
 import cz.tacr.cam.schema.cam.UuidXml;
-import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -100,7 +99,7 @@ public class CamXmlFactory {
         case BIT:
             ArrDataBit dataBit = (ArrDataBit) item.getData();
             ItemBooleanXml itemBoolean = new ItemBooleanXml();
-            itemBoolean.setValue(new BooleanXml(dataBit.isValue()));
+            itemBoolean.setValue(new BooleanXml(dataBit.isBitValue()));
             itemBoolean.setT(itemTypeCode);
             itemBoolean.setS(itemSpecCode);
             itemBoolean.setUuid(uuidXml);
@@ -108,7 +107,7 @@ public class CamXmlFactory {
         case URI_REF:
             ArrDataUriRef dataUriRef = (ArrDataUriRef) item.getData();
             ItemLinkXml itemLink = new ItemLinkXml();
-            itemLink.setUrl(new StringXml(dataUriRef.getValue()));
+            itemLink.setUrl(new StringXml(dataUriRef.getUriRefValue()));
             itemLink.setNm(new StringXml(dataUriRef.getDescription() != null ? dataUriRef.getDescription() : ""));
             itemLink.setT(itemTypeCode);
             itemLink.setS(itemSpecCode);
@@ -117,7 +116,7 @@ public class CamXmlFactory {
         case TEXT:
             ArrDataText dataText = (ArrDataText) item.getData();
             ItemStringXml itemText = new ItemStringXml();
-            itemText.setValue(new StringXml(dataText.getValue()));
+            itemText.setValue(new StringXml(dataText.getTextValue()));
             itemText.setT(itemTypeCode);
             itemText.setS(itemSpecCode);
             itemText.setUuid(uuidXml);
@@ -125,7 +124,7 @@ public class CamXmlFactory {
         case STRING:
             ArrDataString dataString = (ArrDataString) item.getData();
             ItemStringXml itemString = new ItemStringXml();
-            itemString.setValue(new StringXml(dataString.getValue()));
+            itemString.setValue(new StringXml(dataString.getStringValue()));
             itemString.setT(itemTypeCode);
             itemString.setS(itemSpecCode);
             itemString.setUuid(uuidXml);

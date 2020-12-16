@@ -51,12 +51,12 @@ public class DescriptionItemStringImpl extends DescriptionItemString {
 		switch (dataType) {
 		case STRING:
 			ArrDataString str = new ArrDataString();
-			str.setValue(value);
+			str.setStringValue(value);
 			return str;
 		case TEXT:
 		case FORMATTED_TEXT:
 			ArrDataText txt = new ArrDataText();
-			txt.setValue(value);
+			txt.setTextValue(value);
 			return txt;
 		case COORDINATES:
 			ArrDataCoordinates geo = new ArrDataCoordinates();

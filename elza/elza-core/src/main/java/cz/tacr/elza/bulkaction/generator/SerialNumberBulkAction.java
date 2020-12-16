@@ -147,12 +147,12 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 				item = (ArrDataInteger) data;
 			}
 
-			Integer currValue = item.getValue();
+			Integer currValue = item.getIntegerValue();
 
 			counter++;
 			// uložit pouze při rozdílu
 			if (currValue == null || counter != currValue) {
-				item.setValue(counter);
+				item.setIntegerValue(counter);
                 ArrDescItem ret = saveDescItem(descItem);
 				//level.setNode(ret.getNode());
 				countChanges++;
@@ -227,7 +227,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 				item = (ArrDataString) data;
 			}
 
-			String currValue = item.getValue();
+			String currValue = item.getStringValue();
 
 			counter++;
 
@@ -239,7 +239,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 
 				// uložit pouze při rozdílu
 				if (currValue == null || !nextValue.equals(currValue)) {
-					item.setValue(nextValue);
+					item.setStringValue(nextValue);
                     ArrDescItem ret = saveDescItem(descItem);
 					//level.setNode(ret.getNode());
 					countChanges++;

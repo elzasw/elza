@@ -142,12 +142,12 @@ public class PartProcessor<P extends Party, E extends ApPart> implements ItemPro
             for (NameComplement nc : name.getNcs().getNc()) {
                 switch (nc.getCt()) {
                     case "INITIALS":
-                        String dataInit = ((ArrDataString) mainEntity.getData()).getValue();
-                        ((ArrDataString) mainEntity.getData()).setValue(dataInit + " " + nc.getV());
+                        String dataInit = ((ArrDataString) mainEntity.getData()).getStringValue();
+                        ((ArrDataString) mainEntity.getData()).setStringValue(dataInit + " " + nc.getV());
                         break;
                     case "ROMAN_NUM":
-                        String dataRomanNum = ((ArrDataString) mainEntity.getData()).getValue();
-                        ((ArrDataString) mainEntity.getData()).setValue(dataRomanNum + " " + nc.getV());
+                        String dataRomanNum = ((ArrDataString) mainEntity.getData()).getStringValue();
+                        ((ArrDataString) mainEntity.getData()).setStringValue(dataRomanNum + " " + nc.getV());
                         break;
                     case "GENERAL":
                         itemType = staticData.getItemTypeByCode("NM_SUP_GEN");

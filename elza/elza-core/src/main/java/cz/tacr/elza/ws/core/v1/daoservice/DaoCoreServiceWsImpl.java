@@ -318,12 +318,12 @@ public class DaoCoreServiceWsImpl {
                 switch (itemType.getDataType()) {
                 case STRING:
                     ArrDataString ds = new ArrDataString();
-                    ds.setValue(value);
+                    ds.setStringValue(value);
                     data = ds;
                     break;
                 case TEXT:
                     ArrDataText dt = new ArrDataText();
-                    dt.setValue(value);
+                    dt.setTextValue(value);
                     data = dt;
                     break;
                 default:

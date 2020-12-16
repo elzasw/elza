@@ -15,7 +15,7 @@ public class BitValueConvertor implements ItemDataConvertor {
 
         ArrDataBit boolValue = (ArrDataBit) data;
         DescriptionItemBit item = objectFactory.createDescriptionItemBit();
-        item.setV(boolValue.isValue());
+        item.setV(boolValue.isBitValue());
         return item;
     }
 }

@@ -19,17 +19,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataText extends ArrData {
 
-    @Column(nullable = false)
+    public static final String TEXT_VALUE = "textValue";
+
+    @Column(name = "value", nullable = false)
     @Lob
     @Type(type = "org.hibernate.type.TextType")
-    private String value;
+    private String textValue;
 
 	public ArrDataText() {
 
 	}
 
-    public ArrDataText(final String value) {
-        setValue(value);
+    public ArrDataText(final String textValue) {
+        setTextValue(textValue);
     }
 
 	protected ArrDataText(ArrDataText src) {
@@ -38,20 +40,20 @@ public class ArrDataText extends ArrData {
     }
 
     private void copyValue(ArrDataText src) {
-        this.value = src.value;
+        this.textValue = src.textValue;
     }
 
-    public String getValue() {
-        return value;
+    public String getTextValue() {
+        return textValue;
     }
 
-    public void setValue(final String value) {
-        this.value = value;
+    public void setTextValue(final String textValue) {
+        this.textValue = textValue;
     }
 
     @Override
     public String getFulltextValue() {
-        return value;
+        return textValue;
     }
 
 	@Override
@@ -62,7 +64,7 @@ public class ArrDataText extends ArrData {
     @Override
     protected boolean isEqualValueInternal(ArrData srcData) {
         ArrDataText src = (ArrDataText)srcData;
-        return value.equals(src.value);
+        return textValue.equals(src.textValue);
     }
 
     @Override
@@ -73,6 +75,6 @@ public class ArrDataText extends ArrData {
 
     @Override
     protected void validateInternal() {
-        Validate.notNull(value);
+        Validate.notNull(textValue);
     }
 }

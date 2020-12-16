@@ -1741,11 +1741,11 @@ public class RuleService {
                 break;
             case STRING:
                 ArrDataString aeDataString = (ArrDataString) item.getData();
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataString.getValue());
+                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataString.getStringValue());
                 break;
             case TEXT:
                 ArrDataText aeDataText = (ArrDataText) item.getData();
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataText.getValue());
+                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), aeDataText.getTextValue());
                 break;
             case UNITDATE:
                 ArrDataUnitdate aeDataUnitdate = (ArrDataUnitdate) item.getData();
@@ -1753,7 +1753,7 @@ public class RuleService {
                 break;
             case URI_REF:
                 ArrDataUriRef arrDataUriRef = (ArrDataUriRef) item.getData();
-                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), arrDataUriRef.getValue());
+                abstractItem = new Item(item.getItemId(), itemTypeCode, itemSpecCode, dataType.getCode(), arrDataUriRef.getUriRefValue());
                 break;
             default:
                 throw new SystemException("Invalid data type (RulItemType.DataType) " + dataType.getCode() , INVALID_STATE);

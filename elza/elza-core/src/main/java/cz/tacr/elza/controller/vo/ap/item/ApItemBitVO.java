@@ -17,7 +17,7 @@ public class ApItemBitVO extends ApItemVO {
     public ApItemBitVO(final ApItem item) {
         super(item);
         ArrDataBit data = (ArrDataBit) item.getData();
-        value = data == null ? null : data.isValue();
+        value = data == null ? null : data.isBitValue();
     }
 
     public Boolean getValue() {
@@ -31,7 +31,7 @@ public class ApItemBitVO extends ApItemVO {
     @Override
     public ArrData createDataEntity(EntityManager em) {
         ArrDataBit data = new ArrDataBit();
-        data.setValue(value);
+        data.setBitValue(value);
         data.setDataType(DataType.BIT.getEntity());
         return data;
     }
