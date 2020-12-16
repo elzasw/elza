@@ -1903,9 +1903,10 @@ public class AccessPointService {
         return extSyncsQueueItem;
     }
 
-    public Page<ApState> findApAccessPointBySearchFilter(SearchFilterVO searchFilter, Integer from, Integer count, StaticDataProvider sdp) {
+    public Page<ApState> findApAccessPointBySearchFilter(SearchFilterVO searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
+                                                         StateApproval state, Integer from, Integer count, StaticDataProvider sdp) {
         int page = from / count;
-        ApStateSpecification specification = new ApStateSpecification(searchFilter, sdp);
+        ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds, state, sdp);
         return stateRepository.findAll(specification, PageRequest.of(page, count));
     }
 
