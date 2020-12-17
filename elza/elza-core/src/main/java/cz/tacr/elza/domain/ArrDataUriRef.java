@@ -14,6 +14,7 @@ import java.net.URI;
 public class ArrDataUriRef extends ArrData {
 
     public static final String DESCRIPTION = "description";
+    public static final String URI_REF_VALUE = "uriRefValue";
 
     @Basic
     @Column(name="schema", nullable = false, length = 50)
@@ -21,7 +22,7 @@ public class ArrDataUriRef extends ArrData {
 
     @Basic
     @Column(name="value", nullable = false, length = 2000)
-    private String value;
+    private String uriRefValue;
 
     @Basic
     @Column(name="description", length = 2000)
@@ -49,9 +50,9 @@ public class ArrDataUriRef extends ArrData {
 
     }
 
-    public ArrDataUriRef(final String schema, final String value, final String description, final ArrNode arrNode) {
+    public ArrDataUriRef(final String schema, final String uriRefValue, final String description, final ArrNode arrNode) {
         this.schema = schema;
-        this.value = value;
+        this.uriRefValue = uriRefValue;
         this.description = description;
         this.arrNode = arrNode;
     }
@@ -63,7 +64,7 @@ public class ArrDataUriRef extends ArrData {
 
     private void copyValue(ArrDataUriRef src) {
         this.schema = src.schema;
-        this.value = src.value;
+        this.uriRefValue = src.uriRefValue;
         this.description = src.description;
         this.arrNode = src.arrNode;
         this.nodeId = src.nodeId;
@@ -79,12 +80,12 @@ public class ArrDataUriRef extends ArrData {
         this.schema = schema;
     }
 
-    public String getValue() {
-        return value;
+    public String getUriRefValue() {
+        return uriRefValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setUriRefValue(String uriRefValue) {
+        this.uriRefValue = uriRefValue;
     }
 
 
@@ -124,13 +125,13 @@ public class ArrDataUriRef extends ArrData {
 
     @Override
     public String getFulltextValue() {
-        return value + ";" + description;
+        return uriRefValue + ";" + description;
     }
 
     @Override
     protected boolean isEqualValueInternal(ArrData srcData) {
         ArrDataUriRef src = (ArrDataUriRef) srcData;
-        return value.equals(src.value);
+        return uriRefValue.equals(src.uriRefValue);
     }
 
     public boolean isDeletingProcess() {
@@ -154,7 +155,7 @@ public class ArrDataUriRef extends ArrData {
 
     @Override
     protected void validateInternal() {
-        Validate.notNull(value);
+        Validate.notNull(uriRefValue);
         Validate.notNull(schema);
 
     }

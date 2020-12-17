@@ -578,11 +578,47 @@ public class ConfigMapperConfiguration {
                     }
                 }).exclude("value").byDefault().register();
         mapperFactory.classMap(ArrDataNull.class, ArrItemEnumVO.class).byDefault().register();
-        mapperFactory.classMap(ArrDataInteger.class, ArrItemIntVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataInteger.class, ArrItemIntVO.class).customize(
+                new CustomMapper<ArrDataInteger, ArrItemIntVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDataInteger integer,
+                                        final ArrItemIntVO intVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(integer, intVO, context);
+                        intVO.setValue(integer.getIntegerValue());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrItemIntVO intVO,
+                                        final ArrDataInteger integer,
+                                        final MappingContext context) {
+                        super.mapBtoA(intVO, integer, context);
+                        integer.setIntegerValue(intVO.getValue());
+                    }
+                }
+        ).byDefault().register();
         mapperFactory.classMap(ArrDataDate.class, ArrItemDateVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataJsonTable.class, ArrItemJsonTableVO.class).byDefault().register();
         mapperFactory.classMap(ArrDataDecimal.class, ArrItemDecimalVO.class).byDefault().register();
-        mapperFactory.classMap(ArrDataBit.class, ArrItemBitVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataBit.class, ArrItemBitVO.class).customize(
+                new CustomMapper<ArrDataBit, ArrItemBitVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDataBit bit,
+                                        final ArrItemBitVO bitVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(bit, bitVO, context);
+                        bitVO.setValue(bit.isBitValue());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrItemBitVO bitVO,
+                                        final ArrDataBit bit,
+                                        final MappingContext context) {
+                        super.mapBtoA(bitVO, bit, context);
+                        bit.setBitValue(bitVO.isValue());
+                    }
+                }
+        ).byDefault().register();
         mapperFactory.classMap(ArrDataUnitid.class, ArrItemUnitidVO.class).customize(
                 new CustomMapper<ArrDataUnitid, ArrItemUnitidVO>() {
                     @Override
@@ -715,7 +751,25 @@ public class ConfigMapperConfiguration {
                         .orElseThrow(ap(recordRefVO.getValue())));
                     }
                 }).byDefault().register();
-        mapperFactory.classMap(ArrDataString.class, ArrItemStringVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataString.class, ArrItemStringVO.class).customize(
+                new CustomMapper<ArrDataString, ArrItemStringVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDataString string,
+                                        final ArrItemStringVO stringVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(string, stringVO, context);
+                        stringVO.setValue(string.getStringValue());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrItemStringVO stringVO,
+                                        final ArrDataString string,
+                                        final MappingContext context) {
+                        super.mapBtoA(stringVO, string, context);
+                        string.setStringValue(stringVO.getValue());
+                    }
+                }
+        ).byDefault().register();
         mapperFactory.classMap(ArrDataUriRef.class, ArrItemUriRefVO.class).customize(
                 new CustomMapper<ArrDataUriRef, ArrItemUriRefVO>() {
                     @Override
@@ -723,7 +777,7 @@ public class ConfigMapperConfiguration {
                                         final ArrItemUriRefVO uriRefVO,
                                         final MappingContext context) {
                         super.mapAtoB(uriRef, uriRefVO, context);
-                        uriRefVO.setValue(uriRef.getValue());
+                        uriRefVO.setValue(uriRef.getUriRefValue());
                         uriRefVO.setDescription(uriRef.getDescription());
                         uriRefVO.setRefTemplateId(uriRef.getRefTemplate() != null ? uriRef.getRefTemplate().getRefTemplateId() : null);
                         uriRefVO.setNodeId(uriRef.getNodeId());
@@ -734,7 +788,7 @@ public class ConfigMapperConfiguration {
                                         final ArrDataUriRef uriRef,
                                         final MappingContext context) {
                         super.mapBtoA(uriRefVO, uriRef, context);
-                        uriRef.setValue(uriRefVO.getValue());
+                        uriRef.setUriRefValue(uriRefVO.getValue());
                         uriRef.setDescription(uriRefVO.getDescription());
                         uriRef.setRefTemplate(uriRefVO.getRefTemplateId() != null ? refTemplateRepository.findById(uriRefVO.getRefTemplateId())
                                 .orElseThrow(refTemplate(uriRefVO.getRefTemplateId())): null);
@@ -769,8 +823,44 @@ public class ConfigMapperConfiguration {
             }
         }).register();*/
 
-        mapperFactory.classMap(ArrDataText.class, ArrItemTextVO.class).byDefault().register();
-        mapperFactory.classMap(ArrDataText.class, ArrItemFormattedTextVO.class).byDefault().register();
+        mapperFactory.classMap(ArrDataText.class, ArrItemTextVO.class).customize(
+                new CustomMapper<ArrDataText, ArrItemTextVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDataText text,
+                                        final ArrItemTextVO textVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(text, textVO, context);
+                        textVO.setValue(text.getTextValue());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrItemTextVO textVO,
+                                        final ArrDataText text,
+                                        final MappingContext context) {
+                        super.mapBtoA(textVO, text, context);
+                        text.setTextValue(textVO.getValue());
+                    }
+                }
+        ).byDefault().register();
+        mapperFactory.classMap(ArrDataText.class, ArrItemFormattedTextVO.class).customize(
+                new CustomMapper<ArrDataText, ArrItemFormattedTextVO>() {
+                    @Override
+                    public void mapAtoB(final ArrDataText text,
+                                        final ArrItemFormattedTextVO formattedTextVO,
+                                        final MappingContext context) {
+                        super.mapAtoB(text, formattedTextVO, context);
+                        formattedTextVO.setValue(text.getTextValue());
+                    }
+
+                    @Override
+                    public void mapBtoA(final ArrItemFormattedTextVO formattedTextVO,
+                                        final ArrDataText text,
+                                        final MappingContext context) {
+                        super.mapBtoA(formattedTextVO, text, context);
+                        text.setTextValue(formattedTextVO.getValue());
+                    }
+                }
+        ).byDefault().register();
 
         mapperFactory.classMap(PersistentSortRunConfig.class, PersistentSortConfigVO.class).
                 byDefault().

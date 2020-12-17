@@ -20,6 +20,8 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Entity(name = "ap_change")
 public class ApChange {
 
+    public static final String USER = "user";
+
     public enum Type {
         AP_CREATE, AP_UPDATE, AP_DELETE, AP_MIGRATE/***/,
         AP_REVALIDATE,

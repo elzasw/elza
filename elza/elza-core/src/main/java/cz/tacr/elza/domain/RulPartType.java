@@ -26,6 +26,8 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RulPartType {
 
+    public static final String CODE = "code";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db

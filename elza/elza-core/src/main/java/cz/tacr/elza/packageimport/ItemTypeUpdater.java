@@ -558,7 +558,7 @@ public class ItemTypeUpdater {
         // insert new arr_data_date
         for (OnlyValues srcValue : srcValues) {
             // parse current value
-            LocalDate locDate = mfp.parseDate(srcValue.getValue(), LocalDate.now());
+            LocalDate locDate = mfp.parseDate(srcValue.getStringValue(), LocalDate.now());
 
             dataDateRepository.insertMasterOnly(srcValue.getDataId(), locDate);
         }

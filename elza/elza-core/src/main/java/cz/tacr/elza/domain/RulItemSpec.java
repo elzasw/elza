@@ -31,6 +31,7 @@ import java.util.List;
 public class RulItemSpec {
 
     public static final String FIELD_VIEW_ORDER = "viewOrder";
+    public static final String CODE = "code";
 
     @Id
     @GeneratedValue

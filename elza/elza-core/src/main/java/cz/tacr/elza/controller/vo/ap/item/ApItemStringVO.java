@@ -23,7 +23,7 @@ public class ApItemStringVO extends ApItemVO {
     public ApItemStringVO(final ApItem item) {
         super(item);
         ArrDataString data = (ArrDataString) item.getData();
-        value = data == null ? null : data.getValue();
+        value = data == null ? null : data.getStringValue();
     }
 
     public String getValue() {
@@ -37,7 +37,7 @@ public class ApItemStringVO extends ApItemVO {
     @Override
     public ArrData createDataEntity(EntityManager em) {
         ArrDataString data = new ArrDataString();
-        data.setValue(value);
+        data.setStringValue(value);
         data.setDataType(DataType.STRING.getEntity());
         return data;
     }

@@ -16,7 +16,7 @@ public class DescriptionItemBitImpl extends DescriptionItemBit {
 
         //TODO: zpracovat případnou hodnotu value
         ArrDataBit data = new ArrDataBit();
-        data.setValue(isV());
+        data.setBitValue(isV());
         data.setDataType(dataType.getEntity());
 
         return new ImportableItemData(data);

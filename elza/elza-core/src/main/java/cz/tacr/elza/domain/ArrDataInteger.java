@@ -17,15 +17,17 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataInteger extends ArrData {
 
-    @Column(nullable = false)
-    private Integer value;
+    public static final String INTEGER_VALUE = "integerValue";
+
+    @Column(name = "value", nullable = false)
+    private Integer integerValue;
 
 	public ArrDataInteger() {
 
 	}
 
-    public ArrDataInteger(final Integer value) {
-        setValue(value);
+    public ArrDataInteger(final Integer integerValue) {
+        setIntegerValue(integerValue);
     }
 
 	protected ArrDataInteger(ArrDataInteger src) {
@@ -34,25 +36,25 @@ public class ArrDataInteger extends ArrData {
 	}
 
     private void copyValue(ArrDataInteger src) {
-        this.value = src.value;
+        this.integerValue = src.integerValue;
     }
 
-    public Integer getValue() {
-        return value;
+    public Integer getIntegerValue() {
+        return integerValue;
     }
 
-    public void setValue(final Integer value) {
-        this.value = value;
+    public void setIntegerValue(final Integer integerValue) {
+        this.integerValue = integerValue;
     }
 
     @Override
     public String getFulltextValue() {
-        return value.toString();
+        return integerValue.toString();
     }
 
     @Override
     public Integer getValueInt() {
-        return value;
+        return integerValue;
     }
 
 	@Override
@@ -63,7 +65,7 @@ public class ArrDataInteger extends ArrData {
     @Override
     protected boolean isEqualValueInternal(ArrData srcData) {
         ArrDataInteger src = (ArrDataInteger)srcData;
-        return value.equals(src.value);
+        return integerValue.equals(src.integerValue);
     }
 
     @Override
@@ -74,6 +76,6 @@ public class ArrDataInteger extends ArrData {
 
     @Override
     protected void validateInternal() {
-        Validate.notNull(value);
+        Validate.notNull(integerValue);
     }
 }

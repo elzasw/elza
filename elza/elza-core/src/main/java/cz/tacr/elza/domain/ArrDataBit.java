@@ -13,16 +13,18 @@ import javax.persistence.Table;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ArrDataBit extends ArrData {
 
+    public static final String BIT_VALUE = "bitValue";
+
     @Basic
     @Column(name="value", nullable=false)
-    private Boolean value;
+    private Boolean bitValue;
 
     public ArrDataBit() {
 
     }
 
-    public ArrDataBit(final Boolean value) {
-        this.value = value;
+    public ArrDataBit(final Boolean bitValue) {
+        this.bitValue = bitValue;
     }
 
     protected ArrDataBit(ArrDataBit src) {
@@ -31,26 +33,26 @@ public class ArrDataBit extends ArrData {
     }
 
     private void copyValue(ArrDataBit src) {
-        this.value = src.value;
+        this.bitValue = src.bitValue;
     }
 
     @Override
     public String getFulltextValue() {
-        return Boolean.toString(value);
+        return Boolean.toString(bitValue);
     }
 
-    public Boolean isValue() {
-        return value;
+    public Boolean isBitValue() {
+        return bitValue;
     }
 
-    public void setValue(Boolean value) {
-        this.value = value;
+    public void setBitValue(Boolean bitValue) {
+        this.bitValue = bitValue;
     }
 
     @Override
     protected boolean isEqualValueInternal(ArrData srcData) {
         ArrDataBit src = (ArrDataBit) srcData;
-        return (value.booleanValue() == src.value.booleanValue());
+        return (bitValue.booleanValue() == src.bitValue.booleanValue());
     }
 
     @Override
@@ -66,6 +68,6 @@ public class ArrDataBit extends ArrData {
 
     @Override
     protected void validateInternal() {
-        Validate.notNull(value);
+        Validate.notNull(bitValue);
     }
 }

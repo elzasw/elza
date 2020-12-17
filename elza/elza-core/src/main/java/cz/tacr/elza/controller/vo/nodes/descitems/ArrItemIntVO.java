@@ -41,7 +41,7 @@ public class ArrItemIntVO extends ArrItemVO {
     @Override
     public ArrData createDataEntity(EntityManager em) {
         ArrDataInteger data = new ArrDataInteger();
-        data.setValue(value);
+        data.setIntegerValue(value);
         data.setDataType(DataType.INT.getEntity());
         return data;
     }
@@ -55,7 +55,7 @@ public class ArrItemIntVO extends ArrItemVO {
                         .set("dataClass", item.getClass());
             }
             ArrDataInteger dataInt = (ArrDataInteger) data;
-            value = dataInt.getValue();
+            value = dataInt.getIntegerValue();
         }
         ArrItemIntVO vo = new ArrItemIntVO(item, value);
         return vo;

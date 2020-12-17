@@ -109,7 +109,7 @@ public class MoveDescItem extends BulkActionDFS {
 			descItem.setItemSpec(this.trgItemSpec);
 			descItem.setNode(currNode);
 			ArrDataString trgData = new ArrDataString();
-			trgData.setValue(srcData.getValue());
+			trgData.setStringValue(srcData.getStringValue());
 			descItem.setData(trgData);
 
 			/*ArrDescItem trgItem = */
