@@ -22,6 +22,8 @@ public class ApPart {
     public static final String PARENT_PART = "parentPart";
     public static final String ITEMS = "items";
     public static final String INDICES = "indices";
+    public static final String ACCESS_POINT = "accessPoint";
+    public static final String PART_TYPE = "partType";
 
     @Id
     @GeneratedValue

@@ -298,7 +298,7 @@ public class LevelGenerator {
                 if (oldSealedUnitId.isFullySealed()) {
                     // move to old values
                     ArrDataString dataPrev = new ArrDataString();
-                    dataPrev.setValue(oldValue);
+                    dataPrev.setStringValue(oldValue);
 
                     ArrDescItem descItemPrev = new ArrDescItem();
                     descItemPrev.setItemType(params.getPreviousItemType());

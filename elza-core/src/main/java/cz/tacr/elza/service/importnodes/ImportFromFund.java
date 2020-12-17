@@ -377,7 +377,7 @@ public class ImportFromFund implements ImportSource {
 
         public ItemStringImpl(final ArrDescItem item, final ArrDataString itemData) {
             super(item);
-            value = itemData.getValue();
+            value = itemData.getStringValue();
         }
 
         @Override
@@ -391,7 +391,7 @@ public class ImportFromFund implements ImportSource {
 
         public ItemTextImpl(final ArrDescItem item, final ArrDataText itemData) {
             super(item);
-            value = itemData.getValue();
+            value = itemData.getTextValue();
         }
 
         @Override
@@ -405,7 +405,7 @@ public class ImportFromFund implements ImportSource {
 
         public ItemFormattedTextImpl(final ArrDescItem item, final ArrDataText itemData) {
             super(item);
-            value = itemData.getValue();
+            value = itemData.getTextValue();
         }
 
         @Override
@@ -419,7 +419,7 @@ public class ImportFromFund implements ImportSource {
 
         public ItemIntImpl(final ArrDescItem item, final ArrDataInteger itemData) {
             super(item);
-            value = itemData.getValue();
+            value = itemData.getIntegerValue();
         }
 
         @Override
@@ -538,7 +538,7 @@ public class ImportFromFund implements ImportSource {
             super(item);
             nodeId = itemData.getNodeId();
             schema = itemData.getSchema();
-            value = itemData.getValue();
+            value = itemData.getUriRefValue();
             description = itemData.getDescription();
         }
 
@@ -594,7 +594,7 @@ public class ImportFromFund implements ImportSource {
 
         public ItemBitImpl(final ArrDescItem item, final ArrDataBit itemData) {
             super(item);
-            value = itemData.isValue();
+            value = itemData.isBitValue();
         }
 
         @Override

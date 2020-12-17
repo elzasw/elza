@@ -40,7 +40,6 @@ import cz.tacr.elza.service.cache.NodeCacheSerializable;
 public abstract class ArrData implements NodeCacheSerializable {
 
     public static final String ID = "dataId";
-    public static final String VALUE = "value";
 
     @Id
     @GeneratedValue

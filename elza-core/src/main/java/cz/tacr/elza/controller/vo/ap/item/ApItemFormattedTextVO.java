@@ -23,7 +23,7 @@ public class ApItemFormattedTextVO extends ApItemVO {
     public ApItemFormattedTextVO(final ApItem item) {
         super(item);
         ArrDataText data = (ArrDataText) item.getData();
-        value = data == null ? null : data.getValue();
+        value = data == null ? null : data.getTextValue();
     }
 
     public String getValue() {
@@ -37,7 +37,7 @@ public class ApItemFormattedTextVO extends ApItemVO {
     @Override
     public ArrData createDataEntity(EntityManager em) {
         ArrDataText data = new ArrDataText();
-        data.setValue(value);
+        data.setTextValue(value);
         data.setDataType(DataType.FORMATTED_TEXT.getEntity());
         return data;
     }

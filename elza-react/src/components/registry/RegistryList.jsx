@@ -353,7 +353,7 @@ class RegistryList extends AbstractReactComponent {
                         useIdAsValue
                     />
                     <Autocomplete
-                        placeholder={filter.state ? StateApproval.getCaption(filter.state) : i18n('party.apState')}
+                        placeholder={filter.state ? StateApprovalCaption(filter.state) : i18n('party.apState')}
                         items={this.getStateWithAll()}
                         onChange={this.handleFilterRegistryState}
                         value={filter.state}

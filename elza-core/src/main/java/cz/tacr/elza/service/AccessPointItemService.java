@@ -8,15 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
 import cz.tacr.cam.schema.cam.ItemBinaryXml;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
 import org.springframework.stereotype.Service;
 
@@ -32,13 +29,10 @@ import cz.tacr.cam.schema.cam.ItemUnitDateXml;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
-import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApChange;
@@ -362,7 +356,7 @@ public class AccessPointItemService {
             uuid = CamHelper.getUuid(itemBoolean.getUuid());
 
             ArrDataBit dataBit = new ArrDataBit();
-            dataBit.setValue(itemBoolean.getValue().isValue());
+            dataBit.setBitValue(itemBoolean.getValue().isValue());
             dataBit.setDataType(DataType.BIT.getEntity());
             data = dataBit;
         } else if (createItem instanceof ItemEntityRefXml) {
@@ -399,7 +393,7 @@ public class AccessPointItemService {
             uuid = CamHelper.getUuid(itemInteger.getUuid());
 
             ArrDataInteger dataInteger = new ArrDataInteger();
-            dataInteger.setValue(itemInteger.getValue().getValue().intValue());
+            dataInteger.setIntegerValue(itemInteger.getValue().getValue().intValue());
             dataInteger.setDataType(DataType.INT.getEntity());
             data = dataInteger;
         } else if (createItem instanceof ItemLinkXml) {
@@ -410,7 +404,7 @@ public class AccessPointItemService {
             uuid = CamHelper.getUuid(itemLink.getUuid());
 
             ArrDataUriRef dataUriRef = new ArrDataUriRef();
-            dataUriRef.setValue(itemLink.getUrl().getValue());
+            dataUriRef.setUriRefValue(itemLink.getUrl().getValue());
             dataUriRef.setDescription(itemLink.getNm().getValue());
             dataUriRef.setSchema("http");
             dataUriRef.setArrNode(null);
@@ -432,13 +426,13 @@ public class AccessPointItemService {
             switch(dt) {
                 case STRING:
                     ArrDataString dataString = new ArrDataString();
-                    dataString.setValue(itemString.getValue().getValue());
+                    dataString.setStringValue(itemString.getValue().getValue());
                     dataString.setDataType(DataType.STRING.getEntity());
                     data = dataString;
                     break;
                 case TEXT:
                     ArrDataText dataText = new ArrDataText();
-                    dataText.setValue(itemString.getValue().getValue());
+                    dataText.setTextValue(itemString.getValue().getValue());
                     dataText.setDataType(DataType.TEXT.getEntity());
                     data = dataText;
                     break;
@@ -558,7 +552,7 @@ public class AccessPointItemService {
                         ArrDataBit dataBit = (ArrDataBit) ib.getData();
                         if (!(ib.getItemType().getCode().equals(itemBoolean.getT().getValue()) &&
                                 compareItemSpec(ib.getItemSpec(), itemBoolean.getS()) &&
-                                dataBit.isValue().equals(itemBoolean.getValue().isValue()))) {
+                                dataBit.isBitValue().equals(itemBoolean.getValue().isValue()))) {
                             changedItems.add(itemBoolean);
                         } else {
                             notChangeItems.add(bindingItem);
@@ -614,7 +608,7 @@ public class AccessPointItemService {
                         ArrDataInteger dataInteger = (ArrDataInteger) ii.getData();
                         if (!(ii.getItemType().getCode().equals(itemInteger.getT().getValue()) &&
                                 compareItemSpec(ii.getItemSpec(), itemInteger.getS()) &&
-                                dataInteger.getValue().equals(itemInteger.getValue().getValue().intValue()))) {
+                                dataInteger.getIntegerValue().equals(itemInteger.getValue().getValue().intValue()))) {
 
                             changedItems.add(itemInteger);
                         } else {
@@ -633,7 +627,7 @@ public class AccessPointItemService {
                         ArrDataUriRef dataUriRef = (ArrDataUriRef) il.getData();
                         if (!(il.getItemType().getCode().equals(itemLink.getT().getValue()) &&
                                 compareItemSpec(il.getItemSpec(), itemLink.getS()) &&
-                                dataUriRef.getValue().equals(itemLink.getUrl().getValue()) &&
+                                dataUriRef.getUriRefValue().equals(itemLink.getUrl().getValue()) &&
                                 dataUriRef.getDescription().equals(itemLink.getNm().getValue()))) {
 
                             changedItems.add(itemLink);
@@ -654,11 +648,11 @@ public class AccessPointItemService {
                         switch(DataType.fromCode(is.getItemType().getDataType().getCode())) {
                             case STRING:
                                 ArrDataString dataString = (ArrDataString) is.getData();
-                                value = dataString.getValue();
+                                value = dataString.getStringValue();
                                 break;
                             case TEXT:
                                 ArrDataText dataText = (ArrDataText) is.getData();
-                                value = dataText.getValue();
+                                value = dataText.getTextValue();
                                 break;
                             case COORDINATES:
                                 ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) is.getData();

@@ -98,13 +98,13 @@ public class TextAggregationAction extends Action {
                 switch(itemType.getDataType())
                 {
 				case STRING:
-                    value = ((ArrDataString) data).getValue();
+                    value = ((ArrDataString) data).getStringValue();
                     break;
 				case TEXT:
-					value = (((ArrDataText) data).getValue());
+					value = (((ArrDataText) data).getTextValue());
                 	break;
 				case FORMATTED_TEXT:
-					value = (((ArrDataText) data).getValue());
+					value = (((ArrDataText) data).getTextValue());
 					break;
 				default:
 					throw new IllegalStateException(

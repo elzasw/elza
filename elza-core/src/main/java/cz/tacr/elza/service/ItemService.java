@@ -225,7 +225,7 @@ public class ItemService {
         }
 
         if(itemType.getDataType() == DataType.STRING && itemType.getEntity().getStringLengthLimit() != null) {
-            if(((ArrDataString) descItem.getData()).getValue().length() > itemType.getEntity().getStringLengthLimit()) {
+            if(((ArrDataString) descItem.getData()).getStringValue().length() > itemType.getEntity().getStringLengthLimit()) {
                 throw new BusinessException("Délka řetězce je delší než maximální povolená : " +itemType.getEntity().getStringLengthLimit(), BaseCode.INVALID_LENGTH);
             }
         }
