@@ -108,17 +108,17 @@ public class WSHelper {
         switch (itemType.getDataType()) {
         case STRING:
             ArrDataString ds = new ArrDataString();
-            ds.setValue(Long.toString(srcItem.getValue()));
+            ds.setStringValue(Long.toString(srcItem.getValue()));
             data = ds;
             break;
         case TEXT:
             ArrDataText dt = new ArrDataText();
-            dt.setValue(Long.toString(srcItem.getValue()));
+            dt.setTextValue(Long.toString(srcItem.getValue()));
             data = dt;
             break;
         case INT:
             ArrDataInteger di = new ArrDataInteger();
-            di.setValue((int) srcItem.getValue());
+            di.setIntegerValue((int) srcItem.getValue());
             data = di;
             break;
         default:
@@ -141,17 +141,17 @@ public class WSHelper {
         switch (itemType.getDataType()) {
         case STRING:
             ArrDataString ds = new ArrDataString();
-            ds.setValue(srcItem.getValue());
+            ds.setStringValue(srcItem.getValue());
             data = ds;
             break;
         case TEXT:
             ArrDataText dt = new ArrDataText();
-            dt.setValue(srcItem.getValue());
+            dt.setTextValue(srcItem.getValue());
             data = dt;
             break;
         case INT:
             ArrDataInteger di = new ArrDataInteger();
-            di.setValue(Integer.valueOf(srcItem.getValue()));
+            di.setIntegerValue(Integer.valueOf(srcItem.getValue()));
             data = di;
             break;
         case UNITDATE:

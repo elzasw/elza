@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -134,7 +133,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         // check structured object item data
         RulItemSpec so1Item1Spec = staticData.getItemTypeByCode(STRUCT_OBJ_1_ITEM_1_TYPE).getItemSpecByCode(STRUCT_OBJ_1_ITEM_1_SPEC);
         ArrDataInteger so1Item2Data = new ArrDataInteger();
-        so1Item2Data.setValue(STRUCT_OBJ_1_ITEM_2_VALUE);
+        so1Item2Data.setIntegerValue(STRUCT_OBJ_1_ITEM_2_VALUE);
         so1Item2Data.setDataType(DataType.INT.getEntity());
 
         int foundStructData = 0;

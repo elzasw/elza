@@ -102,7 +102,7 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
 
         ArrDataInteger data = new ArrDataInteger();
         data.setDataType(rsit.getDataType().getEntity());
-        data.setValue(value);
+        data.setIntegerValue(value);
         addOutputItem(data, rsit, itemSpecId);
     }
 
@@ -115,14 +115,14 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
             case STRING:
                 ArrDataString str = new ArrDataString();
                 str.setDataType(rsit.getDataType().getEntity());
-                str.setValue(value);
+                str.setStringValue(value);
                 addOutputItem(str, rsit, itemSpecId);
                 break;
             case TEXT:
             case FORMATTED_TEXT:
                 ArrDataText txt = new ArrDataText();
                 txt.setDataType(rsit.getDataType().getEntity());
-                txt.setValue(value);
+                txt.setTextValue(value);
                 addOutputItem(txt, rsit, itemSpecId);
                 break;
             default:

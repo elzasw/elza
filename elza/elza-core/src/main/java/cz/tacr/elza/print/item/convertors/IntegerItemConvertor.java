@@ -16,7 +16,7 @@ public class IntegerItemConvertor extends AbstractItemConvertor {
         }
         ArrDataInteger data = (ArrDataInteger) item.getData();
 
-        return new ItemInteger(data.getValue());
+        return new ItemInteger(data.getIntegerValue());
     }
 
 }

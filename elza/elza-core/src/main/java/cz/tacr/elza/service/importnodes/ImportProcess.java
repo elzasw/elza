@@ -360,18 +360,18 @@ public class ImportProcess {
         ArrData data;
         if (item instanceof ItemInt) {
             data = new ArrDataInteger();
-            ((ArrDataInteger) data).setValue(((ItemInt) item).getValue());
+            ((ArrDataInteger) data).setIntegerValue(((ItemInt) item).getValue());
         } else if (item instanceof ItemEnum) {
             data = new ArrDataNull();
         } else if (item instanceof ItemText) {
             data = new ArrDataText();
-            ((ArrDataText) data).setValue(((ItemText) item).getValue());
+            ((ArrDataText) data).setTextValue(((ItemText) item).getValue());
         } else if (item instanceof ItemFormattedText) {
             data = new ArrDataText();
-            ((ArrDataText) data).setValue(((ItemFormattedText) item).getValue());
+            ((ArrDataText) data).setTextValue(((ItemFormattedText) item).getValue());
         } else if (item instanceof ItemString) {
             data = new ArrDataString();
-            ((ArrDataString) data).setValue(((ItemString) item).getValue());
+            ((ArrDataString) data).setStringValue(((ItemString) item).getValue());
         } else if (item instanceof ItemDecimal) {
             data = new ArrDataDecimal();
             ((ArrDataDecimal) data).setValue(((ItemDecimal) item).getValue());
@@ -416,12 +416,12 @@ public class ImportProcess {
         } else if (item instanceof ItemUriRef) {
             data = new ArrDataUriRef();
             ((ArrDataUriRef) data).setSchema(((ItemUriRef) item).getSchema());
-            ((ArrDataUriRef) data).setValue(((ItemUriRef) item).getValue());
+            ((ArrDataUriRef) data).setUriRefValue(((ItemUriRef) item).getValue());
             ((ArrDataUriRef) data).setDescription(((ItemUriRef) item).getDescription());
             ((ArrDataUriRef) data).setArrNode(nodeRepository.getOne(((ItemUriRef) item).getNodeId()));
         } else if (item instanceof ItemBit) {
             data = new ArrDataBit();
-            ((ArrDataBit) data).setValue(((ItemBit) item).getValue());
+            ((ArrDataBit) data).setBitValue(((ItemBit) item).getValue());
         }else {
             data = null;
         }

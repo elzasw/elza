@@ -1016,5 +1016,10 @@
       <sql>UPDATE db_hibernate_sequences SET next_val =(select (coalesce(max(state_id), 0)+20) as v from ap_state) 
            where sequence_name = 'ap_state|state_id'</sql>
     </changeSet>
+    <changeSet id="20201211004001" author="ppyt">
+        <createIndex indexName="arr_data_uri_ref_node_idx" tableName="arr_data_uri_ref" unique="false">
+            <column name="node_id" type="int"/>
+        </createIndex>
+    </changeSet>
 
 </databaseChangeLog>

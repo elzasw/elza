@@ -46,7 +46,7 @@ public class BitComparator implements Comparator {
         Join<ApItem, ArrData> dataJoin = ctx.getApItemRoot().join(ApItem.FIELD_DATA, JoinType.INNER);
         boolean booleanValue = parseBool(value.toLowerCase());
         if (comparator == QueryComparator.EQ) {
-            return cb.equal(cb.lower(cb.treat(dataJoin, ArrDataBit.class).get(ArrDataBit.VALUE)), booleanValue);
+            return cb.equal(cb.lower(cb.treat(dataJoin, ArrDataBit.class).get(ArrDataBit.BIT_VALUE)), booleanValue);
         }
         throw new IllegalArgumentException(unimplementedMessage(comparator, DataType.BIT));
     }

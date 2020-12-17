@@ -13,7 +13,6 @@ import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import {FOCUS_KEYS} from '../../constants.tsx';
 
 class FundTreeUsage extends AbstractReactComponent {
-
     treeRef = null;
 
     componentDidMount() {
@@ -24,7 +23,7 @@ class FundTreeUsage extends AbstractReactComponent {
         this.trySetFocus(nextProps);
     }
 
-    trySetFocus = (props) => {
+    trySetFocus = props => {
         const {focus} = props;
 
         if (canSetFocus()) {
@@ -33,18 +32,18 @@ class FundTreeUsage extends AbstractReactComponent {
                 if (this.treeRef) {
                     // ještě nemusí existovat
                     this.setState({}, () => {
-                        this.treeRef.getWrappedInstance().focus();
+                        this.treeRef.focus();
                         focusWasSet();
                     });
                 }
             } else if (isFocusFor(focus, FOCUS_KEYS.ARR, 1, 'treeUsage') || isFocusFor(focus, FOCUS_KEYS.ARR, 1)) {
                 this.setState({}, () => {
-                    this.treeRef.getWrappedInstance().focus();
+                    this.treeRef.focus();
                     focusWasSet();
                 });
             }
         }
-    }
+    };
 
     shouldComponentUpdate(nextProps, nextState) {
         return true;
@@ -83,16 +82,16 @@ class FundTreeUsage extends AbstractReactComponent {
      */
     handleCollapse = () => {
         this.props.dispatch(fundTreeCollapse(types.FUND_TREE_AREA_USAGE, this.props.versionId, this.props.fund));
-    }
+    };
 
     render() {
         const {className, cutLongLabels} = this.props;
         return (
             <FundTreeLazy
+                ref={ref => (this.treeRef = ref)}
                 {...this.props}
                 showSearch={false}
                 showCollapseAll={false}
-                ref={ref => this.treeRef = ref}
                 className={className}
                 cutLongLabels={cutLongLabels}
                 onOpenCloseNode={this.props.handleOpenCloseNode}

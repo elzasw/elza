@@ -31,6 +31,7 @@ import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
+import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.UserDetail;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -42,6 +43,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -1898,6 +1901,13 @@ public class AccessPointService {
         extSyncsQueueItem.setDate(date);
         extSyncsQueueItem.setUsername(userName);
         return extSyncsQueueItem;
+    }
+
+    public Page<ApState> findApAccessPointBySearchFilter(SearchFilterVO searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
+                                                         StateApproval state, Integer from, Integer count, StaticDataProvider sdp) {
+        int page = from / count;
+        ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds, state, sdp);
+        return stateRepository.findAll(specification, PageRequest.of(page, count));
     }
 
     /**

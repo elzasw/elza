@@ -342,17 +342,17 @@ public class AccessPointAggregationAction extends Action {
             case FORMATTED_TEXT:
             case TEXT:
                 ArrDataText dataText = new ArrDataText();
-                dataText.setValue(value);
+                dataText.setTextValue(value);
                 data = dataText;
                 break;
             case STRING:
                 ArrDataString itemString = new ArrDataString();
-                itemString.setValue(value);
+                itemString.setStringValue(value);
                 data = itemString;
                 break;
             case INT:
                 ArrDataInteger itemInteger = new ArrDataInteger();
-                itemInteger.setValue(Integer.valueOf(value));
+                itemInteger.setIntegerValue(Integer.valueOf(value));
                 data = itemInteger;
                 break;
             case DATE:
@@ -370,12 +370,12 @@ public class AccessPointAggregationAction extends Action {
                 break;
             case BIT:
                 ArrDataBit itemBit = new ArrDataBit();
-                itemBit.setValue(Boolean.valueOf(value));
+                itemBit.setBitValue(Boolean.valueOf(value));
                 data = itemBit;
                 break;
             case URI_REF:
                 ArrDataUriRef itemUriRef = new ArrDataUriRef();
-                itemUriRef.setValue(value);
+                itemUriRef.setUriRefValue(value);
                 data = itemUriRef;
                 break;
             case ENUM:

@@ -46,7 +46,7 @@ static Did createDid(ArrNode node, CachedNode cachedNode) {
         if (type.getCode().equalsIgnoreCase("ZP2015_TITLE")) {
             def data = (ArrDataText) descItem.getData()
             def unittitle = new Unittitle()
-            unittitle.setLocaltype(data.getValue())
+            unittitle.setLocaltype(data.getTextValue())
             did.getUnittitle().add(unittitle)
         } else if (type.getCode().equalsIgnoreCase("ZP2015_UNIT_ID")) {
             def data = (ArrDataUnitid) descItem.getData()

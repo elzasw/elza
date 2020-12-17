@@ -135,12 +135,12 @@ public class GroovyService {
                 switch (dataType) {
                     case BIT: {
                         ArrDataBit dataTmp = (ArrDataBit) data;
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.isValue());
+                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.isBitValue());
                         break;
                     }
                     case STRING: {
                         ArrDataString dataTmp = (ArrDataString) data;
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.getValue());
+                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.getStringValue());
                         break;
                     }
                     case COORDINATES: {
@@ -150,12 +150,12 @@ public class GroovyService {
                     }
                     case TEXT: {
                         ArrDataText dataTmp = (ArrDataText) data;
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.getValue());
+                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.getTextValue());
                         break;
                     }
                     case INT: {
                         ArrDataInteger dataTmp = (ArrDataInteger) data;
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.getValue());
+                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.getIntegerValue());
                         break;
                     }
                     case UNITDATE: {
