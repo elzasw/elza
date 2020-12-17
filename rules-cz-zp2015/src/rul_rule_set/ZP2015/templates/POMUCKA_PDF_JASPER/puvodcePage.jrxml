@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.13.0.final using JasperReports Library version 6.13.0-46ada4d1be8f3c5985fd0b6146f3ed44caed6f05  -->
+<!-- Created with Jaspersoft Studio version 6.14.0.final using JasperReports Library version 6.14.0-2ab0d8625be255bf609c78e1181801213e51db8f  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="puvodce" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="5e68af3a-e344-406e-924e-15876401d3ae">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -56,6 +56,16 @@
 			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
 		</field>
 	</subDataset>
+	<subDataset name="OtherIdents" uuid="db0cac57-2afa-428d-9183-3c2e1c022603">
+		<parameter name="record" class="cz.tacr.elza.print.part.Part"/>
+		<queryString>
+			<![CDATA[]]>
+		</queryString>
+		<field name="partObj" class="cz.tacr.elza.print.part.Part">
+			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
+		</field>
+		<field name="value" class="java.lang.String"/>
+	</subDataset>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
 	<parameter name="formatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
@@ -81,6 +91,9 @@
 	</variable>
 	<variable name="partsName" class="java.util.List">
 		<variableExpression><![CDATA[$V{record}.getParts("PT_NAME")]]></variableExpression>
+	</variable>
+	<variable name="partsIdent" class="java.util.List">
+		<variableExpression><![CDATA[$V{record}.getParts("PT_IDENT")]]></variableExpression>
 	</variable>
 	<title>
 		<band height="50">
@@ -183,6 +196,32 @@
 				</textElement>
 				<text><![CDATA[Variantní forma jména:]]></text>
 			</staticText>
+		</band>
+		<band height="15">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[($V{partsIdent}!=null)&&($V{partsIdent}.size()>0)]]></printWhenExpression>
+			<componentElement>
+				<reportElement x="0" y="0" width="455" height="15" uuid="e20a5dde-2ddc-45c1-82d2-8201d37b40e3">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="OtherIdents" uuid="09ac9eba-466d-4162-9195-91d10d5be27c">
+						<datasetParameter name="record">
+							<datasetParameterExpression><![CDATA[$V{record}]]></datasetParameterExpression>
+						</datasetParameter>
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partsIdent})]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="15" width="455">
+						<textField textAdjust="StretchHeight">
+							<reportElement x="0" y="0" width="455" height="15" uuid="0d07f0e5-5165-445c-9ec5-dcafa5627a9e"/>
+							<textElement>
+								<font pdfEncoding="Cp1250"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
 		</band>
 		<band height="65" splitType="Immediate">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>

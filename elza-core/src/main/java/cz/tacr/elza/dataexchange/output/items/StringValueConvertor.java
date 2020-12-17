@@ -15,7 +15,7 @@ public class StringValueConvertor implements ItemDataConvertor {
 
         ArrDataString string = (ArrDataString) data;
         DescriptionItemString item = objectFactory.createDescriptionItemString();
-        item.setV(string.getValue());
+        item.setV(string.getStringValue());
         return item;
     }
 }

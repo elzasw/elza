@@ -262,7 +262,7 @@ public class DEImportService {
     private Map<String, List<ArrDataUriRef>> createUuidDataUriRefMap(final List<ArrDataUriRef> uriRefs) {
         Map<String, List<ArrDataUriRef>> uuidDataUriRefMap = new HashMap<>();
         for (ArrDataUriRef uriRef : uriRefs) {
-            URI tempUri = URI.create(uriRef.getValue()).normalize();
+            URI tempUri = URI.create(uriRef.getUriRefValue()).normalize();
             String uuid = tempUri.getAuthority();
             List<ArrDataUriRef> dataUriRefs = uuidDataUriRefMap.computeIfAbsent(uuid, k -> new ArrayList<>());
             dataUriRefs.add(uriRef);

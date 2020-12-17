@@ -15,7 +15,7 @@ import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {PERSISTENT_SORT_CODE} from '../../constants.tsx';
 import {modalDialogHide} from '../../actions/global/modalDialog';
 import {refRulDataTypesFetchIfNeeded} from '../../actions/refTables/rulDataTypes';
-import FormInputField from "../shared/form/FormInputField";
+import FormInputField from '../shared/form/FormInputField';
 
 const transformSubmitData = values => {
     return {
@@ -66,18 +66,12 @@ class PersistentSortForm extends AbstractReactComponent {
     };
 
     render() {
-        const {
-            descItemTypes,
-            rulDataTypes,
-            itemType,
-            submitting
-        } = this.props;
+        const {descItemTypes, rulDataTypes, itemType, submitting} = this.props;
 
         const filteredDescItems = this.filterDescItems(descItemTypes.items, rulDataTypes.items, allowedDatatypes);
 
         return (
             <Form>
-
                 <Field
                     alwaysExpanded
                     label={i18n('arr.fund.bulkModifications.descItemType')}
@@ -134,48 +128,53 @@ class PersistentSortForm extends AbstractReactComponent {
 }
 
 const formComponent = reduxForm({
-    form: PersistentSortForm.FORM
+    form: PersistentSortForm.FORM,
 })(PersistentSortForm);
 
 const selector = formValueSelector(PersistentSortForm.FORM);
 
-export default connect((state, props) => {
-    const {initialValues} = props;
+export default connect(
+    (state, props) => {
+        const {initialValues} = props;
 
-    const descItemTypes = state.refTables.descItemTypes;
-    const rulDataTypes = state.refTables.rulDataTypes;
+        const descItemTypes = state.refTables.descItemTypes;
+        const rulDataTypes = state.refTables.rulDataTypes;
 
-    const itemTypeCode = initialValues && initialValues.itemTypeCode;
-    const itemSpecCode = initialValues && initialValues.itemTypeCode;
+        const itemTypeCode = initialValues && initialValues.itemTypeCode;
+        const itemSpecCode = initialValues && initialValues.itemTypeCode;
 
-    let descItemType = descItemTypes.items.find(i => i.code === itemTypeCode);
+        let descItemType = descItemTypes.items.find(i => i.code === itemTypeCode);
 
-    //zpětné poskládání dat pokud je form použit na /action, pro zapamatované nastavení akce
-    const transformedInitialValues = initialValues
-        ? {
-              itemType: descItemType,
-              itemSpec: itemSpecCode && descItemType.descItemSpecs.find(i => i.code === itemSpecCode),
-              direction: initialValues.direction === true ? DIRECTION.ASC : DIRECTION.DESC,
-              sortChildren: initialValues.sortChildren,
-          }
-        : {
-              direction: DIRECTION.ASC,
-              sortChildren: false,
-          };
+        //zpětné poskládání dat pokud je form použit na /action, pro zapamatované nastavení akce
+        const transformedInitialValues = initialValues
+            ? {
+                  itemType: descItemType,
+                  itemSpec: itemSpecCode && descItemType.descItemSpecs.find(i => i.code === itemSpecCode),
+                  direction: initialValues.direction === true ? DIRECTION.ASC : DIRECTION.DESC,
+                  sortChildren: initialValues.sortChildren,
+              }
+            : {
+                  direction: DIRECTION.ASC,
+                  sortChildren: false,
+              };
 
-    return {
-        descItemTypes,
-        rulDataTypes,
-        itemType: selector(state, 'itemType'),
-        onSubmit: (values, dispatch) =>
-            props.onSubmit
-                ? props.onSubmit(props.versionId, transformSubmitData(values))
-                : handleSubmit(values, dispatch, props.versionId, props.node.id),
-        validate: validate,
-        initialValues: transformedInitialValues,
-        enableReinitialize: true,
-    };
-})(formComponent);
+        return {
+            descItemTypes,
+            rulDataTypes,
+            itemType: selector(state, 'itemType'),
+            onSubmit: (values, dispatch) =>
+                props.onSubmit
+                    ? props.onSubmit(props.versionId, transformSubmitData(values))
+                    : handleSubmit(values, dispatch, props.versionId, props.node.id),
+            validate: validate,
+            initialValues: transformedInitialValues,
+            enableReinitialize: true,
+        };
+    },
+    undefined,
+    undefined,
+    {forwardRef: true},
+)(formComponent);
 
 const validate = values => {
     const errors = {};

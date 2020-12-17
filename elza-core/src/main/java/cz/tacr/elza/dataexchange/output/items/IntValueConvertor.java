@@ -17,7 +17,7 @@ public class IntValueConvertor implements ItemDataConvertor {
 
         ArrDataInteger intValue = (ArrDataInteger) data;
         DescriptionItemInteger item = objectFactory.createDescriptionItemInteger();
-        item.setV(BigInteger.valueOf(intValue.getValue()));
+        item.setV(BigInteger.valueOf(intValue.getIntegerValue()));
         return item;
     }
 }

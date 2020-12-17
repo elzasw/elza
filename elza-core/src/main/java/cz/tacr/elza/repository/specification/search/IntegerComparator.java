@@ -28,15 +28,15 @@ public class IntegerComparator implements Comparator {
         int numberValue = Integer.parseInt(value);
         switch (comparator) {
             case EQ:
-                return cb.equal(cb.lower(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.VALUE)), numberValue);
+                return cb.equal(cb.lower(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.INTEGER_VALUE)), numberValue);
             case GT:
-                return cb.greaterThan(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.VALUE), numberValue);
+                return cb.greaterThan(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.INTEGER_VALUE), numberValue);
             case GTE:
-                return cb.greaterThanOrEqualTo(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.VALUE), numberValue);
+                return cb.greaterThanOrEqualTo(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.INTEGER_VALUE), numberValue);
             case LT:
-                return cb.lessThan(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.VALUE), numberValue);
+                return cb.lessThan(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.INTEGER_VALUE), numberValue);
             case LTE:
-                return cb.lessThanOrEqualTo(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.VALUE), numberValue);
+                return cb.lessThanOrEqualTo(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.INTEGER_VALUE), numberValue);
             default:
                 throw new IllegalArgumentException(unimplementedMessage(comparator, DataType.INT));
         }

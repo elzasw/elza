@@ -1,33 +1,73 @@
 package cz.tacr.elza.repository.specification;
 
+import cz.tacr.cam.client.controller.vo.QueryComparator;
 import cz.tacr.elza.controller.vo.Area;
+import cz.tacr.elza.controller.vo.ExtensionFilterVO;
+import cz.tacr.elza.controller.vo.RelationFilterVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.repository.specification.search.BitComparator;
+import cz.tacr.elza.repository.specification.search.Comparator;
+import cz.tacr.elza.repository.specification.search.CoordinatesComparator;
 import cz.tacr.elza.repository.specification.search.Ctx;
+import cz.tacr.elza.repository.specification.search.DateComparator;
+import cz.tacr.elza.repository.specification.search.DecimalComparator;
+import cz.tacr.elza.repository.specification.search.FileRefComparator;
+import cz.tacr.elza.repository.specification.search.IntegerComparator;
+import cz.tacr.elza.repository.specification.search.JsonTableComparator;
+import cz.tacr.elza.repository.specification.search.LinkComparator;
+import cz.tacr.elza.repository.specification.search.NullComparator;
+import cz.tacr.elza.repository.specification.search.RecordRefComparator;
+import cz.tacr.elza.repository.specification.search.StringComparator;
+import cz.tacr.elza.repository.specification.search.StructuredComparator;
+import cz.tacr.elza.repository.specification.search.TextComparator;
+import cz.tacr.elza.repository.specification.search.UnitIdComparator;
+import cz.tacr.elza.repository.specification.search.UnitdateComparator;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
 public class ApStateSpecification implements Specification<ApState> {
 
     private SearchFilterVO searchFilterVO;
+    private Set<Integer> apTypeIdTree;
+    private Set<Integer> scopeIds;
+    private ApState.StateApproval state;
+    private StaticDataProvider sdp;
 
-    public ApStateSpecification(final SearchFilterVO searchFilterVO) {
+    public ApStateSpecification(final SearchFilterVO searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds, ApState.StateApproval state, final StaticDataProvider sdp) {
         this.searchFilterVO = searchFilterVO;
+        this.apTypeIdTree = apTypeIdTree;
+        this.scopeIds = scopeIds;
+        this.state = state;
+        this.sdp = sdp;
     }
-
 
     @Override
     public Predicate toPredicate(Root<ApState> stateRoot, CriteriaQuery<?> q, CriteriaBuilder cb) {
@@ -41,21 +81,46 @@ public class ApStateSpecification implements Specification<ApState> {
 
         Predicate condition = cb.conjunction();
 
-        // typ archivní entity
-        List<Integer> aeTypeIdList =  searchFilterVO.getAeTypeIds();
-        if (CollectionUtils.isNotEmpty(aeTypeIdList)) {
-            condition = cb.and(condition, stateRoot.get(ApState.FIELD_AP_TYPE_ID).in(aeTypeIdList));
+        String user = searchFilterVO.getUser();
+        if (StringUtils.isNotEmpty(user)) {
+            Join<ApState, ApChange> apChangeJoin = stateRoot.join(ApState.FIELD_CREATE_CHANGE, JoinType.INNER);
+            condition = cb.and(condition, cb.like(cb.lower(apChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%"));
         }
+
+        // omezení dle oblasti
+        Validate.isTrue(!scopeIds.isEmpty());
+        condition = cb.and(condition, stateRoot.get(ApState.FIELD_SCOPE_ID).in(scopeIds));
+
+        // typ archivní entity
+        if (CollectionUtils.isNotEmpty(apTypeIdTree)) {
+            condition = cb.and(condition, stateRoot.get(ApState.FIELD_AP_TYPE_ID).in(apTypeIdTree));
+        }
+
+        // omezení dle stavu
+        if (state != null) {
+            condition = cb.and(condition, stateRoot.get(ApState.FIELD_STATE_APPROVAL).in(state));
+        }
+
+        // omezení dle konkrétních archivních entit
+        String code = searchFilterVO.getCode();
+        if (StringUtils.isNotEmpty(code)) {
+            try {
+                Integer id = Integer.parseInt(code);
+                condition = cb.and(condition, accessPointJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID).in(id));
+            } catch (NumberFormatException e) {
+
+            }
+        }
+
+        // pouze aktuální state
+        condition = cb.and(condition, cb.isNull(stateRoot.get(ApState.FIELD_DELETE_CHANGE_ID)));
 
         condition = cb.and(condition, process(cb.conjunction(), ctx));
 
-        // atribut, podle kterého se výsledek seřadí - dle "sort value" preferovaného jména archivní entity
-        //Path<ApPart> sortingBySortValue = ctx.getPreferredPartJoin().get(ApPart.VALUE);
-        // každý nález ae pouze jednou
-        //q.groupBy(stateRoot, sortingBySortValue);
-        // seřazení
-        //.orderBy(cb.asc(sortingBySortValue));
-
+        Join<ApIndex, ApPart> indexJoin = preferredPartJoin.join(ApPart.INDICES, JoinType.INNER);
+        indexJoin.on(cb.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
+        Path<String> accessPointName = indexJoin.get(ApIndex.VALUE);
+        q.orderBy(cb.asc(accessPointName));
 
         return condition;
     }
@@ -65,41 +130,205 @@ public class ApStateSpecification implements Specification<ApState> {
         String search = searchFilterVO.getSearch();
         Area area = searchFilterVO.getArea();
         if (area != Area.ENTITY_CODE) {
+            Predicate and = cb.conjunction();
             if (StringUtils.isNotEmpty(search)) {
                 List<String> keyWords = getKeyWordsFromSearch(search);
-
-                Predicate and = cb.conjunction();
-                StaticDataProvider sdp = StaticDataProvider.getInstance();
                 RulPartType defaultPartType = sdp.getDefaultPartType();
                 for (String keyWord : keyWords) {
-                    Predicate cond = processValueCondDef(ctx, keyWord);
+                    String partTypeCode;
+                    boolean prefPart = false;
                     switch (area) {
                         case PREFER_NAMES:
-                            and = cb.and(and, processPartCondDef(ctx, cond, defaultPartType.getCode(), true));
+                            partTypeCode = defaultPartType.getCode();
+                            prefPart = true;
                             break;
                         case ALL_PARTS:
-                            and = cb.and(and, cond);
+                            partTypeCode = null;
                             break;
                         case ALL_NAMES:
-                            and = cb.and(and, processPartCondDef(ctx, cond, defaultPartType.getCode(), false));
+                            partTypeCode = defaultPartType.getCode();
                             break;
                         default:
                             throw new NotImplementedException("Neimplementovaný stav oblasti: " + area);
                     }
+                    if (searchFilterVO.getOnlyMainPart() && !area.equals(Area.ALL_PARTS)) {
+                        and = processValueCondDef(ctx, and, keyWord, partTypeCode, "NM_MAIN", null, QueryComparator.CONTAIN, prefPart);
+                    } else {
+                        and = processIndexCondDef(ctx, and, keyWord, partTypeCode, prefPart);
+                    }
                 }
-                condition = cb.and(condition, and);
             }
+            if (CollectionUtils.isNotEmpty(searchFilterVO.getExtFilters())) {
+                for (ExtensionFilterVO ext : searchFilterVO.getExtFilters()) {
+                    String itemTypeCode = ext.getItemTypeId() != null ? sdp.getItemTypeById(ext.getItemTypeId()).getCode() : null;
+                    String itemSpecCode = ext.getItemSpecId() != null ? sdp.getItemSpecById(ext.getItemSpecId()).getCode() : null;
+                    and = processValueCondDef(ctx, and, String.valueOf(ext.getValue()), ext.getPartTypeCode(), itemTypeCode,
+                            itemSpecCode, QueryComparator.CONTAIN, false);
+                }
+            }
+            if (CollectionUtils.isNotEmpty(searchFilterVO.getRelFilters())) {
+                for (RelationFilterVO rel : searchFilterVO.getRelFilters()) {
+                    if (rel.getCode() != null) {
+                        String itemTypeCode = rel.getRelTypeId() != null ? sdp.getItemTypeById(rel.getRelTypeId()).getCode() : null;
+                        String itemSpecCode = rel.getRelSpecId() != null ? sdp.getItemSpecById(rel.getRelSpecId()).getCode() : null;
+                        and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()), null, itemTypeCode,
+                                itemSpecCode, QueryComparator.EQ, false);
+                    }
+                }
+            }
+            if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
+                ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
+                String intervalCreation = arrDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+                and = processValueCondDef(ctx, and, intervalCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CONTAIN, false);
+            }
+            if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
+                ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
+                String intervalExtinction = arrDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+                and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
+            }
+            condition = cb.and(condition, and);
         }
 
         return condition;
     }
 
-    private Predicate processValueCondDef(Ctx ctx, String keyWord) {
-        return null;
+    private Predicate processValueCondDef(final Ctx ctx, final Predicate condition, final String value,
+                                          final String partTypeCode, final String itemTypeCode, final String itemSpecCode,
+                                          final QueryComparator comparator, final boolean prefPart) {
+        CriteriaBuilder cb = ctx.cb;
+
+        Predicate and = cb.conjunction();
+        ctx.resetApItemRoot();
+
+        String dataTypeCode;
+        if (StringUtils.isNotEmpty(itemTypeCode)) {
+            dataTypeCode = validateItemType(itemTypeCode);
+            and = cb.and(and, ctx.getItemTypeJoin().get(RulItemType.CODE).in(itemTypeCode));
+        } else {
+            throw new IllegalArgumentException("Musí být vyplněn alespoň jeden typ prvku popisu v hodnotové podmínce");
+        }
+
+        if (StringUtils.isNotEmpty(itemSpecCode)) {
+            validateItemSpec(itemSpecCode);
+            and = cb.and(and, ctx.getItemSpecJoin().get(RulItemSpec.CODE).in(itemSpecCode));
+        }
+
+        if (partTypeCode != null) {
+            Join<ApItem, ApPart> itemPartJoin = ctx.getItemPartJoin();
+            if (prefPart) {
+                itemPartJoin.on(cb.equal(itemPartJoin.get(ApPart.PART_ID), ctx.getAccessPointJoin().get(ApAccessPoint.FIELD_PREFFERED_PART_ID)));
+                and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
+            } else {
+                and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
+            }
+        }
+
+        return cb.and(condition,
+                and,
+                processValueComparator(ctx, comparator, dataTypeCode, value));
     }
 
-    private Predicate processPartCondDef(Ctx ctx, Predicate cond, String partTypeCode, boolean b) {
-        return null;
+    private Predicate processIndexCondDef(final Ctx ctx, final Predicate condition, final String value, final String partTypeCode, final boolean prefPart) {
+        CriteriaBuilder cb = ctx.cb;
+
+        ctx.resetApIndexRoot();
+        Predicate and = cb.conjunction();
+
+        if (partTypeCode != null) {
+            Join<ApIndex, ApPart> indexPartJoin = ctx.getIndexPartJoin();
+            if (prefPart) {
+                indexPartJoin.on(cb.equal(indexPartJoin.get(ApPart.PART_ID), ctx.getAccessPointJoin().get(ApAccessPoint.FIELD_PREFFERED_PART_ID)));
+                and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
+            } else {
+                and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
+            }
+        }
+        Join<ApPart, ApIndex> apIndexRoot = ctx.getApIndexRoot();
+
+        return cb.and(condition, and, cb.equal(apIndexRoot.get(ApIndex.INDEX_TYPE), "DISPLAY_NAME"),
+                createPredicateIndexComp(ctx, QueryComparator.CONTAIN, value));
+    }
+
+    private Predicate createPredicateIndexComp(final Ctx ctx, QueryComparator comparator, String value) {
+        CriteriaBuilder cb = ctx.cb;
+        Join<ApPart, ApIndex> aeIndexRoot = ctx.getApIndexRoot();
+        switch (comparator) {
+            case EQ:
+                return cb.equal(cb.lower(aeIndexRoot.get(ApIndex.VALUE)), value.toLowerCase());
+            case CONTAIN:
+                return cb.like(cb.lower(aeIndexRoot.get(ApIndex.VALUE)), "%" + value.toLowerCase() + "%");
+            case START_WITH:
+                return cb.like(cb.lower(aeIndexRoot.get(ApIndex.VALUE)), value.toLowerCase() + "%");
+            case END_WITH:
+                return cb.like(cb.lower(aeIndexRoot.get(ApIndex.VALUE)), "%" + value.toLowerCase());
+            default:
+                throw new IllegalArgumentException("Není možné v indexu použít comparator: " + comparator);
+        }
+    }
+
+    private String validateItemType(String itemTypeCode) {
+        RulItemType rulItemType = sdp.getItemType(itemTypeCode);
+        RulDataType dataType = rulItemType.getDataType();
+        return dataType.getCode();
+    }
+
+    private void validateItemSpec(String itemSpecCode) {
+        sdp.getItemSpec(itemSpecCode);
+    }
+
+    private Predicate processValueComparator(final Ctx ctx, final QueryComparator comparator, final String dataTypeCode, final String value) {
+        Comparator cmp;
+        switch (DataType.fromCode(dataTypeCode)) {
+            case FORMATTED_TEXT:
+            case TEXT:
+                cmp = new TextComparator(ctx);
+                break;
+            case STRING:
+                cmp = new StringComparator(ctx);
+                break;
+            case BIT:
+                cmp = new BitComparator(ctx);
+                break;
+            case INT:
+                cmp = new IntegerComparator(ctx);
+                break;
+            case COORDINATES:
+                cmp = new CoordinatesComparator(ctx);
+                break;
+            case URI_REF:
+                cmp = new LinkComparator(ctx);
+                break;
+            case RECORD_REF:
+                cmp = new RecordRefComparator(ctx);
+                break;
+            case UNITDATE:
+                cmp = new UnitdateComparator(ctx);
+                break;
+            case ENUM:
+                cmp = new NullComparator(ctx);
+                break;
+            case UNITID:
+                cmp = new UnitIdComparator(ctx);
+                break;
+            case DECIMAL:
+                cmp = new DecimalComparator(ctx);
+                break;
+            case STRUCTURED:
+                cmp = new StructuredComparator(ctx);
+                break;
+            case FILE_REF:
+                cmp = new FileRefComparator(ctx);
+                break;
+            case JSON_TABLE:
+                cmp = new JsonTableComparator(ctx);
+                break;
+            case DATE:
+                cmp = new DateComparator(ctx);
+                break;
+            default:
+                throw new IllegalArgumentException("Neplatný datový typ: " + dataTypeCode);
+        }
+        return cmp.toPredicate(comparator, value);
     }
 
     private List<String> getKeyWordsFromSearch(String search) {

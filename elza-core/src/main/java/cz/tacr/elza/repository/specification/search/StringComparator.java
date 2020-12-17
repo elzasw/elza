@@ -27,13 +27,13 @@ public class StringComparator implements Comparator {
         String lowerValue = value.toLowerCase();
         switch (comparator) {
             case EQ:
-                return cb.equal(cb.lower(cb.treat(dataJoin, ArrDataString.class).get(ArrDataString.VALUE)), lowerValue);
+                return cb.equal(cb.lower(cb.treat(dataJoin, ArrDataString.class).get(ArrDataString.STRING_VALUE)), lowerValue);
             case CONTAIN:
-                return cb.like(cb.lower(cb.treat(dataJoin, ArrDataString.class).get(ArrDataString.VALUE)), "%" + lowerValue + "%");
+                return cb.like(cb.lower(cb.treat(dataJoin, ArrDataString.class).get(ArrDataString.STRING_VALUE)), "%" + lowerValue + "%");
             case START_WITH:
-                return cb.like(cb.lower(cb.treat(dataJoin, ArrDataString.class).get(ArrDataString.VALUE)), lowerValue + "%");
+                return cb.like(cb.lower(cb.treat(dataJoin, ArrDataString.class).get(ArrDataString.STRING_VALUE)), lowerValue + "%");
             case END_WITH:
-                return cb.like(cb.lower(cb.treat(dataJoin, ArrDataString.class).get(ArrDataString.VALUE)), "%" + lowerValue);
+                return cb.like(cb.lower(cb.treat(dataJoin, ArrDataString.class).get(ArrDataString.STRING_VALUE)), "%" + lowerValue);
             default:
                 throw new IllegalArgumentException(unimplementedMessage(comparator, DataType.STRING));
         }

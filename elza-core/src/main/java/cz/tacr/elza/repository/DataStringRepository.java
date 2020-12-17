@@ -20,10 +20,10 @@ public interface DataStringRepository extends JpaRepository<ArrDataString, Integ
     public interface OnlyValues {
         Integer getDataId();
 
-        String getValue();
+        String getStringValue();
     }
 
-    //@Query(nativeQuery = true, value = "select data_id, value from arr_data_string where data_id in (?1)")
+    //@Query(nativeQuery = true, value = "select data_id, stringValue from arr_data_string where data_id in (?1)")
     Collection<OnlyValues> findValuesByDataIdIn(List<Integer> ids);
 
     @Modifying

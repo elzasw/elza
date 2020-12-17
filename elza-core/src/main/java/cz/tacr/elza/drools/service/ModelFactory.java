@@ -77,7 +77,7 @@ public class ModelFactory {
                     voDescItem.setStructured(createStructured(structObj, itemRepos));
 				} else if (data.getType() == DataType.INT) {
                     ArrDataInteger integer = HibernateUtils.unproxy(data);
-                    voDescItem.setInteger(integer.getValue());
+                    voDescItem.setInteger(integer.getIntegerValue());
                 }
             }
         }
@@ -141,7 +141,7 @@ public class ModelFactory {
             ArrData data = structuredItem.getData();
             if (data.getType() == DataType.INT) {
                 ArrDataInteger integer = HibernateUtils.unproxy(data);
-                result.setInteger(integer.getValue());
+                result.setInteger(integer.getIntegerValue());
             }
         }
 	    return result;

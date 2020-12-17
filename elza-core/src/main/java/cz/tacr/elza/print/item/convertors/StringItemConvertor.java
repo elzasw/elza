@@ -22,13 +22,13 @@ public class StringItemConvertor extends AbstractItemConvertor {
                 return unitid.getUnitId();
             case TEXT:
                 ArrDataText text = (ArrDataText) data;
-                return text.getValue();
+                return text.getTextValue();
             case STRING:
                 ArrDataString str = (ArrDataString) data;
-                return str.getValue();
+                return str.getStringValue();
             case FORMATTED_TEXT:
                 ArrDataText ftext = (ArrDataText) data;
-                return ftext.getValue();
+                return ftext.getTextValue();
             default:
                 return null;
         }

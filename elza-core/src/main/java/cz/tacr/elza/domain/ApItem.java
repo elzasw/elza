@@ -17,6 +17,8 @@ public class ApItem implements Item {
     public static final String PART = "part";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
     public static final String FIELD_DATA = "data";
+    public static final String ITEM_TYPE = "itemType";
+    public static final String ITEM_SPEC = "itemSpec";
 
     @Id
     @GeneratedValue

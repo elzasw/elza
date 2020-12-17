@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -202,44 +203,10 @@ public class ApController {
                                                              @RequestParam(required = false) @Nullable final SearchType searchTypeName,
                                                              @RequestParam(required = false) @Nullable final SearchType searchTypeUsername,
                                                              @RequestBody(required = false) @Nullable final SearchFilterVO searchFilter) {
-
-        if (apTypeId != null && (itemSpecId != null || itemTypeId != null)) {
-            throw new SystemException("Nelze použít více kritérií zároveň (specifikace/typ a typ rejstříku).", BaseCode.SYSTEM_ERROR);
-        }
+        final long foundRecordsCount;
+        final List<ApState> foundRecords;
 
         StaticDataProvider sdp = staticDataService.getData();
-
-        Set<Integer> apTypeIds = new HashSet<>();
-        if (apTypeId != null) {
-            apTypeIds.add(apTypeId);
-        } else if (itemSpecId != null) {
-            RulItemSpec spec = sdp.getItemSpecById(itemSpecId);
-            if (spec == null) {
-                throw new ObjectNotFoundException("Specification not found", ArrangementCode.ITEM_SPEC_NOT_FOUND)
-                        .setId(itemSpecId);
-            }
-            apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemSpec(spec));
-            if (apTypeIds.size() == 0) {
-                logger.error("Specification has no associated classes, itemSpecId={}", itemSpecId);
-                throw new SystemException("Configuration error, specification without associated classes",
-                        BaseCode.SYSTEM_ERROR).set("itemSpecId", itemSpecId);
-            }
-        } else
-        if (itemTypeId != null) {
-            ItemType itemType = sdp.getItemTypeById(itemTypeId);
-            if (itemType == null) {
-                throw new ObjectNotFoundException("Item type not found", ArrangementCode.ITEM_TYPE_NOT_FOUND)
-                        .setId(itemTypeId);
-            }
-            apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemType(itemType.getEntity()));
-            if (apTypeIds.size() == 0) {
-                logger.error("Item type has no associated classes, itemTypeId={}", itemTypeId);
-                throw new SystemException("Configuration error, item type without associated classes",
-                        BaseCode.SYSTEM_ERROR).set("itemTypeId", itemTypeId);
-            }
-        }
-
-        Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
 
         ArrFund fund;
         if (versionId == null) {
@@ -249,14 +216,65 @@ public class ApController {
             fund = version.getFund();
         }
 
-        Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
+	    if (searchFilter == null) {
+            if (apTypeId != null && (itemSpecId != null || itemTypeId != null)) {
+                throw new SystemException("Nelze použít více kritérií zároveň (specifikace/typ a typ rejstříku).", BaseCode.SYSTEM_ERROR);
+            }
 
-        SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
-        SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.DISABLED;
+            Set<Integer> apTypeIds = new HashSet<>();
+            if (apTypeId != null) {
+                apTypeIds.add(apTypeId);
+            } else if (itemSpecId != null) {
+                RulItemSpec spec = sdp.getItemSpecById(itemSpecId);
+                if (spec == null) {
+                    throw new ObjectNotFoundException("Specification not found", ArrangementCode.ITEM_SPEC_NOT_FOUND)
+                            .setId(itemSpecId);
+                }
+                apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemSpec(spec));
+                if (apTypeIds.size() == 0) {
+                    logger.error("Specification has no associated classes, itemSpecId={}", itemSpecId);
+                    throw new SystemException("Configuration error, specification without associated classes",
+                            BaseCode.SYSTEM_ERROR).set("itemSpecId", itemSpecId);
+                }
+            } else
+            if (itemTypeId != null) {
+                ItemType itemType = sdp.getItemTypeById(itemTypeId);
+                if (itemType == null) {
+                    throw new ObjectNotFoundException("Item type not found", ArrangementCode.ITEM_TYPE_NOT_FOUND)
+                            .setId(itemTypeId);
+                }
+                apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemType(itemType.getEntity()));
+                if (apTypeIds.size() == 0) {
+                    logger.error("Item type has no associated classes, itemTypeId={}", itemTypeId);
+                    throw new SystemException("Configuration error, item type without associated classes",
+                            BaseCode.SYSTEM_ERROR).set("itemTypeId", itemTypeId);
+                }
+            }
 
-        final long foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIdTree, fund, scopeId, states, searchTypeNameFinal, searchTypeUsernameFinal);
+            Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
 
-        final List<ApState> foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from, count, fund, scopeId, states, searchTypeNameFinal, searchTypeUsernameFinal);
+            Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
+
+            SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
+            SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.DISABLED;
+
+            foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIdTree, fund, scopeId, states, searchTypeNameFinal, searchTypeUsernameFinal);
+
+            foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from, count, fund, scopeId, states, searchTypeNameFinal, searchTypeUsernameFinal);
+
+        } else {
+            Set<Integer> apTypeIds = new HashSet<>();
+            if (apTypeId != null) {
+                apTypeIds.add(apTypeId);
+            }
+            Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
+
+            Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId);
+
+	        Page<ApState> page = accessPointService.findApAccessPointBySearchFilter(searchFilter, apTypeIdTree, scopeIds, state, from, count, sdp);
+            foundRecords = page.getContent();
+            foundRecordsCount = page.getTotalElements();
+        }
 
         final List<ApAccessPoint> accessPoints = foundRecords.stream()
                 .map(ApState::getAccessPoint)

@@ -671,12 +671,12 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     if (toDataType == DataType.STRING) {
                         ArrDataString dataString = new ArrDataString();
                         dataString.setDataType(DataType.STRING.getEntity());
-                        dataString.setValue(sourceDataDate.getValue().toString());
+                        dataString.setStringValue(sourceDataDate.getValue().toString());
                         data = dataString;
                     } else if (toDataType == DataType.TEXT) {
                         ArrDataText dataText = new ArrDataText();
                         dataText.setDataType(DataType.TEXT.getEntity());
-                        dataText.setValue(sourceDataDate.getValue().toString());
+                        dataText.setTextValue(sourceDataDate.getValue().toString());
                         data = dataText;
                     } else {
                         error = true;
@@ -690,12 +690,12 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     if (toDataType == DataType.STRING) {
                         ArrDataString dataString = new ArrDataString();
                         dataString.setDataType(DataType.STRING.getEntity());
-                        dataString.setValue(sourceData.getFulltextValue());
+                        dataString.setStringValue(sourceData.getFulltextValue());
                         data = dataString;
                     } else if (toDataType == DataType.TEXT) {
                         ArrDataText dataText = new ArrDataText();
                         dataText.setDataType(DataType.TEXT.getEntity());
-                        dataText.setValue(sourceData.getFulltextValue());
+                        dataText.setTextValue(sourceData.getFulltextValue());
                         data = dataText;
                     } else {
                         error = true;
@@ -705,12 +705,12 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     if (toDataType == DataType.STRING) {
                         ArrDataString dataString = new ArrDataString();
                         dataString.setDataType(DataType.STRING.getEntity());
-                        dataString.setValue(sourceItem.getItemSpec().getName());
+                        dataString.setStringValue(sourceItem.getItemSpec().getName());
                         data = dataString;
                     } else if (toDataType == DataType.TEXT) {
                         ArrDataText dataText = new ArrDataText();
                         dataText.setDataType(DataType.TEXT.getEntity());
-                        dataText.setValue(sourceItem.getItemSpec().getName());
+                        dataText.setTextValue(sourceItem.getItemSpec().getName());
                         data = dataText;
                     } else {
                         error = true;
@@ -721,7 +721,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     if (toDataType == DataType.TEXT) {
                         ArrDataText dataText = new ArrDataText();
                         dataText.setDataType(DataType.TEXT.getEntity());
-                        dataText.setValue(sourceDataString.getValue());
+                        dataText.setTextValue(sourceDataString.getStringValue());
                         data = dataText;
                     } else {
                         error = true;
@@ -1719,17 +1719,17 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 case "FORMATTED_TEXT":
                 case "TEXT":
                     ArrDataText dataText = new ArrDataText();
-                    dataText.setValue(text);
+                    dataText.setTextValue(text);
                     data = dataText;
                     break;
                 case "STRING":
                     ArrDataString itemString = new ArrDataString();
-                    itemString.setValue(text);
+                    itemString.setStringValue(text);
                     data = itemString;
                     break;
                 case "INT":
                     ArrDataInteger itemInteger = new ArrDataInteger();
-                    itemInteger.setValue(Integer.valueOf(text));
+                    itemInteger.setIntegerValue(Integer.valueOf(text));
                     data = itemInteger;
                     break;
                 case "UNITID":
@@ -1749,12 +1749,12 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     break;
                 case "BIT":
                     ArrDataBit itemBit = new ArrDataBit();
-                    itemBit.setValue(Boolean.valueOf(text));
+                    itemBit.setBitValue(Boolean.valueOf(text));
                     data = itemBit;
                     break;
                 case "URI-REF":
                     ArrDataUriRef itemUriRef = new ArrDataUriRef();
-                    itemUriRef.setValue(text);
+                    itemUriRef.setUriRefValue(text);
                     data = itemUriRef;
                     break;
                 default:
@@ -1906,10 +1906,10 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		// modify data
 		if (dataNew instanceof ArrDataString) {
 			ArrDataString ds = (ArrDataString) dataNew;
-			ds.setValue(getReplacedDataValue(ds.getValue(), searchString, replaceString));
+			ds.setStringValue(getReplacedDataValue(ds.getStringValue(), searchString, replaceString));
 		} else if (dataNew instanceof ArrDataText) {
 			ArrDataText dt = (ArrDataText) dataNew;
-			dt.setValue(getReplacedDataValue(dt.getValue(), searchString, replaceString));
+			dt.setTextValue(getReplacedDataValue(dt.getTextValue(), searchString, replaceString));
 		} else if (dataNew instanceof ArrDataUnitid) {
             ArrDataUnitid dt = (ArrDataUnitid) dataNew;
             dt.setUnitId(getReplacedDataValue(dt.getUnitId(), searchString, replaceString));

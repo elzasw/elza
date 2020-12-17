@@ -112,17 +112,17 @@ public class DescriptionItemServiceInternal {
                     unitdateData.getCalendarTypeId());
         case STRING:
             ArrDataString strData = (ArrDataString) data;
-            return new TitleValue(strData.getValue());
+            return new TitleValue(strData.getStringValue());
         case TEXT:
         case FORMATTED_TEXT:
             ArrDataText textData = (ArrDataText) data;
-            return new TitleValue(textData.getValue());
+            return new TitleValue(textData.getTextValue());
         case UNITID:
             ArrDataUnitid unitidData = (ArrDataUnitid) data;
             return new TitleValue(unitidData.getUnitId());
         case INT:
             ArrDataInteger intData = (ArrDataInteger) data;
-            return new TitleValue(intData.getValue().toString());
+            return new TitleValue(intData.getIntegerValue().toString());
         case DECIMAL:
             ArrDataDecimal decimalData = (ArrDataDecimal) data;
             return new TitleValue(decimalData.getValue().toPlainString());
@@ -140,10 +140,10 @@ public class DescriptionItemServiceInternal {
             return new TitleValue(DateTimeFormatter.ISO_LOCAL_DATE.format(dataDate.getValue()));
         case URI_REF:
             ArrDataUriRef uriRef = (ArrDataUriRef) data;
-            return new TitleValue(uriRef.getValue());
+            return new TitleValue(uriRef.getUriRefValue());
         case BIT:
             ArrDataBit bit = (ArrDataBit) data;
-            return new TitleValue(Boolean.toString(bit.isValue()));
+            return new TitleValue(Boolean.toString(bit.isBitValue()));
         default:
             throw new SystemException("Failed to create title, uknown data type: " + dataType, BaseCode.SYSTEM_ERROR);
         }

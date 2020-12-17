@@ -1,0 +1,133 @@
+.text-fragments-window {
+    border: 1px solid #ddd;
+    box-shadow: 3px 3px 10px #0002;
+    background-color: #f8f8f8;
+    padding: 10px;
+    padding-top: 0px;
+    width: 350px;
+    position: fixed;
+    z-index: 500;
+
+    .actions-container {
+        padding: 5px 0;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+
+        .btn {
+            color: currentColor;
+
+            &.active {
+                background-color: #ddd;
+            }
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        .title {
+            padding-left: 5px;
+            cursor: default;
+        }
+    }
+
+    .edit-form {
+        display: flex;
+        flex-direction: column;
+        margin-top: 15px;
+        position: relative;
+
+        textarea {
+            border: 1px solid #ddd;
+            background-color: #fff;
+            width: 100%;
+            padding: 10px;
+            padding-top: 25px;
+            min-height: 200px;
+        }
+
+        button {
+            border: none;
+            background-color: #fff;
+        }
+
+        .actions-container {
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            padding: 3px 0;
+        }
+    }
+
+    .scroll-window {
+        border: 1px solid #ddd;
+        background-color: #eee;
+        max-height: 400px;
+        overflow: auto;
+
+        .item-container {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 4px;
+
+            .item {
+                border: 1px solid #ddd;
+                background-color: #fff;
+                font-size: 1.2em;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                flex-grow: 1;
+                padding: 0px 7px;
+                color: currentColor;
+                margin: 2px;
+                border-radius: 4px;
+                position: relative;
+                transition: background-color 150ms ease-in-out, color 150ms ease-in-out, border-color 150ms ease-in-out;
+
+                &:hover {
+                    background-color: #f8f8f8;
+                }
+
+                &:disabled {
+                    opacity: 0.6;
+
+                    &:hover {
+                        background-color: #fff
+                    }
+                }
+
+                &.edit {
+                    border: 1px solid #D86464;
+                    background-color: #D86464;
+                    color: white;
+
+                    &:hover {
+                        background-color: #FF7C7C;
+                        border-color: #FF7C7C;
+                        color: white;
+                        
+                        .delete-overlay {
+                            opacity: 1;
+                        }
+                    }
+
+                    .delete-overlay {
+                        background-color: #FF7C7C;
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        opacity: 0;
+                        transition: opacity 150ms ease-in-out;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -223,7 +223,7 @@ public class UnitCountAction extends Action {
 
     public void createDescItem(Integer nodeId, String value, int count) {
 		ArrDataInteger arrDataInteger = new ArrDataInteger();
-		arrDataInteger.setValue(count);
+		arrDataInteger.setIntegerValue(count);
 
 		ArrDescItem descItem = new ArrDescItem();
 		descItem.setData(arrDataInteger);

@@ -190,7 +190,7 @@ public class StorageOrderGeneratorAction extends Action {
         // Connect struct obj to the level
         ArrDataInteger di = new ArrDataInteger();
         di.setDataType(DataType.INT.getEntity());
-        di.setValue(lastUsedValue);
+        di.setIntegerValue(lastUsedValue);
 
         ArrDescItem descItem = new ArrDescItem();
         descItem.setItemType(orderItemType.getEntity());
@@ -212,7 +212,7 @@ public class StorageOrderGeneratorAction extends Action {
         }
         Validate.isTrue(data.getDataTypeId() == DataType.INT.getId(), "Unexpected data type: %i", data.getDataTypeId());
         ArrDataInteger dataInt = HibernateUtils.unproxy(data);
-        lastOrderValues.put(structObjId, dataInt.getValue());
+        lastOrderValues.put(structObjId, dataInt.getIntegerValue());
     }
 
     @Override
