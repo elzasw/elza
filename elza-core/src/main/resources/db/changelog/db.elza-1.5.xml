@@ -1022,4 +1022,12 @@
         </createIndex>
     </changeSet>
 
+	<changeSet id="20201218143000" author="sergey.iryupin">
+		<sql>UPDATE ap_item ai
+			SET item_spec_id = (SELECT item_spec_id FROM rul_item_spec WHERE name = 'NT_ACCEPTED')
+			FROM rul_item_spec ris, rul_item_type rit
+			WHERE ai.item_spec_id = ris.item_spec_id AND ai.item_type_id = rit.item_type_id
+  				AND ris.name = 'ET_MARRIAGE' AND rit.name = 'NM_TYPE'</sql>
+	</changeSet>
+
 </databaseChangeLog>
