@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
@@ -72,6 +73,9 @@ public class ExternalSystemService {
 
     @Autowired
     private ApBindingItemRepository bindingItemRepository;
+
+    @Autowired
+    private StaticDataService staticDataService;
 
     /**
      * Vyhledá všechny externí systémy.
@@ -138,9 +142,12 @@ public class ExternalSystemService {
      */
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
     public SysExternalSystem create(final SysExternalSystem externalSystem) {
+        
         validateExternalSystem(externalSystem, true);
         externalSystemRepository.save(externalSystem);
         sendCreateExternalSystemNotification(externalSystem.getExternalSystemId());
+
+        staticDataService.reloadOnCommit();
         return externalSystem;
     }
 
@@ -153,6 +160,8 @@ public class ExternalSystemService {
     public void delete(final Integer id) {
         sendDeleteExternalSystemNotification(id);
         externalSystemRepository.deleteById(id);
+
+        staticDataService.reloadOnCommit();
     }
 
     /**
@@ -180,6 +189,8 @@ public class ExternalSystemService {
      */
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
     public SysExternalSystem update(final SysExternalSystem externalSystem) {
+        staticDataService.reloadOnCommit();
+
         validateExternalSystem(externalSystem, false);
         sendUpdateExternalSystemNotification(externalSystem.getExternalSystemId());
         return externalSystemRepository.save(externalSystem);
