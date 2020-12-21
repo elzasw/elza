@@ -1022,7 +1022,7 @@
         </createIndex>
     </changeSet>
 
-	<changeSet id="20201218143000" author="sergey.iryupin">
+	<changeSet id="20201218143000" author="sergey.iryupin" dbms="postgresql">
 		<sql>UPDATE ap_item ai
 			SET item_spec_id = (SELECT item_spec_id FROM rul_item_spec WHERE name = 'NT_ACCEPTED')
 			FROM rul_item_spec ris, rul_item_type rit
