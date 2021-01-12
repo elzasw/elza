@@ -1024,4 +1024,8 @@
         <addNotNullConstraint tableName="rul_part_type" columnName="repeatable" columnDataType="boolean" defaultNullValue="true"/>
     </changeSet>
 
+    <changeSet id="20210112100300" author="fantis">
+        <delete tableName="arr_cached_node"/>
+    </changeSet>
+
 </databaseChangeLog>
