@@ -274,6 +274,7 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
                                 <DetailMultiSection
                                     key={partType.code}
                                     label={partType.name}
+                                    singlePart={!partType.repeatable}
                                     editMode={props.editMode}
                                     parts={typedParts[partType.id] ? typedParts[partType.id] : []}
                                     relatedParts={getRelatedPartSections(
