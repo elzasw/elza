@@ -23,6 +23,10 @@ public class PartType {
         return type.getCode();
     }
 
+    public Boolean getRepeatable() {
+        return type.getRepeatable();
+    }
+
     public RulPartType getEntity() {
         return type;
     }
