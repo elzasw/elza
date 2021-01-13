@@ -57,7 +57,7 @@ public class SectionContext {
                    ResourcePathResolver resourceResolver) {
         this.context = Validate.notNull(context);
         this.staticData = context.getStaticData();
-        this.levelInfoLoader = new LevelInfoLoader(context.getBatchSize(), nodeCacheService);
+        this.levelInfoLoader = new LevelInfoLoader(em, context.getBatchSize(), nodeCacheService);
         this.structObjLoader = new StructObjectInfoLoader(em, context.getBatchSize(), this.staticData);
         this.dmsFileLoader = new DmsFileLoader(em, context.getBatchSize(), resourceResolver);
         this.fundVersion = Validate.notNull(fundVersion);

@@ -24,6 +24,9 @@ public class PartType {
     @XmlElement(name = "child_part")
     private String childPart;
 
+    @XmlElement(name = "repeatable")
+    private Boolean repeatable;
+
     public String getCode() {
         return code;
     }
@@ -46,5 +49,13 @@ public class PartType {
 
     public void setChildPart(String childPart) {
         this.childPart = childPart;
+    }
+
+    public Boolean getRepeatable() {
+        return repeatable;
+    }
+
+    public void setRepeatable(final Boolean repeatable) {
+        this.repeatable = repeatable;
     }
 }

@@ -12,7 +12,7 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.schema.v2.*;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;

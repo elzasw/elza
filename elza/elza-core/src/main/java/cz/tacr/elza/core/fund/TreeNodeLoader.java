@@ -3,7 +3,7 @@ package cz.tacr.elza.core.fund;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.repository.LevelRepositoryCustom.TreeLevelConsumer;
