@@ -25,6 +25,8 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Entity(name = "arr_dao")
 public class ArrDao {
 
+    public final static String FIELD_DAO_ID = "daoId";
+
     static public enum DaoType {
         /**
          * Dao připojované k JP

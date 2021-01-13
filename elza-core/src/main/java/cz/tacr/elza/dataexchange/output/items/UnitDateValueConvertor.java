@@ -1,6 +1,6 @@
 package cz.tacr.elza.dataexchange.output.items;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.dataexchange.common.CalendarTypeConvertor;

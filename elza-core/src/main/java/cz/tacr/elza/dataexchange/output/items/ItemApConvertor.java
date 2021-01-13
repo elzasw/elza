@@ -1,8 +1,10 @@
 package cz.tacr.elza.dataexchange.output.items;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.output.writer.xml.EdxOutputHelper;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -22,8 +24,6 @@ public class ItemApConvertor {
 
     private final Map<DataType, ItemDataConvertor> dataConvertors;
 
-    private final ObjectFactory objectFactory = new ObjectFactory();
-
     public ItemApConvertor(StaticDataProvider staticDataProvider, ItemDataConvertorFactory convertorFactory) {
         this.staticDataProvider = staticDataProvider;
         this.dataConvertors = convertorFactory.createAll();
@@ -36,7 +36,11 @@ public class ItemApConvertor {
      * @return converted object
      */
     public final DescriptionItem convert(ApItem item) {
-        DescriptionItem converted = convert(item.getData());
+        // Till proper batch loading is used we have to
+        // unproxy objects
+        ArrData data = HibernateUtils.unproxy(item.getData());
+
+        DescriptionItem converted = convert(data);
 
         ItemType itemType = staticDataProvider.getItemTypeById(item.getItemTypeId());
         converted.setT(itemType.getCode());
@@ -54,7 +58,7 @@ public class ItemApConvertor {
 
     private DescriptionItem convert(ArrData data) {
         if (data == null) {
-            return objectFactory.createDescriptionItemUndefined();
+            return EdxOutputHelper.getObjectFactory().createDescriptionItemUndefined();
         }
        /* Hibernate.initialize(data);
         // data must be initialized - no hidden fetches per item
@@ -64,7 +68,7 @@ public class ItemApConvertor {
         if (convertor == null) {
             throw new IllegalStateException("Unsupported data type:" + data.getDataType());
         }
-        DescriptionItem item = convertor.convert(data, objectFactory);
+        DescriptionItem item = convertor.convert(data, EdxOutputHelper.getObjectFactory());
         return item;
     }
 }

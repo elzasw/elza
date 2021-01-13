@@ -1,13 +1,20 @@
 package cz.tacr.elza.dataexchange.output.sections;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.EntityManager;
 
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.dataexchange.output.loaders.AbstractBatchLoader;
+import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -25,8 +32,13 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
 
     private boolean firstBatch = true;
 
-    public LevelInfoLoader(int batchSize, NodeCacheService nodeCacheService) {
+    private final DaoLoader daoLoader;
+
+    public LevelInfoLoader(final EntityManager em,
+                           final int batchSize,
+                           final NodeCacheService nodeCacheService) {
         super(batchSize);
+        this.daoLoader = new DaoLoader(em, batchSize);
         this.nodeCacheService = nodeCacheService;
     }
 
@@ -34,6 +46,9 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
     protected void processBatch(ArrayList<BatchEntry> entries) {
         List<Integer> nodeIds = getNodeIds(entries);
         Map<Integer, RestoredNode> cachedNodes = nodeCacheService.getNodes(nodeIds);
+
+        // fetch connected daos
+        Map<Integer, ArrDao> daoMap = loadDaos(cachedNodes);
 
         for (int i = 0; i < entries.size(); i++) {
             BatchEntry entry = entries.get(i);
@@ -44,15 +59,50 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
             // cached node from prepared map
             RestoredNode cachedNode = cachedNodes.get(level.getNodeId());
 
-            LevelInfoImpl levelInfo = createLevelInfo(level.getNodeId(), parentNodeId, cachedNode);
+            LevelInfoImpl levelInfo = createLevelInfo(level.getNodeId(), parentNodeId, cachedNode, daoMap);
             entry.setResult(levelInfo);
         }
 
         firstBatch = false;
     }
 
-    @Override
-    protected void processItemBatch(ArrayList<BatchEntry> entries) {
+    /**
+     * 
+     * @param cachedNodes
+     * @return Map of DAOs.
+     */
+    private Map<Integer, ArrDao> loadDaos(Map<Integer, RestoredNode> cachedNodes) {
+        Map<Integer, ArrDao> daoMap = new HashMap<>();
+        LoadDispatcher<ArrDao> daoDispatcher = new LoadDispatcher<ArrDao>() {
+
+            @Override
+            public void onLoadBegin() {
+                // NOP                
+            }
+
+            @Override
+            public void onLoad(ArrDao result) {
+                daoMap.put(result.getDaoId(), result);
+            }
+
+            @Override
+            public void onLoadEnd() {
+                // NOP                
+            }
+
+        };
+
+        cachedNodes.forEach((nodeId, restoredNode) -> {
+            List<ArrDaoLink> daoLinks = restoredNode.getDaoLinks();
+            if (daoLinks != null) {
+                daoLinks.forEach(daoLink -> daoLoader.addRequest(daoLink.getDaoId(), daoDispatcher));
+            }
+        });
+
+        // fetch DAOs from DB
+        daoLoader.flush();
+
+        return daoMap;
     }
 
     private static List<Integer> getNodeIds(List<BatchEntry> entries) {
@@ -63,7 +113,8 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
         return nodeIds;
     }
 
-    private static LevelInfoImpl createLevelInfo(Integer nodeId, Integer parentNodeId, CachedNode cachedNode) {
+    private static LevelInfoImpl createLevelInfo(Integer nodeId, Integer parentNodeId, CachedNode cachedNode,
+                                                 Map<Integer, ArrDao> daoMap) {
         Validate.notNull(nodeId);
         Validate.notNull(cachedNode);
 
@@ -71,9 +122,19 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
         levelInfo.setNodeUuid(cachedNode.getUuid());
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems != null) {
-        // sort items by item type and position
+            // sort items by item type and position
             descItems.stream().sorted((item1, item2) -> compareItems(item1, item2))
                     .forEachOrdered(levelInfo::addItem);
+        }
+
+        // Add daos
+        List<ArrDaoLink> daoLinks = cachedNode.getDaoLinks();
+        if (daoLinks != null) {
+            daoLinks.forEach(daoLink -> {
+                ArrDao dao = daoMap.get(daoLink.getDaoId());
+                Validate.notNull(dao, "Missing dao: %s", daoLink.getDaoId());
+                levelInfo.addDao(dao);
+            });
         }
 
         return levelInfo;
