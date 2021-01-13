@@ -43,6 +43,9 @@ public class RulPartType {
     @JoinColumn(name = "child_part_id")
     private RulPartType childPart;
 
+    @Column(nullable = false)
+    private Boolean repeatable;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
     private RulPackage rulPackage;
@@ -77,6 +80,14 @@ public class RulPartType {
 
     public void setChildPart(RulPartType childPart) {
         this.childPart = childPart;
+    }
+
+    public Boolean getRepeatable() {
+        return repeatable;
+    }
+
+    public void setRepeatable(final Boolean repeatable) {
+        this.repeatable = repeatable;
     }
 
     public RulPackage getRulPackage() {

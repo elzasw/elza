@@ -48,33 +48,6 @@ public abstract class AbstractEntityLoader<RES, ENT> extends AbstractBatchLoader
     }
 
     @Override
-    protected void processItemBatch(ArrayList<BatchEntry> entries) {
-        Map<Object, List<BatchEntry>> entityIdLookup = getEntityIdLookup(entries);
-        CriteriaQuery<Tuple> cq = createCriteriaItemQuery(entityIdLookup.keySet());
-
-        Query<Tuple> q = createHibernateQuery(cq);
-
-        try (ScrollableResults results = q.scroll(ScrollMode.FORWARD_ONLY)) {
-            while (results.next()) {
-                Tuple tuple = (Tuple) results.get(0);
-                Object entityId = tuple.get(0);
-                Object entity = tuple.get(1);
-
-                // TODO: replace detach for stateless session
-                em.detach(entity);
-                // can be initialized (detached) proxy
-                entity = HibernateUtils.unproxy(entity);
-
-                for (BatchEntry entry : entityIdLookup.get(entityId)) {
-                    RES result = createResult(entity);
-                    entry.setResult(result);
-                }
-            }
-        }
-
-    }
-
-    @Override
     protected final void processBatch(ArrayList<BatchEntry> entries) {
         Map<Object, List<BatchEntry>> entityIdLookup = getEntityIdLookup(entries);
 

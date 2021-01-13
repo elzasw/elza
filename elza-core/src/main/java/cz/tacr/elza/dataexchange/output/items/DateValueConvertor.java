@@ -1,15 +1,9 @@
 package cz.tacr.elza.dataexchange.output.items;
 
-import java.time.ZoneId;
 import java.util.Date;
-import java.util.GregorianCalendar;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.domain.ArrData;

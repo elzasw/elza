@@ -78,7 +78,7 @@ public class AccessPointsReader implements ExportReader {
                     for (ApPart part : parts) {
                         itemLoader.addRequest(part.getPartId(), itd);
                     }
-                    itemLoader.flushItem();
+                    itemLoader.flush();
                     os.addAccessPoint(apInfo);
                 }
             };

@@ -2,6 +2,7 @@ package cz.tacr.elza.dataexchange.output.writer;
 
 import java.util.Collection;
 
+import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrItem;
 
 public interface LevelInfo {
@@ -13,5 +14,12 @@ public interface LevelInfo {
     String getNodeUuid();
 
     Collection<ArrItem> getItems();
+
+    /**
+     * List of connected DAOs
+     * 
+     * @return List of connected daos
+     */
+    Collection<ArrDao> getDaos();
 
 }

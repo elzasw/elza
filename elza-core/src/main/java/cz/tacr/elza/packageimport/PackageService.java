@@ -974,6 +974,7 @@ public class PackageService {
         item.setRulPackage(rulPackage);
         item.setCode(partType.getCode());
         item.setName(partType.getName());
+        item.setRepeatable(partType.getRepeatable() == null || partType.getRepeatable());
     }
 
     /**
@@ -2969,6 +2970,7 @@ public class PackageService {
     private void convertPartType(RulPartType rulPartType, PartType partType) {
         partType.setCode(rulPartType.getCode());
         partType.setName(rulPartType.getName());
+        partType.setRepeatable(rulPartType.getRepeatable());
     }
 
     private void processRulPartTypesChildPart(List<RulPartType> rulPartTypes, List<PartType> partTypes) {

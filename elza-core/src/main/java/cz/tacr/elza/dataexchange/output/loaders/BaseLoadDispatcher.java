@@ -1,6 +1,6 @@
 package cz.tacr.elza.dataexchange.output.loaders;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Base implementation declares completed handler based on begin/end load call count.
