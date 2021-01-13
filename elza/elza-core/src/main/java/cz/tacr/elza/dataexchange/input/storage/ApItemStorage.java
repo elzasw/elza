@@ -3,7 +3,6 @@ package cz.tacr.elza.dataexchange.input.storage;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
 import cz.tacr.elza.repository.ApItemRepository;
-import org.apache.commons.lang.Validate;
 import org.hibernate.Session;
 
 import java.util.Collection;

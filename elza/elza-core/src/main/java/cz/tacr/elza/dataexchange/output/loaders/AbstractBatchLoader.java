@@ -47,22 +47,6 @@ public abstract class AbstractBatchLoader<REQ, RES> implements Loader<REQ, RES> 
         batch.clear();
     }
 
-    public void flushItem() {
-        if (batch.isEmpty()) {
-            return;
-        }
-
-        processItemBatch(batch);
-
-        for (BatchEntry be : batch) {
-            be.onProcessed();
-        }
-
-        batch.clear();
-    }
-
-    protected abstract void processItemBatch(ArrayList<BatchEntry> entries);
-
     /**
      * Process all batch entries and sets results through {@link BatchEntry#setResult(Object)}.
      *

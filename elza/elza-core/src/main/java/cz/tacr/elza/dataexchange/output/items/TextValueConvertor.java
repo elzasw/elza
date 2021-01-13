@@ -1,6 +1,6 @@
 package cz.tacr.elza.dataexchange.output.items;
 
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
@@ -11,7 +11,8 @@ public class TextValueConvertor implements ItemDataConvertor {
 
     @Override
     public DescriptionItemString convert(ArrData data, ObjectFactory objectFactory) {
-        Validate.isTrue(data.getClass() == ArrDataText.class, "Invalid data type, dataId:", data.getDataId());
+        Validate.isTrue(data.getClass() == ArrDataText.class, "Invalid data type, dataId: %s, realClass: %s",
+                        data.getDataId(), data.getClass());
 
         ArrDataText text = (ArrDataText) data;
         DescriptionItemString item = objectFactory.createDescriptionItemString();

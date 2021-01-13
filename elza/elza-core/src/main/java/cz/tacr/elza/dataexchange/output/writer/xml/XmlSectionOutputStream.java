@@ -18,7 +18,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import cz.tacr.elza.schema.v2.*;
 import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.dataexchange.output.items.APRefConvertor;
@@ -34,6 +34,7 @@ import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.FileNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.InternalNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.JaxbNode;
+import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -75,7 +76,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
     public void addLevel(LevelInfo levelInfo) {
         Validate.isTrue(!processed);
 
-        Level level = new Level();
+        Level level = EdxOutputHelper.getObjectFactory().createLevel();
         level.setUuid(levelInfo.getNodeUuid());
         level.setId(Integer.toString(levelInfo.getNodeId()));
         if (levelInfo.getParentNodeId() != null) {
@@ -84,10 +85,31 @@ class XmlSectionOutputStream implements SectionOutputStream {
         // convert description items references
         convertItems(levelInfo.getItems(), level.getDdOrDoOrDp());
 
+        // convert daos
+        convertDaos(levelInfo.getDaos(), level);
+
         try {
             writeLevel(level);
         } catch (Exception e) {
             throw new SystemException(e);
+        }
+    }
+
+    private void convertDaos(Collection<ArrDao> daos, Level level) {
+        if(daos==null||daos.size()==0) {
+            return;
+        }
+        Validate.isTrue(level.getDaos() == null, "Level already have some DAOs");
+
+        DigitalArchivalObjects xmlDaos = EdxOutputHelper.getObjectFactory().createDigitalArchivalObjects();
+        for (ArrDao dao : daos) {
+            DigitalArchivalObject xmlDao = EdxOutputHelper.getObjectFactory().createDigitalArchivalObject();
+            xmlDao.setDoid(dao.getCode());
+            xmlDaos.getDao().add(xmlDao);
+        }
+        // append only non empty
+        if (xmlDaos.getDao().size() > 0) {
+            level.setDaos(xmlDaos);
         }
     }
 
