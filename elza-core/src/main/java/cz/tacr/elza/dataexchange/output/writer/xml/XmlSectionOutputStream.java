@@ -243,6 +243,9 @@ class XmlSectionOutputStream implements SectionOutputStream {
         fundInfo.setIc(sectionContext.getInstitutionCode());
         fundInfo.setN(sectionContext.getFundName());
         fundInfo.setC(sectionContext.getFundInternalCode());
+        fundInfo.setMrk(sectionContext.getFundMark());
+        fundInfo.setNum(sectionContext.getFundNumber());
+        fundInfo.setTr(sectionContext.getFundTimeRange());
         JAXBElement<?> fiElement = XmlUtils.wrapElement(XmlNameConsts.FUND_INFO, fundInfo);
         sectionNode.addNode(new JaxbNode(fiElement));
 
