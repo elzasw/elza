@@ -219,10 +219,6 @@
             <not>
                 <sqlCheck expectedResult="0">SELECT COUNT(access_point_id) FROM ap_access_point</sqlCheck>
             </not>
-            <not>
-                <sqlCheck expectedResult="0">SELECT COUNT(rule_set_id) FROM rul_rule_set WHERE code = 'ZP2015'
-                </sqlCheck>
-            </not>
         </preConditions>
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20200331164200"/>
     </changeSet>
@@ -1016,6 +1012,19 @@
       <sql>UPDATE db_hibernate_sequences SET next_val =(select (coalesce(max(state_id), 0)+20) as v from ap_state) 
            where sequence_name = 'ap_state|state_id'</sql>
     </changeSet>
+    <changeSet id="20201211004001" author="ppyt">
+        <createIndex indexName="arr_data_uri_ref_node_idx" tableName="arr_data_uri_ref" unique="false">
+            <column name="node_id" type="int"/>
+        </createIndex>
+    </changeSet>
+
+	<changeSet id="20201218143000" author="sergey.iryupin" dbms="postgresql">
+		<sql>UPDATE ap_item ai
+			SET item_spec_id = (SELECT item_spec_id FROM rul_item_spec WHERE code = 'NT_ACCEPTED')
+			FROM rul_item_spec ris, rul_item_type rit
+			WHERE ai.item_spec_id = ris.item_spec_id AND ai.item_type_id = rit.item_type_id
+  				AND ris.code = 'ET_MARRIAGE' AND rit.code = 'NM_TYPE'</sql>
+	</changeSet>
 
     <changeSet id="20210111083900" author="slapa">
         <addColumn tableName="rul_part_type">

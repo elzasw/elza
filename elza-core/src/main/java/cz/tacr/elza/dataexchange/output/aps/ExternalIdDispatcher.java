@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cz.tacr.elza.domain.ApBinding;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
@@ -38,9 +38,10 @@ public class ExternalIdDispatcher extends NestedLoadDispatcher<ApBindingState> {
     public void onLoad(ApBindingState result) {
         ApBinding binding = result.getBinding();
         // init external id type
-        ApExternalSystem apExternalSystem = staticData.getApExternalSystemByCode(result.getBinding()
-                .getApExternalSystem().getCode());
-        Validate.notNull(apExternalSystem);
+        ApExternalSystem apExternalSystem = staticData.getApExternalSystemByCode(binding.getApExternalSystem()
+                .getCode());
+        Validate.notNull(apExternalSystem, "External system not found: %s", binding.getApExternalSystem().getCode());
+
         binding.setApExternalSystem(apExternalSystem);
         // set result
         externalIds.add(result);

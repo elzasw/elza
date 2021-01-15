@@ -1087,6 +1087,7 @@ class ArrPage extends ArrParentPage {
 
         const tabContent = this.state.tabs[selectedTab] && this.state.tabs[selectedTab].render();
 
+
         return (
             <Tabs.Container>
                 <Tabs.Tabs items={tabs.items} activeItem={{id: selectedTab}} onSelect={this.handleTabSelect} />

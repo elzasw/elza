@@ -43,6 +43,8 @@ import {JAVA_ATTR_CLASS, JAVA_CLASS_ARR_DIGITIZATION_FRONTDESK_SIMPLE_VO, ItemCl
 
 import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
 
+import {TextFragmentsWindow} from "../../components/arr/text-fragments";
+
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
@@ -329,6 +331,12 @@ class NodeSubNodeForm extends AbstractReactComponent {
         return false;
     }
 
+    handleToggleSpecialCharacters = () => {
+        this.setState({
+            showSpecialCharactersWindow: !this.state?.showSpecialCharactersWindow,
+        })
+    }
+
     /**
      * Renderování globálních akcí pro formulář.
      * @return {Object} view
@@ -337,6 +345,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
         const notRoot = !isFundRootId(this.props.nodeId);
 
         const {fundId, userDetail, issueProtocol, nodeId, nodeSettings} = this.props;
+
         const editPermAllowed = userDetail.hasOne(
             perms.FUND_ADMIN,
             {type: perms.FUND_VER_WR, fundId},
@@ -394,6 +403,16 @@ class NodeSubNodeForm extends AbstractReactComponent {
                                 <Icon glyph="fa-trash" />
                             </NoFocusButton>
                         )}
+                    </div>
+
+                    <div className="section">
+                        <NoFocusButton active={this.state?.showSpecialCharactersWindow} onClick={this.handleToggleSpecialCharacters}>
+                            {/*<Icon glyph="fa-cog" />*/}
+                            &Omega;
+                        </NoFocusButton>
+                        {this.state?.showSpecialCharactersWindow &&
+                            <TextFragmentsWindow onClose={()=>{this.setState({showSpecialCharactersWindow: false})}}/>
+                        }
                     </div>
                     <div className="section">
                         { this.isDigitizationFrontdeskDefined() &&

@@ -229,6 +229,11 @@ public class UISettings {
         RECORD,
 
         /**
+         * Pole uživatelem vložitelných textů
+         */
+        TEXT_FRAGMENTS(false, null),
+
+        /**
          * Nastavení sloupců / atributů pro zobrazení v gridu
          */
         GRID_VIEW(false, EntityType.RULE),
