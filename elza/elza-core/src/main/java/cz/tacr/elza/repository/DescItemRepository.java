@@ -234,7 +234,19 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Modifying
     void deleteByNodeIdIn(Collection<Integer> nodeIds);
 
-    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.data JOIN ArrDataUriRef d on i.data = d WHERE d.arrNode = :node AND i.deleteChange IS NULL")
+    /**
+     * Dotaz vyhleda items navazane na dany uzel prostrednictvim ArrDataUriRef
+     * 
+     * Vraci plne nactena data ArrDataUriRef.
+     * 
+     * Dotaz je nyni optimalizovan na rychlost na PostgreSQL. Problemem
+     * je zajistit, aby se cast "join fetch" vykonavala az po aplikaci
+     * filtru dle node.
+     * 
+     * @param node
+     * @return
+     */
+    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.data where i in (SELECT i FROM arr_desc_item i JOIN ArrDataUriRef d on i.data=d WHERE d.arrNode = :node AND i.deleteChange IS NULL)")
     List<ArrDescItem> findByUriDataNode(@Param("node") final ArrNode node);
 
     /**
