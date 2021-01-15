@@ -1,5 +1,6 @@
 package cz.tacr.elza.dataexchange.output.sections;
 
+import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -90,6 +91,22 @@ public class SectionContext {
         return fundVersion.getFund().getInternalCode();
     }
 
+    public String getFundMark() {
+        return fundVersion.getFund().getMark();
+    }
+
+    public BigInteger getFundNumber() {
+        Integer fundNum = fundVersion.getFund().getFundNumber();
+        if (fundNum != null) {
+            return BigInteger.valueOf(fundNum);
+        }
+        return null;
+    }
+
+    public String getFundTimeRange() {
+        return fundVersion.getFund().getUnitdate();
+    }
+
     public void addStructObjectId(Integer structObjId) {
         Validate.notNull(structObjId);
 
@@ -156,4 +173,5 @@ public class SectionContext {
         }
         return outputStream;
     }
+
 }
