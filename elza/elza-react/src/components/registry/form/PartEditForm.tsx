@@ -157,24 +157,24 @@ const renderItem = (
         case RulDataTypeCodeEnum.URI_REF:
             valueField = (
                 <Row>
-                    <Col xs={12}>
+                    <Col xs={6}>
                         <Field
                             name={`${name}.value`}
                             label={itemType.shortcut}
                             disabled={fieldDisabled}
                             maxLength={1000}
                             component={ReduxFormFieldErrorDecorator}
-                            renderComponent={Form.Control}
+                            renderComponent={FormInput}
                         />
                     </Col>
-                    <Col xs={12}>
+                    <Col xs={6}>
                         <Field
-                            name={`${name}.name`}
+                            name={`${name}.description`}
                             label="Název odkazu"
                             disabled={fieldDisabled}
                             maxLength={250}
                             component={ReduxFormFieldErrorDecorator}
-                            renderComponent={Form.Control}
+                            renderComponent={FormInput}
                         />
                     </Col>
                 </Row>
