@@ -1037,4 +1037,10 @@
         <delete tableName="arr_cached_node"/>
     </changeSet>
 
+    <changeSet id="20210115162000" author="ppyt">
+        <modifyDataType tableName="arr_fund" columnName="mark" newDataType="nvarchar(50)" />
+        <modifyDataType tableName="arr_fund" columnName="unitdate" newDataType="nvarchar(50)" />
+        <sql>update arr_fund set mark=trim(mark) where mark is not null</sql>
+        <sql>update arr_fund set unitdate=trim(unitdate) where unitdate is not null</sql>
+    </changeSet>
 </databaseChangeLog>
