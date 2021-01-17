@@ -1,5 +1,6 @@
 package cz.tacr.elza.dataexchange.output.aps;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
@@ -8,14 +9,14 @@ import org.apache.commons.lang3.Validate;
 import cz.tacr.elza.dataexchange.output.writer.BaseApInfo;
 import cz.tacr.elza.dataexchange.output.writer.ExternalIdApInfo;
 import cz.tacr.elza.dataexchange.output.writer.ItemApInfo;
-import cz.tacr.elza.dataexchange.output.writer.PartApInfo;
+import cz.tacr.elza.dataexchange.output.writer.PartsApInfo;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 
-public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartApInfo, ItemApInfo {
+public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartsApInfo, ItemApInfo {
 
     // --- fields ---
 
@@ -23,11 +24,9 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartApInfo, ItemApI
 
     private Collection<ApBindingState> externalIds;
 
-    private Collection<ApPart> parts;
+    private ArrayList<ApPart> parts = new ArrayList<>();
 
     private Map<Integer, Collection<ApItem>> partItemsMap; // partId, items
-
-    private boolean partyAp;
 
     // --- getters/setters ---
 
@@ -63,8 +62,13 @@ public class ApInfo implements BaseApInfo, ExternalIdApInfo, PartApInfo, ItemApI
     }
 
     @Override
-    public void setParts(Collection<ApPart> parts) {
-        this.parts = parts;
+    public void addPart(ApPart part) {
+        if (part.getPartId().equals(apState.getAccessPoint().getPreferredPartId())) {
+            // store pref. name as first
+            parts.add(0, part);
+        } else {
+            this.parts.add(part);
+        }
     }
 
 

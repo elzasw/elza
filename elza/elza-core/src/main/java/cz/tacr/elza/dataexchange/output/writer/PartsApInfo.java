@@ -4,9 +4,9 @@ import cz.tacr.elza.domain.ApPart;
 
 import java.util.Collection;
 
-public interface PartApInfo {
+public interface PartsApInfo {
 
     Collection<ApPart> getParts();
 
-    void setParts(Collection<ApPart> parts);
+    void addPart(ApPart part);
 }
