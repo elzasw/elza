@@ -153,13 +153,17 @@ public class SectionsContext {
         if (institution == null) {
             throw new DEImportException("Institution not found, internal code:" + fundInfo.getIc());
         }
-        ArrFund fund = arrService.createFund(fundInfo.getN(), fundInfo.getC(), institution, null, null, null);
+        Integer fundNum = null;
+        if (fundInfo.getNum() != null) {
+            fundNum = fundInfo.getNum().intValue();
+        }
+        ArrFund fund = arrService.createFund(fundInfo.getN(), fundInfo.getC(), institution,
+                                             fundNum, fundInfo.getTr(), fundInfo.getMrk());
         arrService.addScopeToFund(fund, importScope);
 
         FundRootAdapter adapter = new FundRootAdapter(fund,
                                    sectionCtx.getRuleSet(),
                                    sectionCtx.getCreateChange(),
-                                   fundInfo.getTr(),
                                    arrService);
         currentSection.setRootAdapter(adapter);
     }
