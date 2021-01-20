@@ -30,6 +30,14 @@ public class ApItemUriRefVO extends ApItemVO {
     public ApItemUriRefVO() {
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(final String description) {
+        this.description = description;
+    }
+
     public ApItemUriRefVO(final ApItem item) {
         super(item);
         ArrDataUriRef data = (ArrDataUriRef) item.getData();
@@ -42,7 +50,11 @@ public class ApItemUriRefVO extends ApItemVO {
     @Override
     public ArrData createDataEntity(EntityManager em) {
        ArrDataUriRef data = new ArrDataUriRef();
-       data.setSchema("http");
+       // pokud by nebylo schéma nastavené, je potřeba ho dopočítat
+       if (schema == null) {
+           schema = ArrDataUriRef.createSchema(value);
+       }
+       data.setSchema(schema);
        data.setUriRefValue(value);
        data.setDescription(description);
 
