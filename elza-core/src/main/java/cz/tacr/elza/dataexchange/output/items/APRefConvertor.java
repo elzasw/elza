@@ -30,6 +30,7 @@ public class APRefConvertor implements ItemDataConvertor {
 
         DescriptionItemAPRef item = objectFactory.createDescriptionItemAPRef();
         if (apRef.getRecordId() == null) {
+            log.debug("AccessPointRef without real data, dataId: {}", data.getDataId());
             ApBinding binding = apRef.getBinding();
             if (binding == null) {
                 log.error("ArrDataRecordRef without connected recordId and binding, dataId: ", data.getDataId());
