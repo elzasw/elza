@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,8 @@ import cz.tacr.elza.service.cache.NodeCacheService;
  */
 @Service
 public class DEExportService {
+
+    private final static Logger log = LoggerFactory.getLogger(DEExportService.class);
 
     private final ExportInitHelper initHelper;
 
@@ -114,6 +118,7 @@ public class DEExportService {
     }
 
     private void exportData(OutputStream os, ExportBuilder builder, DEExportParams params) {
+        log.debug("Exporting data, apIds(count)={}, sections(count)={}", params.getApIds(), params.getFundsSections());
         // create export context
         ExportContext context = new ExportContext(builder, staticDataService.getData(),
                 HibernateConfiguration.MAX_IN_SIZE);
@@ -130,12 +135,21 @@ public class DEExportService {
 
         // write result
         try {
+            log.debug("Building export file");
+
             builder.build(os);
-        } catch (XMLStreamException e) {
+        } catch (Exception e) {
+            log.error("Failed to prepare export", e);
             throw new SystemException(e);
         } finally {
-            builder.clear();
+            log.debug("Cleaning export builder");
+            try {
+                builder.clear();
+            } catch (Exception e) {
+                log.error("Failed to clean export", e);
+            }
         }
+        log.debug("Export is done.");
     }
 
     /**
