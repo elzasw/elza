@@ -22,8 +22,6 @@ class FundRootAdapter implements SectionRootAdapter {
 
     private final ArrChange createChange;
 
-    private final String timeRange;
-
     private final ArrangementService arrangementService;
 
     private ArrFundVersion fundVersion;
@@ -36,12 +34,10 @@ class FundRootAdapter implements SectionRootAdapter {
     public FundRootAdapter(ArrFund fund,
             RulRuleSet ruleSet,
             ArrChange createChange,
-            String timeRange,
             ArrangementService arrangementService) {
         this.fund = fund;
         this.ruleSet = ruleSet;
         this.createChange = createChange;
-        this.timeRange = timeRange;
         this.arrangementService = arrangementService;
     }
 
