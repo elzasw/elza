@@ -7,15 +7,21 @@ export interface Dispatch<S> {
 }
 
 export interface AppFetchingStore {
-	id?: number,
-	fetched: boolean,
-	fetching: boolean,
-	currentDataKey: any,
+    id?: number;
+    fetched: boolean;
+    fetching: boolean;
+    currentDataKey: any;
 }
 
 export enum ApSearchType {
-    DISABLED='DISABLED',
-    JOIN='JOIN',
-    FULLTEXT='FULLTEXT',
-    RIGHT_SIDE_LIKE='RIGHT_SIDE_LIKE'
+    DISABLED = 'DISABLED',
+    JOIN = 'JOIN',
+    FULLTEXT = 'FULLTEXT',
+    RIGHT_SIDE_LIKE = 'RIGHT_SIDE_LIKE',
+}
+
+export interface AppWindow {
+    messages: string[];
+    __DEV__: boolean;
+    __DEVTOOLS__: any;
 }
