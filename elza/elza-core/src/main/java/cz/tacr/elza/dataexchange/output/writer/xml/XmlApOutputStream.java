@@ -13,6 +13,8 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.schema.v2.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -28,6 +30,8 @@ import java.util.List;
  */
 public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStream {
 
+    private final Logger logger = LoggerFactory.getLogger(XmlApOutputStream.class);
+
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(AccessPoint.class);
 
     private final ExportContext context;
@@ -42,10 +46,16 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
         this.rootNode = rootNode;
         this.context = context;
         this.convertor = new ItemApConvertor(context.getStaticData(), new ContextAwareItemDataConvertorFactory());
+
+        logger.debug("New XmlApOutputStream, tempDirectory: {}", tempDirectory);
     }
 
     @Override
     public void addAccessPoint(ApInfo apInfo) {
+        logger.debug("Received accesspoint info, accessPointId: {}, uuid: {}",
+                     apInfo.getAccessPoint().getAccessPointId(),
+                     apInfo.getAccessPoint().getUuid());
+
         Validate.isTrue(!isProcessed());
 
         AccessPoint element = new AccessPoint();
@@ -102,6 +112,7 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
         try {
             writeAP(element);
         } catch (Exception e) {
+            logger.error("Failed to write AP", e);
             throw new SystemException(e);
         }
     }
