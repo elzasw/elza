@@ -103,7 +103,7 @@ class DescItemLink extends AbstractReactComponent {
         let value =
             cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : inputValue(descItem.value);
 
-        const hasNodeLink = descItem.value && (descItem.value.startsWith(ELZA_SCHEME_NODE) || descItem.nodeId);
+        const hasNodeLink = !!descItem.value;
 
         if (readMode) {
             return (

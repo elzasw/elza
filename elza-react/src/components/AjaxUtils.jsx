@@ -11,12 +11,12 @@
  */
 import React from 'react';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
-//import {store} from '../stores/AppStore.jsx';
+//import {store} from '../stores/AppStoreState.jsx';
 import {createException} from 'components/ExceptionUtils.jsx';
 import i18n from './i18n';
 
 import $ from 'jquery';
-import {logout} from "actions/global/login";
+import {logout} from 'actions/global/login';
 
 const serverContextPath = window.serverContextPath;
 
@@ -102,7 +102,7 @@ function resolveException(status, statusText, data) {
         console.log('___', _store);
         _store.dispatch(createException(result));
     }
-    if(result.unauthorized){
+    if (result.unauthorized) {
         _store.dispatch(logout());
     }
 
@@ -141,7 +141,7 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
             processData: false,
             contentType: contentType,
             data: data,
-            success: function(
+            success: function (
                 data, // data ze serveru
                 status, // status - 'success'
                 xhr,
@@ -158,7 +158,7 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
                 }
                 resolve(data);
             },
-            error: function(xhr, status, err) {
+            error: function (xhr, status, err) {
                 if (_logErrors) {
                     if (ignoreError) {
                         console.warn('<-', callStr, '[' + xhr.status + '-' + status + ']', xhr);
@@ -208,7 +208,7 @@ function ajaxCall(url, params, method, data) {
                 'Content-Type': 'application/json',
             },
             data: data ? JSON.stringify(data) : null,
-            success: function(
+            success: function (
                 data, // data ze serveru
                 status, // status - 'success'
                 xhr,
@@ -227,7 +227,7 @@ function ajaxCall(url, params, method, data) {
                 }
                 resolve(data);
             },
-            error: function(xhr, status, err) {
+            error: function (xhr, status, err) {
                 if (_logErrors) {
                     console.error('<-', callStr, '[' + xhr.status + '-' + status + ']', xhr);
                 }

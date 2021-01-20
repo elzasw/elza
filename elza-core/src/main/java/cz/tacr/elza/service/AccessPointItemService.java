@@ -406,7 +406,7 @@ public class AccessPointItemService {
             ArrDataUriRef dataUriRef = new ArrDataUriRef();
             dataUriRef.setUriRefValue(itemLink.getUrl().getValue());
             dataUriRef.setDescription(itemLink.getNm().getValue());
-            dataUriRef.setSchema("http");
+            dataUriRef.setSchema(ArrDataUriRef.createSchema(itemLink.getUrl().getValue()));
             dataUriRef.setArrNode(null);
             dataUriRef.setDataType(DataType.URI_REF.getEntity());
             data = dataUriRef;
