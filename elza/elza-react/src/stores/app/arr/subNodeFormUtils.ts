@@ -1,9 +1,7 @@
 import {getMapFromList, indexById} from 'stores/app/utils.jsx';
-import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx';
-import {DisplayType} from '../../../constants.tsx';
 import {isNormalizeDurationLength, normalizeDurationLength, toDuration} from '../../../components/validate';
 import {ItemAvailability, ItemAvailabilityNumToEnumMap} from '../accesspoint/itemFormUtils';
-import {JAVA_ATTR_CLASS} from '../../../constants';
+import {JAVA_ATTR_CLASS, DisplayType} from '../../../constants';
 import {
     CLS_ITEM_BIT,
     CLS_ITEM_DATE,
@@ -11,23 +9,55 @@ import {
     CLS_ITEM_UNITID,
     CLS_ITEM_URI_REF,
 } from '../../../shared/factory/factoryConsts';
+import {hasDescItemTypeValue} from '../../../components/arr/ArrUtils';
+import {RulItemTypeType} from '../../../api/RulItemTypeType';
+import {DescItem, DescItemGroup, DescItemType, DescItemWithSpec, ItemSpec} from '../../../typings/DescItem';
+import {ItemTypeLiteVO} from '../../../api/ItemTypeLiteVO';
+import {RulDescItemTypeVO} from '../../../api/RulDescItemTypeVO';
 
-const availability = {
-    REQUIRED: 'REQUIRED',
-    RECOMMENDED: 'RECOMMENDED',
-    POSSIBLE: 'POSSIBLE',
-    IMPOSSIBLE: 'IMPOSSIBLE',
+interface FormData {
+    descItemGroups: DescItemGroup[];
+}
+
+interface MergeFromState {
+    infoTypesMap: {[key: number]: ItemTypeLiteVO};
+    refTypesMap: {[key: number]: RulDescItemTypeVO & {dataType: string}};
+    updatedItem?: {
+        descItemObjectId?: number;
+        value: any;
+    };
+    formData: FormData;
+    data: {
+        arrPerm: boolean;
+        descItems: DescItem[];
+        itemTypes: any;
+        parent: {id: number; version: number};
+    };
+
+    addItemTypeIds: null | any;
+    dirty: boolean;
+    fetched: boolean;
+    fetchingId: number;
+    getLoc: (state, valueLocation: {group: number}) => {};
+    infoGroups: any[];
+    infoGroupsMap: {[key: string]: any};
+    isFetching: boolean;
+    needClean: boolean;
+    nodeId: number;
+    unusedItemTypeIds?: number[];
+    versionId: number;
+}
+
+export const rulItemTypeNumberMap = {
+    0: RulItemTypeType.IMPOSSIBLE,
+    1: RulItemTypeType.POSSIBLE,
+    2: RulItemTypeType.RECOMMENDED,
+    3: RulItemTypeType.REQUIRED,
 };
 
-const typesNumToStrMap = {};
-typesNumToStrMap[3] = availability.REQUIRED;
-typesNumToStrMap[2] = availability.RECOMMENDED;
-typesNumToStrMap[1] = availability.POSSIBLE;
-typesNumToStrMap[0] = availability.IMPOSSIBLE;
-
-export function isType(maybeType /*: number || string*/, checkType /*: string*/) {
+export function isType(maybeType: number | string, checkType: string) {
     if (typeof maybeType === 'number') {
-        return typesNumToStrMap[maybeType] == checkType;
+        return rulItemTypeNumberMap[maybeType] == checkType;
     } else {
         return maybeType == checkType;
     }
@@ -35,7 +65,7 @@ export function isType(maybeType /*: number || string*/, checkType /*: string*/)
 
 function getDbItemTypesMap(data) {
     // Mapa id descItemType na descItemType
-    var typesMap = {};
+    let typesMap = {};
     data.groups.forEach(group => {
         group.types.forEach(type => {
             typesMap[type.id] = type;
@@ -51,10 +81,20 @@ function getDbItemTypesMap(data) {
  * typeMap - mapa type.id na type
  * itemMap - mapa item.descItemObjectId na item
  */
-function createDataMap(formData) {
-    let groupMap = {};
-    let typeMap = {};
-    let itemMap = {};
+function createDataMap(formData: FormData) {
+    // Get a find funkce budou přiřazeny později
+    let groupMap: {[key: string]: DescItemGroup} & {
+        get: (key: string) => DescItemGroup;
+        find: (key: string) => DescItemGroup | {};
+    } = {} as any;
+    let typeMap: {[key: string]: DescItemType} & {
+        get: (key: string) => DescItemType;
+        find: (key: string) => DescItemType | {};
+    } = {} as any;
+    let itemMap: {[key: string]: DescItem} & {
+        get: (key: string) => DescItem;
+        find: (key: string) => DescItem | {};
+    } = {} as any;
 
     if (formData) {
         // nějaká data již existují
@@ -65,7 +105,7 @@ function createDataMap(formData) {
                 typeMap[type.id] = type;
 
                 type.descItems.forEach(item => {
-                    itemMap[item.descItemObjectId] = item;
+                    itemMap[item.descItemObjectId!] = item;
                 });
             });
         });
@@ -93,7 +133,7 @@ function createDataMap(formData) {
     };
 }
 
-export function createImplicitDescItem(descItemType, refType, addedByUser = false) {
+export function createImplicitDescItem(descItemType, refType, addedByUser = false): DescItem {
     let descItem = createDescItem(descItemType, refType, addedByUser);
     descItem.position = 1;
     return descItem;
@@ -150,13 +190,15 @@ export function createDescItemFromDb(descItemType, descItem) {
     return result;
 }
 
-function prevDescItemHasSamePrevValue(prevDescItem, newDescItem) {
+function prevDescItemHasSamePrevValue(prevDescItem: DescItem, newDescItem: DescItem) {
     return (
-        prevDescItem.prevValue === newDescItem.value && prevDescItem.prevDescItemSpecId === newDescItem.descItemSpecId
+        prevDescItem.prevValue === newDescItem.value &&
+        // Kontrola Spec (pokud není jsou obě hodnoty undefined a vše je ok)
+        (prevDescItem as DescItemWithSpec).prevDescItemSpecId === (prevDescItem as DescItemWithSpec).descItemSpecId
     );
 }
 
-function addUid(descItem, index) {
+function addUid(descItem: DescItem, index) {
     if (typeof descItem.descItemObjectId !== 'undefined') {
         descItem._uid = descItem.descItemObjectId;
     } else {
@@ -164,13 +206,13 @@ function addUid(descItem, index) {
     }
 }
 
-var _formKeys = {};
+const _formKeys: {[key: number]: number} = {};
 
-export function prepareNextFormKey(descItemType) {
+export function prepareNextFormKey(descItemType: {id: number}) {
     _formKeys[descItemType.id] = _formKeys[descItemType.id] + 1;
 }
 
-function initFormKey(descItemType, descItem) {
+export function initFormKey(descItemType: {id: number}, descItem: {formKey?: string}) {
     if (descItem.formKey) {
         return;
     }
@@ -179,9 +221,6 @@ function initFormKey(descItemType, descItem) {
         _formKeys[descItemType.id] = 1;
     }
     descItem.formKey = 'fk_' + _formKeys[descItemType.id];
-    // descItem.formKey = 'fk_' + descItemType.id;
-    // console.log(1666666666666666666)
-    // _formKeys[descItemType.id] = _formKeys[descItemType.id] + 1;
 }
 
 // 1. Doplní povinné a doporučené specifikace s prázdnou hodnotou, pokud je potřeba
@@ -216,14 +255,19 @@ export function consolidateDescItems(resultDescItemType, infoType, refType, adde
         } else {
             return 0;
         }
-    })
+    });
 }
 
 /**
  * Doplnění prázdných hodnot se specifikací, které jsou vynucené podle typu (REQUIRED a RECOMMENDED), pokud ještě v resultDescItemType nejsou.
  * Uvažujeme POUZE descItemType, které mají specifikaci a MAJÍ i hodnotu, né pouze specifikaci.
  */
-export function addForcedSpecifications(resultDescItemType, infoType, refType, emptySystemSpecToKeyMap = {}) {
+export function addForcedSpecifications(
+    resultDescItemType: DescItemType<DescItemWithSpec>,
+    infoType,
+    refType,
+    emptySystemSpecToKeyMap = {},
+) {
     if (!refType.useSpecification) {
         return;
     }
@@ -233,23 +277,23 @@ export function addForcedSpecifications(resultDescItemType, infoType, refType, e
     }
 
     // Seznam existujících specifikací
-    var existingSpecIds = {};
+    const existingSpecIds = {};
     resultDescItemType.descItems.forEach(descItem => {
-        if (typeof descItem.descItemSpecId !== 'undefined' && descItem.descItemSpecId !== '') {
+        if (typeof descItem.descItemSpecId !== 'undefined' && descItem.descItemSpecId !== ('' as any)) {
             existingSpecIds[descItem.descItemSpecId] = true;
         }
     });
 
     infoType.specs.forEach(spec => {
         const infoSpec = infoType.descItemSpecsMap[spec.id];
-        var forceVisibility = isType(infoSpec.type, 'REQUIRED') || isType(infoSpec.type, 'RECOMMENDED');
+        const forceVisibility = isType(infoSpec.type, 'REQUIRED') || isType(infoSpec.type, 'RECOMMENDED');
         if (forceVisibility && !existingSpecIds[spec.id]) {
             // přidáme ji na formulář, pokud má být vidět a ještě na formuláři není
-            var descItem = createImplicitDescItem(resultDescItemType, refType, false);
+            const descItem = createImplicitDescItem(resultDescItemType, refType, false) as DescItemWithSpec;
             descItem.descItemSpecId = spec.id;
 
             // Ponechání původního form key, pokud existovala tato položka již na klientovi a nebylo na ní šáhnuto
-            var formKey = emptySystemSpecToKeyMap[spec.id];
+            const formKey = emptySystemSpecToKeyMap[spec.id];
             if (formKey) {
                 descItem.formKey = formKey;
             }
@@ -269,11 +313,22 @@ export function addForcedSpecifications(resultDescItemType, infoType, refType, e
     });
 }
 
-function mergeDescItems(state, resultDescItemType, prevType, newType) {
-    var infoType = state.infoTypesMap[resultDescItemType.id];
-    var refType = state.refTypesMap[resultDescItemType.id];
-    // var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED';
-    var forceVisibility = isType(infoType.type, 'REQUIRED') || isType(infoType.type, 'RECOMMENDED');
+/**
+ * Merge jednotivých itemů
+ * @param state
+ * @param resultDescItemType
+ * @param prevType
+ * @param newType
+ */
+export function mergeDescItems(
+    state: MergeFromState,
+    resultDescItemType: DescItemType,
+    prevType?: DescItemType,
+    newType?: DescItemType,
+) {
+    const infoType = state.infoTypesMap[resultDescItemType.id];
+    const refType = state.refTypesMap[resultDescItemType.id];
+    const forceVisibility = isType(infoType.type, 'REQUIRED') || isType(infoType.type, 'RECOMMENDED');
 
     if (!prevType) {
         // ještě ji na formuláři nemáme
@@ -283,7 +338,6 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
                 // přidáme ji pouze pokud je nastaveno forceVisibility
                 // Upravení a opravení seznamu hodnot, případně přidání rázdných
                 consolidateDescItems(resultDescItemType, infoType, refType, false);
-
                 return true;
             }
         } else {
@@ -294,7 +348,6 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
 
             // Upravení a opravení seznamu hodnot, případně přidání rázdných
             consolidateDescItems(resultDescItemType, infoType, refType, false);
-
             return true;
         }
     } else {
@@ -335,24 +388,24 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
             // Pokud ale má klient ty samé hodnoty (prev value je stejné jako nově příchozí hodnota), jako přijdou ze serveru a současně je upravil a nejsou uložené, necháme hodnoty v našem klientovi
 
             // Mapa existujících hodnot na klientovi
-            var prevDescItemMap = {};
+            const prevDescItemMap: {[key: number]: DescItem} = {};
             prevType.descItems.forEach(descItem => {
                 if (typeof descItem.id !== 'undefined') {
                     // hodnota již dříve přijatá ze serveru
-                    prevDescItemMap[descItem.descItemObjectId] = descItem;
+                    prevDescItemMap[descItem.descItemObjectId!] = descItem;
                 }
             });
 
             // Nakopírování nově přijatých hodnot, případně ponechání stejných (na základě descItemObjectId a prev value == value ze serveru, které již uživatel upravil a nejsou odeslané)
             newType.descItems.forEach(descItem => {
-                var prevDescItem = prevDescItemMap[descItem.descItemObjectId];
+                const prevDescItem = prevDescItemMap[descItem.descItemObjectId!];
                 if (
                     prevDescItem &&
                     prevDescItemHasSamePrevValue(prevDescItem, descItem) &&
                     (prevDescItem.touched || (!descItem.value && !descItem.undefined))
                 ) {
                     // původní hodnota přijatá ze serveru má stejné hodnoty jako jsou nyní v nově přijatých datech na serveru a uživatel nám aktuální data upravil
-                    var item = {...prevDescItem};
+                    const item = {...prevDescItem};
                     if (state.updatedItem && state.updatedItem.descItemObjectId === descItem.descItemObjectId) {
                         item.value = state.updatedItem.value;
                     }
@@ -360,7 +413,7 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
                     item.formKey = prevDescItem.formKey;
                     resultDescItemType.descItems.push(item);
                 } else {
-                    var item = createDescItemFromDb(resultDescItemType, descItem);
+                    const item = createDescItemFromDb(resultDescItemType, descItem);
                     addUid(item, null);
                     if (prevDescItem) {
                         item.formKey = prevDescItem.formKey;
@@ -374,50 +427,55 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
 
             // Doplnění o přidané a neuložené v aktuálním klientovi
             // Pokud se jedná o jednohodnotvý atribut, necháme jen tu ze serveru
-            var emptySystemSpecToKeyMap = {}; // mapa id specifikace prázdné systémové vynucené položky specifikace na formKey dané položky - aby nám položky na formuláři neskákaly
-            if (infoType.rep === 1) {
-                // Vícehodnotový
-                var prevDescItem = null;
-                prevType.descItems.forEach((descItem, index) => {
-                    descItem = {...descItem}; // immutable
-                    addUid(descItem, index);
+            const emptySystemSpecToKeyMap = {}; // mapa id specifikace prázdné systémové vynucené položky specifikace na formKey dané položky - aby nám položky na formuláři neskákaly
 
-                    if (typeof descItem.id === 'undefined') {
-                        // mnou přidaná ještě neuložená, musíme jí přidat na správné místo
-                        // Pokud se jedná o systémově přidanou hodnotu a uživatel na ní zatím nešáhl, nebudeme ji vůbec uvažovat
-                        if (!descItem.addedByUser && !descItem.touched) {
-                            // systémově přidaná a neupravená
-                            // nebudeme ji uvažovat, jen se pro ni budeme snažit zachovat formKey, aby nám položky na formuláři neskákaly - jedná se o systémnově přidané atributy s povinnou nebo doporučenou specifikací
-                            if (refType.useSpecification && hasDescItemTypeValue(refType.dataType)) {
-                                emptySystemSpecToKeyMap[descItem.descItemSpecId] = descItem.formKey;
-                            }
-                        } else {
-                            if (prevDescItem) {
-                                // má předchozí, zkusíme ji v novém rozložení dát na stejné místo, pokud to půjde
-                                var index = indexById(resultDescItemType.descItems, prevDescItem._uid, '_uid');
-                                if (index !== null) {
-                                    // našli jsme položku, za kterou ji můžeme přidat
-                                    resultDescItemType.descItems = [
-                                        ...resultDescItemType.descItems.slice(0, index + 1),
-                                        descItem,
-                                        ...resultDescItemType.descItems.slice(index + 1),
-                                    ];
-                                } else {
-                                    // nenašli jsme položku, za kterou ji můžeme přidat, dáme ji na konec
-                                    resultDescItemType.descItems.push(descItem);
-                                }
+            let prevDescItem: DescItem | null = null;
+            prevType.descItems.forEach((descItem, index) => {
+                descItem = {...descItem}; // immutable
+                addUid(descItem, index);
+
+                if (typeof descItem.id === 'undefined') {
+                    // mnou přidaná ještě neuložená, musíme jí přidat na správné místo
+                    // Pokud se jedná o systémově přidanou hodnotu a uživatel na ní zatím nešáhl, nebudeme ji vůbec uvažovat
+
+                    let isSystemValue =
+                        infoType.rep === 1 // Vícehodnotový
+                            ? // systémově přidaná a neupravená
+                              !descItem.addedByUser && !descItem.touched
+                            : // neupravená a není právě upravována v případě jednopolíčkové
+                              !descItem.touched && !descItem.hasFocus;
+
+                    if (isSystemValue) {
+                        // nebudeme ji uvažovat, jen se pro ni budeme snažit zachovat formKey, aby nám položky na formuláři neskákaly - jedná se o systémnově přidané atributy s povinnou nebo doporučenou specifikací
+                        if (refType.useSpecification && hasDescItemTypeValue(refType.dataType)) {
+                            emptySystemSpecToKeyMap[(descItem as DescItemWithSpec).descItemSpecId!] = descItem.formKey;
+                        }
+                    } else {
+                        if (prevDescItem) {
+                            // má předchozí, zkusíme ji v novém rozložení dát na stejné místo, pokud to půjde
+                            const index = indexById(resultDescItemType.descItems, prevDescItem!._uid, '_uid');
+                            if (index !== null) {
+                                // našli jsme položku, za kterou ji můžeme přidat
+                                resultDescItemType.descItems = [
+                                    ...resultDescItemType.descItems.slice(0, index + 1),
+                                    descItem,
+                                    ...resultDescItemType.descItems.slice(index + 1),
+                                ];
                             } else {
-                                // nemá předchozí, dáme ji v novém rozložení na konec
+                                // nenašli jsme položku, za kterou ji můžeme přidat, dáme ji na konec
                                 resultDescItemType.descItems.push(descItem);
                             }
+                        } else {
+                            // nemá předchozí, dáme ji v novém rozložení na konec
+                            resultDescItemType.descItems.push(descItem);
                         }
                     }
+                }
 
-                    prevDescItem = descItem;
-                });
-            }
+                prevDescItem = descItem;
+            });
 
-            // Upravení a opravení seznamu hodnot, případně přidání rázdných
+            // Upravení a opravení seznamu hodnot, případně přidání prázdných
             consolidateDescItems(resultDescItemType, infoType, refType, false, emptySystemSpecToKeyMap);
 
             return true;
@@ -440,8 +498,8 @@ function mergeDescItems(state, resultDescItemType, prevType, newType) {
  */
 function prepareFlatData(data) {
     // Již nahrazeno před posláním akce, zatím necháno, možná se bude celé refaktorovat
-    data.types = replaceIdsWithString(data.types, typesNumToStrMap);
-    data.specs = replaceIdsWithString(data.specs, typesNumToStrMap);
+    data.types = replaceIdsWithString(data.types, rulItemTypeNumberMap);
+    data.specs = replaceIdsWithString(data.specs, rulItemTypeNumberMap);
     data.types = insertDescItemSpecsMap(data.types, data.specs);
 }
 
@@ -462,6 +520,7 @@ function addChangedItemIfExists(data, item) {
     }
 }
 
+type WierdMapType<T> = {[key: number]: T; ids: number[]};
 /**
  * Gets descItem ids per type as map.
  *
@@ -470,7 +529,7 @@ function addChangedItemIfExists(data, item) {
  * @return Object
  */
 function getMapByItemType(items) {
-    let types = {ids: []};
+    const types: WierdMapType<{items: number[]}> = {ids: []};
 
     for (let i = 0; i < items.ids.length; i++) {
         let itemId = items.ids[i];
@@ -545,7 +604,7 @@ export function mergeAfterUpdate(state, data, refTables) {
     state.formData = restoreFormDataStructure(flatLocalForm, state.refTypesMap);
 
     // Odebrání pomocných dat - sice prasárna, ale jinak by se to muselo celé přepsat - commit 85921c4ed7d187d41759fa938370dcaac3da5aa1
-    Object.values(flatLocalForm.types).forEach(type => {
+    Object.values((flatLocalForm.types as any) as {[key: number]: DescItemType}).forEach(type => {
         type.descItems &&
             type.descItems.forEach(descItem => {
                 delete descItem.itemType;
@@ -591,9 +650,9 @@ function insertDescItemSpecsMap(types, specs) {
  * */
 function restoreFormDataStructure(data, refTypesMap) {
     let groupId, group, typeId, type, descItemId, descItem, specId, spec;
-    let usedTypes = {ids: []};
-    let usedGroups = {ids: []};
-    let descItemGroups = [];
+    let usedTypes: WierdMapType<{descItems: DescItem[]; specs: any[]}> = {ids: []};
+    let usedGroups: WierdMapType<{descItemTypes: DescItemType[]}> = {ids: []};
+    let descItemGroups: DescItemGroup[] = [];
 
     for (let d = 0; d < data.descItems.ids.length; d++) {
         descItemId = data.descItems.ids[d];
@@ -693,12 +752,14 @@ class FlatFormData {
        }
     */
 
+    _emptyItemCounter = 0;
+    groups: WierdMapType<DescItemGroup> = {ids: []};
+    types: WierdMapType<DescItemType> = {ids: []};
+    descItems: WierdMapType<DescItem> = {ids: []};
+    specs: WierdMapType<ItemSpec> = {ids: []};
+    refTables: any;
+
     constructor(refTables) {
-        this._emptyItemCounter = 0;
-        this.groups = {ids: []};
-        this.types = {ids: []};
-        this.descItems = {ids: []};
-        this.specs = {ids: []};
         this.refTables = refTables;
     }
 
@@ -763,7 +824,7 @@ class FlatFormData {
             let newItem = newItems[newItemId];
 
             if (!item) {
-                items.ids.push(newItem.descItemObjectId);
+                items.ids.push(newItem.descItemObjectId!);
             }
             if (item.prevValue !== newItem.value) {
                 newItem.value = item.value;
@@ -784,9 +845,8 @@ class FlatFormData {
         for (let i = 0; i < items.ids.length; i++) {
             const itemId = items.ids[i];
             const item = items[itemId];
-            const isEmpty = item.value === null || item.descItemSpecId === null;
-            const type = this.types[item.itemType];
-            const isFromDb = item.descItemObjectId >= 0;
+            const isEmpty = item.value === null || (item as DescItemWithSpec).descItemSpecId === null;
+            const isFromDb = item.descItemObjectId! >= 0;
 
             if (isEmpty && !item.addedByUser && !isFromDb) {
                 delete items[itemId];
@@ -808,12 +868,13 @@ class FlatFormData {
         let itemSpecsMap = this._getForcedSpecsByType(specs);
         let refTypesMap = getMapFromList(this.refTables.descItemTypes.items);
         let refDataTypesMap = getMapFromList(this.refTables.rulDataTypes.items);
-        let newItems = {ids: []};
+        let newItems: WierdMapType<DescItem> = {ids: []} as any;
 
         for (let t = 0; t < types.ids.length; t++) {
             let typeId = types.ids[t];
             let type = types[typeId];
-            let forceVisible = isType(type.type, availability.REQUIRED) || isType(type.type, availability.RECOMMENDED);
+            let forceVisible =
+                isType(type.type, RulItemTypeType.REQUIRED) || isType(type.type, RulItemTypeType.RECOMMENDED);
             let typeItems = itemTypesMap[typeId] && itemTypesMap[typeId].items;
 
             if (forceVisible) {
@@ -839,7 +900,8 @@ class FlatFormData {
                         lastPosition++;
 
                         newItems[nextEmptyItemId] = newItem;
-                        newItems.ids.push(nextEmptyItemId);
+                        // TODO Proč je tu najednou string ? @stanekpa?
+                        newItems.ids.push(nextEmptyItemId as any);
                         this._emptyItemCounter++;
                     }
                 }
@@ -850,7 +912,8 @@ class FlatFormData {
                     newItem.itemType = typeId;
 
                     newItems[nextEmptyItemId] = newItem;
-                    newItems.ids.push(nextEmptyItemId);
+                    // TODO Proč je tu najednou string ? @stanekpa?
+                    newItems.ids.push(nextEmptyItemId as any);
                     this._emptyItemCounter++;
                 }
             }
@@ -872,8 +935,8 @@ class FlatFormData {
     /**
      * Returns specs from given array, that are not used in descItems
      *
-     * @param Array specs - Array of spec ids
-     * @param Array items - Array of descItem ids
+     * @param specIds {number[]} - Array of spec ids
+     * @param itemIds {number[]} - Array of descItem ids
      *
      * @return Array
      */
@@ -882,7 +945,7 @@ class FlatFormData {
         for (let i = 0; i < itemIds.length; i++) {
             let itemId = itemIds[i];
             let item = this.descItems[itemId];
-            let specIndex = unusedSpecIds.indexOf(item.descItemSpecId);
+            let specIndex = unusedSpecIds.indexOf((item as DescItemWithSpec).descItemSpecId!);
             if (specIndex >= 0) {
                 unusedSpecIds.splice(specIndex, 1);
             }
@@ -898,15 +961,15 @@ class FlatFormData {
      *
      * @return Object
      */
-    _getForcedSpecsByType(specs) {
-        let types = {ids: []};
+    _getForcedSpecsByType(specs: WierdMapType<ItemSpec>) {
+        let types: {[key: number]: {specs: number[]}; ids: number[]} = {ids: []};
 
         for (let i = 0; i < specs.ids.length; i++) {
             let itemId = specs.ids[i];
             let item = specs[itemId];
             let typeId = item.itemType;
 
-            if (isType(item.type, availability.RECOMMENDED) || isType(item.type, availability.REQUIRED)) {
+            if (isType(item.type, RulItemTypeType.RECOMMENDED) || isType(item.type, RulItemTypeType.REQUIRED)) {
                 if (!types[typeId]) {
                     types[typeId] = {
                         specs: [],
@@ -1023,7 +1086,7 @@ class FlatFormData {
                 itemType: type.id,
                 // aaaaaaaa: 11111111
             };
-            let itemId = null;
+            let itemId: string | null = null;
 
             if (item.descItemObjectId >= 0) {
                 itemId = item.descItemObjectId;
@@ -1034,7 +1097,8 @@ class FlatFormData {
 
             if (itemId !== null) {
                 this.descItems[itemId] = item;
-                this.descItems.ids.push(itemId);
+                // TODO proč je tu string ? @stanekpa?
+                this.descItems.ids.push(itemId as any);
             }
         }
     }
@@ -1089,7 +1153,7 @@ function merge(state) {
 
     // Procházíme všechny skupiny, které mohou být na formuláři - nikoli hodnoty z db, ty pouze připojujeme
     // Všechny procházíme z toho důvodu, že některé mohou být vynuceny na zobrazení - forceVisible a klient je musí zobrazit
-    let descItemGroups = [];
+    let descItemGroups: DescItemGroup[] = [];
     state.infoGroups.forEach(group => {
         const resultGroup = {
             hasFocus: false,
@@ -1297,8 +1361,8 @@ export function updateFormData(state, data, refTypesMap, groups, updatedItem, di
     }
 }
 
-export function createDescItem(descItemType, refType, addedByUser) {
-    var result = {
+export function createDescItem(descItemType, refType, addedByUser): DescItem {
+    const result: DescItem = ({
         [JAVA_ATTR_CLASS]: getItemClass(refType.dataType),
         prevValue: null,
         hasFocus: false,
@@ -1308,13 +1372,14 @@ export function createDescItem(descItemType, refType, addedByUser) {
         value: null,
         error: {hasError: false},
         addedByUser,
-    };
+    } as any) as DescItem;
 
     prepareNextFormKey(descItemType);
     initFormKey(descItemType, result);
 
     if (refType.useSpecification) {
-        result.descItemSpecId = '';
+        // TODO proč je tu string ? @stanekpa?
+        (result as DescItemWithSpec).descItemSpecId = '' as any;
     }
 
     // Inicializační hodnoty pro nově vytvořenou položku
@@ -1469,14 +1534,14 @@ function checkGroup(group) {
  * Kontrola struktury store - zda-li jsou vyplněná požadovaná data.
  * - metoda je pouze pro ladící účely
  */
-export function checkFormData(formData = {}, msg = '#checkFormData') {
+export function checkFormData(formData: Partial<FormData> = {}, msg = '#checkFormData') {
     return;
     // POUZE PRO TESTOVACÍ ÚČELY
     // eslint-disable-next-line
     if (formData) {
         const descItemGroups = formData.descItemGroups;
         console.log(msg, descItemGroups);
-        descItemGroups.forEach(descItemGroup => {
+        descItemGroups?.forEach(descItemGroup => {
             checkGroup(descItemGroup);
         });
     }

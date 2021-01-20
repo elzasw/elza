@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes';
-import {applyMiddleware, compose, createStore} from 'redux';
+import {applyMiddleware, compose, createStore, Middleware} from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import {createLogger} from 'redux-logger';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
@@ -17,6 +17,8 @@ import arrRegion from './app/arr/arrRegion.jsx';
 import fundRegion from './app/fund/fundRegion';
 import splitter from './app/global/splitter.jsx';
 import adminRegion from './app/admin/adminRegion.jsx';
+import {AppWindow} from '../typings/globals';
+import {FormErrors} from 'redux-form';
 
 // Nastavení úrovně logování
 const _logStoreState = true;
@@ -24,8 +26,10 @@ const _logStoreSize = false;
 const _logActionDuration = false;
 const _logCollapsed = true;
 
+const appWindow = (window as any) as AppWindow;
+
 // Store a middleware
-const loggerMiddleware = window.__DEV__
+const loggerMiddleware = appWindow.__DEV__
     ? createLogger({
           collapsed: _logCollapsed,
           duration: _logActionDuration,
@@ -37,27 +41,25 @@ const loggerMiddleware = window.__DEV__
 /**
  * Třída pro definici inline formulářů.
  */
-const inlineFormSupport = new (class {
-    constructor() {
-        this.forms = {};
-        this.init = {};
-        this.fields = {};
-        this.initFields = {};
-        this.initialFormData = {};
-        this.wasChanged = {};
-    }
+const inlineFormSupport = new (class InlineFormSupport {
+    forms: {[key: string]: boolean} = {};
+    init: {[key: string]: {validate: Function; onSave: Function}} = {};
+    fields: {[key: string]: any} = {};
+    initFields: {[key: string]: any} = {};
+    initialFormData: {[key: string]: any} = {};
+    wasChanged: {[key: string]: {bigChange?: boolean} & {[key: string]: boolean}} = {};
 
-    addForm(formName) {
+    addForm(formName: string) {
         this.forms[formName] = true;
     }
 
-    getFormData(formName, state) {
+    getFormData(formName: string, state) {
         const formState = state.form[formName];
         const reduxFormData = reduxFormUtils.getValues(this.initFields[formName], formState, false);
         return reduxFormData;
     }
 
-    setFields(formName, fields) {
+    setFields(formName: string, fields) {
         this.initFields[formName] = fields;
         this.fields[formName] = fields;
     }
@@ -68,7 +70,7 @@ const inlineFormSupport = new (class {
      * @param validate
      * @param onSave
      */
-    setInit(formName, validate, onSave) {
+    setInit(formName: string, validate: Function, onSave: Function) {
         if (!validate) {
             console.error('Chyba inicializace formuláře', formName, ' chybí validate.');
         }
@@ -85,7 +87,7 @@ const inlineFormSupport = new (class {
      * @param ignoreNotFound true, pokud se má ignorovat neexistence formuláře ve store
      * @returns {*}
      */
-    getFormState(formName, state, ignoreNotFound = false) {
+    getFormState(formName: string, state, ignoreNotFound = false) {
         const formState = state.form[formName];
         if (!formState) {
             !ignoreNotFound && console.error('Nenalezen store pro formulář', formName);
@@ -94,7 +96,7 @@ const inlineFormSupport = new (class {
         return formState;
     }
 
-    setAttributes(formName, formState, commonAttrs, fieldAttrs) {
+    setAttributes(formName: string, formState, commonAttrs, fieldAttrs) {
         const formStateWithAttrs = reduxFormUtils.setAttributes(
             this.initFields[formName],
             formState,
@@ -133,7 +135,7 @@ const inlineFormSupport = new (class {
     //     };
     // }
 
-    mergeFormState(formName, localFormState, serverFormState, action) {
+    mergeFormState(formName: string, localFormState, serverFormState, action) {
         console.log('....MERGE', 'local', localFormState, 'server', JSON.parse(JSON.stringify(serverFormState)));
 
         reduxFormUtils.mergeState(this.initFields[formName], localFormState, serverFormState);
@@ -147,19 +149,21 @@ const inlineFormSupport = new (class {
         console.log('>>>>>MERGE<<<<<');
 
         const formState = this.getFormState(action.form, state);
+        console.log('Before merge', JSON.stringify(formState, null, 4));
+        console.log('Merge with', JSON.stringify(action.form, null, 4));
 
-        var result = {
+        let result = {
             ...formState,
         };
 
         const data = action.data;
         this.fields[action.form].forEach((field, fieldIndex) => {
-            var fd = {
+            let fd = {
                 ...formState[field],
             };
             result[field] = fd;
 
-            var value = data[field];
+            let value = data[field];
             if (fd.touched) {
                 if (fd.initial != value) {
                     // upravil hodnotu, ale mezitím někdo změnil tuto hodnotu, přepíšeme mu jí tou, co přišla
@@ -196,7 +200,7 @@ const inlineFormSupport = new (class {
 
         const formState = this.getFormState(action.form, state, true);
 
-        var someFieldExist = false;
+        let someFieldExist = false;
         for (let a = 0; a < this.initFields[action.form].length; a++) {
             const field = this.initFields[action.form][a];
 
@@ -227,18 +231,18 @@ const inlineFormSupport = new (class {
      * @param formName
      * @returns {*}
      */
-    isSupported(formName) {
+    isSupported(formName: string) {
         return this.forms[formName];
     }
 
-    setBigChange(formName) {
+    setBigChange(formName: string) {
         const changedInfo = this.wasChanged[formName];
         if (changedInfo) {
             changedInfo.bigChange = true;
         }
     }
 
-    wasDataChanged(formName, state) {
+    wasDataChanged(formName: string, state) {
         const changedInfo = this.wasChanged[formName];
         if (changedInfo) {
             if (changedInfo.bigChange) {
@@ -246,7 +250,7 @@ const inlineFormSupport = new (class {
                 return true;
             }
 
-            var changed = false;
+            let changed = false;
             const keys = Object.keys(changedInfo);
             for (let a = 0; a < keys.length; a++) {
                 if (changedInfo[keys[a]]) {
@@ -260,13 +264,13 @@ const inlineFormSupport = new (class {
         }
     }
 
-    isDataValid(formName, data) {
+    isDataValid(formName: string, data) {
         const init = this.init[formName];
-        var errors = init.validate(data);
+        let errors = init.validate(data);
         return !this._hasErrors(errors);
     }
 
-    _hasErrors(errors) {
+    _hasErrors(errors: FormErrors) {
         const fields = Object.keys(errors);
         for (let a = 0; a < fields.length; a++) {
             const value = errors[fields[a]];
@@ -310,7 +314,7 @@ const inlineFormSupport = new (class {
         const formData = this.getFormData(action.form, state);
         const currentValue = reduxFormUtils.read(action.field, formData);
 
-        var changedInfo = this.wasChanged[action.form];
+        let changedInfo = this.wasChanged[action.form];
         if (!changedInfo) {
             changedInfo = {};
             this.wasChanged[action.form] = changedInfo;
@@ -343,9 +347,9 @@ const inlineFormSupport = new (class {
         }
 
         // const formState = this.getFormState(action.form, state);
-        var data = this.getFormData(action.form, state);
-        var changed = this.wasDataChanged(action.form, state);
-        var isValid = this.isDataValid(action.form, data);
+        let data = this.getFormData(action.form, state);
+        let changed = this.wasDataChanged(action.form, state);
+        let isValid = this.isDataValid(action.form, data);
 
         if (changed && isValid) {
             // Nastavení příznaku, že data byla odeslána na server, příznak slouží pro pozdější merge
@@ -430,7 +434,7 @@ const inlineFormMiddleware = function (_ref) {
                 }
             } else if (action.type === 'redux-form/CHANGE') {
                 if (inlineFormSupport.isSupported(action.form)) {
-                    var newAction = {
+                    let newAction = {
                         ...action,
                         touch: true,
                     };
@@ -440,7 +444,7 @@ const inlineFormMiddleware = function (_ref) {
                     inlineFormSupport.updateChanged(getState(), action);
 
                     // ---
-                    // var vfs = inlineFormSupport.getValidatedFormState(getState(), dispatch, action);
+                    // let vfs = inlineFormSupport.getValidatedFormState(getState(), dispatch, action);
                     // if (vfs.stateChanged) {
                     //     dispatch({
                     //         type: "redux-form/REPLACE_STATE",
@@ -468,9 +472,11 @@ const inlineFormMiddleware = function (_ref) {
 
 let createStoreWithMiddleware;
 
-if (window.__DEV__) {
+if (appWindow.__DEV__) {
     const composeFunction =
-        typeof window.__DEVTOOLS__ !== 'undefined' && window.__DEVTOOLS__ ? composeWithDevTools : compose;
+        typeof appWindow.__DEVTOOLS__ !== 'undefined' && appWindow.__DEVTOOLS__
+            ? ((composeWithDevTools as any) as typeof compose)
+            : compose;
 
     const immutableMiddleware = reduxImmutableStateInvariant({
         ignore: [
@@ -479,7 +485,7 @@ if (window.__DEV__) {
             'contextMenu',
             'developer',
             'focus',
-            'formn',
+            'form',
             'fundRegion',
             'login',
             'modalDialog',
@@ -492,11 +498,11 @@ if (window.__DEV__) {
             'tab',
             'toastr',
             'userDetail',
-            'websocket'
-        ]
+            'websocket',
+        ],
     });
 
-    const middleWares = [
+    const middleWares: Middleware<any, any, any>[] = [
         // immutableMiddleware,
         thunkMiddleware,
         loggerMiddleware,
@@ -532,7 +538,7 @@ export const store = (function configureStore(initialState) {
 */
 /*
 import {selectFundTab} from 'actions/arr/fund.jsx'
-var fund = Object.assign({id: 1, versionId: 1});
+let fund = Object.assign({id: 1, versionId: 1});
 store.dispatch(selectFundTab(fund));
 */
 
@@ -550,7 +556,7 @@ if (_logStoreSize) {
         curr = store.getState().arrRegion;
 
         if (curr !== prev) {
-            var lenStr = lenToBytesStr(roughSizeOfObject(curr));
+            let lenStr = lenToBytesStr(roughSizeOfObject(curr));
             console.log('Velikost store', lenStr);
             //console.log("@@@@@@@@@@@@@@@@@@@@@@CHANGE", prev, curr);
         }
@@ -564,7 +570,7 @@ export const save = function (store) {
         type: types.STORE_SAVE,
     };
 
-    //var rrd = registryRegionData(store.registryRegionData, action)
+    //let rrd = registryRegionData(store.registryRegionData, action)
     //console.log(result.registryRegion);
     // result.registryRegion._info = result.registryRegion.registryRegionData._info
     // result.registryRegion.selectedId = result.registryRegion.registryRegionData.selectedId

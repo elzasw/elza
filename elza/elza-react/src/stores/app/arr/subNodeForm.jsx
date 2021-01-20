@@ -1,22 +1,23 @@
 import * as types from 'actions/constants/ActionTypes';
 import {i18n} from 'components/shared';
 import {getMapFromList, indexById} from 'stores/app/utils.jsx';
+import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from 'components/validate.jsx';
+import {valuesEquals} from 'components/Utils.jsx';
+import {DisplayType} from '../../../constants.tsx';
+import {buildIgnoreMap, endWith, startWith} from '../../../components/Utils';
+import {cloneDeep} from 'lodash-es';
 import {
+    prepareNextFormKey,
+    isType,
     consolidateDescItems,
     createDescItem,
     createDescItemFromDb,
     mergeAfterUpdate,
     updateFormData,
     checkFormData,
-    isType,
-} from './subNodeFormUtils.jsx';
-import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from 'components/validate.jsx';
-import {valuesEquals} from 'components/Utils.jsx';
-import {DisplayType} from '../../../constants.tsx';
-import {buildIgnoreMap, endWith, startWith} from '../../../components/Utils';
-import {cloneDeep} from 'lodash-es';
-import {prepareNextFormKey} from './subNodeFormUtils';
+} from './subNodeFormUtils';
 import {validateUnitDate} from '../../../components/registry/field/UnitdateField';
+import {RulItemTypeType} from '../../../api/RulItemTypeType';
 
 const FORM_KEY = 'formKey'; // klíč verze formuláře
 const UID = '_uid'; // virtuální identifikátor hodnoty atributu (jedná se buď o objectId a nebo virtuální klíč v případě, že ještě hodnota atributu nebyla uložena na serveru)
@@ -405,10 +406,14 @@ export default function subNodeForm(state = initialState, action = {}) {
             loc.descItemType.descItems = descItems;
 
             // je třeba upravit index (původní index určuje původní pozici descItemu, nový indexu určuje novou pozici)
-            return setLoc(state, {
-                ...action.valueLocation,
-                descItemIndex: action.index,
-            }, loc);
+            return setLoc(
+                state,
+                {
+                    ...action.valueLocation,
+                    descItemIndex: action.index,
+                },
+                loc,
+            );
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE:
         case types.FUND_SUB_NODE_FORM_VALUE_CHANGE_RECORD:
             const {valueLocation} = action;
@@ -563,8 +568,9 @@ export default function subNodeForm(state = initialState, action = {}) {
                 // toto je zvláštní situace a nerozumíme, kdy k ní dochází
                 // data by mela vzdy existovat pri prijmu odpovedi
                 console.error('unexpected state - missing data', state, action);
-                throw new Error(`Neočekávaný stav při akci: FUND_SUB_NODE_FORM_VALUE_RESPONSE\nstate: `
-                            +JSON.stringify(state));
+                throw new Error(
+                    `Neočekávaný stav při akci: FUND_SUB_NODE_FORM_VALUE_RESPONSE\nstate: ` + JSON.stringify(state),
+                );
             }
             if (state.data.parent.id !== node.id) {
                 checkFormData(state.formData);
@@ -761,7 +767,10 @@ export default function subNodeForm(state = initialState, action = {}) {
                 };
 
                 // Odebereme pouze pokud je pole jiné než: REQUIRED nebo RECOMMENDED
-                if (isType(infoType.type, 'REQUIRED') || isType(infoType.type, 'RECOMMENDED')) {
+                if (
+                    isType(infoType.type, RulItemTypeType.REQUIRED) ||
+                    isType(infoType.type, RulItemTypeType.RECOMMENDED)
+                ) {
                     // ponecháme, pouze odebereme hodnoty
                     // Hodnoty odebereme
                     loc.descItemType.descItems = [];
@@ -796,14 +805,16 @@ export default function subNodeForm(state = initialState, action = {}) {
                 fetchingId: action.nodeId,
                 isFetching: true,
             });
-        case types.FUND_SUB_NODE_FORM_RECEIVE:
+        case types.FUND_SUB_NODE_FORM_RECEIVE: {
+            const prevSTate = JSON.stringify(state, null, 4);
+            window.prevSTATE = prevSTate;
             // ##
             // # Inicializace dat
             // ##
 
             // Doplnění descItemTypes o rulDataType a další data
-            var dataTypeMap = getMapFromList(action.rulDataTypes.items);
-            var descItemTypes = action.refDescItemTypes.items.map(type => {
+            const dataTypeMap = getMapFromList(action.rulDataTypes.items);
+            const descItemTypes = action.refDescItemTypes.items.map(type => {
                 return {
                     ...type,
                     dataType: dataTypeMap[type.dataTypeId],
@@ -813,12 +824,12 @@ export default function subNodeForm(state = initialState, action = {}) {
             });
 
             // Sestavení mapy ref descItemType
-            var refTypesMap = getMapFromList(descItemTypes);
+            const refTypesMap = getMapFromList(descItemTypes);
 
             // ##
             // # Result a merge formuláře.
             // ##
-            var result = {
+            const result = {
                 ...state,
                 isFetching: false,
                 fetched: true,
@@ -843,8 +854,8 @@ export default function subNodeForm(state = initialState, action = {}) {
                 const added = {};
                 itemTypeIds.forEach(itemTypeId => {
                     if (added[itemTypeId]) {
-                        var descItemGroup = null;
-                        var descItemType = null;
+                        let descItemGroup = null;
+                        let descItemType = null;
                         for (let i = 0; i < result.formData.descItemGroups.length; i++) {
                             descItemGroup = result.formData.descItemGroups[i];
                             const itemTypeIndex = indexById(descItemGroup.descItemTypes, itemTypeId);
@@ -862,7 +873,10 @@ export default function subNodeForm(state = initialState, action = {}) {
                 result.addItemTypeIds = null;
             }
             checkFormData(result.formData, '#checkFormData - final');
+            const postState = JSON.stringify(result, null, 4);
+            window.postState = postState;
             return result;
+        }
         case types.FUND_SUBNODE_UPDATE: {
             const {node, parent} = action.data;
             let nodeId = (node && node.id) || (parent && parent.id);
