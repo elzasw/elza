@@ -5,7 +5,7 @@
 import {DisplayType, FOCUS_KEYS} from '../../constants.tsx';
 import {WebApi} from 'actions/index.jsx';
 import {findByRoutingKeyInGlobalState, getRoutingKeyType, indexById} from 'stores/app/utils.jsx';
-import {getFocusDescItemLocation} from 'stores/app/arr/subNodeFormUtils.jsx';
+import {getFocusDescItemLocation} from '../../stores/app/arr/subNodeFormUtils';
 import {valuesEquals} from 'components/Utils.jsx';
 import {setFocus} from 'actions/global/focus.jsx';
 import {increaseNodeVersion} from './node.jsx';
