@@ -13,11 +13,15 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.XMLEvent;
 
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.common.xml.XMLEventWriterBase;
 import cz.tacr.elza.exception.SystemException;
 
 public class FileNode implements XmlNode {
+
+    final static private Logger log = LoggerFactory.getLogger(FileNode.class);
 
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
 
@@ -25,6 +29,8 @@ public class FileNode implements XmlNode {
 
     public FileNode(Path xmlFile) {
         this.xmlFile = Validate.notNull(xmlFile);
+
+        log.debug("Creating FileNode, path: {}", xmlFile);
     }
 
     @Override
@@ -33,7 +39,8 @@ public class FileNode implements XmlNode {
             XMLEventReader eventReader = INPUT_FACTORY.createXMLEventReader(is);
             copyXml(eventReader, streamWriter);
             eventReader.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
+            log.error("Failed to write file: {}", xmlFile, e);
             throw new XMLStreamException(e);
         }
     }
@@ -65,8 +72,11 @@ public class FileNode implements XmlNode {
     @Override
     public void clear() {
         try {
+            log.debug("Deleting FileNode, path: {}", xmlFile);
+
             Files.deleteIfExists(xmlFile);
         } catch (IOException e) {
+            log.error("Failed to delete file: {}", xmlFile.toString(), e);
             throw new SystemException(e);
         }
     }

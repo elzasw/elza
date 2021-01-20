@@ -6,7 +6,7 @@ import cz.tacr.elza.dataexchange.output.loaders.BaseLoadDispatcher;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.loaders.NestedLoadDispatcher;
 import cz.tacr.elza.dataexchange.output.writer.ItemApInfo;
-import cz.tacr.elza.dataexchange.output.writer.PartApInfo;
+import cz.tacr.elza.dataexchange.output.writer.PartsApInfo;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;

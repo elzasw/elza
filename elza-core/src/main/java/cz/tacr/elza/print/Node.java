@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
@@ -128,6 +129,21 @@ public class Node {
             ItemSpec is = item.getSpecification();
             return is != null && specCode.equals(is.getCode());
         }).collect(Collectors.toList());
+    }
+
+    public boolean hasItemWithSpec(String typeCode, String specCode) {
+        Validate.notNull(typeCode);
+        Validate.notNull(specCode);
+
+        List<Item> validItems = getItemsWithSpec(typeCode, specCode);
+        return CollectionUtils.isNotEmpty(validItems);
+    }
+
+    public boolean hasItem(String typeCode) {
+        Validate.notNull(typeCode);
+
+        List<Item> validItems = getItems(Collections.singletonList(typeCode));
+        return CollectionUtils.isNotEmpty(validItems);
     }
 
     /**
