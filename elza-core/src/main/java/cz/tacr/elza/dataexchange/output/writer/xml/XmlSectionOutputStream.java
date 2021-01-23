@@ -326,11 +326,13 @@ class XmlSectionOutputStream implements SectionOutputStream {
         public APRefConvertor createAPRefConvertor() {
             return new APRefConvertor() {
                 @Override
-                public DescriptionItemAPRef convert(ArrData data, ObjectFactory objectFactory) {
-                    DescriptionItemAPRef item = super.convert(data, objectFactory);
-                    if (item != null) {
+                public DescriptionItem convert(ArrData data, ObjectFactory objectFactory) {
+                    DescriptionItem item = super.convert(data, objectFactory);
+                    if (item != null && item instanceof DescriptionItemAPRef) {
                         ArrDataRecordRef apRef = (ArrDataRecordRef) data;
-                        sectionContext.getContext().addApId(apRef.getRecordId());
+                        if (apRef.getRecordId() != null) {
+                            sectionContext.getContext().addApId(apRef.getRecordId());
+                        }
                     }
                     return item;
                 }
