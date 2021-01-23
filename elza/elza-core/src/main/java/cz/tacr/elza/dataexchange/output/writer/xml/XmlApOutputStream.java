@@ -174,20 +174,17 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
      */
     private class ContextAwareItemDataConvertorFactory extends ItemDataConvertorFactory {
 
+        /*
         @Override
         public APRefConvertor createAPRefConvertor() {
             return new APRefConvertor() {
                 @Override
                 public DescriptionItemAPRef convert(ArrData data, ObjectFactory objectFactory) {
                     DescriptionItemAPRef item = super.convert(data, objectFactory);
-                    /*if (item != null) {
-                        ArrDataRecordRef apRef = (ArrDataRecordRef) data;
-                        context.addApId(apRef.getRecordId());
-                    }*/
                     return item;
                 }
             };
-        }
+        }*/
     //TODO : gotzy - zjistit, jestli je to nutne
         /*@Override
         public FileRefConvertor createFileRefConvertor() {
