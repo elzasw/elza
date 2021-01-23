@@ -224,7 +224,7 @@ public class WsClient {
         file.setChecksumType(convertStringToChecksumType(bitstream.getChecksumAlgorithm()));
         file.setChecksum(bitstream.getChecksum());
         file.setIdentifier(fileParam + "/" + bitstream.getName());
-        file.setSize(bitstream.getSizeBytes());
+        file.setSize(bitstream.getSize());
         file.setDescription(bitstream.getDescription());
         file.setFileName(bitstream.getName());
 
