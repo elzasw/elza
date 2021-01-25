@@ -23,7 +23,7 @@ public class JhoveService {
 
     private static Logger log = Logger.getLogger(JhoveService.class);
 
-    private List<Module> modules = new LinkedList<>();
+    //private List<Module> modules = new LinkedList<>();
 
     public boolean generateMetadata(final Path file, final BufferedWriter protocol, final Path destPath, final MetadataInfo metadataInfo) throws IOException {
         boolean moduleFound = false;

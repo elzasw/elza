@@ -168,7 +168,7 @@ public class WsClient {
         daoPackage.setDaoBatchInfo(daoBatchInfo);
 
         Daoset daoset = new Daoset();
-        daoPackage.setDaoset(daoset);
+        daoPackage.setDaos(daoset);
 
         Dao dao = createDao(item);
 
@@ -194,7 +194,7 @@ public class WsClient {
             throw new IllegalStateException("Nastala chyba při zápisu metadat isElza k Item " + item + " odesílané do ELZA", e);
         }
 
-        dao.setFileGroup(fileGroup);
+        dao.setFiles(fileGroup);
         daoset.getDao().add(dao);
         getDaoService().addPackage(daoPackage);
 
@@ -226,7 +226,7 @@ public class WsClient {
         file.setIdentifier(fileParam + "/" + bitstream.getName());
         file.setSize(bitstream.getSize());
         file.setDescription(bitstream.getDescription());
-        file.setFileName(bitstream.getName());
+        file.setName(bitstream.getName());
 
         BitstreamFormat format = null;
         try {
@@ -357,16 +357,16 @@ public class WsClient {
 
     public static void updateItem(Context context, Item item, Did did) {
         try {
-            Unitdatestructured unitdatestructured = did.getUnitdatestructured();
+            Unitdatestructured unitdatestructured = did.getUnitDateStructured();
             if (unitdatestructured != null) {
-                Datesingle datesingle = unitdatestructured.getDatesingle();
+                Datesingle datesingle = unitdatestructured.getDateSingle();
                 if (datesingle != null) {
                     String date = datesingle.getLocaltype();
                     itemService.setMetadataSingleValue(context, item, MetadataSchema.DC_SCHEMA, "date", "issued", null, date);
                 }
             }
 
-            List<Unitid> unitidList = did.getUnitid();
+            List<Unitid> unitidList = did.getUnitId();
             if (unitidList != null) {
                 itemService.clearMetadata(context, item, MetadataSchema.DC_SCHEMA, "identifier", "govdoc", null);
                 for (Unitid unitid : unitidList) {
@@ -374,7 +374,7 @@ public class WsClient {
                 }
             }
 
-            List<Unittitle> unittitleList = did.getUnittitle();
+            List<Unittitle> unittitleList = did.getUnitTitle();
             if (unittitleList != null) {
                 itemService.clearMetadata(context, item, MetadataSchema.DC_SCHEMA, "description", "abstract", null);
                 for (Unittitle unittitle : unittitleList) {
