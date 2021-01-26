@@ -345,10 +345,10 @@ end
 // Prvky popisu pro každou složku
 //-----------------------------------------------------------------
 
-rule "Možné role entit pro složku"
+rule "Možné role entit pro složku (i sérii)"
 no-loop
 when $activeLevel: ActiveLevel( )
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_SERIES", "ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION") ) from $activeLevel.descItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code in (
         // autoři textů
@@ -1055,7 +1055,10 @@ when
       // ZP 5.2.11 Edice a literatura
       "ZP2015_EDITION",
       // Obecná příloha 
-      "ZP2015_ATTACHMENT" ) )
+      "ZP2015_ATTACHMENT",
+      // Role entit jsou možné vždy
+      "ZP2015_ENTITY_ROLE"
+      ) )
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
@@ -1107,9 +1110,7 @@ when
       // ZP5.2.8 Technika, adjustace, nosič a látka záznamu
       "ZP2015_ITEM_MAT",
       // ZP5.2.9 Díl, část, pořadí vydání jednotky popisu
-      "ZP2015_PART",
-      // Role entit jsou možné vždy
-      "ZP2015_ENTITY_ROLE"
+      "ZP2015_PART"
      ) )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 then
