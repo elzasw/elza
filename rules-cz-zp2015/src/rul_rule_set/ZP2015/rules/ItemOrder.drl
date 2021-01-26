@@ -21,7 +21,8 @@ when $activeLevel: ActiveLevel( )
     StructObjItem(type=="ZP2015_PACKET_TYPE" && specCode in ("ZP2015_PACKET_TYPE_KAR", "ZP2015_PACKET_TYPE_FAS",
     	"ZP2015_PACKET_TYPE_AKA", "ZP2015_PACKET_TYPE_KDI", "ZP2015_PACKET_TYPE_VKA",
     	"ZP2015_PACKET_TYPE_DDI")) from $descItem.structured.items
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $activeLevel.descItems
+    // lze použít ve všech typech pomůcek
+    // DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $activeLevel.descItems
     $itemType: RulItemTypeExt( code in ("ZP2015_ITEM_ORDER") )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
