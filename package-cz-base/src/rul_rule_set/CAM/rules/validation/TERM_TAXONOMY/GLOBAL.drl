@@ -3,8 +3,11 @@ import cz.tacr.elza.drools.model.ApValidationErrors;
 import cz.tacr.elza.drools.model.Profile;
 global ApValidationErrors results;
 
+// Profily nejsou v Elza zatim podporovany
+/*
 rule "P_001 Profil pro založení taxonomie"
 when not Profile(code == "TAXONOMY_CREATOR")
 then
     results.addError("Nedostatečná oprávnění pro založení/úpravu entity v podtřídě taxonomická kategorie");
 end
+*/
