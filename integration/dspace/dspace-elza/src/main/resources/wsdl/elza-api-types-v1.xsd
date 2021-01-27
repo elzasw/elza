@@ -4,14 +4,15 @@
 		<xs:documentation>Common data structures used by Elza web services. </xs:documentation>
 	</xs:annotation>
 	<xs:element name="addPermissions" type="eat:PermissionsForUser"/>
+	<xs:element name="createFundFailed" type="eat:ErrorDescription">
+		<xs:annotation>
+			<xs:documentation>Failed to create fund</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="createStructuredObjectFailed" type="eat:ErrorDescription"/>
 	<xs:element name="createUser" type="eat:User">
 		<xs:annotation>
 			<xs:documentation>Žádost o založení uživatele</xs:documentation>
-		</xs:annotation>
-	</xs:element>
-	<xs:element name="daoAttributes" type="eat:Attributes">
-		<xs:annotation>
-			<xs:documentation>Root element for storing DAO attributes</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 	<xs:element name="daoIdentifier" type="eat:Identifier"/>
@@ -21,6 +22,13 @@
 	<xs:element name="daoPackageIdentifier" type="eat:Identifier"/>
 	<xs:element name="daosSyncRequest" type="eat:DaosSyncRequest"/>
 	<xs:element name="daosSyncResponse" type="eat:DaosSyncResponse"/>
+	<xs:element name="deleteFundFailed" type="eat:ErrorDescription"/>
+	<xs:element name="deleteStructuredObjectFailed" type="eat:ErrorDescription"/>
+	<xs:element name="descriptionItems" type="eat:Items">
+		<xs:annotation>
+			<xs:documentation>Collection of description items</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 	<xs:element name="destructionRequest" type="eat:DestructionRequest"/>
 	<xs:element name="destructionRequestId" type="eat:RequestId"/>
 	<xs:element name="destructionRequestRevoked" type="eat:RequestRevoked"/>
@@ -41,6 +49,25 @@
 			<xs:documentation>List of archival entities</xs:documentation>
 		</xs:annotation>
 	</xs:element>
+	<xs:element name="fundCreate" type="eat:Fund"/>
+	<xs:element name="fundCreated" type="eat:FundIdentifiers"/>
+	<xs:element name="fundDelete" type="eat:FundIdentifiers">
+		<xs:annotation>
+			<xs:documentation>Request to delete fund</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="fundUpdate" type="eat:Fund">
+		<xs:annotation>
+			<xs:documentation>Update fund information</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="importRequest" type="eat:ImportRequest"/>
+	<xs:element name="importRequestId" type="eat:Uuid">
+		<xs:annotation>
+			<xs:documentation>Top level element to get statatus of import</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="importRequestStatus" type="eat:RequestStatusInfo"/>
 	<xs:element name="onDaoLinked" type="eat:OnDaoLinked"/>
 	<xs:element name="onDaoUnlinked" type="eat:OnDaoUnlinked"/>
 	<xs:element name="removePermissions" type="eat:PermissionsForUser">
@@ -48,10 +75,29 @@
 			<xs:documentation>Remove permissions</xs:documentation>
 		</xs:annotation>
 	</xs:element>
-	<xs:element name="removeUser" type="eat:Username"/>
+	<xs:element name="searchEntityException" type="eat:ErrorDescription"/>
+	<xs:element name="searchEntityResult" type="eat:SearchEntityResult"/>
+	<xs:element name="searchEntityUpdates" type="eat:SearchEntityUpdates"/>
+	<xs:element name="searchSingleEntity" type="eat:SearchEntity"/>
+	<xs:element name="setUserState" type="eat:SetUserState">
+		<xs:annotation>
+			<xs:documentation>Element to set user state</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="structuredObjectCreate" type="eat:StructuredObject"/>
+	<xs:element name="structuredObjectCreated" type="eat:StructuredObjectIdentifiers"/>
+	<xs:element name="structuredObjectDelete" type="eat:StructuredObjectIdentifiers">
+		<xs:annotation>
+			<xs:documentation>Delete given structured object.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="structuredObjectUpdate" type="eat:StructuredObject"/>
 	<xs:element name="transferRequest" type="eat:TransferRequest"/>
 	<xs:element name="transferRequestId" type="eat:RequestId"/>
 	<xs:element name="transferRequestRevoked" type="eat:RequestRevoked"/>
+	<xs:element name="updatedEntities" type="eat:EntityUpdates"/>
+	<xs:element name="updateFundFailed" type="eat:ErrorDescription"/>
+	<xs:element name="updateStructuredObjectFailed" type="eat:ErrorDescription"/>
 	<xs:simpleType name="Abstract">
 		<xs:annotation>
 			<xs:documentation>A child element of &lt;did&gt; that provides a brief characterization of the materials being described. </xs:documentation>
@@ -124,6 +170,18 @@
 			<xs:maxLength value="65536"/>
 		</xs:restriction>
 	</xs:simpleType>
+	<xs:simpleType name="EntityConflictResolution">
+		<xs:annotation>
+			<xs:documentation>Conflict resolution strategy.
+
+KEEP_MODIFIED is used if modified entity in Elza should not be overwritten by imported entity.
+UPDATE_MODIFIED is used when imported entity has precedence over current entity in Elza. Imported entity will overwrite current entity version.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="KEEP_MODIFIED"/>
+			<xs:enumeration value="UPDATE_MODIFIED"/>
+		</xs:restriction>
+	</xs:simpleType>
 	<xs:simpleType name="Identifier">
 		<xs:annotation>
 			<xs:documentation>This is a machine-processable unique identifier for the descriptive component in which the element appears</xs:documentation>
@@ -137,7 +195,9 @@
 		<xs:annotation>
 			<xs:documentation>A display label for an element.</xs:documentation>
 		</xs:annotation>
-		<xs:restriction base="xs:string"/>
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="250"/>
+		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="Localtype">
 		<xs:annotation>
@@ -146,6 +206,9 @@
 Source: EAD3</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="xs:string"/>
+	</xs:simpleType>
+	<xs:simpleType name="Long">
+		<xs:restriction base="xs:long"/>
 	</xs:simpleType>
 	<xs:simpleType name="NonNegativeRealType">
 		<xs:annotation>
@@ -195,6 +258,18 @@ Source: EAD3</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="xs:token"/>
 	</xs:simpleType>
+	<xs:simpleType name="RequestStatus">
+		<xs:annotation>
+			<xs:documentation>	- OK. The request has succeeded.
+	- FAILED. Request received but processing failed.
+	- NOT_EXISTS. Received was not received.</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="FAILED"/>
+			<xs:enumeration value="NOT_EXISTS"/>
+			<xs:enumeration value="OK"/>
+		</xs:restriction>
+	</xs:simpleType>
 	<xs:simpleType name="Standarddate">
 		<xs:annotation>
 			<xs:documentation>The standardized form of date expressed in &lt;datesingle&gt;, &lt;fromdate&gt;, or &lt;todate&gt;. It is recommened that standarddate values follow ISO 8601, for example, 2011-07-22, 1963, or 1912-11, or another standard date format as specified in dateencoding. </xs:documentation>
@@ -238,25 +313,24 @@ Used to pass unrestricted attribute value.</xs:documentation>
 			<xs:maxLength value="250"/>
 		</xs:restriction>
 	</xs:simpleType>
-	<xs:complexType name="Attribute">
+	<xs:simpleType name="UserState">
 		<xs:annotation>
-			<xs:documentation>Single attribute
-
-Attribute is name + value</xs:documentation>
+			<xs:documentation>User state</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="name" type="eat:StringLong" minOccurs="1" maxOccurs="1"/>
-			<xs:element name="value" type="eat:StringLong" minOccurs="1" maxOccurs="1"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="Attributes">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ACTIVE"/>
+			<xs:enumeration value="INACTIVE"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="Uuid">
 		<xs:annotation>
-			<xs:documentation>Collection of attributes</xs:documentation>
+			<xs:documentation>UUID</xs:documentation>
 		</xs:annotation>
-		<xs:sequence>
-			<xs:element name="Attribute" type="eat:Attribute" minOccurs="1" maxOccurs="unbounded"/>
-		</xs:sequence>
-	</xs:complexType>
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[14][0-9a-fA-F]{3}-[8-9a-bA-B][0-9a-fA-F]{3}-[0-9a-fA-F]{12}"/>
+			<xs:length value="36"/>
+		</xs:restriction>
+	</xs:simpleType>
 	<xs:complexType name="Authorization">
 		<xs:sequence>
 			<xs:element name="authType" type="eat:AuthType" minOccurs="1" maxOccurs="1"/>
@@ -284,7 +358,7 @@ Note: Some types of DAO does not have to have link to any file.</xs:documentatio
 		<xs:sequence>
 			<xs:element name="folders" type="eat:FolderGroup" minOccurs="0" maxOccurs="1"/>
 			<xs:element name="files" type="eat:FileGroup" minOccurs="0" maxOccurs="1"/>
-			<xs:element name="attributes" type="eat:Attributes" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="items" type="eat:Items" minOccurs="0" maxOccurs="1"/>
 		</xs:sequence>
 		<xs:attribute name="daoType" use="required" type="eat:DaoType">
 			<xs:annotation>
@@ -512,6 +586,32 @@ Source: EAD3</xs:documentation>
 			<xs:element name="identifiers" type="eat:IdentifierList" minOccurs="1" maxOccurs="1"/>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="EntityInfo">
+		<xs:annotation>
+			<xs:documentation>Brief info about access point / archival entity</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="entityId" type="eat:Identifier" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="uuid" type="eat:Uuid" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="prefName" type="eat:StringLong" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="briefDesc" type="eat:StringLong" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Stručná charakteristika</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="entityClass" type="eat:Identifier" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="EntityUpdates">
+		<xs:annotation>
+			<xs:documentation>List of updates Aps</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="fromTrans" type="eat:Identifier" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="toTrans" type="eat:Identifier" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="entityIds" type="eat:IdentifierList" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="ErrorDescription">
 		<xs:annotation>
 			<xs:documentation>Type for failure description</xs:documentation>
@@ -583,6 +683,42 @@ Source: EAD3</xs:documentation>
 			<xs:element name="folder" type="eat:Folder" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="Fund">
+		<xs:sequence>
+			<xs:element name="id" type="eat:Identifier" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Database ID of fund</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="uuid" type="eat:Uuid" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="fundName" type="eat:Label" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="rulesetCode" type="eat:Identifier" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="institutionIdentifier" type="eat:Identifier" minOccurs="1" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Institution identifier, typicaly UUID or other ID</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="internalCode" type="eat:Identifier" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="dateRange" type="eat:String250" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="mark" type="eat:String250" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="fundNumber" type="eat:String250" minOccurs="0" maxOccurs="1">
+				<xs:annotation>
+					<xs:documentation>Fund number, logical fund number, usually INT
+
+This is fund identifier inside one institution/archive</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FundIdentifiers">
+		<xs:annotation>
+			<xs:documentation>Fond identifiers</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="id" type="eat:Identifier" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="uuid" type="eat:Uuid" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
 	<xs:complexType name="FundSection">
 		<xs:sequence>
 			<xs:element name="fundId" type="eat:Identifier" minOccurs="1" maxOccurs="1"/>
@@ -601,6 +737,67 @@ Source: EAD3</xs:documentation>
 		<xs:sequence>
 			<xs:element name="identifier" type="eat:Identifier" minOccurs="0" maxOccurs="unbounded"/>
 		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ImportDisposition">
+		<xs:annotation>
+			<xs:documentation>Dispositions for import</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="primaryScope" type="eat:String250" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="conflictResolution" type="eat:EntityConflictResolution" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ImportRequest">
+		<xs:annotation>
+			<xs:documentation>Import request.
+
+Each import request has unique identifier - requestId.
+Format of imported data is determined by value dataFormat. 
+
+Supported data formats:
+	- http://cam.tacr.cz/2019
+	- http://elza.tacr.cz/schema/v2</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="requestId" type="eat:Uuid" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="externalSystem" type="eat:String250" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="dataFormat" type="eat:String250" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="disposition" type="eat:ImportDisposition" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="binData" type="eat:BinaryData" xmime:expectedContentTypes="application/octet-stream" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ItemEnum">
+		<xs:sequence/>
+		<xs:attributeGroup ref="eat:ItemAttrGroup"/>
+	</xs:complexType>
+	<xs:complexType name="ItemLong">
+		<xs:simpleContent>
+			<xs:extension base="eat:Long">
+				<xs:attributeGroup ref="eat:ItemAttrGroup"/>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="Items">
+		<xs:annotation>
+			<xs:documentation>Collection of items</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:choice minOccurs="1" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Item</xs:documentation>
+				</xs:annotation>
+				<xs:element name="str" type="eat:ItemString" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="long" type="eat:ItemLong" minOccurs="1" maxOccurs="1"/>
+				<xs:element name="enm" type="eat:ItemEnum" minOccurs="1" maxOccurs="1"/>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ItemString">
+		<xs:simpleContent>
+			<xs:extension base="eat:StringLong">
+				<xs:attributeGroup ref="eat:ItemAttrGroup"/>
+			</xs:extension>
+		</xs:simpleContent>
 	</xs:complexType>
 	<xs:complexType name="Materials">
 		<xs:annotation>
@@ -674,6 +871,52 @@ Source: EAD3</xs:documentation>
 				<xs:documentation>identifier of the revoked request in the system where request was created</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="RequestStatusInfo">
+		<xs:sequence>
+			<xs:element name="status" type="eat:RequestStatus" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="errorDetail" type="eat:StringLong" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SearchEntity">
+		<xs:sequence>
+			<xs:element name="entityId" type="eat:Identifier" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="items" type="eat:Items" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SearchEntityResult">
+		<xs:sequence>
+			<xs:element name="entityInfo" type="eat:EntityInfo" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SearchEntityUpdates">
+		<xs:annotation>
+			<xs:documentation>Search access point updates</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="fromTrans" type="eat:Identifier" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="SetUserState">
+		<xs:sequence>
+			<xs:element name="username" type="eat:Username" minOccurs="1" maxOccurs="1"/>
+			<xs:element name="state" type="eat:UserState" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="StructuredObject">
+		<xs:sequence>
+			<xs:element name="id" type="eat:Identifier" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="uuid" type="eat:Uuid" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="type" type="eat:Identifier" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="fund" type="eat:FundIdentifiers" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="items" type="eat:Items" minOccurs="1" maxOccurs="1"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="StructuredObjectIdentifiers">
+		<xs:sequence>
+			<xs:element name="id" type="eat:Identifier" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="uuid" type="eat:Uuid" minOccurs="0" maxOccurs="1"/>
+		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="TransferRequest">
 		<xs:annotation>
@@ -764,6 +1007,15 @@ Source: METS, version 3.0</xs:documentation>
 				<xs:documentation>SIZE (long/O): Specifies the size in bytes of the associated file or wrapped content.</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="ItemAttrGroup">
+		<xs:attribute name="readOnly" use="optional" type="xs:boolean">
+			<xs:annotation>
+				<xs:documentation>Flag if item is readonly</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="spec" use="optional" type="xs:string"/>
+		<xs:attribute name="type" use="required" type="xs:string"/>
 	</xs:attributeGroup>
 	<xs:attributeGroup name="MixCoreGroup">
 		<xs:annotation>

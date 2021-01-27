@@ -327,7 +327,7 @@ public class DaoImportService {
             //bs.setDescription(context,null);
             bs.setSequenceID(sequence);
 
-            String mimeType = droidService.getMimeType(file, protocol);
+            String mimeType = null; //droidService.getMimeType(file, protocol);
             BitstreamFormat bf;
             if (mimeType == null) {
                 bf = bitstreamFormatService.guessFormat(context, bs);

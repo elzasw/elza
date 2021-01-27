@@ -17,50 +17,56 @@ import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
 import org.springframework.stereotype.Service;
 
-import uk.gov.nationalarchives.droid.core.BinarySignatureIdentifier;
-import uk.gov.nationalarchives.droid.core.SignatureParseException;
-import uk.gov.nationalarchives.droid.core.interfaces.IdentificationRequest;
-import uk.gov.nationalarchives.droid.core.interfaces.IdentificationResult;
-import uk.gov.nationalarchives.droid.core.interfaces.IdentificationResultCollection;
-import uk.gov.nationalarchives.droid.core.interfaces.RequestIdentifier;
-import uk.gov.nationalarchives.droid.core.interfaces.resource.FileSystemIdentificationRequest;
-import uk.gov.nationalarchives.droid.core.interfaces.resource.RequestMetaData;
+/*
+ * import uk.gov.nationalarchives.droid.core.BinarySignatureIdentifier;
+ * import uk.gov.nationalarchives.droid.core.SignatureParseException;
+ * import uk.gov.nationalarchives.droid.core.interfaces.IdentificationRequest;
+ * import uk.gov.nationalarchives.droid.core.interfaces.IdentificationResult;
+ * import
+ * uk.gov.nationalarchives.droid.core.interfaces.IdentificationResultCollection;
+ * import uk.gov.nationalarchives.droid.core.interfaces.RequestIdentifier;
+ * import uk.gov.nationalarchives.droid.core.interfaces.resource.
+ * FileSystemIdentificationRequest;
+ * import
+ * uk.gov.nationalarchives.droid.core.interfaces.resource.RequestMetaData;
+ */
 
 @Service
 public class DroidService {
 
     private static Logger log = Logger.getLogger(DroidService.class);
 
-    private BinarySignatureIdentifier droidCore;
+    //private BinarySignatureIdentifier droidCore;
 
     private ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
 
     public String getMimeType(final Path file, final BufferedWriter protocol) throws IOException {
         String mimeType = null;
 
+        /*
         if (droidCore == null) {
             log.warn("Droid nebyl inicializován a proto nejde určite MimeType.");
             return  mimeType;
         }
-
+        
         try {
             File f = file.toFile();
             RequestMetaData metadata = new RequestMetaData(f.length(), f.lastModified(), f.getAbsolutePath());
-
+        
             URI uri = new URI("");
             RequestIdentifier identifier = new RequestIdentifier(uri);
             IdentificationRequest request = new FileSystemIdentificationRequest(metadata, identifier);
             request.open(f);
             IdentificationResultCollection identificationResultCollection = droidCore.matchBinarySignatures(request);
             request.close();
-
+        
             List<IdentificationResult> results = identificationResultCollection.getResults();
             if (results.isEmpty()) {
                 protocol.write("Nepodařilo se zjistit MimeType souboru " + file.toAbsolutePath());
                 protocol.newLine();
             } else {
                 mimeType = results.iterator().next().getMimeType();
-
+        
                 protocol.write("MimeType souboru " + file.toAbsolutePath() + " byl určen jako " + mimeType);
                 protocol.newLine();
             }
@@ -68,11 +74,12 @@ public class DroidService {
             protocol.write("Nastala chyba při zjišťování MimeType souboru " + file.toAbsolutePath());
             protocol.write(ExceptionUtils.getStackTrace(e));
             protocol.newLine();
-        }
+        }*/
 
         return mimeType;
     }
 
+    /*
     @PostConstruct
     private void init() {
         String signatureFile = configurationService.getProperty("elza.droid.signatureFile");
@@ -87,5 +94,5 @@ public class DroidService {
                 log.error("Chyba při inicializaci DROID.", e);
             }
         }
-    }
+    }*/
 }

@@ -42,6 +42,49 @@
             </resource>
         </resources>
         <plugins>
+                    <plugin>
+                        <groupId>org.apache.cxf</groupId>
+                        <artifactId>cxf-codegen-plugin</artifactId>
+                        <version>${cxf.version}</version>
+                        <executions>
+                            <execution>
+                                <id>generate-sources</id>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <sourceRoot>${project.build.directory}/generated/cxf</sourceRoot>
+                                    <defaultOptions>
+                                        <exceptionSuper>java.lang.RuntimeException</exceptionSuper>
+                                        <!-- Note: extraargs cannot be specified inside defaultOptions due to bug in plugin -->
+                                    </defaultOptions>
+                                    <wsdlOptions>
+                                        <wsdlOption>
+                                            <wsdl>
+                                                ${basedir}/src/main/resources/wsdl/elza-core-v1.wsdl
+                                            </wsdl>
+                                            <extraargs>
+                                                <extraarg>-autoNameResolution</extraarg>
+<!--                                                <extraarg>-p</extraarg>
+                                                <extraarg>${basedir}/src/main/java/cz/tacr/elza/ws</extraarg>-->
+                                            </extraargs>
+                                        </wsdlOption>
+                                        <wsdlOption>
+                                            <wsdl>
+                                                ${basedir}/src/main/resources/wsdl/elza-dao-service-v1.wsdl
+                                            </wsdl>
+                                            <extraargs>
+                                                <extraarg>-autoNameResolution</extraarg>
+<!--                                                <extraarg>-p</extraarg>
+                                                <extraarg>${basedir}/src/main/java/cz/tacr/elza/ws</extraarg>-->
+                                            </extraargs>
+                                        </wsdlOption>
+                                    </wsdlOptions>
+                                </configuration>
+                                <goals>
+                                    <goal>wsdl2java</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
@@ -51,18 +94,37 @@
                     <filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>com.mycila</groupId>-->
-<!--                <artifactId>license-maven-plugin</artifactId>-->
-<!--                <configuration>-->
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
 <!--                    &lt;!&ndash;Exclude license check for XMLUI files which don't need it&ndash;&gt;-->
-<!--                    <excludes>-->
+                    <excludes>
+                      <exclude>**</exclude>
 <!--                        <exclude>**/static/reports/spin.js</exclude>-->
 <!--                        <exclude>**/static/reports/README.md</exclude>-->
 <!--                        <exclude>**/*.xsd</exclude>-->
-<!--                    </excludes>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
+                    </excludes>
+                </configuration>
+            </plugin>
+<!--            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>enforce-versions</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <DependencyConvergence />
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+            </plugin>-->
         </plugins>
     </build>
 
@@ -86,6 +148,10 @@
                         <groupId>org.codehaus.woodstox</groupId>
                         <artifactId>woodstox-core-asl</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.woodstox</groupId>
+                        <artifactId>stax2-api</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -108,70 +174,6 @@
                 </exclusions>
             </dependency>
             <!-- END - CXF -->
-            <!-- Droid a JHove -->
-            <dependency>
-                <groupId>org.openpreservation.jhove</groupId>
-                <artifactId>jhove-core</artifactId>
-                <version>1.24.2</version>
-            </dependency>
-<!--            <dependency>
-                <groupId>org.openpreservation.jhove</groupId>
-                <artifactId>jhove-modules</artifactId>
-                <version>1.20.1</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.openpreservation.jhove</groupId>
-                        <artifactId>jhove-core</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>-->
-            <dependency>
-                <groupId>org.openpreservation.jhove</groupId>
-                <artifactId>jhove-ext-modules</artifactId>
-                <version>1.24.2</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jwat</groupId>
-                        <artifactId>jwat-warc</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jwat</groupId>
-                        <artifactId>jwat-gzip</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jwat</groupId>
-                        <artifactId>jwat-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jwat</groupId>
-                        <artifactId>jwat-archive-common</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.openpreservation.jhove</groupId>
-                        <artifactId>jhove-core</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>uk.gov.nationalarchives</groupId>
-                <artifactId>droid-core</artifactId>
-                <version>6.5</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.tukaani</groupId>
-                        <artifactId>xz</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.commons</groupId>
-                        <artifactId>commons-compress</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>joda-time</groupId>
-                        <artifactId>joda-time</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <!-- END Droid a JHove -->
         </dependencies>
     </dependencyManagement>
 
@@ -388,39 +390,7 @@
             <artifactId>cxf-rt-frontend-jaxws</artifactId>
         </dependency>
         <!-- END - CXF -->
-        <!-- Droid a JHove -->
-        <dependency>
-            <groupId>org.openpreservation.jhove</groupId>
-            <artifactId>jhove-core</artifactId>
-        </dependency>
-<!--        <dependency>
-            <groupId>org.openpreservation.jhove</groupId>
-            <artifactId>jhove-modules</artifactId>
-        </dependency>-->
-        <dependency>
-            <groupId>org.openpreservation.jhove</groupId>
-            <artifactId>jhove-ext-modules</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>uk.gov.nationalarchives</groupId>
-            <artifactId>droid-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.dspace</groupId>
-            <artifactId>dspace-xmlui</artifactId>
-            <version>${dspace.version}</version>
-            <type>jar</type>
-            <classifier>classes</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.dspace</groupId>
-            <artifactId>dspace-xmlui</artifactId>
-            <version>${dspace.version}</version>
-            <type>war</type>
-        </dependency>
-        <!-- END Droid a JHove -->
     </dependencies>
-
     <profiles>
         <profile>
             <id>generate-Elza-wsdl</id>
@@ -447,8 +417,8 @@
                                             </wsdl>
                                             <extraargs>
                                                 <extraarg>-autoNameResolution</extraarg>
-                                                <extraarg>-p</extraarg>
-                                                <extraarg>${basedir}/src/main/java/cz/tacr/elza/ws</extraarg>
+<!--                                                <extraarg>-p</extraarg>
+                                                <extraarg>${basedir}/src/main/java/cz/tacr/elza/ws</extraarg>-->
                                             </extraargs>
                                         </wsdlOption>
                                         <wsdlOption>
@@ -457,8 +427,8 @@
                                             </wsdl>
                                             <extraargs>
                                                 <extraarg>-autoNameResolution</extraarg>
-                                                <extraarg>-p</extraarg>
-                                                <extraarg>${basedir}/src/main/java/cz/tacr/elza/ws</extraarg>
+<!--                                                <extraarg>-p</extraarg>
+                                                <extraarg>${basedir}/src/main/java/cz/tacr/elza/ws</extraarg>-->
                                             </extraargs>
                                         </wsdlOption>
                                     </wsdlOptions>

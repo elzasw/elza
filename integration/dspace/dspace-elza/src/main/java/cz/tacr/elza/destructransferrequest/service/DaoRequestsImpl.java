@@ -270,7 +270,7 @@ public class DaoRequestsImpl implements DaoRequests{
         log.debug("Spuštěna metoda DaosSyncResponse.");
         DaosSyncResponse daosSyncResponse = new DaosSyncResponse();
 
-        List<DaoSyncRequest> daoSyncRequestList = daosSyncRequest.getDaoSyncRequest();
+        List<DaoSyncRequest> daoSyncRequestList = daosSyncRequest.getDaoSyncRequests();
         if (daoSyncRequestList.isEmpty()) {
             return daosSyncResponse;
         }
@@ -329,7 +329,7 @@ public class DaoRequestsImpl implements DaoRequests{
                                 throw new ProcessingException("Chyba při vytváření souboru z bitstreamu: " + e.getMessage());
                             }
                         }
-                        dao.setFileGroup(fileGroup);
+                        dao.setFiles(fileGroup);
                         daoList.add(dao);
                     }
                 }
@@ -345,8 +345,8 @@ public class DaoRequestsImpl implements DaoRequests{
             throw new ProcessingException("Chyba při synchronizaci dao.", e);
         }
 
-        daosSyncResponse.setDaoset(daoset);
-        daosSyncResponse.setNonexistingDaos(nonexistingDaos);
+        daosSyncResponse.setDaos(daoset);
+        daosSyncResponse.setNonExistDaos(nonexistingDaos);
 
         log.info("Ukončena metoda DaosSyncResponse");
         return daosSyncResponse;
