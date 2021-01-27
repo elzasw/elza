@@ -209,6 +209,12 @@
 		.addValueWithTitle("ZP2015_LANGUAGE")
 		.addValueWithTitle("ZP2015_STORAGE_COND")
 		.addValueWithTitle("ZP2015_SIZE")
+		.addValueWithTitle("ZP2015_SIZE_WIDTH")
+		.addValueWithTitle("ZP2015_SIZE_HEIGHT")
+		.addValueWithTitle("ZP2015_SIZE_DEPTH")
+		.addValueWithTitle("ZP2015_SIZE_UNITS")		
+		.addValueWithTitle("ZP2015_WEIGHT")
+		.addValueWithTitle("ZP2015_AMOUNT")
 		.addValueWithTitle("ZP2015_SCALE")
 		.addValueWithTitle("ZP2015_POSITION")
 		.addValueWithTitle("ZP2015_ORIENTATION")
@@ -283,6 +289,12 @@
 		.addValueWithTitle("ZP2015_UNIT_CURRENT_STATUS")
 		.addValueWithTitle("ZP2015_STORAGE_COND")
 		.addValueWithTitle("ZP2015_SIZE")
+		.addValueWithTitle("ZP2015_SIZE_WIDTH")
+		.addValueWithTitle("ZP2015_SIZE_HEIGHT")
+		.addValueWithTitle("ZP2015_SIZE_DEPTH")
+		.addValueWithTitle("ZP2015_SIZE_UNITS")		
+		.addValueWithTitle("ZP2015_WEIGHT")
+		.addValueWithTitle("ZP2015_AMOUNT")
 		.addValueWithTitle("ZP2015_ITEM_MAT")
 		.addValueWithTitle("ZP2015_LANGUAGE")
 		.addValueWithTitle("ZP2015_RELATED_UNITS")
@@ -324,6 +336,12 @@
 		.addValueWithTitle("ZP2015_UNIT_CURRENT_STATUS")
 		.addValueWithTitle("ZP2015_STORAGE_COND")
 		.addValueWithTitle("ZP2015_SIZE")
+		.addValueWithTitle("ZP2015_SIZE_WIDTH")
+		.addValueWithTitle("ZP2015_SIZE_HEIGHT")
+		.addValueWithTitle("ZP2015_SIZE_DEPTH")
+		.addValueWithTitle("ZP2015_SIZE_UNITS")		
+		.addValueWithTitle("ZP2015_WEIGHT")
+		.addValueWithTitle("ZP2015_AMOUNT")
 		.addValueWithTitle("ZP2015_ITEM_MAT")
 		.addValueWithTitle("ZP2015_LANGUAGE")
 		.addValueWithTitle("ZP2015_RELATED_UNITS")
@@ -443,6 +461,13 @@
 		.addValueWithTitle("ZP2015_UNIT_ACCESS")
 		.addValueWithTitle("ZP2015_UNIT_INFO_RIGHTS")
 		.addValueWithTitle("ZP2015_UNIT_COPY_RIGHTS")
+		.addValueWithTitle("ZP2015_SIZE")
+		.addValueWithTitle("ZP2015_SIZE_WIDTH")
+		.addValueWithTitle("ZP2015_SIZE_HEIGHT")
+		.addValueWithTitle("ZP2015_SIZE_DEPTH")
+		.addValueWithTitle("ZP2015_SIZE_UNITS")
+		.addValueWithTitle("ZP2015_WEIGHT")
+		.addValueWithTitle("ZP2015_AMOUNT")
 		.addValueWithTitle("ZP2015_IMPRINT_COUNT")
 		.addValueWithTitle("ZP2015_EXERQUE")
 		.addValueWithTitle("ZP2015_PAINTING_CHAR")
@@ -599,6 +624,12 @@
 					"ZP2015_UNIT_CURRENT_STATUS",
 					"ZP2015_STORAGE_COND",
 					"ZP2015_SIZE",
+					"ZP2015_SIZE_WIDTH",
+					"ZP2015_SIZE_HEIGHT",
+					"ZP2015_SIZE_DEPTH",
+					"ZP2015_SIZE_UNITS",
+					"ZP2015_WEIGHT",
+					"ZP2015_AMOUNT",					
 					"ZP2015_ITEM_MAT",
 					"ZP2015_LANGUAGE",
 					"ZP2015_RELATED_UNITS",
@@ -689,6 +720,12 @@
 					"ZP2015_UNIT_CURRENT_STATUS",
 					"ZP2015_STORAGE_COND",
 					"ZP2015_SIZE",
+					"ZP2015_SIZE_WIDTH",
+					"ZP2015_SIZE_HEIGHT",
+					"ZP2015_SIZE_DEPTH",
+					"ZP2015_SIZE_UNITS",
+					"ZP2015_WEIGHT",
+					"ZP2015_AMOUNT",
 					"ZP2015_ITEM_MAT",
 					"ZP2015_LANGUAGE",
 					"ZP2015_RELATED_UNITS",
