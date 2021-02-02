@@ -60,8 +60,9 @@ public class ElzaWebApp {
 
     @Bean
     @ConditionalOnProperty(prefix = "elza.debug.h2", name = "console", havingValue = "true")
-    public ServletRegistrationBean h2servletRegistration() {
-        ServletRegistrationBean registration = new ServletRegistrationBean(new WebServlet());
+    public ServletRegistrationBean<WebServlet> h2servletRegistration() {
+        logger.info("Initializing H2 Console, listening on /console (elza.debug.h2=true)");
+        ServletRegistrationBean<WebServlet> registration = new ServletRegistrationBean<>(new WebServlet());
         registration.addUrlMappings("/console/*");
         return registration;
     }
@@ -106,6 +107,7 @@ public class ElzaWebApp {
     @Bean
     @ConditionalOnProperty(prefix = "elza.security", name = "acceptForwardedHeaders", havingValue = "true")
     public Filter forwardedHeaderFilter() {
+        logger.info("Initializing ForwardedHeaderFilter (acceptForwardedHeaders=true)");
         return new ForwardedHeaderFilter();
     }
 
