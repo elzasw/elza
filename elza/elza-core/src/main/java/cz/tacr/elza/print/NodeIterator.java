@@ -1,16 +1,21 @@
 package cz.tacr.elza.print;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.apache.commons.lang3.Validate;
 
 /**
  * Implementace iterátoru s cache pro načítání bloku dat.
  */
-public class NodeIterator implements Iterator<Node> {
+public class NodeIterator implements Iterator<Node>, NodeProvider {
 
     private final NodeLoader nodeLoader;
 
@@ -21,6 +26,13 @@ public class NodeIterator implements Iterator<Node> {
 
     // loaded nodes for current window
     private List<Node> nodes;
+
+    /**
+     * Map of active Nodes
+     * 
+     * Map contain nodes with their parents to the root
+     */
+    private Map<NodeId, Node> activeNodesMap = new HashMap<>();
 
     // position in current window
     private int windowIndex;
@@ -62,6 +74,7 @@ public class NodeIterator implements Iterator<Node> {
 
         if (windowIndex >= windowSize) {
             nodes = nodeLoader.loadNodes(getNextIds());
+            updateActiveNodesMap();
             windowIndex = 0;
         }
 
@@ -70,6 +83,33 @@ public class NodeIterator implements Iterator<Node> {
 
         windowIndex++;
         return node;
+    }
+
+    private void updateActiveNodesMap() {
+        Set<NodeId> oldNodes = new HashSet<>(activeNodesMap.keySet());
+
+        for (Node node : nodes) {
+            node.setNodeProvider(this);
+            // place this node
+            activeNodesMap.put(node.getNodeId(), node);
+            // try to locate parents
+            NodeId parentNodeId = node.getParent();
+            while (parentNodeId != null) {
+                // if exists in oldNodes -> remove it                
+                if (oldNodes.remove(parentNodeId)) {
+                    // try another parent
+                    parentNodeId = parentNodeId.getParent();
+                } else {
+                    parentNodeId = null;
+                }
+            }
+        }
+
+        // remove untouched old nodes  
+        for (NodeId oldNode : oldNodes) {
+            activeNodesMap.remove(oldNode);
+        }
+
     }
 
     /**
@@ -83,5 +123,18 @@ public class NodeIterator implements Iterator<Node> {
             i++;
         }
         return nodeIds;
+    }
+
+    @Override
+    public Node getNode(NodeId nodeId) {
+        Node node = activeNodesMap.get(nodeId);
+        if (node == null) {
+            // node not found, try to use load
+            List<Node> tmpNodes = this.nodeLoader.loadNodes(Collections.singletonList(nodeId));
+            if (tmpNodes.size() > 0) {
+                node = tmpNodes.get(0);
+            }
+        }
+        return node;
     }
 }
