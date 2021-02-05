@@ -2,10 +2,14 @@ package cz.tacr.elza.service.cam;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -113,22 +117,34 @@ abstract public class CamXmlBuilder {
     protected List<PartXml> createPartList(Collection<ApPart> partList,
                                            Map<Integer, List<ApItem>> itemMap,
                                            String externalSystemTypeCode) {
-        List<PartXml> partXmlList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(partList)) {
-            for (ApPart part : partList) {
-                List<ApItem> partItems = itemMap.get(part.getPartId());
-                partItems = filterOutItemsWithoutExtSysMapping(partItems, externalSystemTypeCode);
-                if (CollectionUtils.isEmpty(partItems)) {
-                    continue;
-                }
-                PartXml partXml = createPart(part, partItems, externalSystemTypeCode);
-                if (partXml == null) {
-                    continue;
-                }
-                partXmlList.add(partXml);
-            }
+        if (CollectionUtils.isEmpty(partList)) {
+            return Collections.emptyList();
         }
-        return partXmlList;
+
+        // collection of removed parts from export
+        Set<String> ignoredParts = new HashSet<>();
+
+        List<PartXml> partXmlList = new ArrayList<>();
+        for (ApPart part : partList) {
+            List<ApItem> srcPartItems = itemMap.get(part.getPartId());
+
+            // filter parts
+            List<ApItem> partItems = filterOutItemsWithoutExtSysMapping(srcPartItems, externalSystemTypeCode);
+            if (CollectionUtils.isNotEmpty(srcPartItems) && CollectionUtils.isEmpty(partItems)) {
+                ignoredParts.add(getUuidForPart(part));
+                continue;
+            }
+            PartXml partXml = createPart(part, partItems, externalSystemTypeCode);
+            if (partXml == null) {
+                continue;
+            }
+            partXmlList.add(partXml);
+        }
+        
+        // filter subparts
+        return partXmlList.stream()
+                .filter(p -> p.getPrnt() == null || (!ignoredParts.contains(p.getPrnt().getValue())))
+                .collect(Collectors.toList());
     }
 
     private PartXml createPart(ApPart apPart, List<ApItem> partItems, String externalSystemTypeCode) {
