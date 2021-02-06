@@ -123,30 +123,71 @@ abstract public class CamXmlBuilder {
 
         // collection of removed parts from export
         Set<String> ignoredParts = new HashSet<>();
+        Map<String, Integer> subpartCounter = new HashMap<>();
 
         List<PartXml> partXmlList = new ArrayList<>();
         for (ApPart part : partList) {
             List<ApItem> srcPartItems = itemMap.get(part.getPartId());
 
-            // filter parts
+            // filter parts without mapping
             List<ApItem> partItems = filterOutItemsWithoutExtSysMapping(srcPartItems, externalSystemTypeCode);
             if (CollectionUtils.isNotEmpty(srcPartItems) && CollectionUtils.isEmpty(partItems)) {
                 ignoredParts.add(getUuidForPart(part));
                 continue;
             }
             PartXml partXml = createPart(part, partItems, externalSystemTypeCode);
-            if (partXml == null) {
-                continue;
-            }
             partXmlList.add(partXml);
+            if (partXml.getPrnt() != null) {
+                int cnt = subpartCounter.getOrDefault(partXml.getPrnt().getValue(), 0);
+                cnt++;
+                subpartCounter.put(partXml.getPrnt().getValue(), cnt++);
+            }
         }
-        
-        // filter subparts
-        return partXmlList.stream()
-                .filter(p -> p.getPrnt() == null || (!ignoredParts.contains(p.getPrnt().getValue())))
-                .collect(Collectors.toList());
+
+        // do filtering
+        boolean modified;
+        do {
+            int size = partXmlList.size();
+            partXmlList = partXmlList.stream()
+                    .filter(p -> {
+                        // filter ignored subparts
+                        if (p.getPrnt() != null && ignoredParts.contains(p.getPrnt().getValue())) {
+                            ignoredParts.add(p.getPid().getValue());
+                            return false;
+                        }
+                        // filter empty parts without subparts
+                        if (p.getItms() == null || p.getItms().getItems().size() == 0) {
+                            // no items, we have to check if has subpart
+                            Integer cnt = subpartCounter.getOrDefault(p.getPid().getValue(), 0);
+                            if (cnt == 0) {
+                                // decrement parent counter
+                                if (p.getPrnt() != null) {
+                                    cnt = subpartCounter.getOrDefault(p.getPrnt().getValue(), 0);
+                                    if (cnt > 0) {
+                                        cnt--;
+                                        subpartCounter.put(p.getPrnt().getValue(), cnt);
+                                    }
+                                }
+                                return false;
+                            }
+                        }
+                        return true;
+                    })
+                    .collect(Collectors.toList());
+            modified = (size > partXmlList.size());
+        } while (modified);
+
+        return partXmlList;
     }
 
+    /**
+     * Create part
+     * 
+     * @param apPart
+     * @param partItems
+     * @param externalSystemTypeCode
+     * @return
+     */
     private PartXml createPart(ApPart apPart, List<ApItem> partItems, String externalSystemTypeCode) {
         Validate.isTrue(partItems.size() > 0, "Empty part list, entityId: {}", apPart.getAccessPointId());
 
@@ -164,12 +205,6 @@ abstract public class CamXmlBuilder {
         onPartCreated(apPart, uuid);
 
         ItemsXml itemsXml = createItems(apPart, partItems, externalSystemTypeCode);
-
-        // check if anything to export
-        if (itemsXml.getItems().size() == 0) {
-            return null;
-        }
-
         part.setItms(itemsXml);
         return part;
     }
