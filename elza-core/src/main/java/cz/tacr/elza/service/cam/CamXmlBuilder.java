@@ -207,7 +207,9 @@ abstract public class CamXmlBuilder {
     private PartXml createPart(ApPart apPart, List<ApItem> partItems, String externalSystemTypeCode) {
         Validate.isTrue(partItems.size() > 0, "Empty part list, entityId: {}", apPart.getAccessPointId());
 
-        String uuid = UUID.randomUUID().toString();
+        String uuid = getUuidForPart(apPart);
+
+        log.debug("Creating part, partId: {}, partUuid: {}", apPart.getPartId(), uuid);
 
         String parentUuid;
         if (apPart.getParentPart() != null) {
@@ -263,7 +265,7 @@ abstract public class CamXmlBuilder {
     }
 
     protected void onPartCreated(ApPart apPart, String uuid) {
-        // TODO Auto-generated method stub
+        // nop
 
     }
 
