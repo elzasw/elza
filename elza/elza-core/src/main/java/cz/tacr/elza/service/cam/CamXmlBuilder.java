@@ -16,6 +16,8 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.cam.schema.cam.ItemsXml;
 import cz.tacr.cam.schema.cam.NewItemsXml;
@@ -38,6 +40,8 @@ import cz.tacr.elza.service.cam.CamXmlFactory.EntityRefHandler;
  * This builder will create XML for one binding
  */
 abstract public class CamXmlBuilder {
+
+    private static final Logger log = LoggerFactory.getLogger(CamXmlBuilder.class);
 
     protected final StaticDataProvider sdp;
     protected final ApAccessPoint accessPoint;
@@ -132,11 +136,17 @@ abstract public class CamXmlBuilder {
             // filter parts without mapping
             List<ApItem> partItems = filterOutItemsWithoutExtSysMapping(srcPartItems, externalSystemTypeCode);
             if (CollectionUtils.isNotEmpty(srcPartItems) && CollectionUtils.isEmpty(partItems)) {
-                ignoredParts.add(getUuidForPart(part));
+                String partUuid = getUuidForPart(part);
+                log.debug("Ignoring part, missing mapping to external system, partId={}, partUuid={}", part.getPartId(),
+                          partUuid);
+                ignoredParts.add(partUuid);
                 continue;
             }
             PartXml partXml = createPart(part, partItems, externalSystemTypeCode);
             partXmlList.add(partXml);
+
+            log.debug("Exporting part, partId={}, partUuid={}", part.getPartId(), partXml.getPid().getValue());
+
             if (partXml.getPrnt() != null) {
                 int cnt = subpartCounter.getOrDefault(partXml.getPrnt().getValue(), 0);
                 cnt++;
@@ -152,6 +162,10 @@ abstract public class CamXmlBuilder {
                     .filter(p -> {
                         // filter ignored subparts
                         if (p.getPrnt() != null && ignoredParts.contains(p.getPrnt().getValue())) {
+                            log.debug("Ignoring part, due to ignored parent part, parentPartUuid={}, partUuid={}",
+                                      p.getPrnt().getValue(),
+                                      p.getPid().getValue());
+
                             ignoredParts.add(p.getPid().getValue());
                             return false;
                         }
@@ -160,6 +174,8 @@ abstract public class CamXmlBuilder {
                             // no items, we have to check if has subpart
                             Integer cnt = subpartCounter.getOrDefault(p.getPid().getValue(), 0);
                             if (cnt == 0) {
+                                log.debug("Ignoring part, due missing items, partUuid={}",
+                                          p.getPid().getValue());
                                 // decrement parent counter
                                 if (p.getPrnt() != null) {
                                     cnt = subpartCounter.getOrDefault(p.getPrnt().getValue(), 0);
