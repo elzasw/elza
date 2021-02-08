@@ -125,8 +125,11 @@ abstract public class CamXmlBuilder {
             return Collections.emptyList();
         }
 
-        // collection of removed parts from export
-        Set<String> ignoredParts = new HashSet<>();
+        // collection of available parts for export
+        // note: if parent part is deleted, subparts may still be 
+        //       included in partList, these parts without parent
+        //       parts have to be filtered out.
+        Set<String> availableParts = new HashSet<>();
         Map<String, Integer> subpartCounter = new HashMap<>();
 
         List<PartXml> partXmlList = new ArrayList<>();
@@ -136,23 +139,18 @@ abstract public class CamXmlBuilder {
             // filter parts without mapping
             List<ApItem> partItems = filterOutItemsWithoutExtSysMapping(srcPartItems, externalSystemTypeCode);
             if (CollectionUtils.isNotEmpty(srcPartItems) && CollectionUtils.isEmpty(partItems)) {
-                String partUuid = getUuidForPart(part);
-                log.debug("Ignoring part, missing mapping to external system, partId={}, partUuid={}", part.getPartId(),
-                          partUuid);
-                ignoredParts.add(partUuid);
+                log.debug("Ignoring part, missing mapping to external system, partId={}", part.getPartId());
                 continue;
             }
             PartXml partXml = createPart(part, partItems, externalSystemTypeCode);
             partXmlList.add(partXml);
+            availableParts.add(partXml.getPid().getValue());
 
-            log.debug("Exporting part, partId={}, partUuid={}", part.getPartId(), partXml.getPid().getValue());
+            log.debug("Exporting part, partId={}, partUuid={}, parentPartId={}", part.getPartId(),
+                      partXml.getPid().getValue(),
+                      (part.getParentPart() != null) ? part.getParentPart().getPartId() : null);
 
             if (partXml.getPrnt() != null) {
-                log.debug("Parent info: partId={}, partUuid={}, parentPartId={}, parentPartUuid={}",
-                          part.getPartId(), partXml.getPid().getValue(),
-                          part.getParentPart().getPartId(),
-                          partXml.getPrnt().getValue());
-
                 int cnt = subpartCounter.getOrDefault(partXml.getPrnt().getValue(), 0);
                 cnt++;
                 subpartCounter.put(partXml.getPrnt().getValue(), cnt++);
@@ -166,12 +164,12 @@ abstract public class CamXmlBuilder {
             partXmlList = partXmlList.stream()
                     .filter(p -> {
                         // filter ignored subparts (parent part is already ignored)
-                        if (p.getPrnt() != null && ignoredParts.contains(p.getPrnt().getValue())) {
+                        if (p.getPrnt() != null && !availableParts.contains(p.getPrnt().getValue())) {
                             log.debug("Ignoring part, due to ignored parent part, parentPartUuid={}, partUuid={}",
                                       p.getPrnt().getValue(),
                                       p.getPid().getValue());
 
-                            ignoredParts.add(p.getPid().getValue());
+                            availableParts.remove(p.getPid().getValue());
                             return false;
                         }
                         // filter empty parts without subparts
@@ -181,6 +179,7 @@ abstract public class CamXmlBuilder {
                             if (cnt == 0) {
                                 log.debug("Ignoring part, due missing items, partUuid={}",
                                           p.getPid().getValue());
+                                availableParts.remove(p.getPid().getValue());
                                 // decrement parent counter
                                 if (p.getPrnt() != null) {
                                     cnt = subpartCounter.getOrDefault(p.getPrnt().getValue(), 0);
