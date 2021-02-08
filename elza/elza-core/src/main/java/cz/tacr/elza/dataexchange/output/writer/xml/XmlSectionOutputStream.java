@@ -177,6 +177,10 @@ class XmlSectionOutputStream implements SectionOutputStream {
 
         StructuredObject structObj = new StructuredObject();
         structObj.setId(Integer.toString(structObjInfo.getId()));
+        structObj.setAsgn(structObjInfo.getAssignable());
+        structObj.setUuid(structObjInfo.getUuid());
+        structObj.setV(structObjInfo.getValue());
+        structObj.setCmpl(structObjInfo.getComplement());
 
         // convert description items references
         //TODO: gotzy convertItems(structObjInfo.getItems(), structObj.getDdOrDoOrDn());

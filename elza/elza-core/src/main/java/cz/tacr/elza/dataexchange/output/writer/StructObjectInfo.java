@@ -9,6 +9,14 @@ public interface StructObjectInfo {
 
     int getId();
 
+    public String getUuid();
+
+    public Boolean getAssignable();
+
+    public String getValue();
+
+    public String getComplement();
+
     RulStructuredType getStructType();
 
     Collection<ArrItem> getItems();
