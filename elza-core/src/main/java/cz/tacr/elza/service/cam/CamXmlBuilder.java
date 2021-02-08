@@ -148,6 +148,11 @@ abstract public class CamXmlBuilder {
             log.debug("Exporting part, partId={}, partUuid={}", part.getPartId(), partXml.getPid().getValue());
 
             if (partXml.getPrnt() != null) {
+                log.debug("Parent info: partId={}, partUuid={}, parentPartId={}, parentPartUuid={}",
+                          part.getPartId(), partXml.getPid().getValue(),
+                          part.getParentPart().getPartId(),
+                          partXml.getPrnt().getValue());
+
                 int cnt = subpartCounter.getOrDefault(partXml.getPrnt().getValue(), 0);
                 cnt++;
                 subpartCounter.put(partXml.getPrnt().getValue(), cnt++);
@@ -160,7 +165,7 @@ abstract public class CamXmlBuilder {
             int size = partXmlList.size();
             partXmlList = partXmlList.stream()
                     .filter(p -> {
-                        // filter ignored subparts
+                        // filter ignored subparts (parent part is already ignored)
                         if (p.getPrnt() != null && ignoredParts.contains(p.getPrnt().getValue())) {
                             log.debug("Ignoring part, due to ignored parent part, parentPartUuid={}, partUuid={}",
                                       p.getPrnt().getValue(),

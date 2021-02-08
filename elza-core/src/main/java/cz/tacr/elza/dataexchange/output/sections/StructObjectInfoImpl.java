@@ -16,16 +16,50 @@ public class StructObjectInfoImpl implements StructObjectInfo {
 
     private final int id;
 
+    private final String uuid;
+    private final Boolean assignable;
+    private final String value;
+    private final String complement;
+
     private final RulStructuredType structType;
 
-    public StructObjectInfoImpl(int id, RulStructuredType structType) {
+    public StructObjectInfoImpl(int id,
+                                final String uuid,
+                                final Boolean assignable,
+                                final String value,
+                                final String complement,
+                                RulStructuredType structType) {
         this.id = id;
+        this.uuid = uuid;
+        this.assignable = assignable;
+        this.value = value;
+        this.complement = complement;
         this.structType = Validate.notNull(structType);
     }
 
     @Override
     public int getId() {
         return id;
+    }
+
+    @Override
+    public String getUuid() {
+        return uuid;
+    }
+
+    @Override
+    public Boolean getAssignable() {
+        return assignable;
+    }
+
+    @Override
+    public String getValue() {
+        return value;
+    }
+
+    @Override
+    public String getComplement() {
+        return complement;
     }
 
     @Override
