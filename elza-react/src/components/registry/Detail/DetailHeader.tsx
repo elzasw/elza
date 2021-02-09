@@ -146,16 +146,19 @@ const DetailHeader: FC<Props> = ({
                 <div className="bindings" key="bindings">
                     {item.externalIds.map(binding => {
                         const externalSystem = objectById(externalSystems, binding.externalSystemCode, 'code');
+                        const tooltip = ('id: '+binding.value)+(binding.extRevision?(', uuid: '+binding.extRevision):'');
                         return (
                             <div className="binding" key={'binding-' + binding.id}>
-                                <div className="info">
-                                    <span className="system">{externalSystem.name}</span>-{' '}
-                                    {i18n('ap.binding.external-id')}:{' '}
-                                    <span title={binding.extRevision} className="link">
+                                <div className="info" title={tooltip}>
+                                    {i18n('ap.binding.source')}{': '}
+                                    <span className="system">{externalSystem.name}{' '}</span>
+                                    {binding.value}
+                                    {/*
+                                    <span className="link">
                                         <a href={binding.detailUrl} target="_blank" rel="noopener noreferrer">
                                             {binding.value}
                                         </a>
-                                    </span>
+                                    </span>*/}
                                     , {i18n('ap.binding.extState.' + binding.extState)}
                                     {binding.extReplacedBy && (
                                         <span className="link">
