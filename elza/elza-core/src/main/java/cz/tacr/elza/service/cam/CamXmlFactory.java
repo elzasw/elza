@@ -151,6 +151,10 @@ public class CamXmlFactory {
         ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
 
         EntityRecordRefXml entityRecordRef = entityRefHandler.createEntityRef(dataRecordRef);
+        // check if we have link to external entity
+        if (entityRecordRef == null) {
+            return null;
+        }
 
         ItemEntityRefXml itemEntityRef = new ItemEntityRefXml();
         itemEntityRef.setRef(entityRecordRef);
