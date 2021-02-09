@@ -151,8 +151,7 @@ const DetailHeader: FC<Props> = ({
                             <div className="binding" key={'binding-' + binding.id}>
                                 <div className="info" title={tooltip}>
                                     {i18n('ap.binding.source')}{': '}
-                                    <span className="system">{externalSystem.name}{' '}</span>
-                                    {binding.value}
+                                    <span className="system">{externalSystem.name}</span>
                                     {/*
                                     <span className="link">
                                         <a href={binding.detailUrl} target="_blank" rel="noopener noreferrer">
