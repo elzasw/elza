@@ -1051,7 +1051,7 @@ var messages = {
     "ap.error.emptyValue": "Prázdná hodnota archivní entity",
     "ap.error.duplicateValue": "Hodnota již existuje",
 
-    "ap.binding.external-id": "Externí ID",
+    "ap.binding.source": "zdroj",
     "ap.binding.user": "upravil",
     "ap.binding.replaced": "nahrazená",
 
