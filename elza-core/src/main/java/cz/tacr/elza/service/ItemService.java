@@ -14,6 +14,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +59,8 @@ import cz.tacr.elza.repository.StructuredObjectRepository;
  */
 @Service
 public class ItemService {
+
+    private final Logger log = LoggerFactory.getLogger(ItemService.class);
 
     @Autowired
     private ItemRepository itemRepository;
@@ -176,7 +180,8 @@ public class ItemService {
      * @param descItem hodnota atributu
      */
     @Transactional(TxType.MANDATORY)
-    public void checkValidTypeAndSpec(@NotNull final StaticDataProvider sdp, @NotNull final ArrItem descItem) {
+    public void checkValidTypeAndSpec(@NotNull final StaticDataProvider sdp,
+                                      @NotNull final ArrItem descItem) {
 
         Integer itemTypeId = descItem.getItemTypeId();
         Validate.notNull(itemTypeId, "Invalid description item type: " + itemTypeId);
@@ -231,7 +236,9 @@ public class ItemService {
         }
     }
 
-    private void checkRecordRef(ArrDataRecordRef dataRecordRef, RulItemType rulItemType, RulItemSpec rulItemSpec) {
+    private void checkRecordRef(ArrDataRecordRef dataRecordRef,
+                                RulItemType rulItemType,
+                                RulItemSpec rulItemSpec) {
         ApAccessPoint apAccessPoint = dataRecordRef.getRecord();
         ApState apState = stateRepository.findLastByAccessPoint(apAccessPoint);
 
@@ -245,8 +252,21 @@ public class ItemService {
         Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
 
         if (!apTypeIdTree.contains(apState.getApTypeId())) {
-            throw new BusinessException("Hodnota neodpovídá typu rejstříku podle specifikace nebo typu",
-                    RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE).level(Level.WARNING);
+            log.error("Class of archival entity is incorrect, dataId: {}, accessPointId: {}, rulItemType: {}, rulItemSpec: {}, apTypeId: {}",
+                      dataRecordRef.getDataId(),
+                      apAccessPoint.getAccessPointId(),
+                      rulItemType.getCode(),
+                      (rulItemSpec != null) ? rulItemSpec.getCode() : null,
+                      "apTypeId", apState.getApTypeId());
+
+            throw new BusinessException("Třída přístupového bodu neodpovídá požadavkům prvku popisu.",
+                    RegistryCode.FOREIGN_ENTITY_INVALID_SUBTYPE)
+                            .set("dataId", dataRecordRef.getDataId())
+                            .set("accessPointId", apAccessPoint.getAccessPointId())
+                            .set("rulItemType", rulItemType.getCode())
+                            .set("rulItemSpec", (rulItemSpec != null) ? rulItemSpec.getCode() : null)
+                            .set("apTypeId", apState.getApTypeId())
+                            .level(Level.WARNING);
         }
     }
 
