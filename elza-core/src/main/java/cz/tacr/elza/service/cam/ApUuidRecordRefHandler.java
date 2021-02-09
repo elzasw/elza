@@ -1,5 +1,7 @@
 package cz.tacr.elza.service.cam;
 
+import java.util.UUID;
+
 import cz.tacr.cam.schema.cam.EntityRecordRefXml;
 import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -13,7 +15,16 @@ public class ApUuidRecordRefHandler implements EntityRefHandler {
         if (dataRecordRef.getBinding() == null) {
             uuid = dataRecordRef.getRecord().getUuid();
         } else {
-            uuid = dataRecordRef.getBinding().getValue();
+            String bindingValue = dataRecordRef.getBinding().getValue();
+            try {
+                // check if binding value is uuid
+                UUID.fromString(bindingValue);
+                uuid = bindingValue;
+            } catch (IllegalArgumentException e) {
+                // binding value is not UUID
+                // reference cannot be propageted
+                return null;
+            }
         }
 
         EntityRecordRefXml entityRecordRef = new EntityRecordRefXml();
