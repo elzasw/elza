@@ -155,7 +155,7 @@ class DataGridPagination extends AbstractReactComponent {
         const {onSetPageIndex, onChangePageSize, itemsCount, pageSize, pageIndex} = this.props;
         const pagesCount = getPagesCount(itemsCount, pageSize);
 
-        const options = [25, 50, 100, 250].map(val => (
+        const options = [25, 50, 100, 250, 1000].map(val => (
             <option key={val} value={val}>
                 {val}
             </option>
