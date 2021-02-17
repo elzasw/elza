@@ -2,8 +2,16 @@ package cz.tacr.elza.service.vo;
 
 import org.apache.commons.lang3.Validate;
 
+/**
+ * Zachyceni reference na jinou entitu
+ * 
+ *
+ */
 public class DataRef {
 
+    /**
+     * UUID odkazujiciho se item
+     */
     private String uuid;
 
     /**

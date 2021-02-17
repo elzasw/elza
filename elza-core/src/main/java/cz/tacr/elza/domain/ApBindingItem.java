@@ -27,6 +27,20 @@ public class ApBindingItem {
     @JoinColumn(name = "itemId")
     private ApItem item;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
+    @JoinColumn(name = "createChangeId", nullable = false)
+    private ApChange createChange;
+
+    @Column(nullable = false, updatable = false, insertable = false)
+    private Integer createChangeId;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
+    @JoinColumn(name = "deleteChangeId")
+    private ApChange deleteChange;
+
+    @Column(nullable = true, updatable = false, insertable = false)
+    private Integer deleteChangeId;
+
     public Integer getBindingItemId() {
         return bindingItemId;
     }
@@ -67,4 +81,29 @@ public class ApBindingItem {
         this.item = item;
     }
 
+    public ApChange getCreateChange() {
+        return createChange;
+    }
+
+    public void setCreateChange(ApChange createChange) {
+        this.createChange = createChange;
+        if (createChange == null) {
+            this.createChangeId = null;
+        } else {
+            this.createChangeId = createChange.getChangeId();
+        }
+    }
+
+    public ApChange getDeleteChange() {
+        return deleteChange;
+    }
+
+    public void setDeleteChange(ApChange deleteChange) {
+        this.deleteChange = deleteChange;
+        if (deleteChange == null) {
+            this.deleteChangeId = null;
+        } else {
+            this.deleteChangeId = deleteChange.getChangeId();
+        }
+    }
 }

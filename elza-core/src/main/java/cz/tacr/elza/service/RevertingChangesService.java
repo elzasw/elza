@@ -1333,7 +1333,9 @@ public class RevertingChangesService {
         if (fromChangeId != null) {
             query.setParameter("fromChangeId", fromChangeId);
         }
-        query.setMaxResults(maxSize);
+        if (maxSize > 0) {
+            query.setMaxResults(maxSize);
+        }
         query.setFirstResult(offset);
 
         return query.getResultList();
@@ -1381,7 +1383,9 @@ public class RevertingChangesService {
         if (loggedUser.getUserId() != null) {
             query.setParameter("userId", loggedUser.getUserId());
         }
-        query.setMaxResults(maxSize);
+        if (maxSize > 0) {
+            query.setMaxResults(maxSize);
+        }
 
         return ((Number) query.getSingleResult()).intValue();
     }

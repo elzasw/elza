@@ -85,10 +85,12 @@ public class GroupRepositoryImpl implements GroupRepositoryCustom {
             queryCount.where(conditionCount);
         }
 
-        List<UsrGroup> list = entityManager.createQuery(query)
-                .setFirstResult(firstResult)
-                .setMaxResults(maxResults)
-                .getResultList();
+        TypedQuery<UsrGroup> tq = entityManager.createQuery(query)
+                .setFirstResult(firstResult);
+        if (maxResults > 0) {
+            tq.setMaxResults(maxResults);
+        }
+        List<UsrGroup> list = tq.getResultList();
 		int count = entityManager.createQuery(queryCount).getSingleResult().intValue();
 
         return new FilteredResult<>(firstResult, maxResults, count, list);
