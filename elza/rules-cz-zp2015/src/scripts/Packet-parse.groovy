@@ -16,7 +16,7 @@ void parse() {
     Pattern pattern = Pattern.compile("(.*?)(\\d+)(.*)");
     Matcher matcher = pattern.matcher(value);
     if (matcher.find()) {
-        String prefix = matcher.group(1)
+        String prefix = matcher.group(1).trim()
         if (StringUtils.isNotEmpty(prefix)) {
             result.addItem("ZP2015_PACKET_PREFIX", prefix)
         }
@@ -27,7 +27,7 @@ void parse() {
             result.addItem("ZP2015_PACKET_NUMBER", packetNumber)
         }
 
-        String postfix = matcher.group(3)
+        String postfix = matcher.group(3).trim()
         if (StringUtils.isNotEmpty(postfix)) {
             result.addItem("ZP2015_PACKET_POSTFIX", postfix)
         }
