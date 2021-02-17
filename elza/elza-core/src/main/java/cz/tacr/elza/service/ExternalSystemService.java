@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.constraints.NotNull;
 
@@ -362,7 +363,7 @@ public class ExternalSystemService {
     }
 
     public ApBindingItem createApBindingItem(final ApBinding binding,
-                                             final String uuid,
+                                             ApChange apChange, final String uuid,
                                              final ApPart part,
                                              final ApItem item) {
         ApBindingItem apBindingItem = new ApBindingItem();
@@ -370,6 +371,7 @@ public class ExternalSystemService {
         apBindingItem.setValue(uuid);
         apBindingItem.setPart(part);
         apBindingItem.setItem(item);
+        apBindingItem.setCreateChange(apChange);
         return bindingItemRepository.save(apBindingItem);
     }
 
@@ -383,12 +385,8 @@ public class ExternalSystemService {
         return bindingRepository.findByScopeAndValueAndExternalSystem(scope, archiveEntityId, externalSystem);
     }
 
-    public ApBindingState findByBinding(final ApBinding binding) {
-        List<ApBindingState> bindingList = bindingStateRepository.findByBinding(binding);
-        if (CollectionUtils.isNotEmpty(bindingList)) {
-            return bindingList.get(0);
-        }
-        return null;
+    public Optional<ApBindingState> getBindingState(final ApBinding binding) {
+        return bindingStateRepository.findActiveByBinding(binding);
     }
 
     public ApBindingItem findByBindingAndUuid(ApBinding binding, String uuid) {

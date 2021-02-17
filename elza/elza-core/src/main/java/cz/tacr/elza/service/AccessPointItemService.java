@@ -78,6 +78,40 @@ public class AccessPointItemService {
     private final ApBindingRepository bindingRepository;
     private final AccessPointDataService accessPointDataService;
 
+    /**
+     * Record ref and its value
+     * 
+     *
+     */
+    public static class ReferencedEntities {
+        /**
+         * Data item referencing entity
+         */
+        ArrDataRecordRef data;
+
+        /**
+         * External entity identifier
+         * 
+         * Stored in binding
+         */
+        String entityIdentifier;
+
+        public ReferencedEntities(ArrDataRecordRef data, String entityIdentifier) {
+            super();
+            this.data = data;
+            this.entityIdentifier = entityIdentifier;
+        }
+
+        public ArrDataRecordRef getData() {
+            return data;
+        }
+
+        public String getEntityIdentifier() {
+            return entityIdentifier;
+        }
+
+    }
+
     public AccessPointItemService(final EntityManager em,
                                   final StaticDataService staticDataService,
                                   final ApItemRepository itemRepository,
@@ -248,7 +282,7 @@ public class AccessPointItemService {
                                     final List<ApItem> itemsDb,
                                     final ApChange change,
                                     final List<ApBindingItem> bindingItemList,
-                                    final List<DataRef> dataRefList,
+                                    final List<ReferencedEntities> dataRefList,
                                     final CreateFunction create) {
         StaticDataProvider sdp = staticDataService.getData();
         List<ArrData> dataToSave = new ArrayList<>(createItems.size());
@@ -302,7 +336,8 @@ public class AccessPointItemService {
             }
 
             ArrData data = createItem.createDataEntity(em);
-            setBindingArrDataRecordRef(data, createItem, bindingItemList, dataRefList);
+            // 11.2.2021 - PPy - zakomentovano, nejasny vyznam
+            // setBindingArrDataRecordRef(data, createItem, bindingItemList, dataRefList);
 
             ApItem itemCreated = create.apply(itemType.getEntity(), itemSpec, change, nextItemObjectId(), position);
             dataToSave.add(data);
@@ -312,21 +347,27 @@ public class AccessPointItemService {
             itemsDb.add(itemCreated);
             existsItems.add(itemCreated);
 
-            changeBindingItemsItems(createItem, itemCreated, bindingItemList);
+            changeBindingItemsItems(createItem.getId(), itemCreated, bindingItemList);
         }
         dataRepository.saveAll(dataToSave);
         return itemsCreated;
     }
 
-    private void setBindingArrDataRecordRef(ArrData data, ApItemVO createItem, List<ApBindingItem> bindingItemList, List<DataRef> dataRefList) {
+    private void setBindingArrDataRecordRef(ArrData data, ApItemVO createItem, List<ApBindingItem> bindingItemList,
+                                            List<ReferencedEntities> dataRefList) {
         if (data instanceof ArrDataRecordRef && createItem instanceof ApItemAccessPointRefVO
                 && CollectionUtils.isNotEmpty(bindingItemList) && dataRefList != null) {
+            ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
             ApItemAccessPointRefVO apItemAccessPointRefVO = (ApItemAccessPointRefVO) createItem;
 
+            // TOTO je divne??
+            // Co to dela??
             for (ApBindingItem bindingItem : bindingItemList) {
                 if (bindingItem.getItem() != null && createItem.getId() != null && apItemAccessPointRefVO.getExternalName() != null &&
                         bindingItem.getItem().getItemId() != null && bindingItem.getItem().getItemId().equals(createItem.getId())) {
-                    dataRefList.add(new DataRef(bindingItem.getValue(), apItemAccessPointRefVO.getExternalName()));
+                    // Co se zde ma nastavit?
+                    // ?bindingItem.getValue(), apItemAccessPointRefVO.getExternalName()
+                    dataRefList.add(new ReferencedEntities(recordRef, apItemAccessPointRefVO.getExternalName()));
                     break;
                 }
             }
@@ -334,26 +375,32 @@ public class AccessPointItemService {
         }
     }
 
-    private void changeBindingItemsItems(ApItemVO createItem, ApItem itemCreated, List<ApBindingItem> bindingItemList) {
-        if (CollectionUtils.isNotEmpty(bindingItemList)) {
-            List<ApBindingItem> currentItemBindings = new ArrayList<>();
-            for (ApBindingItem bindingItem : bindingItemList) {
-                if (bindingItem.getItem() != null && createItem.getId() != null &&
-                        bindingItem.getItem().getItemId() != null && bindingItem.getItem().getItemId().equals(createItem.getId())) {
-                    bindingItem.setItem(itemCreated);
-                    currentItemBindings.add(bindingItem);
-                }
-            }
-            if (CollectionUtils.isNotEmpty(currentItemBindings)) {
-                bindingItemRepository.saveAll(currentItemBindings);
+    // Vyhleda aktualni BindingItem dle puvodniho item a nahradi vazbou na novy
+    private void changeBindingItemsItems(Integer itemId, ApItem itemCreated, List<ApBindingItem> bindingItemList) {
+        if (CollectionUtils.isEmpty(bindingItemList)) {
+            return;
+        }
+        List<ApBindingItem> currentItemBindings = new ArrayList<>();
+        for (ApBindingItem bindingItem : bindingItemList) {
+            if (bindingItem.getItem() != null &&
+                    bindingItem.getItem().getItemId() != null &&
+                    bindingItem.getItem().getItemId().equals(itemId)) {
+                //? toto asi nema zadny efekt, pokud to tam jiz je, 
+                //  potom to meni na to same
+                bindingItem.setItem(itemCreated);
+                currentItemBindings.add(bindingItem);
             }
         }
+        if (CollectionUtils.isNotEmpty(currentItemBindings)) {
+            bindingItemRepository.saveAll(currentItemBindings);
+        }
     }
+
 
     public List<ApItem> createItems(final List<Object> createItems,
                                     final ApChange change,
                                     final ApBinding binding,
-                                    final List<DataRef> dataRefList,
+                                    final List<ReferencedEntities> dataRefList,
                                     final CreateFunction create) {
         List<ApItem> itemsCreated = new ArrayList<>();
         Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
@@ -386,7 +433,7 @@ public class AccessPointItemService {
                               final CreateFunction create,
                               final Map<Integer, List<ApItem>> typeIdItemsMap,
                               final ApBinding binding,
-                              final List<DataRef> dataRefList) {
+                              final List<ReferencedEntities> dataRefList) {
         StaticDataProvider sdp = staticDataService.getData();
         RulItemType itemType;
         RulItemSpec itemSpec;
@@ -426,7 +473,7 @@ public class AccessPointItemService {
 
             String extIdent = CamHelper.getEntityIdorUuid(itemEntityRef);
 
-            DataRef dataRef = new DataRef(uuid, extIdent);
+            ReferencedEntities dataRef = new ReferencedEntities(dataRecordRef, extIdent);
             dataRefList.add(dataRef);
 
             dataRecordRef.setDataType(DataType.RECORD_REF.getEntity());
@@ -571,7 +618,7 @@ public class AccessPointItemService {
         itemRepository.save(itemCreated);
 
         if (binding != null) {
-            externalSystemService.createApBindingItem(binding, uuid, null, itemCreated);
+            externalSystemService.createApBindingItem(binding, change, uuid, null, itemCreated);
         }
 
         existsItems.add(itemCreated);

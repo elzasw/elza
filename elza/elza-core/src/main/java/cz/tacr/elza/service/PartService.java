@@ -35,6 +35,7 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApStateEnum;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
@@ -53,6 +54,7 @@ import cz.tacr.elza.repository.ApKeyValueRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
+import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.vo.DataRef;
 
 @Service
@@ -179,16 +181,21 @@ public class PartService {
     /**
      * Založí atributy části.
      *
-     * @param apChange změna
-     * @param apPart část
-     * @param apPartFormVO data k založení
+     * @param apChange
+     *            změna
+     * @param apPart
+     *            část
+     * @param apPartFormVO
+     *            data k založení
+     * @param bindingItemList
+     *            seznam soucasnych item bindings
      * @return
      */
     public List<ApItem> createPartItems(final ApChange apChange,
                                         final ApPart apPart,
                                         final ApPartFormVO apPartFormVO,
                                         final List<ApBindingItem> bindingItemList,
-                                        final List<DataRef> dataRefList) {
+                                        final List<ReferencedEntities> dataRefList) {
         List<ApItem> itemsDb = new ArrayList<>();
         Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
         List<ApItem> items = apItemService.createItems(apPartFormVO.getItems(), typeIdItemsMap, itemsDb, apChange, bindingItemList, dataRefList, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
@@ -200,7 +207,7 @@ public class PartService {
                                         final ApPart apPart,
                                         final List<Object> itemList,
                                         final ApBinding binding,
-                                        final List<DataRef> dataRefList) {
+                                        final List<ReferencedEntities> dataRefList) {
         return apItemService.createItems(itemList, apChange, binding, dataRefList, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
                 -> createPartItem(apPart, it, is, c, objectId, position));
     }

@@ -60,13 +60,15 @@ function createBindings(accessPoint: ApAccessPointVO | undefined) {
         const externalIds = accessPoint.externalIds;
         if (externalIds) {
             externalIds.forEach(externalId => {
-                externalId.bindingItemList.forEach(item => {
-                    if (item.itemId) {
+                if(externalId.bindingItemList) {
+                    externalId.bindingItemList.forEach(item => {
+                      if (item.itemId) {
                         bindings.addItem(item.itemId, item.sync);
-                    } else if (item.partId) {
+                      } else if (item.partId) {
                         bindings.addPart(item.partId, item.sync);
-                    }
-                });
+                      }
+                    });
+                }
             });
         }
     }

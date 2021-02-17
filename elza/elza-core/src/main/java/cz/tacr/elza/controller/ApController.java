@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -101,6 +102,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
@@ -903,8 +905,9 @@ public class ApController {
     public Integer takeArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
                                      @RequestParam final Integer scopeId,
                                      @RequestParam final String externalSystemCode) {
-        ApScope scope = accessPointService.getScope(scopeId);
-        accessPointService.checkUniqueBinding(scope, archiveEntityId.toString(), externalSystemCode);
+        StaticDataProvider sdp = this.staticDataService.getData();
+        ApExternalSystem apExternalSystem = sdp.getApExternalSystemByCode(externalSystemCode);
+        Validate.notNull(apExternalSystem, "External system code is incorrect: {}", externalSystemCode);
 
         EntityXml entity;
         try {
@@ -913,14 +916,29 @@ public class ApController {
             throw prepareSystemException(e);
         }
 
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem);
+        ApScope scope = accessPointService.getScope(scopeId);
+        ApBinding binding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId
+                .toString(), apExternalSystem);
+        if (binding != null) {
+            // check state
+            Optional<ApBindingState> bindingState = externalSystemService.getBindingState(binding);
+            bindingState.ifPresent(bs -> {
+                throw new SystemException("Archival entity already imported", ExternalCode.ALREADY_IMPORTED)
+                        .set("externalSystemCode", externalSystemCode)
+                        .set("archiveEntityId", archiveEntityId.toString())
+                        .set("bindingStateId", bs.getBindingStateId())
+                        .set("accessPointId", bs.getAccessPointId());
 
-        ApBinding binding = externalSystemService.createBinding(scope, Long.toString(entity.getEid().getValue()),
-                                                                externalSystemCode);
-        procCtx.addBinding(binding);
+            });
+        }
 
-        ApState apState = camService.createAccessPoint(procCtx, entity, binding, null);
+        ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem, staticDataService);
+        List<ApState> apStates = camService.createAccessPoints(procCtx, Collections.singletonList(entity));
+        if (apStates.size() != 1) {
+            throw new BusinessException("Failed to create accesspoint from entity", BaseCode.IMPORT_FAILED);
+        }
+
+        ApState apState = apStates.get(0);
         return apState.getAccessPointId();
     }
 
@@ -946,7 +964,7 @@ public class ApController {
         accessPointService.checkUniqueExtSystem(accessPoint, externalSystemCode);
 
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem);
+        ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem, staticDataService);
 
         EntityXml entity;
         try {
@@ -992,7 +1010,7 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem);
+        ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
         camService.synchronizeAccessPoint(procCtx, state, entity, bindingState, false);
     }
 
@@ -1055,7 +1073,7 @@ public class ApController {
             throw prepareSystemException(e);
         }
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem);
+        ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
         camService.createAccessPoints(procCtx, entities);
     }
 

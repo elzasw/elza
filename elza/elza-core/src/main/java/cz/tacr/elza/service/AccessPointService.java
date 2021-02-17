@@ -132,6 +132,7 @@ import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
+import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.DataRef;
@@ -386,11 +387,14 @@ public class AccessPointService {
         apState.setDeleteChange(change);
         apStateRepository.save(apState);
 
-        saveWithLock(accessPoint);
+        accessPoint = saveWithLock(accessPoint);
 
         List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(accessPoint);
-        eids.forEach(eid -> eid.setDeleteChange(change));
-        bindingStateRepository.saveAll(eids);
+        if (CollectionUtils.isNotEmpty(eids)) {
+            eids.forEach(eid -> eid.setDeleteChange(change));
+            bindingStateRepository.saveAll(eids);
+            bindingItemRepository.invalidateByAccessPoint(accessPoint, change);
+        }
 
         publishAccessPointDeleteEvent(accessPoint);
         reindexDescItem(accessPoint);
@@ -832,12 +836,14 @@ public class AccessPointService {
      * @param dataRefList
      * @param bindingItemList
      */
-    private void createBindingForRel(final List<DataRef> dataRefList, final List<ApBindingItem> bindingItemList) {
+    // 11.2.2021 PPy - zakomentovano, nejasna funkce
+    /*
+    private void createBindingForRel(final List<ReferencedEntities> dataRefList, final List<ApBindingItem> bindingItemList) {
         //TODO fantiš optimalizovat
-        for (DataRef dataRef : dataRefList) {
+        for (ReferencedEntities dataRef : dataRefList) {
             ApBindingItem apBindingItem = findBindingItemByUuid(bindingItemList, dataRef.getUuid());
             if (apBindingItem != null && apBindingItem.getItem() != null) {
-                ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) apBindingItem.getItem().getData();
+                ArrDataRecordRef dataRecordRef = dataRef.;
                 ApBinding currentEntity = apBindingItem.getBinding();
                 ApScope scope = currentEntity.getScope();
                 ApExternalSystem apExternalSystem = currentEntity.getApExternalSystem();
@@ -848,7 +854,7 @@ public class AccessPointService {
                     dataRecordRef.setBinding(externalSystemService.createApBinding(scope, dataRef.getValue(), apExternalSystem));
                 } else {
                     dataRecordRef.setBinding(refBinding);
-
+    
                     ApBindingState bindingState = externalSystemService.findByBinding(refBinding);
                     if (bindingState != null) {
                         dataRecordRef.setRecord(bindingState.getAccessPoint());
@@ -858,6 +864,7 @@ public class AccessPointService {
             }
         }
     }
+    */
 
     public ApPart findParentPart(final ApBinding binding, final String parentUuid) {
         ApBindingItem apBindingItem = externalSystemService.findByBindingAndUuid(binding, parentUuid);
@@ -876,13 +883,12 @@ public class AccessPointService {
             ApPart newPart = partService.createPart(apPart, change);
             partService.deletePart(apPart, change);
 
-            changeBindingItemParts(apPart, newPart);
+            changeBindingItemParts(apPart, newPart, change);
             changeIndicesToNewPart(apPart, newPart);
 
-            List<DataRef> dataRefList = new ArrayList<>();
+            List<ReferencedEntities> dataRefList = new ArrayList<>();
 
             partService.createPartItems(change, newPart, apPartFormVO, bindingItemList, dataRefList);
-            createBindingForRel(dataRefList, bindingItemList);
 
             partService.changeParentPart(apPart, newPart);
 
@@ -904,12 +910,30 @@ public class AccessPointService {
         }
     }
 
-    public void changeBindingItemParts(ApPart oldPart, ApPart newPart) {
-        List<ApBindingItem> bindingItemList = bindingItemRepository.findByPart(oldPart);
+    public void changeBindingItemParts(ApPart oldPart, ApPart newPart, ApChange change) {
+        List<ApBindingItem> bindingItemList = bindingItemRepository.findActiveByPart(oldPart);
         if (CollectionUtils.isNotEmpty(bindingItemList)) {
+            // We have two possibilities
+            // - binding item can be updated
+            // - binding item can be deleted and new one created
+            // We are using first strategy - needs to consider what will be beter in future
+
             for (ApBindingItem bindingItem : bindingItemList) {
                 bindingItem.setPart(newPart);
             }
+
+            /*List<ApBindingItem> newBindingItems = new ArrayList<>(bindingItemList.size());
+            
+            for (ApBindingItem bindingItem : bindingItemList) {
+                ApBindingItem newBindingItem = new ApBindingItem();
+                newBindingItem.setBinding(bindingItem.getBinding());
+                newBindingItem.setCreateChange(change);
+                newBindingItems.add(newBindingItem);
+                newBindingItem.setPart(newPart);
+                newBindingItem.setValue(bindingItem.getValue());
+            
+                bindingItem.setDeleteChange(change);
+            }*/
             bindingItemRepository.saveAll(bindingItemList);
         }
     }
@@ -1279,13 +1303,18 @@ public class AccessPointService {
      */
     public ApState createAccessPoint(final ApScope scope, final ApType type,
                                       final ApChange change,
-                                      final String uuid) {
-        ApAccessPoint accessPoint = createAccessPointEntity(scope, type, change, uuid);
+                                     String uuid) {
+        ApAccessPoint accessPoint = new ApAccessPoint();
+        if (uuid == null) {
+            uuid = UUID.randomUUID().toString();
+        }
+        accessPoint.setUuid(uuid);
         accessPoint.setState(ApStateEnum.OK);
-        return createAccessPointState(saveWithLock(accessPoint), scope, type, change);
+        accessPoint = saveWithLock(accessPoint);
+        return createAccessPointState(accessPoint, scope, type, change);
     }
 
-    private ApState createAccessPointState(ApAccessPoint ap, ApScope scope, ApType type, ApChange change) {
+    public ApState createAccessPointState(ApAccessPoint ap, ApScope scope, ApType type, ApChange change) {
         ApState apState = new ApState();
         apState.setAccessPoint(ap);
         apState.setApType(type);
@@ -1307,29 +1336,6 @@ public class AccessPointService {
         newState.setCreateChange(change);
         newState.setDeleteChange(null);
         return newState;
-    }
-
-    /**
-     * Vytvoření entity přístupového bodu.
-     *
-     * @param scope
-     *            třída
-     * @param type
-     *            typ přístupového bodu
-     * @param change
-     *            změna
-     * @param uuid
-     *            UUID
-     * @return vytvořená entita AP
-     */
-    public static ApAccessPoint createAccessPointEntity(final ApScope scope, final ApType type, final ApChange change,
-                                                        String uuid) {
-        ApAccessPoint accessPoint = new ApAccessPoint();
-        if (uuid == null) {
-            uuid = UUID.randomUUID().toString();
-        }
-        accessPoint.setUuid(uuid);
-        return accessPoint;
     }
 
     /**
