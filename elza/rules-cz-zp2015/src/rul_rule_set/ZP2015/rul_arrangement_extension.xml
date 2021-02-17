@@ -11,4 +11,7 @@
   <arrangement-extension code="ZP2015_PoradiUlozeni">
     <name>Pořadí uložení</name>
   </arrangement-extension>
+  <arrangement-extension code="ZP2015_Katalogizace">
+    <name>Katalogizační záznamy</name>
+  </arrangement-extension>
 </arrangement-extensions>
