@@ -9,12 +9,13 @@ import {Ribbon} from 'components/index.jsx';
 import PageLayout from '../shared/layout/PageLayout';
 import {AbstractReactComponent, i18n, ListBox, RibbonGroup, Search, StoreHorizontalLoader} from 'components/shared';
 import {indexById} from 'stores/app/utils.jsx';
-import {fundsFetchIfNeeded, fundsFilter, selectFund} from './../../actions/admin/fund';
+import {fundsFetchIfNeeded, fundsFilter, selectFund, fundsPage, ADMIN_FUNDS_PAGE_SIZE} from './../../actions/admin/fund';
 import {renderFundItem} from '../../components/admin/adminRenderUtils';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as fund from '../../actions/admin/fund';
 import FundDetail from '../../components/admin/FundDetail';
 import FundsPermissionPanel from '../../components/admin/FundsPermissionPanel';
+import ListPager from '../../components/shared/listPager/ListPager';
 
 class AdminFundPage extends AbstractReactComponent {
     constructor(props) {
@@ -49,20 +50,9 @@ class AdminFundPage extends AbstractReactComponent {
     };
 
     componentDidMount() {
+        this.props.dispatch(fundsPage(1, 2))
         this.props.dispatch(fundsFetchIfNeeded());
     }
-
-    handleSelect = item => {
-        this.props.dispatch(selectFund(item.id));
-    };
-
-    handleSearch = filterText => {
-        this.props.dispatch(fundsFilter(filterText));
-    };
-
-    handleSearchClear = () => {
-        this.props.dispatch(fundsFilter(''));
-    };
 
     buildRibbon() {
         const altActions = [];
@@ -92,9 +82,11 @@ class AdminFundPage extends AbstractReactComponent {
         return <FundDetail />;
     };
 
+
     render() {
         const {splitter, funds, fund} = this.props;
         const {fundRows} = this.state;
+        const {page, pageSize} = funds.filter;
 
         let activeIndex;
         if (fund.id !== null) {
@@ -122,6 +114,15 @@ class AdminFundPage extends AbstractReactComponent {
                         onSelect={this.handleSelect}
                     />
                 )}
+                {funds.count > pageSize && (
+                    <ListPager
+                        prev={this.handleFilterPrev}
+                        next={this.handleFilterNext}
+                        from={(page-1)*pageSize}
+                        maxSize={pageSize}
+                        totalCount={funds.count}
+                    />
+                )}
             </div>
         );
 
@@ -139,6 +140,35 @@ class AdminFundPage extends AbstractReactComponent {
                 centerPanel={centerPanel}
             />
         );
+    }
+
+    handleSelect = item => {
+        this.props.dispatch(selectFund(item.id));
+    };
+
+    handleSearch = filterText => {
+        this.props.dispatch(fundsFilter(filterText));
+    };
+
+    handleSearchClear = () => {
+        this.props.dispatch(fundsFilter(''));
+    };
+
+    handleFilterPrev = () => {
+        const {funds} = this.props;
+        const nextPage = funds.filter.page - 1;
+        console.log("prev", nextPage);
+        if(nextPage > 0){
+            this.props.dispatch(fundsPage(nextPage, ADMIN_FUNDS_PAGE_SIZE))
+        }
+    }
+
+    handleFilterNext = () => {
+        const {funds} = this.props;
+        const nextPage = funds.filter.page + 1;
+        if(funds.count >= nextPage*funds.filter.pageSize){
+            this.props.dispatch(fundsPage(this.props.funds.filter.page + 1, ADMIN_FUNDS_PAGE_SIZE))
+        }
     }
 }
 
