@@ -4,14 +4,19 @@ import * as DetailActions from '../../shared/detail/DetailActions';
 
 export const AREA_ADMIN_FUNDS = 'adminRegion.funds';
 export const AREA_ADMIN_FUND = 'adminRegion.fund';
+export const ADMIN_FUNDS_PAGE_SIZE = 2;
 
 export function fundsFilter(text) {
     return SimpleListActions.filter(AREA_ADMIN_FUNDS, {text});
 }
 
+export function fundsPage(page, pageSize = ADMIN_FUNDS_PAGE_SIZE) {
+    return SimpleListActions.filter(AREA_ADMIN_FUNDS, {page, pageSize})
+}
+
 export function fundsFetchIfNeeded() {
     return SimpleListActions.fetchIfNeeded(AREA_ADMIN_FUNDS, null, (parent, filter) =>
-        WebApi.findControlFunds(filter.text),
+            WebApi.findControlFunds(filter.text, filter.pageSize, filter.page > 0 ? (filter.page-1)*filter.pageSize: 0),
     );
 }
 
