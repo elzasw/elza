@@ -5,7 +5,7 @@ import { AdminFund, AdminFundsFilter } from 'typings/store';
 
 export const AREA_ADMIN_FUNDS = 'adminRegion.funds';
 export const AREA_ADMIN_FUND = 'adminRegion.fund';
-export const ADMIN_FUNDS_PAGE_SIZE = 10;
+export const ADMIN_FUNDS_PAGE_SIZE = 200;
 
 export function fundsFilter(text: string, from: number, pageSize: number = ADMIN_FUNDS_PAGE_SIZE) {
     return SimpleListActions.filter(AREA_ADMIN_FUNDS, {from, pageSize, text})
