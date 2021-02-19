@@ -47,6 +47,7 @@ class FundField extends AbstractReactComponent {
                 onSearchChange={this.handleSearchChange}
                 onChange={onChange}
                 {...otherProps}
+                tags={false}
             />
         );
     }
