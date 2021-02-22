@@ -1533,8 +1533,8 @@ export class WebApiCls {
         }).then(json => ({data: json.rows, count: json.count}));
     }
 
-    findControlFunds(fulltext, max = DEFAULT_LIST_SIZE) {
-        return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/controlFunds', {search: fulltext, from: 0, count: max});
+    findControlFunds(fulltext: string, max:number = DEFAULT_LIST_SIZE, from: number = 0) {
+        return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/controlFunds', {search: fulltext, from, count: max});
     }
 
     findUserWithFundCreate(

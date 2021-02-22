@@ -2,6 +2,8 @@ export const DEFAULT_LIST_SIZE = 200;
 
 export enum AP_EXT_SYSTEM_TYPE {
     CAM = 'CAM',
+    CAM_UUID = 'CAM_UUID',
+    CAM_COMPLETE = 'CAM_COMPLETE',
 }
 
 export enum MODAL_DIALOG_VARIANT {

@@ -25,6 +25,8 @@ const EXT_SYSTEM_CLASS_LABEL = {
 
 const AP_EXT_SYSTEM_LABEL = {
     [AP_EXT_SYSTEM_TYPE.CAM]: i18n('admin.extSystem.cam'),
+    [AP_EXT_SYSTEM_TYPE.CAM_UUID]: i18n('admin.extSystem.cam-uuid'),
+    [AP_EXT_SYSTEM_TYPE.CAM_COMPLETE]: i18n('admin.extSystem.cam-complete'),
 };
 
 const FIELDS = {
@@ -161,18 +163,22 @@ class ExtSystemForm extends AbstractReactComponent {
                     />
                     <Field name="name" type="text" component={FormInputField} label={i18n('admin.extSystem.name')} />
                     <Field name="url" type="text" component={FormInputField} label={i18n('admin.extSystem.url')} />
-                    <Field
-                        name="username"
-                        type="text"
-                        component={FormInputField}
-                        label={i18n('admin.extSystem.username')}
-                    />
-                    <Field
-                        name="password"
-                        type="text"
-                        component={FormInputField}
-                        label={i18n('admin.extSystem.password')}
-                    />
+                    {classJ !== EXT_SYSTEM_CLASS.ApExternalSystem && (
+                        <>
+                            <Field
+                                name="username"
+                                type="text"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.username')}
+                            />
+                            <Field
+                                name="password"
+                                type="text"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.password')}
+                            />
+                        </>
+                    )}
                     <Field
                         name="apiKeyId"
                         type="text"
@@ -185,12 +191,14 @@ class ExtSystemForm extends AbstractReactComponent {
                         component={FormInputField}
                         label={i18n('admin.extSystem.apiKeyValue')}
                     />
-                    <Field
-                        name="elzaCode"
-                        type="text"
-                        component={FormInputField}
-                        label={i18n('admin.extSystem.elzaCode')}
-                    />
+                    {classJ !== EXT_SYSTEM_CLASS.ApExternalSystem && (
+                        <Field
+                            name="elzaCode"
+                            type="text"
+                            component={FormInputField}
+                            label={i18n('admin.extSystem.elzaCode')}
+                        />
+                    )}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>

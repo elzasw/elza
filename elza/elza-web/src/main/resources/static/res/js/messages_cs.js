@@ -1290,6 +1290,8 @@ var messages = {
     "admin.extSystem.edit.title": "Upravení externího systému",
     "admin.extSystem.delete.confirm": "Opravdu chcete externí systém odstranit?",
     "admin.extSystem.cam": "CAM",
+    "admin.extSystem.cam-uuid": "CAM - UUID",
+    "admin.extSystem.cam-complete": "CAM - Kompletní",
     "admin.extSystem.apiKeyId": "ApiKey - ID",
     "admin.extSystem.apiKeyValue": "ApiKey - hodnota",
     "admin.bulk.detail.queue.empty": "Ve frontě nejsou žádné požadavky",
