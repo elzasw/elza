@@ -20,6 +20,8 @@ import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApPartVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.core.schema.SchemaManager;
+import cz.tacr.elza.test.ApiException;
+import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.ws.core.v1.FundService;
 import cz.tacr.elza.ws.core.v1.ImportService;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
@@ -37,7 +39,7 @@ public class ImportServiceTest extends AbstractControllerTest {
     }
 
     @Test
-    public void importEntityTest() throws IOException {
+    public void importEntityTest() throws IOException, ApiException {
         // create external system
         ApExternalSystemVO externalSystemVO = new ApExternalSystemVO();
         externalSystemVO.setCode(SYSTEM_CODE);
@@ -80,5 +82,18 @@ public class ImportServiceTest extends AbstractControllerTest {
         assertNotNull(apvo2);
 
         assertTrue(apvo2.getParts().size() == apvo.getParts().size());
+
+        // delete entity
+        DeleteAccessPointDetail deleteAPDetail = new DeleteAccessPointDetail();
+        accesspointsApi.deleteAccessPoint(apvo.getId().toString(), deleteAPDetail);
+
+        // run reimport
+        importReq = WSRequestFactory.createImportRequest(SYSTEM_CODE, SchemaManager.CAM_SCHEMA_URL);
+        importReq.setDisposition(WSRequestFactory.createDisposition(SCOPE_GLOBAL));
+        importReq.setBinData(dh);
+        impService.importData(importReq);
+
+        ApAccessPointVO apvo3 = this.getAccessPoint("7278d973-f0a0-4002-a5a4-5ca176e6db6c");
+        assertNotNull(apvo3);
     }
 }

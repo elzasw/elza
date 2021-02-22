@@ -494,8 +494,14 @@ public class CamService {
         log.debug("Entity synchronization request, accesPointId: {}, revId: {}", state.getAccessPointId(),
                   entity.getRevi().getRid().getValue());
         if(state.getDeleteChangeId()!=null) {
-            throw new BusinessException("Synchronized entity is deleted, accessPointId: " + state.getAccessPoint(),
-                    ExternalCode.RECORD_NOT_FOUND);
+            // TODO: save sync request
+            /*bindingState.setSyncOk(SyncState.NOT_SYNCED);
+            bindingStateRepository.save(bindingState);*/
+            log.info("Received synchronization request for deleted entity, accessPointId: {}",
+                     state.getAccessPointId());
+            return;
+            //throw new BusinessException("Synchronized entity is deleted, accessPointId: " + state.getAccessPoint(),
+            //        ExternalCode.RECORD_NOT_FOUND);
         }
 
         if (syncQueue && checkLocalChanges(state, bindingState)) {
