@@ -38,6 +38,10 @@ spring:
             #dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
 
 elza:
+  debug:
+    h2:
+       # Enable H2 DB console on URL .../console
+       console: false
   workingDir: ./work
   locale: cs
   asyncActions:

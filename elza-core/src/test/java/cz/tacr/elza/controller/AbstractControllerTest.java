@@ -420,6 +420,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.000ZZZZZ");
 
+    public static final String SCOPE_GLOBAL = "GLOBAL";
+
     @Value("${local.server.port}")
     private int port;
 
@@ -706,7 +708,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         createFund.setInternalCode(internalCode);
 
         List<String> scopes = new ArrayList<>();
-        scopes.add("GLOBAL");
+        scopes.add(SCOPE_GLOBAL);
         createFund.setScopes(scopes);
 
         return fundsApi.createFund(createFund);
@@ -1993,9 +1995,20 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
+     * Vrátí jedno heslo (s variantními hesly) dle id.
+     *
+     * @param accessPointId
+     *            id požadovaného hesla
+     */
+    protected ApAccessPointVO getAccessPoint(final String accessPointId) {
+        return get(spec -> spec.pathParam("recordId", accessPointId), GET_RECORD).getBody().as(ApAccessPointVO.class);
+    }
+
+    /**
      * Vytvoření rejstříkového hesla.
      *
-     * @param accessPoint VO rejstříkové heslo
+     * @param accessPoint
+     *            VO rejstříkové heslo
      */
     protected ApAccessPointVO createAccessPoint(final ApAccessPointCreateVO accessPoint) {
         return post(spec -> spec.body(accessPoint), CREATE_ACCESS_POINT).getBody().as(ApAccessPointVO.class);
