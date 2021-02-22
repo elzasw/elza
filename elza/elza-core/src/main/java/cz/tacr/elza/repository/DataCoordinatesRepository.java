@@ -9,11 +9,11 @@ import cz.tacr.elza.domain.ArrDataCoordinates;
 
 
 /**
- * @author Martin Šlapa
- * @since 1.9.2015
+ * Coordinates repository
  */
 @Repository
-public interface DataCoordinatesRepository extends JpaRepository<ArrDataCoordinates, Integer> {
+public interface DataCoordinatesRepository extends JpaRepository<ArrDataCoordinates, Integer>,
+        DataCoordinatesRepositoryCustom {
 
     @Query(value = "SELECT ST_AsKML(ST_setSRID(co.value, 4326)) FROM arr_data_coordinates co WHERE co.data_id = :dataId", nativeQuery = true)
     String convertCoordinatesToKml(Integer dataId);
@@ -26,9 +26,6 @@ public interface DataCoordinatesRepository extends JpaRepository<ArrDataCoordina
 
     @Query(value = "SELECT ST_AsText(ST_GeomFromGML(:coordinates))", nativeQuery = true)
     String convertCoordinatesFromGml(String coordinates);
-
-    @Query(value = "SELECT ST_AsEWKT(ST_GeomFromWKB(:coordinates))", nativeQuery = true)
-    String convertCoordinatesToEWKT(byte[] coordinates);
 
     @Query(value = "SELECT ST_AsBinary(:geometry)", nativeQuery = true)
     byte[] convertGeometryToWKB(Geometry geometry);

@@ -48,12 +48,14 @@ import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyKeyValue;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApKeyValueRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
+import cz.tacr.elza.service.AccessPointItemService.DeletedItems;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.vo.DataRef;
 
@@ -70,6 +72,7 @@ public class PartService {
     private final DataRecordRefRepository dataRecordRefRepository;
     private final ApAccessPointRepository accessPointRepository;
     private final AsyncRequestService asyncRequestService;
+    private final ApBindingItemRepository bindingItemRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(PartService.class);
 
@@ -87,7 +90,8 @@ public class PartService {
                        final ApIndexRepository indexRepository,
                        final DataRecordRefRepository dataRecordRefRepository,
                        final ApAccessPointRepository apAccessPointRepository,
-                       final AsyncRequestService asyncRequestService) {
+                       final AsyncRequestService asyncRequestService,
+                       final ApBindingItemRepository bindingItemRepository) {
         this.partRepository = partRepository;
         this.partTypeRepository = partTypeRepository;
         this.itemRepository = itemRepository;
@@ -98,6 +102,7 @@ public class PartService {
         this.dataRecordRefRepository = dataRecordRefRepository;
         this.accessPointRepository = apAccessPointRepository;
         this.asyncRequestService = asyncRequestService;
+        this.bindingItemRepository = bindingItemRepository;
     }
 
     public ApPart createPart(final RulPartType partType,
@@ -198,63 +203,58 @@ public class PartService {
                                         final List<ReferencedEntities> dataRefList) {
         List<ApItem> itemsDb = new ArrayList<>();
         Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
-        List<ApItem> items = apItemService.createItems(apPartFormVO.getItems(), typeIdItemsMap, itemsDb, apChange, bindingItemList, dataRefList, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
-                -> createPartItem(apPart, it, is, c, objectId, position));
+        List<ApItem> items = apItemService.createItems(apPart, apPartFormVO.getItems(),
+                                                       typeIdItemsMap, itemsDb, apChange, bindingItemList, dataRefList);
         return itemRepository.saveAll(items);
     }
 
-    public List<ApItem> createPartItems(final ApChange apChange,
-                                        final ApPart apPart,
-                                        final List<Object> itemList,
-                                        final ApBinding binding,
-                                        final List<ReferencedEntities> dataRefList) {
-        return apItemService.createItems(itemList, apChange, binding, dataRefList, (RulItemType it, RulItemSpec is, ApChange c, int objectId, int position)
-                -> createPartItem(apPart, it, is, c, objectId, position));
-    }
-
-    private ApItem createPartItem(final ApPart part, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {
-        ApItem item = new ApItem();
-        item.setPart(part);
-        item.setItemType(it);
-        item.setItemSpec(is);
-        item.setCreateChange(c);
-        item.setObjectId(objectId);
-        item.setPosition(position);
-        return item;
-    }
-
     /**
-     * Odstraní část
+     * Odstraní část přímo z DB
+     * 
+     * Pozor: Neodstraňuje bindings
+     * 
+     * Pro vymazání partu včetně biding je nutné použít jiné metody
      *
-     * @param apPart část
-     * @param apChange změna
+     * @param apPart
+     *            část
+     * @param apChange
+     *            změna
      */
-    public void deletePart(ApPart apPart, ApChange apChange) {
-        apPart.setDeleteChange(apChange);
-        apPart.setKeyValue(null);
-        partRepository.save(apPart);
+    private void deletePart(ApPart part, ApChange apChange) {
+        ApKeyValue keyValue = part.getKeyValue();
+        if (keyValue != null) {
+            keyValueRepository.delete(keyValue);
+        }
+        part.setDeleteChange(apChange);
+        part.setKeyValue(null);
+        partRepository.save(part);
     }
 
     /**
      * Odstraní části
+     * 
+     * Odstraní jen samotné části bez prvků popisu
      *
-     * @param partList seznam částí
-     * @param apChange změna
+     * @param partList
+     *            seznam částí
+     * @param apChange
+     *            změna
      */
     public void deleteParts(List<ApPart> partList, ApChange apChange) {
-        if (CollectionUtils.isNotEmpty(partList)) {
-            List<ApKeyValue> keyValues = new ArrayList<>();
-            for (ApPart part : partList) {
-                if (part.getKeyValue() != null) {
-                    keyValues.add(part.getKeyValue());
-                }
-                part.setDeleteChange(apChange);
-                part.setKeyValue(null);
+        if (CollectionUtils.isEmpty(partList)) {
+            return;
+        }
+        List<ApKeyValue> keyValues = new ArrayList<>();
+        for (ApPart part : partList) {
+            if (part.getKeyValue() != null) {
+                keyValues.add(part.getKeyValue());
             }
-            partRepository.saveAll(partList);
-            if (CollectionUtils.isNotEmpty(keyValues)) {
-                keyValueRepository.deleteAll(keyValues);
-            }
+            part.setDeleteChange(apChange);
+            part.setKeyValue(null);
+        }
+        partRepository.saveAll(partList);
+        if (CollectionUtils.isNotEmpty(keyValues)) {
+            keyValueRepository.deleteAll(keyValues);
         }
     }
 
@@ -263,11 +263,7 @@ public class PartService {
         if (CollectionUtils.isNotEmpty(partList)) {
             for (ApPart part : partList) {
                 apItemService.deletePartItems(part, apChange);
-                ApKeyValue keyValue = part.getKeyValue();
                 deletePart(part, apChange);
-                if (keyValue != null) {
-                    keyValueRepository.delete(keyValue);
-                }
             }
         }
     }
@@ -291,12 +287,17 @@ public class PartService {
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_DELETE);
         ApKeyValue keyValue = apPart.getKeyValue();
         apItemService.deletePartItems(apPart, apChange);
-        apPart.setDeleteChange(apChange);
-        apPart.setKeyValue(null);
-        partRepository.save(apPart);
-        if (keyValue != null) {
-            keyValueRepository.delete(keyValue);
+        
+        // Delete bindings
+        List<ApBindingItem> bindingParts = this.bindingItemRepository.findByPart(apPart);
+        if (bindingParts.size() > 0) {
+            for (ApBindingItem bindingItem : bindingParts) {
+                bindingItem.setDeleteChange(apChange);
+            }
+            bindingParts = bindingItemRepository.saveAll(bindingParts);
         }
+
+        deletePart(apPart, apChange);
     }
 
     public List<ApPart> findPartsByAccessPoint(ApAccessPoint accessPoint) {
@@ -353,7 +354,7 @@ public class PartService {
             }
             String value = StringUtils.stripToNull(keyValue.getValue());
             if (value == null) {
-                throw new SystemException("Neplatná hodnota ApKeyValue").set("keyType", keyType).set("value", value);
+                throw new SystemException("Prázdná hodnota pro ApKeyValue").set("keyType", keyType);
             }
             if (value.length() > StringLength.LENGTH_4000) {
                 value = value.substring(0, StringLength.LENGTH_4000 - 1);
@@ -389,7 +390,7 @@ public class PartService {
                     apKeyValue.setKeyType(keyType);
                     apKeyValue.setValue(value);
                     apKeyValue.setScope(scope);
-                    keyValueRepository.save(apKeyValue);
+                    apKeyValue = keyValueRepository.save(apKeyValue);
 
                     apPart.setKeyValue(apKeyValue);
                     partRepository.save(apPart);

@@ -363,12 +363,12 @@ public class ExternalSystemService {
     }
 
     public ApBindingItem createApBindingItem(final ApBinding binding,
-                                             ApChange apChange, final String uuid,
+                                             ApChange apChange, final String value,
                                              final ApPart part,
                                              final ApItem item) {
         ApBindingItem apBindingItem = new ApBindingItem();
         apBindingItem.setBinding(binding);
-        apBindingItem.setValue(uuid);
+        apBindingItem.setValue(value);
         apBindingItem.setPart(part);
         apBindingItem.setItem(item);
         apBindingItem.setCreateChange(apChange);
@@ -391,6 +391,10 @@ public class ExternalSystemService {
 
     public ApBindingItem findByBindingAndUuid(ApBinding binding, String uuid) {
         return bindingItemRepository.findByBindingAndUuid(binding, uuid);
+    }
+
+    public List<ApBindingItem> getBindingItems(final ApBinding binding) {
+        return bindingItemRepository.findByBinding(binding);
     }
 
     public ApBindingState findByAccessPointAndExternalSystem(final ApAccessPoint accessPoint, final ApExternalSystem externalSystem) {

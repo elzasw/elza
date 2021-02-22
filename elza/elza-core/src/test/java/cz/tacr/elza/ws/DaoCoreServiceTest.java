@@ -67,7 +67,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
 
         String address = RestAssured.baseURI + ":" + RestAssured.port + "/services"
                 + WebServiceConfig.DAO_CORE_SERVICE_URL;
-        DaoService daoServiceClient = DaoServiceClientFactory.createDaoService(address, "admin", "admin");
+        DaoService daoServiceClient = WebServiceClientFactory.createDaoService(address, "admin", "admin");
 
         // create AS
         Fund fundInfo = this.createFund(FUND_NAME, FUND_CODE);

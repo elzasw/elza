@@ -132,6 +132,7 @@ import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
+import cz.tacr.elza.service.AccessPointItemService.DeletedItems;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -879,24 +880,27 @@ public class AccessPointService {
             List<ApItem> itemList = itemRepository.findValidItemsByPart(apPart);
             List<ApBindingItem> bindingItemList = bindingItemRepository.findByItems(itemList);
 
-            apItemService.deletePartItems(apPart, change);
+            /*
             ApPart newPart = partService.createPart(apPart, change);
             partService.deletePart(apPart, change);
-
+            
             changeBindingItemParts(apPart, newPart, change);
-            changeIndicesToNewPart(apPart, newPart);
+            changeIndicesToNewPart(apPart, newPart); */
 
             List<ReferencedEntities> dataRefList = new ArrayList<>();
 
-            partService.createPartItems(change, newPart, apPartFormVO, bindingItemList, dataRefList);
+            partService.createPartItems(change, apPart, apPartFormVO, bindingItemList, dataRefList);
+            bindingItemRepository.flush();
 
-            partService.changeParentPart(apPart, newPart);
+            DeletedItems deletedItems = apItemService.deleteItems(itemList, change);
 
-            if (apAccessPoint.getPreferredPartId().equals(apPart.getPartId())) {
+            // partService.changeParentPart(apPart, newPart);
+            /*if (apAccessPoint.getPreferredPartId().equals(apPart.getPartId())) {
                 apAccessPoint.setPreferredPart(newPart);
                 saveWithLock(apAccessPoint);
-            }
-            generateSync(apAccessPoint.getAccessPointId(), newPart);
+            }*/
+
+            generateSync(apAccessPoint.getAccessPointId(), apPart);
 //        }
     }
 
@@ -911,7 +915,7 @@ public class AccessPointService {
     }
 
     public void changeBindingItemParts(ApPart oldPart, ApPart newPart, ApChange change) {
-        List<ApBindingItem> bindingItemList = bindingItemRepository.findActiveByPart(oldPart);
+        List<ApBindingItem> bindingItemList = bindingItemRepository.findByPart(oldPart);
         if (CollectionUtils.isNotEmpty(bindingItemList)) {
             // We have two possibilities
             // - binding item can be updated
@@ -981,13 +985,27 @@ public class AccessPointService {
     private List<ApItem> getItemsForParts(final ApPart part,
                                           final List<ApPart> childrenParts,
                                           final Map<Integer, List<ApItem>> itemMap) {
-        List<ApItem> itemList = new ArrayList<>(itemMap.get(part.getPartId()));
 
-        for (ApPart p : childrenParts) {
-            itemList.addAll(itemMap.get(p.getPartId()));
+        List<ApItem> itemsSrc = itemMap.get(part.getPartId());
+
+        List<ApItem> result;
+        if (CollectionUtils.isEmpty(itemsSrc)) {
+            result = new ArrayList<>();
+        } else {
+            result = new ArrayList<>(itemsSrc);
         }
 
-        return itemList;
+        // get items from children parts
+        if (CollectionUtils.isNotEmpty(childrenParts)) {
+            for (ApPart p : childrenParts) {
+                List<ApItem> childItemList = itemMap.get(p.getPartId());
+                if (CollectionUtils.isNotEmpty(childItemList)) {
+                    result.addAll(childItemList);
+                }
+            }
+        }
+
+        return result;
     }
 
     public boolean updatePartValues(final Collection<PartWrapper> partWrappers) {
@@ -1075,18 +1093,6 @@ public class AccessPointService {
         return partService.updatePartValue(apPart, result, state, false);
     }
 
-
-    @Nullable
-    public ApBindingItem findBindingItemByUuid(final List<ApBindingItem> bindingItemList, final String pid) {
-        if (CollectionUtils.isNotEmpty(bindingItemList)) {
-            for (ApBindingItem bindingItem : bindingItemList) {
-                if (bindingItem.getValue().equals(pid)) {
-                    return bindingItem;
-                }
-            }
-        }
-        return null;
-    }
 
     /**
      * Aktualizace přístupového bodu - není verzované!
@@ -1336,27 +1342,6 @@ public class AccessPointService {
         newState.setCreateChange(change);
         newState.setDeleteChange(null);
         return newState;
-    }
-
-    /**
-     * Vytvoření entity hodnoty atributu přístupového bodu.
-     *
-     * @param accessPoint přístupový bod pro který atribut tvoříme
-     * @param it typ atributu
-     * @param is specifikace atribututu
-     * @param c změna
-     * @param objectId jednoznačný identifikátor položky (nemění se při odverzování)
-     * @param position pozice
-     * @return vytvořená položka
-     */
-    private ApItem createApItem(final ApAccessPoint accessPoint, final RulItemType it, final RulItemSpec is, final ApChange c, final int objectId, final int position) {
-        ApItem item = new ApItem();
-        item.setItemType(it);
-        item.setItemSpec(is);
-        item.setCreateChange(c);
-        item.setObjectId(objectId);
-        item.setPosition(position);
-        return item;
     }
 
     public void publishAccessPointCreateEvent(final ApAccessPoint accessPoint) {

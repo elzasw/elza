@@ -32,7 +32,7 @@ public class StructuredObjectServiceTest extends AbstractControllerTest {
 
         String addressFundService = RestAssured.baseURI + ":" + RestAssured.port + "/services"
                 + WebServiceConfig.FUND_SERVICE_URL;
-        FundService fundServiceClient = DaoServiceClientFactory.createFundService(addressFundService, "admin", "admin");
+        FundService fundServiceClient = WebServiceClientFactory.createFundService(addressFundService, "admin", "admin");
 
         Fund fundCreate = new Fund();
         fundCreate.setFundName("Test fund XYZ");
@@ -48,7 +48,7 @@ public class StructuredObjectServiceTest extends AbstractControllerTest {
         String addressSOService = RestAssured.baseURI + ":" + RestAssured.port
                 + "/services"
                 + WebServiceConfig.STRUCT_OBJ_SERVICE_URL;
-        StructuredObjectService structObjServiceClient = DaoServiceClientFactory.createStructuredObjectService(addressSOService,"admin", "admin");
+        StructuredObjectService structObjServiceClient = WebServiceClientFactory.createStructuredObjectService(addressSOService,"admin", "admin");
 
         // create using id
         StructuredObject createStructuredObject = createPacket(fundIdents, "v1");
