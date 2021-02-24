@@ -4,7 +4,7 @@ export {default as AdminExtSystemPage} from 'pages/admin/AdminExtSystemPage.jsx'
 export {default as AdminLogsPage} from 'pages/admin/AdminLogsPage.jsx';
 export {default as AdminUserPage} from 'pages/admin/AdminUserPage.jsx';
 export {default as AdminGroupPage} from 'pages/admin/AdminGroupPage.jsx';
-export {default as AdminFundPage} from 'pages/admin/AdminFundPage.jsx';
+export {default as AdminFundPage} from 'pages/admin/AdminFundPage';
 export {default as AdminRequestsQueuePage} from 'pages/admin/AdminRequestsQueuePage.jsx';
 
 export {default as ArrPage} from 'pages/arr/ArrPage.jsx';

@@ -92,7 +92,9 @@ public class StructuredObjectRepositoryImpl implements StructuredObjectRepositor
 
         TypedQuery<ArrStructuredObject> q = em.createQuery(cq);
         q.setFirstResult(firstResult);
-        q.setMaxResults(maxResults);
+        if (maxResults > 0) {
+            q.setMaxResults(maxResults);
+        }
 
         return q;
     }

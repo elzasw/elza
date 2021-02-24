@@ -1051,7 +1051,7 @@ var messages = {
     "ap.error.emptyValue": "Prázdná hodnota archivní entity",
     "ap.error.duplicateValue": "Hodnota již existuje",
 
-    "ap.binding.external-id": "Externí ID",
+    "ap.binding.source": "zdroj",
     "ap.binding.user": "upravil",
     "ap.binding.replaced": "nahrazená",
 
@@ -1290,6 +1290,8 @@ var messages = {
     "admin.extSystem.edit.title": "Upravení externího systému",
     "admin.extSystem.delete.confirm": "Opravdu chcete externí systém odstranit?",
     "admin.extSystem.cam": "CAM",
+    "admin.extSystem.cam-uuid": "CAM - UUID",
+    "admin.extSystem.cam-complete": "CAM - Kompletní",
     "admin.extSystem.apiKeyId": "ApiKey - ID",
     "admin.extSystem.apiKeyValue": "ApiKey - hodnota",
     "admin.bulk.detail.queue.empty": "Ve frontě nejsou žádné požadavky",

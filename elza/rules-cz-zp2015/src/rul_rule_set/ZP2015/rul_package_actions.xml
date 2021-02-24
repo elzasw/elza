@@ -12,6 +12,7 @@
             <action-recommended output-type="STARSI_POMUCKA_1958" />
             <action-recommended output-type="ZP2015_MANIP_SEZNAM" />
             <action-recommended output-type="ZP2015_INVENTAR" />
+            <action-recommended output-type="ZP2015_STITKY" />
         </action-recommendeds>
     </package-action>
     <package-action filename="ZNEPLATNENI_INV_CISLA.yaml" >
@@ -21,6 +22,7 @@
     <package-action filename="ZP2015_GENERATOR_UNIT_ID.yaml" >
         <action-recommendeds>
             <action-recommended output-type="ZP2015_INVENTAR" />
+            <action-recommended output-type="ZP2015_STITKY" />
         </action-recommendeds>
     </package-action>
     <package-action filename="ZMRAZENI_REF_OZN.yaml" />

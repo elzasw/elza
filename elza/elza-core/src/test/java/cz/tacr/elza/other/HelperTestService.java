@@ -105,6 +105,10 @@ public class HelperTestService {
     @Autowired
     private ApBindingRepository bindingRepository;
     @Autowired
+    private ApBindingItemRepository bindingItemRepository;
+    @Autowired
+    private ApBindingStateRepository bindingStateRepository;
+    @Autowired
     private AsyncRequestService asyncRequestService;
     @Autowired
     private ApItemRepository apItemRepository;
@@ -221,6 +225,8 @@ public class HelperTestService {
         bulkActionNodeRepository.deleteAll();
         faBulkActionRepository.deleteAll();
         indexRepository.deleteAll();
+        bindingItemRepository.deleteAll();
+        bindingStateRepository.deleteAll();
         apItemRepository.deleteAll();
         partRepository.deleteAll();
         keyValueRepository.deleteAll();

@@ -1043,4 +1043,74 @@
         <sql>update arr_fund set mark=trim(mark) where mark is not null</sql>
         <sql>update arr_fund set unitdate=trim(unitdate) where unitdate is not null</sql>
     </changeSet>
+    
+    <changeSet id="20210210161000" author="ppyt">
+        <!-- Oprava v datech z duvodu chybneho mazani partu -->
+        <sql>UPDATE ap_part p SET delete_change_id = (select p2.delete_change_id FROM ap_part p2 WHERE p.parent_part_id=p2.part_id) WHERE p.delete_change_id is null AND p.parent_part_id is not null</sql>
+        <sql>UPDATE ap_item p SET delete_change_id = (select p2.delete_change_id FROM ap_part p2 WHERE p.part_id=p2.part_id) WHERE p.delete_change_id is null</sql>
+    </changeSet>
+
+    <changeSet id="20210210162000" author="ppyt">
+        <dropForeignKeyConstraint baseTableName="ap_binding_item" constraintName="FK_AP_BINDING_ITEM_PART" />
+        <dropForeignKeyConstraint baseTableName="ap_binding_item" constraintName="FK_AP_BINDING_ITEM_ITEM" />
+        <dropIndex indexName="ap_binding_item_value_idx" tableName="ap_binding_item" />
+        <dropIndex indexName="ap_binding_item_part_idx" tableName="ap_binding_item" />
+        <dropIndex indexName="ap_binding_item_item_idx" tableName="ap_binding_item" />
+        
+        <addColumn tableName="ap_binding_item">
+            <column name="create_change_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_binding_item_create_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_binding_item_delete_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+        </addColumn>
+        
+        <!-- Copy last state -->
+        <sql dbms="postgresql">UPDATE ap_binding_item bi SET create_change_id = bs2.create_change_id, delete_change_id = bs2.delete_change_id
+           FROM (SELECT MAX(bs.create_change_id) AS create_change_id, MAX(bs.delete_change_id) AS delete_change_id, bs.binding_id FROM ap_binding_state bs GROUP BY bs.binding_id) bs2 
+           WHERE bi.binding_id = bs2.binding_id</sql>
+           
+        <addNotNullConstraint tableName="ap_binding_item" columnName="create_change_id" columnDataType="int"/>
+
+        <createIndex indexName="ap_binding_item_value_idx" tableName="ap_binding_item" unique="false">
+            <column name="value" type="char(50)"/>
+            <column name="binding_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_binding_item_part_idx" tableName="ap_binding_item" unique="false">
+            <column name="part_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_binding_item_item_idx" tableName="ap_binding_item" unique="false">
+            <column name="item_id" type="int"/>
+            <column name="delete_change_id" type="int"/>
+        </createIndex>
+        
+        <addForeignKeyConstraint baseColumnNames="part_id" baseTableName="ap_binding_item"
+                                 constraintName="FK_AP_BINDING_ITEM_PART" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="part_id" referencedTableName="ap_part"/>
+                                 
+        <addForeignKeyConstraint baseColumnNames="item_id" baseTableName="ap_binding_item"
+                                 constraintName="FK_AP_BINDING_ITEM_ITEM" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="item_id" referencedTableName="ap_item"/>
+
+        <addForeignKeyConstraint baseColumnNames="create_change_id" baseTableName="ap_binding_item"
+                                 constraintName="FK_AP_BINDING_ITEM_CREATE_CHANGE_ID" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="change_id" referencedTableName="ap_change"/>
+        
+        <addForeignKeyConstraint baseColumnNames="delete_change_id" baseTableName="ap_binding_item"
+                                 constraintName="FK_AP_BINDING_ITEM_DELETE_CHANGE_ID" deferrable="false"
+                                 initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="change_id" referencedTableName="ap_change"/>
+    </changeSet>
 </databaseChangeLog>

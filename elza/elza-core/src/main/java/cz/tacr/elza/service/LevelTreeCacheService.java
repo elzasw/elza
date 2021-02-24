@@ -174,6 +174,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     @Subscribe
     public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
         if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.LEVEL_TREE)) {
+            logger.info("Invalidating LevelTreeCacheService");
             versionCache = new CapacityMap<>();
         }
     }
@@ -271,33 +272,46 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @param versionId id verze stromu
      * @return nalezené uzly
      */
-    public List<TreeNodeVO> getNodesByIds(final Collection<Integer> nodeIds, final Integer versionId) {
+    public List<TreeNodeVO> getNodesByIds(final Collection<Integer> nodeIds,
+                                          final Integer versionId) {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
+        return getNodesByIds(nodeIds, version);
+    }
 
+    public List<TreeNodeVO> getNodesByIds(final Collection<Integer> nodeIds,
+                                          final ArrFundVersion version) {
         Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
 
-        Map<Integer, TreeNode> subMap = new LinkedHashMap<>();
+        Map<Integer, TreeNode> subTreeMap = new LinkedHashMap<>();
         for (Integer nodeId : nodeIds) {
             TreeNode treeNode = versionTreeCache.get(nodeId);
             if (treeNode != null) {
-
                 TreeNode parent = treeNode;
-                while(parent != null){
-                    subMap.put(parent.getId(), parent);
+                while (parent != null && subTreeMap.get(parent) == null) {
+                    subTreeMap.put(parent.getId(), parent);
                     parent = parent.getParent();
                 }
+            } else {
+                logger.error("Node not found in levelTreeCache, nodeId: {}", nodeId);
+                throw new SystemException("Node not found, nodeId: " + nodeId, BaseCode.INVALID_STATE)
+                        .set("nodeId", nodeId);
             }
         }
+        return getNodesByIds(nodeIds, version, subTreeMap);
+    }
 
-        Map<Integer, TitleItemsByType> valuesMap = createValuesMap(subMap, version, null);
-        Map<Integer, TreeNodeVO> clientMap = createNodesWithTitles(subMap, valuesMap, null, version);
+    public List<TreeNodeVO> getNodesByIds(final Collection<Integer> nodeIds,
+                                          final ArrFundVersion version,
+                                          Map<Integer, TreeNode> subTreeMap) {
+        Map<Integer, TitleItemsByType> valuesMap = createValuesMap(subTreeMap, version, null);
+        Map<Integer, TreeNodeVO> clientMap = createNodesWithTitles(subTreeMap, valuesMap, null, version);
 
         List<TreeNodeVO> result = new LinkedList<>();
         ViewTitles viewTitles = configView.getViewTitles(version.getRuleSetId(), version.getFund().getFundId());
 
         for (Integer nodeId : nodeIds) {
-            TreeNode treeNode = versionTreeCache.get(nodeId);
+            TreeNode treeNode = subTreeMap.get(nodeId);
             if(treeNode != null){
                 String[] referenceMark = createClientReferenceMarkFromRoot(treeNode, viewTitles, valuesMap);
                 TreeNodeVO clientNode = clientMap.get(nodeId);
@@ -1267,7 +1281,7 @@ private void processEvent(AbstractEventSimple event) {
 
 
     public List<Integer> sortNodesByTreePosition(final Collection<Integer> nodeIds, final ArrFundVersion version) {
-        List<TreeNodeVO> nodes = getNodesByIds(nodeIds, version.getFundVersionId());
+        List<TreeNodeVO> nodes = getNodesByIds(nodeIds, version);
 
         nodes.sort((node1, node2) -> {
             Integer[] referenceMark1 = node1.getReferenceMarkInt();
@@ -2349,18 +2363,42 @@ private void processEvent(AbstractEventSimple event) {
     /**
      * Sestaví informace o zanoření
      *
-     * @param fundId identifikátor archivního souboru
-     * @param nodeIds seznam identifikátorů jednotek popisu
+     * Pokud node neexistuje (byl vymazan), tak je ignorovan.
+     * 
+     * @param fundId
+     *            identifikátor archivního souboru
+     * @param nodeIds
+     *            seznam identifikátorů jednotek popisu
      */
-    public Map<Integer, TreeNodeVO> findNodeReferenceMark(@NotNull Integer fundId, Collection<Integer> nodeIds) {
-        if (nodeIds != null && !nodeIds.isEmpty()) {
-            ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fundId);
-            if (fundVersion != null) {
-                List<TreeNodeVO> nodes = getNodesByIds(nodeIds, fundVersion.getFundVersionId());
-                return nodes.stream().collect(Collectors.toMap(TreeNodeVO::getId, node -> node));
+    public Map<Integer, TreeNodeVO> findNodeReferenceMark(@NotNull Integer fundId,
+                                                          Collection<Integer> nodeIds) {
+        if (CollectionUtils.isEmpty(nodeIds)) {
+            return Collections.emptyMap();
+        }
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fundId);
+        if (fundVersion == null) {
+            logger.error("Fund not found, foundId: {}", fundId);
+            throw new IllegalStateException("Fund not found, foundId: "+fundId);
+        }
+
+        // filter only existing nodes
+        Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(fundVersion);
+        Collection<Integer> nodeIdList = new ArrayList<>(nodeIds.size());
+        Map<Integer, TreeNode> subTreeMap = new LinkedHashMap<>();
+        for (Integer nodeId : nodeIds) {
+            TreeNode treeNode = versionTreeCache.get(nodeId);
+            if (treeNode != null) {
+                nodeIdList.add(nodeId);
+
+                TreeNode parent = treeNode;
+                while (parent != null && subTreeMap.get(parent) == null) {
+                    subTreeMap.put(parent.getId(), parent);
+                    parent = parent.getParent();
+                }
             }
         }
-        return Collections.emptyMap();
+        List<TreeNodeVO> nodes = getNodesByIds(nodeIdList, fundVersion, subTreeMap);
+        return nodes.stream().collect(Collectors.toMap(TreeNodeVO::getId, node -> node));
     }
 
     /**

@@ -144,6 +144,7 @@ public class ApControllerTest extends AbstractControllerTest {
         ApPartVO preferredPart = findPreferredPart(accessPoint);
         assertNotNull(preferredPart);
 
+        // add new part Karel IV
         items = new ArrayList<>();
         items.add(buildApItem(nmMainItemType.getCode(), null, "Karel", null, null));
         items.add(buildApItem(nmSupGenItemType.getCode(), null, "IV", null, null));
@@ -151,9 +152,11 @@ public class ApControllerTest extends AbstractControllerTest {
         ApPartFormVO partFormVO = createPartFormVO(null, ptName.getCode(), null, items);
         createPart(accessPoint.getId(), partFormVO);
 
+        // check existence of two parts
         accessPoint = getAccessPoint(accessPoint.getId());
         Assert.assertEquals(2, accessPoint.getParts().size());
 
+        // modify preferred part to Karel X
         items = new ArrayList<>(preferredPart.getItems());
         ApItemStringVO itemNmMain = (ApItemStringVO) items.get(0);
         itemNmMain.setValue("Karel");
@@ -164,6 +167,7 @@ public class ApControllerTest extends AbstractControllerTest {
         partFormVO = createPartFormVO(preferredPart.getId(), ptName.getCode(), null, items);
         updatePart(accessPoint.getId(), preferredPart.getId(), partFormVO);
 
+        // check modified preferred part
         do {
             accessPoint = getAccessPoint(accessPoint.getId());
             Assert.assertNotNull(accessPoint);
@@ -174,7 +178,15 @@ public class ApControllerTest extends AbstractControllerTest {
             Thread.sleep(100);
         } while (true);
 
-        setPreferName(accessPoint.getId(), accessPoint.getParts().get(0).getId());
+        // get non preferred part and set as preferred
+        Integer nextPredPartId = null, oldPrefName = accessPoint.getPreferredPart();
+        for (ApPartVO part : accessPoint.getParts()) {
+            if (!part.getId().equals(accessPoint.getPreferredPart())) {
+                nextPredPartId = part.getId();
+                break;
+            }
+        }
+        setPreferName(accessPoint.getId(), nextPredPartId);
 
         do {
             accessPoint = getAccessPoint(accessPoint.getId());
@@ -186,7 +198,7 @@ public class ApControllerTest extends AbstractControllerTest {
             Thread.sleep(100);
         } while (true);
 
-        deletePart(accessPoint.getId(), accessPoint.getParts().get(1).getId());
+        deletePart(accessPoint.getId(), oldPrefName);
         accessPoint = getAccessPoint(accessPoint.getId());
         Assert.assertEquals(1, accessPoint.getParts().size());
     }

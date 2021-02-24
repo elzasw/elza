@@ -2,16 +2,22 @@ package cz.tacr.elza.service.cam;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.cam.schema.cam.ItemsXml;
 import cz.tacr.cam.schema.cam.NewItemsXml;
@@ -34,6 +40,8 @@ import cz.tacr.elza.service.cam.CamXmlFactory.EntityRefHandler;
  * This builder will create XML for one binding
  */
 abstract public class CamXmlBuilder {
+
+    private static final Logger log = LoggerFactory.getLogger(CamXmlBuilder.class);
 
     protected final StaticDataProvider sdp;
     protected final ApAccessPoint accessPoint;
@@ -113,28 +121,99 @@ abstract public class CamXmlBuilder {
     protected List<PartXml> createPartList(Collection<ApPart> partList,
                                            Map<Integer, List<ApItem>> itemMap,
                                            String externalSystemTypeCode) {
+        if (CollectionUtils.isEmpty(partList)) {
+            return Collections.emptyList();
+        }
+
+        // collection of available parts for export
+        // note: if parent part is deleted, subparts may still be 
+        //       included in partList, these parts without parent
+        //       parts have to be filtered out.
+        Set<String> availableParts = new HashSet<>();
+        Map<String, Integer> subpartCounter = new HashMap<>();
+
         List<PartXml> partXmlList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(partList)) {
-            for (ApPart part : partList) {
-                List<ApItem> partItems = itemMap.get(part.getPartId());
-                partItems = filterOutItemsWithoutExtSysMapping(partItems, externalSystemTypeCode);
-                if (CollectionUtils.isEmpty(partItems)) {
-                    continue;
-                }
-                PartXml partXml = createPart(part, partItems, externalSystemTypeCode);
-                if (partXml == null) {
-                    continue;
-                }
-                partXmlList.add(partXml);
+        for (ApPart part : partList) {
+            List<ApItem> srcPartItems = itemMap.get(part.getPartId());
+
+            // filter parts without mapping
+            List<ApItem> partItems = filterOutItemsWithoutExtSysMapping(srcPartItems, externalSystemTypeCode);
+            if (CollectionUtils.isNotEmpty(srcPartItems) && CollectionUtils.isEmpty(partItems)) {
+                log.debug("Ignoring part, missing mapping to external system, partId={}", part.getPartId());
+                continue;
+            }
+            PartXml partXml = createPart(part, partItems, externalSystemTypeCode);
+            partXmlList.add(partXml);
+            availableParts.add(partXml.getPid().getValue());
+
+            log.debug("Exporting part, partId={}, partUuid={}, parentPartId={}", part.getPartId(),
+                      partXml.getPid().getValue(),
+                      (part.getParentPart() != null) ? part.getParentPart().getPartId() : null);
+
+            if (partXml.getPrnt() != null) {
+                int cnt = subpartCounter.getOrDefault(partXml.getPrnt().getValue(), 0);
+                cnt++;
+                subpartCounter.put(partXml.getPrnt().getValue(), cnt++);
             }
         }
+
+        // do filtering
+        boolean modified;
+        do {
+            int size = partXmlList.size();
+            partXmlList = partXmlList.stream()
+                    .filter(p -> {
+                        // filter ignored subparts (parent part is already ignored)
+                        if (p.getPrnt() != null && !availableParts.contains(p.getPrnt().getValue())) {
+                            log.debug("Ignoring part, due to ignored parent part, parentPartUuid={}, partUuid={}",
+                                      p.getPrnt().getValue(),
+                                      p.getPid().getValue());
+
+                            availableParts.remove(p.getPid().getValue());
+                            return false;
+                        }
+                        // filter empty parts without subparts
+                        if (p.getItms() == null || p.getItms().getItems().size() == 0) {
+                            // no items, we have to check if has subpart
+                            Integer cnt = subpartCounter.getOrDefault(p.getPid().getValue(), 0);
+                            if (cnt == 0) {
+                                log.debug("Ignoring part, due missing items, partUuid={}",
+                                          p.getPid().getValue());
+                                availableParts.remove(p.getPid().getValue());
+                                // decrement parent counter
+                                if (p.getPrnt() != null) {
+                                    cnt = subpartCounter.getOrDefault(p.getPrnt().getValue(), 0);
+                                    if (cnt > 0) {
+                                        cnt--;
+                                        subpartCounter.put(p.getPrnt().getValue(), cnt);
+                                    }
+                                }
+                                return false;
+                            }
+                        }
+                        return true;
+                    })
+                    .collect(Collectors.toList());
+            modified = (size > partXmlList.size());
+        } while (modified);
+
         return partXmlList;
     }
 
+    /**
+     * Create part
+     * 
+     * @param apPart
+     * @param partItems
+     * @param externalSystemTypeCode
+     * @return
+     */
     private PartXml createPart(ApPart apPart, List<ApItem> partItems, String externalSystemTypeCode) {
         Validate.isTrue(partItems.size() > 0, "Empty part list, entityId: {}", apPart.getAccessPointId());
 
-        String uuid = UUID.randomUUID().toString();
+        String uuid = getUuidForPart(apPart);
+
+        log.debug("Creating part, partId: {}, partUuid: {}", apPart.getPartId(), uuid);
 
         String parentUuid;
         if (apPart.getParentPart() != null) {
@@ -148,12 +227,6 @@ abstract public class CamXmlBuilder {
         onPartCreated(apPart, uuid);
 
         ItemsXml itemsXml = createItems(apPart, partItems, externalSystemTypeCode);
-
-        // check if anything to export
-        if (itemsXml.getItems().size() == 0) {
-            return null;
-        }
-
         part.setItms(itemsXml);
         return part;
     }
@@ -196,7 +269,7 @@ abstract public class CamXmlBuilder {
     }
 
     protected void onPartCreated(ApPart apPart, String uuid) {
-        // TODO Auto-generated method stub
+        // nop
 
     }
 

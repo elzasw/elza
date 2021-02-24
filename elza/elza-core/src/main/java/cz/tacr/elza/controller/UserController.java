@@ -254,7 +254,7 @@ public class UserController {
     ) {
         Validate.notNull(active);
         Validate.notNull(disabled);
-        SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.DISABLED;
+        SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
         SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.FULLTEXT;
 
         if (!active && !disabled) {

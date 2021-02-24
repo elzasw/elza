@@ -38,7 +38,9 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 
 		Query query = createFulltextQuery(hql, fulltext, userId);
 
-		query.setMaxResults(max);
+        if (max >= 0) {
+            query.setMaxResults(max);
+        }
 		List<Object[]> arrayList = query.getResultList();
 		List<ArrFundOpenVersion> result = new ArrayList<>(arrayList.size());
 		for (Object[] array : arrayList) {

@@ -215,11 +215,11 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
 
     @Override
     protected void onItemCreated(ApItem item, String uuid) {
-        externalSystemService.createApBindingItem(binding, uuid, null, item);
+        externalSystemService.createApBindingItem(binding, null, uuid, null, item);
     }
 
     @Override
     protected void onPartCreated(ApPart apPart, String uuid) {
-        externalSystemService.createApBindingItem(binding, uuid, apPart, null);
+        externalSystemService.createApBindingItem(binding, null, uuid, apPart, null);
     }
 }

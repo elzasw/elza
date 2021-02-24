@@ -3,6 +3,7 @@ package cz.tacr.elza.common;
 import java.io.IOException;
 
 import org.apache.commons.lang3.Validate;
+import org.geotools.geometry.jts.WKBReader;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -17,6 +18,7 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.io.WKTWriter;
 
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -35,6 +37,15 @@ public class GeometryConvertor {
         WKTWriter writer = new WKTWriter();
         writer.setFormatted(false);
         return writer.write(value);
+    }
+
+    public static Geometry convertWkb(byte[] value) {
+        try {
+            Geometry geom = new WKBReader().read(value);
+            return geom;
+        } catch (ParseException e) {
+            throw new SystemException("Failed to parse geometry value", e, BaseCode.PROPERTY_IS_INVALID);
+        }
     }
 
     public static Geometry convert(String value) {

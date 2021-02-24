@@ -18,27 +18,18 @@ type Props = DescItemComponentProps<string>;
 class DescItemUnitid extends AbstractReactComponent<Props> {
     private readonly focusEl: React.RefObject<HTMLInputElement>;
 
-    constructor(props) {
+    public constructor(props: Props) {
         super(props);
         this.focusEl = React.createRef();
     }
 
-    focus() {
-        this.focusEl.current?.focus();
-    }
+    public focus = () => this.focusEl.current?.focus();
 
-    handleChange(e) {
-        const newValue = normalizeString(e.target.value, DescItemUnitid_MAX_LENGTH);
-
-        if (newValue != this.props.descItem.value) {
-            this.props.onChange(newValue);
-        }
-    }
-
-    render() {
+    public render() {
         const {descItem, locked, readMode, cal} = this.props;
-        let value =
-            cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : inputValue(descItem.value);
+        let value = cal && descItem.value == null ? 
+            i18n('subNodeForm.descItemType.calculable') : 
+            inputValue(descItem.value);
 
         if (readMode) {
             return <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />;
@@ -63,6 +54,14 @@ class DescItemUnitid extends AbstractReactComponent<Props> {
                 </ItemTooltipWrapper>
             </div>
         );
+    }
+
+    private handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = normalizeString(e.target.value, DescItemUnitid_MAX_LENGTH);
+
+        if (newValue != this.props.descItem.value) {
+            this.props.onChange(newValue);
+        }
     }
 }
 

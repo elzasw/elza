@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingState, Integer> {
 
@@ -18,7 +19,7 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
     List<ApBindingState> findByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
 
     @Query("SELECT bis FROM ap_binding_state bis WHERE bis.binding = :binding AND bis.deleteChangeId IS NULL")
-    List<ApBindingState> findByBinding(@Param("binding")ApBinding binding);
+    Optional<ApBindingState> findActiveByBinding(@Param("binding") ApBinding binding);
 
     @Query("SELECT bis FROM ap_binding_state bis JOIN bis.binding bin WHERE bis.accessPoint = :accessPoint AND bis.deleteChangeId IS NULL AND bin.apExternalSystem = :apExternalSystem")
     ApBindingState findByAccessPointAndExternalSystem(@Param("accessPoint") ApAccessPoint accessPoint,

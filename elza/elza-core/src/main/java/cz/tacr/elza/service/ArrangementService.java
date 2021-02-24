@@ -979,7 +979,7 @@ public class ArrangementService {
             List<Integer> nodeIdList = fundToNodeList.getNodeIdList();
             ArrFundVersion fundVersion = getOpenVersionByFundId(fundToNodeList.getFundId());
             List<Integer> sortedList = levelTreeCacheService.sortNodesByTreePosition(nodeIdList, fundVersion);
-            return levelTreeCacheService.getNodesByIds(sortedList, fundVersion.getFundVersionId());
+            return levelTreeCacheService.getNodesByIds(sortedList, fundVersion);
         }
         return Collections.emptyList();
     }

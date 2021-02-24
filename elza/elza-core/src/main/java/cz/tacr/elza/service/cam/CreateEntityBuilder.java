@@ -9,6 +9,7 @@ import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
@@ -22,12 +23,14 @@ public class CreateEntityBuilder extends CamXmlBuilder {
     private ApState apState;
     final private ExternalSystemService externalSystemService;
     final private ApBinding binding;
+    final ApChange change;
 
     public CreateEntityBuilder(final ExternalSystemService externalSystemService,
                                final StaticDataProvider sdp,
                                final ApAccessPoint accessPoint,
                                final ApBinding binding,
                                final ApState state,
+                               final ApChange change,
                                final GroovyService groovyService,
                                final AccessPointDataService apDataService,
                                final ApScope scope) {
@@ -35,6 +38,7 @@ public class CreateEntityBuilder extends CamXmlBuilder {
         this.apState = state;
         this.externalSystemService = externalSystemService;
         this.binding = binding;
+        this.change = change;
     }
 
     public CreateEntityXml build(List<ApPart> partList,
@@ -50,11 +54,11 @@ public class CreateEntityBuilder extends CamXmlBuilder {
 
     @Override
     protected void onItemCreated(ApItem item, String uuid) {
-        externalSystemService.createApBindingItem(binding, uuid, null, item);
+        externalSystemService.createApBindingItem(binding, change, uuid, null, item);
     }
 
     @Override
     protected void onPartCreated(ApPart apPart, String uuid) {
-        externalSystemService.createApBindingItem(binding, uuid, apPart, null);
+        externalSystemService.createApBindingItem(binding, change, uuid, apPart, null);
     }
 }

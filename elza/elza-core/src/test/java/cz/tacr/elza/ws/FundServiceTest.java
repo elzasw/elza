@@ -23,7 +23,7 @@ public class FundServiceTest extends AbstractControllerTest {
 
         String address = RestAssured.baseURI + ":" + RestAssured.port + "/services"
                 + WebServiceConfig.FUND_SERVICE_URL;
-        FundService fundServiceClient = DaoServiceClientFactory.createFundService(address, "admin", "admin");
+        FundService fundServiceClient = WebServiceClientFactory.createFundService(address, "admin", "admin");
         
         Fund fundCreate = new Fund();
         fundCreate.setFundName("Test fund XYZ");

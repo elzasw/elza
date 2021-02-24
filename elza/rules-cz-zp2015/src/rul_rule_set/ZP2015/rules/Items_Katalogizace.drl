@@ -1,0 +1,24 @@
+package ZP2015_Katalogizace;
+
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.drools.model.AvailableDescItems;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.StructObjItem;
+
+//----------------------------------------------
+// Role entit pro katalog
+//----------------------------------------------
+
+rule "Umožnění vložení katalogizačního záznamu"
+no-loop
+when
+    $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE") )
+    $itemSpec: RulItemSpecExt( code in ("ZP2015_ENTITY_ROLE_81") ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end

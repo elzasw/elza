@@ -177,7 +177,7 @@ public class ArrangementWebsocketController {
         }
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
-                .getNodesByIds(Collections.singletonList(newLevel.getNodeParent().getNodeId()), version.getFundVersionId());
+                .getNodesByIds(Collections.singletonList(newLevel.getNodeParent().getNodeId()), version);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(ArrNodeVO.valueOf(newLevel.getNode()), nodeClients.iterator().next());
 
@@ -208,7 +208,7 @@ public class ArrangementWebsocketController {
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
-                        version.getFundVersionId());
+                               version);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
 

@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.print.item.Item;
@@ -22,11 +24,11 @@ import cz.tacr.elza.service.cache.RestoredNode;
  */
 public class Node {
 
+    private final static Logger log = LoggerFactory.getLogger(Node.class);
+
     private final NodeId nodeId;
 
     private List<Item> items;
-
-    private List<Record> nodeAPs;
 
     private List<Dao> daos;
 
@@ -34,6 +36,11 @@ public class Node {
      * UUID of the node
      */
     private String uuid;
+
+    /**
+     * Provide parent nodes
+     */
+    NodeProvider nodeProvider;
 
     /**
      * Konstruktor s povinnými hodnotami
@@ -61,6 +68,25 @@ public class Node {
      */
     public NodeId getParent() {
         return nodeId.getParent();
+    }
+
+    public Node getParentNode() {
+        NodeId parentNodeId = nodeId.getParent();
+        if (parentNodeId == null) {
+            return null;
+        }
+        if (nodeProvider == null) {
+            return null;
+        }
+        return nodeProvider.getNode(parentNodeId);
+    }
+
+    public NodeProvider getNodeProvider() {
+        return nodeProvider;
+    }
+
+    void setNodeProvider(NodeProvider nodeProvider) {
+        this.nodeProvider = nodeProvider;
     }
 
     /**
@@ -104,6 +130,65 @@ public class Node {
             String tc = item.getType().getCode();
             return typeCodes.contains(tc);
         }).collect(Collectors.toList());
+    }
+
+    public List<Item> getItems(final Collection<String> typeCodes, final Collection<String> specCodes) {
+        Validate.notNull(typeCodes);
+
+        if (items == null || typeCodes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return items.stream().filter(item -> {
+            String tc = item.getType().getCode();
+            if (!typeCodes.contains(tc)) {
+                return false;
+            }
+            // check specification
+            if (item.getSpecification() == null) {
+                // add items without spec
+                return true;
+            }
+            String specCode = item.getSpecification().getCode();
+            return specCodes.contains(specCode);
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Return list of items with given spec
+     * 
+     * If item is without spec it is also returned
+     * 
+     * @param typeCodes
+     * @param specCodes
+     * @return
+     */
+    public List<Item> getItemsFromParent(final Collection<String> typeCodes, final Collection<String> specCodes) {
+        List<Item> result = new ArrayList<>();
+        NodeId parentNodeId = this.getParent();
+        if (parentNodeId != null) {
+            Node parentNode = nodeProvider.getNode(parentNodeId);
+            result.addAll(parentNode.getItemsFromParent(typeCodes, specCodes));
+        }
+        result.addAll(getItems(typeCodes, specCodes));
+        return result;
+    }
+
+    public List<Item> getItemsFromParent(final Collection<String> typeCodes) {
+        Validate.notNull(typeCodes);
+
+        if (items == null || typeCodes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Item> result = new ArrayList<>();
+        NodeId parentNodeId = this.getParent();
+        if (parentNodeId != null) {
+            Node parentNode = nodeProvider.getNode(parentNodeId);
+            result.addAll(parentNode.getItemsFromParent(typeCodes));
+        }
+        result.addAll(getItems(typeCodes));
+        return result;
     }
 
     /**
@@ -192,16 +277,13 @@ public class Node {
     }
 
     /**
-     * Return list of records connected to the node or to description item
+     * Return list of records connected to description item
      *
      * @return
      */
     public List<Record> getRecords() {
         List<Record> allAPs = new ArrayList<>();
 
-        if (nodeAPs != null) {
-            allAPs.addAll(nodeAPs);
-        }
         if (items != null) {
             for (Item item : items) {
                 if (item instanceof ItemRecordRef) {
@@ -212,18 +294,10 @@ public class Node {
         return allAPs;
     }
 
-    public List<Record> getNodeRecords() {
-        return nodeAPs;
-    }
-
     /* internal methods */
 
     void setItems(List<Item> items) {
         this.items = items;
-    }
-
-    void setNodeAPs(List<Record> nodeAPs) {
-        this.nodeAPs = nodeAPs;
     }
 
     /**
