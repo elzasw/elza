@@ -894,6 +894,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
          * Zastavení zpracování.
          */
         public void stop() {
+            logger.debug("Stopping queue, type: {}", this.type);
+
             boolean result = running.compareAndSet(true, false);
             if (result) {
                 synchronized (lockQueue) {
@@ -919,6 +921,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
          * Spuštění zpracování.
          */
         void start() {
+            logger.debug("Starting queue, type: {}", this.type);
+
             synchronized (lockQueue) {
                 boolean result = running.compareAndSet(false, true);
                 if (result) {
