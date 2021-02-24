@@ -407,7 +407,13 @@ public class RevertingChangesService {
 
         // strukt typy lze smazat az po vymazani vsech ref. na ne
         if (nodeId == null) {
+
+            asyncRequestDelete(fund, toChange);
+
+            dataStructureRefDelete(fund, toChange);
+
             structuredObjectDelete(fund, toChange);
+
         }
 
         // Drop unused node ids
@@ -630,11 +636,19 @@ public class RevertingChangesService {
      * @return
      */
     private Query createDeleteActionRunQuery(final @NotNull ArrFund fund, final @NotNull ArrChange toChange) {
-        Query query = entityManager.createQuery("DELETE FROM arr_bulk_action_run rd WHERE rd IN (SELECT r FROM arr_bulk_action_run r JOIN r.fundVersion v WHERE v.fund = :fund AND r.change >= :change)");
+
+        String hql = "DELETE FROM arr_bulk_action_run rd WHERE rd IN (" +
+                " SELECT r FROM arr_bulk_action_run r" +
+                " JOIN r.fundVersion v" +
+                " WHERE v.fund = :fund AND r.change >= :change" +
+                ")";
+
+        Query query = entityManager.createQuery(hql);
 
         // nastavení parametrů dotazu
         query.setParameter("fund", fund);
         query.setParameter("change", toChange);
+
         return query;
     }
 
@@ -804,13 +818,7 @@ public class RevertingChangesService {
                 " AND si.createChange >= :change" +
                 ")";
 
-        Query query = entityManager.createQuery(hql);
-
-        // nastavení parametrů dotazu
-        query.setParameter("fund", fund);
-        query.setParameter("change", toChange);
-
-        query.executeUpdate();
+        executeRequestWithParameters(hql, fund, toChange);
     }
 
     private void structuredItemUpdate(@NotNull final ArrFund fund, @NotNull final ArrChange change) {
@@ -835,13 +843,31 @@ public class RevertingChangesService {
                 " AND so.createChange >= :change" +
                 ")";
 
-        Query query = entityManager.createQuery(hql);
+        executeRequestWithParameters(hql, fund, toChange);
+    }
 
-        // nastavení parametrů dotazu
-        query.setParameter("fund", fund);
-        query.setParameter("change", toChange);
+    private void asyncRequestDelete(@NotNull ArrFund fund, @NotNull ArrChange toChange) {
+        
+        String hql = "DELETE FROM arr_async_request r" +
+                " WHERE r.structuredObject IN (" +
+                " SELECT so FROM arr_structured_object so" +
+                " WHERE so.fund = :fund" +
+                " AND so.createChange >= :change" +
+                ")";
 
-        query.executeUpdate();
+        executeRequestWithParameters(hql, fund, toChange);
+    }
+
+    private void dataStructureRefDelete(@NotNull ArrFund fund, @NotNull ArrChange toChange) {
+
+        String hql = "DELETE FROM arr_data_structure_ref r" +
+                " WHERE r.structuredObject IN (" +
+                " SELECT so FROM arr_structured_object so" +
+                " WHERE so.fund = :fund" +
+                " AND so.createChange >= :change" +
+                ")";
+
+        executeRequestWithParameters(hql, fund, toChange);
     }
 
     private void structuredObjectDelete(@NotNull ArrFund fund, @NotNull ArrChange toChange) {
@@ -849,6 +875,11 @@ public class RevertingChangesService {
         String hql = "DELETE FROM arr_structured_object so" +
                 " WHERE so.fund = :fund" +
                 " AND so.createChange >= :change";
+
+        executeRequestWithParameters(hql, fund, toChange);
+    }
+
+    private void executeRequestWithParameters(@NotNull String hql, @NotNull ArrFund fund, @NotNull ArrChange toChange) {
 
         Query query = entityManager.createQuery(hql);
 
@@ -995,7 +1026,6 @@ public class RevertingChangesService {
 
         return query;
     }
-
 
     private String createHQLFindChanges(@NotNull final String changeNameColumn,
                                         @NotNull final String table,
