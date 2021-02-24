@@ -1606,7 +1606,7 @@ public class ArrangementController {
         }
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
-                .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), fundVersion.getFundVersionId());
+                .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), fundVersion);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         return new NodeWithParent(ArrNodeVO.valueOf(newLevel.getNode()), nodeClients.iterator().next());
     }
@@ -1633,7 +1633,7 @@ public class ArrangementController {
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
-                        fundVersion.getFundVersionId());
+                               fundVersion);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         return new NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
     }
