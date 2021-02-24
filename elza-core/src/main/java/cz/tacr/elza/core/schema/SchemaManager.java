@@ -45,10 +45,13 @@ public class SchemaManager {
      * @return
      */
     public Schema getSchema(final String urlSchema) {
-        return schemaMap.computeIfAbsent(urlSchema, u -> loadSchema(u));
+        return schemaMap.computeIfAbsent(urlSchema,
+                                         u -> loadSchema(u));
     }
 
     private Schema loadSchema(String urlSchema) {
+        logger.debug("Loading schema: {}", urlSchema);
+
         String fileSchema = schemaUrlToFile(urlSchema);
         if (StringUtils.isEmpty(fileSchema)) {
             logger.error("Schema not found: {}", urlSchema);
@@ -64,7 +67,6 @@ public class SchemaManager {
                         .set("file", fileSchema);
             }
             Schema schema = schemaFactory.newSchema(rsrc);
-            schemaMap.put(urlSchema, schema);
             return schema;
         } catch (SAXException e) {
             logger.error("Failed to read schema: {}", urlSchema, e);

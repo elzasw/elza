@@ -32,7 +32,7 @@ public class FundControllerTest extends AbstractControllerTest {
         cf.setUuid("aaaaaaaa-c903-4b8a-be7b-dfe15ae342e1");
         cf.setMark("mark1");
         List<String> scopes = new ArrayList<>();
-        scopes.add("GLOBAL");
+        scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
         Fund fund = fundsApi.createFund(cf);
         logger.info("Vytvořen AS : " + fund.getId());
@@ -51,7 +51,7 @@ public class FundControllerTest extends AbstractControllerTest {
         cf.setRuleSetCode(ruleSet.getCode());
         cf.setMark("mark1");
         List<String> scopes = new ArrayList<>();
-        scopes.add("GLOBAL");
+        scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
         Fund fund = fundsApi.createFund(cf);
         logger.info("Vytvořen AS : " + fund.getId());
@@ -64,7 +64,7 @@ public class FundControllerTest extends AbstractControllerTest {
         uf.setMark("mark3");
         uf.setFundNumber(100);
         scopes = new ArrayList<>();
-        scopes.add("GLOBAL");
+        scopes.add(SCOPE_GLOBAL);
         uf.setScopes(scopes);
         cz.tacr.elza.test.controller.vo.FundDetail fundDetail = fundsApi.updateFund(fund.getId().toString(), uf);
 
@@ -102,7 +102,7 @@ public class FundControllerTest extends AbstractControllerTest {
         cf.setRuleSetCode(ruleSet.getCode());
         cf.setMark("mark1");
         List<String> scopes = new ArrayList<>();
-        scopes.add("GLOBAL");
+        scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
         Fund fund = fundsApi.createFund(cf);
         logger.info("Vytvořen AS : " + fund.getId());
@@ -126,7 +126,7 @@ public class FundControllerTest extends AbstractControllerTest {
         cf.setUuid("aaaaaaaa-1111-2222-3333-444455556666");
         cf.setMark("mark1");
         List<String> scopes = new ArrayList<>();
-        scopes.add("GLOBAL");
+        scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
         fundsApi.createFund(cf);
 
@@ -137,7 +137,7 @@ public class FundControllerTest extends AbstractControllerTest {
         cf.setRuleSetCode(ruleSet.getCode());
         cf.setMark("mark1");
         scopes = new ArrayList<>();
-        scopes.add("GLOBAL");
+        scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
         fundsApi.createFund(cf);
 

@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,25 +12,15 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 
-import cz.tacr.cam.schema.cam.ItemBinaryXml;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.cam.schema.cam.CodeXml;
-import cz.tacr.cam.schema.cam.EntityRecordRefXml;
-import cz.tacr.cam.schema.cam.ItemBooleanXml;
-import cz.tacr.cam.schema.cam.ItemEntityRefXml;
-import cz.tacr.cam.schema.cam.ItemEnumXml;
-import cz.tacr.cam.schema.cam.ItemIntegerXml;
-import cz.tacr.cam.schema.cam.ItemLinkXml;
-import cz.tacr.cam.schema.cam.ItemStringXml;
-import cz.tacr.cam.schema.cam.ItemUnitDateXml;
-import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -40,16 +30,8 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataBit;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUriRef;
-import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
@@ -60,11 +42,11 @@ import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.service.cam.CamHelper;
-import cz.tacr.elza.service.vo.DataRef;
 
 @Service
 public class AccessPointItemService {
+
+    private final static Logger log = LoggerFactory.getLogger(AccessPointItemService.class);
 
     private static final String OBJECT_ID_SEQUENCE_NAME = "ap_item|object_id";
 
@@ -76,7 +58,60 @@ public class AccessPointItemService {
     private final ExternalSystemService externalSystemService;
     private final ApBindingItemRepository bindingItemRepository;
     private final ApBindingRepository bindingRepository;
-    private final AccessPointDataService accessPointDataService;
+
+    public static class DeletedItems {
+
+        List<ApItem> items;
+        List<ApBindingItem> bindings;
+
+        public DeletedItems(List<ApItem> items, List<ApBindingItem> bindings) {
+            super();
+            this.items = items;
+            this.bindings = bindings;
+        }
+
+        public List<ApItem> getItems() {
+            return items;
+        }
+
+        public List<ApBindingItem> getBindings() {
+            return bindings;
+        }
+    };
+
+    /**
+     * Record ref and its value
+     * 
+     *
+     */
+    public static class ReferencedEntities {
+        /**
+         * Data item referencing entity
+         */
+        ArrDataRecordRef data;
+
+        /**
+         * External entity identifier
+         * 
+         * Stored in binding
+         */
+        String entityIdentifier;
+
+        public ReferencedEntities(ArrDataRecordRef data, String entityIdentifier) {
+            super();
+            this.data = data;
+            this.entityIdentifier = entityIdentifier;
+        }
+
+        public ArrDataRecordRef getData() {
+            return data;
+        }
+
+        public String getEntityIdentifier() {
+            return entityIdentifier;
+        }
+
+    }
 
     public AccessPointItemService(final EntityManager em,
                                   final StaticDataService staticDataService,
@@ -85,8 +120,7 @@ public class AccessPointItemService {
                                   final SequenceService sequenceService,
                                   final ExternalSystemService externalSystemService,
                                   final ApBindingItemRepository bindingItemRepository,
-                                  final ApBindingRepository bindingRepository,
-                                  final AccessPointDataService accessPointDataService) {
+                                  final ApBindingRepository bindingRepository) {
         this.em = em;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
@@ -95,9 +129,9 @@ public class AccessPointItemService {
         this.externalSystemService = externalSystemService;
         this.bindingItemRepository = bindingItemRepository;
         this.bindingRepository = bindingRepository;
-        this.accessPointDataService = accessPointDataService;
     }
 
+    // TODO: Kandidat na vymazani
     @FunctionalInterface
     public interface CreateFunction {
         ApItem apply(final RulItemType itemType, final RulItemSpec itemSpec, final ApChange change, final int objectId, final int position);
@@ -106,31 +140,76 @@ public class AccessPointItemService {
     /**
      * Odstraní všechny atributy části.
      *
-     * @param part část
-     * @param change změna
+     * @param part
+     *            část
+     * @param change
+     *            změna
+     * @return
      */
-    public void deletePartItems(ApPart part, ApChange change) {
+    public DeletedItems deletePartItems(ApPart part, ApChange change) {
         List<ApItem> items = itemRepository.findValidItemsByPart(part);
-        for (ApItem item : items) {
-            item.setDeleteChange(change);
-        }
-        itemRepository.saveAll(items);
+        return deleteItems(items, change);
     }
 
     /**
-     * Odstraní všechny atributy částí.
+     * Odstraní kolekci item.
      *
-     * @param partList seznam částí
-     * @param change změna
+     * @param items
+     *            seznam
+     * @param change
+     *            změna
      */
-    public void deletePartsItems(List<ApPart> partList, ApChange change) {
-        List<ApItem> items = itemRepository.findValidItemsByParts(partList);
+    public DeletedItems deleteItems(List<ApItem> items, ApChange change) {
+        if (items.size() == 0) {
+            return new DeletedItems(Collections.emptyList(), Collections.emptyList());
+        }
+
         for (ApItem item : items) {
+            log.debug("Deleting item, apItemId: {}", item.getItemId());
             item.setDeleteChange(change);
         }
-        itemRepository.saveAll(items);
+        List<ApItem> deletedItems = itemRepository.saveAll(items);
+
+        // Delete bindings
+        List<ApBindingItem> bindingItems = this.bindingItemRepository.findByItems(deletedItems);
+        if (bindingItems.size() > 0) {
+            for (ApBindingItem bindingItem : bindingItems) {
+                log.debug("Deleting binding item, apBindingItemId: {}, apItemId: {}",
+                          bindingItem.getBindingItemId(),
+                          bindingItem.getItem().getItemId());
+                bindingItem.setDeleteChange(change);
+            }
+            bindingItems = bindingItemRepository.saveAll(bindingItems);
+
+            return new DeletedItems(deletedItems, bindingItems);
+        } else {
+            return new DeletedItems(deletedItems, Collections.emptyList());
+        }
     }
 
+    public List<ApItem> deleteBindnedItems(List<ApBindingItem> bindingItemsInPart, ApChange apChange) {
+        if (CollectionUtils.isEmpty(bindingItemsInPart)) {
+            return Collections.emptyList();
+        }
+        List<ApItem> items = new ArrayList<>();
+        for (ApBindingItem bindingItem : bindingItemsInPart) {
+            ApItem item = bindingItem.getItem();
+            if (item == null) {
+                throw new IllegalStateException("Binding item is not item, itemBindingId: " + bindingItem
+                        .getBindingItemId());
+            }
+            item.setDeleteChange(apChange);
+            items.add(item);
+        }
+
+        bindingItemRepository.deleteAll(bindingItemsInPart);
+
+        List<ApItem> deletedItems = itemRepository.saveAll(items);
+        return deletedItems;
+
+    }
+
+    /*
     private void updateItems(final List<ApItemVO> updateItems,
                              final Map<Integer, List<ApItem>> typeIdItemsMap,
                              final List<ApItem> itemsDb,
@@ -144,14 +223,14 @@ public class AccessPointItemService {
             if (item == null) {
                 throw new ObjectNotFoundException("Položka neexistuje", BaseCode.ID_NOT_EXIST).setId(objectId);
             }
-
+    
             RulItemType itemType = sdp.getItemType(item.getItemTypeId());
-
+    
             List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(item.getItemTypeId(), k -> new ArrayList<>());
             ArrData data = updateItem.createDataEntity(em);
             ApItem newItem = item.copy();
             item.setDeleteChange(change);
-
+    
             newItem.setCreateChange(change);
             newItem.setData(data);
             if (itemType.getUseSpecification() != null && itemType.getUseSpecification()) {
@@ -180,12 +259,12 @@ public class AccessPointItemService {
                 }
                 newItem.setItemSpec(null);
             }
-
+    
             dataToSave.add(data);
-
+    
             itemsDb.add(newItem);
             existsItems.add(newItem);
-
+    
             Integer oldPosition = item.getPosition();
             Integer newPosition = updateItem.getPosition();
             Validate.notNull(newPosition);
@@ -202,6 +281,7 @@ public class AccessPointItemService {
         }
         dataRepository.saveAll(dataToSave);
     }
+    */
 
     private int findMaxPosition(final List<ApItem> items) {
         int max = 1;
@@ -215,6 +295,7 @@ public class AccessPointItemService {
         return max;
     }
 
+    /*
     private void deleteItems(final List<ApItemVO> deleteItems,
                              final Map<Integer, List<ApItem>> typeIdItemsMap,
                              final List<ApItem> itemsDb,
@@ -226,7 +307,7 @@ public class AccessPointItemService {
             if (item == null) {
                 throw new ObjectNotFoundException("Položka neexistuje", BaseCode.ID_NOT_EXIST).setId(objectId);
             }
-
+    
             item.setDeleteChange(change);
             List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(item.getItemTypeId(), k -> new ArrayList<>());
             List<ApItem> itemsToShift = findItemsGE(existsItems, item.getPosition());
@@ -234,7 +315,7 @@ public class AccessPointItemService {
             itemsDb.addAll(newItems);
             existsItems.addAll(newItems);
         }
-    }
+    }*/
 
     /**
      * @return identifikátor pro nový item AP
@@ -243,13 +324,13 @@ public class AccessPointItemService {
         return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
     }
 
-    public List<ApItem> createItems(final List<ApItemVO> createItems,
+    public List<ApItem> createItems(final ApPart part,
+                                    final List<ApItemVO> createItems,
                                     final Map<Integer, List<ApItem>> typeIdItemsMap,
                                     final List<ApItem> itemsDb,
                                     final ApChange change,
                                     final List<ApBindingItem> bindingItemList,
-                                    final List<DataRef> dataRefList,
-                                    final CreateFunction create) {
+                                    final List<ReferencedEntities> dataRefList) {
         StaticDataProvider sdp = staticDataService.getData();
         List<ArrData> dataToSave = new ArrayList<>(createItems.size());
         List<ApItem> itemsCreated = new ArrayList<>();
@@ -302,9 +383,10 @@ public class AccessPointItemService {
             }
 
             ArrData data = createItem.createDataEntity(em);
-            setBindingArrDataRecordRef(data, createItem, bindingItemList, dataRefList);
+            // 11.2.2021 - PPy - zakomentovano, nejasny vyznam
+            // setBindingArrDataRecordRef(data, createItem, bindingItemList, dataRefList);
 
-            ApItem itemCreated = create.apply(itemType.getEntity(), itemSpec, change, nextItemObjectId(), position);
+            ApItem itemCreated = createItem(part, itemType.getEntity(), itemSpec, change, nextItemObjectId(), position);
             dataToSave.add(data);
             itemCreated.setData(data);
             itemsCreated.add(itemCreated);
@@ -312,21 +394,27 @@ public class AccessPointItemService {
             itemsDb.add(itemCreated);
             existsItems.add(itemCreated);
 
-            changeBindingItemsItems(createItem, itemCreated, bindingItemList);
+            changeBindingItemsItems(createItem.getId(), itemCreated, bindingItemList);
         }
         dataRepository.saveAll(dataToSave);
         return itemsCreated;
     }
 
-    private void setBindingArrDataRecordRef(ArrData data, ApItemVO createItem, List<ApBindingItem> bindingItemList, List<DataRef> dataRefList) {
+    private void setBindingArrDataRecordRef(ArrData data, ApItemVO createItem, List<ApBindingItem> bindingItemList,
+                                            List<ReferencedEntities> dataRefList) {
         if (data instanceof ArrDataRecordRef && createItem instanceof ApItemAccessPointRefVO
                 && CollectionUtils.isNotEmpty(bindingItemList) && dataRefList != null) {
+            ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
             ApItemAccessPointRefVO apItemAccessPointRefVO = (ApItemAccessPointRefVO) createItem;
 
+            // TOTO je divne??
+            // Co to dela??
             for (ApBindingItem bindingItem : bindingItemList) {
                 if (bindingItem.getItem() != null && createItem.getId() != null && apItemAccessPointRefVO.getExternalName() != null &&
                         bindingItem.getItem().getItemId() != null && bindingItem.getItem().getItemId().equals(createItem.getId())) {
-                    dataRefList.add(new DataRef(bindingItem.getValue(), apItemAccessPointRefVO.getExternalName()));
+                    // Co se zde ma nastavit?
+                    // ?bindingItem.getValue(), apItemAccessPointRefVO.getExternalName()
+                    dataRefList.add(new ReferencedEntities(recordRef, apItemAccessPointRefVO.getExternalName()));
                     break;
                 }
             }
@@ -334,37 +422,27 @@ public class AccessPointItemService {
         }
     }
 
-    private void changeBindingItemsItems(ApItemVO createItem, ApItem itemCreated, List<ApBindingItem> bindingItemList) {
-        if (CollectionUtils.isNotEmpty(bindingItemList)) {
-            List<ApBindingItem> currentItemBindings = new ArrayList<>();
-            for (ApBindingItem bindingItem : bindingItemList) {
-                if (bindingItem.getItem() != null && createItem.getId() != null &&
-                        bindingItem.getItem().getItemId() != null && bindingItem.getItem().getItemId().equals(createItem.getId())) {
-                    bindingItem.setItem(itemCreated);
-                    currentItemBindings.add(bindingItem);
-                }
+    // Vyhleda aktualni BindingItem dle puvodniho item a nahradi vazbou na novy
+    private void changeBindingItemsItems(Integer itemId, ApItem itemCreated, List<ApBindingItem> bindingItemList) {
+        if (CollectionUtils.isEmpty(bindingItemList)) {
+            return;
+        }
+        List<ApBindingItem> currentItemBindings = new ArrayList<>();
+        for (ApBindingItem bindingItem : bindingItemList) {
+            if (bindingItem.getItem() != null &&
+                    bindingItem.getItem().getItemId() != null &&
+                    bindingItem.getItem().getItemId().equals(itemId)) {
+                //? toto asi nema zadny efekt, pokud to tam jiz je, 
+                //  potom to meni na to same
+                bindingItem.setItem(itemCreated);
+                currentItemBindings.add(bindingItem);
             }
-            if (CollectionUtils.isNotEmpty(currentItemBindings)) {
-                bindingItemRepository.saveAll(currentItemBindings);
-            }
+        }
+        if (CollectionUtils.isNotEmpty(currentItemBindings)) {
+            bindingItemRepository.saveAll(currentItemBindings);
         }
     }
 
-    public List<ApItem> createItems(final List<Object> createItems,
-                                    final ApChange change,
-                                    final ApBinding binding,
-                                    final List<DataRef> dataRefList,
-                                    final CreateFunction create) {
-        List<ApItem> itemsCreated = new ArrayList<>();
-        Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
-
-        for (Object createItem : createItems) {
-
-            ApItem itemCreated = createItem(createItem, change, create, typeIdItemsMap, binding, dataRefList);
-            itemsCreated.add(itemCreated);
-        }
-        return itemsCreated;
-    }
 
     public ApItem createItem(final ApItem oldItem,
                              final ApChange change,
@@ -381,201 +459,42 @@ public class AccessPointItemService {
         return newItem;
     }
 
-    private ApItem createItem(final Object createItem,
-                              final ApChange change,
-                              final CreateFunction create,
-                              final Map<Integer, List<ApItem>> typeIdItemsMap,
-                              final ApBinding binding,
-                              final List<DataRef> dataRefList) {
-        StaticDataProvider sdp = staticDataService.getData();
-        RulItemType itemType;
-        RulItemSpec itemSpec;
-        String uuid;
-        ArrData data;
-        if (createItem instanceof ItemBinaryXml) {
-            ItemBinaryXml itemBinary = (ItemBinaryXml) createItem;
+    /**
+     * Vytvoření entity hodnoty atributu přístupového bodu.
+     *
+     * @param accessPoint
+     *            přístupový bod pro který atribut tvoříme
+     * @param it
+     *            typ atributu
+     * @param is
+     *            specifikace atribututu
+     * @param c
+     *            změna
+     * @param objectId
+     *            jednoznačný identifikátor položky (nemění se při odverzování)
+     * @param position
+     *            pozice
+     * @return vytvořená položka
+     */
+    public ApItem createItem(final ApPart part,
+                             final RulItemType it, final RulItemSpec is, final ApChange c,
+                               final int objectId, final int position) {
+        ApItem item = new ApItem();
+        item.setItemType(it);
+        item.setItemSpec(is);
+        item.setCreateChange(c);
+        item.setObjectId(objectId);
+        item.setPosition(position);
+        item.setPart(part);
+        return item;
+    }
 
-            itemType = sdp.getItemType(itemBinary.getT().getValue());
-            itemSpec = itemBinary.getS() == null ? null : sdp.getItemSpec(itemBinary.getS().getValue());
-            uuid = CamHelper.getUuid(itemBinary.getUuid());
-
-            ArrDataCoordinates dataCoordinates = new ArrDataCoordinates();
-            String value = accessPointDataService.convertCoordinatesToEWKT(itemBinary.getValue().getValue());
-            dataCoordinates.setValue(GeometryConvertor.convert(value));
-            dataCoordinates.setDataType(DataType.COORDINATES.getEntity());
-            data = dataCoordinates;
-        } else if (createItem instanceof ItemBooleanXml) {
-            ItemBooleanXml itemBoolean = (ItemBooleanXml) createItem;
-
-            itemType = sdp.getItemType(itemBoolean.getT().getValue());
-            itemSpec = itemBoolean.getS() == null ? null : sdp.getItemSpec(itemBoolean.getS().getValue());
-            uuid = CamHelper.getUuid(itemBoolean.getUuid());
-
-            ArrDataBit dataBit = new ArrDataBit();
-            dataBit.setBitValue(itemBoolean.getValue().isValue());
-            dataBit.setDataType(DataType.BIT.getEntity());
-            data = dataBit;
-        } else if (createItem instanceof ItemEntityRefXml) {
-            ItemEntityRefXml itemEntityRef = (ItemEntityRefXml) createItem;
-
-            itemType = sdp.getItemType(itemEntityRef.getT().getValue());
-            itemSpec = itemEntityRef.getS() == null ? null : sdp.getItemSpec(itemEntityRef.getS().getValue());
-            uuid = CamHelper.getUuid(itemEntityRef.getUuid());
-
-            ArrDataRecordRef dataRecordRef = new ArrDataRecordRef();
-
-            String extIdent = CamHelper.getEntityIdorUuid(itemEntityRef);
-
-            DataRef dataRef = new DataRef(uuid, extIdent);
-            dataRefList.add(dataRef);
-
-            dataRecordRef.setDataType(DataType.RECORD_REF.getEntity());
-            data = dataRecordRef;
-        } else if (createItem instanceof ItemEnumXml) {
-            ItemEnumXml itemEnum = (ItemEnumXml) createItem;
-
-            itemType = sdp.getItemType(itemEnum.getT().getValue());
-            itemSpec = itemEnum.getS() == null ? null : sdp.getItemSpec(itemEnum.getS().getValue());
-            uuid = CamHelper.getUuid(itemEnum.getUuid());
-
-            ArrDataNull dataNull = new ArrDataNull();
-            dataNull.setDataType(DataType.ENUM.getEntity());
-            data = dataNull;
-        } else if (createItem instanceof ItemIntegerXml) {
-            ItemIntegerXml itemInteger = (ItemIntegerXml) createItem;
-
-            itemType = sdp.getItemType(itemInteger.getT().getValue());
-            itemSpec = itemInteger.getS() == null ? null : sdp.getItemSpec(itemInteger.getS().getValue());
-            uuid = CamHelper.getUuid(itemInteger.getUuid());
-
-            ArrDataInteger dataInteger = new ArrDataInteger();
-            dataInteger.setIntegerValue(itemInteger.getValue().getValue().intValue());
-            dataInteger.setDataType(DataType.INT.getEntity());
-            data = dataInteger;
-        } else if (createItem instanceof ItemLinkXml) {
-            ItemLinkXml itemLink = (ItemLinkXml) createItem;
-
-            itemType = sdp.getItemType(itemLink.getT().getValue());
-            itemSpec = itemLink.getS() == null ? null : sdp.getItemSpec(itemLink.getS().getValue());
-            uuid = CamHelper.getUuid(itemLink.getUuid());
-
-            ArrDataUriRef dataUriRef = new ArrDataUriRef();
-            dataUriRef.setUriRefValue(itemLink.getUrl().getValue());
-            dataUriRef.setDescription(itemLink.getNm().getValue());
-            dataUriRef.setSchema(ArrDataUriRef.createSchema(itemLink.getUrl().getValue()));
-            dataUriRef.setArrNode(null);
-            dataUriRef.setDataType(DataType.URI_REF.getEntity());
-            data = dataUriRef;
-        } else if (createItem instanceof ItemStringXml) {
-            ItemStringXml itemString = (ItemStringXml) createItem;
-
-            itemType = sdp.getItemType(itemString.getT().getValue());
-            itemSpec = itemString.getS() == null ? null : sdp.getItemSpec(itemString.getS().getValue());
-            uuid = CamHelper.getUuid(itemString.getUuid());
-
-            RulDataType dataType = itemType.getDataType();
-            String code = dataType.getCode();
-            DataType dt = DataType.fromCode(code);
-            if (dt == null) {
-                throw new IllegalStateException("Neznámý datový typ " + code);
-            }
-            switch(dt) {
-                case STRING:
-                    ArrDataString dataString = new ArrDataString();
-                    dataString.setStringValue(itemString.getValue().getValue());
-                    dataString.setDataType(DataType.STRING.getEntity());
-                    data = dataString;
-                    break;
-                case TEXT:
-                    ArrDataText dataText = new ArrDataText();
-                    dataText.setTextValue(itemString.getValue().getValue());
-                    dataText.setDataType(DataType.TEXT.getEntity());
-                    data = dataText;
-                    break;
-                case COORDINATES:
-                    ArrDataCoordinates dataCoordinates = new ArrDataCoordinates();
-                    dataCoordinates.setValue(GeometryConvertor.convert(itemString.getValue().getValue()));
-                    dataCoordinates.setDataType(DataType.COORDINATES.getEntity());
-                    data = dataCoordinates;
-                    break;
-                default:
-                    throw new IllegalStateException("Nepodporovaný datový typ uložen jako řetězec: " + code +
-                            ", itemType:" + itemString.getT().getValue());
-            }
-
-        } else if (createItem instanceof ItemUnitDateXml) {
-            ItemUnitDateXml itemUnitDate = (ItemUnitDateXml) createItem;
-
-            itemType = sdp.getItemType(itemUnitDate.getT().getValue());
-            itemSpec = itemUnitDate.getS() == null ? null : sdp.getItemSpec(itemUnitDate.getS().getValue());
-            uuid = CamHelper.getUuid(itemUnitDate.getUuid());
-
-            CalendarType calType = CalendarType.GREGORIAN;
-            ArrDataUnitdate dataUnitDate = new ArrDataUnitdate();
-            dataUnitDate.setValueFrom(itemUnitDate.getF().trim());
-            dataUnitDate.setValueFromEstimated(itemUnitDate.isFe());
-            if (dataUnitDate.getValueFromEstimated() == null) {
-                dataUnitDate.setValueFromEstimated(false);
-            }
-            dataUnitDate.setFormat(itemUnitDate.getFmt());
-            dataUnitDate.setValueTo(itemUnitDate.getTo().trim());
-            dataUnitDate.setValueToEstimated(itemUnitDate.isToe());
-            if (dataUnitDate.getValueToEstimated() == null) {
-                dataUnitDate.setValueToEstimated(false);
-            }
-            if (itemUnitDate.getF() != null) {
-                dataUnitDate.setNormalizedFrom(CalendarConverter.toSeconds(calType, LocalDateTime.parse(itemUnitDate.getF().trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
-            } else {
-                dataUnitDate.setNormalizedFrom(Long.MIN_VALUE);
-            }
-
-            if (itemUnitDate.getTo() != null) {
-                dataUnitDate.setNormalizedTo(CalendarConverter.toSeconds(calType, LocalDateTime.parse(itemUnitDate.getTo().trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
-            } else {
-                dataUnitDate.setNormalizedTo(Long.MAX_VALUE);
-            }
-
-            dataUnitDate.setCalendarType(calType.getEntity());
-            dataUnitDate.setDataType(DataType.UNITDATE.getEntity());
-            data = dataUnitDate;
-        } else {
-            throw new IllegalArgumentException("Invalid item type");
-        }
-
-        // check specification (if correctly used)
-        Boolean useSpec = itemType.getUseSpecification();
-        if (useSpec != null && useSpec) {
-            if (itemSpec == null) {
-                throw new BusinessException("Received item without specification, itemType: " + itemType.getName(),
-                        BaseCode.PROPERTY_IS_INVALID)
-                                .set("itemType", itemType.getCode())
-                                .set("itemTypeName", itemType.getName());
-            }
-        } else {
-            if (itemSpec != null) {
-                throw new BusinessException("Received item with unexpected specification, itemType: " + itemType
-                        .getName(), BaseCode.PROPERTY_IS_INVALID)
-                                .set("itemType", itemType.getCode())
-                                .set("itemTypeName", itemType.getName());
-            }
-        }
-
-
-        List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(itemType.getItemTypeId(), k -> new ArrayList<>());
+    public ApItem createItem(final ApPart part,
+                             final RulItemType it, final RulItemSpec is, final ApChange c,
+                             List<ApItem> existsItems) {
         int position = nextPosition(existsItems);
-
-
-        ApItem itemCreated = create.apply(itemType, itemSpec, change, nextItemObjectId(), position);
-        dataRepository.save(data);
-        itemCreated.setData(data);
-        itemRepository.save(itemCreated);
-
-        if (binding != null) {
-            externalSystemService.createApBindingItem(binding, uuid, null, itemCreated);
-        }
-
-        existsItems.add(itemCreated);
-        return itemCreated;
+        int objectId = nextItemObjectId();
+        return createItem(part, it, is, c, objectId, position);
     }
 
     @Nullable
@@ -588,200 +507,6 @@ public class AccessPointItemService {
             }
         }
         return null;
-    }
-
-    public List<Object> findNewOrChangedItems(List<Object> items, List<ApBindingItem> bindingItems,
-                                              List<ApBindingItem> notChangeItems) {
-        List<Object> changedItems = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(items)) {
-            for (Object item : items) {
-                if (item instanceof ItemBinaryXml) {
-                    ItemBinaryXml itemBinary = (ItemBinaryXml) item;
-                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemBinary.getUuid().getValue());
-
-                    if (bindingItem == null) {
-                        changedItems.add(itemBinary);
-                    } else {
-                        ApItem is = bindingItem.getItem();
-                        ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) is.getData();
-                        String value = GeometryConvertor.convert(dataCoordinates.getValue());
-                        String xmlValue = accessPointDataService.convertCoordinatesToEWKT(itemBinary.getValue().getValue());
-                        if (!(is.getItemType().getCode().equals(itemBinary.getT().getValue()) &&
-                                compareItemSpec(is.getItemSpec(), itemBinary.getS()) &&
-                                xmlValue.equals(value))) {
-                            changedItems.add(itemBinary);
-                        } else {
-                            notChangeItems.add(bindingItem);
-                            bindingItems.remove(bindingItem);
-                        }
-                    }
-                } else if (item instanceof ItemBooleanXml) {
-                    ItemBooleanXml itemBoolean = (ItemBooleanXml) item;
-                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemBoolean.getUuid().getValue());
-
-                    if (bindingItem == null) {
-                        changedItems.add(itemBoolean);
-                    } else {
-                        ApItem ib = bindingItem.getItem();
-                        ArrDataBit dataBit = (ArrDataBit) ib.getData();
-                        if (!(ib.getItemType().getCode().equals(itemBoolean.getT().getValue()) &&
-                                compareItemSpec(ib.getItemSpec(), itemBoolean.getS()) &&
-                                dataBit.isBitValue().equals(itemBoolean.getValue().isValue()))) {
-                            changedItems.add(itemBoolean);
-                        } else {
-                            notChangeItems.add(bindingItem);
-                            bindingItems.remove(bindingItem);
-                        }
-                    }
-                } else if (item instanceof ItemEntityRefXml) {
-                    ItemEntityRefXml itemEntityRef = (ItemEntityRefXml) item;
-                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemEntityRef.getUuid().getValue());
-
-                    if (bindingItem == null) {
-                        changedItems.add(itemEntityRef);
-                    } else {
-                        ApItem ier = bindingItem.getItem();
-                        ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) ier.getData();
-                        EntityRecordRefXml entityRecordRef = (EntityRecordRefXml) itemEntityRef.getRef();
-                        String entityRefId = CamHelper.getEntityIdorUuid(entityRecordRef);
-                        if (!(ier.getItemType().getCode().equals(itemEntityRef.getT().getValue()) &&
-                                compareItemSpec(ier.getItemSpec(), itemEntityRef.getS()) &&
-                                dataRecordRef.getBinding().getValue().equals(entityRefId))) {
-
-                            changedItems.add(itemEntityRef);
-                        } else {
-                            notChangeItems.add(bindingItem);
-                            bindingItems.remove(bindingItem);
-                        }
-                    }
-                } else if (item instanceof ItemEnumXml) {
-                    ItemEnumXml itemEnum = (ItemEnumXml) item;
-                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemEnum.getUuid().getValue());
-
-                    if (bindingItem == null) {
-                        changedItems.add(itemEnum);
-                    } else {
-                        ApItem ie = bindingItem.getItem();
-                        if (!(ie.getItemType().getCode().equals(itemEnum.getT().getValue()) &&
-                                compareItemSpec(ie.getItemSpec(), itemEnum.getS()))) {
-
-                            changedItems.add(itemEnum);
-                        } else {
-                            notChangeItems.add(bindingItem);
-                            bindingItems.remove(bindingItem);
-                        }
-                    }
-                } else if (item instanceof ItemIntegerXml) {
-                    ItemIntegerXml itemInteger = (ItemIntegerXml) item;
-                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemInteger.getUuid().getValue());
-
-                    if (bindingItem == null) {
-                        changedItems.add(itemInteger);
-                    } else {
-                        ApItem ii = bindingItem.getItem();
-                        ArrDataInteger dataInteger = (ArrDataInteger) ii.getData();
-                        if (!(ii.getItemType().getCode().equals(itemInteger.getT().getValue()) &&
-                                compareItemSpec(ii.getItemSpec(), itemInteger.getS()) &&
-                                dataInteger.getIntegerValue().equals(itemInteger.getValue().getValue().intValue()))) {
-
-                            changedItems.add(itemInteger);
-                        } else {
-                            notChangeItems.add(bindingItem);
-                            bindingItems.remove(bindingItem);
-                        }
-                    }
-                } else if (item instanceof ItemLinkXml) {
-                    ItemLinkXml itemLink = (ItemLinkXml) item;
-                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemLink.getUuid().getValue());
-
-                    if (bindingItem == null) {
-                        changedItems.add(itemLink);
-                    } else {
-                        ApItem il = bindingItem.getItem();
-                        ArrDataUriRef dataUriRef = (ArrDataUriRef) il.getData();
-                        if (!(il.getItemType().getCode().equals(itemLink.getT().getValue()) &&
-                                compareItemSpec(il.getItemSpec(), itemLink.getS()) &&
-                                dataUriRef.getUriRefValue().equals(itemLink.getUrl().getValue()) &&
-                                dataUriRef.getDescription().equals(itemLink.getNm().getValue()))) {
-
-                            changedItems.add(itemLink);
-                        } else {
-                            notChangeItems.add(bindingItem);
-                            bindingItems.remove(bindingItem);
-                        }
-                    }
-                } else if (item instanceof ItemStringXml) {
-                    ItemStringXml itemString = (ItemStringXml) item;
-                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemString.getUuid().getValue());
-
-                    if (bindingItem == null) {
-                        changedItems.add(itemString);
-                    } else {
-                        ApItem is = bindingItem.getItem();
-                        String value;
-                        switch(DataType.fromCode(is.getItemType().getDataType().getCode())) {
-                            case STRING:
-                                ArrDataString dataString = (ArrDataString) is.getData();
-                                value = dataString.getStringValue();
-                                break;
-                            case TEXT:
-                                ArrDataText dataText = (ArrDataText) is.getData();
-                                value = dataText.getTextValue();
-                                break;
-                            case COORDINATES:
-                                ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) is.getData();
-                                value = GeometryConvertor.convert(dataCoordinates.getValue());
-                                break;
-                            default:
-                                throw new IllegalStateException("Neznámý datový typ " + is.getItemType().getDataType().getCode());
-                        }
-                        if (!(is.getItemType().getCode().equals(itemString.getT().getValue()) &&
-                                compareItemSpec(is.getItemSpec(), itemString.getS()) &&
-                                value.equals(itemString.getValue().getValue()))) {
-
-                            changedItems.add(itemString);
-                        } else {
-                            notChangeItems.add(bindingItem);
-                            bindingItems.remove(bindingItem);
-                        }
-                    }
-                } else if (item instanceof ItemUnitDateXml) {
-                    ItemUnitDateXml itemUnitDate = (ItemUnitDateXml) item;
-                    ApBindingItem bindingItem = findBindingItemByUuid(bindingItems, itemUnitDate.getUuid().getValue());
-
-                    if (bindingItem == null) {
-                        changedItems.add(itemUnitDate);
-                    } else {
-                        ApItem iud = bindingItem.getItem();
-                        ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) iud.getData();
-                        if (!(iud.getItemType().getCode().equals(itemUnitDate.getT().getValue()) &&
-                                compareItemSpec(iud.getItemSpec(), itemUnitDate.getS()) &&
-                                dataUnitdate.getValueFrom().equals(itemUnitDate.getF().trim()) &&
-                                dataUnitdate.getValueFromEstimated().equals(itemUnitDate.isFe()) &&
-                                dataUnitdate.getFormat().equals(itemUnitDate.getFmt()) &&
-                                dataUnitdate.getValueTo().equals(itemUnitDate.getTo().trim()) &&
-                                dataUnitdate.getValueToEstimated().equals(itemUnitDate.isToe()))) {
-
-                            changedItems.add(itemUnitDate);
-                        } else {
-                            notChangeItems.add(bindingItem);
-                            bindingItems.remove(bindingItem);
-                        }
-                    }
-                } else {
-                    throw new IllegalArgumentException("Invalid item type");
-                }
-            }
-        }
-        return changedItems;
-    }
-
-    private boolean compareItemSpec(RulItemSpec itemSpec, CodeXml itemSpecCode) {
-        if (itemSpec == null) {
-            return itemSpecCode == null;
-        } else {
-            return itemSpec.getCode().equals(itemSpecCode.getValue());
-        }
     }
 
     private List<ApItem> shiftItems(final List<ApItem> items, final int diff, final ApChange change) {
@@ -873,6 +598,33 @@ public class AccessPointItemService {
             LocalDateTime toDate = LocalDateTime.parse(valueTo.trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             aeDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(calendarType, toDate));
         }
+    }
+
+    /**
+     * Method will create external item and save all connected items
+     * 
+     * @param part
+     * @param data
+     * @param itemType
+     * @param itemSpec
+     * @param change
+     * @param existsItems
+     * @param binding
+     */
+    public ApItem createItemWithSave(ApPart part, ArrData data, RulItemType itemType, RulItemSpec itemSpec,
+                                     ApChange change,
+                                     List<ApItem> existsItems, ApBinding binding,
+                                     String bindingValue) {
+
+        data = dataRepository.save(data);
+        ApItem itemCreated = createItem(part, itemType, itemSpec, change, existsItems);
+        itemCreated.setData(data);
+        itemCreated = itemRepository.save(itemCreated);
+
+        if (binding != null) {
+            externalSystemService.createApBindingItem(binding, change, bindingValue, null, itemCreated);
+        }
+        return itemCreated;
     }
 
 }

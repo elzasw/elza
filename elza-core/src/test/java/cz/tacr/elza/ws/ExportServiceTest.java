@@ -1,4 +1,4 @@
-package cz.tacr.elza.other;
+package cz.tacr.elza.ws;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

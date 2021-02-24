@@ -1303,7 +1303,7 @@ public class ClientFactoryVO {
         
         List<ArrNodeOutput> nodes = outputServiceInternal.getOutputNodes(output, fundVersion.getLockChange());
         List<Integer> nodeIds = nodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
-        outputExt.setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
+        outputExt.setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion));
         outputExt.setScopes(outputServiceInternal.getRestrictedScopeVOs(output));
         ApAccessPoint anonymizedAp = output.getAnonymizedAp();
         if (anonymizedAp != null) {
@@ -1540,7 +1540,8 @@ public class ClientFactoryVO {
         for (ArrNode node : nodes) {
             nodeIds.add(node.getNodeId());
         }
-        Map<Integer, TreeNodeVO> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
+        Map<Integer, TreeNodeVO> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion).stream()
+                .collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
 
         for (ArrNode node : nodes) {
             result.put(node.getUuid(), treeNodeClientMap.get(node.getNodeId()));
@@ -1593,7 +1594,8 @@ public class ClientFactoryVO {
             nodeIds.add(digitizationRequestNode.getNode().getNodeId());
         }
 
-        Map<Integer, TreeNodeVO> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
+        Map<Integer, TreeNodeVO> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion).stream()
+                .collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
 
         for (ArrDigitizationRequestNode digitizationRequestNode : digitizationRequestNodes) {
             ArrNode node = digitizationRequestNode.getNode();

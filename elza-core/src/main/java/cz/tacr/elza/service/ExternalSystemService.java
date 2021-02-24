@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.constraints.NotNull;
 
@@ -362,14 +363,15 @@ public class ExternalSystemService {
     }
 
     public ApBindingItem createApBindingItem(final ApBinding binding,
-                                             final String uuid,
+                                             ApChange apChange, final String value,
                                              final ApPart part,
                                              final ApItem item) {
         ApBindingItem apBindingItem = new ApBindingItem();
         apBindingItem.setBinding(binding);
-        apBindingItem.setValue(uuid);
+        apBindingItem.setValue(value);
         apBindingItem.setPart(part);
         apBindingItem.setItem(item);
+        apBindingItem.setCreateChange(apChange);
         return bindingItemRepository.save(apBindingItem);
     }
 
@@ -383,16 +385,16 @@ public class ExternalSystemService {
         return bindingRepository.findByScopeAndValueAndExternalSystem(scope, archiveEntityId, externalSystem);
     }
 
-    public ApBindingState findByBinding(final ApBinding binding) {
-        List<ApBindingState> bindingList = bindingStateRepository.findByBinding(binding);
-        if (CollectionUtils.isNotEmpty(bindingList)) {
-            return bindingList.get(0);
-        }
-        return null;
+    public Optional<ApBindingState> getBindingState(final ApBinding binding) {
+        return bindingStateRepository.findActiveByBinding(binding);
     }
 
     public ApBindingItem findByBindingAndUuid(ApBinding binding, String uuid) {
         return bindingItemRepository.findByBindingAndUuid(binding, uuid);
+    }
+
+    public List<ApBindingItem> getBindingItems(final ApBinding binding) {
+        return bindingItemRepository.findByBinding(binding);
     }
 
     public ApBindingState findByAccessPointAndExternalSystem(final ApAccessPoint accessPoint, final ApExternalSystem externalSystem) {

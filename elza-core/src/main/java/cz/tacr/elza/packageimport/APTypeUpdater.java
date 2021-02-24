@@ -119,19 +119,6 @@ public class APTypeUpdater {
             }
         }
         apType.setParentApType(parent);
-
-        // set party type
-        if (apTypeXml.getPartyType() != null) {
-            // check party type - if exists
-           /* ParPartyType parPartyType = PackageService.findEntity(parPartyTypes, apTypeXml.getPartyType(),
-                    ParPartyType::getCode);
-            if (parPartyType == null) {
-                throw new BusinessException("ParPartyType s code=" + apTypeXml.getPartyType() + " nenalezen",
-                        PackageCode.CODE_NOT_FOUND).set("code", apTypeXml.getPartyType()).set("file",
-                        AP_TYPE_XML);
-            }
-            apType.setPartyType(parPartyType);*/
-        }
     }
 
     /**

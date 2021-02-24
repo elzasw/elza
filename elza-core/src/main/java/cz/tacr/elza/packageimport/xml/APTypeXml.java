@@ -21,9 +21,6 @@ public class APTypeXml {
     @XmlAttribute(name = "code", required = true)
     private String code;
 
-    @XmlAttribute(name = "party-type")
-    private String partyType;
-
     @XmlAttribute(name = "parent-ap-type")
     private String parentType;
 
@@ -50,14 +47,6 @@ public class APTypeXml {
 
     public void setCode(final String code) {
         this.code = code;
-    }
-
-    public String getPartyType() {
-        return partyType;
-    }
-
-    public void setPartyType(final String partyType) {
-        this.partyType = partyType;
     }
 
     public String getParentType() {

@@ -27,7 +27,7 @@ import cz.tacr.elza.ws.types.v1.UserState;
 
 public class UserServiceImplTest extends AbstractControllerTest {
 
-    ObjectFactory objectFactory = new ObjectFactory();
+    ObjectFactory objectFactory = WSRequestFactory.objectFactory;
 
     @Test
     public void userServiceTest() {
@@ -37,15 +37,12 @@ public class UserServiceImplTest extends AbstractControllerTest {
 
         String address = RestAssured.baseURI + ":" + RestAssured.port + "/services"
                 + WebServiceConfig.USER_SERVICE_URL;
-        UserService userServiceClient = DaoServiceClientFactory.createUserService(address, "admin", "admin");
-        User createUser = objectFactory.createUser();
-        createUser.setUsername("a");
-        createUser.setPersonId(apId.toString());
+        UserService userServiceClient = WebServiceClientFactory.createUserService(address, "admin", "admin");
         PermissionList createUserPerms = objectFactory.createPermissionList();
         Permission createUserPermReadAll = objectFactory.createPermission();
         createUserPermReadAll.setPermType(PermissionType.FUND_RD_ALL);
         createUserPerms.getPerm().add(createUserPermReadAll);
-        createUser.setPermList(createUserPerms);
+        User createUser = WSRequestFactory.createUser("a", apId.toString(), createUserPerms);
         userServiceClient.createUser(createUser);
         
         // validate user exists

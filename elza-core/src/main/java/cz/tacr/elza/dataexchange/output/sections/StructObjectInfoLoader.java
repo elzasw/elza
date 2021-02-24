@@ -33,7 +33,12 @@ public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInf
         ArrStructuredObject structObj = (ArrStructuredObject) entity;
 
         StructType structType = staticData.getStructuredTypeById(structObj.getStructuredTypeId());
-        return new StructObjectInfoImpl(structObj.getStructuredObjectId(), structType.getStructuredType());
+        return new StructObjectInfoImpl(structObj.getStructuredObjectId(),
+                structObj.getUuid(),
+                structObj.getAssignable(),
+                structObj.getValue(),
+                structObj.getComplement(),
+                structType.getStructuredType());
     }
 
     @Override

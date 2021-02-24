@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.persistence.criteria.CriteriaBuilder.In;
 import java.util.ArrayList;
@@ -362,13 +363,15 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 			queryCount.where(conditionCount);
 		}
 
-		List<UsrUser> list = entityManager.createQuery(query)
-		        .setFirstResult(firstResult)
-		        .setMaxResults(maxResults)
-		        .getResultList();
+		TypedQuery<UsrUser> tq = entityManager.createQuery(query)
+		    .setFirstResult(firstResult);
+		if(maxResults>0) {
+            tq.setMaxResults(maxResults);
+		}
+		List<UsrUser> list = tq.getResultList();
 		int count = list.size();
 		// count number of items
-		if (count >= maxResults || firstResult != 0) {
+        if ((maxResults > 0 && count >= maxResults) || firstResult != 0) {
 			count = entityManager.createQuery(queryCount).getSingleResult().intValue();
 		}
 
@@ -408,13 +411,15 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             queryCount.where(conditionCount);
         }
 
-        List<UsrUser> list = entityManager.createQuery(query)
-                .setFirstResult(firstResult)
-                .setMaxResults(maxResults)
-                .getResultList();
+        TypedQuery<UsrUser> tq = entityManager.createQuery(query)
+                .setFirstResult(firstResult);
+        if (maxResults > 0) {
+            tq.setMaxResults(maxResults);
+        }
+        List<UsrUser> list = tq.getResultList();
         int count = list.size();
         // count number of items
-        if (count >= maxResults || firstResult != 0) {
+        if ((maxResults > 0 && count >= maxResults) || firstResult != 0) {
             count = entityManager.createQuery(queryCount).getSingleResult().intValue();
         }
 

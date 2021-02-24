@@ -25,6 +25,7 @@ import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.ObjectFactory;
 import cz.tacr.elza.common.XmlUtils;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -51,6 +52,9 @@ import cz.tacr.elza.ws.types.v1.RequestStatusInfo;
 public class ImportServiceImpl implements ImportService {
 
     final private static Logger logger = LoggerFactory.getLogger(ImportServiceImpl.class);
+
+    @Autowired
+    private StaticDataService staticDataService;
 
     @Autowired
     private ScopeRepository scopeRepository;
@@ -191,7 +195,7 @@ public class ImportServiceImpl implements ImportService {
 
         }
         
-        ProcessingContext procCtx = new ProcessingContext(scope, externalSystem);
+        ProcessingContext procCtx = new ProcessingContext(scope, externalSystem, staticDataService);
         camService.createAccessPoints(procCtx, newEntities);
         camService.updateAccessPoints(procCtx, updateEntities);
 

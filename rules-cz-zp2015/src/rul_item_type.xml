@@ -915,6 +915,15 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+        <item-aptypes>
+            <item-aptype register-type="EVENT"/>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+            <item-aptype register-type="GEO"/>
+            <item-aptype register-type="ARTWORK"/>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
     </item-type>
     <!-- Prvky popisu pro matriku -->
     <item-type code="ZP2015_RECORD_TYPE" data-type="ENUM">

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ents xmlns="http://cam.tacr.cz/2019">
+<ent eid="3392" euid="7278d973-f0a0-4002-a5a4-5ca176e6db6c" ens="ERS_APPROVED" ent="GEO_UNIT">
+    <revi>
+        <rid>8a50a4f8-9282-47c6-ae51-8c08b4ce0110</rid>
+        <usr>Martin Hankovec</usr>
+        <modt>2021-01-08T09:49:03.229</modt>
+    </revi>
+    <prts>
+        <p pid="fe807ac5-1acc-4c29-8793-424fb68e8d56" t="PT_BODY">
+            <itms>
+                <si t="BRIEF_DESC" uuid="5768aea6-f739-4596-8144-04286959b878">obec v okrese Trutnov</si>
+                <ei s="GT_MUNIP" t="GEO_TYPE" uuid="69c00faf-3406-40ae-92ed-3ae9f3870d29"/>
+                <ai t="GEO_ADMIN_CLASS" uuid="cda721da-5707-4e1f-95a8-3129607baa87">
+                    <er eid="457" euid="e08510da-2dea-4306-90e7-64decd817fe9"/>
+                </ai>
+                <ci t="COORD_POINT" uuid="68f23d0a-834f-43b9-b0c4-76ff2bb801d0">AQEAAAAPR52ctqMvQJNubbVLVElA</ci>
+                <si t="SOURCE_INFO" uuid="fb0b27e2-86f2-44da-95d8-ec2ee0c64670">Registr územní identifikace, adres a nemovitostí (ČÚZK)</si>
+                <li t="SOURCE_LINK" uuid="7cdac868-8e20-428f-a39f-cc5ae05502b4">
+                    <url>https://vdp.cuzk.cz</url>
+                    <nm>RÚIAN</nm>
+                </li>
+                <ci t="COORD_BORDER" uuid="81dd86af-b079-4071-866a-f6a6afb296bb">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</ci>
+                <li t="SOURCE_LINK" uuid="37a5811f-0b89-4971-89b3-0d83a9ee6cba">
+                    <url>http://www.hornimarsov.cz</url>
+                    <nm></nm>
+                </li>
+            </itms>
+            <eits>
+                <si t="DISPLAY_NAME">obec v okrese Trutnov</si>
+            </eits>
+        </p>
+        <p pid="083754bb-706a-4e35-bba8-a315144ccfba" t="PT_IDENT">
+            <itms>
+                <ei s="INTERPI" t="IDN_TYPE" uuid="ce440bc1-2963-4bd2-a8df-080b3212081a"/>
+                <si t="IDN_VALUE" uuid="a020dbbf-c9c3-4e8c-9687-2f14ddd357d7">n000129306</si>
+            </itms>
+            <eits>
+                <si t="DISPLAY_NAME">INTERPI: n000129306</si>
+                <si t="SHORT_NAME">interpi: n000129306</si>
+            </eits>
+        </p>
+        <p pid="5e934855-9a6a-4af6-b07d-d7b1d67320a8" t="PT_IDENT">
+            <itms>
+                <ei s="NUTSLAU" t="IDN_TYPE" uuid="6a39488e-21e3-4e57-99d5-0fd50a8bb8b8"/>
+                <si t="IDN_VALUE" uuid="6987e00e-58c8-440a-9132-b688825cfdc2">CZ0525579262</si>
+            </itms>
+            <eits>
+                <si t="DISPLAY_NAME">NUTS/LAU: CZ0525579262</si>
+                <si t="SHORT_NAME">nuts/lau: cz0525579262</si>
+            </eits>
+        </p>
+        <p pid="68e32394-87e0-440b-899d-48852425e815" t="PT_IDENT">
+            <itms>
+                <ei s="RUIAN" t="IDN_TYPE" uuid="7d4947b4-bd31-4f91-b81e-30d525f2d75d"/>
+                <si t="IDN_VALUE" uuid="bb3be971-fa99-4b85-b17c-dd984c54c937">579262</si>
+                <bi t="IDN_VERIFIED" uuid="e880d278-b7cf-486c-8dd4-2b3322d0d3a0">true</bi>
+            </itms>
+            <eits>
+                <si t="DISPLAY_NAME">RÚIAN: 579262 (hodnota ověřena)</si>
+                <si t="SHORT_NAME">rúian: 579262</si>
+            </eits>
+        </p>
+        <p pid="048410d1-8a50-49c1-a02f-72186b568a37" t="PT_NAME">
+            <itms>
+                <si t="NM_MAIN" uuid="c42e0c17-b056-455a-8ecd-84daec5a043e">Horní Maršov</si>
+                <ei s="NT_OFFICIAL" t="NM_TYPE" uuid="88673c14-4794-4179-9261-7730a9d3eabc"/>
+                <ei s="LNG_cze" t="NM_LANG" uuid="efa028c7-c9a9-4c7f-a3e3-846106deeb21"/>
+                <si t="NM_SUP_GEO" uuid="e26f7102-69ef-4dba-ae79-36d8e2c20876">Trutnov, Česko</si>
+            </itms>
+            <eits>
+                <si t="DISPLAY_NAME">Horní Maršov (Trutnov, Česko)</si>
+                <si t="SHORT_NAME">horní maršov</si>
+            </eits>
+        </p>
+        <p pid="0cb030dd-1406-4aa9-8e6f-e79245b032ad" t="PT_NAME">
+            <itms>
+                <si t="NM_MAIN" uuid="9a5ef6a7-ee1b-4945-bad6-ab13c74aee1b">Marschendorf</si>
+                <ei s="LNG_ger" t="NM_LANG" uuid="54300b88-d293-4e77-8127-fd2870893ca5"/>
+            </itms>
+            <eits>
+                <si t="DISPLAY_NAME">Marschendorf</si>
+                <si t="SHORT_NAME">marschendorf</si>
+            </eits>
+        </p>
+        <p pid="e6c4f2d5-d6be-49fd-8095-e3c6c5f2b340" t="PT_NAME">
+            <itms>
+                <si t="NM_MAIN" uuid="7b2d1dc2-b46a-4545-99cb-8de3ca5d3a59">Maršov IV</si>
+                <ei s="LNG_cze" t="NM_LANG" uuid="783e218c-3296-416e-ab13-30bb10555514"/>
+            </itms>
+            <eits>
+                <si t="DISPLAY_NAME">Maršov IV</si>
+                <si t="SHORT_NAME">maršov iv</si>
+            </eits>
+        </p>
+    </prts>
+</ent>
+</ents>

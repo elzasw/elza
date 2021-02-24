@@ -316,7 +316,8 @@ public class FilterTreeService {
                 .createEntityMap(nodeRepository.findAllById(filteredIds), ArrNode::getNodeId);
 
         Map<Integer, TreeNodeVO> parentIdsMap = ElzaTools.createEntityMap(
-                levelTreeCacheService.getNodesByIds(parentIds, version.getFundVersionId()),
+                                                                          levelTreeCacheService.getNodesByIds(parentIds,
+                                                                                                              version),
                 TreeNodeVO::getId
         );
 
