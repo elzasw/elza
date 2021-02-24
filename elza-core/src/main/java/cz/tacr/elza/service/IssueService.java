@@ -524,6 +524,7 @@ public class IssueService {
             return Collections.emptyMap();
         }
         Validate.isTrue(fundIds.size() == 1, "Připomínky jsou z různých archivních souborů");
+
         return levelTreeCacheService.findNodeReferenceMark(fundIds.iterator().next(), nodeIds);
     }
 
