@@ -63,8 +63,10 @@
 		<variableExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0 ? $P{fund}.getName() : $F{node}.getSingleItemValue("ZP2015_TITLE")]]></variableExpression>
 	</variable>
 	<variable name="titleList" class="java.util.List">
-		<variableExpression><![CDATA[$F{node}.getItemsFromParent(Arrays.asList("ZP2015_ORIGINATOR", "ZP2015_ENTITY_ROLE"), 
-	Arrays.asList(
+		<variableExpression><![CDATA[java.util.stream.Stream.concat(
+	java.util.stream.Stream.concat(	
+	$F{node}.getItemsFromParent(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList("ZP2015_ENTITY_ROLE_81") ).stream(),
+		$F{node}.getItemsFromParent(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList(
 		"ZP2015_ENTITY_ROLE_74",
 		"ZP2015_ENTITY_ROLE_75",
 		"ZP2015_ENTITY_ROLE_76",
@@ -114,7 +116,9 @@
 		"ZP2015_ENTITY_ROLE_42",
 		"ZP2015_ENTITY_ROLE_48"		
 	)
-)]]></variableExpression>
+).stream() ),
+	   $F{node}.getItemsFromParent(Arrays.asList("ZP2015_ORIGINATOR") ).stream()
+).collect(java.util.stream.Collectors.toList())]]></variableExpression>
 	</variable>
 	<filterExpression><![CDATA[($F{node}.hasItemWithSpec("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_FOLDER")||$F{node}.hasItemWithSpec("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ITEM"))&&$F{node}.hasItem("ZP2015_STORAGE_ID")]]></filterExpression>
 	<background>
@@ -129,7 +133,7 @@
 				<textElement>
 					<font size="14" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($V{titleList}.size()>0)?((cz.tacr.elza.print.item.Item)$V{titleList}.get($V{titleList}.size()-1)).getSerializedValue():""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($V{titleList}.size()>0)?((cz.tacr.elza.print.item.Item)$V{titleList}.get(0)).getSerializedValue():""]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
