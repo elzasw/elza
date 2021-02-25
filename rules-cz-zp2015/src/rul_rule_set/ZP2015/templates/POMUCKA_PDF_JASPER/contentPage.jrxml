@@ -794,7 +794,7 @@
 		<variableExpression><![CDATA[$V{isRoot} ? $P{rootNodeDetailFormatter}.format($F{node}) : ""]]></variableExpression>
 	</variable>
 	<variable name="contentEntry" class="java.lang.String">
-		<variableExpression><![CDATA[($F{depth}==1)?"Jednotky popisu":((($V{levelName}.length()+$V{unitDate}.length())>50)?$V{levelName}.substring(0,50-$V{unitDate}.length())+"...":$V{levelName})+" "+$V{unitDate}]]></variableExpression>
+		<variableExpression><![CDATA[($F{depth}==1)?"Jednotky popisu":(($V{levelName}.length()>50)?$V{levelName}.substring(0,50)+"...":$V{levelName})+" "+$V{unitDate}]]></variableExpression>
 	</variable>
 	<pageHeader>
 		<band height="25">
