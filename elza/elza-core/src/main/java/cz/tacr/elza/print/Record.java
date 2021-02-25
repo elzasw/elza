@@ -226,6 +226,7 @@ public class Record {
         if (parts.size() > 1) {
             throw new BusinessException("Multiple parts of required type exists.", BaseCode.INVALID_STATE)
                     .set("partTypeCode", partTypeCode)
+                    .set("name", preferredPart.getValue())
                     .set("count", parts.size());
         }
         return parts.get(0);

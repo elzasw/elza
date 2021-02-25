@@ -467,7 +467,11 @@
 		.addValueWithTitle("ZP2015_SIZE_DEPTH")
 		.addValueWithTitle("ZP2015_SIZE_UNITS")
 		.addValueWithTitle("ZP2015_WEIGHT")
-		.addValueWithTitle("ZP2015_AMOUNT")
+		.setItemSeparator(", ")
+		.setSpecFormat("", "", true)		
+		.addValueWithTitle("ZP2015_AMOUNT" )
+		.setSpecFormat("", ": ", false)
+		.setItemSeparator("<br>")		
 		.addValueWithTitle("ZP2015_IMPRINT_COUNT")
 		.addValueWithTitle("ZP2015_EXERQUE")
 		.addValueWithTitle("ZP2015_PAINTING_CHAR")
@@ -794,7 +798,7 @@
 		<variableExpression><![CDATA[$V{isRoot} ? $P{rootNodeDetailFormatter}.format($F{node}) : ""]]></variableExpression>
 	</variable>
 	<variable name="contentEntry" class="java.lang.String">
-		<variableExpression><![CDATA[($F{depth}==1)?"Jednotky popisu":((($V{levelName}.length()+$V{unitDate}.length())>50)?$V{levelName}.substring(0,50-$V{unitDate}.length())+"...":$V{levelName})+" "+$V{unitDate}]]></variableExpression>
+		<variableExpression><![CDATA[($F{depth}==1)?"Jednotky popisu":(($V{levelName}.length()>50)?$V{levelName}.substring(0,50)+"...":$V{levelName})+" "+$V{unitDate}]]></variableExpression>
 	</variable>
 	<pageHeader>
 		<band height="25">
