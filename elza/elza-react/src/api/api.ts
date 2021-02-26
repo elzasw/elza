@@ -4,6 +4,7 @@ import i18n from '../components/i18n';
 import {createException} from 'components/ExceptionUtils.jsx';
 import {logout} from 'actions/global/login';
 import {store} from 'stores/index.jsx';
+import * as url from "url";
 
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
@@ -141,7 +142,13 @@ export const continueRequests = () => {
     pendingRequests = [];
 };
 
-console.log("Axios basePath:", basePath);
+// Diagnosticky log 
+try {
+    console.log("Axios basePath:", basePath);
+    console.log("Parsed url:", new URL(basePath, window.location.origin));
+} catch (e) {
+    console.error("BasePath error:", e);
+}
 
 export const Api: {
     accesspoints: AccesspointsApi; 
