@@ -4,7 +4,6 @@ import i18n from '../components/i18n';
 import {createException} from 'components/ExceptionUtils.jsx';
 import {logout} from 'actions/global/login';
 import {store} from 'stores/index.jsx';
-import * as url from "url";
 
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
