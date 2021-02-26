@@ -283,7 +283,7 @@ public class DeleteFundHistoryAction {
             dropNodeInfo(unusedNodeIdsByFund);
 
             iterateAction(changesIds, (ids) -> levelRepository.updateCreateChangeByChangeIds(ids, change));
-            changeRepository.deleteByPrimaryNodeIds(unusedNodeIdsByFund, change.getChangeId());
+            changeRepository.deleteByPrimaryNodeIdsWithIgnoredId(unusedNodeIdsByFund, change.getChangeId());
 
             dataUriRefRepository.updateByNodesIdIn(unusedNodeIdsByFund);
 

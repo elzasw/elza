@@ -221,7 +221,7 @@ public class BulkActionService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrBulkActionRun> getAllArrBulkActionRun(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
-        return bulkActionRepository.findByFundVersionId(fundVersionId, PageRequest.of(0, MAX_BULK_ACTIONS_LIST));
+        return bulkActionRepository.findByFundVersionIdPageable(fundVersionId, PageRequest.of(0, MAX_BULK_ACTIONS_LIST));
     }
 
     /**
