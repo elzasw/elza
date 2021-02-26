@@ -27,7 +27,7 @@ public interface RequestQueueItemRepository extends ElzaJpaRepository<ArrRequest
     List<ArrRequestQueueItem> findBySendOrderByCreateChangeAsc(boolean send);
 
     @Query("SELECT rqi FROM arr_request_queue_item rqi WHERE rqi.request IN (?1)")
-    List<ArrRequestQueueItem> findByRequest(Collection<? extends ArrRequest> request);
+    List<ArrRequestQueueItem> findByRequests(Collection<? extends ArrRequest> request);
 
     @Query("SELECT rqi FROM arr_request_queue_item rqi WHERE rqi.request = ?1")
     ArrRequestQueueItem findByRequest(ArrRequest request);

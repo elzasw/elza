@@ -714,7 +714,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public List<cz.tacr.elza.print.item.Item> loadStructItems(Integer structObjId) {
-        List<ArrStructuredItem> items = structItemRepos.findByStructuredObjectAndDeleteChangeIsNullFetchData(
+        List<ArrStructuredItem> items = structItemRepos.findByStructObjIdAndDeleteChangeIsNullFetchData(
                 structObjId);
         List<cz.tacr.elza.print.item.Item> result = convert(items, new OutputItemConvertor(this));
         return result;

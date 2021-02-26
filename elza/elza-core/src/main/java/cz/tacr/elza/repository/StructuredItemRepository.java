@@ -24,7 +24,7 @@ import cz.tacr.elza.domain.RulItemType;
 public interface StructuredItemRepository extends JpaRepository<ArrStructuredItem, Integer> {
 
     @Query("SELECT i FROM arr_structured_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.structuredObjectId = :structuredObjectId")
-    List<ArrStructuredItem> findByStructuredObjectAndDeleteChangeIsNullFetchData(
+    List<ArrStructuredItem> findByStructObjIdAndDeleteChangeIsNullFetchData(
             @Param("structuredObjectId") Integer structuredObjectId);
 
     @Query("SELECT i FROM arr_structured_item i JOIN FETCH i.data d WHERE i.deleteChange IS NULL AND i.structuredObject = :structuredObject")

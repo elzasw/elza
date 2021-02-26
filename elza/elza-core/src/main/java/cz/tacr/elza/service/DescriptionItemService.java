@@ -314,7 +314,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         // uložení uzlu (kontrola optimistických zámků)
         saveNode(node, change);
 
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemType.getEntity(), node);
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsByItemType(descItemType.getEntity(), node);
 
         if (descItems.size() == 0) {
             throw new SystemException("Nebyla nalezena žádná hodnota atributu ke smazání");
@@ -373,7 +373,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
 
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItems(descItemType.getEntity(), node);
+        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsByItemType(descItemType.getEntity(), node);
 
         if (descItems.size() == 0) {
             throw new SystemException("Nebyla nalezena žádná hodnota atributu ke smazání");
@@ -911,7 +911,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         MultiplItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
 
         List<Integer> itemObjectIds = descItemsToDelete.stream().map(ArrDescItem::getDescItemObjectId).collect(Collectors.toList());
-        List<ArrDescItem> deleteDescItems = descItemRepository.findOpenDescItems(itemObjectIds);
+        List<ArrDescItem> deleteDescItems = descItemRepository.findOpenDescItemsByIds(itemObjectIds);
 
         Validate.isTrue(deleteDescItems.size() == descItemsToDelete.size(),
                         "Některý z prvků popisu pro vymazání nebyl nalezen, %s", itemObjectIds);

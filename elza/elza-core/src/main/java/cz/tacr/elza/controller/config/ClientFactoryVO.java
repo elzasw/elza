@@ -1434,7 +1434,8 @@ public class ClientFactoryVO {
         Set<ArrDaoLinkRequest> requestForDaoLinks = new HashSet<>();
 
         Map<ArrRequest, ArrRequestQueueItem> requestQueuedMap = new HashMap<>();
-        List<ArrRequestQueueItem> requestQueueItems = CollectionUtils.isEmpty(requests) ? Collections.emptyList() : requestQueueItemRepository.findByRequest(requests);
+        List<ArrRequestQueueItem> requestQueueItems = CollectionUtils.isEmpty(requests) ? Collections.emptyList()
+                : requestQueueItemRepository.findByRequests(requests);
         for (ArrRequestQueueItem requestQueueItem : requestQueueItems) {
             requestQueuedMap.put(requestQueueItem.getRequest(), requestQueueItem);
         }
@@ -1555,7 +1556,7 @@ public class ClientFactoryVO {
                                                             final Map<ArrDaoRequest, List<ArrDao>> daosRequestMap) {
         Map<ArrDaoRequest, Integer> countDaosRequestMap;
         countDaosRequestMap = new HashMap<>();
-        List<ArrDaoRequestDao> daoRequestDaos = daoRequestDaoRepository.findByDaoRequest(requestForDaos);
+        List<ArrDaoRequestDao> daoRequestDaos = daoRequestDaoRepository.findByDaoRequests(requestForDaos);
 
         Set<Integer> daoIds = new HashSet<>();
         for (ArrDaoRequestDao daoRequestDao : daoRequestDaos) {

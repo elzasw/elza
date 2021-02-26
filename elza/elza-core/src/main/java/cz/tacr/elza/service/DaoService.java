@@ -167,7 +167,7 @@ public class DaoService {
         if (unassigned) {
             return daoRepository.findDettachedByPackage(daoPackage, pageable).toList();
         } else {
-            return daoRepository.findByPackage(daoPackage, pageable).toList();
+            return daoRepository.findByPackagePageable(daoPackage, pageable).toList();
         }
     }
 
@@ -386,7 +386,7 @@ public class DaoService {
             // smazat arr_dao_link_request
             final List<ArrDaoLinkRequest> arrDaoLinkRequestList = daoLinkRequestRepository.findByDao(arrDao);
             if (!arrDaoLinkRequestList.isEmpty()) {
-                List<ArrRequestQueueItem> queueItems = requestQueueItemRepository.findByRequest(arrDaoLinkRequestList);
+                List<ArrRequestQueueItem> queueItems = requestQueueItemRepository.findByRequests(arrDaoLinkRequestList);
                 requestQueueItemRepository.deleteAll(queueItems);
             }
             daoLinkRequestRepository.deleteAll(arrDaoLinkRequestList);
