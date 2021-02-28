@@ -80,6 +80,7 @@ import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
 import liquibase.pro.packaged.bi;
+import ma.glasnost.orika.impl.mapping.strategy.InstantiateByDefaultAndUseCustomMapperStrategy;
 
 /**
  * Create or update entities
@@ -514,7 +515,7 @@ public class EntityDBDispatcher {
             List<ApItem> itemList;
             if (bindingItem != null && bindingItem.getPart() != null) {
                 // Binding found -> update
-                itemList = updatePart(partXml, bindingItem.getPart(), binding, dataRefList);
+                itemList = updatePart(partXml, bindingItem.getPart(), bining, dataRefList);
             } else {
                 bindingItem = createPart(partXml, accessPoint, binding);
                 itemList = createItems(partXml.getItms().getItems(),
@@ -543,7 +544,15 @@ public class EntityDBDispatcher {
                     .collect(Collectors.toList());
             deleteItems(items, apChange);
         }
-        Validate.isTrue(bindingItemLookup.size() == 0);
+        if (bindingItemLookup.size() > 0) {
+            log.error("Exists unresolved bindings (items), accessPointId: {}, items: {}",
+                      accessPoint.getAccessPointId(),
+                      bindingItemLookup.keySet());
+            throw new BusinessException("Exists unresolved bindings, accessPointId: " + accessPoint.getAccessPointId() +
+                    ", count: " + bindingItemLookup.size(),
+                    BaseCode.DB_INTEGRITY_PROBLEM)
+                            .set("accessPointId", accessPoint.getAccessPointId());
+        }
         Validate.isTrue(bindingPartLookup.size() == 0);
 
         //nastavení odkazů na entitu
