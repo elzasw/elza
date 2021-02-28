@@ -553,7 +553,15 @@ public class EntityDBDispatcher {
                     BaseCode.DB_INTEGRITY_PROBLEM)
                             .set("accessPointId", accessPoint.getAccessPointId());
         }
-        Validate.isTrue(bindingPartLookup.size() == 0);
+        if (bindingPartLookup.size() > 0) {
+            log.error("Exists unresolved bindings (parts), accessPointId: {}, items: {}",
+                      accessPoint.getAccessPointId(),
+                      bindingPartLookup.keySet());
+            throw new BusinessException("Exists unresolved bindings (parts), accessPointId: " +
+                    accessPoint.getAccessPointId() + ", count: " +
+                    bindingPartLookup.size(), BaseCode.DB_INTEGRITY_PROBLEM)
+                            .set("accessPointId", accessPoint.getAccessPointId());
+        }
 
         //nastavení odkazů na entitu
         camService.createBindingForRel(dataRefList, procCtx);
