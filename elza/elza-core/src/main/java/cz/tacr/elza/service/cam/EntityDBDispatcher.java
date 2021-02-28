@@ -515,7 +515,7 @@ public class EntityDBDispatcher {
             List<ApItem> itemList;
             if (bindingItem != null && bindingItem.getPart() != null) {
                 // Binding found -> update
-                itemList = updatePart(partXml, bindingItem.getPart(), bining, dataRefList);
+                itemList = updatePart(partXml, bindingItem.getPart(), binding, dataRefList);
             } else {
                 bindingItem = createPart(partXml, accessPoint, binding);
                 itemList = createItems(partXml.getItms().getItems(),
