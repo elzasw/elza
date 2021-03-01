@@ -228,7 +228,7 @@ public class ApController {
             fund = version.getFund();
         }
 
-        if (searchFilter == null || !accessPointService.isQueryComplex(searchFilter)) {
+        if (search != null && (!accessPointService.isQueryComplex(searchFilter))) {
             return findAccessPointFulltext(search, from, count, fund, apTypeId, state, scopeId, searchFilter, sdp);
         }
 
