@@ -21,6 +21,10 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.domain.ApCachedAccessPoint;
+import cz.tacr.elza.repository.ApCachedAccessPointRepository;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -176,6 +180,12 @@ public class ApController {
     @Autowired
     private CamService camService;
 
+    @Autowired
+    private ApCachedAccessPointRepository apCachedAccessPointRepository;
+
+    @Autowired
+    private AccessPointCacheService accessPointCacheService;
+
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
      * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
@@ -216,6 +226,10 @@ public class ApController {
         } else {
             ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
             fund = version.getFund();
+        }
+
+        if (search != null && (!accessPointService.isQueryComplex(searchFilter))) {
+            return findAccessPointFulltext(search, from, count, fund, apTypeId, state, scopeId, searchFilter, sdp);
         }
 
 	    if (searchFilter == null) {
@@ -292,6 +306,40 @@ public class ApController {
                         apState.getAccessPoint(),
                         nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getValue() : null),
                 foundRecordsCount);
+    }
+
+    private FilteredResultVO<ApAccessPointVO> findAccessPointFulltext(String search,
+                                                                      Integer from,
+                                                                      Integer count,
+                                                                      ArrFund fund,
+                                                                      Integer apTypeId,
+                                                                      ApState.StateApproval state,
+                                                                      Integer scopeId,
+                                                                      SearchFilterVO searchFilter,
+                                                                      StaticDataProvider sdp) {
+
+        Set<Integer> apTypeIds = new HashSet<>();
+        if (apTypeId != null) {
+            apTypeIds.add(apTypeId);
+        }
+        Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
+
+        Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId);
+
+        final Map<Integer, Integer> typeRuleSetMap = apFactory.getTypeRuleSetMap();
+
+        List<ApCachedAccessPoint> cachedAccessPoints = apCachedAccessPointRepository.findApCachedAccessPointisByQuery(search, searchFilter, apTypeIdTree, scopeIds,
+                state, from, count, sdp);
+
+        List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
+
+        for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPoints) {
+            CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData());
+            String name = accessPointCacheService.findAeCachedEntityName(entity);
+            accessPointVOList.add(apFactory.createVO(entity.getApState(), typeRuleSetMap, entity, name));
+        }
+
+        return new FilteredResultVO<>(accessPointVOList, accessPointVOList.size());
     }
 
     /**

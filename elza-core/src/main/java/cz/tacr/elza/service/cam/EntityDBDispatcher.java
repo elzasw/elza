@@ -528,7 +528,7 @@ public class EntityDBDispatcher {
 
         for (PartXml partXml : partsXml.getList()) {
             log.debug("Synchronizing part, accessPointId: {}, part uuid: {}, parent uuid: {}, type: {}",
-                      accessPointId, partXml.getPid(),
+                      accessPointId, partXml.getPid().getValue(),
                       partXml.getPrnt() != null ? partXml.getPrnt().getValue() : null,
                       partXml.getT());
             

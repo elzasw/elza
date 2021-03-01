@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -21,7 +22,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  */
 @Entity(name = "ap_scope")
 @Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ApScope implements IApScope {
+public class ApScope implements IApScope, AccessPointCacheSerializable {
 
     @Id
     @GeneratedValue

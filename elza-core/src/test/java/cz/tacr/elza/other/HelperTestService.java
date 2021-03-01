@@ -154,6 +154,8 @@ public class HelperTestService {
     private ApIndexRepository indexRepository;
     @Autowired
     private ApKeyValueRepository keyValueRepository;
+    @Autowired
+    private ApCachedAccessPointRepository apCachedAccessPointRepository;
 
     @Autowired
     private PackageService packageService;
@@ -204,6 +206,7 @@ public class HelperTestService {
         daoLinkRepository.deleteAll();
         daoRepository.deleteAll();
 
+        apCachedAccessPointRepository.deleteAll();
         asyncRequestRepository.deleteAll();
         commentRepository.deleteAll();
         issueRepository.deleteAll();

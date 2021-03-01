@@ -1162,4 +1162,23 @@
           where p.part_id = si.part_id      
       </sql>
     </changeSet>
+    
+    <changeSet id="20210228150900" author="fantis">
+        <createTable tableName="ap_cached_access_point">
+            <column name="cached_access_point_id" type="int">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_ap_cached_access_point"
+                             nullable="false"/>
+            </column>
+            <column name="access_point_id" type="int">
+                <constraints foreignKeyName="fk_ap_cached_access_point_access_point"
+                             referencedTableName="ap_access_point"
+                             referencedColumnNames="access_point_id"
+                             nullable="false"/>
+            </column>
+            <column name="data" type="${type.text}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
 </databaseChangeLog>

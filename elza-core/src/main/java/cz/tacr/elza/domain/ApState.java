@@ -15,9 +15,10 @@ import javax.persistence.ManyToOne;
 import cz.tacr.elza.api.interfaces.IApScope;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.interfaces.Versionable;
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
 @Entity(name = "ap_state")
-public class ApState extends AbstractVersionableEntity implements IApScope, Versionable {
+public class ApState extends AbstractVersionableEntity implements IApScope, Versionable, AccessPointCacheSerializable {
 
     public static final String FIELD_ACCESS_POINT = "accessPoint";
     public static final String FIELD_ACCESS_POINT_ID = "accessPointId";
@@ -199,7 +200,7 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
     /**
      * Stav přístupového bodu.
      */
-    public enum StateApproval {
+    public enum StateApproval implements AccessPointCacheSerializable {
 
         /**
          * Nový přístupový bod.
