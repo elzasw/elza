@@ -43,6 +43,8 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+
 @Service
 public class AccessPointCacheService implements SearchIndexSupport<ApCachedAccessPoint> {
 
@@ -319,5 +321,23 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         }
         // moznost optimalizovat nacteni vcene zavislosti
         return cachedAccessPointRepository.findAllById(ids).stream().collect(Collectors.toMap(o -> o.getAccessPointId(), o -> o));
+    }
+
+    public String findAeCachedEntityName(CachedAccessPoint entity) {
+        if (CollectionUtils.isNotEmpty(entity.getParts())) {
+            for (CachedPart part : entity.getParts()) {
+                if (part.getPartId().equals(entity.getPreferredPartId())) {
+                    if (CollectionUtils.isNotEmpty(part.getIndices())) {
+                        for (ApIndex index : part.getIndices()) {
+                            if (index.getIndexType().equals(DISPLAY_NAME)) {
+                                return index.getValue();
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return null;
     }
 }
