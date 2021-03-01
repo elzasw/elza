@@ -26,6 +26,8 @@ import javax.persistence.Table;
 @Entity(name = "ap_cached_access_point")
 public class ApCachedAccessPoint {
 
+    public static final String DATA = "data";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)

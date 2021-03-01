@@ -7,8 +7,11 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import org.hibernate.ScrollableResults;
 
@@ -66,4 +69,7 @@ public interface ApAccessPointRepositoryCustom {
      * @return
      */
     ScrollableResults findUncachedAccessPoints();
+
+    List<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search, SearchFilterVO searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
+                                                               ApState.StateApproval state, Integer from, Integer count, StaticDataProvider sdp);
 }
