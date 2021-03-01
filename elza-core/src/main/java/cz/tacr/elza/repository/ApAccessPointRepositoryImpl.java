@@ -26,6 +26,10 @@ import cz.tacr.elza.domain.ApIndex;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.hibernate.CacheMode;
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -327,5 +331,16 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             sb.append(" and i").append(index).append(".item_spec_id = ").append(itemSpec.getItemSpecId());
         }
 
+    }
+
+    @Override
+    public ScrollableResults findUncachedAccessPoints() {
+        String hql = "SELECT ap.accessPointId FROM ap_access_point ap LEFT JOIN ap_cached_access_point cap ON cap.accessPointId = ap.accessPointId WHERE cap IS NULL";
+
+        Session session = entityManager.unwrap(Session.class);
+        ScrollableResults scrollableResults = session.createQuery(hql).setCacheMode(CacheMode.IGNORE)
+                .scroll(ScrollMode.FORWARD_ONLY);
+
+        return scrollableResults;
     }
 }
