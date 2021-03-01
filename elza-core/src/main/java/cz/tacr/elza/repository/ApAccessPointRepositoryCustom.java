@@ -69,7 +69,4 @@ public interface ApAccessPointRepositoryCustom {
      * @return
      */
     ScrollableResults findUncachedAccessPoints();
-
-    List<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search, SearchFilterVO searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
-                                                               ApState.StateApproval state, Integer from, Integer count, StaticDataProvider sdp);
 }

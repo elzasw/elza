@@ -6,7 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ApCachedAccessPointRepository extends ElzaJpaRepository<ApCachedAccessPoint, Integer> {
+public interface ApCachedAccessPointRepository extends ElzaJpaRepository<ApCachedAccessPoint, Integer>, ApCachedAccessPointRepositoryCustom {
 
     @Query("SELECT cap FROM ap_cached_access_point cap WHERE cap.accessPoint.accessPointId = :accessPointId")
     ApCachedAccessPoint findByAccessPointId(@Param("accessPointId") Integer accessPointId);
