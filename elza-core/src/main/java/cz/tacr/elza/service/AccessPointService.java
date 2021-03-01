@@ -1901,6 +1901,11 @@ public class AccessPointService {
         return stateRepository.findAll(specification, PageRequest.of(page, count));
     }
 
+    public boolean isQueryComplex(SearchFilterVO searchFilter) {
+        //todo fantiš definovat příliš složitý dotaz
+        return false;
+    }
+
     /**
      * Pomocná třída pro založení změny až při její první potřebě.
      */

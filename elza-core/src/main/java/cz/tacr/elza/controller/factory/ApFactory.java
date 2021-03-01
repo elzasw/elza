@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.ApStateEnum;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -329,6 +331,40 @@ public class ApFactory {
         }
 
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
+        vo.setName(name);
+        return vo;
+    }
+
+    public ApAccessPointVO createVO(final ApState apState,
+                                    final Map<Integer, Integer> typeRuleSetMap,
+                                    final CachedAccessPoint ap,
+                                    final String name) {
+        return createVO(apState, typeRuleSetMap, ap.getAccessPointId(), ap.getUuid(), ap.getErrorDescription(), ap.getState(), name);
+    }
+
+    public ApAccessPointVO createVO(final ApState apState,
+                                    final Map<Integer, Integer> typeRuleSetMap,
+                                    final Integer accessPointId,
+                                    final String uuid,
+                                    final String errorDescription,
+                                    final ApStateEnum state,
+                                    final String name) {
+        // create VO
+        ApAccessPointVO vo = new ApAccessPointVO();
+        vo.setId(accessPointId);
+        vo.setInvalid(apState.getDeleteChange() != null);
+        vo.setScopeId(apState.getScopeId());
+        vo.setTypeId(apState.getApTypeId());
+        vo.setComment(apState.getComment());
+        vo.setStateApproval(apState.getStateApproval());
+        vo.setUuid(uuid);
+        vo.setExternalIds(Collections.emptyList());
+        vo.setErrorDescription(errorDescription);
+        if (typeRuleSetMap != null) {
+            vo.setRuleSetId(typeRuleSetMap.get(apState.getApTypeId()));
+        }
+
+        vo.setState(state == null ? null : ApStateVO.valueOf(state.name()));
         vo.setName(name);
         return vo;
     }
