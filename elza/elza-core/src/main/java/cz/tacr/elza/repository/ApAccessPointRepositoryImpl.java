@@ -26,6 +26,10 @@ import cz.tacr.elza.domain.ApIndex;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.hibernate.CacheMode;
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,12 +41,10 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.ws.types.v1.ItemEnum;
 import cz.tacr.elza.ws.types.v1.ItemString;
-
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
 /**
@@ -58,6 +60,8 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
 
     @Autowired
     private StaticDataService staticDataService;
+
+    public static final String STAR = "*";
 
     @Override
     public List<ApState> findApAccessPointByTextAndType(
@@ -328,4 +332,17 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         }
 
     }
+
+    @Override
+    public ScrollableResults findUncachedAccessPoints() {
+        String hql = "SELECT ap.accessPointId FROM ap_access_point ap LEFT JOIN ap_cached_access_point cap ON cap.accessPointId = ap.accessPointId WHERE cap IS NULL";
+
+        Session session = entityManager.unwrap(Session.class);
+        ScrollableResults scrollableResults = session.createQuery(hql).setCacheMode(CacheMode.IGNORE)
+                .scroll(ScrollMode.FORWARD_ONLY);
+
+        return scrollableResults;
+    }
+
+
 }

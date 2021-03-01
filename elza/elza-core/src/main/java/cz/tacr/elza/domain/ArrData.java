@@ -16,6 +16,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang3.Validate;
@@ -37,7 +38,7 @@ import cz.tacr.elza.service.cache.NodeCacheSerializable;
 @Inheritance(strategy = InheritanceType.JOINED)
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler"})
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include=JsonTypeInfo.As.PROPERTY, property="@class")
-public abstract class ArrData implements NodeCacheSerializable {
+public abstract class ArrData implements NodeCacheSerializable, AccessPointCacheSerializable {
 
     public static final String ID = "dataId";
 
