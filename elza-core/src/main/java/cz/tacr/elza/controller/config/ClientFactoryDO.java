@@ -382,8 +382,8 @@ public class ClientFactoryDO {
                 case GT: {
                     if (dataType == DataType.UNITDATE) {
                         ArrDataUnitdate unitDate = getConditionValueUnitdate(filter.getCondition());
-                        String attributeName = ArrDescItem.NORMALIZED_FROM_ATT;
-                        condition = new GtDescItemCondition<>(unitDate.getNormalizedTo(), attributeName);
+                        String attributeName = ArrDescItem.NORMALIZED_TO_ATT;
+                        condition = new GtDescItemCondition<>(unitDate.getNormalizedFrom(), attributeName);
                     } else if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
                         String attributeName = ArrDescItem.INTGER_ATT;
@@ -399,13 +399,6 @@ public class ClientFactoryDO {
                     } else {
                         throw new NotImplementedException("Neimplementovaný typ: " + dataType.getCode());
                     }
-                    break;
-                }
-                case INTERSECT: {
-                    Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
-                    condition = new IntersectDescItemCondition<>(conditionValue,
-                            ArrDescItem.NORMALIZED_FROM_ATT,
-                            ArrDescItem.NORMALIZED_TO_ATT);
                     break;
                 }
                 case INTERVAL: {
@@ -447,8 +440,8 @@ public class ClientFactoryDO {
                 case LT: {
                     if (dataType == DataType.UNITDATE) {
                         ArrDataUnitdate unitDate = getConditionValueUnitdate(filter.getCondition());
-                        String attributeName = ArrDescItem.NORMALIZED_TO_ATT;
-                        condition = new LtDescItemCondition<>(unitDate.getNormalizedFrom(), attributeName);
+                        String attributeName = ArrDescItem.NORMALIZED_FROM_ATT;
+                        condition = new LtDescItemCondition<>(unitDate.getNormalizedTo(), attributeName);
                     } else if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
                         String attributeName = ArrDescItem.INTGER_ATT;
@@ -511,6 +504,13 @@ public class ClientFactoryDO {
                     } else {
                         throw new NotImplementedException("Neimplementovaný typ: " + dataType.getCode());
                     }
+                    break;
+                }
+                case INTERSECT: {
+                    Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
+                    condition = new IntersectDescItemCondition<>(conditionValue,
+                            ArrDescItem.NORMALIZED_FROM_ATT,
+                            ArrDescItem.NORMALIZED_TO_ATT);
                     break;
                 }
                 case SUBSET: {
