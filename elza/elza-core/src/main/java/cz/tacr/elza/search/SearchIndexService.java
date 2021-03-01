@@ -9,6 +9,8 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import cz.tacr.elza.domain.ApCachedAccessPoint;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.search.backend.LuceneWork;
@@ -47,6 +49,8 @@ public class SearchIndexService {
 
     private final DescriptionItemService descriptionItemService;
 
+    private final AccessPointCacheService accessPointCacheService;
+
     // --- fields ---
 
     @PersistenceContext
@@ -67,8 +71,9 @@ public class SearchIndexService {
     // --- constructor ---
 
     @Autowired
-    public SearchIndexService(DescriptionItemService descriptionItemService) {
+    public SearchIndexService(DescriptionItemService descriptionItemService, AccessPointCacheService accessPointCacheService) {
         this.descriptionItemService = descriptionItemService;
+        this.accessPointCacheService = accessPointCacheService;
     }
 
     // --- methods ---
@@ -77,6 +82,7 @@ public class SearchIndexService {
     public void init() {
         // AbstractDocumentBuilder builder = getEntityBuilder(integrator, ArrDescItem.class);
         repositoryMap.put(ArrDescItem.class, descriptionItemService);
+        repositoryMap.put(ApCachedAccessPoint.class, accessPointCacheService);
     }
 
     @Transactional

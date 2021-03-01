@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
+
 import javax.persistence.*;
 
 /**
@@ -11,7 +13,7 @@ import javax.persistence.*;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "ap_item")
-public class ApItem implements Item {
+public class ApItem implements Item, AccessPointCacheSerializable {
 
     public static final String PART_ID = "partId";
     public static final String PART = "part";
