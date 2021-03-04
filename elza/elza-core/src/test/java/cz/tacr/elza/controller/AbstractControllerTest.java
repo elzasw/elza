@@ -795,9 +795,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param addLevelParam parametry pro vytvoření nového uzlu
      * @return nový uzel
      */
-    protected ArrangementController.NodeWithParent addLevel(final AddLevelParam addLevelParam) {
+    protected ArrangementController.NodesWithParent addLevel(final AddLevelParam addLevelParam) {
         Response response = put(spec -> spec.body(addLevelParam), ADD_LEVEL);
-        return response.getBody().as(ArrangementController.NodeWithParent.class);
+        return response.getBody().as(ArrangementController.NodesWithParent.class);
     }
 
     /**
@@ -820,7 +820,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param parentStaticNode rodič uzlu vůči kterému přidávám
      * @return vytvořený uzel
      */
-    protected ArrangementController.NodeWithParent addLevel(final FundLevelService.AddLevelDirection direction,
+    protected ArrangementController.NodesWithParent addLevel(final FundLevelService.AddLevelDirection direction,
                                                             final ArrFundVersionVO fundVersion,
                                                             final ArrNodeVO staticNode,
                                                             final ArrNodeVO parentStaticNode,
@@ -831,9 +831,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
         addLevelParam.setStaticNode(staticNode);
         addLevelParam.setStaticNodeParent(parentStaticNode);
         addLevelParam.setScenarioName(scenarioName);
-        ArrangementController.NodeWithParent newLevel = addLevel(addLevelParam);
+        ArrangementController.NodesWithParent newLevel = addLevel(addLevelParam);
 
-        Assert.assertNotNull(newLevel.getNode());
+        Assert.assertNotNull(newLevel.getNodes().get(0));
         Assert.assertNotNull(newLevel.getParentNode());
 
         return newLevel;
@@ -964,7 +964,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param staticNodeParent rodič uzlu který mažu
      * @return smazaný uzel s rodičem
      */
-    protected ArrangementController.NodeWithParent deleteLevel(final ArrFundVersionVO fundVersion,
+    protected ArrangementController.NodesWithParent deleteLevel(final ArrFundVersionVO fundVersion,
                                                                final ArrNodeVO staticNode,
                                                                final ArrNodeVO staticNodeParent) {
         ArrangementController.NodeParam nodeParam = new ArrangementController.NodeParam();
@@ -980,9 +980,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param nodeParam parametry mazání
      * @return smazaný uzel s rodičem
      */
-    protected ArrangementController.NodeWithParent deleteLevel(final ArrangementController.NodeParam nodeParam) {
+    protected ArrangementController.NodesWithParent deleteLevel(final ArrangementController.NodeParam nodeParam) {
         Response response = delete(spec -> spec.body(nodeParam), DELETE_LEVEL);
-        return response.getBody().as(ArrangementController.NodeWithParent.class);
+        return response.getBody().as(ArrangementController.NodesWithParent.class);
     }
 
     /**
