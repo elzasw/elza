@@ -345,7 +345,7 @@ public class ArrangementController {
             parentNode = parentNodes.iterator().next();
         }
 
-        NodeWithParent nodeWithParent = new NodeWithParent(ArrNodeVO.valueOf(node), parentNode);
+        NodesWithParent nodeWithParent = new NodesWithParent(Collections.singletonList(ArrNodeVO.valueOf(node)), parentNode);
 
         SelectNodeResult result = new SelectNodeResult();
         result.setFund(fund);
@@ -1575,7 +1575,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/levels", method = RequestMethod.PUT)
-    public NodeWithParent addLevel(@RequestBody final AddLevelParam addLevelParam) {
+    public NodesWithParent addLevel(@RequestBody final AddLevelParam addLevelParam) {
         Assert.notNull(addLevelParam, "Parametry musí být vyplněny");
         Assert.notNull(addLevelParam.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
 
@@ -1608,7 +1608,7 @@ public class ArrangementController {
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), fundVersion);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
-        return new NodeWithParent(ArrNodeVO.valueOf(newLevel.getNode()), nodeClients.iterator().next());
+        return new NodesWithParent(Collections.singletonList(ArrNodeVO.valueOf(newLevel.getNode())), nodeClients.iterator().next());
     }
 
     /**
@@ -1618,7 +1618,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/levels", method = RequestMethod.DELETE)
-    public NodeWithParent deleteLevel(@RequestBody final NodeParam nodeParam) {
+    public NodesWithParent deleteLevel(@RequestBody final NodeParam nodeParam) {
         Assert.notNull(nodeParam, "Parametry JP musí být vyplněny");
         Assert.notNull(nodeParam.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(nodeParam.getStaticNode(), "Nebyla zvolena referenční JP");
@@ -1635,7 +1635,7 @@ public class ArrangementController {
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
                                fundVersion);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
-        return new NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
+        return new NodesWithParent(Collections.singletonList(ArrNodeVO.valueOf(deleteLevel.getNode())), nodeClients.iterator().next());
     }
 
     /**
@@ -3415,26 +3415,26 @@ public class ArrangementController {
     }
 
     /**
-     * Jednotka popisu - node + node parent
+     * Jednotky popisu - node + node parent
      */
-    public static class NodeWithParent {
+    public static class NodesWithParent {
 
         /**
          * Jednotka popisu.
          */
-        private ArrNodeVO node;
+        private List<ArrNodeVO> nodes;
 
         /**
          * Rodič jednotky popisu.
          */
         private TreeNodeVO parentNode;
 
-        public ArrNodeVO getNode() {
-            return node;
+        public List<ArrNodeVO> getNodes() {
+            return nodes;
         }
 
-        public void setNode(final ArrNodeVO node) {
-            this.node = node;
+        public void setNodes(final List<ArrNodeVO> nodes) {
+            this.nodes = nodes;
         }
 
         public TreeNodeVO getParentNode() {
@@ -3445,11 +3445,11 @@ public class ArrangementController {
             this.parentNode = parentNode;
         }
 
-        public NodeWithParent() {
+        public NodesWithParent() {
         }
 
-        public NodeWithParent(final ArrNodeVO node, final TreeNodeVO parentNode) {
-            this.node = node;
+        public NodesWithParent(final List<ArrNodeVO> nodes, final TreeNodeVO parentNode) {
+            this.nodes = nodes;
             this.parentNode = parentNode;
         }
     }

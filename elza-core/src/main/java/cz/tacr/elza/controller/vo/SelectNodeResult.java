@@ -5,7 +5,7 @@ import cz.tacr.elza.controller.ArrangementController;
 public class SelectNodeResult {
 
     private ArrFundVO fund;
-    private ArrangementController.NodeWithParent nodeWithParent;
+    private ArrangementController.NodesWithParent nodeWithParent;
 
     public ArrFundVO getFund() {
         return fund;
@@ -15,11 +15,11 @@ public class SelectNodeResult {
         this.fund = fund;
     }
 
-    public void setNodeWithParent(final ArrangementController.NodeWithParent nodeWithParent) {
+    public void setNodeWithParent(final ArrangementController.NodesWithParent nodeWithParent) {
         this.nodeWithParent = nodeWithParent;
     }
 
-    public ArrangementController.NodeWithParent getNodeWithParent() {
+    public ArrangementController.NodesWithParent getNodeWithParent() {
         return nodeWithParent;
     }
 }
