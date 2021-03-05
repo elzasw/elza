@@ -235,7 +235,8 @@ export default function fundTree(state = initialState, action = {}) {
                             const keys = Object.keys(newState.selectedIds);
                             if (keys.length > 0) {
                                 // kontrolujeme stejný level - depth
-                                const indexSelected = indexById(newState.nodes, keys[0]);
+                                const selectedId = parseInt(keys[0]); // Needs to be converted to number, because Object.keys returns string[] and node.id is number
+                                const indexSelected = indexById(newState.nodes, selectedId); 
                                 const indexNewSelection = indexById(newState.nodes, action.nodeId);
                                 if (newState.nodes[indexSelected].depth === newState.nodes[indexNewSelection].depth) {
                                     newState.selectedIds[action.nodeId] = true;
