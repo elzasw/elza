@@ -11,13 +11,13 @@ import {
 } from 'components/shared';
 import {Button} from '../ui';
 import classNames from 'classnames';
-import {propsEquals} from 'components/Utils.jsx';
-import {indexById} from 'stores/app/utils.jsx';
-import {createReferenceMark, getNodeFirstChild, getNodeIcon, getNodeParent} from 'components/arr/ArrUtils.jsx';
+import {propsEquals} from 'components/Utils';
+import {indexById} from 'stores/app/utils';
+import {createReferenceMark, getNodeFirstChild, getNodeIcon, getNodeParent} from 'components/arr/ArrUtils';
 import './FundTreeLazy.scss';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
-import defaultKeymap from './FundTreeLazyKeymap.jsx';
+import defaultKeymap from './FundTreeLazyKeymap';
 
 // Na kolik znaků se má název položky stromu oříznout, jen pokud je nastaven vstupní atribut, že se má název ořezávat
 const TREE_NAME_MAX_CHARS = 60;

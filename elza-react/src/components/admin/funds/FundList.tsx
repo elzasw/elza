@@ -1,7 +1,7 @@
 import React, {FC, useEffect} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import { i18n, ListBox, Search, StoreHorizontalLoader} from 'components/shared';
-import {indexById} from 'stores/app/utils.jsx';
+import {indexById} from 'stores/app/utils';
 import {fundsFetchIfNeeded, fundsFilter, selectFund} from '../../../actions/admin/fund';
 import {renderFundItem} from '../../admin/adminRenderUtils';
 import storeFromArea from '../../../shared/utils/storeFromArea';

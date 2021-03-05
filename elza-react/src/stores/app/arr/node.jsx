@@ -1,13 +1,13 @@
 import * as types from 'actions/constants/ActionTypes';
-import {indexById} from 'stores/app/utils.jsx';
-import subNodeForm from './subNodeForm.jsx';
-import subNodeFormCache from './subNodeFormCache.jsx';
-import subNodeDaos from './subNodeDaos.jsx';
-import subNodeInfo from './subNodeInfo.jsx';
-import {consolidateState} from 'components/Utils.jsx';
-import {nodeFormActions} from 'actions/arr/subNodeForm.jsx';
-import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo.jsx';
-import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos.jsx';
+import {indexById} from 'stores/app/utils';
+import subNodeForm from './subNodeForm';
+import subNodeFormCache from './subNodeFormCache';
+import subNodeDaos from './subNodeDaos';
+import subNodeInfo from './subNodeInfo';
+import {consolidateState} from 'components/Utils';
+import {nodeFormActions} from 'actions/arr/subNodeForm';
+import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo';
+import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos';
 
 let _nextRoutingKey = 1;
 const _routingKeyAreaPrefix = 'NODE|';

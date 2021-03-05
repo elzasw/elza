@@ -45,6 +45,22 @@ export interface CalendarType {
     name: string;
 }
 
+interface Scope {
+    versionId: number;
+    id: number | unknown;
+}
+
+interface ScopeData {
+    isDirty: boolean | unknown;
+    isFetching: boolean | unknown;
+    versionId: number | unknown;
+    scopes: Scope[];
+}
+
+interface ScopesData {
+    scopes: ScopeData[];
+}
+
 export interface RefTablesState {
     apTypes: BaseRefTableStore<unknown>;
     calendarTypes: BaseRefTableStore<CalendarType>;
@@ -60,7 +76,7 @@ export interface RefTablesState {
     recordTypes: unknown;
     rulDataTypes: unknown;
     ruleSet: unknown;
-    scopesData: unknown;
+    scopesData: ScopesData;
     structureTypes: unknown;
     templates: unknown;
     visiblePolicyTypes: unknown;
@@ -117,10 +133,83 @@ export interface AdminFund {
     reducer: unknown;
 }
 
+export interface Node {
+    routingKey?: string;
+}
+
+export interface NodesState {
+    activeIndex: number | unknown;
+    nodes: Node[];
+}
+
+export interface Fund {
+    activeVersion: unknown;
+    apScopes: unknown;
+    bulkActions: unknown;
+    closed: boolean | unknown;
+    createDate: string | unknown;
+    daoPackageDetail: unknown;
+    daoPackageList: unknown;
+    daoUnassignedPackageList: unknown;
+    dirty: boolean | unknown;
+    fundAction: unknown;
+    fundDataGrid: unknown;
+    fundFiles: unknown;
+    fundNodesError: unknown;
+    fundNodesPolicy: unknown;
+    fundNumber: unknown | null;
+    fundOutput: unknown;
+    fundTree: unknown;
+    fundTreeDaosLeft: unknown;
+    fundTreeDaosRight: unknown;
+    fundTreeMovementsLeft: unknown;
+    fundTreeMovementsRight: unknown;
+    fundTreeNodes: unknown;
+    historicalNamedOutputs: unknown | null;
+    id: number | unknown;
+    institutionId: number | unknown;
+    internalCode: string | unknown;
+    isFetching: boolean | unknown;
+    lastUseTemplateName?: unknown;
+    lockDate: unknown | null;
+    mark: unknown | null;
+    moving: boolean | unknown;
+    name: string | unknown;
+    nodeDaoList: unknown;
+    nodeDaoListAssign: unknown;
+    nodes: NodesState;
+    packageDaoList: unknown;
+    reducer: unknown;
+    requestDetail: unknown;
+    requestList: unknown;
+    unitdate: unknown | null;
+    validNamedOutputs: unknown | null;
+    versionId: number | unknown;
+    versionValidation: unknown;
+    versions: unknown;
+}
+
+export interface VisiblePolicy {
+    data: null | unknown;
+    otherData: null | unknown;
+}
+
+export interface ArrRegion {
+    activeIndex: number | null;
+    customFund: unknown;
+    extendedView?: boolean;
+    fundSearch: unknown;
+    funds: Fund[];
+    globalFundTree: unknown;
+    nodeSettings: unknown;
+    showRegisterJp?: boolean;
+    visiblePolicy: VisiblePolicy;
+}
+
 export interface AppState {
     splitter: SplitterState;
     adminRegion: AdminRegionState;
-    arrRegion: unknown;
+    arrRegion: ArrRegion;
     app: unknown;
     contextMenu: ContextMenuState;
     developer: DeveloperState;

@@ -1,9 +1,9 @@
 import * as types from 'actions/constants/ActionTypes';
 import {i18n} from 'components/shared';
-import {getMapFromList, indexById} from 'stores/app/utils.jsx';
-import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from 'components/validate.jsx';
-import {valuesEquals} from 'components/Utils.jsx';
-import {DisplayType} from '../../../constants.tsx';
+import {getMapFromList, indexById} from 'stores/app/utils';
+import {validateCoordinatePoint, validateDouble, validateDuration, validateInt} from 'components/validate';
+import {valuesEquals} from 'components/Utils';
+import {DisplayType} from '../../../constants';
 import {buildIgnoreMap, endWith, startWith} from '../../../components/Utils';
 import {cloneDeep} from 'lodash-es';
 import {

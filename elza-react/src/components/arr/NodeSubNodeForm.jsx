@@ -14,23 +14,23 @@ import {
     toggleCopyAllDescItemType,
     unlockAllDescItemType,
     unlockDescItemType,
-} from 'actions/arr/nodeSetting.jsx';
-import {deleteNode} from '../../actions/arr/node.jsx';
-import {createFundRoot, isFundRootId} from './ArrUtils.jsx';
-import * as perms from 'actions/user/Permission.jsx';
-import {nodeFormActions} from 'actions/arr/subNodeForm.jsx';
-import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
-import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {WebApi} from 'actions/index.jsx';
-import {getMapFromList, indexById} from 'stores/app/utils.jsx';
-import {fundSelectSubNode} from 'actions/arr/node.jsx';
-import {addToastr, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+} from 'actions/arr/nodeSetting';
+import {deleteNode} from '../../actions/arr/node';
+import {createFundRoot, isFundRootId} from './ArrUtils';
+import * as perms from 'actions/user/Permission';
+import {nodeFormActions} from 'actions/arr/subNodeForm';
+import {getOneSettings, setSettings} from 'components/arr/ArrUtils';
+import ArrHistoryForm from 'components/arr/ArrHistoryForm';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
+import {WebApi} from 'actions/index';
+import {getMapFromList, indexById} from 'stores/app/utils';
+import {fundSelectSubNode} from 'actions/arr/node';
+import {addToastr, addToastrSuccess} from 'components/shared/toastr/ToastrActions';
 import {Dropdown, DropdownButton} from 'react-bootstrap';
 import TemplateForm, {EXISTS_TEMPLATE, NEW_TEMPLATE} from './TemplateForm';
 import TemplateUseForm from './TemplateUseForm';
-import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
-import DescItemFactory from 'components/arr/nodeForm/DescItemFactory.jsx';
+import {userDetailsSaveSettings} from 'actions/user/userDetail';
+import DescItemFactory from 'components/arr/nodeForm/DescItemFactory';
 import {CLS, CLS_ITEM_ENUM} from '../../shared/factory/factoryConsts';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as issuesActions from '../../actions/arr/issues';

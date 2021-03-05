@@ -1,5 +1,5 @@
 import StoreUtils from './StoreUtils';
-import {indexById} from 'stores/app/utils.jsx';
+import {indexById} from 'stores/app/utils';
 
 /**
  * Provede zpracování store, který může obsahovat area a vrátí upraený store.
