@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
 /**
  * Stav entity.
@@ -9,7 +8,7 @@ import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
  *  - {@link ApAccessPoint}
  *  - {@link ApPart}
  */
-public enum ApStateEnum implements AccessPointCacheSerializable {
+public enum ApStateEnum {
 
     /**
      * V pořádku, platné.

@@ -5,7 +5,6 @@ import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApStateEnum;
-import cz.tacr.elza.domain.RulPartType;
 import java.util.List;
 
 public class CachedPart implements AccessPointCacheSerializable {
@@ -16,7 +15,7 @@ public class CachedPart implements AccessPointCacheSerializable {
 
     private String errorDescription;
 
-    private RulPartType partType;
+    private String partTypeCode;
 
     private Integer parentPartId;
 
@@ -54,12 +53,12 @@ public class CachedPart implements AccessPointCacheSerializable {
         this.errorDescription = errorDescription;
     }
 
-    public RulPartType getPartType() {
-        return partType;
+    public String getPartTypeCode() {
+        return partTypeCode;
     }
 
-    public void setPartType(RulPartType partType) {
-        this.partType = partType;
+    public void setPartTypeCode(String partTypeCode) {
+        this.partTypeCode = partTypeCode;
     }
 
     public Integer getParentPartId() {

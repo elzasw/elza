@@ -444,6 +444,7 @@ public class ApController {
         ApState oldState = accessPointService.getStateInternal(accessPoint);
         ApState newState = accessPointService.changeApType(accessPointId, editVo.getTypeId());
         accessPointService.generateSync(accessPointId);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
         return apFactory.createVO(newState, true);
     }
 
@@ -707,6 +708,7 @@ public class ApController {
 
         accessPointService.updateApState(accessPoint, stateChange.getState(), stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
         accessPointService.generateSync(accessPointId);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
     /**
@@ -753,6 +755,7 @@ public class ApController {
         accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
         accessPointService.generateSync(accessPointId, apPart);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
     /**
@@ -773,6 +776,7 @@ public class ApController {
         accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.getPart(partId);
         accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
 
@@ -792,6 +796,7 @@ public class ApController {
         accessPointService.hasPermissionForEditingConfirmed(state);
         partService.deletePart(apAccessPoint, partId);
         accessPointService.generateSync(accessPointId);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
     /**
@@ -811,6 +816,7 @@ public class ApController {
         accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.getPart(partId);
         accessPointService.setPreferName(apAccessPoint, apPart);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
     /**

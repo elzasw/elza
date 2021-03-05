@@ -16,10 +16,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
 @Entity(name = "ap_change")
-public class ApChange implements AccessPointCacheSerializable {
+public class ApChange {
 
     public static final String USER = "user";
 

@@ -33,6 +33,7 @@ import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -261,6 +262,9 @@ public class AccessPointService {
 
     @Autowired
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
+
+    @Autowired
+    private AccessPointCacheService accessPointCacheService;
 
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
@@ -815,6 +819,7 @@ public class AccessPointService {
 
         partService.createPartItems(apChange, apPart, apPartFormVO, null, null);
         generateSync(accessPoint.getAccessPointId(), apPart);
+        accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         publishAccessPointCreateEvent(accessPoint);
 

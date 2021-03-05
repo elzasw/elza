@@ -171,12 +171,17 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Transactional
     public void createApCachedAccessPoint(Integer accessPointId) {
-        ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
-        if (oldApCachedAccessPoint != null) {
-            cachedAccessPointRepository.delete(oldApCachedAccessPoint);
+        writeLock.lock();
+        try {
+            ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
+            if (oldApCachedAccessPoint != null) {
+                cachedAccessPointRepository.delete(oldApCachedAccessPoint);
+            }
+            ApCachedAccessPoint apCachedAccessPoint = createCachedAccessPoint(accessPointId);
+            cachedAccessPointRepository.save(apCachedAccessPoint);
+        } finally {
+            writeLock.unlock();
         }
-        ApCachedAccessPoint apCachedAccessPoint = createCachedAccessPoint(accessPointId);
-        cachedAccessPointRepository.save(apCachedAccessPoint);
     }
 
     private ApCachedAccessPoint createCachedAccessPoint(Integer accessPointId) {
@@ -233,7 +238,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         cachedPart.setDeleteChange(part.getDeleteChange());
         cachedPart.setErrorDescription(part.getErrorDescription());
         cachedPart.setState(part.getState());
-        cachedPart.setPartType(part.getPartType());
+        cachedPart.setPartTypeCode(part.getPartType().getCode());
         cachedPart.setKeyValue(part.getKeyValue());
         cachedPart.setParentPartId(part.getParentPart() != null ? part.getParentPart().getPartId() : null);
         cachedPart.setItems(items);
@@ -290,12 +295,17 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Transactional
     public CachedAccessPoint findCachedAccessPoint(Integer accessPointId) {
-        ApCachedAccessPoint apCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
-        CachedAccessPoint cachedAccessPoint = null;
-        if (apCachedAccessPoint != null) {
-            cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
+        readLock.lock();
+        try {
+            ApCachedAccessPoint apCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
+            CachedAccessPoint cachedAccessPoint = null;
+            if (apCachedAccessPoint != null) {
+                cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
+            }
+            return cachedAccessPoint;
+        } finally {
+            readLock.unlock();
         }
-        return cachedAccessPoint;
     }
 
     public CachedAccessPoint deserialize(String data) {
