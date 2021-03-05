@@ -147,8 +147,7 @@ public class ArrangementWebsocketController {
     @Transactional
     @MessageMapping("/arrangement/levels/add")
     public void addLevel(@Payload final AddLevelParam addLevelParam,
-                         final StompHeaderAccessor requestHeaders,
-                         @Nullable Integer count) {
+                         final StompHeaderAccessor requestHeaders) {
 
         Assert.notNull(addLevelParam, "Parametry musí být vyplněny");
         Integer versionId = addLevelParam.getVersionId();
@@ -165,9 +164,7 @@ public class ArrangementWebsocketController {
         ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ? null : factoryDO
                 .createNode(addLevelParam.getStaticNodeParent());
 
-        if (count == null) {
-            count = 1;
-        }
+        int count = addLevelParam.getCount() == null? 1 : addLevelParam.getCount();
 
         List<ArrNodeVO> nodes = new ArrayList<>(count);
         Collection<TreeNodeVO> nodeClients = null;
@@ -224,8 +221,7 @@ public class ArrangementWebsocketController {
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
                                version);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
-        List<ArrNodeVO> nodes = Collections.singletonList(ArrNodeVO.valueOf(deleteLevel.getNode()));
-        final ArrangementController.NodesWithParent result = new ArrangementController.NodesWithParent(nodes, nodeClients.iterator().next());
+        final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
 
         // Odeslání dat zpět
 		webScoketStompService.sendReceiptAfterCommit(result, requestHeaders);
