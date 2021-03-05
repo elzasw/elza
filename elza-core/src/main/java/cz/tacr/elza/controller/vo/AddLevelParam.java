@@ -31,6 +31,12 @@ public class AddLevelParam extends ArrangementController.NodeParam {
     @Nullable
     private Set<Integer> descItemCopyTypes;
 
+    /**
+     * Počet zakládaných položek
+     */
+    @Nullable
+    private Integer count;
+
     public FundLevelService.AddLevelDirection getDirection() {
         return direction;
     }
@@ -61,5 +67,13 @@ public class AddLevelParam extends ArrangementController.NodeParam {
 
     public void setDescItemCopyTypes(final Set<Integer> descItemCopyTypes) {
         this.descItemCopyTypes = descItemCopyTypes;
+    }
+
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
     }
 }

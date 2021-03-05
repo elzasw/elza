@@ -775,9 +775,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // smazání druhého uzlu v první úrovni
         helperTestService.waitForWorkers();
-        ArrangementController.NodesWithParent nodesWithParent = deleteLevel(fundVersion, newNodes.get(2), rootNode);
+        ArrangementController.NodeWithParent nodesWithParent = deleteLevel(fundVersion, newNodes.get(2), rootNode);
 
-        assertTrue(nodesWithParent.getNodes().get(0).getId().equals(newNodes.get(2).getId()));
+        assertTrue(nodesWithParent.getNode().getId().equals(newNodes.get(2).getId()));
         assertTrue(nodesWithParent.getParentNode().getId().equals(rootNode.getId()));
 
         input = new ArrangementController.FaTreeParam();
@@ -795,7 +795,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání třetího levelu na první pozici pod root
         helperTestService.waitForWorkers();
-        ArrangementController.NodesWithParent newLevel5 = addLevel(FundLevelService.AddLevelDirection.CHILD,
+        ArrangementController.NodeWithParent newLevel5 = addLevel(FundLevelService.AddLevelDirection.CHILD,
                 fundVersion, rootNode, rootNode, null);
 
         helperTestService.waitForWorkers();
@@ -855,7 +855,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání prvního levelu pod root
         helperTestService.waitForWorkers();
-        ArrangementController.NodesWithParent newLevel1 = addLevel(FundLevelService.AddLevelDirection.CHILD,
+        ArrangementController.NodeWithParent newLevel1 = addLevel(FundLevelService.AddLevelDirection.CHILD,
                 fundVersion, rootNode, rootNode, "Série");
 
         // Rodič nového uzlu musí být root
@@ -870,7 +870,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání druhého levelu pod root
         helperTestService.waitForWorkers();
-        ArrangementController.NodesWithParent newLevel2 = addLevel(FundLevelService.AddLevelDirection.CHILD,
+        ArrangementController.NodeWithParent newLevel2 = addLevel(FundLevelService.AddLevelDirection.CHILD,
                 fundVersion, rootNode, rootNode, null);
 
         // Rodič nového uzlu musí být root
@@ -885,8 +885,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání třetího levelu na první pozici pod root
         helperTestService.waitForWorkers();
-        ArrangementController.NodesWithParent newLevel3 = addLevel(FundLevelService.AddLevelDirection.BEFORE,
-                fundVersion, newLevel1.getNodes().get(0), rootNode, null);
+        ArrangementController.NodeWithParent newLevel3 = addLevel(FundLevelService.AddLevelDirection.BEFORE,
+                fundVersion, newLevel1.getNode(), rootNode, null);
 
         // "Rodič nového uzlu musí být root"
         assertTrue(newLevel3.getParentNode().getId().equals(rootNode.getId()));
@@ -900,8 +900,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // přidání uzlu za první uzel pod root (za child3)
         helperTestService.waitForWorkers();
-        ArrangementController.NodesWithParent newLevel4 = addLevel(FundLevelService.AddLevelDirection.AFTER,
-                fundVersion, newLevel3.getNodes().get(0), rootNode, null);
+        ArrangementController.NodeWithParent newLevel4 = addLevel(FundLevelService.AddLevelDirection.AFTER,
+                fundVersion, newLevel3.getNode(), rootNode, null);
 
         // "Rodič nového uzlu musí být root"
         assertTrue(newLevel4.getParentNode().getId().equals(rootNode.getId()));
@@ -924,17 +924,17 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         TreeNodeVO node2 = nodeClientIterator.next();
         TreeNodeVO node3 = nodeClientIterator.next();
         TreeNodeVO node4 = nodeClientIterator.next();
-        assertTrue(node1.getId().equals(newLevel3.getNodes().get(0).getId()));
-        assertTrue(node2.getId().equals(newLevel4.getNodes().get(0).getId()));
-        assertTrue(node3.getId().equals(newLevel1.getNodes().get(0).getId()));
-        assertTrue(node4.getId().equals(newLevel2.getNodes().get(0).getId()));
+        assertTrue(node1.getId().equals(newLevel3.getNode().getId()));
+        assertTrue(node2.getId().equals(newLevel4.getNode().getId()));
+        assertTrue(node3.getId().equals(newLevel1.getNode().getId()));
+        assertTrue(node4.getId().equals(newLevel2.getNode().getId()));
 
         List<ArrNodeVO> nodes = new ArrayList<>(treeData.getNodes().size() + 1);
         nodes.add(rootNode);
-        nodes.add(newLevel3.getNodes().get(0));
-        nodes.add(newLevel4.getNodes().get(0));
-        nodes.add(newLevel1.getNodes().get(0));
-        nodes.add(newLevel2.getNodes().get(0));
+        nodes.add(newLevel3.getNode());
+        nodes.add(newLevel4.getNode());
+        nodes.add(newLevel1.getNode());
+        nodes.add(newLevel2.getNode());
         return nodes;
     }
 
