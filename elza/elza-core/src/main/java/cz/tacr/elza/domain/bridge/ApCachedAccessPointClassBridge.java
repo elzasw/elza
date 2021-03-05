@@ -49,11 +49,8 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
             CachedAccessPoint cachedAccessPoint = mapper.readValue(apCachedAccessPoint.getData(), CachedAccessPoint.class);
             addField(name + SEPARATOR + CachedAccessPoint.ACCESS_POINT_ID, cachedAccessPoint.getAccessPointId().toString().toLowerCase(), document, luceneOptions);
             addField(name + SEPARATOR + STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document, luceneOptions);
-            addField(name + SEPARATOR + AP_TYPE_ID, cachedAccessPoint.getApState().getApType().getApTypeId().toString().toLowerCase(), document, luceneOptions);
-            addField(name + SEPARATOR + SCOPE_ID, cachedAccessPoint.getApState().getScope().getScopeId().toString().toLowerCase(), document, luceneOptions);
-            if (cachedAccessPoint.getApState().getCreateChange().getUser() != null) {
-                addField(name + SEPARATOR + USERNAME, cachedAccessPoint.getApState().getCreateChange().getUser().getUsername().toLowerCase(), document, luceneOptions);
-            }
+            addField(name + SEPARATOR + AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document, luceneOptions);
+            addField(name + SEPARATOR + SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document, luceneOptions);
 
             if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
                 for (CachedPart part : cachedAccessPoint.getParts()) {
@@ -105,7 +102,7 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
     private void addIndexFields(String name, CachedPart part, Document document, LuceneOptions luceneOptions) {
         if (CollectionUtils.isNotEmpty(part.getIndices())) {
             for (ApIndex index : part.getIndices()) {
-                StringBuilder fieldName = new StringBuilder(part.getPartType().getCode());
+                StringBuilder fieldName = new StringBuilder(part.getPartTypeCode());
                 fieldName.append(SEPARATOR).append(INDEX);
 
                 addField(name + SEPARATOR + fieldName.toString().toLowerCase(), index.getValue().toLowerCase(), document, luceneOptions);

@@ -14,7 +14,6 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
 
 /**
@@ -25,7 +24,7 @@ import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 @Entity(name = "rul_part_type")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulPartType implements AccessPointCacheSerializable {
+public class RulPartType {
 
     public static final String CODE = "code";
 
