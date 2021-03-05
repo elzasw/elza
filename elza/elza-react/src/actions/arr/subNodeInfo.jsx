@@ -2,8 +2,8 @@
  * Akce pro doplňující informace pro aktuálně vybraný formulář node.
  */
 
-import {WebApi} from 'actions/index.jsx';
-import {findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx';
+import {WebApi} from 'actions/index';
+import {findByRoutingKeyInGlobalState} from 'stores/app/utils';
 
 import * as types from 'actions/constants/ActionTypes';
 

@@ -2,9 +2,9 @@
  * Akce pro doplňující informace k záložce NODE.
  */
 
-import {WebApi} from 'actions/index.jsx';
-import {findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx';
-import {isFundRootId} from 'components/arr/ArrUtils.jsx';
+import {WebApi} from 'actions/index';
+import {findByRoutingKeyInGlobalState} from 'stores/app/utils';
+import {isFundRootId} from 'components/arr/ArrUtils';
 import * as types from 'actions/constants/ActionTypes';
 
 export function isNodeInfoAction(action) {

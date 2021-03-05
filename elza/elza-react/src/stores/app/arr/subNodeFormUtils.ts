@@ -1,4 +1,4 @@
-import {getMapFromList, indexById} from 'stores/app/utils.jsx';
+import {getMapFromList, indexById} from 'stores/app/utils';
 import {isNormalizeDurationLength, normalizeDurationLength, toDuration} from '../../../components/validate';
 import {ItemAvailability, ItemAvailabilityNumToEnumMap} from '../accesspoint/itemFormUtils';
 import {JAVA_ATTR_CLASS, DisplayType} from '../../../constants';
@@ -866,8 +866,8 @@ class FlatFormData {
         let specs = this.specs;
         let itemTypesMap = getMapByItemType(items);
         let itemSpecsMap = this._getForcedSpecsByType(specs);
-        let refTypesMap = getMapFromList(this.refTables.descItemTypes.items);
-        let refDataTypesMap = getMapFromList(this.refTables.rulDataTypes.items);
+        let refTypesMap:any = getMapFromList(this.refTables.descItemTypes.items); // @TODO odstranit 'any' az bude dostupne otypovani u this.refTables.descItemTypes.items
+        let refDataTypesMap:any = getMapFromList(this.refTables.rulDataTypes.items); // @TODO odstranit 'any' az bude dostupne otypovani u this.refTables.rulDataTypes.items
         let newItems: WierdMapType<DescItem> = {ids: []} as any;
 
         for (let t = 0; t < types.ids.length; t++) {
@@ -1201,7 +1201,7 @@ function merge(state) {
  * @returns {*}
  */
 function fillImpossibleTypes(data, refTypesMap) {
-    const dataItemTypeMap = getMapFromList(data.itemTypes);
+    const dataItemTypeMap:any = getMapFromList(data.itemTypes); // @TODO - odstranit 'any' az bude dostupne otypovani v data.itemTypes
 
     Object.keys(refTypesMap).forEach(itemTypeId => {
         const itemTypeFound = indexById(data.itemTypes, itemTypeId);
@@ -1274,7 +1274,7 @@ export function updateFormData(state, data, refTypesMap, groups, updatedItem, di
         // Překopírování seznam id nepoužitých PP pro výstupy
         state.unusedItemTypeIds = data.unusedItemTypeIds;
 
-        const dataItemTypeMap = getMapFromList(data.itemTypes);
+        const dataItemTypeMap:any = getMapFromList(data.itemTypes); // @TODO - odstranit 'any' az bude dostupne otypovani v data.itemTypes
 
         // Info skupiny - ty, které jsou jako celek definované pro konkrétní JP - obsahují všechny atributy včetně např. typu - POSSIBLE atp.
         // Změna číselného typu na řetězec

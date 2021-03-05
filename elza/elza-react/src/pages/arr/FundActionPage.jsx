@@ -4,15 +4,15 @@
 
 import './FundActionPage.scss';
 
-import ArrParentPage from './ArrParentPage.jsx';
+import ArrParentPage from './ArrParentPage';
 
 import React from 'react';
-import {indexById} from 'stores/app/utils.jsx';
+import {indexById} from 'stores/app/utils';
 import {connect} from 'react-redux';
-import {FormInput, FundNodesList, FundNodesSelectForm, Ribbon} from 'components/index.jsx';
+import {FormInput, FundNodesList, FundNodesSelectForm, Ribbon} from 'components/index';
 import {i18n, Icon, ListBox, RibbonGroup, StoreHorizontalLoader, Utils} from 'components/shared';
 import {Button} from '../../components/ui';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
 import {
     funcActionActionInterrupt,
     fundActionActionSelect,
@@ -23,12 +23,12 @@ import {
     fundActionFormReset,
     fundActionFormShow,
     fundActionFormSubmit,
-} from 'actions/arr/fundAction.jsx';
-import * as perms from 'actions/user/Permission.jsx';
+} from 'actions/arr/fundAction';
+import * as perms from 'actions/user/Permission';
 import {ActionState, PERSISTENT_SORT_CODE} from '../../constants.tsx';
 import {actionStateTranslation} from '../../actions/arr/fundAction';
 import {PropTypes} from 'prop-types';
-import defaultKeymap from './FundActionPageKeymap.jsx';
+import defaultKeymap from './FundActionPageKeymap';
 import PersistentSortForm from '../../components/arr/PersistentSortForm';
 import {descItemTypesFetchIfNeeded} from '../../actions/refTables/descItemTypes';
 

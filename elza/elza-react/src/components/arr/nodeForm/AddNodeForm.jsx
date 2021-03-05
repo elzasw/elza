@@ -10,16 +10,16 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {Button} from '../../ui';
 import {Col, Form, FormControl, FormGroup, FormLabel, Modal, Row} from 'react-bootstrap';
-import {WebApi} from 'actions/index.jsx';
+import {WebApi} from 'actions/index';
 import {AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, i18n} from 'components/shared';
-import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils.jsx';
-import {getSetFromIdsList, indexById} from 'stores/app/utils.jsx';
+import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils';
+import {getSetFromIdsList, indexById} from 'stores/app/utils';
 import './AddNodeForm.scss';
 
 import FundTreeCopy from '../FundTreeCopy';
 import FundField from '../../admin/FundField';
 import {FUND_TREE_AREA_COPY} from '../../../actions/constants/ActionTypes';
-import {nodeFormActions} from '../../../actions/arr/subNodeForm.jsx';
+import {nodeFormActions} from '../../../actions/arr/subNodeForm';
 import {JAVA_ATTR_CLASS} from '../../../constants';
 import RefTemplateField from '../RefTemplateField';
 

@@ -13,16 +13,16 @@ import {
     SearchWithGoto,
     StoreHorizontalLoader,
 } from 'components/shared';
-import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes.jsx';
-import {indexById} from 'stores/app/utils.jsx';
+import {refRecordTypesFetchIfNeeded} from 'actions/refTables/recordTypes';
+import {indexById} from 'stores/app/utils';
 import {
     DEFAULT_REGISTRY_LIST_MAX_SIZE,
     registryDetailFetchIfNeeded,
     registryListFetchIfNeeded,
     registryListFilter,
     registryListInvalidate,
-} from 'actions/registry/registry.jsx';
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
+} from 'actions/registry/registry';
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus';
 import {getTreeItemById} from './../../components/registry/registryUtils';
 import {StateApproval, StateApprovalCaption} from '../../api/StateApproval';
 import './RegistryList.scss';

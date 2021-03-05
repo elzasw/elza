@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
-import {indexById} from 'stores/app/utils.jsx';
+import {indexById} from 'stores/app/utils';
 import {i18n} from 'components/shared';
-import {consolidateState} from 'components/Utils.jsx';
+import {consolidateState} from 'components/Utils';
 
 const initialState = {
     selectedId: null,

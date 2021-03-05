@@ -1,5 +1,5 @@
 import * as types from 'actions/constants/ActionTypes';
-import {indexById} from 'stores/app/utils.jsx';
+import {indexById} from 'stores/app/utils';
 
 const initialState = {
     data: [],

@@ -2,13 +2,13 @@
  * Akce pro vybranou záložku NODE pod konkrétní vybranou záložkou AS.
  */
 
-import {WebApi} from 'actions/index.jsx';
+import {WebApi} from 'actions/index';
 import * as types from './../../actions/constants/ActionTypes';
-import {findByRoutingKeyInGlobalState, indexById} from 'stores/app/utils.jsx';
-import {createFundRoot, isFundRootId} from 'components/arr/ArrUtils.jsx';
-import {savingApiWrapper} from 'actions/global/status.jsx';
+import {findByRoutingKeyInGlobalState, indexById} from 'stores/app/utils';
+import {createFundRoot, isFundRootId} from 'components/arr/ArrUtils';
+import {savingApiWrapper} from 'actions/global/status';
 import {fundExtendedView} from './fundExtended';
-import {developerNodeScenariosDirty} from 'actions/global/developer.jsx';
+import {developerNodeScenariosDirty} from 'actions/global/developer';
 import {fundNodeInfoReceive} from './nodeInfo';
 
 export function isNodeAction(action) {

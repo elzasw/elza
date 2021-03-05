@@ -3,12 +3,12 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {Button} from '../ui';
 import {AbstractReactComponent, i18n, Icon, StoreHorizontalLoader} from 'components/shared';
-import {indexById} from 'stores/app/utils.jsx';
-import {getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
-import {selectFundTab} from 'actions/arr/fund.jsx';
-import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions.jsx';
-import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx';
-import {routerNavigate} from 'actions/router.jsx';
+import {indexById, indexByProperty} from 'stores/app/utils';
+import {getFundFromFundAndVersion} from 'components/arr/ArrUtils';
+import {selectFundTab} from 'actions/arr/fund';
+import {refInstitutionsFetchIfNeeded} from 'actions/refTables/institutions';
+import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet';
+import {routerNavigate} from 'actions/router';
 
 import './FundDetail.scss';
 
@@ -63,8 +63,8 @@ class FundDetail extends AbstractReactComponent {
             const instIndex = indexById(institutions.items, fundDetail.institutionId);
             const institution = instIndex !== null ? institutions.items[instIndex].name : '';
 
-            const activeVersionIndex = indexById(fundDetail.versions, null, 'lockChange');
-            const ruleIndex = indexById(ruleSet.items, fundDetail.versions[activeVersionIndex].ruleSetId);
+            const activeVersionIndex = indexByProperty(fundDetail.versions, null, 'lockChange');
+            const ruleIndex = indexById(ruleSet.items, fundDetail.versions[activeVersionIndex]?.ruleSetId);
             const rule = ruleIndex !== null ? ruleSet.items[ruleIndex].name : '';
             const ver = fundDetail.versions[activeVersionIndex];
             content = (

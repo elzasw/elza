@@ -1,6 +1,6 @@
-import {WebApi} from 'actions/index.jsx';
+import {WebApi} from 'actions/index';
 import * as types from 'actions/constants/ActionTypes';
-import {findByRoutingKeyInGlobalState} from 'stores/app/utils.jsx';
+import {findByRoutingKeyInGlobalState} from 'stores/app/utils';
 import { Api } from "api";
 
 export function isSubNodeDaosAction(action) {
