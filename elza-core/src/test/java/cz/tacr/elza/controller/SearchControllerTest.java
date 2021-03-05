@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -8,23 +9,27 @@ import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.AbstractFilter;
 import cz.tacr.elza.test.controller.vo.ResultEntityRef;
 import cz.tacr.elza.test.controller.vo.SearchParams;
-import cz.tacr.elza.test.controller.vo.Sorting;
 
 public class SearchControllerTest extends AbstractControllerTest {
 
     @Test
     public void searchEntityTest() throws ApiException {
-        AbstractFilter filter = new AbstractFilter();
-        filter.setFilterType("filterType");
+        ResultEntityRef result = searchApi.searchEntity(createSearchParam());
+        assertNotNull(result);
 
-        Sorting sortItem = new Sorting();
-        sortItem.setField("state");
-
-        SearchParams searchParams = new SearchParams();
-        searchParams.addFiltersItem(filter).offset(0).size(10).addSortItem(sortItem);
-
-        //ResultEntityRef responce = searchApi.searchEntity(searchParams);
-        //assertNotNull(responce);
+        assertTrue(result.getCount() == 3);
     }
-    
+
+    @Test
+    public void searchArchDescTest() throws ApiException {
+        ResultEntityRef result = searchApi.searchArchDesc(createSearchParam());
+        assertNotNull(result);
+
+        assertTrue(result.getCount() == 0);
+    }
+
+    private SearchParams createSearchParam() {
+        SearchParams searchParams = new SearchParams();
+        return searchParams.addFiltersItem(new AbstractFilter()).offset(0).size(100);
+    }
 }
