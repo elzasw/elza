@@ -214,7 +214,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
             ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
             String intervalExtinction = arrDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
-            searchQuery.must(processValueCondDef(queryBuilder, intervalExtinction,  "EXT_DATE", null, "PT_EXT"));
+            searchQuery.must(processValueCondDef(queryBuilder, intervalExtinction.toLowerCase(),  "EXT_DATE", null, "PT_EXT"));
         }
 
 

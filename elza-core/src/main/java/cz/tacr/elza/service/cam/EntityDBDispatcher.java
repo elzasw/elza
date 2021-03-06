@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
@@ -148,6 +149,8 @@ public class EntityDBDispatcher {
 
     final private CamService camService;
 
+    final private AccessPointCacheService accessPointCacheService;
+
     private ProcessingContext procCtx;
 
     public EntityDBDispatcher(final ApAccessPointRepository accessPointRepository,
@@ -160,6 +163,7 @@ public class EntityDBDispatcher {
                               final AccessPointItemService accessPointItemService,
                               final AsyncRequestService asyncRequestService,
                               final PartService partService,
+                              final AccessPointCacheService accessPointCacheService,
                               final CamService camService) {
         this.accessPointRepository = accessPointRepository;
         this.stateRepository = stateRepository;
@@ -172,6 +176,7 @@ public class EntityDBDispatcher {
         this.asyncRequestService = asyncRequestService;
         this.camService = camService;
         this.partService = partService;
+        this.accessPointCacheService = accessPointCacheService;
     }
 
     public void createEntities(ProcessingContext procCtx,
@@ -317,6 +322,7 @@ public class EntityDBDispatcher {
 
         accessPointService.generateSync(accessPoint.getAccessPointId(), state,
                                         syncRes.getParts(), syncRes.getItemMap());
+        accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         this.procCtx = null;
     };
@@ -383,6 +389,7 @@ public class EntityDBDispatcher {
         accessPoint.setPreferredPart(accessPointService.findPreferredPart(partList));
 
         accessPointService.generateSync(accessPoint.getAccessPointId(), apState, partList, itemMap);
+        accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
     /**

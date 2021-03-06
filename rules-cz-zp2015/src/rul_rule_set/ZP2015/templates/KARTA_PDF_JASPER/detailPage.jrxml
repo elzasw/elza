@@ -169,7 +169,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[" pozůstalost (fond):"]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField textAdjust="ScaleFont">
 				<reportElement x="142" y="10" width="208" height="20" uuid="9b4f2b25-c813-4a5e-ba06-0f9b593360f1">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 				</reportElement>
@@ -178,12 +178,12 @@
 					<rightPen lineWidth="1.0"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="14" isBold="false" pdfEncoding="Cp1250"/>
+					<font size="12" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{fund}.getName()]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement positionType="Float" x="0" y="140" width="200" height="40" uuid="8d7b7ea3-f582-419d-8e09-7a64d9c15c41">
+				<reportElement positionType="Float" x="0" y="130" width="200" height="30" uuid="8d7b7ea3-f582-419d-8e09-7a64d9c15c41">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="PDF417" drawText="false" checksumRequired="false">
@@ -191,11 +191,11 @@
 				</jr:barbecue>
 			</componentElement>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="1" y="63" width="542" height="37" uuid="c5dae977-1604-4c7d-9d48-42bd852f5b8b">
+				<reportElement positionType="Float" x="1" y="60" width="542" height="37" uuid="c5dae977-1604-4c7d-9d48-42bd852f5b8b">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font size="14" isBold="false" pdfEncoding="Cp1250"/>
+					<font size="12" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{levelName}]]></textFieldExpression>
 			</textField>
@@ -244,20 +244,20 @@
 				<textFieldExpression><![CDATA[" ukl. j. / poř. č.:"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="275" y="140" width="268" height="40" uuid="ab824ceb-9561-45e4-a280-21110de4d211">
+				<reportElement positionType="Float" x="275" y="130" width="268" height="30" uuid="ab824ceb-9561-45e4-a280-21110de4d211">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 					<printWhenExpression><![CDATA[$P{fund}.getFundNumber()!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="14" isBold="false" pdfEncoding="Cp1250"/>
+					<font size="12" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{amountFormatter}.format($F{node})]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="1" y="100" width="542" height="30" uuid="c46129d2-3263-4df0-ac87-1b6324f7c11d"/>
+				<reportElement positionType="Float" x="1" y="97" width="542" height="30" uuid="c46129d2-3263-4df0-ac87-1b6324f7c11d"/>
 				<box topPadding="3"/>
 				<textElement>
-					<font size="14" pdfEncoding="Cp1250"/>
+					<font size="12" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_UNIT_DATE")]]></textFieldExpression>
 			</textField>
@@ -266,7 +266,7 @@
 					<printWhenExpression><![CDATA[$F{node}.getParent()!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font size="14" isBold="true" pdfEncoding="Cp1250"/>
+					<font size="12" isBold="true" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{parentNameFormatter}.format($F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_TITLE")))]]></textFieldExpression>
 			</textField>

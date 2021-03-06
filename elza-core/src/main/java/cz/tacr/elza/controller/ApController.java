@@ -228,7 +228,7 @@ public class ApController {
             fund = version.getFund();
         }
 
-        if (search != null && (!accessPointService.isQueryComplex(searchFilter))) {
+        if (StringUtils.isNotEmpty(search) && (!accessPointService.isQueryComplex(searchFilter))) {
             return findAccessPointFulltext(search, from, count, fund, apTypeId, state, scopeId, searchFilter, sdp);
         }
 
@@ -335,7 +335,7 @@ public class ApController {
 
         for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPoints) {
             CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData());
-            String name = accessPointCacheService.findAeCachedEntityName(entity);
+            String name = apFactory.findAeCachedEntityName(entity);
             accessPointVOList.add(apFactory.createVO(entity.getApState(), typeRuleSetMap, entity, name));
         }
 
@@ -359,6 +359,10 @@ public class ApController {
         SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
 
         ApState apState = accessPointService.createAccessPoint(scope, type, language, accessPoint.getPartForm());
+        CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(apState.getAccessPointId());
+        if (cachedAccessPoint != null) {
+            return apFactory.createVO(cachedAccessPoint);
+        }
         return apFactory.createVO(apState, true);
     }
 
@@ -422,6 +426,10 @@ public class ApController {
     public ApAccessPointVO getAccessPoint(@PathVariable final String accessPointId) {
         ApState apState = accessPointService.getApState(accessPointId);
 
+        CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(apState.getAccessPointId());
+        if (cachedAccessPoint != null) {
+            return apFactory.createVO(cachedAccessPoint);
+        }
         ApAccessPointVO vo = apFactory.createVO(apState, true);
         return vo;
     }
@@ -444,6 +452,11 @@ public class ApController {
         ApState oldState = accessPointService.getStateInternal(accessPoint);
         ApState newState = accessPointService.changeApType(accessPointId, editVo.getTypeId());
         accessPointService.generateSync(accessPointId);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(accessPointId);
+        if (cachedAccessPoint != null) {
+            return apFactory.createVO(cachedAccessPoint);
+        }
         return apFactory.createVO(newState, true);
     }
 
@@ -707,6 +720,7 @@ public class ApController {
 
         accessPointService.updateApState(accessPoint, stateChange.getState(), stateChange.getComment(), stateChange.getTypeId(), stateChange.getScopeId());
         accessPointService.generateSync(accessPointId);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
     /**
@@ -753,6 +767,7 @@ public class ApController {
         accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
         accessPointService.generateSync(accessPointId, apPart);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
     /**
@@ -773,6 +788,7 @@ public class ApController {
         accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.getPart(partId);
         accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
 
@@ -792,6 +808,7 @@ public class ApController {
         accessPointService.hasPermissionForEditingConfirmed(state);
         partService.deletePart(apAccessPoint, partId);
         accessPointService.generateSync(accessPointId);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
     /**
@@ -811,6 +828,7 @@ public class ApController {
         accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.getPart(partId);
         accessPointService.setPreferName(apAccessPoint, apPart);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
     /**
