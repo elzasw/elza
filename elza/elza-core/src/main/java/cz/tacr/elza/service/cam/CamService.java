@@ -58,6 +58,7 @@ import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.vo.DataRef;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
@@ -145,6 +146,9 @@ public class CamService {
     @Autowired
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
 
+    @Autowired
+    private AccessPointCacheService accessPointCacheService;
+
     private final String TRANSACTION_UUID = "91812cb8-3519-4f78-b0ec-df6e951e2c7c";
     private final Integer PAGE_SIZE = 1000;
 
@@ -159,6 +163,7 @@ public class CamService {
                 apItemService,
                 asyncRequestService,
                 partService,
+                accessPointCacheService,
                 this);
     }
 
