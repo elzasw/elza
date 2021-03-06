@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingItem;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
@@ -14,6 +17,9 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingItemRepository;
+import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
@@ -21,6 +27,7 @@ import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.search.SearchIndexSupport;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.hibernate.ScrollableResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +83,15 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Autowired
     private ApCachedAccessPointRepository cachedAccessPointRepository;
+
+    @Autowired
+    private ApBindingRepository bindingRepository;
+
+    @Autowired
+    private ApBindingStateRepository bindingStateRepository;
+
+    @Autowired
+    private ApBindingItemRepository bindingItemRepository;
 
     /**
      * Maximální počet AP, které se mají dávkově zpracovávat pro synchronizaci.
@@ -151,14 +167,16 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         Map<Integer, List<ApState>> stateMap = stateRepository.findLastByAccessPointIds(accessPointIds).stream()
                 .collect(Collectors.groupingBy(i -> i.getAccessPointId()));
         Map<Integer, List<CachedPart>> partMap = createCachedPartMap(accessPointIds, accessPointList);
+        Map<Integer, List<CachedBinding>> bindingMap = createCachedBindingMap(accessPointList);
 
         List<ApCachedAccessPoint> apCachedAccessPoints = new ArrayList<>();
 
         for (ApAccessPoint accessPoint : accessPointList) {
             ApState state = stateMap.get(accessPoint.getAccessPointId()).get(0);
             List<CachedPart> parts = partMap.get(accessPoint.getAccessPointId());
+            List<CachedBinding> bindings = bindingMap.get(accessPoint.getAccessPointId());
 
-            CachedAccessPoint cachedAccessPoint = createCachedAccessPoint(accessPoint, state, parts);
+            CachedAccessPoint cachedAccessPoint = createCachedAccessPoint(accessPoint, state, parts, bindings);
             String data = serialize(cachedAccessPoint);
 
             ApCachedAccessPoint apCachedAccessPoint = new ApCachedAccessPoint();
@@ -171,12 +189,17 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Transactional
     public void createApCachedAccessPoint(Integer accessPointId) {
-        ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
-        if (oldApCachedAccessPoint != null) {
-            cachedAccessPointRepository.delete(oldApCachedAccessPoint);
+        writeLock.lock();
+        try {
+            ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
+            if (oldApCachedAccessPoint != null) {
+                cachedAccessPointRepository.delete(oldApCachedAccessPoint);
+            }
+            ApCachedAccessPoint apCachedAccessPoint = createCachedAccessPoint(accessPointId);
+            cachedAccessPointRepository.save(apCachedAccessPoint);
+        } finally {
+            writeLock.unlock();
         }
-        ApCachedAccessPoint apCachedAccessPoint = createCachedAccessPoint(accessPointId);
-        cachedAccessPointRepository.save(apCachedAccessPoint);
     }
 
     private ApCachedAccessPoint createCachedAccessPoint(Integer accessPointId) {
@@ -184,9 +207,9 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                 .orElseThrow(() -> new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(accessPointId));
         ApState state = stateRepository.findLastByAccessPoint(accessPoint);
         List<CachedPart> parts = createCachedParts(accessPoint);
+        List<CachedBinding> bindings = createCachedBindings(accessPoint);
 
-
-        CachedAccessPoint cachedAccessPoint = createCachedAccessPoint(accessPoint, state, parts);
+        CachedAccessPoint cachedAccessPoint = createCachedAccessPoint(accessPoint, state, parts, bindings);
         String data = serialize(cachedAccessPoint);
 
         ApCachedAccessPoint apCachedAccessPoint = new ApCachedAccessPoint();
@@ -195,7 +218,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         return apCachedAccessPoint;
     }
 
-    private CachedAccessPoint createCachedAccessPoint(ApAccessPoint accessPoint, ApState state, List<CachedPart> parts) {
+    private CachedAccessPoint createCachedAccessPoint(ApAccessPoint accessPoint, ApState state, List<CachedPart> parts, List<CachedBinding> bindings) {
         CachedAccessPoint cachedAccessPoint = new CachedAccessPoint();
         cachedAccessPoint.setAccessPointId(accessPoint.getAccessPointId());
         cachedAccessPoint.setApState(state);
@@ -205,6 +228,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         cachedAccessPoint.setState(accessPoint.getState());
         cachedAccessPoint.setUuid(accessPoint.getUuid());
         cachedAccessPoint.setParts(parts);
+        cachedAccessPoint.setBindings(bindings);
         return cachedAccessPoint;
     }
 
@@ -229,11 +253,11 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     private CachedPart createCachedPart(ApPart part, List<ApItem> items, List<ApIndex> indices) {
         CachedPart cachedPart = new CachedPart();
         cachedPart.setPartId(part.getPartId());
-        cachedPart.setCreateChange(part.getCreateChange());
-        cachedPart.setDeleteChange(part.getDeleteChange());
+        cachedPart.setCreateChangeId(part.getCreateChangeId());
+        cachedPart.setDeleteChangeId(part.getDeleteChangeId());
         cachedPart.setErrorDescription(part.getErrorDescription());
         cachedPart.setState(part.getState());
-        cachedPart.setPartType(part.getPartType());
+        cachedPart.setPartTypeCode(part.getPartType().getCode());
         cachedPart.setKeyValue(part.getKeyValue());
         cachedPart.setParentPartId(part.getParentPart() != null ? part.getParentPart().getPartId() : null);
         cachedPart.setItems(items);
@@ -288,14 +312,121 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         return cachedPartMap;
     }
 
+    private List<CachedBinding> createCachedBindings(ApAccessPoint accessPoint) {
+        Map<Integer, List<ApBindingState>> bindingStateMap = bindingStateRepository.findByAccessPoint(accessPoint).stream()
+                .collect(Collectors.groupingBy(i -> i.getBinding().getBindingId()));
+        List<ApBinding> bindingList = new ArrayList<>();
+        Map<Integer, List<ApBindingItem>> bindingItemMap;
+
+        if (MapUtils.isNotEmpty(bindingStateMap)) {
+            bindingList = bindingRepository.findAllById(bindingStateMap.keySet());
+        }
+
+        List<CachedBinding> cachedBindingList = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(bindingList)) {
+            bindingItemMap = bindingItemRepository.findByBindings(bindingList).stream()
+                    .collect(Collectors.groupingBy(i -> i.getBinding().getBindingId()));
+
+            for (ApBinding binding : bindingList) {
+                ApBindingState bindingState = bindingStateMap.get(binding.getBindingId()).get(0);
+                List<ApBindingItem> bindingItemList = bindingItemMap.get(binding.getBindingId());
+                cachedBindingList.add(createCachedBinding(binding, bindingState, bindingItemList));
+            }
+        }
+
+        return cachedBindingList;
+    }
+
+    private Map<Integer, List<CachedBinding>> createCachedBindingMap(List<ApAccessPoint> accessPointList) {
+        Map<Integer, Map<ApBinding, List<ApBindingState>>> apBindingStateMap = new HashMap<>();
+        List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoints(accessPointList);
+        if (CollectionUtils.isNotEmpty(bindingStates)) {
+            for (ApBindingState bindingState : bindingStates) {
+                apBindingStateMap.computeIfAbsent(bindingState.getAccessPointId(), k -> new HashMap<>()).computeIfAbsent(bindingState.getBinding(), l -> new ArrayList<>()).add(bindingState);
+            }
+        }
+
+        Map<Integer, Collection<ApBinding>> bindingMap = createBindingMap(apBindingStateMap);
+        List<ApBinding> bindingList = createBindingList(bindingMap);
+        Map<ApBinding, List<ApBindingItem>> bindingItemMap;
+
+        Map<Integer, List<CachedBinding>> cachedBindingMap = new HashMap<>();
+
+        if (CollectionUtils.isNotEmpty(bindingList)) {
+            bindingItemMap = bindingItemRepository.findByBindings(bindingList).stream()
+                    .collect(Collectors.groupingBy(ApBindingItem::getBinding));
+
+            for (Map.Entry<Integer, Collection<ApBinding>> entry : bindingMap.entrySet()) {
+                Integer accessPointId = entry.getKey();
+                List<CachedBinding> cachedBindingList = new ArrayList<>();
+                Map<ApBinding, List<ApBindingState>> bindingStateMap = apBindingStateMap.get(accessPointId);
+
+                if (CollectionUtils.isNotEmpty(entry.getValue())) {
+                    for (ApBinding binding : entry.getValue()) {
+                        ApBindingState bindingState = bindingStateMap.get(binding).get(0);
+                        List<ApBindingItem> bindingItemList = bindingItemMap.get(binding);
+                        cachedBindingList.add(createCachedBinding(binding, bindingState, bindingItemList));
+                    }
+                }
+
+                cachedBindingMap.put(accessPointId, cachedBindingList);
+            }
+        }
+
+        return cachedBindingMap;
+    }
+
+    private List<ApBinding> createBindingList(Map<Integer, Collection<ApBinding>> bindingMap) {
+        List<ApBinding> bindingList = new ArrayList<>();
+
+        if (MapUtils.isNotEmpty(bindingMap)) {
+            for (Map.Entry<Integer, Collection<ApBinding>> entry : bindingMap.entrySet()) {
+                bindingList.addAll(entry.getValue());
+            }
+        }
+
+        return bindingList;
+    }
+
+    private Map<Integer, Collection<ApBinding>> createBindingMap(Map<Integer, Map<ApBinding, List<ApBindingState>>> bindingStateMap) {
+        Map<Integer, Collection<ApBinding>> bindingMap = new HashMap<>();
+
+        if (MapUtils.isNotEmpty(bindingStateMap)) {
+            for (Map.Entry<Integer, Map<ApBinding, List<ApBindingState>>> entry : bindingStateMap.entrySet()) {
+                Integer accessPointId = entry.getKey();
+                Map<ApBinding, List<ApBindingState>> map = entry.getValue();
+
+                bindingMap.put(accessPointId, map.keySet());
+            }
+        }
+
+        return bindingMap;
+    }
+
+    private CachedBinding createCachedBinding(ApBinding binding, ApBindingState bindingState, List<ApBindingItem> bindingItemList) {
+        CachedBinding cachedBinding = new CachedBinding();
+        cachedBinding.setId(binding.getBindingId());
+        cachedBinding.setExternalSystemCode(binding.getApExternalSystem().getCode());
+        cachedBinding.setValue(binding.getValue());
+        cachedBinding.setBindingState(bindingState);
+        cachedBinding.setBindingItemList(bindingItemList);
+        return cachedBinding;
+    }
+
     @Transactional
     public CachedAccessPoint findCachedAccessPoint(Integer accessPointId) {
-        ApCachedAccessPoint apCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
-        CachedAccessPoint cachedAccessPoint = null;
-        if (apCachedAccessPoint != null) {
-            cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
+        readLock.lock();
+        try {
+            ApCachedAccessPoint apCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
+            CachedAccessPoint cachedAccessPoint = null;
+            if (apCachedAccessPoint != null) {
+                cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
+            }
+            return cachedAccessPoint;
+        } finally {
+            readLock.unlock();
         }
-        return cachedAccessPoint;
     }
 
     public CachedAccessPoint deserialize(String data) {
@@ -321,23 +452,5 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         }
         // moznost optimalizovat nacteni vcene zavislosti
         return cachedAccessPointRepository.findAllById(ids).stream().collect(Collectors.toMap(o -> o.getAccessPointId(), o -> o));
-    }
-
-    public String findAeCachedEntityName(CachedAccessPoint entity) {
-        if (CollectionUtils.isNotEmpty(entity.getParts())) {
-            for (CachedPart part : entity.getParts()) {
-                if (part.getPartId().equals(entity.getPreferredPartId())) {
-                    if (CollectionUtils.isNotEmpty(part.getIndices())) {
-                        for (ApIndex index : part.getIndices()) {
-                            if (index.getIndexType().equals(DISPLAY_NAME)) {
-                                return index.getValue();
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-        return null;
     }
 }

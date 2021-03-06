@@ -12,10 +12,12 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
 @Entity(name = "ap_binding_state")
-public class ApBindingState {
+public class ApBindingState implements AccessPointCacheSerializable {
 
     public static final String ACCESS_POINT_ID = "accessPointId";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
@@ -25,6 +27,7 @@ public class ApBindingState {
     @Access(AccessType.PROPERTY)
     private Integer bindingStateId;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApBinding.class)
     @JoinColumn(name = "bindingId", nullable = false)
     private ApBinding binding;
@@ -141,6 +144,15 @@ public class ApBindingState {
 
     public void setSyncChange(ApChange syncChange) {
         this.syncChange = syncChange;
+        if (syncChange == null) {
+            this.syncChangeId = null;
+        } else {
+            this.syncChangeId = syncChange.getChangeId();
+        }
+    }
+
+    public Integer getSyncChangeId() {
+        return syncChangeId;
     }
 
     public SyncState getSyncOk() {
@@ -157,6 +169,15 @@ public class ApBindingState {
 
     public void setCreateChange(ApChange createChange) {
         this.createChange = createChange;
+        if (createChange == null) {
+            this.createChangeId = null;
+        } else {
+            this.createChangeId = createChange.getChangeId();
+        }
+    }
+
+    public Integer getCreateChangeId() {
+        return createChangeId;
     }
 
     public ApChange getDeleteChange() {
@@ -165,5 +186,14 @@ public class ApBindingState {
 
     public void setDeleteChange(ApChange deleteChange) {
         this.deleteChange = deleteChange;
+        if (deleteChange == null) {
+            this.deleteChangeId = null;
+        } else {
+            this.deleteChangeId = deleteChange.getChangeId();
+        }
+    }
+
+    public Integer getDeleteChangeId() {
+        return deleteChangeId;
     }
 }

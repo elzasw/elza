@@ -118,6 +118,8 @@ public class StaticDataProvider {
 
     private Map<String, ApExternalSystem> apExternalSystemCodeMap = new HashMap<>();
 
+    private Map<Integer, ApExternalSystem> apExternalSystemIdMap = new HashMap<>();
+
     private static StaticDataProvider self;
 
     StaticDataProvider() {
@@ -273,6 +275,11 @@ public class StaticDataProvider {
     public ApExternalSystem getApExternalSystemByCode(String code) {
         Validate.notNull(code);
         return apExternalSystemCodeMap.get(code);
+    }
+
+    public ApExternalSystem getApExternalSystemById(Integer id) {
+        Validate.notNull(id);
+        return apExternalSystemIdMap.get(id);
     }
 
     public RulItemType getItemType(String code) {
@@ -463,6 +470,7 @@ public class StaticDataProvider {
         if (CollectionUtils.isNotEmpty(apExternalSystems)) {
             for (ApExternalSystem apExternalSystem : apExternalSystems) {
                 apExternalSystemCodeMap.put(apExternalSystem.getCode(), apExternalSystem);
+                apExternalSystemIdMap.put(apExternalSystem.getExternalSystemId(), apExternalSystem);
             }
         }
 
