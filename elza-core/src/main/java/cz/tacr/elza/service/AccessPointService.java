@@ -1167,6 +1167,7 @@ public class AccessPointService {
 
         saveWithLock(accessPoint);
         generateSync(accessPoint.getAccessPointId());
+        accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
     /**
