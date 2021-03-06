@@ -16,8 +16,12 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApStateEnum;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedBinding;
+import cz.tacr.elza.service.cache.CachedPart;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -96,6 +100,8 @@ import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.vo.TypeRuleSet;
+
+import javax.annotation.Nullable;
 
 @Service
 public class ApFactory {
@@ -311,6 +317,26 @@ public class ApFactory {
         return apVO;
     }
 
+    public ApAccessPointVO createVO(CachedAccessPoint cachedAccessPoint) {
+        String name = findAeCachedEntityName(cachedAccessPoint);
+        ApAccessPointVO apVO = createVO(cachedAccessPoint.getApState(), getTypeRuleSetMap(), cachedAccessPoint, name);
+
+        //description
+        String description = getDescription(cachedAccessPoint);
+
+        //prepare eids
+        List<ApBindingVO> eidsVO = createApBindingsVO(cachedAccessPoint);
+        apVO.setExternalIds(eidsVO);
+        fillBindingUrls(eidsVO);
+
+        apVO.setParts(createVO(cachedAccessPoint.getParts()));
+        if (description != null) {
+            apVO.setDescription(description);
+        }
+        apVO.setPreferredPart(cachedAccessPoint.getPreferredPartId());
+        return apVO;
+    }
+
     public ApAccessPointVO createVO(final ApState apState,
                                     final Map<Integer, Integer> typeRuleSetMap,
                                     final ApAccessPoint ap,
@@ -369,6 +395,87 @@ public class ApFactory {
         return vo;
     }
 
+    private List<ApBindingVO> createApBindingsVO(CachedAccessPoint cachedAccessPoint) {
+        List<ApBindingVO> bindingVOList = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(cachedAccessPoint.getBindings())) {
+            for (CachedBinding binding : cachedAccessPoint.getBindings()) {
+                bindingVOList.add(createApBindingVO(binding, cachedAccessPoint.getParts()));
+            }
+        }
+
+        return bindingVOList;
+    }
+
+    private ApBindingVO createApBindingVO(CachedBinding binding, List<CachedPart> parts) {
+        ApBindingVO bindingVO = new ApBindingVO();
+        bindingVO.setId(binding.getId());
+        bindingVO.setExternalSystemCode(binding.getExternalSystemCode());
+        bindingVO.setValue(binding.getValue());
+        bindingVO.setExtState(binding.getBindingState().getExtState());
+        bindingVO.setExtRevision(binding.getBindingState().getExtRevision());
+        bindingVO.setExtUser(binding.getBindingState().getExtUser());
+        bindingVO.setExtReplacedBy(binding.getBindingState().getExtReplacedBy());
+        bindingVO.setSyncState(binding.getBindingState().getSyncOk());
+        bindingVO.setBindingItemList(createApBindingItemsVO(binding, parts));
+        return bindingVO;
+    }
+
+    private List<ApBindingItemVO> createApBindingItemsVO(CachedBinding binding, List<CachedPart> parts) {
+        List<ApBindingItemVO> bindingItemVOList = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(binding.getBindingItemList())) {
+            for (ApBindingItem bindingItem : binding.getBindingItemList()) {
+                bindingItemVOList.add(createApBindingItemVO(bindingItem, binding.getBindingState(), parts));
+            }
+        }
+
+        return bindingItemVOList;
+    }
+
+    private ApBindingItemVO createApBindingItemVO(ApBindingItem bindingItem, ApBindingState bindingState, List<CachedPart> parts) {
+        ApBindingItemVO bindingItemVO = new ApBindingItemVO();
+        bindingItemVO.setValue(bindingItem.getValue());
+        bindingItemVO.setPartId(bindingItem.getPartId());
+        bindingItemVO.setItemId(bindingItem.getItemId());
+        bindingItemVO.setSync(getSync(bindingItem, bindingState.getSyncChangeId(), parts));
+        return bindingItemVO;
+    }
+
+    private Boolean getSync(ApBindingItem bindingItem, Integer syncChangeId, List<CachedPart> parts) {
+        if (bindingItem.getItemId() != null) {
+            return getSyncFromItem(bindingItem.getItemId(), syncChangeId, parts);
+        } else {
+            return getSyncFromPart(bindingItem.getPartId(), syncChangeId, parts);
+        }
+    }
+
+    private Boolean getSyncFromItem(Integer itemId, Integer syncChangeId, List<CachedPart> parts) {
+        if (CollectionUtils.isNotEmpty(parts)) {
+            for (CachedPart part : parts) {
+                if (CollectionUtils.isNotEmpty(part.getItems())) {
+                    for (ApItem item : part.getItems()) {
+                        if (item.getItemId().equals(itemId)) {
+                            return syncChangeId >= item.getCreateChangeId();
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private Boolean getSyncFromPart(Integer partId, Integer syncChangeId, List<CachedPart> parts) {
+        if (CollectionUtils.isNotEmpty(parts)) {
+            for (CachedPart part : parts) {
+                if (part.getPartId().equals(partId)) {
+                    return syncChangeId >= part.getCreateChangeId();
+                }
+            }
+        }
+        return false;
+    }
+
     private void fillBindingUrls(final List<ApBindingVO> bindings) {
         if (CollectionUtils.isNotEmpty(bindings)) {
             for (ApBindingVO binding : bindings) {
@@ -389,6 +496,24 @@ public class ApFactory {
         }
     }
 
+    public String findAeCachedEntityName(CachedAccessPoint entity) {
+        if (CollectionUtils.isNotEmpty(entity.getParts())) {
+            for (CachedPart part : entity.getParts()) {
+                if (part.getPartId().equals(entity.getPreferredPartId())) {
+                    if (CollectionUtils.isNotEmpty(part.getIndices())) {
+                        for (ApIndex index : part.getIndices()) {
+                            if (index.getIndexType().equals(DISPLAY_NAME)) {
+                                return index.getValue();
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return null;
+    }
+
     private void fillBindingItems(final List<ApBindingVO> eidsVO,
                                   final Map<ApBinding, ApBindingState> bindings,
                                   final Map<Integer, List<ApBindingItem>> bindingItemsMap) {
@@ -402,6 +527,34 @@ public class ApFactory {
                 }
             }
         }
+    }
+
+    private String getDescription(CachedAccessPoint cachedAccessPoint) {
+        CachedPart body = null;
+        String briefDesc = null;
+        StaticDataProvider sdp = staticDataService.getData();
+
+        if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
+            for (CachedPart part : cachedAccessPoint.getParts()) {
+                if (part.getPartTypeCode().equals(sdp.getDefaultBodyPartType().getCode())) {
+                    body = part;
+                    break;
+                }
+            }
+        }
+
+        if (body != null) {
+            if (CollectionUtils.isNotEmpty(body.getItems())) {
+                for (ApItem item : body.getItems()) {
+                    ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
+                    if (itemType.getCode().equals(BRIEF_DESC)) {
+                        briefDesc = item.getData().getFulltextValue();
+                        break;
+                    }
+                }
+            }
+        }
+        return briefDesc;
     }
 
     private String getDescription(List<ApPart> parts, Map<Integer, List<ApItem>> items) {
@@ -430,6 +583,40 @@ public class ApFactory {
             }
         }
         return briefDesc;
+    }
+
+    private List<ApPartVO> createVO(List<CachedPart> parts) {
+        List<ApPartVO> partVOList = new ArrayList<>();
+        for (CachedPart part : parts) {
+            partVOList.add(createVO(part));
+        }
+        return partVOList;
+    }
+
+    private ApPartVO createVO(CachedPart part) {
+        StaticDataProvider sdp = staticDataService.getData();
+        RulPartType rulPartType = sdp.getPartTypeByCode(part.getPartTypeCode());
+        ApPartVO apPartVO = new ApPartVO();
+
+        apPartVO.setId(part.getPartId());
+        apPartVO.setTypeId(rulPartType.getPartTypeId());
+        apPartVO.setState(part.getState() == null ? null : ApStateVO.valueOf(part.getState().name()));
+        apPartVO.setErrorDescription(part.getErrorDescription());
+        apPartVO.setValue(CollectionUtils.isNotEmpty(part.getIndices()) ? findDisplayIndexValue(part.getIndices()) : null);
+        apPartVO.setPartParentId(part.getParentPartId());
+        apPartVO.setItems(CollectionUtils.isNotEmpty(part.getItems()) ? createItemsVO(part.getItems()) : null);
+
+        return apPartVO;
+    }
+
+    @Nullable
+    private String findDisplayIndexValue(List<ApIndex> indices) {
+        for (ApIndex index : indices) {
+            if (index.getIndexType().equals(DISPLAY_NAME)) {
+                return index.getValue();
+            }
+        }
+        return null;
     }
 
     public List<ApPartVO> createVO(final List<ApPart> parts,
@@ -584,7 +771,8 @@ public class ApFactory {
                 item = new ApItemCoordinatesVO(apItem);
                 break;
             case RECORD_REF:
-                item = new ApItemAccessPointRefVO(apItem, ((externalSystem, value) -> {
+                item = new ApItemAccessPointRefVO(apItem, ((externalSystemId, value) -> {
+                    ApExternalSystem externalSystem = sdp.getApExternalSystemById(externalSystemId);
                     CamInstance camInstance = camConnector.getByCode(externalSystem.getCode());
                     return camInstance.getEntityDetailUrl(value);
                 }));

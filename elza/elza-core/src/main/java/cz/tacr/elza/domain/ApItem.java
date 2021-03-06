@@ -114,6 +114,11 @@ public class ApItem implements Item, AccessPointCacheSerializable {
 
     public void setCreateChange(final ApChange createChange) {
         this.createChange = createChange;
+        this.createChangeId = createChange != null ? createChange.getChangeId() : null;
+    }
+
+    public Integer getCreateChangeId() {
+        return createChangeId;
     }
 
     public ApChange getDeleteChange() {
@@ -122,6 +127,7 @@ public class ApItem implements Item, AccessPointCacheSerializable {
 
     public void setDeleteChange(final ApChange deleteChange) {
         this.deleteChange = deleteChange;
+        this.deleteChangeId = deleteChange != null ? deleteChange.getChangeId() : null;
     }
 
     public Integer getObjectId() {

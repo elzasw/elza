@@ -54,6 +54,9 @@ public class ApPart {
     @JoinColumn(name = "create_change_id", nullable = false)
     private ApChange createChange;
 
+    @Column(name = "create_change_id", nullable = false, updatable = false, insertable = false)
+    private Integer createChangeId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
     @JoinColumn(name = "delete_change_id")
     private ApChange deleteChange;
@@ -125,6 +128,11 @@ public class ApPart {
 
     public void setCreateChange(ApChange createChange) {
         this.createChange = createChange;
+        this.createChangeId = createChange != null ? createChange.getChangeId() : null;
+    }
+
+    public Integer getCreateChangeId() {
+        return createChangeId;
     }
 
     public ApChange getDeleteChange() {

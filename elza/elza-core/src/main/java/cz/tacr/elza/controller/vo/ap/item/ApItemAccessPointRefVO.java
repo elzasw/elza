@@ -32,7 +32,7 @@ public class ApItemAccessPointRefVO extends ApItemVO {
             ApBinding binding = data.getBinding();
             if (binding != null) {
                 setExternalName(binding.getValue());
-                setExternalUrl(getExternalUrl.getUrl(binding.getApExternalSystem(), binding.getValue()));
+                setExternalUrl(getExternalUrl.getUrl(binding.getExternalSystemId(), binding.getValue()));
             }
         }
         value = data == null ? null : data.getRecordId();;
@@ -88,6 +88,6 @@ public class ApItemAccessPointRefVO extends ApItemVO {
 
     @FunctionalInterface
     public interface GetExternalUrl {
-        String getUrl(ApExternalSystem externalSystem, String value);
+        String getUrl(Integer externalSystemId, String value);
     }
 }
