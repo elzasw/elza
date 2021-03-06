@@ -9,6 +9,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
@@ -55,7 +56,7 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
             if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
                 for (CachedPart part : cachedAccessPoint.getParts()) {
                     addItemFields(name, part, cachedAccessPoint, document, luceneOptions);
-                    addIndexFields(name, part, document, luceneOptions);
+                    addIndexFields(name, part, cachedAccessPoint, document, luceneOptions);
                 }
             }
 
@@ -73,8 +74,9 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
             for (ApItem item : part.getItems()) {
                 ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
                 RulItemSpec itemSpec = item.getItemSpecId() != null ? sdp.getItemSpecById(item.getItemSpecId()) : null;
+                DataType dataType = DataType.fromCode(itemType.getEntity().getDataType().getCode());
 
-                if (DataType.fromCode(itemType.getEntity().getDataType().getCode()) != DataType.COORDINATES) {
+                if (dataType == DataType.COORDINATES) {
                     continue;
                 }
 
@@ -86,8 +88,18 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
                 if (itemSpec != null) {
                     fieldName.append(SEPARATOR).append(itemSpec.getCode());
                 }
+                String value;
 
-                String value = item.getData().getFulltextValue();
+                if (dataType == DataType.RECORD_REF) {
+                    ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) item.getData();
+                    if (dataRecordRef == null || dataRecordRef.getRecordId() == null) {
+                        continue;
+                    }
+                    value = dataRecordRef.getRecordId().toString();
+                } else {
+                    value = item.getData().getFulltextValue();
+                }
+
                 if (value == null) {
                     if (itemSpec == null) {
                         continue;
@@ -99,11 +111,15 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
         }
     }
 
-    private void addIndexFields(String name, CachedPart part, Document document, LuceneOptions luceneOptions) {
+    private void addIndexFields(String name, CachedPart part, CachedAccessPoint cachedAccessPoint, Document document, LuceneOptions luceneOptions) {
         if (CollectionUtils.isNotEmpty(part.getIndices())) {
             for (ApIndex index : part.getIndices()) {
                 StringBuilder fieldName = new StringBuilder(part.getPartTypeCode());
                 fieldName.append(SEPARATOR).append(INDEX);
+
+                if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
+                    addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX, index.getValue().toLowerCase(), document, luceneOptions);
+                }
 
                 addField(name + SEPARATOR + fieldName.toString().toLowerCase(), index.getValue().toLowerCase(), document, luceneOptions);
                 addField(name + SEPARATOR + INDEX, index.getValue().toLowerCase(), document, luceneOptions);

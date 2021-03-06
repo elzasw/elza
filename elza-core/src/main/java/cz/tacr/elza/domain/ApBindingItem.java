@@ -1,17 +1,20 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
 import javax.persistence.*;
 
 @Entity(name = "ap_binding_item")
-public class ApBindingItem {
+public class ApBindingItem implements AccessPointCacheSerializable {
 
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
     private Integer bindingItemId;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApBinding.class)
     @JoinColumn(name = "bindingId", nullable = false)
     private ApBinding binding;
@@ -23,9 +26,15 @@ public class ApBindingItem {
     @JoinColumn(name = "partId")
     private ApPart part;
 
+    @Column(nullable = true, updatable = false, insertable = false)
+    private Integer partId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApItem.class)
     @JoinColumn(name = "itemId")
     private ApItem item;
+
+    @Column(nullable = true, updatable = false, insertable = false)
+    private Integer itemId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
     @JoinColumn(name = "createChangeId", nullable = false)
@@ -71,6 +80,15 @@ public class ApBindingItem {
 
     public void setPart(ApPart part) {
         this.part = part;
+        if (part == null) {
+            this.partId = null;
+        } else {
+            this.partId = part.getPartId();
+        }
+    }
+
+    public Integer getPartId() {
+        return partId;
     }
 
     public ApItem getItem() {
@@ -79,6 +97,15 @@ public class ApBindingItem {
 
     public void setItem(ApItem item) {
         this.item = item;
+        if (item == null) {
+            this.itemId = null;
+        } else {
+            this.itemId = item.getItemId();
+        }
+    }
+
+    public Integer getItemId() {
+        return itemId;
     }
 
     public ApChange getCreateChange() {
@@ -94,6 +121,10 @@ public class ApBindingItem {
         }
     }
 
+    public Integer getCreateChangeId() {
+        return createChangeId;
+    }
+
     public ApChange getDeleteChange() {
         return deleteChange;
     }
@@ -105,5 +136,9 @@ public class ApBindingItem {
         } else {
             this.deleteChangeId = deleteChange.getChangeId();
         }
+    }
+
+    public Integer getDeleteChangeId() {
+        return deleteChangeId;
     }
 }

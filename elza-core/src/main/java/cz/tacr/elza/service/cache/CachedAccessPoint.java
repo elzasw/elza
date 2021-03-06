@@ -26,6 +26,8 @@ public class CachedAccessPoint {
 
     private List<CachedPart> parts;
 
+    private List<CachedBinding> bindings;
+
     public Integer getAccessPointId() {
         return accessPointId;
     }
@@ -88,5 +90,13 @@ public class CachedAccessPoint {
 
     public void setParts(List<CachedPart> parts) {
         this.parts = parts;
+    }
+
+    public List<CachedBinding> getBindings() {
+        return bindings;
+    }
+
+    public void setBindings(List<CachedBinding> bindings) {
+        this.bindings = bindings;
     }
 }
