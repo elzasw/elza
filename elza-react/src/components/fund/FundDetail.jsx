@@ -63,7 +63,7 @@ class FundDetail extends AbstractReactComponent {
             const instIndex = indexById(institutions.items, fundDetail.institutionId);
             const institution = instIndex !== null ? institutions.items[instIndex].name : '';
 
-            const activeVersionIndex = indexByProperty(fundDetail.versions, null, 'lockChange');
+            const activeVersionIndex = indexByProperty(fundDetail.versions, null, 'lockDate');
             const ruleIndex = indexById(ruleSet.items, fundDetail.versions[activeVersionIndex]?.ruleSetId);
             const rule = ruleIndex !== null ? ruleSet.items[ruleIndex].name : '';
             const ver = fundDetail.versions[activeVersionIndex];
