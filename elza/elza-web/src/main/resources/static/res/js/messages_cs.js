@@ -429,7 +429,7 @@ var messages = {
     "arr.output.title.anonymizedAp.remove": "Odebrat anonymizované AP",
     "arr.output.name": "Název výstupu",
     "arr.output.internalCode": "Interní kód výstupu",
-    "arr.output.outputType": "Typ výstup",
+    "arr.output.outputType": "Typ výstupu",
     "arr.output.template": "Šablona",
     "arr.output.template.set": "Nastavit",
     "arr.output.template.evenPageOffsetX": "Offset liché stránky X",
