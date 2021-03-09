@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 
 public class DbChangeSet20200331164200 extends BaseTaskChange {
 
+    private final static Logger log = LoggerFactory.getLogger(DbChangeSet20200331164200.class);
+
 
     /**
      * <changeSet id="20200331164200" author="gotzy">
@@ -437,6 +439,15 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
     private Integer createApItemString(Integer partId, ItemTypeCode itemType, String value)
             throws DatabaseException, SQLException {
+        if(itemType.getMaxStringLength()!=null) {
+            if (value != null && itemType.getMaxStringLength() > 0 && value.length() > itemType.getMaxStringLength()) {
+                log.info("Value too long, has to be shortened. itemType: {}, partId: {}, value: {}",
+                          itemType.getCode(),
+                          partId,
+                          value);
+                value = value.substring(0, itemType.getMaxStringLength());
+            }
+        }
         String itemTypeCode = itemType.getCode();
         RulItemType rulItemType = rulItemTypeMap.get(itemTypeCode);
         Integer dataId = createArrData(rulItemType.getDataTypeId());
@@ -1975,11 +1986,11 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
     }
 
     private enum ItemTypeCode {
-        BRIEF_DESC("BRIEF_DESC"),
-        NM_MAIN("NM_MAIN"),
-        NM_MINOR("NM_MINOR"),
-        NM_DEGREE_PRE("NM_DEGREE_PRE"),
-        NM_DEGREE_POST("NM_DEGREE_POST"),
+        BRIEF_DESC("BRIEF_DESC", 250),
+        NM_MAIN("NM_MAIN", 250),
+        NM_MINOR("NM_MINOR", 250),
+        NM_DEGREE_PRE("NM_DEGREE_PRE", 50),
+        NM_DEGREE_POST("NM_DEGREE_POST", 50),
         NOTE("NOTE"),
         NM_USED_FROM("NM_USED_FROM"),
         NM_USED_TO("NM_USED_TO"),
@@ -2010,9 +2021,19 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
 
         private String code;
+        private Integer maxStringLength;
 
         ItemTypeCode(String code) {
             this.code = code;
+        }
+
+        ItemTypeCode(String code, Integer maxStringLength) {
+            this.code = code;
+            this.maxStringLength = maxStringLength;
+        }
+
+        Integer getMaxStringLength() {
+            return maxStringLength;
         }
 
         public String getCode() {
