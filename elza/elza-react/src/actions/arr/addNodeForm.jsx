@@ -25,8 +25,13 @@ import {globalFundTreeInvalidate} from './globalFundTree';
  */
 export function addNodeFormArr(direction, node, selectedSubNodeIndex, versionId) {
     return dispatch => {
-        const afterCreateCallback = (versionId, node, parentNode) => {
-            dispatch(fundSelectSubNode(versionId, node.id, parentNode));
+        const afterCreateCallback = (versionId, nodes, parentNode) => {
+            const node = nodes && nodes[0];
+            if(node){
+                dispatch(fundSelectSubNode(versionId, node.id, parentNode));
+            } else {
+                throw new Error("No node found in addNode response");
+            }
         };
 
         const inParentNode = node;

@@ -369,8 +369,8 @@ export function addNode(
             dispatch,
             WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems),
         ).then(json => {
-            dispatch(fundNodeChangeAdd(versionId, json.node, indexNode, json.parentNode, direction));
-            afterCreateCallback && afterCreateCallback(versionId, json.node, json.parentNode);
+            dispatch(fundNodeChangeAdd(versionId, json.nodes, indexNode, json.parentNode, direction));
+            afterCreateCallback && afterCreateCallback(versionId, json.nodes, json.parentNode);
 
             const state = getState();
             const activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
@@ -429,9 +429,9 @@ export function deleteNode(node, parentNode, versionId, afterDeleteCallback) {
  * @param {Object} parentNode nadřazený uzel k indexNode, pokud je přidáváno jako 'CHILD', je stejný jako indexNode
  * @param {string} direction 'BEFORE', 'AFTER' nebo 'CHILD'
  */
-function fundNodeChangeAdd(versionId, newNode, indexNode, parentNode, direction) {
+function fundNodeChangeAdd(versionId, newNodes, indexNode, parentNode, direction) {
     return {
-        newNode,
+        newNodes,
         indexNode,
         parentNode,
         direction,
