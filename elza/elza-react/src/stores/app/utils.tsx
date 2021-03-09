@@ -67,7 +67,7 @@ export function getIdsList<T extends {id: string | number}>(objectList:T[], attr
 export function indexByProperty<T, P extends keyof T>(array: T[] | null | undefined = [], value: T[P] | null | undefined, propertyName: P) : number | null {
     if ( isNullOrUndefined(array) ) return null;
     
-    const index = array.findIndex((item) => item[propertyName] ? item[propertyName] === value : false );
+    const index = array.findIndex((item) => item[propertyName] !== undefined ? item[propertyName] === value : false );
 
     return index !== - 1 ? index : null;
 }
