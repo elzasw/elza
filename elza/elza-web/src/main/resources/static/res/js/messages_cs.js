@@ -547,8 +547,8 @@ var messages = {
 
     "arr.fund.version": "Verze {0}",
     "arr.fund.version.list": "Verze AS",
-    "arr.fund.outputDefinition.active": "Přehled platných AP",
-    "arr.fund.outputDefinition.hist": "Přehled historických AP",
+    "arr.fund.outputDefinition.active": "Výstupy",
+    "arr.fund.outputDefinition.hist": "Starší výstupy",
     "arr.fund.outputDefinition.action.showPDF": "Zobrazit PDF",
     "arr.fund.outputDefinition.version": "Verze {0}",
     "arr.fund.detail": "Detail AS",
