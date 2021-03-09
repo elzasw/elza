@@ -473,15 +473,27 @@ export function node(state = nodeInitialState, action) {
                      * indexNode - Node objekt který slouží k nalezení a před/za který umístímě nový node
                      * parentNode - Parent node
                      * direction - BEFORE/AFTER - před/za
-                     * newNode - Node objekt
+                     * newNodes - Pole node objektů
                      */
                     let nodeIndex = indexById(state.childNodes, action.indexNode.id);
 
-                    const existsNode = indexById(state.childNodes, action.newNode.id);
-                    if (existsNode != null) {
-                        // JS bylo již přidáno
+                    const newUniqueNodes = [];
+
+                    if(action?.newNodes){
+                        action.newNodes.forEach((newNode)=>{
+                            const existingNode = state.childNodes.find((node)=> node.id === newNode.id);
+                            if(!existingNode){ 
+                                newUniqueNodes.push(newNode); 
+                            }
+                        })
+                    }
+
+                    if (newUniqueNodes.length === 0) {
+                        // JP bylo již přidáno
                         return state;
                     }
+
+                    const newChildren = newUniqueNodes.map((node)=>initNodeChild(node));
 
                     if (nodeIndex != null) {
                         switch (action.direction) {
@@ -491,7 +503,7 @@ export function node(state = nodeInitialState, action) {
 
                                 let childNodes = [
                                     ...state.childNodes.slice(0, nodeIndex),
-                                    initNodeChild(action.newNode),
+                                    ...newChildren,
                                     ...state.childNodes.slice(nodeIndex),
                                 ];
 
@@ -504,7 +516,7 @@ export function node(state = nodeInitialState, action) {
                                 };
                             }
                             case 'CHILD': {
-                                let childNodes = [...state.childNodes, initNodeChild(action.newNode)];
+                                let childNodes = [...state.childNodes, ...newChildren];
 
                                 return {
                                     ...state,
