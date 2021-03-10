@@ -1,4 +1,5 @@
-import {notEmpty, objectById} from '../../shared/utils';
+import {notEmpty} from '../../shared/utils';
+import {objectByProperty} from 'stores/app/utils';
 import * as factory from '../../shared/factory';
 import PropTypes from 'prop-types';
 
@@ -869,8 +870,8 @@ class NodeSubNodeForm extends AbstractReactComponent {
     findItemType = itemTypeId => {
         const {subNodeForm, groups} = this.props;
         const groupCode = groups.reverse[itemTypeId];
-        const group = objectById(subNodeForm.formData.descItemGroups, groupCode, 'code');
-        return objectById(group.types, itemTypeId);
+        const group = objectByProperty(subNodeForm.formData.descItemGroups, groupCode, 'code');
+        return objectByProperty(group.types, parseInt(itemTypeId), 'id');
     };
 
     initFocus() {
@@ -947,7 +948,7 @@ function mapStateToProps(state) {
     let structureTypes = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
-        structureTypes = objectById(refTables.structureTypes.data, fund.versionId, 'versionId');
+        structureTypes = objectByProperty(refTables.structureTypes.data, fund.versionId, 'versionId');
     }
 
     return {
