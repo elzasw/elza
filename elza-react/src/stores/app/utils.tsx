@@ -75,11 +75,11 @@ export function indexByProperty<T, P extends keyof T>(array: T[] | null | undefi
 export function objectByProperty<T, P extends keyof T>(array: T[] | null | undefined = [], value: T[P], propertyName: P) : T | null {
     if ( isNullOrUndefined(array) ) return null;
 
-    const object = array.find((item) => item[propertyName] ? item[propertyName] === value : false );
+    const object = array.find((item) => item[propertyName] !== undefined ? item[propertyName] === value : false );
     return object || null;
 }
 
-/*
+/**
  * @Obsolete - nahradit funkcí indexByProperty
  * Otypovano tak, aby odpovidalo soucasne funkcionalite
  */
@@ -89,7 +89,7 @@ export function indexById(arr: any[] | null | undefined, id?: any, propertyName:
     return indexByProperty(arr, id, propertyName);
 }
 
-/*
+/**
  * @Obsolete - nahradit funkcí objectByProperty
  * Otypovano tak, aby odpovidalo soucasne funkcionalite
  */

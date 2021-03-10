@@ -125,13 +125,13 @@ public class OutputModelTest extends AbstractServiceTest {
         assertNotNull(structObj2);
 
         // Create levels
-        ArrLevel level1 = fundLevelService.addNewLevel(fi.getFundVersion(), fi.getRootNode(), fi.getRootNode(),
-                                                       AddLevelDirection.CHILD, "Série", null, null);
-        assertNotNull(level1);
+        List<ArrLevel> level1 = fundLevelService.addNewLevel(fi.getFundVersion(), fi.getRootNode(), fi.getRootNode(),
+                                                       AddLevelDirection.CHILD, "Série", null, null, null);
+        assertTrue(level1.size() == 1);
 
-        ArrLevel level2 = fundLevelService.addNewLevel(fi.getFundVersion(), level1.getNode(), level1.getNode(),
-                                                       AddLevelDirection.CHILD, "Série", null, null);
-        assertNotNull(level2);
+        List<ArrLevel> level2 = fundLevelService.addNewLevel(fi.getFundVersion(), level1.get(0).getNode(), level1.get(0).getNode(),
+                                                       AddLevelDirection.CHILD, "Série", null, null, null);
+        assertTrue(level2.size() == 1);
 
         // Output type SRD_INVENTORY
         RulOutputType outputType = outputTypeRepository.findByCode("SRD_INVENTORY");
@@ -144,7 +144,7 @@ public class OutputModelTest extends AbstractServiceTest {
         itemSVO.setValue(structObj1.getStructuredObjectId());
         itemSVO.setStructureData(svo1);
         itemSVO.setItemTypeId(itemType.getItemTypeId());
-        ArrDescItem descItemResult1 = createDescItem(itemSVO, level1.getNode(), fi.getFundVersionId());
+        ArrDescItem descItemResult1 = createDescItem(itemSVO, level1.get(0).getNode(), fi.getFundVersionId());
         assertNotNull(descItemResult1);
 
         // Insert item2 to level1
@@ -153,7 +153,7 @@ public class OutputModelTest extends AbstractServiceTest {
         itemSVO2.setStructureData(svo1);
         itemSVO2.setValue(structObj1.getStructuredObjectId());
         itemSVO2.setItemTypeId(itemType.getItemTypeId());
-        ArrDescItem descItemResult2 = createDescItem(itemSVO2, level2.getNode(), fi.getFundVersionId());
+        ArrDescItem descItemResult2 = createDescItem(itemSVO2, level2.get(0).getNode(), fi.getFundVersionId());
         assertNotNull(descItemResult2);
         helperTestService.waitForWorkers();
         OutputModel outputModel = new OutputModel(staticDataService, elzaLocale,
@@ -170,7 +170,7 @@ public class OutputModelTest extends AbstractServiceTest {
         helperTestService.waitForWorkers();
         assertNotNull(change);
         OutputParams params = new OutputParams(output, change, fi.getFundVersion(),
-                Collections.singletonList(level1.getNodeId()),
+                Collections.singletonList(level1.get(0).getNodeId()),
                 Collections.emptyList());
                 //Paths.get("test"));
         outputModel.init(params);

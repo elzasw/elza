@@ -141,7 +141,6 @@ public class ArrangementWebsocketController {
      *
      * @param addLevelParam vstupní parametry
      * @param requestHeaders
-     * @param count počet zakládaných položek
      * @return nový přidaný uzel
      */
     @Transactional
@@ -156,24 +155,22 @@ public class ArrangementWebsocketController {
 
         ArrFundVersion version = fundVersionRepository.findById(versionId).orElseThrow(version(versionId));
 
+        ArrNode staticNode = factoryDO.createNode(addLevelParam.getStaticNode());
+        ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ? 
+                null : factoryDO.createNode(addLevelParam.getStaticNodeParent());
+
         Set<RulItemType> descItemCopyTypes = new HashSet<>();
         if (CollectionUtils.isNotEmpty(addLevelParam.getDescItemCopyTypes())) {
             descItemCopyTypes.addAll(itemTypeRepository.findAllById(addLevelParam.getDescItemCopyTypes()));
         }
 
-        ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ? null : factoryDO
-                .createNode(addLevelParam.getStaticNodeParent());
-
-        int count = addLevelParam.getCount() == null? 1 : addLevelParam.getCount();
-
-        List<ArrNodeVO> nodes = new ArrayList<>(count);
+        List<ArrLevel> newLevels = moveLevelService.addNewLevel(version, staticNode, staticParentNode,
+                                                         addLevelParam.getDirection(), addLevelParam.getScenarioName(),
+                                                         descItemCopyTypes, null, addLevelParam.getCount());
+        List<ArrNodeVO> nodes = new ArrayList<>(newLevels.size());
         Collection<TreeNodeVO> nodeClients = null;
-        for (int i = 0; i < count; i++) {
-            ArrNode staticNode = factoryDO.createNode(addLevelParam.getStaticNode());
-            ArrLevel newLevel = moveLevelService.addNewLevel(version, staticNode, staticParentNode,
-                                                             addLevelParam.getDirection(), addLevelParam.getScenarioName(),
-                                                             descItemCopyTypes, null);
 
+        for (ArrLevel newLevel : newLevels) {
             if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
                 UpdateDescItemsParam params = new UpdateDescItemsParam(
                         addLevelParam.getCreateItems(),
@@ -181,19 +178,17 @@ public class ArrangementWebsocketController {
                         Collections.emptyList());
                 arrangementFormService.updateDescItems(version.getFundVersionId(), newLevel.getNodeId(), newLevel.getNode().getVersion(), params, null);
             }
-
+    
             if (nodeClients == null) {
                 nodeClients = levelTreeCacheService.getNodesByIds(Collections.singletonList(newLevel.getNodeParent().getNodeId()), version);
                 Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
             }
-
-            nodes.add(ArrNodeVO.valueOf(newLevel.getNode()));
         }
 
         final ArrangementController.NodesWithParent result = new ArrangementController.NodesWithParent(nodes, nodeClients.iterator().next());
 
         // Odeslání dat zpět
-		webScoketStompService.sendReceiptAfterCommit(result, requestHeaders);
+        webScoketStompService.sendReceiptAfterCommit(result, requestHeaders);
     }
 
     /**
