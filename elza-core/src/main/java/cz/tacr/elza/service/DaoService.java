@@ -538,10 +538,10 @@ public class DaoService {
             DaoSyncService daoSyncService = appCtx.getBean(DaoSyncService.class);
             DaoDesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
             FundLevelService fundLevelService = appCtx.getBean(FundLevelService.class);
-            ArrLevel level = fundLevelService.addNewLevel(fundVersion, node, node,
+            List<ArrLevel> levels = fundLevelService.addNewLevel(fundVersion, node, node,
                                                           AddLevelDirection.CHILD, null, null,
-                                                          descItemProvider);
-            linkNode = level.getNode();
+                                                          descItemProvider, null);
+            linkNode = levels.get(0).getNode();
             scenario = descItemProvider.getScenario();
             break;
         case ATTACHMENT:
