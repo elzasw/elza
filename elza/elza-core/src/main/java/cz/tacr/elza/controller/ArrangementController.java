@@ -1593,9 +1593,9 @@ public class ArrangementController {
         }
 
 
-        ArrLevel newLevel = fundLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
-                addLevelParam.getDirection(), addLevelParam.getScenarioName(),
-                                                         descItemCopyTypes, null);
+        List<ArrLevel> newLevels = fundLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
+                addLevelParam.getDirection(), addLevelParam.getScenarioName(), descItemCopyTypes, null, null);
+        ArrLevel newLevel = newLevels.get(0);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
             UpdateDescItemsParam params = new UpdateDescItemsParam(
