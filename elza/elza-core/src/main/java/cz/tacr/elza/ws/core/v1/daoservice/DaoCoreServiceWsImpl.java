@@ -340,17 +340,17 @@ public class DaoCoreServiceWsImpl {
                                                                     changeContext);
             }
         };
-        ArrLevel level = fundLevelService.addNewLevel(fundVersion, rootNode, rootNode,
+        List<ArrLevel> level = fundLevelService.addNewLevel(fundVersion, rootNode, rootNode,
                                                       AddLevelDirection.CHILD,
                                                       lis.getScenarioName(), Collections.emptySet(),
-                                                      descProvider);
+                                                      descProvider, null);
 
         List<ArrDaoLink> daoLinks = new ArrayList<>(levelDaos.size());
         // attach to the parent
         for (ArrDao dao : levelDaos) {
             Validate.isTrue(dao.getDaoType() == DaoType.LEVEL);
 
-            ArrDaoLink daoLink = daoService.createDaoLink(fundVersion, dao, level.getNode());
+            ArrDaoLink daoLink = daoService.createDaoLink(fundVersion, dao, level.get(0).getNode());
             daoLinks.add(daoLink);
         }
         return daoLinks;

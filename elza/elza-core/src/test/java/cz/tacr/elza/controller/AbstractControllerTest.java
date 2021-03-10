@@ -424,7 +424,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     public static final String SCOPE_GLOBAL = "GLOBAL";
 
     @Value("${local.server.port}")
-    private int port;
+    protected int port;
 
     private List<RulDataTypeVO> dataTypes = null;
     private List<RulDescItemTypeExtVO> descItemTypes = null;
@@ -437,7 +437,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     protected SearchApi searchApi;
 
-    private static Map<String, String> cookies = null;
+    protected static Map<String, String> cookies = null;
 
     @Override
     @Before
