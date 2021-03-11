@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -8,9 +9,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,13 +51,17 @@ import cz.tacr.elza.test.controller.vo.Fund;
 
 public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
+    static private Logger logger = LoggerFactory.getLogger(ArrangementWebsocketControllerTest.class);
+
     AddLevelParam addLevelParam;
 
-    //@Test
-    public void addLevelTest() throws ApiException, InterruptedException, ExecutionException {
+    @Test
+    public void addLevelTest() throws ApiException, InterruptedException, ExecutionException, IllegalAccessException {
         MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
         StompSession session = connectWebSocketStompClient(sessionHandler);
         
+        FieldUtils.writeField(StompCommand.RECEIPT, "body", true, true);
+
         session.subscribe("/topic/api/changes", sessionHandler);
         
         Fund fund = createFund("Jmeno", "kod");
@@ -74,7 +81,19 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
         session.setAutoReceipt(true);
         Receiptable receipt = session.send("/app/arrangement/levels/add", addLevelParam);
-        Object resp = sessionHandler.waitForResponse();
+
+        AtomicBoolean receiptReceived = new AtomicBoolean(false);
+        receipt.addReceiptTask(() -> {
+            logger.debug("Receipt received");
+            receiptReceived.set(true);
+        });
+        receipt.addReceiptLostTask(() -> {
+            fail("Receipt lost");
+        });
+        while (!receiptReceived.get()) {
+            logger.info("Waiting on receipt");
+            Thread.sleep(100);
+        }
         
         nodes = nodeRepository.findAll();
         assertTrue(nodes.size() == 2);
@@ -111,20 +130,10 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
     class MyStompSessionHandler implements StompSessionHandler {
 
         private Logger logger = LoggerFactory.getLogger(this.getClass());
-
-        List<Object> responses = new LinkedList<>();
-
-        public Object waitForResponse() throws InterruptedException {
-            while (responses.size() == 0) {
-                Thread.sleep(100);
-            }
-            return responses.remove(0);
-        }
         
         @Override
         public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
             logger.info("New session established : " + session.getSessionId());
-            logger.info("Data sent to websocket server");
         }
 
         @Override
@@ -134,8 +143,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
         @Override
         public void handleFrame(StompHeaders headers, Object payload) {
-            responses.add(payload);
-            logger.info("Received : Object");
+            logger.info("Received: {}", payload);
         }
 
         @Override
