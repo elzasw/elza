@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -10,9 +11,11 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.lang3.concurrent.AtomicInitializer;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -55,6 +58,12 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
     AddLevelParam addLevelParam;
 
+    enum ReceiptStatus {
+        RCP_WAITING,
+        RCP_RECEIVED,
+        RCP_LOST
+    };
+
     @Test
     public void addLevelTest() throws ApiException, InterruptedException, ExecutionException, IllegalAccessException {
         MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
@@ -82,18 +91,20 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         session.setAutoReceipt(true);
         Receiptable receipt = session.send("/app/arrangement/levels/add", addLevelParam);
 
-        AtomicBoolean receiptReceived = new AtomicBoolean(false);
+        AtomicReference<ReceiptStatus> receiptStatus = new AtomicReference<ReceiptStatus>();
         receipt.addReceiptTask(() -> {
             logger.debug("Receipt received");
-            receiptReceived.set(true);
+            receiptStatus.set(ReceiptStatus.RCP_RECEIVED);
         });
         receipt.addReceiptLostTask(() -> {
-            fail("Receipt lost");
+            logger.debug("Receipt lost");
+            receiptStatus.set(ReceiptStatus.RCP_LOST);
         });
-        while (!receiptReceived.get()) {
+        while (receiptStatus.get() == null) {
             logger.info("Waiting on receipt");
             Thread.sleep(100);
         }
+        assertEquals(ReceiptStatus.RCP_RECEIVED, receiptStatus.get());
         
         nodes = nodeRepository.findAll();
         assertTrue(nodes.size() == 2);
