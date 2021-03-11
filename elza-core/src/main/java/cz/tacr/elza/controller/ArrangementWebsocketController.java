@@ -178,7 +178,9 @@ public class ArrangementWebsocketController {
                         Collections.emptyList());
                 arrangementFormService.updateDescItems(version.getFundVersionId(), newLevel.getNodeId(), newLevel.getNode().getVersion(), params, null);
             }
-    
+
+            nodes.add(ArrNodeVO.newInstance(newLevel.getNode()));
+
             if (nodeClients == null) {
                 nodeClients = levelTreeCacheService.getNodesByIds(Collections.singletonList(newLevel.getNodeParent().getNodeId()), version);
                 Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
