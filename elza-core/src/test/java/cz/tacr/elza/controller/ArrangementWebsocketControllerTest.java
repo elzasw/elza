@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.task.TaskSchedulerBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -22,7 +23,10 @@ import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.messaging.simp.stomp.StompSession.Receiptable;
 import org.springframework.messaging.simp.stomp.StompSessionHandler;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -68,7 +72,8 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         addLevelParam.setDirection(FundLevelService.AddLevelDirection.CHILD);
         //addLevelParam.setCount(2);
 
-        session.send("/arrangement/levels/add", addLevelParam);        
+        session.setAutoReceipt(true);
+        Receiptable receipt = session.send("/app/arrangement/levels/add", addLevelParam);
         Object resp = sessionHandler.waitForResponse();
         
         nodes = nodeRepository.findAll();
@@ -78,8 +83,11 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
     }
 
     private StompSession connectWebSocketStompClient(StompSessionHandler sessionHandler) throws InterruptedException, ExecutionException {
-        WebSocketClient client = new StandardWebSocketClient();    
+        WebSocketClient client = new StandardWebSocketClient();
         WebSocketStompClient stompClient = new WebSocketStompClient(client);
+        ThreadPoolTaskScheduler taskScheduler = new TaskSchedulerBuilder().poolSize(1).build();
+        taskScheduler.initialize();
+        stompClient.setTaskScheduler(taskScheduler);
 
         stompClient.setMessageConverter(new MappingJackson2MessageConverter());
 
