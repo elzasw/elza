@@ -12,7 +12,6 @@ import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.ErrorMessageXml;
 import cz.tacr.cam.schema.cam.LongStringXml;
-import cz.tacr.cam.schema.cam.PartXml;
 import cz.tacr.cam.schema.cam.UpdatesFromXml;
 import cz.tacr.cam.schema.cam.UpdatesXml;
 import cz.tacr.cam.schema.cam.UuidXml;
@@ -32,13 +31,9 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
-import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.exception.AbstractException;
-import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
@@ -48,7 +43,6 @@ import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
-import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
@@ -59,26 +53,23 @@ import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
-import cz.tacr.elza.service.vo.DataRef;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
-import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -100,9 +91,6 @@ public class CamService {
 
     @Autowired
     private ApStateRepository stateRepository;
-
-    @Autowired
-    private ApAccessPointRepository accessPointRepository;
 
     @Autowired
     private ApBindingStateRepository bindingStateRepository;
@@ -148,6 +136,12 @@ public class CamService {
 
     @Autowired
     private AccessPointCacheService accessPointCacheService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Value("${elza.ap.checkDb:false}")
+    private boolean checkDb;
 
     private final String TRANSACTION_UUID = "91812cb8-3519-4f78-b0ec-df6e951e2c7c";
     private final Integer PAGE_SIZE = 1000;
@@ -430,6 +424,12 @@ public class CamService {
         synchronizeAccessPointsForExternalSystem(externalSystem, entityRecordRevInfoXmls);
         apBindingSync.setLastTransaction(lastTransaction);
         bindingSyncRepository.save(apBindingSync);
+
+        // kontrola datové struktury
+        if (checkDb) {
+            entityManager.flush();
+            accessPointService.checkConsistency();
+        }
     }
 
     private void synchronizeAccessPointsForExternalSystem(ApExternalSystem externalSystem,
@@ -581,6 +581,12 @@ public class CamService {
         for (SyncEntityRequest syncReq : syncRequests) {
             synchronizeAccessPoint(procCtx, syncReq.getState(),
                     syncReq.getEntityXml(), syncReq.getBindingState(), false);
+        }
+
+        // kontrola datové struktury
+        if (checkDb) {
+            entityManager.flush();
+            accessPointService.checkConsistency();
         }
     }
 

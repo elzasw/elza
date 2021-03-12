@@ -28,6 +28,10 @@ elza:
   scope:
     deleteWithEntities: false
 
+  # Příznak kontroly datové struktury
+  ap:
+    checkDb: true
+
 #  hibernate:
 #    index:
 #      enabled: true
