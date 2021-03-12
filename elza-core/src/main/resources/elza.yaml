@@ -30,7 +30,7 @@ elza:
 
   # Příznak kontroly datové struktury
   ap:
-    checkDb: true
+    checkDb: false
 
 #  hibernate:
 #    index:
