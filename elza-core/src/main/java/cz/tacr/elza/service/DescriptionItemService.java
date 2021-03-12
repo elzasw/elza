@@ -494,9 +494,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, version, createChange,
                                                                     batchChangeCtx);
-
-        batchChangeCtx.addCreatedItem(descItemCreated);
-
         return descItemCreated;
     }
 
@@ -579,12 +576,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         List<ArrDescItem> createdItems = new ArrayList<>();
         for (ArrDescItem descItem :
                 descItems) {
-            descItem.setNode(node);
-            descItem.setCreateChange(change);
-            descItem.setDeleteChange(null);
-            descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
-
-            ArrDescItem created = createDescriptionItemWithData(descItem, version, change, changeContext);
+                    ArrDescItem created = createDescriptionItemInBatch(descItem, node, version, change, changeContext);
             createdItems.add(created);
         }
 
@@ -806,9 +798,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         }
 
         descItem.setCreateChange(change);
-        descItemFactory.saveItemVersionWithData(descItem, true);
+        ArrDescItem result = descItemFactory.saveItemVersionWithData(descItem, true);
+
+        changeContext.addCreatedItem(result);
     //    asyncRequestService.enqueue(fundVersion,descItem.getNode(),AsyncTypeEnum.NODE);
-        arrangementCacheService.createDescItem(descItem.getNodeId(), descItem, changeContext);
+        arrangementCacheService.createDescItem(result, changeContext);
         return descItem;
     }
 
@@ -1044,7 +1038,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
             changeContext.addCreatedItem(savedItem);
 
-            arrangementCacheService.createDescItem(node.getNodeId(), savedItem, changeContext);
+            arrangementCacheService.createDescItem(savedItem, changeContext);
         }
 
         return result;
@@ -1770,8 +1764,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
             newDescItem.setPosition(1);
 
-            descItemFactory.saveItemVersionWithData(newDescItem, true);
-            arrangementCacheService.createDescItem(newDescItem.getNodeId(), newDescItem, changeContext);
+            ArrDescItem savedItem = descItemFactory.saveItemVersionWithData(newDescItem, true);
+            arrangementCacheService.createDescItem(savedItem, changeContext);
 
             changeContext.flushIfNeeded();
         }
@@ -1850,7 +1844,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 descItem.setDeleteChange(null);
                 descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
                 ArrDescItem created = createDescriptionItemWithData(descItem, fundVersion, change, changeContext);
-                changeContext.addCreatedItem(created);
             }
         }
 
