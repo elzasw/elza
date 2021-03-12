@@ -128,6 +128,9 @@ public class StartupService implements SmartLifecycle {
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
         startInTransaction();
 
+        // kontrola datové struktury
+        accessPointService.checkConsistency();
+
         running = true;
         logger.info("Elza startup finished in {} ms", System.currentTimeMillis() - startTime);
     }
