@@ -137,7 +137,6 @@ import cz.tacr.elza.service.AccessPointItemService.DeletedItems;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.vo.DataRef;
 
 
 /**
@@ -2024,5 +2023,33 @@ public class AccessPointService {
     public ApState getApState(Integer accessPointId) {
         ApAccessPoint ap = getAccessPointInternal(accessPointId);
         return getApState(ap);
+    }
+    
+    /**
+     * Kontrola datové struktury.
+     * 
+     * Tato metoda se volá, pokud parametr elza.ap.checkDb má hodnotu TRUE
+     */
+    public void checkConsistency() {
+        int partsWithChild = partRepository.countDeletedPartsWithUndeletedChild();
+        if (partsWithChild > 0) {
+            logger.error("Existují {} vymazané Parts s nevymazanými potomky", partsWithChild);
+            throw new IllegalStateException("There are deleted Part(s) with non-deleted Children(s)");
+        }
+        int partsWithBindingItem = partRepository.countDeletedPartsWithUndeletedBindingItem();
+        if (partsWithBindingItem > 0) {
+            logger.error("Existují {} vymazané Parts s nevymazanými BindingItem", partsWithBindingItem);
+            throw new IllegalStateException("There are deleted Part(s) with non-deleted BindingItem(s)");
+        }
+        int partsWithItem = partRepository.countDeletedPartsWithUndeletedItem();
+        if (partsWithItem > 0) {
+            logger.error("Existují {} vymazané Parts s nevymazanými Item", partsWithItem);
+            throw new IllegalStateException("There are deleted Part(s) with non-deleted Item(s)");
+        }
+        int itemsWithBindingItem = itemRepository.countDeletedItemsWithUndeletedBindingItem();
+        if (itemsWithBindingItem > 0) {
+            logger.error("Existují {} vymazané Items s nevymazanými BindingItem", itemsWithBindingItem);
+            throw new IllegalStateException("There are deleted Items(s) with non-deleted BindingItem(s)");
+        }
     }
 }

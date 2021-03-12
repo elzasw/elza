@@ -33,4 +33,18 @@ public interface ApPartRepository extends JpaRepository<ApPart, Integer> {
     @Query("SELECT part FROM ApPart part WHERE part.accessPoint = :accessPoint AND part.deleteChange IS NULL AND part.createChange.changeId > :changeId")
     List<ApPart> findNewerValidPartsByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint, @Param("changeId") Integer changeId);
 
+    @Query(value = "select count(*) from ap_part p" +
+            " join ap_part p2 on p2.parent_part_id = p.part_id and p2.delete_change_id is null" +
+            " where p.delete_change_id is not null", nativeQuery = true)
+    int countDeletedPartsWithUndeletedChild();
+
+    @Query(value = "select count(*) from ap_part p" +
+            " join ap_binding_item bi on bi.part_id = p.part_id and bi.delete_change_id is null" +
+            " where p.delete_change_id is not null", nativeQuery = true)
+    int countDeletedPartsWithUndeletedBindingItem();
+
+    @Query(value = "select count(*) from ap_part p" +
+            " join ap_item i on i.part_id = p.part_id and i.delete_change_id is null" +
+            " where p.delete_change_id is not null", nativeQuery = true)
+    int countDeletedPartsWithUndeletedItem();
 }
