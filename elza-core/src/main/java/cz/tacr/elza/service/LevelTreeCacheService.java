@@ -193,31 +193,24 @@ public class LevelTreeCacheService implements NodePermissionChecker {
                               final Set<Integer> expandedIds,
                               final Set<Integer> includeIds) {
 
-
-        Set<Integer> nodesToExpandIDs = new HashSet<>();
-        if (expandedIds != null) {
-            nodesToExpandIDs.addAll(expandedIds);
-        }
-
         ArrFundVersion version = arrangementService.getFundVersion(versionId);
-
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(version);
-        Set<Integer> expandedIdsExtended = createExpandedIdsExtension(includeIds, treeMap);
 
-
+        Set<Integer> parentNodeIds = getAllParentsWithoutError(includeIds, treeMap);
         if (nodeId == null) {
-            expandedIdsExtended.add(version.getRootNode().getNodeId());
+            // add root node
+            parentNodeIds.add(version.getRootNode().getNodeId());
         } else {
-            //pokud vracíme podstrom, přidáme pro jistotu nodeid do otevřených uzlů
-            nodesToExpandIDs.add(nodeId);
+            parentNodeIds.add(nodeId);
         }
-
-        //do rozbalených uzlů přidáme ty, které je nutné rozbalit, aby byly included vidět
-        nodesToExpandIDs.addAll(expandedIdsExtended);
-
+        if (expandedIds != null) {
+            // pridani rodicu rozbalenych uzlu
+            parentNodeIds.addAll(getAllParentsWithoutError(expandedIds, treeMap));
+            parentNodeIds.addAll(expandedIds);
+        }
 
         Map<Integer, TreeNode> expandedNodes = new TreeMap<Integer, TreeNode>();
-        for (Integer expandedId : nodesToExpandIDs) {
+        for (Integer expandedId : expandedIds) {
             TreeNode treeNode = treeMap.get(expandedId);
             if(treeNode != null){
                 createExpandedTreeNodeMap(treeNode, expandedNodes);
@@ -228,9 +221,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         TreeSet<TreeNode> expandedSort = new TreeSet<>(expandedNodes.values());
         Iterator<TreeNode> expandedIterator = expandedSort.iterator();
 
-
         LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
-
 
         if (nodeId == null) {
             TreeNode nextNode = expandedIterator.next();
@@ -262,7 +253,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         LinkedHashMap<Integer, Node> nodes = getNodes(nodesMap, rootNode, param, version);
 
         boolean fullArrPerm = userService.hasFullArrPerm(version.getFundId());
-        return new TreeData(convertToTreeNodeWithPerm(nodes.values(), version, fullArrPerm), expandedIdsExtended, fullArrPerm);
+        return new TreeData(convertToTreeNodeWithPerm(nodes.values(), version, fullArrPerm), parentNodeIds, fullArrPerm);
     }
 
     /**
@@ -448,7 +439,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @param treeMap     mapa všech uzlů ve stromu
      * @return množinu nodeid uzlů, které musejí být rozbalené, aby byly vybrané uzly viditelné
      */
-    private Set<Integer> createExpandedIdsExtension(final Set<Integer> includedIds,
+    private Set<Integer> getAllParentsWithoutError(final Set<Integer> includedIds,
                                                     final Map<Integer, TreeNode> treeMap) {
         Set<Integer> result = new HashSet<>();
 
@@ -457,6 +448,8 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             for (Integer includedId : includedIds) {
                 TreeNode node = treeMap.get(includedId);
                 if (node == null) {
+                    // pripadne neexistujici uzly jsou ignorovany
+                    // jejich ID mohou zustat v cache klienta
                     continue;
                 }
                 TreeNode parent = node.getParent();
