@@ -438,7 +438,7 @@ public class StructObjValueService {
         }
 
         // run duplicate check only for nondeleted values
-        if (structObj.getDeleteChangeId() == null) {
+        if (structObj.getDeleteChangeId() == null && !structType.getStructuredType().getAnonymous()) {
             DuplicationEvaluator evaluator = new DuplicationEvaluator(oldSortValue, sortValue, structObj);
             if (evaluator.evaluate()) {
                 validationErrorDescription.setDuplicateValue(true);
