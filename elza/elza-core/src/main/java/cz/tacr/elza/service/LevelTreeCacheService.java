@@ -210,7 +210,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         }
 
         Map<Integer, TreeNode> expandedNodes = new TreeMap<Integer, TreeNode>();
-        for (Integer expandedId : expandedIds) {
+        for (Integer expandedId : parentNodeIds) {
             TreeNode treeNode = treeMap.get(expandedId);
             if(treeNode != null){
                 createExpandedTreeNodeMap(treeNode, expandedNodes);
