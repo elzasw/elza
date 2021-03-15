@@ -1,6 +1,9 @@
 package cz.tacr.elza.drools.model;
 
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 /**
  * Value object pro hodnotu atributu.
@@ -59,6 +62,8 @@ public class DescItem {
      * Prvek popisu jen pro cteni
      */
     private boolean readOnly;
+
+    private ArrDataUnitdate unitDate;
 
     public DescItem(final String type, final String spec) {
         this.type = type;
@@ -165,4 +170,27 @@ public class DescItem {
         DescItem item = new DescItem(descItem);
         return item;
     }
+
+    public void setUnitDate(final ArrDataUnitdate unitDate) {
+        this.unitDate = unitDate;
+    }
+
+    public Long getNormalizedFrom() {
+        if (this.unitDate == null) {
+            throw new BusinessException("Item is not unitDate, dataType: " + this.dataType
+                    + ", itemType: " + this.type,
+                    BaseCode.INVALID_STATE);
+        }
+        return unitDate.getNormalizedFrom();
+    }
+
+    public Long getNormalizedTo() {
+        if (this.unitDate == null) {
+            throw new BusinessException("Item is not unitDate, dataType: " + this.dataType
+                    + ", itemType: " + this.type,
+                    BaseCode.INVALID_STATE);
+        }
+        return unitDate.getNormalizedTo();
+    }
+
 }

@@ -32,6 +32,18 @@ then
 	results.createMissing("ZP2015_UNIT_DATE", "Není uvedena datace", "ZP2015_POL_BASIC");
 end
 
+rule "Nadřazená datace zahrnuje dataci úrovně"
+when
+	$activeLevel: ActiveLevel( $ownItems: ownDescItems && parent!=null && $parent: parent )
+	$datace: DescItem(type in ("ZP2015_UNIT_DATE") ) from $ownItems
+	Level( $parentItems: descItems ) from $parent 	
+	DescItem( type in ("ZP2015_UNIT_DATE") 
+	           && (normalizedFrom>$datace.normalizedFrom || normalizedTo<$datace.normalizedTo ) ) from $parentItems	
+then
+	results.createMissing("ZP2015_UNIT_DATE", "Datace není zahrnuta v časovém rozsahu vyšší úrovně", "ZP2015_POL_BASIC");
+end
+
+
 // Kontrola, zda každá hromadina s EJ má uvedenu ukládací jednotku s druhem KAR,FAS,DAJ
 // TODO slapa: upravit na nové entity
 /*rule "Každá hromadina s EJ má uvedenu ukládací jednotku"
