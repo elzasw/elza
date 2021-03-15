@@ -373,7 +373,7 @@ public class AccessPointService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState,
-                                  final ApAccessPoint replacedBy) {
+                                  final ApAccessPoint replacedBy, boolean copyAll) {
 
         apDataService.validationNotDeleted(apState);
 
@@ -384,6 +384,37 @@ public class AccessPointService {
             apDataService.validationNotDeleted(replacementState);
             replace(apState, replacementState);
             apState.setReplacedBy(replacedBy);
+
+            // kopírování všechny Part z accessPoint->replacedBy
+            if (copyAll) {
+                List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
+                List<ApPart> partsTo = partService.findPartsByAccessPoint(replacedBy);
+                Map<Integer, ApPart> mapParent = new HashMap<>();
+
+                // kopírování Part rodiče
+                for (ApPart part : parts) {
+                    if (part.getPartType().getRepeatable() && part.getParentPart() == null) {
+                        ApPart newPart = copyPart(part, replacedBy, null);
+                        mapParent.put(part.getPartId(), newPart);
+                    }
+                }
+
+                // kopírování všeho ostatního
+                for (ApPart part : parts) {
+                    if (part.getPartType().getRepeatable()) {
+                        if (part.getParentPart() != null) {
+                            copyPart(part, replacedBy, mapParent);
+                        }
+                    } else {
+                        ApPart partTo = partService.findFirstPartByCode(part.getPartType().getCode(), partsTo);
+                        if (partTo == null) {
+                            copyPart(part, replacedBy, null);
+                        } else {
+                            copyItems(part, partTo);
+                        }
+                    }
+                }
+            }
         }
         checkDeletion(accessPoint);
         ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
@@ -2050,6 +2081,61 @@ public class AccessPointService {
         if (itemsWithBindingItem > 0) {
             logger.error("Existují {} vymazané Items s nevymazanými BindingItem", itemsWithBindingItem);
             throw new IllegalStateException("There are deleted Items(s) with non-deleted BindingItem(s)");
+        }
+    }
+
+    /**
+     * Vytvoření kopie ApPart která patří k danému ApAccessPoint
+     * 
+     * @param part zdroj ke kopírování
+     * @param accessPoint
+     * @param mapParent
+     * @return ApPart
+     */
+    private ApPart copyPart(ApPart part, ApAccessPoint accessPoint, Map<Integer, ApPart> mapParent) {
+        ApPart newPart = new ApPart();
+        newPart.setAccessPoint(accessPoint);
+        newPart.setCreateChange(part.getCreateChange());
+        newPart.setKeyValue(part.getKeyValue());
+        if (mapParent != null) {
+            newPart.setParentPart(mapParent.get(part.getPartId()));
+        }
+        newPart.setPartType(part.getPartType());
+        newPart.setState(part.getState());
+        copyItems(part, newPart);
+        return partRepository.save(newPart);
+    }
+
+    /**
+     * Vytvoření kopie všech Item která patří k danému ApPart
+     * 
+     * @param fromPart
+     * @param toPart
+     */
+    private void copyItems(ApPart partFrom, ApPart partTo) {
+        List<ApItem> items = itemRepository.findValidItemsByPart(partFrom);
+
+        int position = 0;
+        for (ApItem item : items) {
+            if (item.getPosition() > position) {
+                position = item.getPosition();
+            }
+        }
+
+        for (ApItem item : items) {
+            ApItem newItem = new ApItem();
+            newItem.setCreateChange(item.getCreateChange());
+
+            ArrData newData = ArrData.makeCopyWithoutId(item.getData());
+            newItem.setData(newData);
+
+            newItem.setItemSpec(item.getItemSpec());
+            newItem.setItemType(item.getItemType());
+            newItem.setObjectId(item.getObjectId());
+            newItem.setPosition(++position);
+
+            newItem.setPart(partTo);
+            itemRepository.save(newItem);
         }
     }
 }
