@@ -312,6 +312,15 @@ public class PartService {
         return partRepository.findNewerValidPartsByAccessPoint(accessPoint, changeId);
     }
 
+    public ApPart findFirstPartByCode(String code, List<ApPart> parts) {
+        for (ApPart part : parts) {
+            if (part.getPartType().getCode().equals(code)) {
+                return part;
+            }
+        }
+        return null;
+    }
+
     /**
      * Update part key value
      * 

@@ -26,10 +26,15 @@ public class AccessPointController implements AccesspointsApi {
         ApAccessPoint accessPoint = accessPointService.getAccessPointByIdOrUuid(id);
         ApState apState = accessPointService.getStateInternal(accessPoint);
         ApAccessPoint replacedBy = null;
+        boolean copyAll = false;
         if (deleteAccessPointDetail != null && deleteAccessPointDetail.getReplacedBy() != null) {
-            replacedBy = accessPointService.getAccessPointByIdOrUuid(deleteAccessPointDetail.getReplacedBy());
+            if (deleteAccessPointDetail.getReplacedBy() != null) {
+                replacedBy = accessPointService.getAccessPointByIdOrUuid(deleteAccessPointDetail.getReplacedBy());
+            }
+            copyAll = deleteAccessPointDetail.getReplaceType() != null 
+                    && deleteAccessPointDetail.getReplaceType().equals("COPY_ALL");
         }
-        accessPointService.deleteAccessPoint(apState, replacedBy);
+        accessPointService.deleteAccessPoint(apState, replacedBy, copyAll);
         return ResponseEntity.ok().build();
     }
 
