@@ -421,6 +421,12 @@ components:
         replacedBy:
           description: Id entity, kterou je odstraňovaná nahrazena
           type: string
+        replaceType:
+          description: Způsob provedení náhrady
+          type: string
+          enum:
+            - SIMPLE
+            - COPY_ALL
     AbstractFilter:
       title: Abstract filter
       description: Used as a parent for all other filters
