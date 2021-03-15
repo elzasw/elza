@@ -1936,7 +1936,7 @@ when $activeLevel: ActiveLevel( $items: descItems )
     $itemType: RulItemTypeExt( code in (
         "ZP2015_ENTITY_ROLE"
        ) )    
-    $itemSpec: RulItemSpecExt( code in ("ZP2015_ENTITY_ROLE_71")
+    $itemSpec: RulItemSpecExt( code in ("ZP2015_ENTITY_ROLE_82")
      	) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
