@@ -43,7 +43,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         ApAccessPoint ap2 = apRepository.findApAccessPointByUuid("c4b13fa0-89a2-44a2-954f-e281934c3dcf");
         assertNotNull(ap2);
-        parts = partService.findPartsByAccessPoint(ap1);
+        parts = partService.findPartsByAccessPoint(ap2);
         assertTrue(parts.size() == 3);
 
         DeleteAccessPointDetail deleteAPDetail = new DeleteAccessPointDetail();
@@ -82,7 +82,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         accesspointsApi.deleteAccessPoint(ap1.getAccessPointId().toString(), deleteAPDetail);
 
         parts = partService.findPartsByAccessPoint(ap1);
-        assertTrue(parts.size() == 6);
+        assertTrue(parts.size() == 0);
 
         parts = partService.findPartsByAccessPoint(ap2);
         assertTrue(parts.size() == 6);
