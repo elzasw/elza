@@ -387,31 +387,38 @@ public class AccessPointService {
 
             // kopírování všechny Part z accessPoint->replacedBy
             if (copyAll) {
-                List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
+                List<ApPart> partsFrom = partService.findPartsByAccessPoint(accessPoint);
                 List<ApPart> partsTo = partService.findPartsByAccessPoint(replacedBy);
                 Map<Integer, ApPart> mapParent = new HashMap<>();
 
-                // kopírování Part rodiče
-                for (ApPart part : parts) {
-                    if (part.getPartType().getRepeatable() && part.getParentPart() == null) {
-                        ApPart newPart = copyPart(part, replacedBy, null);
-                        mapParent.put(part.getPartId(), newPart);
+                // kopírování Part bez rodičů
+                for (ApPart part : partsFrom) {
+                    if (part.getParentPart() == null) {
+                        if (part.getPartType().getRepeatable()) {
+                          ApPart newPart = copyPart(part, replacedBy, null);
+                          mapParent.put(part.getPartId(), newPart);
+                        } else {
+                            ApPart partTo = partService.findFirstPartByCode(part.getPartType().getCode(), partsTo);
+                            if (partTo == null) {
+                                copyPart(part, replacedBy, null);
+                            } else {
+                                copyItems(part, partTo);
+                            }
+                        }
                     }
                 }
 
-                // kopírování všeho ostatního
-                for (ApPart part : parts) {
-                    if (part.getPartType().getRepeatable()) {
-                        if (part.getParentPart() != null) {
-                            copyPart(part, replacedBy, mapParent);
-                        }
-                    } else {
-                        ApPart partTo = partService.findFirstPartByCode(part.getPartType().getCode(), partsTo);
-                        if (partTo == null) {
-                            copyPart(part, replacedBy, null);
+                // kopírování Part s rodiči
+                for (ApPart part : partsFrom) {
+                    if (part.getParentPart() != null) {
+                        ApPart parentTo;
+                        if (part.getPartType().getRepeatable()) {
+                            parentTo = mapParent.get(part.getPartId());
                         } else {
-                            copyItems(part, partTo);
+                            parentTo = partService.findFirstPartByCode(part.getParentPart().getPartType().getCode(), partsTo);
                         }
+                        Validate.notNull(parentTo, "Rodičovský Part musí existovat");
+                        copyPart(part, replacedBy, parentTo);
                     }
                 }
             }
@@ -2092,14 +2099,12 @@ public class AccessPointService {
      * @param mapParent
      * @return ApPart
      */
-    private ApPart copyPart(ApPart part, ApAccessPoint accessPoint, Map<Integer, ApPart> mapParent) {
+    private ApPart copyPart(ApPart part, ApAccessPoint accessPoint, ApPart parent) {
         ApPart newPart = new ApPart();
         newPart.setAccessPoint(accessPoint);
         newPart.setCreateChange(part.getCreateChange());
         newPart.setKeyValue(part.getKeyValue());
-        if (mapParent != null) {
-            newPart.setParentPart(mapParent.get(part.getPartId()));
-        }
+        newPart.setParentPart(parent);
         newPart.setPartType(part.getPartType());
         newPart.setState(part.getState());
         copyItems(part, newPart);
