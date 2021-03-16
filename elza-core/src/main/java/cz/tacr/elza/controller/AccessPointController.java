@@ -32,7 +32,7 @@ public class AccessPointController implements AccesspointsApi {
                 replacedBy = accessPointService.getAccessPointByIdOrUuid(deleteAccessPointDetail.getReplacedBy());
             }
             copyAll = deleteAccessPointDetail.getReplaceType() != null 
-                    && deleteAccessPointDetail.getReplaceType().equals("COPY_ALL");
+                    && deleteAccessPointDetail.getReplaceType() == DeleteAccessPointDetail.ReplaceTypeEnum.COPY_ALL;
         }
         accessPointService.deleteAccessPoint(apState, replacedBy, copyAll);
         return ResponseEntity.ok().build();
