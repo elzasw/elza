@@ -81,6 +81,7 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApScopeRelation;
@@ -119,10 +120,12 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApKeyValueRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -257,13 +260,19 @@ public class AccessPointService {
     private RuleService ruleService;
     
     @Autowired
-    InstitutionRepository institutionRepository;
+    private InstitutionRepository institutionRepository;
+    
+    @Autowired
+    private DataRepository dataRepository;
 
     @Autowired
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
 
     @Autowired
     private AccessPointCacheService accessPointCacheService;
+    
+    @Autowired
+    private ApKeyValueRepository keyValueRepository;
 
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
@@ -379,6 +388,8 @@ public class AccessPointService {
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
+        ApChange change = apDataService.createChange(ApChange.Type.AP_REPLACE);
+
         if (replacedBy != null) {
             ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
             apDataService.validationNotDeleted(replacementState);
@@ -395,12 +406,12 @@ public class AccessPointService {
                 for (ApPart part : partsFrom) {
                     if (part.getParentPart() == null) {
                         if (part.getPartType().getRepeatable()) {
-                          ApPart newPart = copyPart(part, replacedBy, null);
+                          ApPart newPart = copyPart(part, replacedBy, null, change);
                           mapParent.put(part.getPartId(), newPart);
                         } else {
                             ApPart partTo = partService.findFirstPartByCode(part.getPartType().getCode(), partsTo);
                             if (partTo == null) {
-                                copyPart(part, replacedBy, null);
+                                copyPart(part, replacedBy, null, change);
                             } else {
                                 copyItems(part, partTo);
                             }
@@ -418,13 +429,12 @@ public class AccessPointService {
                             parentTo = partService.findFirstPartByCode(part.getParentPart().getPartType().getCode(), partsTo);
                         }
                         Validate.notNull(parentTo, "Rodičovský Part musí existovat");
-                        copyPart(part, replacedBy, parentTo);
+                        copyPart(part, replacedBy, parentTo, change);
                     }
                 }
             }
         }
         checkDeletion(accessPoint);
-        ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
         partService.deleteParts(accessPoint, change);
         apState.setDeleteChange(change);
         apStateRepository.save(apState);
@@ -2097,18 +2107,20 @@ public class AccessPointService {
      * @param part zdroj ke kopírování
      * @param accessPoint
      * @param mapParent
+     * @param change
      * @return ApPart
      */
-    private ApPart copyPart(ApPart part, ApAccessPoint accessPoint, ApPart parent) {
+    private ApPart copyPart(ApPart part, ApAccessPoint accessPoint, ApPart parent, ApChange change) {
         ApPart newPart = new ApPart();
         newPart.setAccessPoint(accessPoint);
-        newPart.setCreateChange(part.getCreateChange());
-        newPart.setKeyValue(part.getKeyValue());
+        newPart.setCreateChange(change);
+        newPart.setKeyValue(null);
         newPart.setParentPart(parent);
         newPart.setPartType(part.getPartType());
         newPart.setState(part.getState());
+        newPart = partRepository.save(newPart);
         copyItems(part, newPart);
-        return partRepository.save(newPart);
+        return newPart;
     }
 
     /**
@@ -2138,8 +2150,9 @@ public class AccessPointService {
             newItem.setItemType(item.getItemType());
             newItem.setObjectId(item.getObjectId());
             newItem.setPosition(++position);
-
             newItem.setPart(partTo);
+
+            dataRepository.save(newData);
             itemRepository.save(newItem);
         }
     }
