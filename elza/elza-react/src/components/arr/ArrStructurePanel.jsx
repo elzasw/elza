@@ -637,13 +637,13 @@ class ArrStructurePanel extends AbstractReactComponent {
                     </div>
                 )}
                 {contextMenu.isOpen && this.renderContextMenu()}
-                {count > maxSize && (
+                {(count > maxSize || filter.from !== 0) && (
                     <ListPager
                         key="pager"
                         prev={this.handleFilterPrev}
                         next={this.handleFilterNext}
                         from={filter.from}
-                        maxSize={maxSize}
+                        pageSize={maxSize}
                         totalCount={count}
                     />
                 )}

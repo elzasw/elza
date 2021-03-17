@@ -421,12 +421,15 @@ class RegistryList extends AbstractReactComponent {
                         {i18n('party.list.itemsVisibleCountFrom', registryList.filteredRows.length, registryList.count)}
                     </span>
                 )}
-                {registryList.count > maxSize && (
+                {(
+                    registryList.count > maxSize || 
+                    this.props.registryList.filter.from !== 0
+                ) && (
                     <ListPager
                         prev={this.handleFilterPrev}
                         next={this.handleFilterNext}
                         from={this.props.registryList.filter.from}
-                        maxSize={maxSize}
+                        pageSize={maxSize}
                         totalCount={this.props.registryList.count}
                     />
                 )}
