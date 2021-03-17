@@ -13,21 +13,18 @@ global DataValidationResults results;
 // Kontrola, zda každý list má ukládací jednotku
 rule "List musí mít ukládací jednotku směrem ke kořeni"
 when
-	$activeLevel: ActiveLevel( !hasChildren )
-	not ( $level: Level( $items: descItems ) and
-		DescItem(type in ("ZP2015_STORAGE_ID", "ZP2015_AIP_ID", "ZP2015_ITEM_LINK")) from $items 
-		)
+	$activeLevel: ActiveLevel( !hasChildren && $items: descItems )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $items
+	not ( DescItem(type in ("ZP2015_STORAGE_ID", "ZP2015_AIP_ID", "ZP2015_ITEM_LINK")) from $items )
 then
 	results.createMissing("ZP2015_STORAGE_ID", "Chybí ukládací jednotka", "ZP2015_POL_STORAGE_ID");
 end
 
 rule "List musí mít strojovou dataci směrem ke kořeni"
 when
-	$activeLevel: ActiveLevel( !hasChildren )
-	not ( $level: Level( $items: descItems ) and
-		DescItem(type in
-		  ( "ZP2015_UNIT_DATE" ) )
-		  from $items )
+	$activeLevel: ActiveLevel( !hasChildren && $items: descItems )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $items
+	not ( DescItem(type in ( "ZP2015_UNIT_DATE" ) ) from $items )
 then
 	results.createMissing("ZP2015_UNIT_DATE", "Není uvedena datace", "ZP2015_POL_BASIC");
 end
