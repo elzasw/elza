@@ -413,7 +413,7 @@ public class AccessPointService {
                             if (partTo == null) {
                                 copyPart(part, replacedBy, null, change);
                             } else {
-                                copyItems(part, partTo);
+                                copyItems(part, partTo, change);
                             }
                         }
                     }
@@ -2119,7 +2119,7 @@ public class AccessPointService {
         newPart.setPartType(part.getPartType());
         newPart.setState(part.getState());
         newPart = partRepository.save(newPart);
-        copyItems(part, newPart);
+        copyItems(part, newPart, change);
         return newPart;
     }
 
@@ -2129,7 +2129,7 @@ public class AccessPointService {
      * @param fromPart
      * @param toPart
      */
-    private void copyItems(ApPart partFrom, ApPart partTo) {
+    private void copyItems(ApPart partFrom, ApPart partTo, ApChange change) {
         List<ApItem> items = itemRepository.findValidItemsByPart(partFrom);
 
         int position = 0;
@@ -2141,7 +2141,7 @@ public class AccessPointService {
 
         for (ApItem item : items) {
             ApItem newItem = new ApItem();
-            newItem.setCreateChange(item.getCreateChange());
+            newItem.setCreateChange(change);
 
             ArrData newData = ArrData.makeCopyWithoutId(item.getData());
             newItem.setData(newData);
