@@ -61,7 +61,7 @@ export const FundList:FC<{
                 onSelect={handleSelect}
             />
         )}
-        {funds.count > pageSize && (
+        {(funds.count > pageSize || from !== 0) && (
             <ListPager
                 prev={handleChangePage}
                 next={handleChangePage}

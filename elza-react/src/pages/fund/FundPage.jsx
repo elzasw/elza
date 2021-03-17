@@ -530,12 +530,15 @@ class FundPage extends AbstractReactComponent {
                     onFocus={this.handleSelect}
                     onSelect={this.handleSelect}
                 />
-                {fundRegion.fundsCount > maxSize && (
+                {(
+                    fundRegion.fundsCount > maxSize ||
+                    fundRegion.filter.from !== 0
+                ) && (
                     <ListPager
                         prev={this.handleFilterPrev}
                         next={this.handleFilterNext}
                         from={fundRegion.filter.from}
-                        maxSize={maxSize}
+                        pageSize={maxSize}
                         totalCount={fundRegion.fundsCount}
                     />
                 )}
