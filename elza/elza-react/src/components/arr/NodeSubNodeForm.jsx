@@ -779,7 +779,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
         newItem,
     ) => {
         const itemType = this.findItemType(itemTypeId);
-        if (itemType.rep) {
+        if (itemType && itemType.rep) {
             // je opakovatelný
             const existsItems = actualFormData[itemTypeId];
             if (data.replaceValues) {

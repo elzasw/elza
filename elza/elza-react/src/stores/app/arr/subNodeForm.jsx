@@ -642,96 +642,85 @@ export default function subNodeForm(state = initialState, action = {}) {
             return newState;
 
         case types.FUND_SUB_NODE_FORM_TEMPLATE_USE: {
-            const groups = action.groups;
-            const template = action.template;
-            const addItemTypeIds = action.addItemTypeIds;
-            const formData = template.formData;
-            const replaceValues = template.replaceValues;
+            const {template:{formData, replaceValues}, groups} = action;
+            console.log("use template", action.template);
 
-            Object.keys(formData).forEach(itemTypeId => {
-                let existsItemType = false;
-                const items = formData[itemTypeId];
+            const {refTypesMap, infoTypesMap} = state;
+
+            const currentFormData = state.formData
+            let descItemGroups = [];
+            let descItemTypes = [];
+
+            currentFormData.descItemGroups.forEach((group)=>{
+                descItemGroups.push(group);
+                group.descItemTypes.forEach((type)=>{
+                    descItemTypes.push(type);
+                })
+            })
+
+            const updateDescItems = (itemType, newDescItems, replace = false) => {
+                let descItems = itemType.descItems ? [...itemType.descItems] : [];
+
+                // Replace values when 'replaceValues' is true, add values when none exist or itemType is repeatable. 
+                // Do nothing otherwise
+                if(replace){
+                    descItems = [...newDescItems];
+                } else if(descItems.length === 0 || itemType.rep){
+                    descItems.push(...newDescItems);
+                }
+
+               return { ...itemType, descItems };
+            }
+            
+            Object.keys(formData).forEach((itemTypeId) => {
+                itemTypeId = parseInt(itemTypeId);
+                const descItemTypeIndex = descItemTypes.findIndex((type)=>type.id === itemTypeId);
+                let itemType = descItemTypeIndex !== -1 ? descItemTypes[descItemTypeIndex] : infoTypesMap[itemTypeId];
+
+                const newDescItems = formData[itemTypeId].map((item)=>({
+                    ...createDescItem(itemType, refTypesMap[itemTypeId], true),
+                    ...item, 
+                }))
+
+                itemType = updateDescItems(itemType, newDescItems, replaceValues);
+
+                consolidateDescItems(itemType, infoTypesMap[itemTypeId], refTypesMap[itemTypeId], true);
+                
+                // if itemType exists, update values, if not, add it
+                if(descItemTypeIndex !== -1){
+                    descItemTypes[descItemTypeIndex] = itemType;
+                }else{
+                    descItemTypes.push(itemType);
+                }
 
                 const groupCode = groups.reverse[itemTypeId];
-                const group = groups[groupCode];
+                const descItemGroup = groups[groupCode];
 
-                const addItemType = state.infoTypesMap[itemTypeId];
-
-                // Dohledání skupiny, pokud existuje
-                const grpIndex = indexById(state.formData.descItemGroups, groupCode, 'code');
-
-                let itemsMerge = [];
-                let descItemGroup;
-                if (grpIndex !== null) {
-                    descItemGroup = state.formData.descItemGroups[grpIndex];
-
-                    const index = indexById(descItemGroup.descItemTypes, itemTypeId);
-
-                    if (index !== null) {
-                        existsItemType = true;
-                        const itemType = descItemGroup.descItemTypes[index];
-                        itemsMerge = itemType.descItems;
-                        if (itemType.rep) {
-                            items.forEach(item => {
-                                const {value, ...newItem} = item; // odebrání hodnoty
-                                itemsMerge.push(newItem);
-                                if (!value) {
-                                    if (!state.addItemTypeIds) {
-                                        state.addItemTypeIds = [];
-                                    }
-                                    state.addItemTypeIds.push(itemType.id);
-                                }
-                            });
-                        }
-                    }
-                } else {
-                    // skupina není, je nutné ji nejdříve přidat a následně seřadit skupiny podle pořadí
-                    descItemGroup = {code: group.code, name: group.name, descItemTypes: []};
-
-                    items.forEach(item => {
-                        const {value, ...newItem} = item; // odebrání hodnoty
-                        itemsMerge.push(newItem);
-                    });
-
-                    state.formData.descItemGroups.push(descItemGroup);
-
-                    // Seřazení
-                    state.formData.descItemGroups.sort(
-                        (a, b) => state.infoGroupsMap[a.code].position - state.infoGroupsMap[b.code].position,
-                    );
+                // if the group doesn't exist in the existing list, add it
+                if(descItemGroups.find((group)=>group.code === groupCode) === undefined){
+                    descItemGroups.push(descItemGroup);
                 }
+            })
 
-                // Přidání prvku do skupiny a seřazení prvků podle position
-                const itemType = {...addItemType, descItems: itemsMerge};
-                if (!existsItemType) {
-                    if (addItemTypeIds) {
-                        if (!state.addItemTypeIds) {
-                            state.addItemTypeIds = [];
-                        }
-                        items.forEach(item => {
-                            // musím přidat tolikrát, kolikrát je to v šabloně
-                            const {value, ...newItem} = item;
-                            if (!value) {
-                                state.addItemTypeIds.push(itemType.id);
-                            }
-                        });
-                    }
-                    descItemGroup.descItemTypes.push(itemType);
-                }
-                // Musíme ponechat prázdnou hodnotu
-                const refType = state.refTypesMap[itemType.id];
-                const infoType = state.infoTypesMap[itemType.id];
+            // order types by viewOrder
+            descItemTypes = descItemTypes.sort((typeA, typeB) => 
+                refTypesMap[typeA.id].viewOrder - refTypesMap[typeB.id].viewOrder
+            )
 
-                // Upravení a opravení seznamu hodnot, případně přidání prázdných
-                consolidateDescItems(itemType, infoType, refType, true);
+            // order groups by code
+            descItemGroups = descItemGroups.sort((groupA, groupB)=> {
+                if(groupA.code < groupB.code){return -1}
+                if(groupA.code > groupB.code){return 1}
+                return 0;
+            })
 
-                descItemGroup.descItemTypes.sort((a, b) => {
-                    return state.refTypesMap[a.id].viewOrder - state.refTypesMap[b.id].viewOrder;
-                    //return a.viewOrder - b.viewOrder
-                });
-            });
+            // update groups with new types
+            descItemGroups = descItemGroups.map((group)=>({
+                ...group,
+                descItemTypes: descItemTypes.filter((type)=>groups.reverse[type.id] === group.code)
+            }))
 
-            state.formData = {...state.formData};
+            state.formData.descItemGroups = [...descItemGroups];
             checkFormData(state.formData);
             return {...state};
         }
