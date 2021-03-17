@@ -399,6 +399,9 @@ public class AccessPointService {
             // kopírování všechny Part z accessPoint->replacedBy
             if (copyAll) {
                 copyParts(accessPoint, replacedBy, change);
+                // vygenerování indexů a aktualizace záznamů v cache
+                generateSync(replacedBy.getAccessPointId());        
+                accessPointCacheService.createApCachedAccessPoint(replacedBy.getAccessPointId());
             }
         }
         checkDeletion(accessPoint);
@@ -2134,15 +2137,18 @@ public class AccessPointService {
         partTo.setPartType(part.getPartType());
         partTo.setState(part.getState());
         partTo = partRepository.save(partTo);
+
         copyItems(items, partTo, change);
+
         return partTo;
     }
 
     /**
      * Vytvoření kopie všech Item která patří k danému ApPart
      * 
-     * @param itemsFrom
+     * @param itemsFrom prvky původní part
      * @param toPart
+     * @param change
      */
     private void copyItems(List<ApItem> itemsFrom, ApPart partTo, ApChange change) {
         int position = 0;
