@@ -92,7 +92,6 @@
 		"ZP2015_ENTITY_ROLE_18",
 		"ZP2015_ENTITY_ROLE_19",
 		"ZP2015_ENTITY_ROLE_20",
-		"ZP2015_ENTITY_ROLE_21",
 		"ZP2015_ENTITY_ROLE_22",
 		"ZP2015_ENTITY_ROLE_23",
 		"ZP2015_ENTITY_ROLE_24",
@@ -114,7 +113,10 @@
 		"ZP2015_ENTITY_ROLE_40",
 		"ZP2015_ENTITY_ROLE_41",
 		"ZP2015_ENTITY_ROLE_42",
-		"ZP2015_ENTITY_ROLE_48"		
+		"ZP2015_ENTITY_ROLE_48",
+		"ZP2015_ENTITY_ROLE_66",
+		"ZP2015_ENTITY_ROLE_67",
+		"ZP2015_ENTITY_ROLE_68"
 	)
 ).stream() ),
 	   $F{node}.getItemsFromParent(Arrays.asList("ZP2015_ORIGINATOR") ).stream()
@@ -133,7 +135,7 @@
 				<textElement>
 					<font size="14" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($V{titleList}.size()>0)?((cz.tacr.elza.print.item.Item)$V{titleList}.get(0)).getSerializedValue():""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($V{titleList}.size()>0)?( (cz.tacr.elza.print.item.Item)( (java.util.List) $V{titleList}.get(0) ).get(0) ).getSerializedValue():""]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -268,7 +270,7 @@
 				<textElement>
 					<font size="12" isBold="true" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{parentNameFormatter}.format($F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_TITLE")))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{parentNameFormatter}.format( $F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_TITLE")).get(0) )]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
