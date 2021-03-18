@@ -63,13 +63,12 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
     @Autowired
     ItemRepository itemRepository;
-    
+
     private ArrFundVersionVO fundVersion;
 
     private TreeData treeData;
 
     @Test
-    @Transactional
     public void updateDescItemsTest() throws InterruptedException, ExecutionException, IllegalAccessException, ApiException {
         MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
         StompSession session = connectWebSocketStompClient(sessionHandler);
@@ -89,35 +88,44 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         assertTrue(items.size() == 1); // SRD_LEVEL_TYPE // ENUM
 
         // Příprava objektu s daty pro odeslání
-        String destination = UPDATE_DESK_ITEMS_MSG_MAPPING
-                .replace("{fundVersionId}", fundVersion.getId().toString())
-                .replace("{nodeId}", treeData.getNodes().iterator().next().getId().toString())
-                .replace("{nodeVersion}", treeData.getNodes().iterator().next().getVersion().toString());
-
-        ArrItemIntVO item = new ArrItemIntVO();
-        item.setValue(1);
-        item.setItemTypeId(findItemTypeId("SRD_NAD"));
+        Integer fundVersionId = fundVersion.getId();
+        Integer nodeId = treeData.getNodes().iterator().next().getId();
+        Integer nodeVersion = treeData.getNodes().iterator().next().getVersion();
 
         // vytvoření nové ArrItem
-        ArrUpdateItemVO updateItem = new ArrUpdateItemVO();
-        updateItem.setUpdateOp(UpdateOp.CREATE);
-        updateItem.setItem(item);
-        ArrUpdateItemVO[] updateItems = { updateItem };
+        ArrItemIntVO newItem = new ArrItemIntVO();
+        newItem.setItemTypeId(findItemTypeId("SRD_NAD"));
+        newItem.setValue(1);
+        ArrUpdateItemVO[] createItems = { new ArrUpdateItemVO(UpdateOp.CREATE, newItem) };
 
-        Receiptable receiptCreate = session.send(destination, updateItems);
+        Receiptable receiptCreate = session
+                .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, nodeVersion), createItems);
         waitingForReceipt(receiptCreate);
 
-        items = itemRepository.findAll();
+        items = itemRepository.findByDeleteChangeIsNull();
         assertTrue(items.size() == 2);
 
-        // změna ArrItem
-        //item = ArrItemIntVO.newInstance(items.get(0));
-        //updateItem.setUpdateOp(UpdateOp.UPDATE);
+        // změna existujícího ArrItem
+        ArrItemIntVO updateItem = new ArrItemIntVO(items.get(1), 2);
+        ArrUpdateItemVO[] updateItems = { new ArrUpdateItemVO(UpdateOp.UPDATE, updateItem) };
 
-        //Receiptable receiptDelete = session.send(destination, updateItems);
-        //waitingForReceipt(receiptDelete);
+        Receiptable receiptUpdate = session
+                .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), updateItems);
+        waitingForReceipt(receiptUpdate);
 
-        //items = itemRepository.findAll();
+        items = itemRepository.findByDeleteChangeIsNull();
+        assertTrue(items.size() == 2);
+
+        // mazání existujícího ArrItem
+        ArrItemIntVO deleleItem = new ArrItemIntVO(items.get(1), null);
+        ArrUpdateItemVO[] deleteItems = { new ArrUpdateItemVO(UpdateOp.DELETE, deleleItem) };
+
+        Receiptable receiptDelete = session
+                .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), deleteItems);
+        waitingForReceipt(receiptDelete);
+
+        items = itemRepository.findByDeleteChangeIsNull();
+        assertTrue(items.size() == 1);
 
         session.disconnect();
     }
@@ -169,6 +177,13 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
             }
         }
         return null;
+    }
+
+    private String createDestination(String pattern, Integer fundVersionId, Integer nodeId, Integer nodeVersion) {
+        return pattern
+                .replace("{fundVersionId}", fundVersionId.toString())
+                .replace("{nodeId}", nodeId.toString())
+                .replace("{nodeVersion}", nodeVersion.toString());
     }
 
     private void waitingForReceipt(Receiptable receipt) throws InterruptedException {
