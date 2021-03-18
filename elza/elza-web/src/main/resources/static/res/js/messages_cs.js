@@ -700,6 +700,7 @@ var messages = {
     "arr.fund.addNode.conflict.rename": "Přejmenovat",
     "arr.fund.addNode.conflict.structure": "Obaly",
     "arr.fund.addNode.conflict.scopes": "Cílový AS nemá povolené tyto oblasti entit: {0}",
+    "arr.fund.addNode.count": "Počet",
     "arr.fund.addNode.ignoreRootNodes": "Ignorovat kořenové uzly",
     "arr.fund.addNode.direction": "Umístění",
     "arr.fund.addNode.before": "Před",
