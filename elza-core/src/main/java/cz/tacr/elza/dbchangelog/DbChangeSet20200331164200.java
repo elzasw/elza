@@ -795,7 +795,9 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         ps.execute();
         try (ResultSet rs = ps.getResultSet()) {
             while (rs.next()) {
-                if (convertRelEventMap.get(rs.getString("relation_type_code")).equals(StructuredTypeCode.PT_REL.code)) {
+                String relTypeCode = rs.getString("relation_type_code");
+                String convertToRel = convertRelEventMap.get(relTypeCode);
+                if (convertToRel.equals(StructuredTypeCode.PT_REL.code)) {
                     createPTRelParts(accessPointId, rs);
                 } else {
                     createOtherRelParts(accessPointId, rs);
@@ -872,26 +874,33 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
         String itemSpecCode = null;
         ItemTypeCode fromUnitdateTypeCode = null;
         ItemTypeCode toUnitdateTypeCode = null;
-        if (rs.getString("relation_type_code").equals("CREATION")) {
+
+        String relationTypeCode = rs.getString("relation_type_code");
+        if (relationTypeCode.equals("CREATION")) {
             itemSpecCode = convertPersonPartyTypeItemSpec.get(rs.getString("party_type_code"));
-        } else if (rs.getString("relation_type_code").equals("EXTINCTION")) {
+        } else if (relationTypeCode.equals("EXTINCTION")) {
             itemSpecCode = convertExtinctionPartyTypeItemSpec.get(rs.getString("party_type_code"));
         } else {
-            itemSpecCode = convertItemSpecMap.get(rs.getString("relation_type_code"));
+            itemSpecCode = convertItemSpecMap.get(relationTypeCode);
         }
 
-        Integer partId = createApPart(accessPointId, rulPartTypeMap.get(convertRelEventMap.get(rs.getString("relation_type_code"))), null);
+        String partTypeCode = convertRelEventMap.get(relationTypeCode);
+        Integer partId = createApPart(accessPointId, rulPartTypeMap.get(partTypeCode), null);
 
-        if (convertRelEventMap.get(rs.getString("relation_type_code")).equals(RulPartTypeCode.PT_CRE.code)) {
+        if (partTypeCode.equals(RulPartTypeCode.PT_CRE.code)) {
             fromUnitdateTypeCode = ItemTypeCode.CRE_DATE;
             itemTypeCode = ItemTypeCode.CRE_CLASS;
-        } else if (convertRelEventMap.get(rs.getString("relation_type_code")).equals(RulPartTypeCode.PT_EVENT.code)) {
+        } else if (partTypeCode.equals(RulPartTypeCode.PT_EVENT.code)) {
             fromUnitdateTypeCode = ItemTypeCode.EV_BEGIN;
             toUnitdateTypeCode = ItemTypeCode.EV_END;
             itemTypeCode = ItemTypeCode.EV_TYPE;
-        } else if (convertRelEventMap.get(rs.getString("relation_type_code")).equals(RulPartTypeCode.PT_EXT.code)) {
+        } else if (partTypeCode.equals(RulPartTypeCode.PT_EXT.code)) {
             toUnitdateTypeCode = ItemTypeCode.EXT_DATE;
             itemTypeCode = ItemTypeCode.EXT_CLASS;
+        } else {
+            throw new IllegalArgumentException("Nerozpoznaný druh části, accessPointId: "
+                    + accessPointId
+                    + ", partTypeCode: " + partTypeCode);
         }
 
         //třída
@@ -899,16 +908,38 @@ public class DbChangeSet20200331164200 extends BaseTaskChange {
 
         //zpracování from_unitdate_id
         int fromUnitdateId = rs.getInt("from_unitdate_id");
+        int toUnitdateId = rs.getInt("to_unitdate_id");
+
         String noteUnitDateFrom = null;
-        if (fromUnitdateId > 0 && fromUnitdateTypeCode != null) {
-            noteUnitDateFrom = storeUnitdateValue(partId, fromUnitdateId, fromUnitdateTypeCode);
+        if (fromUnitdateId > 0) {
+            if (fromUnitdateTypeCode != null) {
+                noteUnitDateFrom = storeUnitdateValue(partId, fromUnitdateId, fromUnitdateTypeCode);
+            } else {
+                // Elza uklada i koncovou dataci chybne do pole from
+                if (toUnitdateId == 0 && toUnitdateTypeCode != null) {
+                    toUnitdateId = fromUnitdateId;
+                    fromUnitdateId = 0;
+                } else {
+                    throw new IllegalArgumentException(
+                            "Nalezena datace bez definovaného způsobu převodu, accessPointId: "
+                        + accessPointId
+                        + ", partTypeCode: " + partTypeCode
+                        + ", fromUnitdateId: " + fromUnitdateId);
+                }
+            }
         }
 
-        //zpracování to_unitdate_id
-        int validToUnitdateId = rs.getInt("to_unitdate_id");
+        //zpracování to_unitdate_id        
         String noteUnitDateTo = null;
-        if (validToUnitdateId > 0 && toUnitdateTypeCode != null) {
-            noteUnitDateTo = storeUnitdateValue(partId, validToUnitdateId, toUnitdateTypeCode);
+        if (toUnitdateId > 0) {
+            if (toUnitdateTypeCode != null) {
+                noteUnitDateTo = storeUnitdateValue(partId, toUnitdateId, toUnitdateTypeCode);
+            } else {
+                throw new IllegalArgumentException("Nalezena datace bez definovaného způsobu převodu, accessPointId: "
+                        + accessPointId
+                        + ", partTypeCode: " + partTypeCode
+                        + ", toUnitdateId: " + toUnitdateId);
+            }
         }
 
         //zpracování note
