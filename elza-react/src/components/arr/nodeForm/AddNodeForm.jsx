@@ -37,6 +37,7 @@ class AddNodeForm extends AbstractReactComponent {
 
     state = {
         // initial states
+        count: 1,
         scenarios: undefined,
         template: '',
         loading: false,
@@ -190,6 +191,12 @@ class AddNodeForm extends AbstractReactComponent {
         this.setState({template: e.target.value});
     };
 
+    handleCountChange = (e) => {
+        if(Number.isInteger(parseInt(e.target.value))){
+            this.setState({count: e.target.value})
+        }
+    };
+
     /**
      * Vrátí prvky popisu ke zkopírování na základě proměnné props.nodeSettings
      */
@@ -246,7 +253,7 @@ class AddNodeForm extends AbstractReactComponent {
             initDirection,
             globalFundTree: {fundTreeCopy},
         } = this.props;
-        const {selectedDirection, selectedScenario, template} = this.state;
+        const {selectedDirection, selectedScenario, template, count} = this.state;
 
         // nastavi odpovidajiciho rodice a direction pro dotaz
         const dataServ = this.formatDataForServer(selectedDirection, node, parentNode);
@@ -259,6 +266,7 @@ class AddNodeForm extends AbstractReactComponent {
                 direction: dataServ.direction,
                 descItemCopyTypes: this.getDescItemTypeCopyIds(),
                 scenarioName: selectedScenario === TEMPLATE_SCENARIOS ? null : selectedScenario,
+                count,
             };
 
             const emptyItemTypeIds = []; // seznam identifikátorů prázdných typů atributu, které se mají po založení přidat na formulář (použití pro šablony)
@@ -653,6 +661,14 @@ class AddNodeForm extends AbstractReactComponent {
                             )}
                         </div>
                     )}
+                    <FormInput
+                        ref="count"
+                        disabled={loading || submitting}
+                        label={i18n('arr.fund.addNode.count')}
+                        type="number"
+                        value={this.state.count}
+                        onChange={this.handleCountChange}
+                    />
                 </FormGroup>
             </div>
         );

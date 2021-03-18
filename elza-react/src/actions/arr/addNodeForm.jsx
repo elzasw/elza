@@ -70,6 +70,7 @@ export function addNodeForm(
                             data.descItemCopyTypes,
                             data.scenarioName,
                             data.createItems,
+                            data.count,
                             afterCreateCallback,
                             emptyItemTypeIds,
                         ),
