@@ -1163,6 +1163,13 @@
       </sql>
     </changeSet>
     
+    <changeSet id="20210318032824" author="ppyt">
+        <dropIndex tableName="arr_structured_object" indexName="arr_structured_object_uuid_unique_idx"/>
+        <addUniqueConstraint tableName="arr_structured_object"
+                    constraintName="arr_structured_object_uuid_unique" 
+        			columnNames="uuid, fund_id, structured_type_id, delete_change_id" />  
+    </changeSet>    
+    
     <changeSet id="20210228150900" author="fantis">
         <createTable tableName="ap_cached_access_point">
             <column name="cached_access_point_id" type="int">
