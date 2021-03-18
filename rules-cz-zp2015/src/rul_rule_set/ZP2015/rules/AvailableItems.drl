@@ -404,7 +404,9 @@ when $activeLevel: ActiveLevel( )
 		// geografický objekt zachycený jednotkami popisu
 		"ZP2015_ENTITY_ROLE_71",
 		// obecný pojem vztahující se k jednotce popisu
-		"ZP2015_ENTITY_ROLE_72"        
+		"ZP2015_ENTITY_ROLE_72",
+		// sekundární klasifikace
+		"ZP2015_ENTITY_ROLE_83",        
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
@@ -1317,7 +1319,9 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
 		// geografický objekt zachycený jednotkami popisu
 		"ZP2015_ENTITY_ROLE_71",
 		// obecný pojem vztahující se k jednotce popisu
-		"ZP2015_ENTITY_ROLE_72"
+		"ZP2015_ENTITY_ROLE_72",
+		// sekundární klasifikace
+		"ZP2015_ENTITY_ROLE_83"		
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
