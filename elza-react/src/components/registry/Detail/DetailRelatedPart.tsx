@@ -146,7 +146,13 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
             glyph={'fa-pencil'}
             onClick={() => onEdit && onEdit(part)}
         />
-
+        {editMode && (
+            <Icon
+                className={'mr-2 cursor-pointer'}
+                glyph={'fa-trash'}
+                onClick={() => onDelete && onDelete(part)}
+            />
+        )}
         {showValidationError()}
       </Col>
     </Row>
