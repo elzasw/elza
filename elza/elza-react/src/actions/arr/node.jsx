@@ -346,6 +346,7 @@ export function addNode(
     descItemCopyTypes = null,
     scenarioName = null,
     createItems = null,
+    count,
     afterCreateCallback = null,
     emptyItemTypeIds = null,
 ) {
@@ -367,7 +368,7 @@ export function addNode(
         // Reálné provedení operace
         return savingApiWrapper(
             dispatch,
-            WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems),
+            WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems, count),
         ).then(json => {
             dispatch(fundNodeChangeAdd(versionId, json.nodes, indexNode, json.parentNode, direction));
             afterCreateCallback && afterCreateCallback(versionId, json.nodes, json.parentNode);
