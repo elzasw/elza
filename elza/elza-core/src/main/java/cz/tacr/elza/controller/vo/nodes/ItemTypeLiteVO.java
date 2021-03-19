@@ -62,6 +62,10 @@ public class ItemTypeLiteVO {
      */
     private Integer width;
 
+    public ItemTypeLiteVO() {
+
+    }
+    
     public Integer getId() {
         return id;
     }
