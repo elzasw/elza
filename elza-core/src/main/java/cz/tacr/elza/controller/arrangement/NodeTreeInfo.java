@@ -5,10 +5,16 @@ package cz.tacr.elza.controller.arrangement;
  * 
  */
 public class NodeTreeInfo {
-	protected final String icon;
-	protected final String name;
 
-	NodeTreeInfo(String icon, String name) {
+    protected String icon;
+
+    protected String name;
+
+	public NodeTreeInfo() {
+
+	}
+
+	public NodeTreeInfo(String icon, String name) {
 		this.icon = icon;
 		this.name = name;
 	}
