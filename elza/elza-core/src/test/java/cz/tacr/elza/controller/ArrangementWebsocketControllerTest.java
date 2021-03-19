@@ -4,21 +4,30 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.transaction.Transactional;
-
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.assertj.core.util.Arrays;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.task.TaskSchedulerBuilder;
 import org.springframework.http.HttpHeaders;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
+import org.springframework.messaging.converter.MessageConverter;
+import org.springframework.messaging.converter.SimpleMessageConverter;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
@@ -31,6 +40,12 @@ import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import cz.tacr.elza.controller.arrangement.UpdateItemResult;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.TreeData;
@@ -38,6 +53,7 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrUpdateItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.domain.ArrItem;
@@ -46,6 +62,7 @@ import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.websocket.WebSocketStompClientElza;
 
 public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
@@ -69,9 +86,13 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
     private TreeData treeData;
 
     @Test
-    public void updateDescItemsTest() throws InterruptedException, ExecutionException, IllegalAccessException, ApiException {
+    public void updateDescItemsTest() throws InterruptedException, ExecutionException, IllegalAccessException, ApiException, JsonParseException, JsonMappingException, IOException {
+        final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
+        ObjectMapper mapper = new ObjectMapper();
+        Message<byte[]> recepipt;
+
         MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
-        StompSession session = connectWebSocketStompClient(sessionHandler);
+        StompSession session = connectWebSocketStompClient(sessionHandler, receiptStore);
         session.setAutoReceipt(true);
 
         FieldUtils.writeField(StompCommand.RECEIPT, "body", true, true);
@@ -83,9 +104,6 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
         // Musí existovat pouze root node
         assertTrue(treeData.getNodes().size() == 1);
-
-        List<ArrItem> items = itemRepository.findAll();
-        assertTrue(items.size() == 1); // SRD_LEVEL_TYPE // ENUM
 
         // Příprava objektu s daty pro odeslání
         Integer fundVersionId = fundVersion.getId();
@@ -101,39 +119,52 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         Receiptable receiptCreate = session
                 .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, nodeVersion), createItems);
         waitingForReceipt(receiptCreate);
+        recepipt = receiptStore.get(receiptCreate.getReceiptId());
+        assertNotNull(recepipt);
 
-        items = itemRepository.findByDeleteChangeIsNull();
-        assertTrue(items.size() == 2);
+        List<UpdateItemResult> addResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<UpdateItemResult>>(){});
+        assertTrue(addResults.size() == 1);
+        assertNotNull(addResults.get(0).getItem());
+        assertTrue(addResults.get(0).getNode().getVersion() == 1);
 
         // změna existujícího ArrItem
-        ArrItemIntVO updateItem = new ArrItemIntVO(items.get(1), 2);
+        ArrItemIntVO updateItem = (ArrItemIntVO) addResults.get(0).getItem();
+        updateItem.setValue(2);
         ArrUpdateItemVO[] updateItems = { new ArrUpdateItemVO(UpdateOp.UPDATE, updateItem) };
 
         Receiptable receiptUpdate = session
                 .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), updateItems);
         waitingForReceipt(receiptUpdate);
+        recepipt = receiptStore.get(receiptUpdate.getReceiptId());
 
-        items = itemRepository.findByDeleteChangeIsNull();
-        assertTrue(items.size() == 2);
+        List<UpdateItemResult> updResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<UpdateItemResult>>(){});
+        assertTrue(updResults.size() == 1);
+        assertNotNull(updResults.get(0).getItem());
+        assertTrue(updResults.get(0).getNode().getVersion() == 2);
 
         // mazání existujícího ArrItem
-        ArrItemIntVO deleleItem = new ArrItemIntVO(items.get(1), null);
+        ArrItemIntVO deleleItem = (ArrItemIntVO) updResults.get(0).getItem();
         ArrUpdateItemVO[] deleteItems = { new ArrUpdateItemVO(UpdateOp.DELETE, deleleItem) };
 
         Receiptable receiptDelete = session
                 .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), deleteItems);
         waitingForReceipt(receiptDelete);
+        recepipt = receiptStore.get(receiptDelete.getReceiptId());
 
-        items = itemRepository.findByDeleteChangeIsNull();
-        assertTrue(items.size() == 1);
+        List<UpdateItemResult> delResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<UpdateItemResult>>(){});
+        assertTrue(delResults.size() == 1);
+        assertNotNull(delResults.get(0).getItem());
+        assertTrue(delResults.get(0).getNode().getVersion() == 3);
 
         session.disconnect();
     }
 
     @Test
     public void addLevelTest() throws InterruptedException, ExecutionException, IllegalAccessException, ApiException {
+        final Map<String, Message<byte[]>> recepiptStore = new HashMap<>();
         MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
-        StompSession session = connectWebSocketStompClient(sessionHandler);
+        
+        StompSession session = connectWebSocketStompClient(sessionHandler, recepiptStore);
         session.setAutoReceipt(true);
 
         FieldUtils.writeField(StompCommand.RECEIPT, "body", true, true);
@@ -213,9 +244,12 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         treeData = getFundTree(input);
     }
 
-    private StompSession connectWebSocketStompClient(StompSessionHandler sessionHandler) throws InterruptedException, ExecutionException {
+    private StompSession connectWebSocketStompClient(StompSessionHandler sessionHandler, 
+                                                     final Map<String, Message<byte[]> > recepiptStore) throws InterruptedException, ExecutionException {
         WebSocketClient client = new StandardWebSocketClient();
-        WebSocketStompClient stompClient = new WebSocketStompClient(client);
+        WebSocketStompClientElza stompClient = new WebSocketStompClientElza(client, (rcpId, msg) -> {
+            recepiptStore.put(rcpId, msg);
+        });
 
         ThreadPoolTaskScheduler taskScheduler = new TaskSchedulerBuilder().poolSize(1).build();
         taskScheduler.initialize();

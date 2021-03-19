@@ -16,23 +16,27 @@ public class UpdateItemResult {
 	/**
 	 * Change Id (transaction) connected with the update
 	 */
-	protected final int changeId;
+	protected int changeId;
 
 	/**
 	 * Node which was updated and new version
 	 */
-	protected final ArrNodeVO node;
+	protected ArrNodeVO node;
 
 	/**
 	 * Updated item
 	 */
-	protected final ArrItemVO item;
+	protected ArrItemVO item;
 
-	protected final NodeTreeInfo treeInfo;
+	protected NodeTreeInfo treeInfo;
 
-	protected final NodeFormTitle formTitle;
+	protected NodeFormTitle formTitle;
 
-    protected final List<ItemTypeLiteVO> itemTypes;
+    protected List<ItemTypeLiteVO> itemTypes;
+
+    public UpdateItemResult() {
+
+    }
 
     public UpdateItemResult(ArrDescItem descItem, ArrItemVO descItemVo,
                             List<ItemTypeLiteVO> itemTypes, LevelTreeCacheService.Node node) {
