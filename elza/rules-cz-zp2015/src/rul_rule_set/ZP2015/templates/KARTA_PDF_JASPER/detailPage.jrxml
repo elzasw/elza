@@ -62,11 +62,11 @@
 	<variable name="levelName" class="java.lang.String">
 		<variableExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0 ? $P{fund}.getName() : $F{node}.getSingleItemValue("ZP2015_TITLE")]]></variableExpression>
 	</variable>
-	<variable name="titleList" class="java.util.List">
-		<variableExpression><![CDATA[java.util.stream.Stream.concat(
-	java.util.stream.Stream.concat(	
-	$F{node}.getItemsFromParent(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList("ZP2015_ENTITY_ROLE_81") ).stream(),
-		$F{node}.getItemsFromParent(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList(
+	<variable name="titleList" class="java.lang.Iterable">
+		<variableExpression><![CDATA[org.apache.commons.collections4.IterableUtils.chainedIterable(
+	$F{node}.getItemsFromParent(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList("ZP2015_ENTITY_ROLE_81") ),
+	$F{node}.getParentNode()!=null?
+	$F{node}.getParentNode().getItemsFromParent(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList(
 		"ZP2015_ENTITY_ROLE_74",
 		"ZP2015_ENTITY_ROLE_75",
 		"ZP2015_ENTITY_ROLE_76",
@@ -118,9 +118,63 @@
 		"ZP2015_ENTITY_ROLE_67",
 		"ZP2015_ENTITY_ROLE_68"
 	)
-).stream() ),
-	   $F{node}.getItemsFromParent(Arrays.asList("ZP2015_ORIGINATOR") ).stream()
-).collect(java.util.stream.Collectors.toList())]]></variableExpression>
+  ):java.util.Collections.emptyList(),
+  	java.util.Collections.singletonList(
+  		$F{node}.getItems(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList(
+  		"ZP2015_ENTITY_ROLE_21",
+		"ZP2015_ENTITY_ROLE_74",
+		"ZP2015_ENTITY_ROLE_75",
+		"ZP2015_ENTITY_ROLE_76",
+		"ZP2015_ENTITY_ROLE_77",
+		"ZP2015_ENTITY_ROLE_79",
+		"ZP2015_ENTITY_ROLE_1",
+		"ZP2015_ENTITY_ROLE_2",
+		"ZP2015_ENTITY_ROLE_4",
+		"ZP2015_ENTITY_ROLE_5",
+		"ZP2015_ENTITY_ROLE_10",
+		"ZP2015_ENTITY_ROLE_6",
+		"ZP2015_ENTITY_ROLE_7",
+		"ZP2015_ENTITY_ROLE_8",
+		"ZP2015_ENTITY_ROLE_9",
+		"ZP2015_ENTITY_ROLE_11",
+		"ZP2015_ENTITY_ROLE_3",
+		"ZP2015_ENTITY_ROLE_12",
+		"ZP2015_ENTITY_ROLE_13",
+		"ZP2015_ENTITY_ROLE_14",
+		"ZP2015_ENTITY_ROLE_15",
+		"ZP2015_ENTITY_ROLE_16",
+		"ZP2015_ENTITY_ROLE_17",
+		"ZP2015_ENTITY_ROLE_18",
+		"ZP2015_ENTITY_ROLE_19",
+		"ZP2015_ENTITY_ROLE_20",
+		"ZP2015_ENTITY_ROLE_22",
+		"ZP2015_ENTITY_ROLE_23",
+		"ZP2015_ENTITY_ROLE_24",
+		"ZP2015_ENTITY_ROLE_25",
+		"ZP2015_ENTITY_ROLE_26",
+		"ZP2015_ENTITY_ROLE_27",
+		"ZP2015_ENTITY_ROLE_28",
+		"ZP2015_ENTITY_ROLE_29",
+		"ZP2015_ENTITY_ROLE_30",
+		"ZP2015_ENTITY_ROLE_31",
+		"ZP2015_ENTITY_ROLE_32",
+		"ZP2015_ENTITY_ROLE_33",
+		"ZP2015_ENTITY_ROLE_34",
+		"ZP2015_ENTITY_ROLE_35",
+		"ZP2015_ENTITY_ROLE_36",
+		"ZP2015_ENTITY_ROLE_37",
+		"ZP2015_ENTITY_ROLE_38",
+		"ZP2015_ENTITY_ROLE_39",
+		"ZP2015_ENTITY_ROLE_40",
+		"ZP2015_ENTITY_ROLE_41",
+		"ZP2015_ENTITY_ROLE_42",
+		"ZP2015_ENTITY_ROLE_48",
+		"ZP2015_ENTITY_ROLE_66",
+		"ZP2015_ENTITY_ROLE_67",
+		"ZP2015_ENTITY_ROLE_68"
+	))),
+	   $F{node}.getItemsFromParent(Arrays.asList("ZP2015_ORIGINATOR") )
+)]]></variableExpression>
 	</variable>
 	<filterExpression><![CDATA[($F{node}.hasItemWithSpec("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_FOLDER")||$F{node}.hasItemWithSpec("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ITEM"))&&$F{node}.hasItem("ZP2015_STORAGE_ID")]]></filterExpression>
 	<background>
@@ -135,7 +189,7 @@
 				<textElement>
 					<font size="14" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($V{titleList}.size()>0)?( (cz.tacr.elza.print.item.Item)( (java.util.List) $V{titleList}.get(0) ).get(0) ).getSerializedValue():""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[cz.tacr.elza.print.format.Helper.getFirstStringOrDefault($V{titleList}, "")]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
