@@ -406,7 +406,7 @@ when $activeLevel: ActiveLevel( )
 		// obecný pojem vztahující se k jednotce popisu
 		"ZP2015_ENTITY_ROLE_72",
 		// sekundární klasifikace
-		"ZP2015_ENTITY_ROLE_83",        
+		"ZP2015_ENTITY_ROLE_83"       
      ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
