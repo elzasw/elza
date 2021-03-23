@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 public class ExtSyncsQueueItem {
 
     public static final String ACCESS_POINT = "accessPoint";
-    public static final String EXTERNAL_SYSTEM = "apExternalSystem";
+    public static final String EXTERNAL_SYSTEM = "externalSystem";
 
     @Id
     @GeneratedValue
@@ -25,7 +25,10 @@ public class ExtSyncsQueueItem {
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApExternalSystem.class)
     @JoinColumn(name = "externalSystemId", nullable = false)
-    private ApExternalSystem apExternalSystem;
+    private ApExternalSystem externalSystem;
+
+    @Column(nullable = false, updatable = false, insertable = false)
+    private Integer externalSystemId;
 
     @Column(length = StringLength.LENGTH_4000)
     private String stateMessage;
@@ -39,6 +42,9 @@ public class ExtSyncsQueueItem {
 
     @Column(length = StringLength.LENGTH_250, nullable = false)
     private String username;
+
+    @Column(length = StringLength.LENGTH_50, nullable = true)
+    private String batchId;
 
     public Integer getExtSyncsQueueItemId() {
         return extSyncsQueueItemId;
@@ -61,12 +67,17 @@ public class ExtSyncsQueueItem {
         return accessPointId;
     }
 
-    public ApExternalSystem getApExternalSystem() {
-        return apExternalSystem;
+    public ApExternalSystem getExternalSystem() {
+        return externalSystem;
     }
 
-    public void setApExternalSystem(ApExternalSystem apExternalSystem) {
-        this.apExternalSystem = apExternalSystem;
+    public void setExternalSystem(final ApExternalSystem apExternalSystem) {
+        this.externalSystem = apExternalSystem;
+        this.externalSystemId = apExternalSystem != null ? apExternalSystem.getExternalSystemId() : null;
+    }
+
+    public Integer getExternalSystemId() {
+        return externalSystemId;
     }
 
     public String getStateMessage() {
@@ -75,6 +86,14 @@ public class ExtSyncsQueueItem {
 
     public void setStateMessage(String stateMessage) {
         this.stateMessage = stateMessage;
+    }
+
+    public String getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(String batchId) {
+        this.batchId = batchId;
     }
 
     public ExtAsyncQueueState getState() {
@@ -105,11 +124,9 @@ public class ExtSyncsQueueItem {
 
         NEW("Nový"),
 
-        RUNNING("Zpracovávaný"),
+        OK("Odesláno"),
 
-        OK("Zpracovaný OK"),
-
-        ERROR("Zpracovaný chyba");
+        ERROR("Chyba");
 
         private String value;
 

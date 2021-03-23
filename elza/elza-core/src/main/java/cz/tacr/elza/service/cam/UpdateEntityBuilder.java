@@ -3,22 +3,30 @@ package cz.tacr.elza.service.cam;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.cam.schema.cam.BatchEntityRecordRevXml;
 import cz.tacr.cam.schema.cam.CodeXml;
+import cz.tacr.cam.schema.cam.DeleteItemsXml;
 import cz.tacr.cam.schema.cam.DeletePartXml;
 import cz.tacr.cam.schema.cam.EntityIdXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
+import cz.tacr.cam.schema.cam.ItemRefXml;
 import cz.tacr.cam.schema.cam.NewItemsXml;
 import cz.tacr.cam.schema.cam.PartTypeXml;
+import cz.tacr.cam.schema.cam.PartXml;
 import cz.tacr.cam.schema.cam.SetRecordStateXml;
 import cz.tacr.cam.schema.cam.UpdateEntityXml;
 import cz.tacr.cam.schema.cam.UpdateItemsXml;
@@ -33,11 +41,15 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
 
 public class UpdateEntityBuilder extends CamXmlBuilder {
+
+    final private static Logger logger = LoggerFactory.getLogger(UpdateEntityBuilder.class);
 
     final private ApBindingState bindingState;
     final ApBindingItemRepository bindingItemRepository;
@@ -45,7 +57,52 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
     final private ExternalSystemService externalSystemService;
     final private ApBinding binding;
 
-    List<ApBindingItem> bindingItems = new ArrayList<>();
+    private List<ApBindingItem> bindingItems;
+
+    private List<ApBindingItem> bindingParts;
+
+    private List<Object> trgList = new ArrayList<>();
+
+    static class BindingPartInfo {
+        final ApBindingItem bindingPart;
+
+        List<ApBindingItem> deletedItems = new ArrayList<>();
+        List<ApBindingItem> activeItems = new ArrayList<>();
+
+        Map<Integer, ApBindingItem> bindingItemMap = new HashMap<>();
+
+        public BindingPartInfo(final ApBindingItem bindingPart) {
+            this.bindingPart = bindingPart;
+        }
+
+        public void addItem(ApBindingItem bindingItem) {
+            if (bindingItem.getDeleteChangeId() != null) {
+                deletedItems.add(bindingItem);
+            } else {
+                activeItems.add(bindingItem);
+            }
+            bindingItemMap.put(bindingItem.getItemId(), bindingItem);
+        }
+
+        public List<ApBindingItem> getActiveBindedItems() {
+            return activeItems;
+        }
+
+        public List<ApBindingItem> getDeletedBindedItems() {
+            return deletedItems;
+        }
+
+        public boolean isBinded(ApItem i) {
+            ApBindingItem bindedItem = bindingItemMap.get(i.getItemId());
+            return bindedItem != null;
+        }
+    };
+
+    /**
+     * Map between partId and binded items
+     */
+    private Map<Integer, BindingPartInfo> bindingMap = new HashMap<>();
+    private Map<Integer, ApPart> partMap = new HashMap<>();
 
     public UpdateEntityBuilder(ExternalSystemService externalSystemService,
                                ApBindingItemRepository bindingItemRepository,
@@ -77,97 +134,166 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         return updateItemsXml;
     }
 
-    private List<Object> createUpdateEntityChanges(Collection<ApPart> partList,
+    /**
+     * Prepare item changes
+     * 
+     * Prerequisity: all items are read
+     * 
+     * @param partList
+     * @param itemMap
+     * @param externalSystemTypeCode
+     * @return
+     */
+    private void createUpdateEntityChanges(Collection<ApPart> partList,
                                                    Map<Integer, List<ApItem>> itemMap,
-                                                   List<ApBindingItem> bindingParts,
                                                    String externalSystemTypeCode) {
-        List<Object> changes = new ArrayList<>();
         List<ApBindingItem> deletedParts = new ArrayList<>();
-        List<ApBindingItem> changedParts = new ArrayList<>();
+        List<ApBindingItem> partsWithPossibleChange = new ArrayList<>();
+        List<ApPart> newParts = new ArrayList<>();
 
-        if (CollectionUtils.isNotEmpty(bindingParts)) {
-            for (ApBindingItem bindingPart : bindingParts) {
-                if (bindingPart.getPart().getDeleteChange() != null) {
-                    deletedParts.add(bindingPart);
-                } else if (bindingPart.getPart().getCreateChange().getChangeId() > bindingState.getSyncChange()
-                        .getChangeId()) {
-                    changedParts.add(bindingPart);
-                }
-                partList.remove(bindingPart.getPart());
+        for (ApBindingItem bindingPart : bindingParts) {
+            ApPart part = bindingPart.getPart();
+            if (part.getDeleteChangeId() != null) {
+                deletedParts.add(bindingPart);
+            } else {
+                partsWithPossibleChange.add(bindingPart);
+            }
+        }
+        // detect new parts
+        for (ApPart part : partList) {
+            BindingPartInfo partBinding = bindingMap.get(part.getPartId());
+            if (partBinding == null) {
+                newParts.add(part);
             }
         }
 
-        changes.addAll(createPartList(partList, itemMap, externalSystemTypeCode));
-        changes.addAll(createDeletePartList(deletedParts));
-        changes.addAll(createChangedPartList(changedParts, itemMap, externalSystemTypeCode));
-
-        return changes;
-    }
-
-    private List<Object> createChangedPartList(List<ApBindingItem> changedParts,
-                                               Map<Integer, List<ApItem>> itemMap,
-                                               String externalSystemTypeCode) {
-        List<Object> changes = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(changedParts)) {
-            Map<Integer, List<ApBindingItem>> bindingItemMap = bindingItemRepository.findItemsByBinding(bindingState
-                    .getBinding()).stream()
-                    .collect(Collectors.groupingBy(i -> i.getItem().getPartId()));
-            for (ApBindingItem changedPart : changedParts) {
-                List<ApItem> itemList = itemMap.getOrDefault(changedPart.getPart().getPartId(), Collections
-                        .emptyList());
-                List<ApBindingItem> bindingItemList = bindingItemMap.getOrDefault(changedPart.getPart().getPartId(),
-                                                                                  new ArrayList<>());
-                changes.addAll(createChangedPartList(changedPart, itemList, bindingItemList, externalSystemTypeCode));
-            }
+        List<PartXml> parts = createNewParts(newParts, itemMap, externalSystemTypeCode);
+        for (PartXml part : parts) {
+            addUpdate(part);
         }
-        return changes;
+
+        createDeletePartList(deletedParts);
+
+        createChangedPartList(partsWithPossibleChange, itemMap, externalSystemTypeCode);
     }
 
-    private List<Object> createChangedPartList(ApBindingItem changedPart,
+    /**
+     * Create list of modified parts and items in these parts
+     * 
+     * @param changedParts
+     * @param itemMap
+     * @param externalSystemTypeCode
+     * @return
+     */
+    private void createChangedPartList(List<ApBindingItem> changedParts,
+                                       Map<Integer, List<ApItem>> itemMap,
+                                       String externalSystemTypeCode) {
+        if (CollectionUtils.isEmpty(changedParts)) {
+            return;
+        }
+
+        // sort items as created, update, deleted
+        for (ApBindingItem changedPart : changedParts) {
+            Integer partId =  changedPart.getPartId();
+            BindingPartInfo bi = this.bindingMap.get(partId);
+            if(bi==null) {
+                logger.error("Failed to get binging info, partId: {}", partId);
+                throw new BusinessException("Failed to get binging info", 
+                                            BaseCode.DB_INTEGRITY_PROBLEM);
+            }
+            List<ApItem> itemList = itemMap.getOrDefault(partId, Collections.emptyList());
+
+            createChangedPartList(changedPart, itemList, bi, externalSystemTypeCode);
+        }
+    }
+
+    private void createChangedPartList(ApBindingItem changedPart,
                                                List<ApItem> itemList,
-                                               List<ApBindingItem> bindingItemList,
+                                               BindingPartInfo bi,
                                                String externalSystemTypeCode) {
+        /*
         List<Object> changes = new ArrayList<>();
         List<ApBindingItem> changedItems = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(bindingItemList)) {
-            for (ApBindingItem bindingItem : bindingItemList) {
-                if (bindingItem.getItem().getCreateChange().getChangeId() > bindingState.getSyncChange()
-                        .getChangeId()) {
+        if (CollectionUtils.isNotEmpty(bi)) {
+            for (ApBindingItem bindingItem : bi) {
+                if (bindingItem.getItem().getCreateChangeId() > bindingState.getSyncChangeId()) {
                     changedItems.add(bindingItem);
                     itemList.remove(bindingItem.getItem());
                 }
             }
         }
+        */
 
         itemList = filterOutItemsWithoutExtSysMapping(itemList, externalSystemTypeCode);
         if (CollectionUtils.isNotEmpty(itemList)) {
-            NewItemsXml newItems = createNewItems(changedPart, itemList, externalSystemTypeCode);
-            // some new items does not have to be created
-            if (newItems != null) {
-                changes.add(newItems);
+            // filter bindined items
+            List<ApItem> filteredList = itemList.stream().filter(i -> !bi.isBinded(i))
+                    .collect(Collectors.toList());
+            if (filteredList.size() > 0) {
+                NewItemsXml newItems = createNewItems(changedPart, filteredList, externalSystemTypeCode);
+                // some new items does not have to be created
+                if (newItems != null) {
+                    addUpdate(newItems);
+                }
             }
         }
-        changedItems = filterOutBindingItemsWithoutExtSysMapping(changedItems, externalSystemTypeCode);
-        if (CollectionUtils.isNotEmpty(changedItems)) {
-            changes.add(createUpdateItems(changedPart, changedItems, externalSystemTypeCode));
-        }
 
-        return changes;
-    }
-
-    private List<DeletePartXml> createDeletePartList(List<ApBindingItem> deletedParts) {
-        List<DeletePartXml> deletePartXmls = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(deletedParts)) {
-            for (ApBindingItem deletedPart : deletedParts) {
-                deletePartXmls.add(new DeletePartXml(new UuidXml(deletedPart.getValue()),
-                        // TODO: improve with sdp
-                        PartTypeXml.fromValue(
-                                              deletedPart.getPart().getPartType().getCode())));
+        List<ApBindingItem> deletedItems = bi.getDeletedBindedItems();
+        if (CollectionUtils.isNotEmpty(deletedItems)) {
+            DeleteItemsXml deleteItems = createDeleteItems(changedPart, deletedItems);
+            if (deleteItems != null) {
+                addUpdate(deleteItems);
             }
         }
-        return deletePartXmls;
+
+        List<ApBindingItem> activeItems = bi.getActiveBindedItems();
+        if (CollectionUtils.isNotEmpty(activeItems)) {
+            // filter bindined items
+            List<ApBindingItem> filteredList = activeItems.stream().filter(i -> i.getItem()
+                    .getCreateChangeId() > bindingState.getSyncChangeId())
+                    .collect(Collectors.toList());
+            if (filteredList.size() > 0) {
+                UpdateItemsXml updateItems = createUpdateItems(changedPart, activeItems, externalSystemTypeCode);
+                if (updateItems != null) {
+                    addUpdate(updateItems);
+                }
+            }
+        }
     }
 
+    private DeleteItemsXml createDeleteItems(ApBindingItem changedPart,
+                                             List<ApBindingItem> deletedItems) {
+        if (CollectionUtils.isEmpty(deletedItems)) {
+            return null;
+        }
+        DeleteItemsXml ret = new DeleteItemsXml();
+        ret.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
+        ret.setPid(new UuidXml(changedPart.getValue()));
+        List<ItemRefXml> itemRefs = ret.getList();
+
+        for (ApBindingItem di : deletedItems) {
+            ItemRefXml itemRf = new ItemRefXml();
+            itemRf.setUuid(new UuidXml(di.getValue()));
+            // TODO: set type and spec
+            itemRefs.add(itemRf);
+        }
+        return ret;
+    }
+
+    private void createDeletePartList(List<ApBindingItem> deletedParts) {
+        if (CollectionUtils.isEmpty(deletedParts)) {
+            return;
+        }
+
+        List<DeletePartXml> deletePartXmls = new ArrayList<>(deletedParts.size());
+        for (ApBindingItem deletedPart : deletedParts) {
+            DeletePartXml dpx = new DeletePartXml(new UuidXml(deletedPart.getValue()),
+                    // TODO: improve with sdp
+                    PartTypeXml.fromValue(
+                                          deletedPart.getPart().getPartType().getCode()));
+            addUpdate(dpx);
+        }
+    }
 
     private BatchEntityRecordRevXml createBatchEntityRecordRef() {
         BatchEntityRecordRevXml batchEntityRecordRevXml = new BatchEntityRecordRevXml();
@@ -177,40 +303,81 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         return batchEntityRecordRevXml;
     }
 
-    public void build(final List<Object> trgList,
-                      final EntityXml entityXml, List<ApPart> partList,
+    public List<Object> build(final EntityXml entityXml,
+                      List<ApPart> partList,
                       Map<Integer, List<ApItem>> itemMap,
-                      List<ApBindingItem> bindingParts,
                       String externalSystemTypeCode) {
+        // check that list is empty
+        Validate.isTrue(trgList.size() == 0);
         
-        List<Object> changes = createUpdateEntityChanges(partList, itemMap, bindingParts, externalSystemTypeCode);
+        partMap = partList.stream().collect(Collectors.toMap(ApPart::getPartId, Function.identity()));
 
-        if (CollectionUtils.isNotEmpty(changes)) {
-            for (Object change : changes) {
-                addChange(trgList, change);
-            }
+        // read current bindings
+        bindingParts = bindingItemRepository.findPartsForSync(bindingState.getBinding(),
+                                                              bindingState.getSyncChangeId());
+        for (ApBindingItem bindingPart : bindingParts) {
+            BindingPartInfo bi = new BindingPartInfo(bindingPart);
+            bindingMap.put(bindingPart.getPartId(), bi);
         }
+        bindingItems = bindingItemRepository.findItemsForSync(bindingState.getBinding(),
+                                                              bindingState.getSyncChangeId());
+        for (ApBindingItem bindingItem : bindingItems) {
+            ApItem item = bindingItem.getItem();
+            BindingPartInfo bi = bindingMap.get(item.getPartId());
+            if (bi == null) {
+                logger.error("Inconsistent date, bindingItemId: {}", bindingItem.getBindingItemId());
+            }
+            bi.addItem(bindingItem);
+        }
+
+        createUpdateEntityChanges(partList, itemMap, externalSystemTypeCode);
 
         // TODO: this is broken, probably meant for aptype change
-        if (!entityXml.getEnt().getValue().equals(apState.getApType().getCode())) {
+        /*if (!entityXml.getEnt().getValue().equals(apState.getApType().getCode())) {
             addChange(trgList, new CodeXml(apState.getApType().getCode()));
-        }
+        }*/
 
-        if (apState.getStateApproval() == StateApproval.APPROVED && entityXml
-                .getEns() != EntityRecordStateXml.ERS_APPROVED) {
-            addChange(trgList, new SetRecordStateXml(EntityRecordStateXml.ERS_APPROVED, null));
+        if (apState.getStateApproval() == StateApproval.APPROVED &&
+                entityXml.getEns() != EntityRecordStateXml.ERS_APPROVED) {
+            addUpdate(new SetRecordStateXml(EntityRecordStateXml.ERS_APPROVED, null));
         }
 
         //TODO dodělat změnu preferovaného partu
         ApBindingItem preferPart = CamUtils.findBindingItemById(bindingParts,
                                                                 accessPoint.getPreferredPartId());
         
+        return trgList;
+
     }
 
-    private void addChange(List<Object> trgList, Object change) {
+    private void addChangeInternal(Object change) {
         UpdateEntityXml result = new UpdateEntityXml(createBatchEntityRecordRef(), change);
         trgList.add(result);
 
+    }
+
+    private void addUpdate(NewItemsXml change) {
+        addChangeInternal(change);
+    }
+
+    private void addUpdate(PartXml change) {
+        addChangeInternal(change);
+    }
+
+    private void addUpdate(DeletePartXml change) {
+        addChangeInternal(change);
+    }
+
+    private void addUpdate(SetRecordStateXml change) {
+        addChangeInternal(change);
+    }
+
+    private void addUpdate(DeleteItemsXml change) {
+        addChangeInternal(change);
+    }
+
+    private void addUpdate(UpdateItemsXml change) {
+        addChangeInternal(change);
     }
 
     @Override

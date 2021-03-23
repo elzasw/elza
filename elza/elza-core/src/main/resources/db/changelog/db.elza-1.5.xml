@@ -1188,4 +1188,11 @@
             </column>
         </createTable>
     </changeSet>
+    <changeSet id="20210320234400" author="ppyt">
+      <sql>UPDATE ext_syncs_queue_item SET state='NEW' WHERE state='RUNNING'</sql>
+        <addColumn tableName="ext_syncs_queue_item">
+            <column name="batch_id" type="nvarchar(50)">
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
