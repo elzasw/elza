@@ -34,7 +34,7 @@ public interface ChangeRepository extends ElzaJpaRepository<ArrChange, Integer> 
 
     @Modifying
     @Query("DELETE FROM arr_change c WHERE c.primaryNodeId IN :deleteNodeIds AND c.changeId <> :ignoreChangeId")
-    void deleteByPrimaryNodeIds(@Param("deleteNodeIds") List<Integer> deleteNodeIds, @Param("ignoreChangeId") Integer ignoreChangeId);
+    void deleteByPrimaryNodeIdsWithIgnoredId(@Param("deleteNodeIds") List<Integer> deleteNodeIds, @Param("ignoreChangeId") Integer ignoreChangeId);
 
     @Modifying
     @Query("DELETE FROM arr_change c WHERE c.changeId IN :changeIds")

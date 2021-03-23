@@ -25,7 +25,7 @@ public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun,
     List<ArrBulkActionRun> findByFundVersionId(@Param(value = "fundVersionId") Integer fundVersionId);
 
     @Query(value = "SELECT ba FROM arr_bulk_action_run ba JOIN ba.fundVersion v WHERE v.fundVersionId = :fundVersionId ORDER BY ba.bulkActionRunId DESC")
-    List<ArrBulkActionRun> findByFundVersionId(@Param(value = "fundVersionId") Integer fundVersionId, Pageable pageable);
+    List<ArrBulkActionRun> findByFundVersionIdPageable(@Param(value = "fundVersionId") Integer fundVersionId, Pageable pageable);
 
     /**
      * Vrátí všechny hromadné akce verze FA daného CODE
@@ -37,7 +37,7 @@ public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun,
     List<ArrBulkActionRun> findByFundVersionIdAndState(@Param(value = "fundVersionId") final Integer fundVersionId,
                                                        @Param(value = "state") final State state);
     @Query(value = "SELECT ba FROM arr_bulk_action_run ba JOIN ba.fundVersion v WHERE v.fundVersionId = :fundVersionId AND ba.state = :state")
-    List<ArrBulkActionRun> findByFundVersionIdAndState(@Param(value = "fundVersionId") final Integer fundVersionId,
+    List<ArrBulkActionRun> findByFundVersionIdAndStatePageable(@Param(value = "fundVersionId") final Integer fundVersionId,
                                                        @Param(value = "state") final State state, Pageable pageable);
 
     @Query(value = "SELECT ba FROM arr_bulk_action_run ba JOIN ba.fundVersion v WHERE v.fundVersionId = :fundVersionId AND ba.bulkActionCode = :code")

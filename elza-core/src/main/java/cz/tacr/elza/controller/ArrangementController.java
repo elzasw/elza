@@ -1593,9 +1593,9 @@ public class ArrangementController {
         }
 
 
-        ArrLevel newLevel = fundLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
-                addLevelParam.getDirection(), addLevelParam.getScenarioName(),
-                                                         descItemCopyTypes, null);
+        List<ArrLevel> newLevels = fundLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
+                addLevelParam.getDirection(), addLevelParam.getScenarioName(), descItemCopyTypes, null, null);
+        ArrLevel newLevel = newLevels.get(0);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
             UpdateDescItemsParam params = new UpdateDescItemsParam(
@@ -3450,6 +3450,46 @@ public class ArrangementController {
 
         public NodeWithParent(final ArrNodeVO node, final TreeNodeVO parentNode) {
             this.node = node;
+            this.parentNode = parentNode;
+        }
+    }
+
+    /**
+     * Jednotky popisu - node + node parent
+     */
+    public static class NodesWithParent {
+
+        /**
+         * Jednotky popisu.
+         */
+        private List<ArrNodeVO> nodes;
+
+        /**
+         * Rodič jednotky popisu.
+         */
+        private TreeNodeVO parentNode;
+
+        public List<ArrNodeVO> getNodes() {
+            return nodes;
+        }
+
+        public void setNodes(final List<ArrNodeVO> nodes) {
+            this.nodes = nodes;
+        }
+
+        public TreeNodeVO getParentNode() {
+            return parentNode;
+        }
+
+        public void setParentNode(final TreeNodeVO parentNode) {
+            this.parentNode = parentNode;
+        }
+
+        public NodesWithParent() {
+        }
+
+        public NodesWithParent(final List<ArrNodeVO> nodes, final TreeNodeVO parentNode) {
+            this.nodes = nodes;
             this.parentNode = parentNode;
         }
     }

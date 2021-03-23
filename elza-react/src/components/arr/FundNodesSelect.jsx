@@ -14,8 +14,8 @@ import {
     fundTreeNodeCollapse,
     fundTreeNodeExpand,
     fundTreeSelectNode,
-} from 'actions/arr/fundTree.jsx';
-import {getMapFromList} from 'stores/app/utils.jsx';
+} from 'actions/arr/fundTree';
+import {getMapFromList} from 'stores/app/utils';
 import './FundNodesSelect.scss';
 import FundTreeLazy from './FundTreeLazy';
 

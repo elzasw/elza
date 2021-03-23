@@ -6,7 +6,7 @@ import './AdminGroupPage.scss';
 import React from 'react';
 import {connect} from 'react-redux';
 import {Button} from '../../components/ui';
-import {AddGroupForm, GroupDetail, Ribbon} from 'components/index.jsx';
+import {AddGroupForm, GroupDetail, Ribbon} from 'components/index';
 import PageLayout from '../shared/layout/PageLayout';
 import {
     AbstractReactComponent,
@@ -25,11 +25,11 @@ import {
     groupsSearch,
     groupsSelectGroup,
     groupUpdate,
-} from 'actions/admin/group.jsx';
-import {indexById} from 'stores/app/utils.jsx';
-import {modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
-import {renderGroupItem} from 'components/admin/adminRenderUtils.jsx';
+} from 'actions/admin/group';
+import {indexById} from 'stores/app/utils';
+import {modalDialogShow} from 'actions/global/modalDialog';
+import {addToastrSuccess} from 'components/shared/toastr/ToastrActions';
+import {renderGroupItem} from 'components/admin/adminRenderUtils';
 
 const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     constructor(props) {

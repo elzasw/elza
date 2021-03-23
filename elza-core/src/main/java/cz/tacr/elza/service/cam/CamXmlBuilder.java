@@ -33,6 +33,7 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.cam.CamXmlFactory.EntityRefHandler;
+import cz.tacr.elza.service.cam.UpdateEntityBuilder.BindingPartInfo;
 
 /**
  * Builder for CAM XML
@@ -67,7 +68,8 @@ abstract public class CamXmlBuilder {
         this.scope = scope;
     }
 
-    protected NewItemsXml createNewItems(ApBindingItem changedPart, Collection<ApItem> itemList, String externalSystemTypeCode) {
+    protected NewItemsXml createNewItems(ApBindingItem changedPart, Collection<ApItem> itemList,
+                                         String externalSystemTypeCode) {
         NewItemsXml newItems = new NewItemsXml();
         newItems.setPid(new UuidXml(changedPart.getValue()));
         newItems.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
@@ -104,7 +106,7 @@ abstract public class CamXmlBuilder {
         }
         
         // if no parts available -> create item without parts
-        List<PartXml> partxmlList = createPartList(adjustedPartList, itemMap, externalSystemTypeCode);
+        List<PartXml> partxmlList = createNewParts(adjustedPartList, itemMap, externalSystemTypeCode);
         // if no parts available -> return null
         if (CollectionUtils.isEmpty(partxmlList)) {
             // schema allows empty element prts
@@ -118,7 +120,15 @@ abstract public class CamXmlBuilder {
         return parts;
     }
 
-    protected List<PartXml> createPartList(Collection<ApPart> partList,
+    /**
+     * Create list of new parts
+     * 
+     * @param partList
+     * @param itemMap
+     * @param externalSystemTypeCode
+     * @return
+     */
+    protected List<PartXml> createNewParts(Collection<ApPart> partList,
                                            Map<Integer, List<ApItem>> itemMap,
                                            String externalSystemTypeCode) {
         if (CollectionUtils.isEmpty(partList)) {
@@ -305,28 +315,6 @@ abstract public class CamXmlBuilder {
             for (ApItem item : itemList) {
                 if (doesItemHaveExtSysMapping(item, externalSystemTypeCode)) {
                     filteredItems.add(item);
-                }
-            }
-        }
-
-        return filteredItems;
-    }
-
-    /**
-     * Metoda odfiltruje itemy, které nemají mapování v externím systému
-     *
-     * @param itemList itemy k filtrování
-     * @param externalSystemTypeCode kód typu externího systému
-     * @return kolekce itemů k poslání do externího systému
-     */
-    protected List<ApBindingItem> filterOutBindingItemsWithoutExtSysMapping(List<ApBindingItem> itemList, String externalSystemTypeCode) {
-        List<ApBindingItem> filteredItems = new ArrayList<>();
-
-        if (CollectionUtils.isNotEmpty(itemList)) {
-            for (ApBindingItem bindingItem : itemList) {
-                ApItem item = bindingItem.getItem();
-                if (doesItemHaveExtSysMapping(item, externalSystemTypeCode)) {
-                    filteredItems.add(bindingItem);
                 }
             }
         }

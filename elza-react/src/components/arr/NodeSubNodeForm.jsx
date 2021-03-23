@@ -1,4 +1,5 @@
-import {notEmpty, objectById} from '../../shared/utils';
+import {notEmpty} from '../../shared/utils';
+import {objectByProperty} from 'stores/app/utils';
 import * as factory from '../../shared/factory';
 import PropTypes from 'prop-types';
 
@@ -14,23 +15,23 @@ import {
     toggleCopyAllDescItemType,
     unlockAllDescItemType,
     unlockDescItemType,
-} from 'actions/arr/nodeSetting.jsx';
-import {deleteNode} from '../../actions/arr/node.jsx';
-import {createFundRoot, isFundRootId} from './ArrUtils.jsx';
-import * as perms from 'actions/user/Permission.jsx';
-import {nodeFormActions} from 'actions/arr/subNodeForm.jsx';
-import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
-import ArrHistoryForm from 'components/arr/ArrHistoryForm.jsx';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {WebApi} from 'actions/index.jsx';
-import {getMapFromList, indexById} from 'stores/app/utils.jsx';
-import {fundSelectSubNode} from 'actions/arr/node.jsx';
-import {addToastr, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+} from 'actions/arr/nodeSetting';
+import {deleteNode} from '../../actions/arr/node';
+import {createFundRoot, isFundRootId} from './ArrUtils';
+import * as perms from 'actions/user/Permission';
+import {nodeFormActions} from 'actions/arr/subNodeForm';
+import {getOneSettings, setSettings} from 'components/arr/ArrUtils';
+import ArrHistoryForm from 'components/arr/ArrHistoryForm';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
+import {WebApi} from 'actions/index';
+import {getMapFromList, indexById} from 'stores/app/utils';
+import {fundSelectSubNode} from 'actions/arr/node';
+import {addToastr, addToastrSuccess} from 'components/shared/toastr/ToastrActions';
 import {Dropdown, DropdownButton} from 'react-bootstrap';
 import TemplateForm, {EXISTS_TEMPLATE, NEW_TEMPLATE} from './TemplateForm';
 import TemplateUseForm from './TemplateUseForm';
-import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
-import DescItemFactory from 'components/arr/nodeForm/DescItemFactory.jsx';
+import {userDetailsSaveSettings} from 'actions/user/userDetail';
+import DescItemFactory from 'components/arr/nodeForm/DescItemFactory';
 import {CLS, CLS_ITEM_ENUM} from '../../shared/factory/factoryConsts';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as issuesActions from '../../actions/arr/issues';
@@ -778,7 +779,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
         newItem,
     ) => {
         const itemType = this.findItemType(itemTypeId);
-        if (itemType.rep) {
+        if (itemType && itemType.rep) {
             // je opakovatelný
             const existsItems = actualFormData[itemTypeId];
             if (data.replaceValues) {
@@ -869,8 +870,8 @@ class NodeSubNodeForm extends AbstractReactComponent {
     findItemType = itemTypeId => {
         const {subNodeForm, groups} = this.props;
         const groupCode = groups.reverse[itemTypeId];
-        const group = objectById(subNodeForm.formData.descItemGroups, groupCode, 'code');
-        return objectById(group.types, itemTypeId);
+        const group = objectByProperty(subNodeForm.formData.descItemGroups, groupCode, 'code');
+        return objectByProperty(group.types, parseInt(itemTypeId), 'id');
     };
 
     initFocus() {
@@ -947,7 +948,7 @@ function mapStateToProps(state) {
     let structureTypes = null;
     if (arrRegion.activeIndex != null) {
         fund = arrRegion.funds[arrRegion.activeIndex];
-        structureTypes = objectById(refTables.structureTypes.data, fund.versionId, 'versionId');
+        structureTypes = objectByProperty(refTables.structureTypes.data, fund.versionId, 'versionId');
     }
 
     return {

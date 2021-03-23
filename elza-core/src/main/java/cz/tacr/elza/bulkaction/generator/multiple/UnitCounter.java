@@ -218,7 +218,7 @@ public class UnitCounter {
     private void countStructObj(Integer packetId, LevelWithItems level, UnitCountAction unitCountAction) {
         // TODO: Do filtering in DB
         List<ArrStructuredItem> structObjItems = this.structureItemRepository
-                .findByStructuredObjectAndDeleteChangeIsNullFetchData(packetId);
+                .findByStructObjIdAndDeleteChangeIsNullFetchData(packetId);
         // filter only our item types
         for (ArrStructuredItem structObjItem : structObjItems) {
             if (structObjItem.getItemTypeId().equals(this.objectItemType.getItemTypeId())) {

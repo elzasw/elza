@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+
 /**
  * Stav entity.
  *

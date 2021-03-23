@@ -33,6 +33,7 @@ import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -80,6 +81,7 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApScopeRelation;
@@ -118,10 +120,12 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApKeyValueRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -136,7 +140,6 @@ import cz.tacr.elza.service.AccessPointItemService.DeletedItems;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import cz.tacr.elza.service.vo.DataRef;
 
 
 /**
@@ -257,10 +260,19 @@ public class AccessPointService {
     private RuleService ruleService;
     
     @Autowired
-    InstitutionRepository institutionRepository;
+    private InstitutionRepository institutionRepository;
+    
+    @Autowired
+    private DataRepository dataRepository;
 
     @Autowired
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
+
+    @Autowired
+    private AccessPointCacheService accessPointCacheService;
+    
+    @Autowired
+    private ApKeyValueRepository keyValueRepository;
 
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
@@ -370,20 +382,29 @@ public class AccessPointService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState,
-                                  final ApAccessPoint replacedBy) {
+                                  final ApAccessPoint replacedBy, boolean copyAll) {
 
         apDataService.validationNotDeleted(apState);
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
+
+        ApChange change = apDataService.createChange(ApChange.Type.AP_REPLACE);
 
         if (replacedBy != null) {
             ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
             apDataService.validationNotDeleted(replacementState);
             replace(apState, replacementState);
             apState.setReplacedBy(replacedBy);
+
+            // kopírování všechny Part z accessPoint->replacedBy
+            if (copyAll) {
+                copyParts(accessPoint, replacedBy, change);
+                // vygenerování indexů a aktualizace záznamů v cache
+                generateSync(replacedBy.getAccessPointId());        
+                accessPointCacheService.createApCachedAccessPoint(replacedBy.getAccessPointId());
+            }
         }
         checkDeletion(accessPoint);
-        ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
         partService.deleteParts(accessPoint, change);
         apState.setDeleteChange(change);
         apStateRepository.save(apState);
@@ -815,6 +836,7 @@ public class AccessPointService {
 
         partService.createPartItems(apChange, apPart, apPartFormVO, null, null);
         generateSync(accessPoint.getAccessPointId(), apPart);
+        accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         publishAccessPointCreateEvent(accessPoint);
 
@@ -1162,6 +1184,7 @@ public class AccessPointService {
 
         saveWithLock(accessPoint);
         generateSync(accessPoint.getAccessPointId());
+        accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
     /**
@@ -1857,7 +1880,8 @@ public class AccessPointService {
         return extSyncsQueueItemVOList;
     }
 
-    private ExtSyncsQueueItemVO createExtSyncsQueueItemVO(ExtSyncsQueueItem extSyncsQueueItem, String name, Integer scopeId) {
+    private ExtSyncsQueueItemVO createExtSyncsQueueItemVO(ExtSyncsQueueItem extSyncsQueueItem,
+                                                          String name, Integer scopeId) {
         ExtSyncsQueueItemVO extSyncsQueueItemVO = new ExtSyncsQueueItemVO();
         extSyncsQueueItemVO.setId(extSyncsQueueItem.getExtSyncsQueueItemId());
         extSyncsQueueItemVO.setAccessPointId(extSyncsQueueItem.getAccessPoint().getAccessPointId());
@@ -1886,7 +1910,7 @@ public class AccessPointService {
                                                      final String userName) {
         ExtSyncsQueueItem extSyncsQueueItem = new ExtSyncsQueueItem();
         extSyncsQueueItem.setAccessPoint(accessPoint);
-        extSyncsQueueItem.setApExternalSystem(apExternalSystem);
+        extSyncsQueueItem.setExternalSystem(apExternalSystem);
         extSyncsQueueItem.setStateMessage(stateMessage);
         extSyncsQueueItem.setState(state);
         extSyncsQueueItem.setDate(date);
@@ -1899,6 +1923,11 @@ public class AccessPointService {
         int page = from / count;
         ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds, state, sdp);
         return stateRepository.findAll(specification, PageRequest.of(page, count));
+    }
+
+    public boolean isQueryComplex(SearchFilterVO searchFilter) {
+        //todo fantiš definovat příliš složitý dotaz
+        return false;
     }
 
     /**
@@ -2013,5 +2042,138 @@ public class AccessPointService {
     public ApState getApState(Integer accessPointId) {
         ApAccessPoint ap = getAccessPointInternal(accessPointId);
         return getApState(ap);
+    }
+    
+    /**
+     * Kontrola datové struktury.
+     * 
+     * Tato metoda se volá, pokud parametr elza.ap.checkDb má hodnotu TRUE
+     */
+    public void checkConsistency() {
+        int partsWithChild = partRepository.countDeletedPartsWithUndeletedChild();
+        if (partsWithChild > 0) {
+            logger.error("Existují {} vymazané Parts s nevymazanými potomky", partsWithChild);
+            throw new IllegalStateException("There are deleted Part(s) with non-deleted Children(s)");
+        }
+        int partsWithBindingItem = partRepository.countDeletedPartsWithUndeletedBindingItem();
+        if (partsWithBindingItem > 0) {
+            logger.error("Existují {} vymazané Parts s nevymazanými BindingItem", partsWithBindingItem);
+            throw new IllegalStateException("There are deleted Part(s) with non-deleted BindingItem(s)");
+        }
+        int partsWithItem = partRepository.countDeletedPartsWithUndeletedItem();
+        if (partsWithItem > 0) {
+            logger.error("Existují {} vymazané Parts s nevymazanými Item", partsWithItem);
+            throw new IllegalStateException("There are deleted Part(s) with non-deleted Item(s)");
+        }
+        int itemsWithBindingItem = itemRepository.countDeletedItemsWithUndeletedBindingItem();
+        if (itemsWithBindingItem > 0) {
+            logger.error("Existují {} vymazané Items s nevymazanými BindingItem", itemsWithBindingItem);
+            throw new IllegalStateException("There are deleted Items(s) with non-deleted BindingItem(s)");
+        }
+    }
+
+    /**
+     * kopírování všechny Part z accessPoint do replacedBy
+     * 
+     * @param accessPoint
+     * @param replacedBy
+     * @param change
+     */
+    private void copyParts(ApAccessPoint accessPoint, ApAccessPoint replacedBy, ApChange change) {
+        List<ApPart> partsFrom = partService.findPartsByAccessPoint(accessPoint);
+        Map<Integer, List<ApItem>> itemMapFrom = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
+                .collect(Collectors.groupingBy(ApItem::getPartId));
+
+        List<ApPart> partsTo = partService.findPartsByAccessPoint(replacedBy);
+        Map<Integer, ApPart> mapParent = new HashMap<>();
+
+        // kopírování Part bez rodičů
+        for (ApPart part : partsFrom) {
+            if (part.getParentPart() == null) {
+                if (part.getPartType().getRepeatable()) {
+                  ApPart newPart = copyPart(part, itemMapFrom.get(part.getPartId()), replacedBy, null, change);
+                  mapParent.put(part.getPartId(), newPart);
+                } else {
+                    ApPart partTo = partService.findFirstPartByCode(part.getPartType().getCode(), partsTo);
+                    if (partTo == null) {
+                        copyPart(part, itemMapFrom.get(part.getPartId()), replacedBy, null, change);
+                    } else {
+                        copyItems(itemMapFrom.get(part.getPartId()), partTo, change);
+                    }
+                }
+            }
+        }
+
+        // kopírování Part s rodiči
+        for (ApPart part : partsFrom) {
+            if (part.getParentPart() != null) {
+                ApPart parentTo;
+                if (part.getPartType().getRepeatable()) {
+                    parentTo = mapParent.get(part.getPartId());
+                } else {
+                    parentTo = partService.findFirstPartByCode(part.getParentPart().getPartType().getCode(), partsTo);
+                }
+                Validate.notNull(parentTo, "Rodičovský Part musí existovat");
+                copyPart(part, itemMapFrom.get(part.getPartId()), replacedBy, parentTo, change);
+            }
+        }
+    }
+
+    /**
+     * Vytvoření kopie ApPart která patří k danému ApAccessPoint
+     * 
+     * @param part zdroj ke kopírování
+     * @param items prvky původní part
+     * @param accessPoint
+     * @param mapParent
+     * @param change
+     * @return ApPart
+     */
+    private ApPart copyPart(ApPart part, List<ApItem> items, ApAccessPoint accessPoint, ApPart parent, ApChange change) {
+        ApPart partTo = new ApPart();
+        partTo.setAccessPoint(accessPoint);
+        partTo.setCreateChange(change);
+        partTo.setKeyValue(null);
+        partTo.setParentPart(parent);
+        partTo.setPartType(part.getPartType());
+        partTo.setState(part.getState());
+        partTo = partRepository.save(partTo);
+
+        copyItems(items, partTo, change);
+
+        return partTo;
+    }
+
+    /**
+     * Vytvoření kopie všech Item která patří k danému ApPart
+     * 
+     * @param itemsFrom prvky původní part
+     * @param toPart
+     * @param change
+     */
+    private void copyItems(List<ApItem> itemsFrom, ApPart partTo, ApChange change) {
+        int position = 0;
+        for (ApItem item : itemsFrom) {
+            if (item.getPosition() > position) {
+                position = item.getPosition();
+            }
+        }
+
+        for (ApItem item : itemsFrom) {
+            ApItem newItem = new ApItem();
+            newItem.setCreateChange(change);
+
+            ArrData newData = ArrData.makeCopyWithoutId(item.getData());
+            newItem.setData(newData);
+
+            newItem.setItemSpec(item.getItemSpec());
+            newItem.setItemType(item.getItemType());
+            newItem.setObjectId(item.getObjectId());
+            newItem.setPosition(++position);
+            newItem.setPart(partTo);
+
+            dataRepository.save(newData);
+            itemRepository.save(newItem);
+        }
     }
 }

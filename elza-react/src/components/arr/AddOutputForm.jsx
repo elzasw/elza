@@ -6,9 +6,9 @@ import {AbstractReactComponent, FormInput, FormInputField, i18n} from '../../com
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {decorateFormField, submitForm} from '../form/FormUtils';
-import {outputTypesFetchIfNeeded} from '../../actions/refTables/outputTypes.jsx';
-import {templatesFetchIfNeeded} from '../../actions/refTables/templates.jsx';
-import {indexById} from '../../stores/app/utils.jsx';
+import {outputTypesFetchIfNeeded} from '../../actions/refTables/outputTypes';
+import {templatesFetchIfNeeded} from '../../actions/refTables/templates';
+import {indexById} from '../../stores/app/utils';
 
 /**
  * Formulář přidání výstupu.

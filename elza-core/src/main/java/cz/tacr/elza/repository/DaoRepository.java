@@ -46,7 +46,7 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
     List<ArrDao> findByPackage(@Param(value = "daoPackage") ArrDaoPackage arrDaoPackage);
 
     @Query("SELECT d FROM arr_dao d WHERE d.valid = TRUE AND d.daoPackage = :daoPackage")
-    Page<ArrDao> findByPackage(ArrDaoPackage daoPackage, Pageable pageable);    
+    Page<ArrDao> findByPackagePageable(ArrDaoPackage daoPackage, Pageable pageable);
 
     @Modifying
     @Query("DELETE FROM arr_dao d WHERE d.daoPackageId IN (SELECT p.daoPackageId FROM arr_dao_package p WHERE p.fund = ?1)")

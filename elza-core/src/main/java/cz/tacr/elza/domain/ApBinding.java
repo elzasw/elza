@@ -11,9 +11,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
 @Entity(name = "ap_binding")
-public class ApBinding {
+public class ApBinding implements AccessPointCacheSerializable {
 
     @Id
     @GeneratedValue
@@ -26,6 +27,9 @@ public class ApBinding {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApExternalSystem.class)
     @JoinColumn(name = "externalSystemId", nullable = false)
     private ApExternalSystem apExternalSystem;
+
+    @Column(nullable = false, updatable = false, insertable = false)
+    private Integer externalSystemId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApScope.class)
     @JoinColumn(name = "scopeId", nullable = false)
@@ -53,6 +57,11 @@ public class ApBinding {
 
     public void setApExternalSystem(ApExternalSystem apExternalSystem) {
         this.apExternalSystem = apExternalSystem;
+        this.externalSystemId = apExternalSystem != null ? apExternalSystem.getExternalSystemId() : null;
+    }
+
+    public Integer getExternalSystemId() {
+        return externalSystemId;
     }
 
     public ApScope getScope() {

@@ -30,7 +30,7 @@ public interface DaoRequestDaoRepository extends ElzaJpaRepository<ArrDaoRequest
     List<ArrDaoRequestDao> findByDaoRequest(ArrDaoRequest arrDaoRequest);
 
     @Query("SELECT p FROM arr_dao_request_dao p WHERE p.daoRequest IN (?1)")
-    List<ArrDaoRequestDao> findByDaoRequest(Collection<ArrDaoRequest> daoRequests);
+    List<ArrDaoRequestDao> findByDaoRequests(Collection<ArrDaoRequest> daoRequests);
 
     @Query("SELECT p FROM arr_dao_request_dao p WHERE p.daoRequest = ?1 AND p.dao IN (?2)")
     List<ArrDaoRequestDao> findByDaoRequestAndDao(ArrDaoRequest daoRequest, List<ArrDao> daos);

@@ -1,6 +1,6 @@
 import * as types from 'actions/constants/ActionTypes';
-import {getSetFromIdsList} from 'stores/app/utils.jsx';
-import * as perms from 'actions/user/Permission.jsx';
+import {getSetFromIdsList} from 'stores/app/utils';
+import * as perms from 'actions/user/Permission';
 
 function hasRight(right) {
     switch (typeof right) {

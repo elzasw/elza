@@ -122,7 +122,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     List<ArrDescItem> findOpenDescItems(Integer descItemObjectId);
 
     @Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.descItemObjectId IN :descItemObjectIds")
-    List<ArrDescItem> findOpenDescItems(@Param("descItemObjectIds") Collection<Integer> descItemObjectIds);
+    List<ArrDescItem> findOpenDescItemsByIds(@Param("descItemObjectIds") Collection<Integer> descItemObjectIds);
 
     /**
      * Vyhledá otevřenou (nesmazenou) hodnotu atributů podle objectId.
@@ -152,7 +152,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @return
      */
 	@Query("SELECT i FROM arr_desc_item i LEFT JOIN FETCH i.data WHERE i.deleteChange IS NULL AND i.itemType = ?1 AND i.node = ?2")
-    List<ArrDescItem> findOpenDescItems(RulItemType itemType, ArrNode node);
+    List<ArrDescItem> findOpenDescItemsByItemType(RulItemType itemType, ArrNode node);
 
     /**
      * najde maximální pozici atributu archivního popisu podle nodu a typu atributu archivního popisu pokud je číslo smazání nevyplněné.

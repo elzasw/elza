@@ -62,11 +62,11 @@
 	<variable name="levelName" class="java.lang.String">
 		<variableExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0 ? $P{fund}.getName() : $F{node}.getSingleItemValue("ZP2015_TITLE")]]></variableExpression>
 	</variable>
-	<variable name="titleList" class="java.util.List">
-		<variableExpression><![CDATA[java.util.stream.Stream.concat(
-	java.util.stream.Stream.concat(	
-	$F{node}.getItemsFromParent(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList("ZP2015_ENTITY_ROLE_81") ).stream(),
-		$F{node}.getItemsFromParent(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList(
+	<variable name="titleList" class="java.lang.Iterable">
+		<variableExpression><![CDATA[org.apache.commons.collections4.IterableUtils.chainedIterable(
+	$F{node}.getItemsFromParent(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList("ZP2015_ENTITY_ROLE_81") ),
+	$F{node}.getParentNode()!=null?
+	$F{node}.getParentNode().getItemsFromParent(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList(
 		"ZP2015_ENTITY_ROLE_74",
 		"ZP2015_ENTITY_ROLE_75",
 		"ZP2015_ENTITY_ROLE_76",
@@ -92,7 +92,6 @@
 		"ZP2015_ENTITY_ROLE_18",
 		"ZP2015_ENTITY_ROLE_19",
 		"ZP2015_ENTITY_ROLE_20",
-		"ZP2015_ENTITY_ROLE_21",
 		"ZP2015_ENTITY_ROLE_22",
 		"ZP2015_ENTITY_ROLE_23",
 		"ZP2015_ENTITY_ROLE_24",
@@ -114,11 +113,68 @@
 		"ZP2015_ENTITY_ROLE_40",
 		"ZP2015_ENTITY_ROLE_41",
 		"ZP2015_ENTITY_ROLE_42",
-		"ZP2015_ENTITY_ROLE_48"		
+		"ZP2015_ENTITY_ROLE_48",
+		"ZP2015_ENTITY_ROLE_66",
+		"ZP2015_ENTITY_ROLE_67",
+		"ZP2015_ENTITY_ROLE_68"
 	)
-).stream() ),
-	   $F{node}.getItemsFromParent(Arrays.asList("ZP2015_ORIGINATOR") ).stream()
-).collect(java.util.stream.Collectors.toList())]]></variableExpression>
+  ):java.util.Collections.emptyList(),
+  	java.util.Collections.singletonList(
+  		$F{node}.getItems(Arrays.asList("ZP2015_ENTITY_ROLE"), Arrays.asList(
+  		"ZP2015_ENTITY_ROLE_21",
+		"ZP2015_ENTITY_ROLE_74",
+		"ZP2015_ENTITY_ROLE_75",
+		"ZP2015_ENTITY_ROLE_76",
+		"ZP2015_ENTITY_ROLE_77",
+		"ZP2015_ENTITY_ROLE_79",
+		"ZP2015_ENTITY_ROLE_1",
+		"ZP2015_ENTITY_ROLE_2",
+		"ZP2015_ENTITY_ROLE_4",
+		"ZP2015_ENTITY_ROLE_5",
+		"ZP2015_ENTITY_ROLE_10",
+		"ZP2015_ENTITY_ROLE_6",
+		"ZP2015_ENTITY_ROLE_7",
+		"ZP2015_ENTITY_ROLE_8",
+		"ZP2015_ENTITY_ROLE_9",
+		"ZP2015_ENTITY_ROLE_11",
+		"ZP2015_ENTITY_ROLE_3",
+		"ZP2015_ENTITY_ROLE_12",
+		"ZP2015_ENTITY_ROLE_13",
+		"ZP2015_ENTITY_ROLE_14",
+		"ZP2015_ENTITY_ROLE_15",
+		"ZP2015_ENTITY_ROLE_16",
+		"ZP2015_ENTITY_ROLE_17",
+		"ZP2015_ENTITY_ROLE_18",
+		"ZP2015_ENTITY_ROLE_19",
+		"ZP2015_ENTITY_ROLE_20",
+		"ZP2015_ENTITY_ROLE_22",
+		"ZP2015_ENTITY_ROLE_23",
+		"ZP2015_ENTITY_ROLE_24",
+		"ZP2015_ENTITY_ROLE_25",
+		"ZP2015_ENTITY_ROLE_26",
+		"ZP2015_ENTITY_ROLE_27",
+		"ZP2015_ENTITY_ROLE_28",
+		"ZP2015_ENTITY_ROLE_29",
+		"ZP2015_ENTITY_ROLE_30",
+		"ZP2015_ENTITY_ROLE_31",
+		"ZP2015_ENTITY_ROLE_32",
+		"ZP2015_ENTITY_ROLE_33",
+		"ZP2015_ENTITY_ROLE_34",
+		"ZP2015_ENTITY_ROLE_35",
+		"ZP2015_ENTITY_ROLE_36",
+		"ZP2015_ENTITY_ROLE_37",
+		"ZP2015_ENTITY_ROLE_38",
+		"ZP2015_ENTITY_ROLE_39",
+		"ZP2015_ENTITY_ROLE_40",
+		"ZP2015_ENTITY_ROLE_41",
+		"ZP2015_ENTITY_ROLE_42",
+		"ZP2015_ENTITY_ROLE_48",
+		"ZP2015_ENTITY_ROLE_66",
+		"ZP2015_ENTITY_ROLE_67",
+		"ZP2015_ENTITY_ROLE_68"
+	))),
+	   $F{node}.getItemsFromParent(Arrays.asList("ZP2015_ORIGINATOR") )
+)]]></variableExpression>
 	</variable>
 	<filterExpression><![CDATA[($F{node}.hasItemWithSpec("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_FOLDER")||$F{node}.hasItemWithSpec("ZP2015_LEVEL_TYPE", "ZP2015_LEVEL_ITEM"))&&$F{node}.hasItem("ZP2015_STORAGE_ID")]]></filterExpression>
 	<background>
@@ -133,7 +189,7 @@
 				<textElement>
 					<font size="14" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($V{titleList}.size()>0)?((cz.tacr.elza.print.item.Item)$V{titleList}.get(0)).getSerializedValue():""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[cz.tacr.elza.print.format.Helper.getFirstStringOrDefault($V{titleList}, "")]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -169,7 +225,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[" pozůstalost (fond):"]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField textAdjust="ScaleFont">
 				<reportElement x="142" y="10" width="208" height="20" uuid="9b4f2b25-c813-4a5e-ba06-0f9b593360f1">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 				</reportElement>
@@ -178,12 +234,12 @@
 					<rightPen lineWidth="1.0"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="14" isBold="false" pdfEncoding="Cp1250"/>
+					<font size="12" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{fund}.getName()]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement positionType="Float" x="0" y="140" width="200" height="40" uuid="8d7b7ea3-f582-419d-8e09-7a64d9c15c41">
+				<reportElement positionType="Float" x="0" y="130" width="200" height="30" uuid="8d7b7ea3-f582-419d-8e09-7a64d9c15c41">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<jr:barbecue xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" type="PDF417" drawText="false" checksumRequired="false">
@@ -191,11 +247,11 @@
 				</jr:barbecue>
 			</componentElement>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="1" y="63" width="542" height="37" uuid="c5dae977-1604-4c7d-9d48-42bd852f5b8b">
+				<reportElement positionType="Float" x="1" y="60" width="542" height="37" uuid="c5dae977-1604-4c7d-9d48-42bd852f5b8b">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font size="14" isBold="false" pdfEncoding="Cp1250"/>
+					<font size="12" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{levelName}]]></textFieldExpression>
 			</textField>
@@ -244,20 +300,20 @@
 				<textFieldExpression><![CDATA[" ukl. j. / poř. č.:"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="275" y="140" width="268" height="40" uuid="ab824ceb-9561-45e4-a280-21110de4d211">
+				<reportElement positionType="Float" x="275" y="130" width="268" height="30" uuid="ab824ceb-9561-45e4-a280-21110de4d211">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 					<printWhenExpression><![CDATA[$P{fund}.getFundNumber()!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font size="14" isBold="false" pdfEncoding="Cp1250"/>
+					<font size="12" isBold="false" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{amountFormatter}.format($F{node})]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="1" y="100" width="542" height="30" uuid="c46129d2-3263-4df0-ac87-1b6324f7c11d"/>
+				<reportElement positionType="Float" x="1" y="97" width="542" height="30" uuid="c46129d2-3263-4df0-ac87-1b6324f7c11d"/>
 				<box topPadding="3"/>
 				<textElement>
-					<font size="14" pdfEncoding="Cp1250"/>
+					<font size="12" pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_UNIT_DATE")]]></textFieldExpression>
 			</textField>
@@ -266,9 +322,9 @@
 					<printWhenExpression><![CDATA[$F{node}.getParent()!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font size="14" isBold="true" pdfEncoding="Cp1250"/>
+					<font size="12" isBold="true" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{parentNameFormatter}.format($F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_TITLE")))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{parentNameFormatter}.format( $F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_TITLE")).get(0) )]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

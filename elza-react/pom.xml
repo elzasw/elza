@@ -49,7 +49,7 @@
             <plugin>
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
-                <version>4.2.3</version>
+                <version>${openapiGenerator.version}</version>
                 <executions>
                     <execution>
                         <id>openapi-elza-typescript</id>

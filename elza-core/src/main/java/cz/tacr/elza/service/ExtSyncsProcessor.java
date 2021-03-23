@@ -25,9 +25,6 @@ public class ExtSyncsProcessor implements Runnable {
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
 
     @Autowired
-    private ApExternalSystemRepository apExternalSystemRepository;
-
-    @Autowired
     private CamService camService;
 
     private static final Logger logger = LoggerFactory.getLogger(ExtSyncsProcessor.class);
@@ -38,8 +35,15 @@ public class ExtSyncsProcessor implements Runnable {
 
     private static int QUEUE_CHECK_TIME_INTERVAL = 10000;
 
+    private enum ThreadStatus {
+        RUNNING, STOP_REQUEST, STOPPED
+    }
+
+    private ThreadStatus status;
+
     public void startExtSyncs() {
         synchronized (lock) {
+            status = ThreadStatus.RUNNING;
             if (this.asyncThread == null) {
                 this.asyncThread = new Thread(this,"ExtSyncsProcessor");
                 this.asyncThread.start();
@@ -47,45 +51,56 @@ public class ExtSyncsProcessor implements Runnable {
         }
     }
 
+    private boolean processItem() {
+        Pageable pageable = PageRequest.of(0, 1);
+        // find first items
+        Page<ExtSyncsQueueItem> page = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.NEW,
+                                                                               pageable);
+        if (page.isEmpty()) {
+            return false;
+        }
+        List<ExtSyncsQueueItem> items = page.getContent();
+        for (ExtSyncsQueueItem item : items) {
+            if (!camService.synchronizeExtItem(item)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 
     @Override
     public void run() {
-        try {
-            while (true) {
-                if(!isQueuePopulated()) {
-                    Thread.sleep(QUEUE_CHECK_TIME_INTERVAL);
-                } else {
-                    processQueue();
+        synchronized (lock) {
+            try {
+                while (status == ThreadStatus.RUNNING) {
+                    boolean wait = true;
+                    try {
+                        if (processItem()) {
+                            wait = false;
+                        }
+                    } catch (Exception ex) {
+                        logger.error("Failed to process item. ", ex);
+                    }
+                    if (wait) {
+                        try {
+                            // wake up every minute to retry
+                            lock.wait(QUEUE_CHECK_TIME_INTERVAL);
+                        } catch (InterruptedException e) {
+                            logger.error(e.getMessage());
+                            break;
+                        }
+                    }
+
                 }
+            } catch (Exception e) {
+                logger.error("ExtSyncsProcessor - processor thread error " + e.toString());
             }
-        } catch(Exception e) {
-            logger.error("ExtSyncsProcessor - processor thread error " + e.toString());
+            status = ThreadStatus.STOPPED;
+            lock.notifyAll();
+            logger.error("ExtSyncsProcessor - thread finished");
         }
     }
 
-    private void processQueue() {
-        Pageable pageable = PageRequest.of(0, 100);
-        // find first items
-        Page<ExtSyncsQueueItem> page = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.NEW, pageable);
-
-        if (page != null && page.getTotalElements() > 0) {
-            List<ExtSyncsQueueItem> extSyncsQueueItems = page.getContent();
-
-            for (ExtSyncsQueueItem extSyncsQueueItem : extSyncsQueueItems) {
-                Integer apExternalSystemId = extSyncsQueueItem.getApExternalSystem().getExternalSystemId();
-                ApExternalSystem apExternalSystem = apExternalSystemRepository.findById(apExternalSystemId)
-                        .orElseThrow(() -> new ObjectNotFoundException("Externí systém neexistuje", BaseCode.ID_NOT_EXIST).setId(apExternalSystemId));
-                if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
-                        apExternalSystem.getType() == ApExternalSystemType.CAM_UUID) {
-                    extSyncsQueueItem.setState(ExtSyncsQueueItem.ExtAsyncQueueState.RUNNING);
-                    extSyncsQueueItemRepository.save(extSyncsQueueItem);
-                    camService.synchronizeExtItem(extSyncsQueueItem, apExternalSystem);
-                }
-            }
-        }
-    }
-
-    private boolean isQueuePopulated() {
-        return extSyncsQueueItemRepository.countByState(ExtSyncsQueueItem.ExtAsyncQueueState.NEW) > 0;
-    }
 }

@@ -4,19 +4,19 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {AbstractReactComponent, i18n, ListBox, StoreHorizontalLoader} from 'components/shared';
-import {indexById} from 'stores/app/utils.jsx';
+import {indexById} from 'stores/app/utils';
 import {
     AREA_EXT_SYSTEM_DETAIL,
     AREA_EXT_SYSTEM_LIST,
     extSystemDetailFetchIfNeeded,
     extSystemListFetchIfNeeded,
-} from 'actions/admin/extSystem.jsx';
-import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
+} from 'actions/admin/extSystem';
+import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus';
 import {storeFromArea} from 'shared/utils';
 
 import './AdminExtSystemList.scss';
 import AdminExtSystemListItem from './AdminExtSystemListItem';
-import {FOCUS_KEYS} from '../../constants.tsx';
+import {FOCUS_KEYS} from '../../constants';
 
 class AdminExtSystemList extends AbstractReactComponent {
     state = {

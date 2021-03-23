@@ -3,7 +3,7 @@ import './ArrDaoPage.scss';
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {indexById} from 'stores/app/utils.jsx';
+import {indexById} from 'stores/app/utils';
 import {connect} from 'react-redux';
 
 import ArrDaoPackages from '../../components/arr/ArrDaoPackages';
@@ -13,12 +13,12 @@ import ArrDaos from '../../components/arr/ArrDaos';
 
 import {i18n, Icon, RibbonGroup, Tabs} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes';
-import {createFundRoot, getParentNode} from 'components/arr/ArrUtils.jsx';
-import {addNodeForm} from 'actions/arr/addNodeForm.jsx';
-import ArrParentPage from './ArrParentPage.jsx';
-import {fundTreeSelectNode} from 'actions/arr/fundTree.jsx';
+import {createFundRoot, getParentNode} from 'components/arr/ArrUtils';
+import {addNodeForm} from 'actions/arr/addNodeForm';
+import ArrParentPage from './ArrParentPage';
+import {fundTreeSelectNode} from 'actions/arr/fundTree';
 import {Button} from '../../components/ui';
-import {WebApi} from 'actions/index.jsx';
+import {WebApi} from 'actions/index';
 
 /**
  * Stránka archivních pomůcek.

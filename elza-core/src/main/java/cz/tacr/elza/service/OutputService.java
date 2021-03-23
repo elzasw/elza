@@ -1247,7 +1247,7 @@ public class OutputService {
         saveOutput(output);
 
 
-        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemTypeId, output);
+        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItemsByItemType(itemTypeId, output);
 
         if (outputItems.size() == 0) {
             throw new IllegalStateException("Nebyla nalezena žádná hodnota atributu ke smazání");
@@ -1302,7 +1302,7 @@ public class OutputService {
             itemSettings.setOutput(output);
             itemSettingsRepository.save(itemSettings);
 
-            List<ArrOutputItem> items = outputItemRepository.findOpenOutputItems(itemType.getItemTypeId(), output);
+            List<ArrOutputItem> items = outputItemRepository.findOpenOutputItemsByItemType(itemType.getItemTypeId(), output);
             for (ArrOutputItem item : items) {
                 outputServiceInternal.publishOutputItemChanged(item, fundVersion.getFundVersionId());
             }
@@ -1381,7 +1381,7 @@ public class OutputService {
                 List<RulAction> actionByCodes = bulkActionService.getBulkActionByCodes(actionCodes);
 
                 if (!actionByCodes.isEmpty()) {
-                    rulItemTypes = itemTypeActionRepository.findByAction(actionByCodes);
+                    rulItemTypes = itemTypeActionRepository.findByActions(actionByCodes);
                 }
             }
         }

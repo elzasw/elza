@@ -40,6 +40,10 @@
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.junit.reportPaths>target/surefire-reports</sonar.junit.reportPaths>
         <sonar.jacoco.reportPaths>target/jacoco.exec</sonar.jacoco.reportPaths>
+
+        <!-- Pri zmene verze OpenApi generatoru je nutno zkontrolovat sedici verze axiosu v elze a ve vygenerovanem elza-api -->
+        <!-- V soucasne verzi OpenApi (5.0.1) je axios ve verzi 0.21.1 -->
+        <openapiGenerator.version>5.0.1</openapiGenerator.version>
     </properties>
 
     <modules>

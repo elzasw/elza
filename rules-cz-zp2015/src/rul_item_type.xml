@@ -93,7 +93,7 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_OTHER_ID" data-type="STRING">
-        <name>Jiná označení - specifikace a hodnota</name>
+        <name>Jiná označení</name>
         <shortcut>Jiná ozn.</shortcut>
         <description>ZP4.2.2 Jiná označení - specifikace a hodnota</description>
         <is-value-unique>false</is-value-unique>
@@ -394,17 +394,17 @@
         <use-specification>true</use-specification>
     </item-type>    
     <item-type code="ZP2015_AWARD_LEVEL" data-type="STRING">
-        <name>Úroveň státního vyznamenání/ceny</name>
-        <shortcut>Úroveň státního vyznamenání/ceny</shortcut>
+        <name>Úroveň vyznamenání/ceny</name>
+        <shortcut>Úroveň vyznamenání/ceny</shortcut>
         <description>třída nebo úroveň</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
     <item-type code="ZP2015_AWARD_GROUP" data-type="STRING">
-        <name>Skupina státního vyznamenání/ceny</name>
-        <shortcut>Skupina státního vyznamenání/ceny</shortcut>
-        <description>Skupina státního vyznamenání/ceny (civilní, vojenské)</description>
+        <name>Skupina vyznamenání/ceny</name>
+        <shortcut>Skupina vyznamenání/ceny</shortcut>
+        <description>Skupina vyznamenání/ceny (civilní, vojenské)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>

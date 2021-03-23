@@ -5,7 +5,7 @@ public enum ExtAsyncQueueState {
 
     NEW("Nový"),
 
-    RUNNING("Zpracovávaný"),
+    // RUNNING("Zpracovávaný"),
 
     OK("Zpracovaný OK"),
 

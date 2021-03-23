@@ -5,8 +5,8 @@ import React from 'react';
 import {AbstractReactComponent, i18n} from 'components/shared';
 import {Modal} from 'react-bootstrap';
 import {Button} from '../ui';
-import {indexById} from 'stores/app/utils.jsx';
-import Tags from 'components/form/Tags.jsx';
+import {indexById} from 'stores/app/utils';
+import Tags from 'components/form/Tags';
 
 /**
  * Formulář pro vybrání několika položek pomocí tag input.
