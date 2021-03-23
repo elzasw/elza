@@ -4,11 +4,11 @@
  * uzel - JP
  */
 
-import {WebApi} from 'actions/index.jsx';
+import {WebApi} from 'actions/index';
 import * as types from 'actions/constants/ActionTypes';
-import {indexById} from 'stores/app/utils.jsx';
-import {fundSelectSubNode} from './node.jsx';
-import {createFundRoot} from 'components/arr/ArrUtils.jsx';
+import {indexById} from 'stores/app/utils';
+import {fundSelectSubNode} from './node';
+import {createFundRoot} from 'components/arr/ArrUtils';
 
 export function isFundTreeAction(action) {
     switch (action.type) {

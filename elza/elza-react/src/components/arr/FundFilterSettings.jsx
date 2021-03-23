@@ -5,17 +5,17 @@ import {AbstractReactComponent, FilterableListBox, FormInput, HorizontalLoader, 
 import DescItemCoordinates from './nodeForm/DescItemCoordinates';
 import {Accordion, Card, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
-import {WebApi} from 'actions/index.jsx';
-import {hasDescItemTypeValue} from 'components/arr/ArrUtils.jsx';
-import {createFilterStructure, FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid.jsx';
+import {WebApi} from 'actions/index';
+import {hasDescItemTypeValue} from 'components/arr/ArrUtils';
+import {createFilterStructure, FILTER_NULL_VALUE} from 'actions/arr/fundDataGrid';
 import {
     normalizeDouble,
     normalizeInt,
     validateCoordinatePoint,
     validateDouble,
     validateInt,
-} from 'components/validate.jsx';
-import {getMapFromList} from 'stores/app/utils.jsx';
+} from 'components/validate';
+import {getMapFromList} from 'stores/app/utils';
 import {COL_REFERENCE_MARK} from './FundDataGridConst';
 import FundNodesSelect from './FundNodesSelect';
 import SimpleCheckListBox from './SimpleCheckListBox';

@@ -41,11 +41,20 @@ public interface ApBindingItemRepository extends ElzaJpaRepository<ApBindingItem
 
     void deleteByBinding(ApBinding binding);
 
-    @Query("SELECT bi FROM ap_binding_item bi LEFT JOIN FETCH bi.part WHERE bi.binding = :binding AND bi.part IS NOT NULL AND bi.deleteChange IS NULL")
-    List<ApBindingItem> findPartsByBinding(@Param("binding") ApBinding binding);
+    /**
+     * Find deleted or existing parts since last sync
+     * 
+     * @param binding
+     * @param syncChangeId
+     * @return
+     */
+    @Query("SELECT bi FROM ap_binding_item bi LEFT JOIN FETCH bi.part WHERE bi.binding = :binding AND bi.part IS NOT NULL AND (bi.deleteChange IS NULL OR bi.deleteChangeId > :syncChangeId )")
+    List<ApBindingItem> findPartsForSync(@Param("binding") ApBinding binding,
+                                         @Param("syncChangeId") Integer syncChangeId);
 
-    @Query("SELECT bi FROM ap_binding_item bi LEFT JOIN FETCH bi.item i LEFT JOIN FETCH i.data WHERE bi.binding = :binding AND bi.item IS NOT NULL AND bi.deleteChange IS NULL")
-    List<ApBindingItem> findItemsByBinding(@Param("binding") ApBinding binding);
+    @Query("SELECT bi FROM ap_binding_item bi LEFT JOIN FETCH bi.item i LEFT JOIN FETCH i.data WHERE bi.binding = :binding AND bi.item IS NOT NULL AND (bi.deleteChange IS NULL OR bi.deleteChangeId > :syncChangeId )")
+    List<ApBindingItem> findItemsForSync(@Param("binding") ApBinding binding,
+                                         @Param("syncChangeId") Integer syncChangeId);
 
     /**
      * Zneplatni vsechny doposud platne vazby itemu a partu

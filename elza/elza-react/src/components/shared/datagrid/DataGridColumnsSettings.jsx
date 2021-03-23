@@ -4,7 +4,7 @@
 import React from 'react';
 import {Modal} from 'react-bootstrap';
 import {Button} from '../../ui';
-import {getMapFromList} from 'stores/app/utils.jsx';
+import {getMapFromList} from 'stores/app/utils';
 
 import './DataGridColumnsSettings.scss';
 import AbstractReactComponent from '../../AbstractReactComponent';

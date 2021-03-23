@@ -7,13 +7,13 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
 import {AbstractReactComponent, HorizontalLoader, Icon, Splitter} from 'components/shared';
-import {indexById} from 'stores/app/utils.jsx';
-import * as daoActions from 'actions/arr/daoActions.jsx';
-import {WebApi} from 'actions/index.jsx';
+import {indexById} from 'stores/app/utils';
+import * as daoActions from 'actions/arr/daoActions';
+import {WebApi} from 'actions/index';
 import ArrDao from './ArrDao';
 
-import flattenItems from 'components/shared/utils/itemFilter.jsx';
-import List from 'components/shared/tree-list/TreeList.jsx';
+import flattenItems from 'components/shared/utils/itemFilter';
+import List from 'components/shared/tree-list/TreeList';
 import ListItem from '../shared/tree-list/list-item/ListItem';
 
 class ArrDaos extends AbstractReactComponent {

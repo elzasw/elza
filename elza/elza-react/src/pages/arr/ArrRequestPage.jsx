@@ -6,15 +6,15 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {indexById} from 'stores/app/utils.jsx';
+import {indexById} from 'stores/app/utils';
 import {connect} from 'react-redux';
-import {ArrRequestDetail, Ribbon} from 'components/index.jsx';
+import {ArrRequestDetail, Ribbon} from 'components/index';
 import {FormInput, i18n, Icon, ListBox, RibbonGroup, SearchWithGoto, StoreHorizontalLoader} from 'components/shared';
 import {Button} from '../../components/ui';
-import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx';
+import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus';
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
-import {createDigitizationName, DIGITIZATION} from 'components/arr/ArrUtils.jsx';
-import ArrParentPage from './ArrParentPage.jsx';
+import {createDigitizationName, DIGITIZATION} from 'components/arr/ArrUtils';
+import ArrParentPage from './ArrParentPage';
 
 import classNames from 'classnames';
 

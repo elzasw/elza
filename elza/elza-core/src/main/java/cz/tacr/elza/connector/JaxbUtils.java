@@ -1,6 +1,7 @@
 package cz.tacr.elza.connector;
 
 
+import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.PackageCode;
 import org.springframework.core.io.InputStreamSource;
@@ -11,6 +12,8 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.validation.Schema;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
@@ -50,12 +53,13 @@ public abstract class JaxbUtils {
     }
 
 
-    public static <T> File asFile(final T body) {
+    public static <T> File asFile(final T body, Schema schema) {
         Class<?> aClass = body.getClass();
         try {
             File temp = File.createTempFile("cam-", ".api.xml");
             JAXBContext jaxbContext = JAXBContext.newInstance(aClass);
             Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            jaxbMarshaller.setSchema(schema);
             jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             try (FileOutputStream os = new FileOutputStream(temp);
                  OutputStreamWriter wf = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {

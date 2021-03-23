@@ -1,9 +1,9 @@
 /**
  * Utility pro pořádání.
  */
-import {getSetFromIdsList, indexById} from 'stores/app/utils.jsx';
+import {getSetFromIdsList, indexById} from 'stores/app/utils';
 import React from 'react';
-import {dateTimeToString} from 'components/Utils.jsx';
+import {dateTimeToString} from 'components/Utils';
 import {i18n} from 'components/shared';
 import {JAVA_ATTR_CLASS} from '../../constants';
 

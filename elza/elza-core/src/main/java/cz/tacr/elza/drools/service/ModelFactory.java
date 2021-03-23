@@ -6,6 +6,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -78,6 +79,9 @@ public class ModelFactory {
 				} else if (data.getType() == DataType.INT) {
                     ArrDataInteger integer = HibernateUtils.unproxy(data);
                     voDescItem.setInteger(integer.getIntegerValue());
+                } else if (data.getType() == DataType.UNITDATE) {
+                    ArrDataUnitdate unitDate = HibernateUtils.unproxy(data);
+                    voDescItem.setUnitDate(unitDate);
                 }
             }
         }

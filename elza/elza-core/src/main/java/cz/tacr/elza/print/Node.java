@@ -157,38 +157,66 @@ public class Node {
     /**
      * Return list of items with given spec
      * 
-     * If item is without spec it is also returned
+     * If item is without spec it is also returned.
+     * First are items from top most parent.
      * 
      * @param typeCodes
      * @param specCodes
      * @return
      */
-    public List<Item> getItemsFromParent(final Collection<String> typeCodes, final Collection<String> specCodes) {
-        List<Item> result = new ArrayList<>();
+    public List<List<Item>> getItemsFromParent(final Collection<String> typeCodes, final Collection<String> specCodes) {
         NodeId parentNodeId = this.getParent();
+        List<List<Item>> parentItems;
         if (parentNodeId != null) {
             Node parentNode = nodeProvider.getNode(parentNodeId);
-            result.addAll(parentNode.getItemsFromParent(typeCodes, specCodes));
+            parentItems = parentNode.getItemsFromParent(typeCodes, specCodes);
+        } else {
+            parentItems = Collections.emptyList();
         }
-        result.addAll(getItems(typeCodes, specCodes));
-        return result;
+        List<Item> localItems = getItems(typeCodes, specCodes);
+        if (localItems.isEmpty()) {
+            return parentItems;
+        } else {
+            List<List<Item>> result = new ArrayList<>(parentItems.size() + 1);
+            result.addAll(parentItems);
+            result.add(localItems);
+            return result;
+        }
     }
 
-    public List<Item> getItemsFromParent(final Collection<String> typeCodes) {
+    /**
+     * Return list of items
+     * 
+     * First are items from top most parent.
+     * 
+     * @param typeCodes
+     * @return
+     */
+    public List<List<Item>> getItemsFromParent(final Collection<String> typeCodes) {
         Validate.notNull(typeCodes);
 
         if (items == null || typeCodes.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<Item> result = new ArrayList<>();
         NodeId parentNodeId = this.getParent();
+        List<List<Item>> parentItems;
         if (parentNodeId != null) {
             Node parentNode = nodeProvider.getNode(parentNodeId);
-            result.addAll(parentNode.getItemsFromParent(typeCodes));
+            parentItems = parentNode.getItemsFromParent(typeCodes);
+        } else {
+            parentItems = Collections.emptyList();
         }
-        result.addAll(getItems(typeCodes));
-        return result;
+        List<Item> localItems = getItems(typeCodes);
+
+        if (localItems.isEmpty()) {
+            return parentItems;
+        } else {
+            List<List<Item>> result = new ArrayList<>(parentItems.size() + 1);
+            result.addAll(parentItems);
+            result.add(localItems);
+            return result;
+        }
     }
 
     /**

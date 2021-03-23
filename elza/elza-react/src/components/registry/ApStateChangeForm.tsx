@@ -4,13 +4,14 @@ import {DecoratedFormProps, Field, FormErrors, formValueSelector, InjectedFormPr
 import {Autocomplete, i18n} from 'components/shared';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
-import {indexById} from 'stores/app/utils.jsx';
+import {indexByProperty} from 'stores/app/utils';
 import Scope from '../shared/scope/Scope';
 import FormInputField from '../../components/shared/form/FormInputField';
 import {connect} from 'react-redux';
 import FF from '../shared/form/FF';
 import * as perms from '../../actions/user/Permission';
 import {StateApproval, StateApprovalCaption} from '../../api/StateApproval';
+import {AppState} from "typings/store";
 
 const stateToOption = (item: StateApproval) => ({
     id: item,
@@ -54,7 +55,8 @@ class ApStateChangeForm extends React.Component<Props> {
                 refTables: {scopesData},
                 versionId,
             } = this.props;
-            let index = scopesData.scopes ? indexById(scopesData.scopes, versionId, 'versionId') : false;
+
+            let index = scopesData.scopes ? indexByProperty(scopesData.scopes, versionId, "versionId") : false;
             if (index && scopesData.scopes[index].scopes && scopesData.scopes[index].scopes[0].id) {
                 this.props.change('scopeId', scopesData.scopes[index].scopes[0].id);
             }
@@ -125,7 +127,7 @@ class ApStateChangeForm extends React.Component<Props> {
     }
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state:AppState) => {
     const selector = formValueSelector('apStateChangeForm');
 
     return {
@@ -133,7 +135,7 @@ const mapStateToProps = state => {
         typeId: selector(state, 'typeId'),
         state: selector(state, 'state'),
         refTables: state.refTables,
-        userDetail: state.userDetail,
+        userDetail: state.userDetail as any,
     };
 };
 

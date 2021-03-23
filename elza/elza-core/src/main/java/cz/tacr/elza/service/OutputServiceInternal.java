@@ -462,7 +462,7 @@ public class OutputServiceInternal {
                     ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
-        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemTypeId, output);
+        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItemsByItemType(itemTypeId, output);
 
         for (ArrOutputItem item : outputItems) {
             item.setDeleteChange(deleteChange); // saved by commit

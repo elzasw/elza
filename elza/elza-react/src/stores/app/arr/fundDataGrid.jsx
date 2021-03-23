@@ -1,8 +1,8 @@
 import * as types from 'actions/constants/ActionTypes';
-import {consolidateState} from 'components/Utils.jsx';
-import subNodeForm from './subNodeForm.jsx';
-import {nodeFormActions} from 'actions/arr/subNodeForm.jsx';
-import {getMapFromList} from 'stores/app/utils.jsx';
+import {consolidateState} from 'components/Utils';
+import subNodeForm from './subNodeForm';
+import {nodeFormActions} from 'actions/arr/subNodeForm';
+import {getMapFromList} from 'stores/app/utils';
 
 const initialState = {
     initialised: false, // jestli byl prvotně inicializován, např. seznam zobrazovaných sloupců atp.

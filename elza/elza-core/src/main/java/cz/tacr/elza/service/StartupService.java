@@ -8,6 +8,7 @@ import javax.transaction.Transactional.TxType;
 
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,8 @@ public class StartupService implements SmartLifecycle {
 
     private final ExtSyncsProcessor extSyncsProcessor;
 
+    private final AccessPointCacheService accessPointCacheService;
+
     private boolean running;
 
     @Autowired
@@ -89,7 +92,8 @@ public class StartupService implements SmartLifecycle {
                           IndexWorkProcessor indexWorkProcessor,
                           final ApplicationContext applicationContext,
                           final AsyncRequestService asyncRequestService,
-                          final ExtSyncsProcessor extSyncsProcessor) {
+                          final ExtSyncsProcessor extSyncsProcessor,
+                          final AccessPointCacheService accessPointCacheService) {
         this.nodeRepository = nodeRepository;
         this.arrangementService = arrangementService;
         this.bulkActionRunRepository = bulkActionRunRepository;
@@ -108,6 +112,7 @@ public class StartupService implements SmartLifecycle {
         this.applicationContext = applicationContext;
         this.asyncRequestService = asyncRequestService;
         this.extSyncsProcessor = extSyncsProcessor;
+        this.accessPointCacheService = accessPointCacheService;
     }
 
     @Autowired
@@ -122,6 +127,9 @@ public class StartupService implements SmartLifecycle {
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
         startInTransaction();
+
+        // kontrola datové struktury
+        accessPointService.checkConsistency();
 
         running = true;
         logger.info("Elza startup finished in {} ms", System.currentTimeMillis() - startTime);
@@ -171,6 +179,7 @@ public class StartupService implements SmartLifecycle {
         clearOrphanedNodes();
         bulkActionConfigManager.load();
         syncNodeCacheService();
+        syncApCacheService();
         structureDataService.startGenerator();
         indexWorkProcessor.startIndexing();
         extSyncsProcessor.startExtSyncs();
@@ -219,6 +228,13 @@ public class StartupService implements SmartLifecycle {
      */
     private void syncNodeCacheService() {
         nodeCacheService.syncCache();
+    }
+
+    /**
+     * Provede spuštění synchronizace cache pro AP.
+     */
+    private void syncApCacheService() {
+        accessPointCacheService.syncCache();
     }
 
     /**

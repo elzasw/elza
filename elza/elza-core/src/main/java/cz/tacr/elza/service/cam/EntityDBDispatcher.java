@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
@@ -29,6 +31,7 @@ import cz.tacr.cam.schema.cam.ItemLinkXml;
 import cz.tacr.cam.schema.cam.ItemStringXml;
 import cz.tacr.cam.schema.cam.ItemUnitDateXml;
 import cz.tacr.cam.schema.cam.PartXml;
+import cz.tacr.cam.schema.cam.PartsXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.common.ObjectListIterator;
@@ -80,6 +83,7 @@ import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
 import liquibase.pro.packaged.bi;
+import ma.glasnost.orika.impl.mapping.strategy.InstantiateByDefaultAndUseCustomMapperStrategy;
 
 /**
  * Create or update entities
@@ -145,6 +149,8 @@ public class EntityDBDispatcher {
 
     final private CamService camService;
 
+    final private AccessPointCacheService accessPointCacheService;
+
     private ProcessingContext procCtx;
 
     public EntityDBDispatcher(final ApAccessPointRepository accessPointRepository,
@@ -157,6 +163,7 @@ public class EntityDBDispatcher {
                               final AccessPointItemService accessPointItemService,
                               final AsyncRequestService asyncRequestService,
                               final PartService partService,
+                              final AccessPointCacheService accessPointCacheService,
                               final CamService camService) {
         this.accessPointRepository = accessPointRepository;
         this.stateRepository = stateRepository;
@@ -169,6 +176,7 @@ public class EntityDBDispatcher {
         this.asyncRequestService = asyncRequestService;
         this.camService = camService;
         this.partService = partService;
+        this.accessPointCacheService = accessPointCacheService;
     }
 
     public void createEntities(ProcessingContext procCtx,
@@ -314,6 +322,7 @@ public class EntityDBDispatcher {
 
         accessPointService.generateSync(accessPoint.getAccessPointId(), state,
                                         syncRes.getParts(), syncRes.getItemMap());
+        accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         this.procCtx = null;
     };
@@ -380,6 +389,7 @@ public class EntityDBDispatcher {
         accessPoint.setPreferredPart(accessPointService.findPreferredPart(partList));
 
         accessPointService.generateSync(accessPoint.getAccessPointId(), apState, partList, itemMap);
+        accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
     /**
@@ -492,6 +502,20 @@ public class EntityDBDispatcher {
                                                    final EntityXml entity,
                                                    final ApBindingState bindingState,
                                                    final ApAccessPoint accessPoint) {
+        Integer accessPointId = accessPoint.getAccessPointId();
+        PartsXml partsXml = entity.getPrts();
+        if(partsXml==null) {
+            log.error("Element parts is empty, accessPointId: {}, entityUuid: {}",
+                      accessPointId,
+                      entity.getEuid().toString());
+            throw new BusinessException("Element parts is empty, accessPointId: " + accessPoint.getAccessPointId(),
+                    BaseCode.INVALID_STATE)
+                            .set("accessPointId", accessPoint.getAccessPointId());
+        }
+        
+        log.debug("Synchronizing parts, accessPointId: {}, number of parts: {}", accessPointId,
+                  partsXml.getList().size());
+
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
         ApChange apChange = procCtx.getApChange();
         ApBinding binding = bindingState.getBinding();
@@ -509,13 +533,23 @@ public class EntityDBDispatcher {
 
         ApPart preferredName = null;
 
-        for (PartXml partXml : entity.getPrts().getList()) {
+        for (PartXml partXml : partsXml.getList()) {
+            log.debug("Synchronizing part, accessPointId: {}, part uuid: {}, parent uuid: {}, type: {}",
+                      accessPointId, partXml.getPid().getValue(),
+                      partXml.getPrnt() != null ? partXml.getPrnt().getValue() : null,
+                      partXml.getT());
+            
             ApBindingItem bindingItem = bindingPartLookup.remove(partXml.getPid().getValue());
             List<ApItem> itemList;
-            if (bindingItem != null && bindingItem.getPart() != null) {
+            if (bindingItem != null) {
+                log.debug("Part with required binding was found, updating existing binding, accessPointId: {}, bindingItemId: {}",
+                          accessPointId,
+                          bindingItem.getBindingItemId());
                 // Binding found -> update
                 itemList = updatePart(partXml, bindingItem.getPart(), binding, dataRefList);
             } else {
+                log.debug("Part with binding does not exists, creating new binding, accessPointId: {}", accessPointId);
+
                 bindingItem = createPart(partXml, accessPoint, binding);
                 itemList = createItems(partXml.getItms().getItems(),
                                                     bindingItem.getPart(), apChange, binding,
@@ -534,7 +568,7 @@ public class EntityDBDispatcher {
 
         // smazání partů dle externího systému
         // mažou se zbývající party
-        deleteParts(bindingPartLookup.values(), apChange);
+        deletePartsInLookup(apChange);
 
         // smazání zbývajících nezpracovaných item
         Collection<ApBindingItem> remainingBindingItems = bindingItemLookup.values();
@@ -543,8 +577,24 @@ public class EntityDBDispatcher {
                     .collect(Collectors.toList());
             deleteItems(items, apChange);
         }
-        Validate.isTrue(bindingItemLookup.size() == 0);
-        Validate.isTrue(bindingPartLookup.size() == 0);
+        if (bindingItemLookup.size() > 0) {
+            log.error("Exists unresolved bindings (items), accessPointId: {}, items: {}",
+                      accessPoint.getAccessPointId(),
+                      bindingItemLookup.keySet());
+            throw new BusinessException("Exists unresolved bindings, accessPointId: " + accessPointId +
+                    ", count: " + bindingItemLookup.size(),
+                    BaseCode.DB_INTEGRITY_PROBLEM)
+                            .set("accessPointId", accessPointId);
+        }
+        if (bindingPartLookup.size() > 0) {
+            log.error("Exists unresolved bindings (parts), accessPointId: {}, items: {}",
+                      accessPointId,
+                      bindingPartLookup.keySet());
+            throw new BusinessException("Exists unresolved bindings (parts), accessPointId: " +
+                    accessPoint.getAccessPointId() + ", count: " +
+                    bindingPartLookup.size(), BaseCode.DB_INTEGRITY_PROBLEM)
+                            .set("accessPointId", accessPointId);
+        }
 
         //nastavení odkazů na entitu
         camService.createBindingForRel(dataRefList, procCtx);
@@ -559,17 +609,25 @@ public class EntityDBDispatcher {
         return syncResult;
     }
 
-    private void deleteParts(Collection<ApBindingItem> bindingParts, ApChange apChange) {
-        if (CollectionUtils.isEmpty(bindingParts)) {
+    private void deletePartsInLookup(ApChange apChange) {
+        if (bindingPartLookup.isEmpty()) {
             return;
         }
 
+        Collection<ApBindingItem> partsBinding = bindingPartLookup.values();
         List<ApPart> partList = new ArrayList<>();
-        for (ApBindingItem bindingItem : bindingParts) {
-            partList.add(bindingItem.getPart());
-            bindingItem.setDeleteChange(apChange);
+        for (ApBindingItem partBinding : partsBinding) {
+            ApPart part = partBinding.getPart();
+            log.debug("Deleting part binding, bindingItemId: {}, partId: {}",
+                      partBinding.getBindingItemId(),
+                      part.getPartId());
+            partList.add(part);
+            partBinding.setDeleteChange(apChange);
         }
-        bindingItemRepository.saveAll(bindingParts);
+        bindingItemRepository.saveAll(partsBinding);
+
+        // clear lookup
+        bindingPartLookup.clear();
 
         List<ApItem> items = accessPointItemService.findItemsByParts(partList);
         deleteItems(items, apChange);
@@ -609,13 +667,17 @@ public class EntityDBDispatcher {
     private List<ApItem> updatePart(PartXml partXml, ApPart apPart,
                             ApBinding binding, List<ReferencedEntities> dataRefList) {
 
-        if (partXml.getItms() == null) {
-            throw new SystemException("Received empty part");
+        List<Object> itemsXml;
+
+        if (partXml.getItms() != null) {
+            itemsXml = partXml.getItms().getItems();
+        } else {
+            itemsXml = Collections.emptyList();
         }
 
         List<ApBindingItem> notChangeItems = new ArrayList<>();
         List<ChangedBindedItem> changedItems = new ArrayList<>();
-        List<Object> newItems = findNewOrChangedItems(partXml.getItms().getItems(),
+        List<Object> newItems = findNewOrChangedItems(itemsXml,
                                                       changedItems,
                                                       notChangeItems);
 

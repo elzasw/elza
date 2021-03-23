@@ -360,7 +360,7 @@
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_STV">
-        <name>vyznamenání / cena</name>
+        <name>vyznamenání/cena</name>
         <description>vyznamenání nebo cena</description>
         <shortcut>stv</shortcut>
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
@@ -372,13 +372,13 @@
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_STVR">
-        <name>udělení / propůjčení vyznamenání / ceny</name>
+        <name>udělení/propůjčení vyznamenání/ceny</name>
         <description>udělení / propůjčení vyznamenání / ceny</description>
         <shortcut>stvr</shortcut>
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_SUBTYPE_JMF">
-        <name>jmenování / ustanovení do funkce</name>
+        <name>jmenování/ustanovení do funkce</name>
         <description>jmenování / ustanovení do funkce</description>
         <shortcut>jmf</shortcut>
         <item-type-assign code="ZP2015_UNIT_SUBTYPE"/>
@@ -2342,8 +2342,8 @@
     </item-spec>
     <!-- Role entit -->
     <item-spec code="ZP2015_ENTITY_ROLE_73">
-        <name>vyznamenání / cena</name>
-        <description>vyznamenání / cena</description>
+        <name>vyznamenání/cena</name>
+        <description>vyznamenání nebo cena</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="ARTWORK"/>
@@ -2351,8 +2351,8 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_74">
-        <name>nositel</name>
-        <description>nositel vyznamenání / ceny</description>
+        <name>nositel vyznamenání/ceny</name>
+        <description>nositel vyznamenání nebo ceny</description>
         <shortcut></shortcut>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
@@ -2419,7 +2419,8 @@
     <!-- zastaralé, nově většinou autor textu (ZP2015_ENTITY_ROLE_11),
           používá se nyní již jen u technických výkresů, asi by mohlo být 
           přejmenováno na "autor výkresu" -->
-    <item-spec code="ZP2015_ENTITY_ROLE_1">        <name>autor</name>
+    <item-spec code="ZP2015_ENTITY_ROLE_1">
+        <name>autor</name>
         <description>zastaralé, nově většinou autor textu</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -2571,7 +2572,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_16">
-        <name>vydavatel / nakladatel</name>
+        <name>vydavatel/nakladatel</name>
         <description>5.6.1, 5.9.1, 5.11.2, 5.16.1, 5.17.1, 5.18.1 - hudebniny, mapy (mapová díla, atlasy), grafické listy, pohlednice, plakáty, štočky</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -2651,7 +2652,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_24">
-        <name>odesilatel</name>
+        <name>odesílatel</name>
         <description>5.12.1, 5.16.1 - fotografické archiválie, pohlednice</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -2890,7 +2891,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_49">
-        <name>zpracovatel nosičů záznamů</name>
+        <name>zpracovatel nosiče záznamu</name>
         <description>5.13.2, 5.14.2 - kinematografické filmy, zvukové archiválie</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -2900,7 +2901,7 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_50">
-        <name>výrobce nosičů záznamů</name>
+        <name>výrobce nosiče záznamu</name>
         <description>5.12.1, 5.13.2, 5.9.1, 5.14.2, 5.15.1 - fotografické archiválie, kinematografické filmy, mapy (mapová díla, atlasy), zvukové archiválie, tisky</description>
         <shortcut></shortcut>
         <item-aptypes>
@@ -3137,7 +3138,26 @@
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
     </item-spec>
-    <!-- Poslední role entity: ZP2015_ENTITY_ROLE_81 -->    
+    <item-spec code="ZP2015_ENTITY_ROLE_82">
+        <name>matriční místo</name>
+        <description>matriční místo, platné pro podtyp matiky</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_83">
+        <name>sekundární klasifikace</name>
+        <description>sekundární klasifikace pro dotazy na web</description>
+        <shortcut></shortcut>
+        <item-aptypes>
+            <item-aptype register-type="TERM_GENERAL"/>
+            <item-aptype register-type="TERM_TAXONOMY"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>
+    <!-- Poslední použitá role entity: ZP2015_ENTITY_ROLE_83 -->    
     <!-- Nezjištěné hodnoty -->
     <item-spec code="ZP2015_UNKNOWN_AUTHOR">
         <name>autor</name>

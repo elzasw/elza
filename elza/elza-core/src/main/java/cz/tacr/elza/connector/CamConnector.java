@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.validation.Schema;
+
 import cz.tacr.cam.schema.cam.UpdatesFromXml;
 import cz.tacr.cam.schema.cam.UpdatesXml;
 import org.slf4j.Logger;
@@ -24,6 +26,7 @@ import cz.tacr.cam.schema.cam.BatchUpdateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.QueryResultXml;
 import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.UsrPermission;
@@ -38,6 +41,11 @@ public class CamConnector {
 
     @Autowired
     private ApExternalSystemRepository apExternalSystemRepository;
+
+    @Autowired
+    private SchemaManager schemaManager;
+
+    // schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL)
 
     private static final Logger logger = LoggerFactory.getLogger(CamConnector.class);
 
@@ -61,7 +69,10 @@ public class CamConnector {
 
     public BatchUpdateResultXml postNewBatch(final BatchUpdateXml batchUpdate,
                                              final String externalSystemCode) throws ApiException {
-        ApiResponse<File> fileApiResponse = getBatchUpdatesApiByCode(externalSystemCode).postNewBatchWithHttpInfo(JaxbUtils.asFile(batchUpdate));
+        Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL);
+        File xmlFile = JaxbUtils.asFile(batchUpdate, schema);
+        ApiResponse<File> fileApiResponse = getBatchUpdatesApiByCode(externalSystemCode)
+                .postNewBatchWithHttpInfo(xmlFile);
         return JaxbUtils.unmarshal(BatchUpdateResultXml.class, fileApiResponse.getData());
     }
 

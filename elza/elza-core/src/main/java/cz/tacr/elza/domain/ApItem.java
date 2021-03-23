@@ -1,5 +1,8 @@
 package cz.tacr.elza.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
+
 import javax.persistence.*;
 
 /**
@@ -11,7 +14,8 @@ import javax.persistence.*;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "ap_item")
-public class ApItem implements Item {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ApItem implements Item, AccessPointCacheSerializable {
 
     public static final String PART_ID = "partId";
     public static final String PART = "part";
@@ -110,6 +114,11 @@ public class ApItem implements Item {
 
     public void setCreateChange(final ApChange createChange) {
         this.createChange = createChange;
+        this.createChangeId = createChange != null ? createChange.getChangeId() : null;
+    }
+
+    public Integer getCreateChangeId() {
+        return createChangeId;
     }
 
     public ApChange getDeleteChange() {
@@ -118,6 +127,7 @@ public class ApItem implements Item {
 
     public void setDeleteChange(final ApChange deleteChange) {
         this.deleteChange = deleteChange;
+        this.deleteChangeId = deleteChange != null ? deleteChange.getChangeId() : null;
     }
 
     public Integer getObjectId() {

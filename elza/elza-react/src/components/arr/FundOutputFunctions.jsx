@@ -15,10 +15,10 @@ import {
     fundOutputActionInterrupt,
     fundOutputActionRun,
     fundOutputFunctionsFilterByState,
-} from 'actions/arr/fundOutputFunctions.jsx';
-import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx';
-import {indexById} from 'stores/app/utils.jsx';
-import {dateTimeToString} from 'components/Utils.jsx';
+} from 'actions/arr/fundOutputFunctions';
+import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction';
+import {indexById} from 'stores/app/utils';
+import {dateTimeToString} from 'components/Utils';
 import './FundOutputFunctions.scss';
 import {actionStateTranslation} from '../../actions/arr/fundAction';
 

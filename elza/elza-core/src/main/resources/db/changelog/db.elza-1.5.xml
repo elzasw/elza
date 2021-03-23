@@ -1162,4 +1162,37 @@
           where p.part_id = si.part_id      
       </sql>
     </changeSet>
+    
+    <changeSet id="20210318032824" author="ppyt">
+        <dropIndex tableName="arr_structured_object" indexName="arr_structured_object_uuid_unique_idx"/>
+        <addUniqueConstraint tableName="arr_structured_object"
+                    constraintName="arr_structured_object_uuid_unique" 
+        			columnNames="uuid, fund_id, structured_type_id, delete_change_id" />  
+    </changeSet>    
+    
+    <changeSet id="20210228150900" author="fantis">
+        <createTable tableName="ap_cached_access_point">
+            <column name="cached_access_point_id" type="int">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_ap_cached_access_point"
+                             nullable="false"/>
+            </column>
+            <column name="access_point_id" type="int">
+                <constraints foreignKeyName="fk_ap_cached_access_point_access_point"
+                             referencedTableName="ap_access_point"
+                             referencedColumnNames="access_point_id"
+                             nullable="false"/>
+            </column>
+            <column name="data" type="${type.text}">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="20210320234400" author="ppyt">
+      <sql>UPDATE ext_syncs_queue_item SET state='NEW' WHERE state='RUNNING'</sql>
+        <addColumn tableName="ext_syncs_queue_item">
+            <column name="batch_id" type="nvarchar(50)">
+            </column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

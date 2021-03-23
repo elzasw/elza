@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -13,7 +14,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 @Entity(name = "ap_index")
-public class ApIndex {
+public class ApIndex implements AccessPointCacheSerializable {
 
     public static final String VALUE = "value";
     public static final String INDEX_TYPE = "indexType";
