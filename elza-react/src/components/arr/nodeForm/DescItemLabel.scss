@@ -20,6 +20,9 @@
     padding-right: 3px;
     vertical-align: middle;
     line-height: 1.8em;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     &:not(:last-child) {
       white-space: normal;
