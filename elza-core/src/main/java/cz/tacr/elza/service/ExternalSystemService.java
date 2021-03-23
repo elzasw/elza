@@ -344,7 +344,8 @@ public class ExternalSystemService {
         return bindingStateRepository.save(apBindingState);
     }
 
-    public ApBindingState createNewApBindingState(ApBindingState oldbindingState, ApChange apChange, String revisionUuid) {
+    public ApBindingState createNewApBindingState(ApBindingState oldbindingState,
+                                                  ApChange apChange, String revisionUuid) {
         ApBindingState apBindingState = new ApBindingState();
         apBindingState.setBinding(oldbindingState.getBinding());
         apBindingState.setAccessPoint(oldbindingState.getAccessPoint());

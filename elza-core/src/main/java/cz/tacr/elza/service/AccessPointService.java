@@ -1880,7 +1880,8 @@ public class AccessPointService {
         return extSyncsQueueItemVOList;
     }
 
-    private ExtSyncsQueueItemVO createExtSyncsQueueItemVO(ExtSyncsQueueItem extSyncsQueueItem, String name, Integer scopeId) {
+    private ExtSyncsQueueItemVO createExtSyncsQueueItemVO(ExtSyncsQueueItem extSyncsQueueItem,
+                                                          String name, Integer scopeId) {
         ExtSyncsQueueItemVO extSyncsQueueItemVO = new ExtSyncsQueueItemVO();
         extSyncsQueueItemVO.setId(extSyncsQueueItem.getExtSyncsQueueItemId());
         extSyncsQueueItemVO.setAccessPointId(extSyncsQueueItem.getAccessPoint().getAccessPointId());
@@ -1909,7 +1910,7 @@ public class AccessPointService {
                                                      final String userName) {
         ExtSyncsQueueItem extSyncsQueueItem = new ExtSyncsQueueItem();
         extSyncsQueueItem.setAccessPoint(accessPoint);
-        extSyncsQueueItem.setApExternalSystem(apExternalSystem);
+        extSyncsQueueItem.setExternalSystem(apExternalSystem);
         extSyncsQueueItem.setStateMessage(stateMessage);
         extSyncsQueueItem.setState(state);
         extSyncsQueueItem.setDate(date);
