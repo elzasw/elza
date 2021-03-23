@@ -9,6 +9,7 @@ import {useDispatch} from 'react-redux';
 import {modalDialogHide} from '../../actions/global/modalDialog';
 
 import { Api, ApAccessPointVO } from "../../api";
+import { DeleteAccessPointDetailReplaceTypeEnum as ReplaceType} from "elza-api";
 
 // Docasne definice
 // bude nahrazeno typy z vygenerovaneho api
@@ -43,16 +44,26 @@ export const AccessPointDeleteForm:FC<{
     const [data, setData] = useState<RegistryUsage | null>(null)
     const dispatch = useDispatch();
 
-    const handleReplace = (selectedReplacementNode: ApAccessPointVO) => {
-        if (selectedReplacementNode) {
+
+    const deleteAccessPoint = (newNode: ApAccessPointVO, replaceType: ReplaceType) => {
+        if (newNode) {
             Api.accesspoints.deleteAccessPoint(detail.id.toString(), {
-                replacedBy: selectedReplacementNode.id.toString(),
+                replacedBy: newNode.id.toString(),
+                replaceType,
             }).then(() => {
                 dispatch(addToastrSuccess(i18n('registry.replaceSuccess')));
                 dispatch(modalDialogHide());
             });
         }
+    }
+
+    const handleReplace = (replacementNode: ApAccessPointVO) => {
+        deleteAccessPoint(replacementNode, ReplaceType.Simple);
     };
+
+    const handleMerge = (replacementNode: ApAccessPointVO) => {
+        deleteAccessPoint(replacementNode, ReplaceType.CopyAll);
+    }
 
     useEffect(()=>{
         WebApi.findRegistryUsage(detail.id).then(data => {
@@ -65,8 +76,9 @@ export const AccessPointDeleteForm:FC<{
             detail={detail}
             treeArea={types.FUND_TREE_AREA_USAGE}
             onReplace={handleReplace}
+            onMerge={handleMerge}
             type="registry"
-            replaceButtonText={`${i18n('accesspoint.removeDuplicity.resolve')}`}
+            //replaceButtonText={`${i18n('accesspoint.removeDuplicity.resolve')}`}
             replaceText={`${i18n('accesspoint.removeDuplicity.replacingAccesspoint')}:`}
             replaceType="delete"
             nameLabel={`${i18n('accesspoint.removeDuplicity.replacedAccesspoint')}:`}

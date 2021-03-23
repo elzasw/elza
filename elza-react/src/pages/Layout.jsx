@@ -41,7 +41,6 @@ import {
 import './Layout.scss';
 import {modalDialogShow} from '../actions/global/modalDialog';
 import i18n from '../components/i18n';
-import RegistryUsageForm from '../components/form/RegistryUsageForm';
 import {FOCUS_KEYS} from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
 
@@ -111,11 +110,6 @@ class Layout extends AbstractReactComponent {
         }, 1000);
     };
 
-    //kvůli circular dependency
-    handleRegistryShowUsage = data => {
-        this.props.dispatch(modalDialogShow(this, i18n('registry.registryUsage'), <RegistryUsageForm detail={data} />));
-    };
-
     render() {
         const {canStartGame, showGame} = this.state;
 
@@ -167,7 +161,7 @@ class Layout extends AbstractReactComponent {
                             </Route>
 
                             <Route path="/registry">
-                                <RegistryPage onShowUsage={this.handleRegistryShowUsage} />
+                                <RegistryPage/>
                             </Route>
 
                             <Route path="/admin">
