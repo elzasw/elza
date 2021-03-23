@@ -28,6 +28,7 @@ class RegistryUsageForm extends React.Component {
         detail: PropTypes.object,
         replaceText: PropTypes.string,
         replaceButtonText: PropTypes.string,
+        mergeButtonText: PropTypes.string,
         replaceType: PropTypes.string,
         nameLabel: PropTypes.string,
     };
@@ -35,6 +36,7 @@ class RegistryUsageForm extends React.Component {
     static defaultProps = {
         replaceText: i18n("registry.replaceText"),
         replaceButtonText: i18n('registry.replace'),
+        mergeButtonText: i18n('registry.merge'),
         replaceType: "replace",
     }
 
@@ -248,7 +250,7 @@ class RegistryUsageForm extends React.Component {
     }
 
     renderReplaceField = () => {
-        const { type, replaceButtonText, onReplace} = this.props;
+        const { type, replaceButtonText, mergeButtonText, onMerge, onReplace} = this.props;
         const {selectedReplacementNode} = this.state;
         return (
             <div className="field-container">
@@ -259,54 +261,74 @@ class RegistryUsageForm extends React.Component {
                         onBlur={() => {}}
                     />
                 )}
-                <Button
-                    onClick={() => onReplace(selectedReplacementNode)}
-                    disabled={!this.canReplace() || !onReplace}
-                >
-                    {replaceButtonText}
-                </Button>
             </div>
         )
     }
 
 
     render() {
-        const {detail, fundTreeUsage, replaceType, onReplace, nameLabel} = this.props;
+        const {detail, fundTreeUsage, replaceType, onReplace, onMerge, nameLabel} = this.props;
+        const { replaceButtonText, mergeButtonText} = this.props;
+        const {selectedReplacementNode} = this.state;
 
         const canReplace = (replaceType === "replace" && this.state.usageCount > 0);
         const canDelete = replaceType === "delete";
+
         return (
+            <>
             <Modal.Body className="reg-usage-form">
                 {nameLabel && <div className="name-label">{nameLabel}</div>}
                 <h4>{detail && detail.data && detail.data.name}</h4>
-                <label>
-                    {i18n('registry.registryUsageCount')} {this.state.usageCount}
-                </label>
-                {fundTreeUsage && (
-                    <FundTreeUsage
-                        handleOpenCloseNode={this.handleOpenCloseNode}
-                        className="fund-tree-container-fixed"
-                        cutLongLabels={true}
-                        ref={ref => (this.treeRef = ref)}
-                        showCountStats={true}
-                        onLinkClick={this.handleLinkClick}
-                        {...fundTreeUsage}
-                    />
-                )}
-                { onReplace && (canDelete ? 
+                { onReplace && onMerge && (canDelete ? 
                     <div className="actions-container">
                         <div className="actions-text">{this.props.replaceText}</div>
                         {this.renderReplaceField()}
                     </div> : 
                     canReplace && (
-                    <ToggleContent 
-                        withText 
-                        text={this.props.replaceText} 
-                    >
-                        {this.renderReplaceField()}
-                    </ToggleContent>
-                ))}
+                        <ToggleContent 
+                            withText 
+                            text={this.props.replaceText} 
+                        >
+                            {this.renderReplaceField()}
+                        </ToggleContent>
+                    ))}
+                <ToggleContent 
+                    withText 
+                    opened={!canDelete}
+                    text={`${i18n('registry.registryUsageCount')} ${this.state.usageCount}`}
+                >
+                    {fundTreeUsage && (
+                        <FundTreeUsage
+                            handleOpenCloseNode={this.handleOpenCloseNode}
+                            className="fund-tree-container-fixed"
+                            cutLongLabels={true}
+                            ref={ref => (this.treeRef = ref)}
+                            showCountStats={true}
+                            onLinkClick={this.handleLinkClick}
+                            {...fundTreeUsage}
+                            />
+                    )}
+                </ToggleContent>
             </Modal.Body>
+                {canDelete &&
+                    <Modal.Footer>
+                        <Button
+                            onClick={() => onReplace(selectedReplacementNode)}
+                            disabled={!this.canReplace() || !onReplace}
+                            variant="outline-secondary"
+                        >
+                            {replaceButtonText}
+                        </Button>
+                        <Button
+                            onClick={() => onMerge(selectedReplacementNode)}
+                            disabled={!this.canReplace() || !onMerge}
+                            variant="outline-secondary"
+                        >
+                            {mergeButtonText}
+                        </Button>
+                    </Modal.Footer>
+                }
+            </>
         );
     }
 

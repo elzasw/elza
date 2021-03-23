@@ -993,6 +993,7 @@ var messages = {
     "registry.usage.tooMany": "Počet nalezených výskytů je příliš velký",
     "registry.replaceText": "Nahrazení hesla ve výskytech za heslo",
     "registry.replace": "Nahradit",
+    "registry.merge": "Sloučit",
     "registry.setValid.confirm": "Opravdu chcete zplatnit toto rejstříkové heslo?",
     "registry.setValid": "Zplatnit heslo",
     "registry.invalid.warning": "Zobrazené heslo je neplatné",
