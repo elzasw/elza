@@ -224,7 +224,6 @@ public class AccessPointsContext {
         if (storeReferenced) {
             storeAccessPoints();
         }
-        //storageManager.storeGeneric(partQueue);
         storageManager.storeParts(partQueue);
         for (PartWrapper wrapper : partQueue) {
             wrapper.getPartInfo().setEntityId(wrapper.getEntity().getPartId());

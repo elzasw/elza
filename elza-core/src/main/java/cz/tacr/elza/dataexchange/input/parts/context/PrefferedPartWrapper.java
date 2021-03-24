@@ -51,6 +51,10 @@ public class PrefferedPartWrapper implements RefUpdateWrapper {
 
     @Override
     public void executeUpdateQuery(Session session) {
+        if (apInfo.getSaveMethod() != SaveMethod.CREATE) {
+            return;
+        }
+
         ApPart prefferedPart = partIdHolder.getEntityRef(session);
 
         CriteriaBuilder cb = session.getCriteriaBuilder();
