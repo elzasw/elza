@@ -25,12 +25,6 @@ public class PartWrapper implements EntityWrapper {
         this.itemQueue = itemWrapperList;
     }
 
-    public PartWrapper(ApPart entity) {
-        this.entity = Validate.notNull(entity);
-        this.partInfo = null;
-        this.itemQueue = null;
-    }
-
     public PartInfo getPartInfo() {
         return partInfo;
     }

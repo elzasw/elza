@@ -127,7 +127,11 @@ public class AccessPointsContext {
      * @param eids    AP external ids, can be null
      * @return Return access point import info
      */
-    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApBindingState> eids, Collection<PartWrapper> partWrappers) {
+    public AccessPointInfo addAccessPoint(ApAccessPoint entity,
+                                          String entryId,
+                                          ApState apState,
+                                          Collection<ApBindingState> eids,
+                                          Collection<PartWrapper> partWrappers) {
         AccessPointInfo info = new AccessPointInfo(apState);
         if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
             throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
@@ -148,26 +152,6 @@ public class AccessPointsContext {
             partWrappers.forEach(partWrapper -> addPart(partWrapper, apWrapper));
         }
 
-
-
-        return info;
-    }
-
-    public AccessPointInfo addAccessPoint(ApAccessPoint entity, String entryId, ApState apState, Collection<ApBindingState> eids) {
-        AccessPointInfo info = new AccessPointInfo(apState);
-        if (entryIdApInfoMap.putIfAbsent(entryId, info) != null) {
-            throw new DEImportException("Access point has duplicate id, apeId:" + entryId);
-        }
-        // add to queue
-        apQueue.add(new AccessPointWrapper(entity, info, eids, arrangementService));
-        info.onEntityQueued();
-        if (apQueue.size() >= batchSize) {
-            storeAccessPoints();
-        }
-        // add all external ids to queue
-        if (eids != null) {
-            eids.forEach(eid -> addExternalId(eid, info));
-        }
         return info;
     }
 
