@@ -12,7 +12,7 @@ import {
 } from 'redux-form';
 import { ApPartFormVO } from '../../../api/ApPartFormVO';
 import { ApTypeVO } from '../../../api/ApTypeVO';
-import { objectById } from '../../../shared/utils';
+// import { objectById } from '../../../shared/utils';
 import requireFields from '../../../shared/utils/requireFields';
 import i18n from '../../i18n';
 import { Autocomplete, Loading } from '../../shared';
@@ -24,6 +24,7 @@ import {AP_VIEW_SETTINGS} from '../../../constants';
 import storeFromArea from '../../../shared/utils/storeFromArea';
 import {ApViewSettings} from '../../../api/ApViewSettings';
 import {DetailStoreState} from '../../../types';
+import { AppState, PartType, ScopeData, UserDetail } from "../../../typings/store";
 
 const FORM_NAME = 'createAccessPointForm';
 
@@ -62,17 +63,17 @@ const CreateAccessPointModal:FC<Props> = ({
     partForm,
     submitting,
     change,
+    userDetail,
 }) => {
-    // eslint-disable-next-line
+    const partTypeCode = "PT_NAME";
+
     useEffect(() => {
-        const partType = objectById(refTables.partTypes.items, 'PT_NAME', 'code');
-        if (partType) {
-            change('partForm', {
-                partTypeCode: partType.code,
-                items: [],
-            } as ApPartFormVO);
-        }
-    }, [apTypeId, apType]);
+        // const partType = getPartTypeId(refTables.partTypes.items, "PT_NAME");
+        change('partForm', {
+            partTypeCode,
+            items: [],
+        } as ApPartFormVO);
+    }, [apTypeId, apType, change]);
 
     const loading = 
         !refTables.apTypes.fetched || 
@@ -83,6 +84,8 @@ const CreateAccessPointModal:FC<Props> = ({
         !apViewSettings.fetched;
 
     const filteredApTypes = filterApTypes(refTables.apTypes.fetched ? refTables.apTypes.items : [], apTypeFilter);
+    const filteredScopes = filterScopes(refTables.scopesData.scopes, userDetail);
+    const partTypeId = getPartTypeId(refTables.partTypes.items, partTypeCode);
 
     return (
         <ReduxForm onSubmit={handleSubmit}>
@@ -101,7 +104,7 @@ const CreateAccessPointModal:FC<Props> = ({
                     items={filteredApTypes}
                     tree
                     alwaysExpanded
-                    allowSelectItem={item => item.addRecord}
+                    allowSelectItem={(item: ApTypeVO) => item.addRecord}
                     value={apTypeId ? apTypeId : apType ? apType.id : null}
                 />
 
@@ -112,14 +115,14 @@ const CreateAccessPointModal:FC<Props> = ({
                     component={ReduxFormFieldErrorDecorator}
                     renderComponent={Scope}
                     passOnly
-                    items={refTables.scopesData.scopes}
+                    items={filteredScopes}
                     tree
                     alwaysExpanded
-                    allowSelectItem={item => item.addRecord}
+                    allowSelectItem={(item: ApTypeVO) => item.addRecord}
                     value={scopeId}
                 />
 
-                {(apTypeId || (apType && apType.id)) && scopeId && partForm && (
+                {(apTypeId || (apType && apType.id)) && scopeId && partForm && partTypeId !== undefined && (
                     <FormSection name="partForm">
                         <hr />
                         <PartEditForm
@@ -127,7 +130,7 @@ const CreateAccessPointModal:FC<Props> = ({
                                 formName: FORM_NAME,
                                 sectionName: 'partForm',
                             }}
-                            partTypeId={objectById(refTables.partTypes.items, 'PT_NAME', 'code').id}
+                            partTypeId={partTypeId}
                             apTypeId={apType.id}
                             scopeId={scopeId}
                             formData={partForm}
@@ -150,11 +153,32 @@ const CreateAccessPointModal:FC<Props> = ({
     );
 };
 
-const filterApTypes = (apTypes: ApTypeVO[], apTypeCodes?: string[]) => {
+const getPartTypeId = (partTypes: PartType[] = [], partTypeName: "PT_NAME") => {
+    const partType = partTypes.find((item:any)=>item.code === partTypeName);
+    return partType ? partType.id : undefined;
+}
+
+const filterScopes = (scopes: ScopeData[] = [], userDetail: UserDetail) => {
+    // Don't filter, when user is admin, or has permission to write to all scopes.
+    if(userDetail.isAdmin() || userDetail.permissionsMap.AP_SCOPE_WR_ALL){return scopes;}
+    const userWritableScopes = userDetail.permissionsMap.AP_SCOPE_WR?.scopeIdsMap;
+    // Return empty, when user doesn't have any permission to write in scopes.
+    if(!userWritableScopes){return [];}
+
+    return [...scopes].map((scopeData)=>({
+        ...scopeData,
+        scopes: scopeData.scopes.filter((scope) => 
+            scope.id !== undefined && 
+            scope.id !== null && 
+            userWritableScopes[scope.id] !== undefined
+        )
+    }))
+}
+
+const filterApTypes = (apTypes: ApTypeVO[] = [], apTypeCodes: string[] = []) => {
+    if(apTypeCodes.length === 0){ return apTypes; }
+
     const filteredTypes: ApTypeVO[] = [];
-
-    if(!apTypeCodes || apTypeCodes.length === 0){ return apTypes; }
-
     apTypes.forEach((type)=>{
         if(apTypeCodes.indexOf(type.code) >= 0){
             filteredTypes.push(type);
@@ -172,13 +196,14 @@ const filterApTypes = (apTypes: ApTypeVO[], apTypeCodes?: string[]) => {
 }
 
 const selector = formValueSelector(FORM_NAME);
-const mapStateToProps = (state: any) => {
+const mapStateToProps = (state: AppState) => {
     return {
         refTables: state.refTables,
         apType: selector(state, 'apType') as ApTypeVO,
         scopeId: selector(state, 'scopeId'),
         partForm: selector(state, 'partForm'),
         apViewSettings: storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>,
+        userDetail: state.userDetail,
     };
 };
 
