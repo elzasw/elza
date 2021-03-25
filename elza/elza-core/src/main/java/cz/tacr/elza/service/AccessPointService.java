@@ -1616,15 +1616,15 @@ public class AccessPointService {
         bindingRepository.delete(binding);
     }
 
-    public List<Integer> findRelArchiveEntities(ApAccessPoint accessPoint) {
-        List<Integer> archiveEntityIds = new ArrayList<>();
+    public List<String> findRelArchiveEntities(ApAccessPoint accessPoint) {
+        List<String> archiveEntityIds = new ArrayList<>();
         List<ApItem> itemList = itemRepository.findValidItemsByAccessPoint(accessPoint);
 
         for (ApItem item : itemList) {
             if (item.getData() instanceof ArrDataRecordRef) {
                 ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) item.getData();
                 if (dataRecordRef.getRecord() == null) {
-                    archiveEntityIds.add(Integer.parseInt(dataRecordRef.getBinding().getValue()));
+                    archiveEntityIds.add(dataRecordRef.getBinding().getValue());
                 }
             }
         }

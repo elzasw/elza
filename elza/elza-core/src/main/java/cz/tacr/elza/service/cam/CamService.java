@@ -424,7 +424,7 @@ public class CamService {
             EntityXml entity;
             try {
                 // download entity from CAM
-                entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()),
+                entity = camConnector.getEntityById(bindingState.getBinding().getValue(),
                                                     externalSystem.getCode());
             } catch (ApiException e) {
                 throw prepareSystemException(e);
@@ -597,7 +597,7 @@ public class CamService {
             // update entity
             EntityXml entity;
             try {
-                entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()), externalSystemCode);
+                entity = camConnector.getEntityById(bindingState.getBinding().getValue(), externalSystemCode);
             } catch (ApiException e) {
                 throw prepareSystemException(e);
             }

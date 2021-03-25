@@ -968,7 +968,7 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "/external/{archiveEntityId}/take", method = RequestMethod.POST)
-    public Integer takeArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
+    public Integer takeArchiveEntity(@PathVariable("archiveEntityId") final String archiveEntityId,
                                      @RequestParam final Integer scopeId,
                                      @RequestParam final String externalSystemCode) {
         StaticDataProvider sdp = this.staticDataService.getData();
@@ -983,15 +983,15 @@ public class ApController {
         }
 
         ApScope scope = accessPointService.getScope(scopeId);
-        ApBinding binding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId
-                .toString(), apExternalSystem);
+        ApBinding binding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId,
+                                                                                         apExternalSystem);
         if (binding != null) {
             // check state
             Optional<ApBindingState> bindingState = externalSystemService.getBindingState(binding);
             bindingState.ifPresent(bs -> {
                 throw new SystemException("Archival entity already imported", ExternalCode.ALREADY_IMPORTED)
                         .set("externalSystemCode", externalSystemCode)
-                        .set("archiveEntityId", archiveEntityId.toString())
+                        .set("archiveEntityId", archiveEntityId)
                         .set("bindingStateId", bs.getBindingStateId())
                         .set("accessPointId", bs.getAccessPointId());
 
@@ -1017,7 +1017,7 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "/external/{archiveEntityId}/connect/{accessPointId}", method = RequestMethod.POST)
-    public void connectArchiveEntity(@PathVariable("archiveEntityId") final Integer archiveEntityId,
+    public void connectArchiveEntity(@PathVariable("archiveEntityId") final String archiveEntityId,
                                      @PathVariable("accessPointId") final Integer accessPointId,
                                      @RequestParam("externalSystemCode") final String externalSystemCode,
                                      @RequestParam("replace") final Boolean replace) {
@@ -1072,7 +1072,7 @@ public class ApController {
 
         EntityXml entity;
         try {
-            entity = camConnector.getEntityById(Integer.parseInt(bindingState.getBinding().getValue()), externalSystemCode);
+            entity = camConnector.getEntityById(bindingState.getBinding().getValue(), externalSystemCode);
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
@@ -1126,12 +1126,12 @@ public class ApController {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getStateInternal(accessPoint);
 
-        List<Integer> archiveEntities = accessPointService.findRelArchiveEntities(accessPoint);
+        List<String> archiveEntities = accessPointService.findRelArchiveEntities(accessPoint);
         List<EntityXml> entities = new ArrayList<>();
 
         try {
             if (CollectionUtils.isNotEmpty(archiveEntities)) {
-                for (Integer archiveEntityId : archiveEntities) {
+                for (String archiveEntityId : archiveEntities) {
                     entities.add(camConnector.getEntityById(archiveEntityId, externalSystemCode));
                 }
             }
