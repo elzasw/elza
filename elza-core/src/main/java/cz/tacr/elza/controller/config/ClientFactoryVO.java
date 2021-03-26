@@ -423,19 +423,19 @@ public class ClientFactoryVO {
         ArrFundVO fundVO = mapper.map(fund, ArrFundVO.class);
         fundVO.setInstitutionId(fund.getInstitution().getInstitutionId());
 
+        StaticDataProvider staticData = staticDataService.getData();
+
+        Set<ApScope> apScopes = scopeRepository.findByFund(fund);
+        fundVO.setApScopes(FactoryUtils.transformList(apScopes, s -> ApScopeVO.newInstance(s, staticData)));
+
         if (includeVersions) {
 
             List<ArrFundVersion> versions = fundVersionRepository
                     .findVersionsByFundIdOrderByCreateDateDesc(fund.getFundId());
 
             List<ArrFundVersionVO> versionVOs = new ArrayList<>(versions.size());
-            StaticDataProvider staticData = staticDataService.getData();
             for (ArrFundVersion version : versions) {
                 ArrFundVersionVO fundVersion = createFundVersion(version, user);
-                if (fundVersion.getLockDate() == null) {
-                    Set<ApScope> apScopes = scopeRepository.findByFund(fund);
-                    fundVO.setApScopes(FactoryUtils.transformList(apScopes, s -> ApScopeVO.newInstance(s, staticData)));
-                }
                 versionVOs.add(fundVersion);
             }
             fundVO.setVersions(versionVOs);
