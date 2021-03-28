@@ -1,10 +1,19 @@
 package cz.tacr.elza.domain;
 
 import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
+import org.apache.lucene.analysis.charfilter.MappingCharFilterFactory;
+import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
+import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
 import org.hibernate.annotations.Type;
+import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.AnalyzerDef;
+import org.hibernate.search.annotations.CharFilterDef;
 import org.hibernate.search.annotations.ClassBridge;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Parameter;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.annotations.TokenFilterDef;
+import org.hibernate.search.annotations.TokenizerDef;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -20,8 +29,20 @@ import javax.persistence.Table;
 
 @Table
 @Indexed
+@AnalyzerDef(name = "cz",
+        charFilters = {
+                @CharFilterDef(factory = MappingCharFilterFactory.class, params = {
+                        @Parameter(name = "mapping",
+                                value = "search/mapping-chars.txt")
+                })
+        },
+        tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
+        filters = {
+                @TokenFilterDef(factory = LowerCaseFilterFactory.class)
+        })
 @ClassBridge(name = "data",
         impl = ApCachedAccessPointClassBridge.class,
+        analyzer = @Analyzer(definition = "cz"),
         store = Store.YES)
 @Entity(name = "ap_cached_access_point")
 public class ApCachedAccessPoint {

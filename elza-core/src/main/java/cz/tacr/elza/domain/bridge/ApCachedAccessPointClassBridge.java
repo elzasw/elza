@@ -17,7 +17,9 @@ import cz.tacr.elza.service.cache.ApVisibilityChecker;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.hibernate.search.bridge.FieldBridge;
 import org.hibernate.search.bridge.LuceneOptions;
 import org.hibernate.search.bridge.StringBridge;
@@ -25,6 +27,8 @@ import org.hibernate.search.bridge.StringBridge;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
 public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge {
 
@@ -35,6 +39,12 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
     public static final String STATE = "state";
     public static final String AP_TYPE_ID = "ap_type_id";
     public static final String USERNAME = "username";
+
+    public static final String PREF_INDEX = "pref_index";
+    public static final String PREF_NM_MAIN = "pref_nm_main";
+    public static final String PREF_NM_MINOR = "pref_nm_minor";
+    public static final String NM_MAIN = "nm_main";
+    public static final String NM_MINOR = "nm_minor";
 
     @Override
     public void set(String name, Object value, Document document, LuceneOptions luceneOptions) {
@@ -48,10 +58,10 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
 
         try {
             CachedAccessPoint cachedAccessPoint = mapper.readValue(apCachedAccessPoint.getData(), CachedAccessPoint.class);
-            addField(name + SEPARATOR + CachedAccessPoint.ACCESS_POINT_ID, cachedAccessPoint.getAccessPointId().toString().toLowerCase(), document, luceneOptions);
-            addField(name + SEPARATOR + STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document, luceneOptions);
-            addField(name + SEPARATOR + AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document, luceneOptions);
-            addField(name + SEPARATOR + SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document, luceneOptions);
+            addField(name + SEPARATOR + CachedAccessPoint.ACCESS_POINT_ID, cachedAccessPoint.getAccessPointId().toString().toLowerCase(), document, luceneOptions, name);
+            addField(name + SEPARATOR + STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document, luceneOptions, name);
+            addField(name + SEPARATOR + AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document, luceneOptions, name);
+            addField(name + SEPARATOR + SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document, luceneOptions, name);
 
             if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
                 for (CachedPart part : cachedAccessPoint.getParts()) {
@@ -80,14 +90,6 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
                     continue;
                 }
 
-                StringBuilder fieldName = new StringBuilder(itemType.getCode());
-                if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
-                    fieldName.insert(0, PREFIX_PREF + SEPARATOR);
-                }
-
-                if (itemSpec != null) {
-                    fieldName.append(SEPARATOR).append(itemSpec.getCode());
-                }
                 String value;
 
                 if (dataType == DataType.RECORD_REF) {
@@ -106,7 +108,21 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
                     }
                     value = itemSpec.getCode();
                 }
-                addField(name + SEPARATOR + fieldName.toString().toLowerCase(), value.toLowerCase(), document, luceneOptions);
+
+                if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
+                    addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + itemType.getCode().toLowerCase(), value.toLowerCase(), document, luceneOptions, name);
+
+                    if (itemSpec != null) {
+                        addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + itemType.getCode().toLowerCase() + SEPARATOR + itemSpec.getCode().toLowerCase(),
+                                value.toLowerCase(), document, luceneOptions, name);
+                    }
+                }
+
+                addField(name + SEPARATOR + itemType.getCode().toLowerCase(), value.toLowerCase(), document, luceneOptions, name);
+
+                if (itemSpec != null) {
+                    addField(name + SEPARATOR + itemType.getCode().toLowerCase() + SEPARATOR + itemSpec.getCode().toLowerCase(), value.toLowerCase(), document, luceneOptions, name);
+                }
             }
         }
     }
@@ -114,21 +130,41 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
     private void addIndexFields(String name, CachedPart part, CachedAccessPoint cachedAccessPoint, Document document, LuceneOptions luceneOptions) {
         if (CollectionUtils.isNotEmpty(part.getIndices())) {
             for (ApIndex index : part.getIndices()) {
-                StringBuilder fieldName = new StringBuilder(part.getPartTypeCode());
-                fieldName.append(SEPARATOR).append(INDEX);
+                if (index.getIndexType().equals(DISPLAY_NAME)) {
+                    StringBuilder fieldName = new StringBuilder(part.getPartTypeCode());
+                    fieldName.append(SEPARATOR).append(INDEX);
 
-                if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
-                    addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX, index.getValue().toLowerCase(), document, luceneOptions);
+                    if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
+                        addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX, index.getValue().toLowerCase(), document, luceneOptions, name);
+                    }
+
+                    addField(name + SEPARATOR + fieldName.toString().toLowerCase(), index.getValue().toLowerCase(), document, luceneOptions, name);
+                    addField(name + SEPARATOR + INDEX, index.getValue().toLowerCase(), document, luceneOptions, name);
                 }
-
-                addField(name + SEPARATOR + fieldName.toString().toLowerCase(), index.getValue().toLowerCase(), document, luceneOptions);
-                addField(name + SEPARATOR + INDEX, index.getValue().toLowerCase(), document, luceneOptions);
             }
         }
     }
 
-    private void addField(String name, String value, Document document, LuceneOptions luceneOptions) {
-        luceneOptions.addFieldToDocument(name, value, document);
+    private void addField(String name, String value, Document document, LuceneOptions luceneOptions, String prefixName) {
+        Field field = new Field(name, value, luceneOptions.getStore(), luceneOptions.getIndex(), luceneOptions.getTermVector());
+        field.setBoost(getBoost(name, prefixName));
+        document.add(field);
+    }
+
+    private float getBoost(String name, String prefixName) {
+        float boost = 1.0f;
+
+        name = StringUtils.removeStart(name, prefixName + SEPARATOR);
+
+        switch (name) {
+            case PREF_INDEX: boost = 1.5f; break;
+            case PREF_NM_MAIN: boost = 2.0f; break;
+            case PREF_NM_MINOR: boost = 1.7f; break;
+            case NM_MAIN: boost = 1.2f; break;
+            case NM_MINOR: boost = 1.1f; break;
+        }
+
+        return boost;
     }
 
     @Override
