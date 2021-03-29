@@ -233,14 +233,8 @@ public class ApController {
         }
 
 	    if (searchFilter == null) {
-            if (apTypeId != null && (itemSpecId != null || itemTypeId != null)) {
-                throw new SystemException("Nelze použít více kritérií zároveň (specifikace/typ a typ rejstříku).", BaseCode.SYSTEM_ERROR);
-            }
-
             Set<Integer> apTypeIds = new HashSet<>();
-            if (apTypeId != null) {
-                apTypeIds.add(apTypeId);
-            } else if (itemSpecId != null) {
+            if (itemSpecId != null) {
                 RulItemSpec spec = sdp.getItemSpecById(itemSpecId);
                 if (spec == null) {
                     throw new ObjectNotFoundException("Specification not found", ArrangementCode.ITEM_SPEC_NOT_FOUND)
@@ -266,7 +260,24 @@ public class ApController {
                             BaseCode.SYSTEM_ERROR).set("itemTypeId", itemTypeId);
                 }
             }
-
+            if (apTypeId != null) {
+                if (apTypeIds.size() > 0) {
+                    // check collision with other limitation from fund
+                    if (apTypeIds.contains(apTypeId)) {
+                        // we can use requested filter
+                        apTypeIds.clear();
+                    } else {
+                        logger.error("Specification has no associated classes, itemSpecId={}, itemTypeId={}, apTypeId={}", 
+                                     itemSpecId, itemTypeId, apTypeId);
+                        throw new SystemException("AP class is not valid for given item type",
+                                BaseCode.SYSTEM_ERROR)
+                                        .set("apTypeId", apTypeId)
+                                        .set("itemTypeId", itemTypeId)
+                                        .set("itemSpecId", itemSpecId);
+                    }
+                }
+                apTypeIds.add(apTypeId);
+            }
             Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
 
             Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
