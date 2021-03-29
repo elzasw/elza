@@ -32,6 +32,7 @@ import org.hibernate.ScrollableResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -96,6 +97,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     /**
      * Maximální počet AP, které se mají dávkově zpracovávat pro synchronizaci.
      */
+    @Value("${elza.ap.cache.batchsize:800}")
     private static final int SYNC_BATCH_AP_SIZE = 800;
 
     public AccessPointCacheService() {
@@ -433,6 +435,8 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         try {
             return mapper.readValue(data, CachedAccessPoint.class);
         } catch (IOException e) {
+            logger.error("Failed to deserialize object, data: " +
+                    data);
             throw new SystemException("Nastal problém při deserializaci objektu", e);
         }
     }
@@ -441,7 +445,11 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         try {
             return mapper.writeValueAsString(cachedAccessPoint);
         } catch (JsonProcessingException e) {
-            throw new SystemException("Nastal problém při serializaci objektu", e);
+            logger.error("Failed to serialize object, accessPointId: " +
+                    cachedAccessPoint.getAccessPointId(), e);
+            throw new SystemException("Nastal problém při serializaci objektu, accessPointId: " +
+                    cachedAccessPoint.getAccessPointId(), e)
+                            .set("accessPointId", cachedAccessPoint.getAccessPointId());
         }
     }
 
