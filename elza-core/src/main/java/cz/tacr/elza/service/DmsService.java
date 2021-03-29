@@ -36,12 +36,14 @@ import cz.tacr.elza.common.AutoDeletingTempFile;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.FileRepository;
@@ -81,6 +83,9 @@ public class DmsService {
     @Autowired
     private OutputFileRepository outputFileRepository;
 
+    @Autowired
+    ArrangementInternalService arrangementInternalService;
+    
     @Autowired
     private EventNotificationService eventNotificationService;
     
@@ -253,9 +258,8 @@ public class DmsService {
         deleteFile(fileRepository.getOneCheckExist(fileId));
     }
 
-
     /**
-     * Smazání Arr file pomocí ID
+     * Smazání/nastavení pole deleteChange u objektu ArrFile
      *
      * @param file soubor
      * @param fund archivní soubor
@@ -266,9 +270,10 @@ public class DmsService {
             UsrPermission.Permission.FUND_ADMIN })
     public void deleteArrFile(final ArrFile file,
                               @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) throws IOException {
-        deleteFile(file);
+        ArrChange deleteChange = arrangementInternalService.createChange(Type.DELETE_ATTACHMENT);
+        file.setDeleteChange(deleteChange);
+        fileRepository.save(file);
     }
-
 
     /**
      * Smazání Output file pomocí ID
@@ -305,9 +310,19 @@ public class DmsService {
      * @param files seznam souborů ke smazání
      */
     public void deleteFilesAfterCommit(List<ArrOutputFile> files) {
+        List<Integer> ids = files.stream().map(p -> p.getFileId()).collect(Collectors.toList());
+        deleteFilesAfterCommitByIds(ids);
+    }
+
+    /**
+     * Smazání seznam souborů po commitu
+     * 
+     * @param fileIds seznam id souborů ke smazání
+     */
+    public void deleteFilesAfterCommitByIds(List<Integer> fileIds) {
 
         // prepare list of files
-        List<File> filesToDelete = files.stream()
+        List<File> filesToDelete = fileIds.stream()
             .map(p -> getFilePath(p).toFile())
             .collect(Collectors.toList());
 

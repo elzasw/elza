@@ -118,6 +118,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     private ArrangementService arrangementService;
 
     @Autowired
+    ArrangementInternalService arrangementInternalService;
+
+    @Autowired
     private DescItemRepository descItemRepository;
 
     @Autowired
@@ -261,7 +264,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         }
 
         node.setVersion(nodeVersion);
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
 
         // uložení uzlu (kontrola optimistických zámků)
         saveNode(node, change);
@@ -308,7 +311,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ItemType descItemType = sdp.getItemTypeById(descItemTypeId);
         Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
         node.setVersion(nodeVersion);
 
         // uložení uzlu (kontrola optimistických zámků)
@@ -371,7 +374,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ItemType descItemType = sdp.getItemTypeById(descItemTypeId);
         Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
 
         List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsByItemType(descItemType.getEntity(), node);
 
@@ -420,7 +423,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
         }
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
 
         // uložení uzlu (kontrola optimistických zámků)
         node.setVersion(nodeVersion);
@@ -458,7 +461,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
         }
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
 
         // uložení uzlu (kontrola optimistických zámků)
         node.setVersion(nodeVersion);
@@ -572,7 +575,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
 
-        ArrChange change = createChange == null ? arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node) : createChange;
+        ArrChange change = createChange == null ? arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node) : createChange;
         List<ArrDescItem> createdItems = new ArrayList<>();
         for (ArrDescItem descItem :
                 descItems) {
@@ -1157,7 +1160,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             node.setVersion(nodeVersion);
 
             // vytvoření změny
-            change = arrangementService.createChange(ArrChange.Type.UPDATE_DESC_ITEM, node);
+            change = arrangementInternalService.createChange(ArrChange.Type.UPDATE_DESC_ITEM, node);
 
             // uložení uzlu (kontrola optimistických zámků)
             saveNode(node, change);
@@ -1579,7 +1582,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         if (!descItemsToReplaceText.isEmpty()) {
 
-            ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
+            ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
             MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
 
@@ -1672,7 +1675,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 descItemRepository.findOpenByNodesAndType(nodes, descItemType);
         }
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
         MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
         for (ArrDescItem descItem : descItems) {
@@ -1822,7 +1825,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             }
         }
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
         MultiplItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
 
@@ -1954,7 +1957,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         }
 
         if (!descItems.isEmpty()) {
-            ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_DELETE_DESC_ITEM);
+            ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_DELETE_DESC_ITEM);
 
             MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
 
@@ -2043,7 +2046,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             }
         }
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
 
         if (descItemObjectId != null) {
             ArrDescItem openDescItem = descItemRepository.findOpenDescItem(descItemObjectId);

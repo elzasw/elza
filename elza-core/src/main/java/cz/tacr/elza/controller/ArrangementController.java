@@ -136,6 +136,7 @@ import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrangementFormService;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.DaoSyncService;
@@ -195,6 +196,9 @@ public class ArrangementController {
 
     @Autowired
     private ArrangementService arrangementService;
+
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private DescItemRepository descItemRepository;
@@ -1657,7 +1661,7 @@ public class ArrangementController {
         RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
 
         ArrNode node = factoryDO.createNode(nodeVO);
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
         ArrLevel level = arrangementService.lockNode(node, fundVersion, change);
 
         List<ArrDescItem> newDescItems = arrangementService.copyOlderSiblingAttribute(fundVersion, descItemType, level, change);
@@ -2688,7 +2692,7 @@ public class ArrangementController {
     public void synchronizeNodes(@PathVariable (value = "nodeId") final Integer nodeId,
                                  @PathVariable (value = "nodeVersion") final Integer nodeVersion,
                                  @RequestParam (value = "childrenNodes") final Boolean childrenNodes) {
-        ArrChange change = arrangementService.createChange(ArrChange.Type.SYNCHRONIZE_JP);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.SYNCHRONIZE_JP);
         arrangementService.synchronizeNodes(nodeId, nodeVersion, childrenNodes, change);
     }
 

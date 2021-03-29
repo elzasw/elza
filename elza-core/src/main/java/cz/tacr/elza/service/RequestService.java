@@ -79,7 +79,7 @@ public class RequestService {
     private DaoRequestRepository daoRequestRepository;
 
     @Autowired
-    private ArrangementService arrangementService;
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private EventNotificationService eventNotificationService;
@@ -110,7 +110,7 @@ public class RequestService {
 
         digitizationRequest.setDigitizationFrontdesk(digitizationFrontdesk);
         digitizationRequest.setFund(fundVersion.getFund());
-        digitizationRequest.setCreateChange(arrangementService.createChange(ArrChange.Type.CREATE_DIGI_REQUEST));
+        digitizationRequest.setCreateChange(arrangementInternalService.createChange(ArrChange.Type.CREATE_DIGI_REQUEST));
         digitizationRequest.setState(ArrRequest.State.OPEN);
 
         List<ArrDigitizationRequestNode> requestNodes = new ArrayList<>(nodes.size());
@@ -140,7 +140,7 @@ public class RequestService {
         daoRequest.setDescription(description);
         daoRequest.setDigitalRepository(digitalRepository);
         daoRequest.setFund(fundVersion.getFund());
-        daoRequest.setCreateChange(arrangementService.createChange(ArrChange.Type.CREATE_DAO_REQUEST));
+        daoRequest.setCreateChange(arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_REQUEST));
         daoRequest.setState(ArrRequest.State.OPEN);
         daoRequest.setType(type);
 
