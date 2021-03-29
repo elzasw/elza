@@ -106,7 +106,7 @@ public class BulkActionService {
     private NodeRepository nodeRepository;
 
     @Autowired
-    private ArrangementService arrangementService;
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private ActionRepository actionRepository;
@@ -154,7 +154,7 @@ public class BulkActionService {
 
         ArrBulkActionRun bulkActionRun = new ArrBulkActionRun();
 
-        bulkActionRun.setChange(arrangementService.createChange(ArrChange.Type.BULK_ACTION));
+        bulkActionRun.setChange(arrangementInternalService.createChange(ArrChange.Type.BULK_ACTION));
         bulkActionRun.setBulkActionCode(bulkActionCode);
         bulkActionRun.setUserId(userId);
         ArrFundVersion arrFundVersion = new ArrFundVersion();

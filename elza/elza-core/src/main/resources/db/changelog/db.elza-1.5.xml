@@ -1195,4 +1195,25 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="20210319133000" author="sergey.iryupin">
+        <addColumn tableName="arr_file">
+            <column name="create_change_id" type="int">
+                <constraints foreignKeyName="fk_arrFile_createChange_arrChange"
+                             referencedTableName="arr_change"
+                             referencedColumnNames="change_id" />
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints foreignKeyName="fk_arrFile_deleteChange_arrChange"
+                             referencedTableName="arr_change"
+                             referencedColumnNames="change_id" />
+            </column>
+        </addColumn>
+        <!-- Vyplňování polí create_change_id -->
+        <sql>UPDATE arr_file f SET create_change_id = (SELECT fv.create_change_id FROM arr_fund_version fv 
+        	WHERE f.fund_id = fv.fund_id AND fv.lock_change_id IS NULL)
+        </sql>
+        <addNotNullConstraint tableName="arr_file" columnName="create_change_id" columnDataType="int" />
+    </changeSet>
+
 </databaseChangeLog>

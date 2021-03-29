@@ -462,7 +462,7 @@ public class ArrangementService {
                                           final String mark,
                                           String uuid,
                                           List<ApScope> scopes) {
-        ArrChange change = createChange(ArrChange.Type.CREATE_AS);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_AS);
 
         if (uuid == null || uuid.isEmpty()) {
             uuid = generateUuid();
@@ -619,40 +619,6 @@ public class ArrangementService {
     }
 
     /**
-     * Vytvoření objektu pro změny s primárním uzlem.
-     *
-     * @param type        typ změny
-     * @param primaryNode primární uzel
-     * @return objekt změny
-     */
-    public ArrChange createChange(@Nullable final ArrChange.Type type,
-                                  @Nullable final ArrNode primaryNode) {
-        ArrChange change = new ArrChange();
-        UserDetail userDetail = userService.getLoggedUserDetail();
-        change.setChangeDate(OffsetDateTime.now());
-
-        if (userDetail != null && userDetail.getId() != null) {
-            UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
-            change.setUser(user);
-        }
-
-        change.setType(type);
-        change.setPrimaryNode(primaryNode);
-
-        return changeRepository.save(change);
-    }
-
-    /**
-     * Vytvoření objektu pro změny.
-     *
-     * @param type typ změny
-     * @return objekt změny
-     */
-    public ArrChange createChange(@Nullable final ArrChange.Type type) {
-        return createChange(type, null);
-    }
-
-    /**
      * Dodatečné nastavení primární vazby u změny.
      *
      * @param change        změna u které primární uzel nastavujeme
@@ -737,7 +703,7 @@ public class ArrangementService {
             throw new BusinessException("Nelze uzavřít verzi AS s ID=" + fund.getFundId() + ", protože běží validace", ArrangementCode.VERSION_CANNOT_CLOSE_VALIDATION);
         }
 
-        ArrChange change = createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
         version.setLockChange(change);
         fundVersionRepository.save(version);
 
@@ -1892,7 +1858,7 @@ public class ArrangementService {
                         .collect(Collectors.groupingBy(ArrItem::getItemTypeId));
 
                 if (change == null) {
-                    change = createChange(ArrChange.Type.SYNCHRONIZE_JP);
+                    change = arrangementInternalService.createChange(ArrChange.Type.SYNCHRONIZE_JP);
                 }
 
                 synchronizeNodes(node, nodeVersion, nodeItemMap, sourceNode, sourceNodeItemMap, dataUriRef.getRefTemplate(), change);

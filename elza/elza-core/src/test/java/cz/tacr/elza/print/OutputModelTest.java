@@ -166,7 +166,7 @@ public class OutputModelTest extends AbstractServiceTest {
         output.setFund(fi.getFund());
         output.setOutputType(outputType);
 
-        ArrChange change = arrangementService.createChange(Type.GENERATE_OUTPUT);
+        ArrChange change = arrangementInternalService.createChange(Type.GENERATE_OUTPUT);
         helperTestService.waitForWorkers();
         assertNotNull(change);
         OutputParams params = new OutputParams(output, change, fi.getFundVersion(),

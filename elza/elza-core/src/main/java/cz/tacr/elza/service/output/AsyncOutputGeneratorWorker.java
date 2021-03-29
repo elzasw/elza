@@ -54,6 +54,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.repository.OutputTemplateRepository;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelServiceInternal;
 import cz.tacr.elza.service.OutputServiceInternal;
@@ -91,8 +92,8 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     private ApplicationEventPublisher eventPublisher;
 
     @Autowired
-    private ArrangementService arrangementService;
-    
+    private ArrangementInternalService arrangementInternalService;
+
     @Autowired
     private OutputTemplateRepository outputTemplateRepository;
 
@@ -220,7 +221,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
                     request.getFundVersionId());
         }
 
-        ArrChange change = arrangementService.createChange(Type.GENERATE_OUTPUT);
+        ArrChange change = arrangementInternalService.createChange(Type.GENERATE_OUTPUT);
 
         List<ArrNodeOutput> outputNodes = outputServiceInternal.getOutputNodes(output, fundVersion.getLockChange());
         List<Integer> nodeIds = outputNodes.stream().map(no -> no.getNodeId()).collect(Collectors.toList());

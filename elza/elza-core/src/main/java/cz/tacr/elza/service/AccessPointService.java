@@ -187,6 +187,9 @@ public class AccessPointService {
 
     @Autowired
     private ArrangementService arrangementService;
+    
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private UserService userService;
@@ -764,7 +767,7 @@ public class AccessPointService {
                     .collect(toMap(ArrFundVersion::getFundId, Function.identity()));
         }
 
-        final ArrChange change = arrangementService.createChange(ArrChange.Type.REPLACE_REGISTER);
+        final ArrChange change = arrangementInternalService.createChange(ArrChange.Type.REPLACE_REGISTER);
         arrItems.forEach(i -> {
             final ArrDataRecordRef data = new ArrDataRecordRef();
             data.setRecord(replacement);

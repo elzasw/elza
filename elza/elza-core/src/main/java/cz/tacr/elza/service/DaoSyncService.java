@@ -146,6 +146,9 @@ public class DaoSyncService {
 
     @Autowired
     private ArrangementService arrangementService;
+    
+    @Autowired
+    ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private DescriptionItemService descriptionItemService;
@@ -320,7 +323,7 @@ public class DaoSyncService {
         ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
         ArrLevel level = fundLevelService.findLevelByNode(node);
         
-        ArrChange change = arrangementService.createChange(ArrChange.Type.CHANGE_SCENARIO_ITEMS, node);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CHANGE_SCENARIO_ITEMS, node);
         
         Items items = unmarshalItemsFromAttributes(dao.getAttributes(), daoId);
 
