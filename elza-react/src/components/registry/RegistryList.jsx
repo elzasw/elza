@@ -40,6 +40,7 @@ import {Button} from '../ui';
 class RegistryList extends AbstractReactComponent {
     static propTypes = {
         maxSize: PropTypes.number,
+        fund: PropTypes.object,
     };
 
     static defaultProps = {
@@ -133,6 +134,7 @@ class RegistryList extends AbstractReactComponent {
                 ...this.props.registryList.filter,
                 from: 0,
                 scopeId: id,
+                versionId: this.props.fund.versionId,
             }),
         );
     };
@@ -221,19 +223,23 @@ class RegistryList extends AbstractReactComponent {
     };
 
     filterScopes(scopes) {
-        const {userDetail} = this.props;
+        const {fund, userDetail} = this.props;
         return scopes.filter(scope =>
-            userDetail.hasOne(perms.AP_SCOPE_RD_ALL, {
-                type: perms.AP_SCOPE_RD,
-                scopeId: scope.id,
-            }),
+            {
+                const hasFundRestriction = fund !== undefined;
+                const isAllowedInFund = hasFundRestriction && fund.apScopes?.find((fundScope)=>scope.id === fundScope.id);
+                return (!hasFundRestriction || isAllowedInFund) && userDetail.hasOne(perms.AP_SCOPE_RD_ALL, {
+                    type: perms.AP_SCOPE_RD,
+                    scopeId: scope.id,
+                })
+            }
         );
     }
 
     getScopesWithAll(scopes) {
         const defaultValue = {name: i18n('registry.all')};
         if (scopes && scopes.length > 0 && scopes[0] && scopes[0].scopes && scopes[0].scopes.length > 0) {
-            return this.filterScopes([defaultValue, ...scopes[0].scopes]);
+            return [defaultValue,...this.filterScopes([...scopes[0].scopes])];
         }
         return [defaultValue];
     }
@@ -363,10 +369,7 @@ class RegistryList extends AbstractReactComponent {
                         placeholder={!filter.registryTypeId ? this.registryTypeDefaultValue : ''}
                         items={apTypesWithAll}
                         disabled={
-                            !registryTypes ||
-                            registryList.filter.parents.length ||
-                            registryList.filter.itemSpecId ||
-                            registryList.filter.itemTypeId
+                            !registryTypes
                         }
                         tree
                         alwaysExpanded
