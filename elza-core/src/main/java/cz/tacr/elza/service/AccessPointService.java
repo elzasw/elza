@@ -73,6 +73,7 @@ import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
 import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
+import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
@@ -1037,6 +1038,11 @@ public class AccessPointService {
         Set<Integer> accessPointIds = new HashSet<>();
 
         for (PartWrapper partWrapper : partWrappers) {
+            // skip ignored parts
+            if (partWrapper.getSaveMethod() == SaveMethod.IGNORE) {
+                continue;
+            }
+
             ApPart apPart = partWrapper.getEntity();
             ApState state = partWrapper.getPartInfo().getApInfo().getApState();
 
@@ -1610,15 +1616,15 @@ public class AccessPointService {
         bindingRepository.delete(binding);
     }
 
-    public List<Integer> findRelArchiveEntities(ApAccessPoint accessPoint) {
-        List<Integer> archiveEntityIds = new ArrayList<>();
+    public List<String> findRelArchiveEntities(ApAccessPoint accessPoint) {
+        List<String> archiveEntityIds = new ArrayList<>();
         List<ApItem> itemList = itemRepository.findValidItemsByAccessPoint(accessPoint);
 
         for (ApItem item : itemList) {
             if (item.getData() instanceof ArrDataRecordRef) {
                 ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) item.getData();
                 if (dataRecordRef.getRecord() == null) {
-                    archiveEntityIds.add(Integer.parseInt(dataRecordRef.getBinding().getValue()));
+                    archiveEntityIds.add(dataRecordRef.getBinding().getValue());
                 }
             }
         }

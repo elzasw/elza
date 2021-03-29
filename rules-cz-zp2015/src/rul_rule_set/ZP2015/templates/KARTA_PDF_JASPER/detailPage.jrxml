@@ -324,7 +324,7 @@
 				<textElement>
 					<font size="12" isBold="true" pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{parentNameFormatter}.format( $F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_TITLE")).get(0) )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{parentNameFormatter}.format( com.google.common.collect.Lists.newArrayList(com.google.common.collect.Iterables.concat( $F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_TITLE")) )) )]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

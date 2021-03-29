@@ -1,6 +1,6 @@
-import { RulDescItemTypeVO } from '../../api/RulDescItemTypeVO';
-import { ArrFundBaseVO } from '../../api/ArrFundBaseVO';
-import { BaseRefTableStore } from '../BaseRefTableStore';
+import { ArrFundBaseVO } from "../../api/ArrFundBaseVO";
+import { RefTablesState } from "./RefTables.types";
+import { UserDetail } from "./UserDetail.types";
 
 export interface SplitterState {
     leftWidth: number;
@@ -27,59 +27,6 @@ export interface FocusState {
 
 export interface LoginState {
     logged: boolean;
-}
-
-/*
-interface RefTableArr<T> {
-    items: T[];
-    itemsMap: Record<number, T>;
-    dirty: boolean;
-    fetched: boolean;
-    isFetching: boolean;
-}
-*/
-
-export interface CalendarType {
-    code: string;
-    id: number;
-    name: string;
-}
-
-interface Scope {
-    versionId: number;
-    id: number | unknown;
-}
-
-interface ScopeData {
-    isDirty: boolean | unknown;
-    isFetching: boolean | unknown;
-    versionId: number | unknown;
-    scopes: Scope[];
-}
-
-interface ScopesData {
-    scopes: ScopeData[];
-}
-
-export interface RefTablesState {
-    apTypes: BaseRefTableStore<unknown>;
-    calendarTypes: BaseRefTableStore<CalendarType>;
-    descItemTypes: BaseRefTableStore<RulDescItemTypeVO>;
-    eidTypes: unknown;
-    externalSystems: unknown;
-    groups: unknown;
-    institutions: unknown;
-    issueStates: unknown;
-    issueTypes: unknown;
-    outputTypes: unknown;
-    partTypes: unknown;
-    recordTypes: unknown;
-    rulDataTypes: unknown;
-    ruleSet: unknown;
-    scopesData: ScopesData;
-    structureTypes: unknown;
-    templates: unknown;
-    visiblePolicyTypes: unknown;
 }
 
 export interface AdminFulltext {
@@ -206,6 +153,7 @@ export interface ArrRegion {
     visiblePolicy: VisiblePolicy;
 }
 
+
 export interface AppState {
     splitter: SplitterState;
     adminRegion: AdminRegionState;
@@ -225,6 +173,6 @@ export interface AppState {
     structures: unknown;
     tab: unknown;
     toastr: unknown;
-    userDetail: unknown;
+    userDetail: UserDetail;
     webSocket: unknown;
 }

@@ -61,9 +61,10 @@ public class CamConnector {
         return JaxbUtils.unmarshal(QueryResultXml.class, fileApiResponse.getData());
     }
 
-    public EntityXml getEntityById(final Integer archiveEntityId,
+    public EntityXml getEntityById(final String archiveEntityId,
                                    final String externalSystemCode) throws ApiException {
-        ApiResponse<File> fileApiResponse = getEntityApiByCode(externalSystemCode).getEntityByIdWithHttpInfo(String.valueOf(archiveEntityId));
+        ApiResponse<File> fileApiResponse = getEntityApiByCode(externalSystemCode)
+                .getEntityByIdWithHttpInfo(archiveEntityId);
         return JaxbUtils.unmarshal(EntityXml.class, fileApiResponse.getData());
     }
 

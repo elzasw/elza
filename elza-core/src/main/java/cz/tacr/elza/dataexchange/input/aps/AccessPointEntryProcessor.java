@@ -90,13 +90,14 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         }
     }
 
+    // obsolete - can be removed
     protected void processEntry(Party party) {
         AccessPointEntry entry = party.getApe();
         entryId = entry.getId();
         // create AP and prepare AP info
         ApEntity entity = createEntity(entry);
         List<ApBindingState> eids = createExternalIds(entry.getEid());
-        apInfo = context.addAccessPoint(entity.accessPoint, party.getId(), entity.state, eids);
+        apInfo = context.addAccessPoint(entity.accessPoint, party.getId(), entity.state, eids, null);
 
     }
 

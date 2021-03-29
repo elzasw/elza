@@ -40,7 +40,7 @@ public class ApPartStorage extends EntityStorage<PartWrapper> {
 
         if(apIdMap.size() > 0) {
             List<ApPart> currParts = partRepository.findPartsByAccessPointIdIn(apIdMap.keySet());
-            if (currParts.size() != apIdMap.size()) {
+            if (currParts.size() != pws.size()) {
                 throw new IllegalStateException(
                         "Not all AP parts found, apIds=" + StringUtils.join(apIdMap.keySet(), ','));
             }
