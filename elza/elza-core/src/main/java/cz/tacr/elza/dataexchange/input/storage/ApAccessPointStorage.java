@@ -72,6 +72,8 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         }
         ApChange change = changeHolder.getChange();
         if (apIds.size() > 0) {
+            // this is probably incorrect
+            // why we need to invalidate binding?
             bindingStateRepository.invalidateByAccessPointIdIn(apIds, change);
         }
     }

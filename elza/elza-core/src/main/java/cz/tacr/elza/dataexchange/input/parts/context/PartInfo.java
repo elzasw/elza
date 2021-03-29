@@ -50,7 +50,9 @@ public class PartInfo implements EntityIdHolder<ApPart> {
     }
 
     public SaveMethod getSaveMethod() {
-        return apInfo.getSaveMethod();
+        SaveMethod sm = apInfo.getSaveMethod();
+        // update is not supported -> ignore part
+        return sm.equals(SaveMethod.CREATE) ? sm : SaveMethod.IGNORE;
     }
 
     public void setEntityId(Integer entityId) {
