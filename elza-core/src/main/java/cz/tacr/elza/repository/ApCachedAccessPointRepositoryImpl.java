@@ -43,6 +43,7 @@ import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.PREFIX_P
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.SCOPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.SEPARATOR;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.STATE;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.TRANS;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.USERNAME;
 
 public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRepositoryCustom {
@@ -239,7 +240,14 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         fieldName.append(INDEX);
         itemFieldName.append(NM_MAIN);
         indexQuery.should(new WildcardQuery(new Term(itemFieldName.toString().toLowerCase(), STAR + value.toLowerCase() + STAR)));
-        indexQuery.must(new WildcardQuery(new Term(fieldName.toString().toLowerCase(), STAR + value.toLowerCase() + STAR)));
+        indexQuery.should(new WildcardQuery(new Term(itemFieldName.toString().toLowerCase() + SEPARATOR + TRANS, STAR + value.toLowerCase() + STAR)));
+
+        BooleanJunction<BooleanJunction> transQuery = queryBuilder.bool();
+        transQuery.minimumShouldMatchNumber(1);
+        transQuery.should(new WildcardQuery(new Term(fieldName.toString().toLowerCase() + SEPARATOR + TRANS, STAR + value.toLowerCase() + STAR)));
+        transQuery.should(new WildcardQuery(new Term(fieldName.toString().toLowerCase(), STAR + value.toLowerCase() + STAR)));
+
+        indexQuery.must(transQuery.createQuery());
         return indexQuery.createQuery();
     }
 
@@ -261,7 +269,9 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
             }
             valueQuery.must(new TermQuery(new Term(fieldName.toString().toLowerCase(), value.toLowerCase())));
         } else {
-            valueQuery.must(new WildcardQuery(new Term(fieldName.toString().toLowerCase(), STAR + value.toLowerCase() + STAR)));
+            valueQuery.minimumShouldMatchNumber(1);
+            valueQuery.should(new WildcardQuery(new Term(fieldName.toString().toLowerCase(), STAR + value.toLowerCase() + STAR)));
+            valueQuery.should(new WildcardQuery(new Term(fieldName.toString().toLowerCase() + SEPARATOR + TRANS, STAR + value.toLowerCase() + STAR)));
         }
 
         return valueQuery.createQuery();

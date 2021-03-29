@@ -44,6 +44,7 @@ import javax.persistence.Table;
         impl = ApCachedAccessPointClassBridge.class,
         analyzer = @Analyzer(definition = "cz"),
         store = Store.YES)
+@Analyzer(definition = "cz")
 @Entity(name = "ap_cached_access_point")
 public class ApCachedAccessPoint {
 

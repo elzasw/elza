@@ -39,6 +39,7 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
     public static final String STATE = "state";
     public static final String AP_TYPE_ID = "ap_type_id";
     public static final String USERNAME = "username";
+    public static final String TRANS = "trans";
 
     public static final String PREF_INDEX = "pref_index";
     public static final String PREF_NM_MAIN = "pref_nm_main";
@@ -146,9 +147,19 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
     }
 
     private void addField(String name, String value, Document document, LuceneOptions luceneOptions, String prefixName) {
-        Field field = new Field(name, value, luceneOptions.getStore(), luceneOptions.getIndex(), luceneOptions.getTermVector());
+        Field field = new Field(name, value, luceneOptions.getStore(), Field.Index.NOT_ANALYZED, luceneOptions.getTermVector());
         field.setBoost(getBoost(name, prefixName));
         document.add(field);
+
+        if (isFieldForTransliteration(name)) {
+            Field transField = new Field(name + SEPARATOR + TRANS, value, luceneOptions.getStore(), Field.Index.ANALYZED, luceneOptions.getTermVector());
+            transField.setBoost(getBoost(name, prefixName));
+            document.add(transField);
+        }
+    }
+
+    private boolean isFieldForTransliteration(String name) {
+        return name.contains(INDEX) || name.contains(NM_MAIN) || name.contains(NM_MINOR);
     }
 
     private float getBoost(String name, String prefixName) {
