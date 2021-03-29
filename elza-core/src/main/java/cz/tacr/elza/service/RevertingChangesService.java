@@ -7,6 +7,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundStructureExtension;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -26,6 +27,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.repository.ArrFileRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -45,10 +47,8 @@ import cz.tacr.elza.service.vo.TitleItemsByType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.hibernate.Session;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.NamingStrategy;
-import org.hibernate.query.NativeQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,6 +155,12 @@ public class RevertingChangesService {
 
     @Autowired
     private ChangeRepository changeRepository;
+
+    @Autowired
+    private ArrFileRepository arrFileRepository;
+
+    @Autowired
+    private DmsService dmsService;
 
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
@@ -373,6 +379,15 @@ public class RevertingChangesService {
             sobjVrequestDelete(fund, toChange);
 
             structuredObjectUpdate(fund, toChange);
+
+            List<Integer> ids = arrFileRepository.findIdByFundAndGreaterOrEqualCreateChange(fund, toChange);
+            if (!CollectionUtils.isEmpty(ids)) {
+                dmsService.deleteFilesAfterCommitByIds(ids);
+            }
+
+            arrFileDeleteChangeUndo(fund, toChange);
+            arrFileCreateChangeUndo(fund, toChange);
+
         }
 
         {
@@ -738,6 +753,9 @@ public class RevertingChangesService {
                 { ArrNodeOutput.TABLE_NAME, ArrNodeOutput.FIELD_DELETE_CHANGE_ID },
                 { ArrOutputResult.TABLE_NAME, ArrOutputResult.FIELD_CHANGE_ID },
 
+                { ArrFile.TABLE_NAME, ArrFile.FIELD_CREATE_CHANGE_ID },
+                { ArrFile.TABLE_NAME, ArrFile.FIELD_DELETE_CHANGE_ID },
+
                 { ArrDaoLink.TABLE_NAME, ArrDaoLink.FIELD_CREATE_CHANGE_ID },
                 { ArrDaoLink.TABLE_NAME, ArrDaoLink.FIELD_DELETE_CHANGE_ID },
 
@@ -875,6 +893,22 @@ public class RevertingChangesService {
         String hql = "DELETE FROM arr_structured_object so" +
                 " WHERE so.fund = :fund" +
                 " AND so.createChange >= :change";
+
+        executeRequestWithParameters(hql, fund, toChange);
+    }
+
+    private void arrFileDeleteChangeUndo(@NotNull final ArrFund fund, @NotNull final ArrChange toChange) {
+
+        String hql = "UPDATE arr_file af SET af.deleteChange = NULL" +
+                " WHERE af.fund = :fund AND af.deleteChange >= :change";
+
+        executeRequestWithParameters(hql, fund, toChange);
+    }
+
+    private void arrFileCreateChangeUndo(@NotNull final ArrFund fund, @NotNull final ArrChange toChange) {
+
+        String hql = "DELETE FROM arr_file af" +
+                " WHERE af.fund = :fund AND af.createChange >= :change";
 
         executeRequestWithParameters(hql, fund, toChange);
     }
@@ -1308,6 +1342,10 @@ public class RevertingChangesService {
                     "            JOIN arr_item i ON i.item_id = si.item_id\n" +
                     "            JOIN arr_structured_object so ON so.structured_object_id = si.structured_object_id\n" +
                     "            WHERE so.fund_id = :fundId\n" +
+                    "      UNION ALL\n" +
+                    "      SELECT create_change_id, null, 1 AS weight FROM arr_file af WHERE af.fund_id = :fundId\n" +
+                    "      UNION ALL\n" +
+                    "      SELECT delete_change_id, null, 1 AS weight FROM arr_file af WHERE af.fund_id = :fundId\n" +
                     "      UNION ALL\n" +
                     "      SELECT delete_change_id, null, 1 AS weight FROM arr_structured_object so WHERE so.fund_id = :fundId AND so.state <> '" + ArrStructuredObject.State.TEMP.name() + "'\n" +
                     "      UNION ALL\n" +

@@ -58,16 +58,25 @@ public class FundLevelService {
 
     @PersistenceContext
     private EntityManager entityManager;
+    
     @Autowired
     private LevelRepository levelRepository;
+    
     @Autowired
     private ArrangementService arrangementService;
+
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
+
     @Autowired
     private RuleService ruleService;
+    
     @Autowired
     private DescItemRepository descItemRepository;
+    
     @Autowired
     private IEventNotificationService eventNotificationService;
+    
     @Autowired
     private DescriptionItemService descriptionItemService;
 
@@ -89,7 +98,7 @@ public class FundLevelService {
 
         Assert.notEmpty(transportNodes, "Musí být vyplněn alespoň jedna JP");
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
         arrangementService.setPrimaryNode(change, staticNode);
 
         ArrLevel staticLevelParent = arrangementService.lockNode(staticParentNode, version, change);
@@ -211,7 +220,7 @@ public class FundLevelService {
                                 final ArrNode transportParentNode) {
         Assert.notEmpty(transportNodes, "Musí být vyplněn alespoň jedna JP");
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
 
         ArrLevel staticLevelParent = arrangementService.lockNode(staticParentNode, version, change);
         ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode)
@@ -322,7 +331,7 @@ public class FundLevelService {
                                 final Collection<ArrNode> transportNodes,
                                 final ArrNode transportParentNode) {
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
 
         ArrLevel staticLevel = arrangementService.lockNode(staticNode, version, change);
         if (!staticNode.getNodeId().equals(transportParentNode.getNodeId())) {
@@ -415,7 +424,7 @@ public class FundLevelService {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(deleteNode, "Mazané JP musí být vyplněna");
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_LEVEL, deleteNode);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_LEVEL, deleteNode);
 
         ArrLevel deleteLevel = arrangementService.lockNode(deleteNode, version, change);
         if (deleteNodeParent != null) {
@@ -625,7 +634,7 @@ public class FundLevelService {
 
         arrangementService.isValidAndOpenVersion(version);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL, staticNodeParent);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_LEVEL, staticNodeParent);
 
         final ArrLevel staticLevelParent = arrangementService.lockNode(staticNodeParent, version, change);
         Assert.notNull(staticLevelParent, "Rodič levelu musí být vyplněn");
@@ -665,7 +674,7 @@ public class FundLevelService {
 
         arrangementService.isValidAndOpenVersion(version);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL, staticNode);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_LEVEL, staticNode);
         final ArrLevel staticLevel = arrangementService.lockNode(staticNode, version, change);
         Assert.notNull(staticLevel, "Referenční level musí být vyplněn");
 

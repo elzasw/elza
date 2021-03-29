@@ -96,7 +96,7 @@ public class DaoService {
     private EventNotificationService eventNotificationService;
 
     @Autowired
-    private ArrangementService arrangementService;
+    ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private DaoPackageRepository daoPackageRepository;
@@ -210,7 +210,7 @@ public class DaoService {
     private ArrDaoLink createArrDaoLink(ArrFundVersion fundVersion, ArrDao dao,
                                         ArrNode node, String scenario) {
         // vytvořit změnu
-        final ArrChange createChange = arrangementService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
+        final ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
 
         // vytvořit připojení
         final ArrDaoLink daoLink = new ArrDaoLink();
@@ -286,7 +286,7 @@ public class DaoService {
         }
 
         // rozpojit připojení - vytvořit změnu a nastavit na link
-        final ArrChange deleteChange = arrangementService.createChange(ArrChange.Type.DELETE_DAO_LINK, daoLink.getNode());
+        final ArrChange deleteChange = arrangementInternalService.createChange(ArrChange.Type.DELETE_DAO_LINK, daoLink.getNode());
         daoLink.setDeleteChange(deleteChange);
         logger.debug("Zadané propojení arrDaoLink(ID=" + daoLink.getDaoLinkId() + ") bylo zneplatněno novou změnou.");
         final ArrDaoLink resultDaoLink = daoLinkRepository.save(daoLink);

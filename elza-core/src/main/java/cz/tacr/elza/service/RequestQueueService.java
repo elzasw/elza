@@ -84,7 +84,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     private RequestRepository requestRepository;
 
     @Autowired
-    private ArrangementService arrangementService;
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private DaoSyncService daoSyncService;
@@ -177,7 +177,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
 
     private void addRequestToQueue(final ArrRequest request,
                                    final ArrFundVersion fundVersion) {
-        ArrChange createChange = arrangementService.createChange(ArrChange.Type.CREATE_REQUEST_QUEUE);
+        ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.CREATE_REQUEST_QUEUE);
 
         ArrRequestQueueItem requestQueueItem = new ArrRequestQueueItem();
         requestQueueItem.setCreateChange(createChange);
