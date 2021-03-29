@@ -3,7 +3,7 @@ package cz.tacr.elza.domain;
 import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
 import org.apache.lucene.analysis.charfilter.MappingCharFilterFactory;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
-import org.apache.lucene.analysis.standard.StandardTokenizerFactory;
+import org.apache.lucene.analysis.core.WhitespaceTokenizerFactory;
 import org.hibernate.annotations.Type;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
@@ -36,7 +36,7 @@ import javax.persistence.Table;
                                 value = "search/mapping-chars.txt")
                 })
         },
-        tokenizer = @TokenizerDef(factory = StandardTokenizerFactory.class),
+        tokenizer = @TokenizerDef(factory = WhitespaceTokenizerFactory.class),
         filters = {
                 @TokenFilterDef(factory = LowerCaseFilterFactory.class)
         })
