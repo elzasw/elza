@@ -59,6 +59,7 @@ class RegistryPage extends AbstractReactComponent {
         refTables: PropTypes.object.isRequired,
         focus: PropTypes.object.isRequired,
         userDetail: PropTypes.object.isRequired,
+        fund: PropTypes.object,
     };
 
     state = {items: []};
@@ -579,7 +580,7 @@ class RegistryPage extends AbstractReactComponent {
                     splitter={splitter}
                     key="registryPage"
                     ribbon={this.buildRibbon()}
-                    leftPanel={<RegistryList />}
+                    leftPanel={<RegistryList fund={this.props.fund} />}
                     centerPanel={centerPanel}
                     // rightPanel={rightPanel}
                     status={status}
