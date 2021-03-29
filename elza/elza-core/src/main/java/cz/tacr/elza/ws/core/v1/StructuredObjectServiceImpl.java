@@ -21,6 +21,7 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.ws.types.v1.ErrorDescription;
@@ -40,7 +41,7 @@ public class StructuredObjectServiceImpl implements StructuredObjectService {
     StructObjService structObjService;
 
     @Autowired
-    ArrangementService arrangementService;
+    ArrangementInternalService arrangementInternalService;
 
     @Autowired
     StaticDataService staticDataService;
@@ -110,7 +111,7 @@ public class StructuredObjectServiceImpl implements StructuredObjectService {
         // get fund
         ArrFund fund = wsHelper.getFund(createStructuredObject.getFund());
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_STRUCTURE_DATA);
         List<ArrStructuredItem> items = prepareItems(createStructuredObject.getItems());
         ArrStructuredObject structObj = structObjService.createStructObj(fund, change,
                                                                          structObjType.getStructuredType(),
@@ -152,7 +153,7 @@ public class StructuredObjectServiceImpl implements StructuredObjectService {
             ArrStructuredObject structObj = findStructObj(updateStructuredObject.getId(), updateStructuredObject
                     .getUuid());
 
-            ArrChange change = arrangementService.createChange(ArrChange.Type.UPDATE_STRUCT_DATA_BATCH);
+            ArrChange change = arrangementInternalService.createChange(ArrChange.Type.UPDATE_STRUCT_DATA_BATCH);
             List<ArrStructuredItem> items = prepareItems(updateStructuredObject.getItems());
 
             structObjService.updateStructObj(change, structObj, items);

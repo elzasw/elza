@@ -104,6 +104,7 @@ public class DEImportService {
     public DEImportService(EntityManager em,
                            ApAccessPointRepository apRepository,
                            ArrangementService arrangementService,
+                           ArrangementInternalService arrangementInternalService,
                            ApBindingRepository bindingRepository,
                            InstitutionRepository institutionRepository,
                            UserService userService,
@@ -129,7 +130,7 @@ public class DEImportService {
                            DataUriRefRepository dataUriRefRepository,
                            NodeRepository nodeRepository) {
         this.initHelper = new ImportInitHelper(groovyScriptService, institutionRepository, institutionTypeRepository,
-                arrangementService, levelRepository, apRepository, bindingRepository,
+                arrangementService, arrangementInternalService, levelRepository, apRepository, bindingRepository,
                 structObjService, accessPointService,
                 dmsService, apStateRepository, apPartRepository, apItemRepository, apItemService, bindingStateRepository);
         this.em = em;
@@ -341,7 +342,7 @@ public class DEImportService {
         ArrangementService arrangementService = initHelper.getArrangementService();
 
         // create global import change
-        ArrChange createChange = arrangementService.createChange(Type.IMPORT);
+        ArrChange createChange = initHelper.getArrangementInternalService().createChange(Type.IMPORT);
 
         // prepare import position
         ImportPositionParams posParams = params.getPositionParams();

@@ -829,6 +829,8 @@ var messages = {
     "arr.history.change.title.ADD_STRUCTURE_ITEM": "založení atributu u strukt. typu",
     "arr.history.change.title.UPDATE_STRUCTURE_ITEM": "změna atributu u strukt. typu",
     "arr.history.change.title.DELETE_STRUCTURE_ITEM": "zrušení atributu u strukt. typu",
+    "arr.history.change.title.ADD_ATTACHMENT": "přidání souboru",
+    "arr.history.change.title.DELETE_ATTACHMENT": "mazání souborů",
 
     "arr.history.change.description.CREATE_AS": "Vytvoření archivního souboru",
     "arr.history.change.description.ADD_NODES_OUTPUT": "Připojení JP ({0}) k výstupu",

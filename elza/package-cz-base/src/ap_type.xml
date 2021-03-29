@@ -267,4 +267,19 @@
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
+    <ap-type code="EXTENDED">
+        <name>speciální entity</name>
+        <hierarchical>false</hierarchical>
+        <read-only>true</read-only>
+    </ap-type>
+    <ap-type code="EXT_ADDRESS" parent-ap-type="EXTENDED">
+        <name>adresní místo</name>
+        <hierarchical>false</hierarchical>
+        <read-only>false</read-only>
+    </ap-type>
+    <ap-type code="EXT_ORIGINATOR_TYPE" parent-ap-type="EXTENDED">
+        <name>druh původce</name>
+        <hierarchical>false</hierarchical>
+        <read-only>false</read-only>
+    </ap-type>
 </ap-types>

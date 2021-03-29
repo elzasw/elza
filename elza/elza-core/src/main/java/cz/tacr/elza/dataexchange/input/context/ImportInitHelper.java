@@ -12,6 +12,8 @@ public class ImportInitHelper {
     private final InstitutionTypeRepository institutionTypeRepository;
 
     private final ArrangementService arrangementService;
+    
+    private final ArrangementInternalService arrangementInternalService;
 
     private final LevelRepository levelRepository;
 
@@ -39,6 +41,7 @@ public class ImportInitHelper {
                             final InstitutionRepository institutionRepository,
                             final InstitutionTypeRepository institutionTypeRepository,
                             final ArrangementService arrangementService,
+                            final ArrangementInternalService arrangementInternalService,
                             final LevelRepository levelRepository,
                             final ApAccessPointRepository apRepository,
                             final ApBindingRepository bindingRepository,
@@ -54,6 +57,7 @@ public class ImportInitHelper {
         this.institutionRepository = institutionRepository;
         this.institutionTypeRepository = institutionTypeRepository;
         this.arrangementService = arrangementService;
+        this.arrangementInternalService = arrangementInternalService;
         this.levelRepository = levelRepository;
         this.apRepository = apRepository;
         this.bindingRepository = bindingRepository;
@@ -87,6 +91,10 @@ public class ImportInitHelper {
         return arrangementService;
     }
 
+    public ArrangementInternalService getArrangementInternalService() {
+        return arrangementInternalService;
+    }
+
     public LevelRepository getLevelRepository() {
         return levelRepository;
     }
@@ -115,7 +123,9 @@ public class ImportInitHelper {
         return apStateRepository;
     }
 
-    public ApPartRepository getApPartRepository() { return apPartRepository; }
+    public ApPartRepository getApPartRepository() {
+        return apPartRepository;
+    }
 
     public ApItemRepository getApItemRepository() {
         return apItemRepository;

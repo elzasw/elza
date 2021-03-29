@@ -32,6 +32,7 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
@@ -57,6 +58,9 @@ public abstract class AbstractServiceTest extends AbstractTest {
 
     @Autowired
     protected ArrangementService arrangementService;
+
+    @Autowired
+    protected ArrangementInternalService arrangementInternalService;
 
     @Autowired
     protected DescriptionItemService descriptionItemService;

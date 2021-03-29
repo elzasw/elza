@@ -131,6 +131,9 @@ public class OutputService {
     private ArrangementService arrangementService;
 
     @Autowired
+    ArrangementInternalService arrangementInternalService;
+    
+    @Autowired
     private NodeOutputRepository nodeOutputRepository;
 
     @Autowired
@@ -225,7 +228,7 @@ public class OutputService {
                     OutputCode.CANNOT_DELETED_IN_STATE).set("state", output.getState());
         }
 
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
         output.setDeleteChange(change);
 
         EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, output.getOutputId());
@@ -378,7 +381,7 @@ public class OutputService {
                 .orElseThrow(outputType(outputTypeId));
         output.setOutputType(type);
         
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
         output.setCreateChange(change);
         output.setDeleteChange(null);
 
@@ -411,7 +414,7 @@ public class OutputService {
     public void removeNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                        final ArrOutput output,
                                        final List<Integer> nodeIds) {
-        ArrChange change = arrangementService.createChange(ArrChange.Type.REMOVE_NODES_OUTPUT);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.REMOVE_NODES_OUTPUT);
         removeNodesNamedOutput(fundVersion, output, nodeIds, change);
     }
 
@@ -558,7 +561,7 @@ public class OutputService {
     public void addNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                     final ArrOutput output,
                                     final List<Integer> nodeIds) {
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_NODES_OUTPUT);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_NODES_OUTPUT);
         addNodesNamedOutput(fundVersion, output, nodeIds, change);
     }
 
@@ -825,7 +828,7 @@ public class OutputService {
                                           final ArrOutput output,
                                           final ArrFundVersion fundVersion,
                                           @Nullable final ArrChange createChange) {
-        ArrChange change = createChange == null ? arrangementService.createChange(null) : createChange;
+        ArrChange change = createChange == null ? arrangementInternalService.createChange(null) : createChange;
 
         outputItem.setOutput(output);
 
@@ -902,7 +905,7 @@ public class OutputService {
         Assert.notNull(outputVersion, "Verze výstupu není vyplněna");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
         List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(descItemObjectId);
@@ -1032,7 +1035,7 @@ public class OutputService {
         saveOutput(output);
 
         // vytvoření změny
-        change = arrangementService.createChange(null);
+        change = arrangementInternalService.createChange(null);
 
         ArrOutputItem outputItemUpdated = updateOutputItem(outputItem, outputItemDB, fundVersion, change);
 
@@ -1192,7 +1195,7 @@ public class OutputService {
         if (!allowStates.contains(output.getState())) {
             throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
-        ArrChange change = createChange == null ? arrangementService.createChange(null) : createChange;
+        ArrChange change = createChange == null ? arrangementInternalService.createChange(null) : createChange;
         List<ArrOutputItem> createdItems = new ArrayList<>();
         for (ArrOutputItem outputItem : outputItems) {
             outputItem.setOutput(output);
@@ -1226,7 +1229,7 @@ public class OutputService {
                                              final Integer outputVersion,
                                              final Integer itemTypeId) {
 
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
 
@@ -1289,7 +1292,7 @@ public class OutputService {
 
         ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputAndItemType(output, itemType);
 
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
 
         if (itemSettings == null) {
             if (strict) {
@@ -1450,7 +1453,7 @@ public class OutputService {
             }
         }
 
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
 
         if (outputItemObjectId != null) {
             ArrOutputItem openOutputItem = outputItemRepository.findOpenOutputItem(outputItemObjectId);
