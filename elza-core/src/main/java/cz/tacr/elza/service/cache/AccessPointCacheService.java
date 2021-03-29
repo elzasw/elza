@@ -98,7 +98,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
      * Maximální počet AP, které se mají dávkově zpracovávat pro synchronizaci.
      */
     @Value("${elza.ap.cache.batchsize:800}")
-    private static final int SYNC_BATCH_AP_SIZE = 800;
+    private int syncApBatchSize = 800;
 
     public AccessPointCacheService() {
         mapper = new ObjectMapper();
@@ -132,15 +132,15 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     private void syncCacheInternal() {
         ScrollableResults uncachedAPs = accessPointRepository.findUncachedAccessPoints();
 
-        List<Integer> apIds = new ArrayList<>(SYNC_BATCH_AP_SIZE);
+        List<Integer> apIds = new ArrayList<>(syncApBatchSize);
         int count = 0;
         while (uncachedAPs.next()) {
             Object obj = uncachedAPs.get(0);
 
             apIds.add((Integer) obj);
             count++;
-            if (count % SYNC_BATCH_AP_SIZE == 0) {
-                logger.info("Sestavuji AP " + (count - SYNC_BATCH_AP_SIZE + 1) + "-" + count);
+            if (count % syncApBatchSize == 0) {
+                logger.info("Sestavuji AP " + (count - syncApBatchSize + 1) + "-" + count);
 
                 processNewAPs(apIds);
                 apIds.clear();
@@ -149,7 +149,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         }
         // process remaining APs
         if (apIds.size() > 0) {
-            logger.info("Sestavuji AP " + ((count / SYNC_BATCH_AP_SIZE) * SYNC_BATCH_AP_SIZE + 1) + "-" + count);
+            logger.info("Sestavuji AP " + ((count / syncApBatchSize) * syncApBatchSize + 1) + "-" + count);
             processNewAPs(apIds);
         }
 
