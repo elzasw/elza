@@ -1120,8 +1120,8 @@ public class RevertingChangesService {
         }
 
         ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(), fundVersion.getFundId());
-        Set<Integer> descItemTypeCodes = viewTitles.getTreeItemIds() == null ? Collections.emptySet()
-                : new LinkedHashSet<>(viewTitles.getTreeItemIds());
+        Set<Integer> descItemTypeCodes = viewTitles.getTreeItem().getIds() == null ? Collections.emptySet()
+                : new LinkedHashSet<>(viewTitles.getTreeItem().getIds());
 
         List<RulItemType> descItemTypes = Collections.emptyList();
         if (!descItemTypeCodes.isEmpty()) {
