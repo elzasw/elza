@@ -18,6 +18,8 @@ public class DescItemValue {
 
     private String specCode;
 
+    private Integer specId;
+
     public DescItemValue() {
     }
 
@@ -44,5 +46,13 @@ public class DescItemValue {
 
     public void setSpecCode(final String specCode) {
         this.specCode = specCode;
+    }
+
+    public Integer getSpecId() {
+        return specId;
+    }
+
+    public void setSpecId(Integer specId) {
+        this.specId = specId;
     }
 }

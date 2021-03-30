@@ -238,54 +238,100 @@ public class SettingFundViews extends Setting {
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "title-config")
+    public static class TitleConfig {
+
+        @XmlAttribute(name = "separator", required = false)
+        private String separator;
+
+        @XmlElement(name = "item")
+        private List<TitleConfigItem> items;
+
+        public String getSeparator() {
+            return separator;
+        }
+
+        public void setSeparator(String separator) {
+            this.separator = separator;
+        }
+
+        public List<TitleConfigItem> getItems() {
+            return items;
+        }
+
+        public void setItems(final List<TitleConfigItem> values) {
+            this.items = values;
+        }
+
+    }
+
+    @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "tree", namespace = NS_FUND_VIEWS)
-    public static class Tree {
-
-        @XmlValue
-        @XmlList
-        private List<String> values;
-
-        public List<String> getValues() {
-            return values;
-        }
-
-        public void setValues(final List<String> values) {
-            this.values = values;
-        }
+    public static class Tree extends TitleConfig {
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "accordion-left", namespace = NS_FUND_VIEWS)
-    public static class AccordionLeft {
+    public static class AccordionLeft extends TitleConfig {
+    }
 
-        @XmlValue
-        @XmlList
-        private List<String> values;
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "accordion-right", namespace = NS_FUND_VIEWS)
+    public static class AccordionRight extends TitleConfig {
+    }
 
-        public List<String> getValues() {
-            return values;
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "item")
+    public static class TitleConfigItem {
+
+        @XmlAttribute(name = "max-count", required = false)
+        private Integer maxCount;
+
+        @XmlAttribute(name = "type", required = true)
+        private String type;
+
+        @XmlElement(name = "spec", required = false)
+        private List<ItemSpec> specs;
+
+        public Integer getMaxCount() {
+            return maxCount;
         }
 
-        public void setValues(final List<String> values) {
-            this.values = values;
+        public void setMaxCount(Integer maxCount) {
+            this.maxCount = maxCount;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public List<ItemSpec> getSpecs() {
+            return specs;
+        }
+
+        public void setSpecs(List<ItemSpec> specs) {
+            this.specs = specs;
         }
 
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "accordion-right", namespace = NS_FUND_VIEWS)
-    public static class AccordionRight {
+    @XmlType(name = "spec")
+    public static class ItemSpec {
 
-        @XmlValue
-        @XmlList
-        private List<String> values;
+        @XmlAttribute(name = "type", required = true)
+        private String type;
 
-        public List<String> getValues() {
-            return values;
+        public String getType() {
+            return type;
         }
 
-        public void setValues(final List<String> values) {
-            this.values = values;
+        public void setType(String type) {
+            this.type = type;
         }
 
     }

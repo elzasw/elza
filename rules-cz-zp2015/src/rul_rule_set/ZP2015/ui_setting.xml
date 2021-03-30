@@ -8,9 +8,24 @@
         <ns2:default>
             <title>&lt;Není nastaveno&gt;</title>
             <strict-mode>true</strict-mode>
-            <tree>ZP2015_TITLE ZP2015_UNIT_DATE</tree>
-            <accordion-left>ZP2015_TITLE ZP2015_UNIT_DATE</accordion-left>
-            <accordion-right>ZP2015_FOLDER_TYPE ZP2015_STORAGE_ID ZP2015_ITEM_ORDER</accordion-right>
+            <tree>
+                <item type="ZP2015_TITLE" />
+                <item type="ZP2015_UNIT_DATE" />
+                <item type="ZP2015_FOLDER_TYPE" />
+            </tree>
+            <accordion-left separator="_">
+                <item type="ZP2015_TITLE" />
+                <item type="ZP2015_UNIT_DATE" />
+                <item type="ZP2015_OTHER_ID" maxCount="1">
+                    <spec type="ZP2015_OTHERID_OLDSIG2" />
+                    <spec type="ZP2015_OTHERID_OLDSIG" />
+                </item>
+            </accordion-left>
+            <accordion-right>
+                <item type="ZP2015_FOLDER_TYPE" />
+                <item type="ZP2015_STORAGE_ID" />
+                <item type="ZP2015_ITEM_ORDER" />
+            </accordion-right>
             <hierarchy type-code="ZP2015_LEVEL_TYPE" default-separator="|">
                 <level spec-code="ZP2015_LEVEL_ROOT">
                     <icon>fa-sitemap</icon>
