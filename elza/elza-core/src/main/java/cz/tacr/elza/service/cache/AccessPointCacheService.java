@@ -166,7 +166,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                 processNewAPs(apIds);
                 apIds.clear();
                 // check transaction size
-                if (count > syncApTransSize) {
+                if (count >= syncApTransSize) {
                     break;
                 }
             }
