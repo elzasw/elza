@@ -13,10 +13,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
 @Entity(name = "ap_binding_state")
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ApBindingState implements AccessPointCacheSerializable {
 
     public static final String ACCESS_POINT_ID = "accessPointId";
