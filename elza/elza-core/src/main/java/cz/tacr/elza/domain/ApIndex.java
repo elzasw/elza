@@ -32,6 +32,9 @@ public class ApIndex implements AccessPointCacheSerializable {
     @JoinColumn(name = "part_id", nullable = false)
     private ApPart part;
 
+    @Column(name = "part_id", nullable = false, updatable = false, insertable = false)
+    private Integer partId;
+
     @Column(length = StringLength.LENGTH_50, nullable = false)
     private String indexType;
 
@@ -50,8 +53,13 @@ public class ApIndex implements AccessPointCacheSerializable {
         return part;
     }
 
+    public Integer getPartId() {
+        return partId;
+    }
+
     public void setPart(ApPart part) {
         this.part = part;
+        this.partId = part != null ? part.getPartId() : null;
     }
 
     public String getIndexType() {
