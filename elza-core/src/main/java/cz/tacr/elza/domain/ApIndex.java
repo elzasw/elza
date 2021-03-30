@@ -13,7 +13,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity(name = "ap_index")
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ApIndex implements AccessPointCacheSerializable {
 
     public static final String VALUE = "value";
