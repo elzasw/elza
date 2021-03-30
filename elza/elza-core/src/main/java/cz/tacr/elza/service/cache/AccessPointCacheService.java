@@ -32,8 +32,11 @@ import org.hibernate.ScrollableResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -100,6 +103,13 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     @Value("${elza.ap.cache.batchsize:800}")
     private int syncApBatchSize = 800;
 
+    @Value("${elza.ap.cache.transsize:800}")
+    private int syncApTransSize = 800;
+
+    @Autowired
+    @Qualifier("transactionManager")
+    protected PlatformTransactionManager txManager;
+
     public AccessPointCacheService() {
         mapper = new ObjectMapper();
         mapper.registerModule(new JavaTimeModule());
@@ -114,12 +124,20 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
      *
      * Synchronní metoda volaná z transakce.
      */
-    @Transactional(TxType.MANDATORY)
     public void syncCache() {
         writeLock.lock();
         try {
             logger.info("Spuštění synchronizace cache pro AP");
-            syncCacheInternal();
+            int off = 0;
+            Integer numProcessed;
+            do {
+                TransactionTemplate tt = new TransactionTemplate(txManager);
+                final int off2 = off;
+                numProcessed = tt.execute(t -> syncCacheInternal(off2));
+                off += numProcessed;
+            } while (numProcessed > 0);
+
+            logger.info("Všechny AP jsou synchronizovány");
             logger.info("Ukončení synchronizace cache pro AP");
         } finally {
             writeLock.unlock();
@@ -128,8 +146,11 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     /**
      * Synchronizace záznamů v databázi.
+     * 
+     * @param offset
+     * @return Number of processed items
      */
-    private void syncCacheInternal() {
+    private int syncCacheInternal(int offset) {
         ScrollableResults uncachedAPs = accessPointRepository.findUncachedAccessPoints();
 
         List<Integer> apIds = new ArrayList<>(syncApBatchSize);
@@ -140,20 +161,23 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             apIds.add((Integer) obj);
             count++;
             if (count % syncApBatchSize == 0) {
-                logger.info("Sestavuji AP " + (count - syncApBatchSize + 1) + "-" + count);
+                logger.info("Sestavuji AP " + (count - syncApBatchSize + 1 + offset) + "-" + (count + offset));
 
                 processNewAPs(apIds);
                 apIds.clear();
-
+                // check transaction size
+                if (count > syncApTransSize) {
+                    break;
+                }
             }
         }
         // process remaining APs
         if (apIds.size() > 0) {
-            logger.info("Sestavuji AP " + ((count / syncApBatchSize) * syncApBatchSize + 1) + "-" + count);
+            logger.info("Sestavuji AP " + ((count / syncApBatchSize) * syncApBatchSize + 1 + offset) + "-" + (count
+                    + offset));
             processNewAPs(apIds);
         }
-
-        logger.info("Všechny AP jsou synchronizovány");
+        return count;
     }
 
     private void processNewAPs(List<Integer> accessPointIds) {
