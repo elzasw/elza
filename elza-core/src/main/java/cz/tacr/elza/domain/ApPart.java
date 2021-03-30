@@ -50,6 +50,9 @@ public class ApPart {
     @JoinColumn(name = "parent_part_id")
     private ApPart parentPart;
 
+    @Column(name = "parent_part_id", updatable = false, insertable = false)
+    private Integer parentPartId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
     @JoinColumn(name = "create_change_id", nullable = false)
     private ApChange createChange;
@@ -118,8 +121,13 @@ public class ApPart {
         return parentPart;
     }
 
+    public Integer getParentPartId() {
+        return parentPartId;
+    }
+
     public void setParentPart(ApPart parentPart) {
         this.parentPart = parentPart;
+        this.parentPartId = parentPart != null ? parentPart.getPartId() : null;
     }
 
     public ApChange getCreateChange() {
@@ -172,4 +180,5 @@ public class ApPart {
     public void setKeyValue(ApKeyValue keyValue) {
         this.keyValue = keyValue;
     }
+
 }

@@ -18,7 +18,7 @@ public interface ApPartRepository extends JpaRepository<ApPart, Integer> {
     @Query("SELECT p FROM ApPart p WHERE p.accessPoint = :accessPoint AND p.deleteChange IS NULL")
     List<ApPart> findValidPartByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
 
-    @Query("SELECT p FROM ApPart p WHERE p.accessPoint IN :accessPoints AND p.deleteChange IS NULL")
+    @Query("SELECT p FROM ApPart p LEFT JOIN FETCH p.keyValue WHERE p.accessPoint IN :accessPoints AND p.deleteChange IS NULL")
     List<ApPart> findValidPartByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
 
     @Query("SELECT COUNT (p) FROM ApPart p WHERE p.parentPart =:parentPart AND p.deleteChange IS NULL")
