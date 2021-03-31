@@ -134,7 +134,7 @@ class RegistryList extends AbstractReactComponent {
                 ...this.props.registryList.filter,
                 from: 0,
                 scopeId: id,
-                versionId: this.props.fund.versionId,
+                versionId: this.props.fund?.versionId,
             }),
         );
     };
