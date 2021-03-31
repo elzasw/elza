@@ -115,7 +115,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     private int maxCacheSize = 30;
 
     /**
-     * Maximální počet verzí stromů ukládaných současně v paměti.
+     * Příznak zobrazení DaoId.
      */
     @Value("${elza.levelTreeCache.display.daoId:true}")
     private boolean displayDaoId = true;
@@ -814,7 +814,6 @@ private void processEvent(AbstractEventSimple event) {
 
         Map<Integer, TreeNodeVO> result = new LinkedHashMap<>(treeNodeMap.size());
 
-
         String[] rootReferenceMark = new String[0];
         if (subtreeRoot != null) {
             rootReferenceMark = createClientReferenceMarkFromRoot(subtreeRoot,
@@ -830,7 +829,6 @@ private void processEvent(AbstractEventSimple event) {
                     parentReferenceMark = result.get(treeNode.getParent().getId()).getReferenceMark();
                 }
             }
-
 
             TreeNodeVO client = new TreeNodeVO(treeNode.getId(), treeNode.getDepth(), null, 
                     !treeNode.getChilds().isEmpty(),
@@ -879,56 +877,6 @@ private void processEvent(AbstractEventSimple event) {
         return result;
     }
 
-    private void createTitle(final List<String> titleParts,
-                                     final List<Integer> itemTypeIds,
-                             final TitleItemsByType descItemCodeToValueMap,
-                             ArrDao dao) {
-        if (itemTypeIds != null && descItemCodeToValueMap != null) {
-            for (Integer itemTypeId : itemTypeIds) {
-                TitleValues titleValues = descItemCodeToValueMap.getTitles(itemTypeId);
-                if (titleValues != null) {
-                    TitleValue titleValue = titleValues.getValues().iterator().next();
-
-                    String value = titleValue.getValue();
-                    if (StringUtils.isNotBlank(value)) {
-                        titleParts.add(value);
-                    }
-                }
-            }
-        }
-        if (dao != null && this.displayDaoId) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("(");
-            if (StringUtils.isNotBlank(dao.getLabel())) {
-                sb.append("dao: ");
-                sb.append(dao.getLabel());
-            } else if (StringUtils.isNotBlank(dao.getCode())) {
-                sb.append("dao: ");
-                sb.append(dao.getCode());
-            } else {
-                sb.append("daoId: ");
-                sb.append(dao.getDaoId().toString());
-            }
-            sb.append(")");
-            titleParts.add(sb.toString());
-        }
-    }
-
-    private String createTitle(final List<Integer> itemTypeIds,
-                               final TitleItemsByType descItemCodeToValueMap,
-                               final ArrDao dao,
-                               final String defaultNodeTitle) {
-
-        List<String> titleParts = new ArrayList<String>();
-        createTitle(titleParts, itemTypeIds, descItemCodeToValueMap, dao);
-
-        if (titleParts.size() == 0 && StringUtils.isNotEmpty(defaultNodeTitle)) {
-            titleParts.add(defaultNodeTitle);
-        }
-        String title = StringUtils.join(titleParts, " ");
-        return title;
-    }
-
     /**
      * Nastavení hodnot (icon, name) ve třídě TreeNodeVO.
      * 
@@ -950,21 +898,16 @@ private void processEvent(AbstractEventSimple event) {
             treeNodeClient.setIcon(icon);
         }
 
-        List<String> titles = new ArrayList<>();
-        createTitle(titles, viewTitles.getTreeItemIds(), descItemCodeToValueMap, dao);
-        if (titles.size() == 0) {
-            String defaultTitle;
-            if (treeNodeClient.getDepth() > 1) {
-                defaultTitle = createDefaultTitle(viewTitles, treeNodeClient.getId());
-            } else {
-                defaultTitle = createRootTitle(version.getFund(), viewTitles, treeNodeClient.getId());
-            }
-
-            titles.add(defaultTitle);
+        String defaultTitle;
+        if (treeNodeClient.getDepth() > 1) {
+            defaultTitle = createDefaultTitle(viewTitles, treeNodeClient.getId());
+        } else {
+            defaultTitle = createRootTitle(version.getFund(), viewTitles, treeNodeClient.getId());
         }
-        String title = StringUtils.join(titles, " ");
 
-        treeNodeClient.setName(title);
+        ArrDao displayDao = displayDaoId? dao : null;
+
+        treeNodeClient.setName(viewTitles.getTreeItem().build(descItemCodeToValueMap, displayDao, defaultTitle));
     }
 
     /**
@@ -2030,14 +1973,14 @@ private void processEvent(AbstractEventSimple event) {
             defaultTitle = createDefaultTitle(viewTitles, id);
         }
 
+        ArrDao displayDao = displayDaoId? dao : null;
+
         if (param.isName()) {
-            node.setName(createTitle(viewTitles.getTreeItemIds(), descItemCodeToValueMap, dao, defaultTitle));
+            node.setName(viewTitles.getTreeItem().build(descItemCodeToValueMap, displayDao, defaultTitle));
         }
         if (param.isAccordion()) {
-            node.setAccordionLeft(createTitle(viewTitles.getAccordionLeftIds(), descItemCodeToValueMap, dao,
-                                              defaultTitle));
-            node.setAccordionRight(createTitle(viewTitles.getAccordionRightIds(), descItemCodeToValueMap,
-                                               null, null));
+            node.setAccordionLeft(viewTitles.getAccordionLeft().build(descItemCodeToValueMap, displayDao, defaultTitle));
+            node.setAccordionRight(viewTitles.getAccordionRight().build(descItemCodeToValueMap, displayDao, defaultTitle));
         }
         if (param.isIcon()) {
             if (descItemCodeToValueMap != null) {

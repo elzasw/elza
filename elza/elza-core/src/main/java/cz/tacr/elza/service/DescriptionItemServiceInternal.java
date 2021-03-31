@@ -72,6 +72,7 @@ public class DescriptionItemServiceInternal {
             String specCode = itemSpec.getCode();
             titleValue.setIconValue(specCode);
             titleValue.setSpecCode(specCode);
+            titleValue.setSpecId(descItem.getItemSpecId());
             if (dataExport) {
                 titleValue.setSpecName(itemSpec.getName());
             }
