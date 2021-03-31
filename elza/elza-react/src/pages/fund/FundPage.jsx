@@ -498,14 +498,14 @@ class FundPage extends AbstractReactComponent {
             <div className="fund-list-container">
                 <Autocomplete
                     useIdAsValue={true}
-                    items={[{code: null, name: i18n('global.all')}, ...this.state.institutions]}
-                    getItemId={item => (item ? item.code : null)}
+                    items={[{code: undefined, name: i18n('global.all')}, ...this.state.institutions]}
+                    getItemId={item => (item ? item.code : undefined)}
                     getItemName={item =>
                         item
                             ? item.name
                                 ? item.name
                                 : i18n('arr.fund.filterSettings.value.empty') + ' id:' + item.id
-                            : null
+                            : undefined
                     }
                     placeholder={i18n('arr.fund.institution')}
                     value={fundRegion.filter.institutionIdentifier}
