@@ -838,7 +838,7 @@ public class AccessPointService {
         ApPart apPart = partService.createPart(partType, accessPoint, apChange, null);
         accessPoint.setPreferredPart(apPart);
 
-        partService.createPartItems(apChange, apPart, apPartFormVO, null, null);
+        apItemService.createItems(apPart, apPartFormVO.getItems(), apChange, null, null);
         generateSync(accessPoint.getAccessPointId(), apPart);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
@@ -915,7 +915,7 @@ public class AccessPointService {
 
             List<ReferencedEntities> dataRefList = new ArrayList<>();
 
-            partService.createPartItems(change, apPart, apPartFormVO, bindingItemList, dataRefList);
+            apItemService.createItems(apPart, apPartFormVO.getItems(), change, bindingItemList, dataRefList);
             bindingItemRepository.flush();
 
             DeletedItems deletedItems = apItemService.deleteItems(itemList, change);
