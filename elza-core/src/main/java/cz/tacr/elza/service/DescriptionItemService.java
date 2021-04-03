@@ -836,9 +836,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         // pro mazání musí být verze otevřená
         checkFundVersionLock(version);
 
+        descItem.setDeleteChange(change);
+        ArrDescItem retDescItem = descItemRepository.save(descItem);
+
         if (moveAfter) {
             // načtení hodnot, které je potřeba přesunout výš
-            // TODO: This functionality should be after item is deleted?
             List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsAfterPosition(
                     descItem.getItemType(),
                     descItem.getNode(),
@@ -846,10 +848,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
             copyDescItemsWithData(change, descItems, -1, version, changeContext);
         }
-
-        descItem.setDeleteChange(change);
-
-        ArrDescItem retDescItem = descItemRepository.save(descItem);
 
         changeContext.addRemovedItem(descItem);
 
