@@ -1,7 +1,7 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
+import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 
 import java.util.List;
 

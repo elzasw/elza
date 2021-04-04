@@ -1860,9 +1860,20 @@ public class AccessPointService {
         return indexRepository.findPreferredPartIndexByAccessPointAndIndexType(accessPoint, DISPLAY_NAME);
     }
 
-    public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max, String externalSystemCode, SyncsFilterVO filter) {
+    public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max, 
+                                                       String externalSystemCode, 
+                                                       SyncsFilterVO filter) {
         ExtSyncsQueueResultListVO result = new ExtSyncsQueueResultListVO();
-        List<ExtSyncsQueueItem> items = extSyncsQueueItemRepository.findExtSyncsQueueItemsByExternalSystemAndScopesAndState(externalSystemCode, filter.getStates(), filter.getScopes(), from, max);
+        List<cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState> states;
+        if(CollectionUtils.isNotEmpty(filter.getStates())) {
+            states = filter.getStates().stream()
+                    .map(s -> cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState.fromValue(s.name()))
+                    .collect(Collectors.toList());
+        } else {
+            states = null;
+        }
+        
+        List<ExtSyncsQueueItem> items = extSyncsQueueItemRepository.findExtSyncsQueueItemsByExternalSystemAndScopesAndState(externalSystemCode, states, filter.getScopes(), from, max);
 
         result.setTotal(items.size());
         result.setData(createExtSyncsQueueItemVOList(items));
