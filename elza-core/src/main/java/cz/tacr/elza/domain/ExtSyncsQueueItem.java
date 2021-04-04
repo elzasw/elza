@@ -10,6 +10,8 @@ public class ExtSyncsQueueItem {
 
     public static final String ACCESS_POINT = "accessPoint";
     public static final String EXTERNAL_SYSTEM = "externalSystem";
+    public static final String DATE = "date";
+    public static final String STATE = "state";
 
     @Id
     @GeneratedValue
