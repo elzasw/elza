@@ -63,7 +63,7 @@ class RegistrySelectPage extends SelectPage {
     render() {
         const props = this.getPageProps();
 
-        return <RegistryPage {...props} />;
+        return <RegistryPage fund={this.props.fund} {...props} />;
     }
 }
 

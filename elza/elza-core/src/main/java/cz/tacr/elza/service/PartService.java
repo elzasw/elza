@@ -165,7 +165,7 @@ public class PartService {
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
 
         ApPart newPart = createPart(partType, accessPoint, apChange, parentPart);
-        createPartItems(apChange, newPart, apPartFormVO, null, null);
+        apItemService.createItems(newPart, apPartFormVO.getItems(), apChange, null, null);
         return newPart;
     }
 
@@ -181,31 +181,6 @@ public class PartService {
         Validate.notNull(partId);
         return partRepository.findById(partId)
                 .orElseThrow(part(partId));
-    }
-
-    /**
-     * Založí atributy části.
-     *
-     * @param apChange
-     *            změna
-     * @param apPart
-     *            část
-     * @param apPartFormVO
-     *            data k založení
-     * @param bindingItemList
-     *            seznam soucasnych item bindings
-     * @return
-     */
-    public List<ApItem> createPartItems(final ApChange apChange,
-                                        final ApPart apPart,
-                                        final ApPartFormVO apPartFormVO,
-                                        final List<ApBindingItem> bindingItemList,
-                                        final List<ReferencedEntities> dataRefList) {
-        List<ApItem> itemsDb = new ArrayList<>();
-        Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
-        List<ApItem> items = apItemService.createItems(apPart, apPartFormVO.getItems(),
-                                                       typeIdItemsMap, itemsDb, apChange, bindingItemList, dataRefList);
-        return itemRepository.saveAll(items);
     }
 
     /**

@@ -48,7 +48,7 @@ class DescItemRecordRef extends AbstractReactComponent {
     };
 
     handleSelectModule = ({onSelect, filterText, value}) => {
-        const {hasSpecification, descItem, registryList, fundName, nodeName, itemName, specName} = this.props;
+        const {hasSpecification, descItem, registryList, fund, nodeName, itemName, specName} = this.props;
         const oldFilter = {...registryList.filter};
 
         this.props.dispatch(
@@ -58,6 +58,7 @@ class DescItemRecordRef extends AbstractReactComponent {
                 itemTypeId: this.props.itemTypeId,
                 text: filterText,
                 itemSpecId: hasSpecification ? descItem.descItemSpecId : null,
+                versionId: fund?.versionId,
             }),
         );
 
@@ -67,7 +68,8 @@ class DescItemRecordRef extends AbstractReactComponent {
                 this,
                 null,
                 <RegistrySelectPage
-                    titles={[fundName, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
+                    titles={[fund?.name, nodeName, itemName + (hasSpecification ? ': ' + specName : '')]}
+                    fund={fund}
                     onSelect={data => {
                         onSelect(data);
                         this.props.dispatch(registryListFilter({...oldFilter}));
@@ -149,25 +151,24 @@ class DescItemRecordRef extends AbstractReactComponent {
 
 export default connect(
     (state, props) => {
-        let fundName = null,
-            nodeName = null;
+        let nodeName = null;
+        let fund = undefined;
         if (props.typePrefix !== 'output' && props.typePrefix !== 'accesspoint' && props.typePrefix !== 'ap-name') {
             const {
                 arrRegion: {activeIndex, funds},
             } = state;
-            const fund = funds[activeIndex];
+            fund = funds[activeIndex];
             const {nodes} = fund;
-            fundName = fund.name;
             const node = nodes.nodes[nodes.activeIndex];
             const {selectedSubNodeId} = node;
             const subNode = objectById(node.childNodes, selectedSubNodeId);
-            subNode && subNode.name && (nodeName = subNode.name);
+            nodeName = subNode && subNode.name ? subNode.name : nodeName;
         }
 
         const registryList = storeFromArea(state, AREA_REGISTRY_LIST);
         return {
             registryList,
-            fundName,
+            fund,
             nodeName,
         };
     },
