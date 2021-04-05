@@ -115,6 +115,24 @@ export function localUTCToDateTime(str) {
 }
 
 /**
+ * Převede utc zápis do Date instance javascriptu VČETNĚ času.
+ * @param str
+ */
+ export function utcToDateTime(str) {
+    if (!str) {
+        return null;
+    }
+    if (str instanceof Date) {
+        return str;
+    }
+
+    const dt = str.split(/[: T-]/).map(parseFloat);
+    const seconds = dt[5] ? Math.floor(dt[5]) : 0;
+    const milliseconds = dt[5] ? (dt[5] - seconds) * 1000 : 0;
+    return new Date(Date.UTC(dt[0], dt[1] - 1, dt[2], dt[3] || 0, dt[4] || 0, seconds, milliseconds));
+}
+
+/**
  * Převod Obejct:Date do řetězce včetně času
  * @param date {Date} datum a čas
  * @return {String} datum
