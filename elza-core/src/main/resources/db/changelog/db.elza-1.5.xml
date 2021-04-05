@@ -1227,5 +1227,9 @@
         <sql dbms="postgresql">CREATE UNIQUE INDEX arr_item_object_pidx 
                                ON arr_item(desc_item_object_id) 
                                WHERE delete_change_id IS NULL</sql>
+    </changeSet>
+
+    <changeSet id="20210405232524" author="ppyt">
+      <delete tableName="ap_cached_access_point" />
     </changeSet>    
 </databaseChangeLog>
