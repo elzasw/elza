@@ -981,6 +981,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		// Mark orig descItem as deleted
 		descItem.setDeleteChange(change);
         descItemRepository.save(descItem);
+        // deleted item has to be flushed to DB before new item is created
+        descItemRepository.flush();
 
 		// Create new one
 		ArrDescItem descItemNew = new ArrDescItem(descItem);
