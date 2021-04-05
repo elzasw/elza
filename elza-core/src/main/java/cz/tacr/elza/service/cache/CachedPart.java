@@ -5,6 +5,8 @@ import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApStateEnum;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class CachedPart implements AccessPointCacheSerializable {
@@ -107,5 +109,19 @@ public class CachedPart implements AccessPointCacheSerializable {
 
     public void setIndices(List<ApIndex> indices) {
         this.indices = indices;
+    }
+
+    public void addItem(ApItem item) {
+        if (this.items == null) {
+            items = new ArrayList<>();
+        }
+        items.add(item);
+    }
+
+    public void addIndex(ApIndex index) {
+        if (this.indices == null) {
+            indices = new ArrayList<>();
+        }
+        indices.add(index);
     }
 }

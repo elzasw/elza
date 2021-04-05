@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -134,7 +135,8 @@ public class AccessPointItemService {
     // TODO: Kandidat na vymazani
     @FunctionalInterface
     public interface CreateFunction {
-        ApItem apply(final RulItemType itemType, final RulItemSpec itemSpec, final ApChange change, final int objectId, final int position);
+        ApItem apply(final RulItemType itemType, final RulItemSpec itemSpec, final ApChange change, final int objectId,
+                     final int position);
     }
 
     /**
@@ -324,13 +326,29 @@ public class AccessPointItemService {
         return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
     }
 
+    /**
+     * Založí atributy části.
+     *
+     * @param part
+     *            část
+     * @param createItems
+     *            Vytvářené záznamy
+     * @param change
+     *            změna *
+     * @param bindingItemList
+     *            seznam soucasnych item bindings
+     * @param dataRefList
+     *            seznam odkazovaných entit
+     * @return
+     */
     public List<ApItem> createItems(final ApPart part,
                                     final List<ApItemVO> createItems,
-                                    final Map<Integer, List<ApItem>> typeIdItemsMap,
-                                    final List<ApItem> itemsDb,
                                     final ApChange change,
                                     final List<ApBindingItem> bindingItemList,
                                     final List<ReferencedEntities> dataRefList) {
+        // Map for position counting
+        Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
+
         StaticDataProvider sdp = staticDataService.getData();
         List<ArrData> dataToSave = new ArrayList<>(createItems.size());
         List<ApItem> itemsCreated = new ArrayList<>();
@@ -375,7 +393,6 @@ public class AccessPointItemService {
 
                     List<ApItem> itemsToShift = findItemsGE(existsItems, positionWant);
                     List<ApItem> newItems = shiftItems(itemsToShift, 1, change);
-                    itemsDb.addAll(newItems);
                     existsItems.addAll(newItems);
 
                     position = positionWant;
@@ -383,43 +400,70 @@ public class AccessPointItemService {
             }
 
             ArrData data = createItem.createDataEntity(em);
-            // 11.2.2021 - PPy - zakomentovano, nejasny vyznam
-            // setBindingArrDataRecordRef(data, createItem, bindingItemList, dataRefList);
+            // zkopirovani binding pro ArrDataRecordRef
+            if (data instanceof ArrDataRecordRef) {
+                setBindingArrDataRecordRef((ArrDataRecordRef) data, createItem, bindingItemList, dataRefList);
+            }
 
             ApItem itemCreated = createItem(part, itemType.getEntity(), itemSpec, change, nextItemObjectId(), position);
             dataToSave.add(data);
             itemCreated.setData(data);
             itemsCreated.add(itemCreated);
 
-            itemsDb.add(itemCreated);
             existsItems.add(itemCreated);
 
             changeBindingItemsItems(createItem.getId(), itemCreated, bindingItemList);
         }
         dataRepository.saveAll(dataToSave);
+        itemRepository.saveAll(itemsCreated);
         return itemsCreated;
     }
 
-    private void setBindingArrDataRecordRef(ArrData data, ApItemVO createItem, List<ApBindingItem> bindingItemList,
+    /**
+     * Nastaveni vazby ne pripojene AP z puvodniho ArrDataRecordRef
+     * 
+     * Jako vedlejsi efekt funkce kontroluje existenci nastaveni vazby
+     * na AP nebo na Binding na AP
+     * 
+     * @param data
+     * @param createItem
+     * @param bindingItemList
+     * @param dataRefList
+     */
+    private void setBindingArrDataRecordRef(ArrDataRecordRef data, ApItemVO createItem,
+                                            List<ApBindingItem> bindingItemList,
                                             List<ReferencedEntities> dataRefList) {
-        if (data instanceof ArrDataRecordRef && createItem instanceof ApItemAccessPointRefVO
-                && CollectionUtils.isNotEmpty(bindingItemList) && dataRefList != null) {
-            ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
-            ApItemAccessPointRefVO apItemAccessPointRefVO = (ApItemAccessPointRefVO) createItem;
+        Validate.isTrue(createItem instanceof ApItemAccessPointRefVO);
 
-            // TOTO je divne??
-            // Co to dela??
+        ApItemAccessPointRefVO apItemAccessPointRefVO = (ApItemAccessPointRefVO) createItem;
+
+        if (bindingItemList != null && dataRefList != null) {
+            // Vyhledani stavajiciho binding
             for (ApBindingItem bindingItem : bindingItemList) {
-                if (bindingItem.getItem() != null && createItem.getId() != null && apItemAccessPointRefVO.getExternalName() != null &&
-                        bindingItem.getItem().getItemId() != null && bindingItem.getItem().getItemId().equals(createItem.getId())) {
-                    // Co se zde ma nastavit?
-                    // ?bindingItem.getValue(), apItemAccessPointRefVO.getExternalName()
-                    dataRefList.add(new ReferencedEntities(recordRef, apItemAccessPointRefVO.getExternalName()));
+                if (bindingItem.getItem() != null
+                        && createItem.getId() != null
+                        && apItemAccessPointRefVO.getExternalName() != null
+                        && bindingItem.getItem().getItemId() != null
+                        && bindingItem.getItem().getItemId().equals(createItem.getId())) {
+                    // prevzeti puvodniho odkazu
+                    ApItem origItem = bindingItem.getItem();
+                    ArrDataRecordRef origData = (ArrDataRecordRef) origItem.getData();
+                    data.setBinding(origData.getBinding());
+
+                    dataRefList.add(new ReferencedEntities(data, apItemAccessPointRefVO.getExternalName()));
                     break;
                 }
             }
-
         }
+
+        // finalni kontrola
+        if (data.getBinding() == null && data.getRecordId() == null) {
+            throw new BusinessException("Missing record reference, dataId" + createItem.getId(),
+                    BaseCode.INVALID_STATE)
+                            .set("itemId", createItem.getId())
+                            .set("objectId", createItem.getObjectId());
+        }
+
     }
 
     // Vyhleda aktualni BindingItem dle puvodniho item a nahradi vazbou na novy
@@ -442,7 +486,6 @@ public class AccessPointItemService {
             bindingItemRepository.saveAll(currentItemBindings);
         }
     }
-
 
     public ApItem createItem(final ApItem oldItem,
                              final ApChange change,
@@ -478,7 +521,7 @@ public class AccessPointItemService {
      */
     public ApItem createItem(final ApPart part,
                              final RulItemType it, final RulItemSpec is, final ApChange c,
-                               final int objectId, final int position) {
+                             final int objectId, final int position) {
         ApItem item = new ApItem();
         item.setItemType(it);
         item.setItemSpec(is);
@@ -575,8 +618,10 @@ public class AccessPointItemService {
         return itemRepository.findItemsByAccessPointIdAndItemTypeAndPartTypeCode(accessPointId, itemType, partTypeCode);
     }
 
-    public List<ApItem> findItems(final Integer accessPointId, final Collection<RulItemType> itemTypes, final String partTypeCode) {
-        return itemRepository.findItemsByAccessPointIdAndItemTypesAndPartTypeCode(accessPointId, itemTypes, partTypeCode);
+    public List<ApItem> findItems(final Integer accessPointId, final Collection<RulItemType> itemTypes,
+                                  final String partTypeCode) {
+        return itemRepository.findItemsByAccessPointIdAndItemTypesAndPartTypeCode(accessPointId, itemTypes,
+                                                                                  partTypeCode);
     }
 
     public static void normalize(ArrDataUnitdate aeDataUnitdate) {

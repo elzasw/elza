@@ -232,42 +232,43 @@ public class ApController {
             return findAccessPointFulltext(search, from, count, fund, apTypeId, state, scopeId, searchFilter, sdp);
         }
 
-	    if (searchFilter == null) {
-            if (apTypeId != null && (itemSpecId != null || itemTypeId != null)) {
-                throw new SystemException("Nelze použít více kritérií zároveň (specifikace/typ a typ rejstříku).", BaseCode.SYSTEM_ERROR);
-            }
+        // TODO: Use StaticDataProvider
+        //
+        Set<Integer> apTypeIds = new HashSet<>();
+        if (apTypeId != null) {
+            apTypeIds.add(apTypeId);
+        }
+        Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
 
-            Set<Integer> apTypeIds = new HashSet<>();
-            if (apTypeId != null) {
-                apTypeIds.add(apTypeId);
-            } else if (itemSpecId != null) {
-                RulItemSpec spec = sdp.getItemSpecById(itemSpecId);
-                if (spec == null) {
-                    throw new ObjectNotFoundException("Specification not found", ArrangementCode.ITEM_SPEC_NOT_FOUND)
-                            .setId(itemSpecId);
-                }
-                apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemSpec(spec));
-                if (apTypeIds.size() == 0) {
-                    logger.error("Specification has no associated classes, itemSpecId={}", itemSpecId);
-                    throw new SystemException("Configuration error, specification without associated classes",
-                            BaseCode.SYSTEM_ERROR).set("itemSpecId", itemSpecId);
-                }
-            } else
-            if (itemTypeId != null) {
-                ItemType itemType = sdp.getItemTypeById(itemTypeId);
-                if (itemType == null) {
-                    throw new ObjectNotFoundException("Item type not found", ArrangementCode.ITEM_TYPE_NOT_FOUND)
-                            .setId(itemTypeId);
-                }
-                apTypeIds.addAll(itemAptypeRepository.findApTypeIdsByItemType(itemType.getEntity()));
-                if (apTypeIds.size() == 0) {
-                    logger.error("Item type has no associated classes, itemTypeId={}", itemTypeId);
-                    throw new SystemException("Configuration error, item type without associated classes",
-                            BaseCode.SYSTEM_ERROR).set("itemTypeId", itemTypeId);
-                }
+        if (itemSpecId != null) {
+            RulItemSpec spec = sdp.getItemSpecById(itemSpecId);
+            if (spec == null) {
+                throw new ObjectNotFoundException("Specification not found", ArrangementCode.ITEM_SPEC_NOT_FOUND)
+                        .setId(itemSpecId);
             }
+            List<Integer> extraApTypeLimit = itemAptypeRepository.findApTypeIdsByItemSpec(spec);
+            if (extraApTypeLimit.size() == 0) {
+                logger.error("Specification has no associated classes, itemSpecId={}", itemSpecId);
+                throw new SystemException("Configuration error, specification without associated classes",
+                        BaseCode.SYSTEM_ERROR).set("itemSpecId", itemSpecId);
+            }
+            applyApTypeFilter(sdp, apTypeIdTree, extraApTypeLimit);
+        } else if (itemTypeId != null) {
+            ItemType itemType = sdp.getItemTypeById(itemTypeId);
+            if (itemType == null) {
+                throw new ObjectNotFoundException("Item type not found", ArrangementCode.ITEM_TYPE_NOT_FOUND)
+                        .setId(itemTypeId);
+            }
+            List<Integer> extraApTypeLimit = itemAptypeRepository.findApTypeIdsByItemType(itemType.getEntity());
+            if (extraApTypeLimit.size() == 0) {
+                logger.error("Item type has no associated classes, itemTypeId={}", itemTypeId);
+                throw new SystemException("Configuration error, item type without associated classes",
+                        BaseCode.SYSTEM_ERROR).set("itemTypeId", itemTypeId);
+            }
+            applyApTypeFilter(sdp, apTypeIdTree, extraApTypeLimit);
+        }
 
-            Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
+        if (searchFilter == null) {
 
             Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
 
@@ -279,11 +280,6 @@ public class ApController {
             foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from, count, fund, scopeId, states, searchTypeNameFinal, searchTypeUsernameFinal);
 
         } else {
-            Set<Integer> apTypeIds = new HashSet<>();
-            if (apTypeId != null) {
-                apTypeIds.add(apTypeId);
-            }
-            Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
 
             Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId);
 
@@ -306,6 +302,26 @@ public class ApController {
                         apState.getAccessPoint(),
                         nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getValue() : null),
                 foundRecordsCount);
+    }
+
+    private void applyApTypeFilter(StaticDataProvider sdp, Set<Integer> apTypeIdTree, List<Integer> extraApTypeLimit) {
+        if (CollectionUtils.isEmpty(extraApTypeLimit)) {
+            return;
+        }
+        // TODO: use StaticDataProvider
+        Set<Integer> extraSubTree = apTypeRepository.findSubtreeIds(extraApTypeLimit);
+        if (CollectionUtils.isEmpty(apTypeIdTree)) {
+            // no limits till now -> apply this subtree
+            apTypeIdTree.addAll(extraSubTree);
+        } else {
+            // remove all except data in extraSubTree
+            for (Integer val : new ArrayList<Integer>(apTypeIdTree)) {
+                if (!extraSubTree.contains(val)) {
+                    apTypeIdTree.remove(val);
+                }
+            }
+
+        }
     }
 
     private FilteredResultVO<ApAccessPointVO> findAccessPointFulltext(String search,

@@ -170,12 +170,16 @@ public class GroovyService {
                         if (dataTmp.getRecord() != null) {
                             value = dataTmp.getFulltextValue();
                             intValue = dataTmp.getRecordId();
-                        } else {
+                        } else if (dataTmp.getBinding() != null) {
                             value = dataTmp.getBinding().getValue();
                             // pokud se jedná o pouhý odkaz do externího systému (bez lokálního AP)
                             // nastavuje se id z bindingu jako záporný idnetifikátor pro odlišení
                             // identifikátorů z lokálních AP
                             intValue = dataTmp.getBinding().getBindingId() * -1;
+                        } else {
+                            throw new SystemException("RecordRef without any data, dataId: " + dataTmp.getDataId(),
+                                    BaseCode.DB_INTEGRITY_PROBLEM)
+                                            .set("dataId", dataTmp.getDataId());
                         }
 
                         groovyItem = new GroovyItem(itemTypeCode, spec, specCode, value, intValue);

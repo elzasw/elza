@@ -838,7 +838,7 @@ public class AccessPointService {
         ApPart apPart = partService.createPart(partType, accessPoint, apChange, null);
         accessPoint.setPreferredPart(apPart);
 
-        partService.createPartItems(apChange, apPart, apPartFormVO, null, null);
+        apItemService.createItems(apPart, apPartFormVO.getItems(), apChange, null, null);
         generateSync(accessPoint.getAccessPointId(), apPart);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
@@ -915,7 +915,7 @@ public class AccessPointService {
 
             List<ReferencedEntities> dataRefList = new ArrayList<>();
 
-            partService.createPartItems(change, apPart, apPartFormVO, bindingItemList, dataRefList);
+            apItemService.createItems(apPart, apPartFormVO.getItems(), change, bindingItemList, dataRefList);
             bindingItemRepository.flush();
 
             DeletedItems deletedItems = apItemService.deleteItems(itemList, change);
@@ -1860,9 +1860,20 @@ public class AccessPointService {
         return indexRepository.findPreferredPartIndexByAccessPointAndIndexType(accessPoint, DISPLAY_NAME);
     }
 
-    public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max, String externalSystemCode, SyncsFilterVO filter) {
+    public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max, 
+                                                       String externalSystemCode, 
+                                                       SyncsFilterVO filter) {
         ExtSyncsQueueResultListVO result = new ExtSyncsQueueResultListVO();
-        List<ExtSyncsQueueItem> items = extSyncsQueueItemRepository.findExtSyncsQueueItemsByExternalSystemAndScopesAndState(externalSystemCode, filter.getStates(), filter.getScopes(), from, max);
+        List<cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState> states;
+        if(CollectionUtils.isNotEmpty(filter.getStates())) {
+            states = filter.getStates().stream()
+                    .map(s -> cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState.fromValue(s.name()))
+                    .collect(Collectors.toList());
+        } else {
+            states = null;
+        }
+        
+        List<ExtSyncsQueueItem> items = extSyncsQueueItemRepository.findExtSyncsQueueItemsByExternalSystemAndScopesAndState(externalSystemCode, states, filter.getScopes(), from, max);
 
         result.setTotal(items.size());
         result.setData(createExtSyncsQueueItemVOList(items));
