@@ -71,6 +71,7 @@ import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.service.ItemService.FundContext;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
@@ -421,7 +422,8 @@ public class OutputServiceInternal {
         }
 
         StaticDataProvider sdp = this.staticDataService.getData();
-        itemService.checkValidTypeAndSpec(sdp, outputItem);
+        FundContext fundContext = new FundContext(fundVersion.getFund(), arrangementService);
+        itemService.checkValidTypeAndSpec(fundContext, sdp, outputItem);
 
         int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutput());
 
