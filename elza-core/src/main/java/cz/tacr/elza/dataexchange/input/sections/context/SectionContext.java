@@ -187,6 +187,7 @@ public class SectionContext {
         dmsFile.setMimeType(mimetype);
         dmsFile.setFund(getFund());
         dmsFile.setFileSize(0);
+        dmsFile.setCreateChange(getCreateChange());
         // save file
         dmsService.createFile(dmsFile, dataProvider);
 
