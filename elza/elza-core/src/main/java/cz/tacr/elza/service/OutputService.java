@@ -96,6 +96,7 @@ import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.service.ItemService.FundContext;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -866,7 +867,8 @@ public class OutputService {
 
         // kontrola validity typu a specifikace
         StaticDataProvider sdp = staticDataService.getData();
-        itemService.checkValidTypeAndSpec(sdp, outputItem);
+        FundContext fundContext = new FundContext(fundVersion.getFund(), arrangementService);
+        itemService.checkValidTypeAndSpec(fundContext, sdp, outputItem);
 
         int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutput());
 

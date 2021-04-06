@@ -82,7 +82,6 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApScopeRelation;
@@ -118,10 +117,8 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
-import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
-import cz.tacr.elza.repository.ApKeyValueRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
@@ -141,7 +138,6 @@ import cz.tacr.elza.service.AccessPointItemService.DeletedItems;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-
 
 /**
  * Servisní třída pro registry.
@@ -202,9 +198,6 @@ public class AccessPointService {
 
     @Autowired
     private DescItemRepository descItemRepository;
-
-    @Autowired
-    private ApChangeRepository apChangeRepository;
 
     @Autowired
     private ApBindingRepository bindingRepository;
@@ -275,9 +268,6 @@ public class AccessPointService {
     @Autowired
     private AccessPointCacheService accessPointCacheService;
     
-    @Autowired
-    private ApKeyValueRepository keyValueRepository;
-
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
 
@@ -552,7 +542,7 @@ public class AccessPointService {
 
         if (!scopeIdsToSearch.isEmpty()) {
             if (fund != null) {
-                Set<Integer> fundScopeIds = scopeRepository.findIdsByFund(fund);
+                Set<Integer> fundScopeIds = scopeRepository.findAllConnectedByFundId(fund.getFundId());
                 scopeIdsToSearch.retainAll(fundScopeIds);
             }
 
