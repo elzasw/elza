@@ -130,19 +130,7 @@ import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.VisiblePolicyRepository;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundRegisterScopeRepository;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.security.UserDetail;
@@ -232,6 +220,9 @@ public class ArrangementService {
     @Autowired
     private ScopeRepository scopeRepository;
 
+    @Autowired
+    private ScopeRelationRepository scopeRelationRepository;
+    
     @Autowired
     private EntityManager em;
 
@@ -1595,6 +1586,24 @@ public class ArrangementService {
 
     }
 
+    /**
+     * Získání seznam ApScope podle fondu
+     * 
+     * @param arrFund
+     * @return Set<ApScope>
+     */
+    public Set<ApScope> findApScopeByFund(ArrFund arrFund) {
+        Set<ApScope> scopes = scopeRepository.findByFund(arrFund);
+        scopes.addAll(scopeRelationRepository.findConnectedScopeByScope(scopes));
+        return scopes;
+    }
+
+    /**
+     * Získání ApScope podle kódu
+     * 
+     * @param s kod
+     * @return ApScope
+     */
     public ApScope getApScope(String s) {
         ApScope entity = scopeRepository.findByCode(s);
         if(entity == null) {
@@ -1604,7 +1613,6 @@ public class ArrangementService {
         }
         return entity;
     }
-
 
     /**
      * @return vrací session uživatele

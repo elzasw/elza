@@ -252,7 +252,7 @@ public class ApController {
                 throw new SystemException("Configuration error, specification without associated classes",
                         BaseCode.SYSTEM_ERROR).set("itemSpecId", itemSpecId);
             }
-            applyApTypeFilter(sdp, apTypeIdTree, extraApTypeLimit);
+            apTypeIdTree = applyApTypeFilter(sdp, apTypeIdTree, extraApTypeLimit);
         } else if (itemTypeId != null) {
             ItemType itemType = sdp.getItemTypeById(itemTypeId);
             if (itemType == null) {
@@ -265,7 +265,7 @@ public class ApController {
                 throw new SystemException("Configuration error, item type without associated classes",
                         BaseCode.SYSTEM_ERROR).set("itemTypeId", itemTypeId);
             }
-            applyApTypeFilter(sdp, apTypeIdTree, extraApTypeLimit);
+            apTypeIdTree = applyApTypeFilter(sdp, apTypeIdTree, extraApTypeLimit);
         }
 
         if (searchFilter == null) {
@@ -304,23 +304,24 @@ public class ApController {
                 foundRecordsCount);
     }
 
-    private void applyApTypeFilter(StaticDataProvider sdp, Set<Integer> apTypeIdTree, List<Integer> extraApTypeLimit) {
+    private Set<Integer> applyApTypeFilter(StaticDataProvider sdp, Set<Integer> apTypeIdTree, List<Integer> extraApTypeLimit) {
         if (CollectionUtils.isEmpty(extraApTypeLimit)) {
-            return;
+            return apTypeIdTree;
         }
         // TODO: use StaticDataProvider
         Set<Integer> extraSubTree = apTypeRepository.findSubtreeIds(extraApTypeLimit);
         if (CollectionUtils.isEmpty(apTypeIdTree)) {
             // no limits till now -> apply this subtree
-            apTypeIdTree.addAll(extraSubTree);
+            return extraSubTree;
         } else {
             // remove all except data in extraSubTree
+            Set<Integer> result = new HashSet<>(apTypeIdTree);
             for (Integer val : new ArrayList<Integer>(apTypeIdTree)) {
                 if (!extraSubTree.contains(val)) {
-                    apTypeIdTree.remove(val);
+                    result.remove(val);
                 }
             }
-
+            return result;
         }
     }
 

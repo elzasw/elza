@@ -204,9 +204,6 @@ public class AccessPointService {
     private DescItemRepository descItemRepository;
 
     @Autowired
-    private ApChangeRepository apChangeRepository;
-
-    @Autowired
     private ApBindingRepository bindingRepository;
 
     @Autowired
@@ -275,9 +272,6 @@ public class AccessPointService {
     @Autowired
     private AccessPointCacheService accessPointCacheService;
     
-    @Autowired
-    private ApKeyValueRepository keyValueRepository;
-
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
 
@@ -553,6 +547,7 @@ public class AccessPointService {
         if (!scopeIdsToSearch.isEmpty()) {
             if (fund != null) {
                 Set<Integer> fundScopeIds = scopeRepository.findIdsByFund(fund);
+                fundScopeIds.addAll(scopeRelationRepository.findConnectedScopeIdsByScopeIds(fundScopeIds));
                 scopeIdsToSearch.retainAll(fundScopeIds);
             }
 
