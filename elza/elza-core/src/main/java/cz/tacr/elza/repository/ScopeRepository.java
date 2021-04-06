@@ -39,6 +39,21 @@ public interface ScopeRepository extends ElzaJpaRepository<ApScope, Integer>, Sc
     Set<Integer> findIdsByFundId(final Integer fundId);
 
     /**
+     * Najde seznam id podle FA spolu s připojenými.
+     * 
+     * @param fundId
+     * @return seznam id
+     */
+    @Query(value = 
+            "WITH fund_scopes(scope_id) AS"
+            + "  (SELECT scope_id AS scope FROM arr_fund_register_scope WHERE fund_id = ?1)"
+            + "SELECT scope_id from fund_scopes "
+            + "UNION "
+            + "SELECT connected_scope_id AS scope FROM ap_scope_relation WHERE scope_id IN"
+            + "  (SELECT scope_id FROM fund_scopes)", nativeQuery = true)    
+    Set<Integer> findAllConnectedByFundId(final Integer fundId);
+
+    /**
      * Najde id tříd pro FA.
      *
      * @param fund archivní pomůcka

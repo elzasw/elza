@@ -8,7 +8,6 @@ import static cz.tacr.elza.repository.ExceptionThrow.version;
 
 import java.text.Normalizer;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,15 +92,6 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.UIVisiblePolicy;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -124,16 +114,13 @@ import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
-import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
 import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
@@ -165,11 +152,7 @@ public class ArrangementService {
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
     @Autowired
-    private UserService userService;
-    @Autowired
     private RuleService ruleService;
-    @Autowired
-    private ItemRepository itemRepository;
     @Autowired
     private InstitutionRepository institutionRepository;
     @Autowired
@@ -201,8 +184,6 @@ public class ArrangementService {
     @Autowired
     private DescItemRepository descItemRepository;
     @Autowired
-    private AccessPointService accessPointService;
-    @Autowired
     private ArrangementInternalService arrangementInternalService;
 
     @Autowired
@@ -220,9 +201,6 @@ public class ArrangementService {
     @Autowired
     private ScopeRepository scopeRepository;
 
-    @Autowired
-    private ScopeRelationRepository scopeRelationRepository;
-    
     @Autowired
     private EntityManager em;
 
@@ -1587,15 +1565,13 @@ public class ArrangementService {
     }
 
     /**
-     * Získání seznam ApScope podle fondu
+     * Získání seznamu id ApScope podle fondu
      * 
      * @param arrFund
      * @return Set<ApScope>
      */
-    public Set<ApScope> findApScopeByFund(ArrFund arrFund) {
-        Set<ApScope> scopes = scopeRepository.findByFund(arrFund);
-        scopes.addAll(scopeRelationRepository.findConnectedScopeByScope(scopes));
-        return scopes;
+    public Set<Integer> findAllConnectedScopeByFund(ArrFund arrFund) {
+        return scopeRepository.findAllConnectedByFundId(arrFund.getFundId());
     }
 
     /**
