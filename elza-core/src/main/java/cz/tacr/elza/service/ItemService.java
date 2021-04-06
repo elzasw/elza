@@ -1,6 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +23,6 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
@@ -277,7 +275,7 @@ public class ItemService {
         }
 
         // kontrola scope entity
-        if (!fundContext.getScopes().contains(apState.getScope())) {
+        if (!fundContext.getScopes().contains(apState.getScope().getScopeId())) {
             log.error("Archival entity has invalid scope, dataId: {}, accessPointId: {}, scopes: {}, scopeId: {}",
                       dataRecordRef.getDataId(),
                       apAccessPoint.getAccessPointId(),
@@ -355,17 +353,13 @@ public class ItemService {
      */
     public static class FundContext {
 
-        private final Set<ApScope> scopes;
-
-        public FundContext(Set<ApScope> scopes) {
-            this.scopes = scopes;
-        }
+        private final Set<Integer> scopes;
 
         public FundContext(ArrFund fund, ArrangementService service) {
-            scopes = service.findApScopeByFund(fund);
+            scopes = service.findAllConnectedScopeByFund(fund);
         }
 
-        public Set<ApScope> getScopes() {
+        public Set<Integer> getScopes() {
             return scopes;
         }
     }
