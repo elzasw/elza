@@ -8,7 +8,6 @@ import static cz.tacr.elza.repository.ExceptionThrow.version;
 
 import java.text.Normalizer;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,15 +92,6 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.UIVisiblePolicy;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -124,7 +114,6 @@ import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
@@ -132,20 +121,6 @@ import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundRegisterScopeRepository;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.VisiblePolicyRepository;
-import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
 import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
@@ -177,11 +152,7 @@ public class ArrangementService {
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
     @Autowired
-    private UserService userService;
-    @Autowired
     private RuleService ruleService;
-    @Autowired
-    private ItemRepository itemRepository;
     @Autowired
     private InstitutionRepository institutionRepository;
     @Autowired
@@ -212,8 +183,6 @@ public class ArrangementService {
     private NodeConformityErrorRepository nodeConformityErrorsRepository;
     @Autowired
     private DescItemRepository descItemRepository;
-    @Autowired
-    private AccessPointService accessPointService;
     @Autowired
     private ArrangementInternalService arrangementInternalService;
 
@@ -1595,6 +1564,22 @@ public class ArrangementService {
 
     }
 
+    /**
+     * Získání seznamu id ApScope podle fondu
+     * 
+     * @param arrFund
+     * @return Set<ApScope>
+     */
+    public Set<Integer> findAllConnectedScopeByFund(ArrFund arrFund) {
+        return scopeRepository.findAllConnectedByFundId(arrFund.getFundId());
+    }
+
+    /**
+     * Získání ApScope podle kódu
+     * 
+     * @param s kod
+     * @return ApScope
+     */
     public ApScope getApScope(String s) {
         ApScope entity = scopeRepository.findByCode(s);
         if(entity == null) {
@@ -1604,7 +1589,6 @@ public class ArrangementService {
         }
         return entity;
     }
-
 
     /**
      * @return vrací session uživatele

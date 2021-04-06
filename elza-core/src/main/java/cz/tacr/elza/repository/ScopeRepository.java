@@ -21,7 +21,7 @@ import cz.tacr.elza.domain.ArrFund;
 public interface ScopeRepository extends ElzaJpaRepository<ApScope, Integer>, ScopeRepositoryCustom {
 
     /**
-     * Najde třídy podle kódů.
+     * Najde seznam tříd podle seznamu kódů.
      *
      * @param codes seznam kódů
      * @return seznam tříd
@@ -29,15 +29,29 @@ public interface ScopeRepository extends ElzaJpaRepository<ApScope, Integer>, Sc
     @Query("SELECT s FROM ap_scope s WHERE s.code IN (?1)")
     List<ApScope> findByCodes(Collection<String> codes);
 
-
     /**
-     * Najde id tříd pro FA.
+     * Najde seznam id tříd pro FA.
      *
-     * @param fund archivní pomůcka
+     * @param fundId archivní pomůcka
      * @return id tříd dané fa
      */
     @Query("SELECT s.scopeId FROM arr_fund_register_scope fs JOIN fs.scope s WHERE fs.fund.id = ?1")
-    Set<Integer> findIdsByFundId(final Integer fund);
+    Set<Integer> findIdsByFundId(final Integer fundId);
+
+    /**
+     * Najde seznam id podle FA spolu s připojenými.
+     * 
+     * @param fundId
+     * @return seznam id
+     */
+    @Query(value = 
+            "WITH fund_scopes(scope_id) AS"
+            + "  (SELECT scope_id AS scope FROM arr_fund_register_scope WHERE fund_id = ?1)"
+            + "SELECT scope_id from fund_scopes "
+            + "UNION "
+            + "SELECT connected_scope_id AS scope FROM ap_scope_relation WHERE scope_id IN"
+            + "  (SELECT scope_id FROM fund_scopes)", nativeQuery = true)    
+    Set<Integer> findAllConnectedByFundId(final Integer fundId);
 
     /**
      * Najde id tříd pro FA.
@@ -49,7 +63,7 @@ public interface ScopeRepository extends ElzaJpaRepository<ApScope, Integer>, Sc
     Set<Integer> findIdsByFund(final ArrFund fund);
 
     /**
-     * Najde id tříd pro FA.
+     * Najde seznam tříd pro FA.
      *
      * @param fund archivní pomůcka
      * @return id tříd dané fa
