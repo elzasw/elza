@@ -276,17 +276,17 @@ public class ItemService {
 
         // kontrola scope entity
         if (!fundContext.getScopes().contains(apState.getScope().getScopeId())) {
-            log.error("Archival entity has invalid scope, dataId: {}, accessPointId: {}, scopes: {}, scopeId: {}",
+            log.error("Archival entity has invalid scope, dataId: {}, accessPointId: {}, scopeIds: {}, AF scopeId: {}",
                       dataRecordRef.getDataId(),
                       apAccessPoint.getAccessPointId(),
                       fundContext.getScopes(),
                       apState.getScope().getScopeId());
-            
+
             throw new BusinessException("Archivní entita má nevhodné scope.",
                                         RegistryCode.INVALID_ENTITY_SCOPE)
                                                 .set("dataId", dataRecordRef.getDataId())
                                                 .set("accessPointId", apAccessPoint.getAccessPointId())
-                                                .set("scopes", fundContext.getScopes())
+                                                .set("scopeIds", fundContext.getScopes())
                                                 .set("scopeId", apState.getScope().getScopeId())
                                                 .level(Level.WARNING);
         }
@@ -355,12 +355,31 @@ public class ItemService {
 
         private final Set<Integer> scopes;
 
-        public FundContext(ArrFund fund, ArrangementService service) {
-            scopes = service.findAllConnectedScopeByFund(fund);
+        private final ArrFund fund;
+
+        private final StaticDataProvider sdp;
+
+        public FundContext(Set<Integer> scopes, ArrFund fund, StaticDataProvider sdp) {
+            this.scopes = scopes;
+            this.fund = fund;
+            this.sdp = sdp;
+        }
+
+        public static FundContext newInstance(ArrFund fund, ArrangementService service, StaticDataProvider sdp) {
+            Set<Integer> scopes = service.findAllConnectedScopeByFund(fund);
+            return new FundContext(scopes, fund, sdp);
         }
 
         public Set<Integer> getScopes() {
             return scopes;
+        }
+
+        public ArrFund getFund() {
+            return fund;
+        }
+
+        public StaticDataProvider getSdp() {
+            return sdp;
         }
     }
 }
