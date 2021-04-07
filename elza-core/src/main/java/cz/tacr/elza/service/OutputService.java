@@ -53,7 +53,10 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeOutput;
@@ -74,6 +77,7 @@ import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -82,6 +86,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
@@ -109,6 +114,9 @@ import cz.tacr.elza.service.output.OutputSender;
 public class OutputService {
 
     private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
+
+    @Autowired
+    private DataRepository dataRepository;
 
     @Autowired
     private OutputRepository outputRepository;
@@ -887,8 +895,12 @@ public class OutputService {
             itemService.copyItem(item, change, item.getPosition() + 1);
         }
 
+        // save data
+        ArrData savedData = this.saveData(outputItem.getItemType(), outputItem.getData());
+
         outputItem.setCreateChange(change);
-        return itemService.save(outputItem);
+        outputItem.setData(savedData);
+        return this.outputItemRepository.save(outputItem);
     }
 
     /**
@@ -1044,6 +1056,20 @@ public class OutputService {
         return outputItemUpdated;
     }
 
+    public ArrData saveData(RulItemType itemType, ArrData data) {
+        if (data == null) {
+            return null;
+        } else {
+            if (data instanceof ArrDataJsonTable) {
+                itemService.checkJsonTableData(((ArrDataJsonTable) data).getValue(),
+                                               (List<ElzaColumn>) itemType.getViewDefinition());
+            }
+
+            ArrData dataNew = ArrData.makeCopyWithoutId(data);
+            return dataRepository.save(dataNew);
+        }
+    }
+
     /**
      * Úprava hodnoty atributu.
      *
@@ -1099,16 +1125,19 @@ public class OutputService {
 
             // save old value with deleteChange
             outputItemDB.setDeleteChange(change);
-            itemService.save(outputItemDB);
+            outputItemRepository.save(outputItemDB);
+            outputItemRepository.flush();
+
+            ArrData newData = this.saveData(descItemNew.getItemType(), outputItem.getData());
 
             descItemNew.setItemId(null);
             descItemNew.setCreateChange(change);
             descItemNew.setPosition(positionNew);
             // update specification
             descItemNew.setItemSpec(outputItem.getItemSpec());
-            descItemNew.setData(outputItem.getData());
+            descItemNew.setData(newData);
 
-            ArrOutputItem outputItemUpdated = itemService.save(descItemNew);
+            ArrOutputItem outputItemUpdated = outputItemRepository.save(descItemNew);
 
             outputServiceInternal.publishOutputItemChanged(outputItemUpdated, version.getFundVersionId());
             return outputItemUpdated;
