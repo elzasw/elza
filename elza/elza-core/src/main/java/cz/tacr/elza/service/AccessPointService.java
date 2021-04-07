@@ -1655,8 +1655,9 @@ public class AccessPointService {
         Set<Integer> scopeList = new HashSet<>();
         if (scopeId != null) {
             scopeList.add(scopeId);
+            scopeList.addAll(scopeRelationRepository.findConnectedScopeIdsByScopeIds(Collections.singleton(scopeId)));
         } else {
-            scopeList.add(1);
+            scopeList.add(1); // GLOBAL by default
         }
         List<ApState> stateList = apAccessPointRepository.findApAccessPointByTextAndType(filter.getSearch(), filter.getAeTypeIds(), from, max, scopeList, null , null, null);
 
