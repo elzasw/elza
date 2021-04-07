@@ -1650,17 +1650,14 @@ public class AccessPointService {
         return aeTypeIds;
     }
 
-    public ArchiveEntityResultListVO findAccessPoints(Integer from, Integer max, Integer scopeId, SearchFilterVO filter) {
+    @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
+    public ArchiveEntityResultListVO findAccessPointsForRel(Integer from, Integer max, 
+                                                            @AuthParam(type = AuthParam.Type.SCOPE) Integer scopeId, SearchFilterVO filter) {
         searchFilterFactory.completeApTypesTreeInFilter(filter);
         Set<Integer> scopeList = new HashSet<>();
-        if (scopeId != null) {
-            scopeList.add(scopeId);
-            scopeList.addAll(scopeRelationRepository.findConnectedScopeIdsByScopeIds(Collections.singleton(scopeId)));
-        } else {
-            scopeList.add(1); // GLOBAL by default
-        }
+        scopeList.add(scopeId);
+        scopeList.addAll(scopeRelationRepository.findConnectedScopeIdsByScopeIds(Collections.singleton(scopeId)));
         List<ApState> stateList = apAccessPointRepository.findApAccessPointByTextAndType(filter.getSearch(), filter.getAeTypeIds(), from, max, scopeList, null , null, null);
-
 
 //        ApStateSpecification stateSpecification = new ApStateSpecification(filter);
 //        PageRequest pageRequest = new PageRequest(from, max);
