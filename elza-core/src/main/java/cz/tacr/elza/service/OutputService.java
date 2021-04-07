@@ -867,7 +867,7 @@ public class OutputService {
 
         // kontrola validity typu a specifikace
         StaticDataProvider sdp = staticDataService.getData();
-        FundContext fundContext = new FundContext(fundVersion.getFund(), arrangementService);
+        FundContext fundContext = FundContext.newInstance(fundVersion.getFund(), arrangementService, sdp);
         itemService.checkValidTypeAndSpec(fundContext, sdp, outputItem);
 
         int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutput());
