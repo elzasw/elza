@@ -99,7 +99,6 @@ import java.util.stream.Collectors;
 
 import static cz.tacr.elza.repository.ExceptionThrow.calendarType;
 
-
 /**
  * Description Item management
  *
@@ -763,10 +762,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         // pro vytváření musí být verze otevřená
         checkFundVersionLock(fundVersion);
 
-        FundContext fundContext = new FundContext(fundVersion.getFund(), arrangementService);
-        StaticDataProvider sdp = staticDataService.getData();
-
         // kontrola validity typu a specifikace
+        StaticDataProvider sdp = staticDataService.getData();
+        FundContext fundContext = FundContext.newInstance(fundVersion.getFund(), arrangementService, sdp);
         itemService.checkValidTypeAndSpec(fundContext, sdp, descItem);
 
         int maxPosition = getMaxPosition(descItem);
@@ -1379,21 +1377,18 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		// save new data
 		data = descItemFactory.saveData(descItem.getItemType(), data);
 
-        // save new item
-        StaticDataProvider sdp = staticDataService.getData();
-
         // set data and specification
         descItemCurr.setData(data);
         descItemCurr.setItemSpec(descItem.getItemSpec());
         ArrDescItem result = descItemRepository.save(descItemCurr);
 
-        FundContext fundContext = new FundContext(fundVersion.getFund(), arrangementService);
-
+        // kontrola validity typu a specifikace
+        StaticDataProvider sdp = staticDataService.getData();
+        FundContext fundContext = FundContext.newInstance(fundVersion.getFund(), arrangementService, sdp);
         itemService.checkValidTypeAndSpec(fundContext, sdp, result);
 
         // update value in node cache
-        arrangementCacheService.changeDescItem(result.getNodeId(), result, false,
-                                               changeContext);
+        arrangementCacheService.changeDescItem(result.getNodeId(), result, false, changeContext);
 
         changeContext.addUpdatedItem(result);
 
@@ -1408,7 +1403,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 	 *
 	 * @param descItem
 	 *            detached item with new value
-	 *
 	 */
     public ArrDescItem updateValueAsNewVersion(final ArrFundVersion fundVersion, final ArrChange change,
                                                final ArrDescItem descItem,
@@ -1477,20 +1471,17 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		descItemDB.setDeleteChange(change);
 		descItemRepository.save(descItemDB);
 
-		// save new item
-        StaticDataProvider sdp = staticDataService.getData();
-
         // set data and specification
         descItemNew.setData(dataNew);
         descItemNew.setItemSpec(itemSpec);
         ArrDescItem result = descItemRepository.save(descItemNew);
 
-        FundContext fundContext = new FundContext(fundVersion.getFund(), arrangementService);
-
+        // kontrola validity typu a specifikace
+        StaticDataProvider sdp = staticDataService.getData();
+        FundContext fundContext = FundContext.newInstance(fundVersion.getFund(), arrangementService, sdp);
         itemService.checkValidTypeAndSpec(fundContext, sdp, result);
 
         // update value in node cache
-
         arrangementCacheService.changeDescItem(result.getNodeId(), result, move, batchChangeContext);
 
         batchChangeContext.addUpdatedItem(result);
