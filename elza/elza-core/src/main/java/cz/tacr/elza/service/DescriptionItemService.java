@@ -1457,22 +1457,15 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             move = true;
         }
 
+        descItemDB = HibernateUtils.unproxy(descItemDB);
+
         ArrData dataNew = descItemFactory.saveData(descItemDB.getItemType(), srcData);
 
-		// create new item based on source
-        descItemDB = HibernateUtils.unproxy(descItemDB);
-		ArrDescItem descItemNew = new ArrDescItem(descItemDB);
-		descItemNew.setItemId(null);
-		descItemNew.setCreateChange(change);
-		descItemNew.setItemType(descItemDB.getItemType());
+        ArrDescItem descItemNew = prepareNewDescItem(descItemDB, dataNew, change);
+
+        // create new item based on source        
         descItemNew.setPosition(newPosition);
-
-		// mark current item as deleted and save
-		descItemDB.setDeleteChange(change);
-		descItemRepository.save(descItemDB);
-
         // set data and specification
-        descItemNew.setData(dataNew);
         descItemNew.setItemSpec(itemSpec);
         ArrDescItem result = descItemRepository.save(descItemNew);
 

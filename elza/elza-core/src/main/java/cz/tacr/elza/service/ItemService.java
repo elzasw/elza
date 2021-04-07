@@ -135,23 +135,6 @@ public class ItemService {
         }
     }
 
-    @Deprecated
-    public <T extends ArrItem> T save(final T item) {
-        ArrData data = item.getData();
-
-        if (data != null) {
-            if (data instanceof ArrDataJsonTable) {
-                checkJsonTableData(((ArrDataJsonTable) data).getValue(), (List<ElzaColumn>) item.getItemType().getViewDefinition());
-        }
-
-            ArrData dataNew = ArrData.makeCopyWithoutId(data);
-            dataRepository.save(dataNew);
-
-            item.setData(dataNew);
-    }
-        return itemRepository.save(item);
-    }
-
     @SuppressWarnings("unchecked")
     @Transactional(TxType.MANDATORY)
     public <T extends ArrItem> T copyItem(T item, ArrChange change, int position) {

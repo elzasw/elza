@@ -371,6 +371,7 @@ public class StructObjService {
         }
 
         structureItemRepository.saveAll(structureItems); // uložení změny deleteChange
+        structureItemRepository.flush();
 
         if (createNewDataVersion) {
             List<ArrData> resultDataList = new ArrayList<>(resultStructureItems.size());
@@ -429,6 +430,7 @@ public class StructObjService {
 
             structureItemDB.setDeleteChange(change);
             structureItemRepository.save(structureItemDB);
+            structureItemRepository.flush();
 
             Integer positionDB = structureItemDB.getPosition();
             Integer positionChange = structureItem.getPosition();
