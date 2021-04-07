@@ -165,13 +165,12 @@ public class ItemService {
      */
     @Transactional(TxType.MANDATORY)
     public void checkValidTypeAndSpec(@NotNull final FundContext fundContext,
-                                      @NotNull final StaticDataProvider sdp,
                                       @NotNull final ArrItem descItem) {
 
         Integer itemTypeId = descItem.getItemTypeId();
         Validate.notNull(itemTypeId, "Invalid description item type: " + itemTypeId);
 
-        ItemType itemType = sdp.getItemTypeById(itemTypeId);
+        ItemType itemType = fundContext.getSdp().getItemTypeById(itemTypeId);
         Validate.notNull(itemType, "Invalid description item type: " + itemTypeId);
 
         // extra check for data
