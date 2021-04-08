@@ -32,6 +32,7 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrFile;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -134,23 +135,6 @@ public class ItemService {
         }
     }
 
-    @Deprecated
-    public <T extends ArrItem> T save(final T item) {
-        ArrData data = item.getData();
-
-        if (data != null) {
-            if (data instanceof ArrDataJsonTable) {
-                checkJsonTableData(((ArrDataJsonTable) data).getValue(), (List<ElzaColumn>) item.getItemType().getViewDefinition());
-        }
-
-            ArrData dataNew = ArrData.makeCopyWithoutId(data);
-            dataRepository.save(dataNew);
-
-            item.setData(dataNew);
-    }
-        return itemRepository.save(item);
-    }
-
     @SuppressWarnings("unchecked")
     @Transactional(TxType.MANDATORY)
     public <T extends ArrItem> T copyItem(T item, ArrChange change, int position) {
@@ -180,13 +164,13 @@ public class ItemService {
      * @param descItem hodnota atributu
      */
     @Transactional(TxType.MANDATORY)
-    public void checkValidTypeAndSpec(@NotNull final StaticDataProvider sdp,
+    public void checkValidTypeAndSpec(@NotNull final FundContext fundContext,
                                       @NotNull final ArrItem descItem) {
 
         Integer itemTypeId = descItem.getItemTypeId();
         Validate.notNull(itemTypeId, "Invalid description item type: " + itemTypeId);
 
-        ItemType itemType = sdp.getItemTypeById(itemTypeId);
+        ItemType itemType = fundContext.getSdp().getItemTypeById(itemTypeId);
         Validate.notNull(itemType, "Invalid description item type: " + itemTypeId);
 
         // extra check for data
@@ -211,7 +195,7 @@ public class ItemService {
                 // check record_ref
                 if (itemType.getDataType().equals(DataType.RECORD_REF)) {
                     ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
-                    checkRecordRef(recordRef, rulItemType, rulItemSpec);
+                    checkRecordRef(fundContext, recordRef, rulItemType, rulItemSpec);
                 }
             }
 
@@ -223,20 +207,22 @@ public class ItemService {
                 if (data != null && !descItem.isUndefined()) {
                     if (itemType.getDataType().equals(DataType.RECORD_REF)) {
                         ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
-                        checkRecordRef(recordRef, rulItemType, null);
+                        checkRecordRef(fundContext, recordRef, rulItemType, null);
                     }
                 }
             }
         }
 
-        if(itemType.getDataType() == DataType.STRING && itemType.getEntity().getStringLengthLimit() != null) {
-            if(((ArrDataString) descItem.getData()).getStringValue().length() > itemType.getEntity().getStringLengthLimit()) {
+        if (itemType.getDataType() == DataType.STRING && itemType.getEntity().getStringLengthLimit() != null) {
+            ArrDataString dataString = (ArrDataString) data;
+            if(dataString.getStringValue().length() > itemType.getEntity().getStringLengthLimit()) {
                 throw new BusinessException("Délka řetězce je delší než maximální povolená : " +itemType.getEntity().getStringLengthLimit(), BaseCode.INVALID_LENGTH);
             }
         }
     }
 
-    private void checkRecordRef(ArrDataRecordRef dataRecordRef,
+    private void checkRecordRef(FundContext fundContext, 
+                                ArrDataRecordRef dataRecordRef,
                                 RulItemType rulItemType,
                                 RulItemSpec rulItemSpec) {
         ApAccessPoint apAccessPoint = dataRecordRef.getRecord();
@@ -251,6 +237,7 @@ public class ItemService {
         }
         Set<Integer> apTypeIdTree = registerTypeRepository.findSubtreeIds(apTypeIds);
 
+        // kontrola typu třídy 
         if (!apTypeIdTree.contains(apState.getApTypeId())) {
             log.error("Class of archival entity is incorrect, dataId: {}, accessPointId: {}, rulItemType: {}, rulItemSpec: {}, apTypeId: {}",
                       dataRecordRef.getDataId(),
@@ -268,6 +255,24 @@ public class ItemService {
                             .set("apTypeId", apState.getApTypeId())
                             .level(Level.WARNING);
         }
+
+        // kontrola scope entity
+        if (!fundContext.getScopes().contains(apState.getScope().getScopeId())) {
+            log.error("Archival entity has invalid scope, dataId: {}, accessPointId: {}, scopeIds: {}, AF scopeId: {}",
+                      dataRecordRef.getDataId(),
+                      apAccessPoint.getAccessPointId(),
+                      fundContext.getScopes(),
+                      apState.getScope().getScopeId());
+
+            throw new BusinessException("Archivní entita má nevhodné scope.",
+                                        RegistryCode.INVALID_ENTITY_SCOPE)
+                                                .set("dataId", dataRecordRef.getDataId())
+                                                .set("accessPointId", apAccessPoint.getAccessPointId())
+                                                .set("scopeIds", fundContext.getScopes())
+                                                .set("scopeId", apState.getScope().getScopeId())
+                                                .level(Level.WARNING);
+        }
+
     }
 
     public ApAccessPoint getApProxy(Integer apId) {
@@ -322,6 +327,41 @@ public class ItemService {
         List<ApAccessPoint> recordEntities = recordRepository.findAllById(recordIds);
         for (ApAccessPoint recordEntity : recordEntities) {
             recordMap.get(recordEntity.getAccessPointId()).setRecord(recordEntity);
+        }
+    }
+
+    /**
+     * Třída pro požadované údaje o fondu (AS)
+     */
+    public static class FundContext {
+
+        private final Set<Integer> scopes;
+
+        private final ArrFund fund;
+
+        private final StaticDataProvider sdp;
+
+        public FundContext(Set<Integer> scopes, ArrFund fund, StaticDataProvider sdp) {
+            this.scopes = scopes;
+            this.fund = fund;
+            this.sdp = sdp;
+        }
+
+        public static FundContext newInstance(ArrFund fund, ArrangementService service, StaticDataProvider sdp) {
+            Set<Integer> scopes = service.findAllConnectedScopeByFund(fund);
+            return new FundContext(scopes, fund, sdp);
+        }
+
+        public Set<Integer> getScopes() {
+            return scopes;
+        }
+
+        public ArrFund getFund() {
+            return fund;
+        }
+
+        public StaticDataProvider getSdp() {
+            return sdp;
         }
     }
 }

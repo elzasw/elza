@@ -71,6 +71,7 @@ import cz.tacr.elza.repository.OutputRestrictionScopeRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.service.ItemService.FundContext;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
@@ -85,8 +86,6 @@ public class OutputServiceInternal {
 
     private final TaskExecutor taskExecutor = new TaskExecutor(2);
 
-    private final PlatformTransactionManager transactionManager;
-    
     private final OutputFileRepository outputFileRepository;
 
     private final OutputTemplateRepository outputTemplateRepository;
@@ -133,8 +132,7 @@ public class OutputServiceInternal {
     private final DmsService dmsService;
 
     @Autowired
-    public OutputServiceInternal(final PlatformTransactionManager transactionManager,
-                                 final IEventNotificationService eventNotificationService,
+    public OutputServiceInternal(final IEventNotificationService eventNotificationService,
                                  final OutputRepository outputRepository,
                                  final OutputResultRepository outputResultRepository,
                                  final NodeOutputRepository nodeOutputRepository,
@@ -155,7 +153,6 @@ public class OutputServiceInternal {
                                  final TemplateRepository templateRepository,
                                  final OutputFileRepository outputFileRepository,
                                  final DmsService dmsService) {
-        this.transactionManager = transactionManager;
         this.eventNotificationService = eventNotificationService;
         this.outputRepository = outputRepository;
         this.outputResultRepository = outputResultRepository;
@@ -420,8 +417,10 @@ public class OutputServiceInternal {
                     ArrangementCode.VERSION_ALREADY_CLOSED);
         }
 
+        // kontrola validity typu a specifikace
         StaticDataProvider sdp = this.staticDataService.getData();
-        itemService.checkValidTypeAndSpec(sdp, outputItem);
+        FundContext fundContext = FundContext.newInstance(fundVersion.getFund(), arrangementService, sdp);
+        itemService.checkValidTypeAndSpec(fundContext, outputItem);
 
         int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutput());
 
