@@ -1,16 +1,14 @@
 package cz.tacr.elza.domain;
 
 import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
-import org.apache.lucene.analysis.charfilter.MappingCharFilterFactory;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.core.WhitespaceTokenizerFactory;
+import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilterFactory;
 import org.hibernate.annotations.Type;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
-import org.hibernate.search.annotations.CharFilterDef;
 import org.hibernate.search.annotations.ClassBridge;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Parameter;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
@@ -30,15 +28,16 @@ import javax.persistence.Table;
 @Table
 @Indexed
 @AnalyzerDef(name = "cz",
-        charFilters = {
-                @CharFilterDef(factory = MappingCharFilterFactory.class, params = {
-                        @Parameter(name = "mapping",
-                                value = "search/mapping-chars.txt")
-                })
-        },
+//        charFilters = {
+//                @CharFilterDef(factory = MappingCharFilterFactory.class, params = {
+//                        @Parameter(name = "mapping",
+//                                value = "search/mapping-chars.txt")
+//                })
+//        },
         tokenizer = @TokenizerDef(factory = WhitespaceTokenizerFactory.class),
         filters = {
-                @TokenFilterDef(factory = LowerCaseFilterFactory.class)
+                @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+                @TokenFilterDef(factory = ASCIIFoldingFilterFactory.class)
         })
 @ClassBridge(name = "data",
         impl = ApCachedAccessPointClassBridge.class,
