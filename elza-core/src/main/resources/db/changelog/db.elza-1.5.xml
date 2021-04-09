@@ -1231,5 +1231,12 @@
 
     <changeSet id="20210405232524" author="ppyt">
       <delete tableName="ap_cached_access_point" />
-    </changeSet>    
+    </changeSet>
+
+    <changeSet id="20210410101000" author="sergey.iryupin">
+        <createIndex indexName="ap_binding_item_id_idx" tableName="ap_binding_item">
+            <column name="binding_id"/>
+        </createIndex>
+	</changeSet>
+
 </databaseChangeLog>
