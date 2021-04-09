@@ -28,12 +28,6 @@ import javax.persistence.Table;
 @Table
 @Indexed
 @AnalyzerDef(name = "cz",
-//        charFilters = {
-//                @CharFilterDef(factory = MappingCharFilterFactory.class, params = {
-//                        @Parameter(name = "mapping",
-//                                value = "search/mapping-chars.txt")
-//                })
-//        },
         tokenizer = @TokenizerDef(factory = WhitespaceTokenizerFactory.class),
         filters = {
                 @TokenFilterDef(factory = LowerCaseFilterFactory.class),

@@ -1,0 +1,34 @@
+search:
+  fields:
+    - name: id
+      boost: 2.0f
+      boostExact: 1.0f
+      transliterate: false
+    - name: pref_index
+      boost: 1.5f
+      boostExact: 1.5f
+      transliterate: true
+    - name: index
+      boost: 1.0f
+      boostExact: 1.2f
+      transliterate: true
+    - name: pt_name_index
+      boost: 1.0f
+      boostExact: 1.2f
+      transliterate: true
+    - name: pref_nm_main
+      boost: 2.0f
+      boostExact: 2.0f
+      transliterate: true
+    - name: pref_nm_minor
+      boost: 1.7f
+      boostExact: 1.7f
+      transliterate: true
+    - name: nm_main
+      boost: 1.2f
+      boostExact: 1.2f
+      transliterate: true
+    - name: nm_minor
+      boost: 1.1f
+      boostExact: 1.1f
+      transliterate: true
