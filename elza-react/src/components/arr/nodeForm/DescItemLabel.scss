@@ -4,22 +4,28 @@
   display: flex;
 
   .desc-item-label-value {
-    flex-grow: 1;
+    flex-grow: 0;
+    flex-shrink: 1;
     width: 100%;
 
     white-space: normal;
     max-height: 250em;
     overflow: auto;
-    width: 100%;
+    width: auto;
+    display: flex;
+    align-items: center;
   }
 
   .desc-item-spec-label {
-    flex-shrink: 0;
+    flex-shrink: 1;
     white-space: nowrap;
 
     padding-right: 3px;
     vertical-align: middle;
     line-height: 1.8em;
+    width: auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     &:not(:last-child) {
       white-space: normal;

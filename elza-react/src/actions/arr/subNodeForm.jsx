@@ -2,20 +2,20 @@
  * Akce pro formulář JP.
  */
 
-import {DisplayType, FOCUS_KEYS} from '../../constants.tsx';
-import {WebApi} from 'actions/index.jsx';
-import {findByRoutingKeyInGlobalState, getRoutingKeyType, indexById} from 'stores/app/utils.jsx';
+import {DisplayType, FOCUS_KEYS} from '../../constants';
+import {WebApi} from 'actions/index';
+import {findByRoutingKeyInGlobalState, getRoutingKeyType, indexById} from 'stores/app/utils';
 import {getFocusDescItemLocation} from '../../stores/app/arr/subNodeFormUtils';
-import {valuesEquals} from 'components/Utils.jsx';
-import {setFocus} from 'actions/global/focus.jsx';
-import {increaseNodeVersion} from './node.jsx';
-import {outputIncreaseNodeVersion} from './outputActions.jsx';
+import {valuesEquals} from 'components/Utils';
+import {setFocus} from 'actions/global/focus';
+import {increaseNodeVersion} from './node';
+import {outputIncreaseNodeVersion} from './outputActions';
 import * as types from '../../actions/constants/ActionTypes';
-import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+import {addToastrDanger, addToastrSuccess} from 'components/shared/toastr/ToastrActions';
 import {i18n} from 'components/shared';
-import {statusSaved, statusSaving} from 'actions/global/status.jsx';
-import {fundNodeInfoReceive} from './nodeInfo.jsx';
-import NodeRequestController from 'websocketController.jsx';
+import {statusSaved, statusSaving} from 'actions/global/status';
+import {fundNodeInfoReceive} from './nodeInfo';
+import NodeRequestController from 'websocketController';
 import {fundSubNodeInfoReceive} from './subNodeInfo';
 import {fromDuration} from '../../components/validate';
 import {DataTypeCode, ItemAvailabilityNumToEnumMap} from '../../stores/app/accesspoint/itemFormUtils';

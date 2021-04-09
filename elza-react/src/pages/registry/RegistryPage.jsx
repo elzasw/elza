@@ -59,6 +59,7 @@ class RegistryPage extends AbstractReactComponent {
         refTables: PropTypes.object.isRequired,
         focus: PropTypes.object.isRequired,
         userDetail: PropTypes.object.isRequired,
+        fund: PropTypes.object,
     };
 
     state = {items: []};
@@ -387,7 +388,7 @@ class RegistryPage extends AbstractReactComponent {
 
         const altActions = [...parts.altActions];
 
-        if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
+        if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
             altActions.push(
                 <Button key="addRegistry" onClick={this.handleAddRegistry}>
                     <Icon glyph="fa-plus-circle" />
@@ -396,6 +397,8 @@ class RegistryPage extends AbstractReactComponent {
                     </div>
                 </Button>,
             );
+        }
+        if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
             altActions.push(
                 <Button key="registryImport" onClick={this.handleRegistryImport}>
                     <Icon glyph="fa-download" />
@@ -424,7 +427,7 @@ class RegistryPage extends AbstractReactComponent {
                 );
             }
         }
-        if (userDetail.hasOne(perms.FUND_ADMIN, perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
+        if (userDetail.hasOne(perms.FUND_ADMIN, perms.AP_SCOPE_WR_ALL)) {
             altActions.push(
                 <Button key="scopeManagement" onClick={this.handleScopeManagement}>
                     <Icon glyph="fa-wrench" />
@@ -577,7 +580,7 @@ class RegistryPage extends AbstractReactComponent {
                     splitter={splitter}
                     key="registryPage"
                     ribbon={this.buildRibbon()}
-                    leftPanel={<RegistryList />}
+                    leftPanel={<RegistryList fund={this.props.fund} />}
                     centerPanel={centerPanel}
                     // rightPanel={rightPanel}
                     status={status}

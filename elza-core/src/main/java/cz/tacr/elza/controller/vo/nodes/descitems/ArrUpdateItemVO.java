@@ -11,6 +11,14 @@ public class ArrUpdateItemVO {
 
     private ArrItemVO item;
 
+    public ArrUpdateItemVO() {
+    }
+
+    public ArrUpdateItemVO(UpdateOp updateOp, ArrItemVO item) {
+        this.updateOp = updateOp;
+        this.item = item;
+    }
+
     public UpdateOp getUpdateOp() {
         return updateOp;
     }

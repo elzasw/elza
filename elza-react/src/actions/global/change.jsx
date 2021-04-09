@@ -3,10 +3,10 @@ import * as types from 'actions/constants/ActionTypes';
 import React from 'react';
 import {i18n} from 'components/shared';
 import {Button} from '../../components/ui';
-import {addToastrDanger, addToastrInfo, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
-import {fundOutputSelectOutput} from 'actions/arr/fundOutput.jsx';
-import {routerNavigate} from 'actions/router.jsx';
-import {indexById} from 'stores/app/utils.jsx';
+import {addToastrDanger, addToastrInfo, addToastrSuccess} from 'components/shared/toastr/ToastrActions';
+import {fundOutputSelectOutput} from 'actions/arr/fundOutput';
+import {routerNavigate} from 'actions/router';
+import {indexById} from 'stores/app/utils';
 import {
     AREA_EXT_SYSTEM_DETAIL,
     AREA_EXT_SYSTEM_LIST,
@@ -14,21 +14,21 @@ import {
     extSystemDetailFetchIfNeeded,
     extSystemDetailInvalidate,
     extSystemListInvalidate,
-} from 'actions/admin/extSystem.jsx';
+} from 'actions/admin/extSystem';
 import {
     detailInvalidate,
     detailUnselect,
     listInvalidate,
     preparedListInvalidate,
     queueListInvalidate,
-} from 'actions/arr/arrRequestActions.jsx';
+} from 'actions/arr/arrRequestActions';
 import {storeFromArea} from 'shared/utils';
 import {
     AREA_REGISTRY_DETAIL,
     AREA_REGISTRY_LIST,
     registryDetailInvalidate,
     registryListInvalidate,
-} from 'actions/registry/registry.jsx';
+} from 'actions/registry/registry';
 import {refExternalSystemListInvalidate} from 'actions/refTables/externalSystems';
 import {structureTypeInvalidate} from '../arr/structureType';
 import {DetailActions} from '../../shared/detail';

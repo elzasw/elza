@@ -5,10 +5,15 @@ package cz.tacr.elza.controller.arrangement;
  */
 public class NodeFormTitle {
 
-	protected final String titleLeft;
-	protected final String titleRight;
+	protected String titleLeft;
 
-	NodeFormTitle(String left, String right) {
+	protected String titleRight;
+
+	public NodeFormTitle() {
+
+	}
+
+	public NodeFormTitle(String left, String right) {
 		this.titleLeft = left;
 		this.titleRight = right;
 	}

@@ -2,13 +2,13 @@
  * Akce pro vybranou záložku NODE pod konkrétní vybranou záložkou AS.
  */
 
-import {WebApi} from 'actions/index.jsx';
+import {WebApi} from 'actions/index';
 import * as types from './../../actions/constants/ActionTypes';
-import {findByRoutingKeyInGlobalState, indexById} from 'stores/app/utils.jsx';
-import {createFundRoot, isFundRootId} from 'components/arr/ArrUtils.jsx';
-import {savingApiWrapper} from 'actions/global/status.jsx';
+import {findByRoutingKeyInGlobalState, indexById} from 'stores/app/utils';
+import {createFundRoot, isFundRootId} from 'components/arr/ArrUtils';
+import {savingApiWrapper} from 'actions/global/status';
 import {fundExtendedView} from './fundExtended';
-import {developerNodeScenariosDirty} from 'actions/global/developer.jsx';
+import {developerNodeScenariosDirty} from 'actions/global/developer';
 import {fundNodeInfoReceive} from './nodeInfo';
 
 export function isNodeAction(action) {
@@ -346,6 +346,7 @@ export function addNode(
     descItemCopyTypes = null,
     scenarioName = null,
     createItems = null,
+    count,
     afterCreateCallback = null,
     emptyItemTypeIds = null,
 ) {
@@ -367,10 +368,10 @@ export function addNode(
         // Reálné provedení operace
         return savingApiWrapper(
             dispatch,
-            WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems),
+            WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems, count),
         ).then(json => {
-            dispatch(fundNodeChangeAdd(versionId, json.node, indexNode, json.parentNode, direction));
-            afterCreateCallback && afterCreateCallback(versionId, json.node, json.parentNode);
+            dispatch(fundNodeChangeAdd(versionId, json.nodes, indexNode, json.parentNode, direction));
+            afterCreateCallback && afterCreateCallback(versionId, json.nodes, json.parentNode);
 
             const state = getState();
             const activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
@@ -429,9 +430,9 @@ export function deleteNode(node, parentNode, versionId, afterDeleteCallback) {
  * @param {Object} parentNode nadřazený uzel k indexNode, pokud je přidáváno jako 'CHILD', je stejný jako indexNode
  * @param {string} direction 'BEFORE', 'AFTER' nebo 'CHILD'
  */
-function fundNodeChangeAdd(versionId, newNode, indexNode, parentNode, direction) {
+function fundNodeChangeAdd(versionId, newNodes, indexNode, parentNode, direction) {
     return {
-        newNode,
+        newNodes,
         indexNode,
         parentNode,
         direction,

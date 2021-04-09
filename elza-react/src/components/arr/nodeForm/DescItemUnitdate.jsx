@@ -1,9 +1,9 @@
 import React from 'react';
 import {AbstractReactComponent, i18n} from 'components/shared';
-import {decorateValue} from './DescItemUtils.jsx';
-import DescItemLabel from './DescItemLabel.jsx';
-import {indexById} from 'stores/app/utils.jsx';
-import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
+import {decorateValue} from './DescItemUtils';
+import DescItemLabel from './DescItemLabel';
+import {indexById} from 'stores/app/utils';
+import ItemTooltipWrapper from './ItemTooltipWrapper';
 
 import './DescItemUnitdate.scss';
 import {CLS_CALCULABLE} from "../../../constants";

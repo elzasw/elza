@@ -20,7 +20,9 @@ globalAxios.interceptors.request.use((config) => {
 })
 */
 
-globalAxios.interceptors.response.use(undefined, error => {
+const axios = globalAxios.create();
+
+axios.interceptors.response.use(undefined, error => {
     const exception = resolveException(error);
     if (exception.unauthorized && !error.config.noPending) {
         return createPendingPromise(error.config);
@@ -116,7 +118,7 @@ const createPendingPromise = (config: AxiosRequestConfig): Promise<AxiosResponse
     console.log('create pending promise');
     return new Promise((resolve, reject) => {
         pendingRequests.push(() => {
-            globalAxios
+            axios
                 .request(config)
                 .then(response => {
                     resolve(response);
@@ -139,12 +141,20 @@ export const continueRequests = () => {
     pendingRequests = [];
 };
 
+// Diagnosticky log 
+try {
+    console.log("Axios basePath:", basePath);
+    console.log("Parsed url:", new URL(basePath, window.location.origin));
+} catch (e) {
+    console.error("BasePath error:", e);
+}
+
 export const Api: {
     accesspoints: AccesspointsApi; 
     funds: FundsApi;
     daos: DaosApi;
 } = {
-    accesspoints: new AccesspointsApi({basePath}, undefined, globalAxios),
-    funds: new FundsApi({basePath}, undefined, globalAxios),
-    daos: new DaosApi({basePath}, undefined, globalAxios),
+    accesspoints: new AccesspointsApi(undefined, basePath, axios),
+    funds: new FundsApi(undefined, basePath, axios),
+    daos: new DaosApi(undefined, basePath, axios),
 };

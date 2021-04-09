@@ -3,6 +3,7 @@ package cz.tacr.elza.service.cache;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CachedBinding implements AccessPointCacheSerializable {
@@ -55,5 +56,13 @@ public class CachedBinding implements AccessPointCacheSerializable {
 
     public void setBindingItemList(List<ApBindingItem> bindingItemList) {
         this.bindingItemList = bindingItemList;
+    }
+
+    public void addBindingItem(ApBindingItem bindingItem) {
+        if (bindingItemList == null) {
+            bindingItemList = new ArrayList<>();
+        }
+        bindingItemList.add(bindingItem);
+
     }
 }

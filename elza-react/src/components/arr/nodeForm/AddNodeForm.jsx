@@ -10,16 +10,16 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {Button} from '../../ui';
 import {Col, Form, FormControl, FormGroup, FormLabel, Modal, Row} from 'react-bootstrap';
-import {WebApi} from 'actions/index.jsx';
+import {WebApi} from 'actions/index';
 import {AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, i18n} from 'components/shared';
-import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils.jsx';
-import {getSetFromIdsList, indexById} from 'stores/app/utils.jsx';
+import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils';
+import {getSetFromIdsList, indexById} from 'stores/app/utils';
 import './AddNodeForm.scss';
 
 import FundTreeCopy from '../FundTreeCopy';
 import FundField from '../../admin/FundField';
 import {FUND_TREE_AREA_COPY} from '../../../actions/constants/ActionTypes';
-import {nodeFormActions} from '../../../actions/arr/subNodeForm.jsx';
+import {nodeFormActions} from '../../../actions/arr/subNodeForm';
 import {JAVA_ATTR_CLASS} from '../../../constants';
 import RefTemplateField from '../RefTemplateField';
 
@@ -37,6 +37,7 @@ class AddNodeForm extends AbstractReactComponent {
 
     state = {
         // initial states
+        count: 1,
         scenarios: undefined,
         template: '',
         loading: false,
@@ -190,6 +191,12 @@ class AddNodeForm extends AbstractReactComponent {
         this.setState({template: e.target.value});
     };
 
+    handleCountChange = (e) => {
+        if(Number.isInteger(parseInt(e.target.value))){
+            this.setState({count: e.target.value})
+        }
+    };
+
     /**
      * Vrátí prvky popisu ke zkopírování na základě proměnné props.nodeSettings
      */
@@ -246,7 +253,7 @@ class AddNodeForm extends AbstractReactComponent {
             initDirection,
             globalFundTree: {fundTreeCopy},
         } = this.props;
-        const {selectedDirection, selectedScenario, template} = this.state;
+        const {selectedDirection, selectedScenario, template, count} = this.state;
 
         // nastavi odpovidajiciho rodice a direction pro dotaz
         const dataServ = this.formatDataForServer(selectedDirection, node, parentNode);
@@ -259,6 +266,7 @@ class AddNodeForm extends AbstractReactComponent {
                 direction: dataServ.direction,
                 descItemCopyTypes: this.getDescItemTypeCopyIds(),
                 scenarioName: selectedScenario === TEMPLATE_SCENARIOS ? null : selectedScenario,
+                count,
             };
 
             const emptyItemTypeIds = []; // seznam identifikátorů prázdných typů atributu, které se mají po založení přidat na formulář (použití pro šablony)
@@ -653,6 +661,14 @@ class AddNodeForm extends AbstractReactComponent {
                             )}
                         </div>
                     )}
+                    <FormInput
+                        ref="count"
+                        disabled={loading || submitting}
+                        label={i18n('arr.fund.addNode.count')}
+                        type="number"
+                        value={this.state.count}
+                        onChange={this.handleCountChange}
+                    />
                 </FormGroup>
             </div>
         );

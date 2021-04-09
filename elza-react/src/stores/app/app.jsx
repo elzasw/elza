@@ -28,7 +28,6 @@ const initialState = {
             registryTypeId: null,
             versionId: null,
             itemSpecId: null,
-            parents: [],
             typesToRoot: null,
             scopeId: null,
             from: 0,

@@ -7,7 +7,7 @@ import './ArrOutputPage.scss';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {indexById} from 'stores/app/utils.jsx';
+import {indexById} from 'stores/app/utils';
 import {connect} from 'react-redux';
 import {
     AddOutputForm,
@@ -16,11 +16,11 @@ import {
     FundOutputFunctions,
     Ribbon,
     RunActionForm,
-} from '../../components/index.jsx';
+} from '../../components/index';
 import {i18n, Icon, ListBox, RibbonGroup, StoreHorizontalLoader, Tabs, Utils} from 'components/shared';
 import {Button} from '../../components/ui';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus.jsx';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
+import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus';
 import {
     fundOutputClone,
     fundOutputCreate,
@@ -32,19 +32,19 @@ import {
     fundOutputSelectOutput,
     fundOutputSend,
     fundOutputUsageEnd,
-} from '../../actions/arr/fundOutput.jsx';
-import {fundOutputActionRun} from 'actions/arr/fundOutputFunctions.jsx';
-import * as perms from 'actions/user/Permission.jsx';
-import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction.jsx';
-import {routerNavigate} from 'actions/router.jsx';
-import {templatesFetchIfNeeded} from 'actions/refTables/templates.jsx';
-import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm.jsx';
-import {outputFormActions} from 'actions/arr/subNodeForm.jsx';
-import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx';
-import {getDescItemsAddTree, getOneSettings} from 'components/arr/ArrUtils.jsx';
-import ArrParentPage from './ArrParentPage.jsx';
+} from '../../actions/arr/fundOutput';
+import {fundOutputActionRun} from 'actions/arr/fundOutputFunctions';
+import * as perms from 'actions/user/Permission';
+import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction';
+import {routerNavigate} from 'actions/router';
+import {templatesFetchIfNeeded} from 'actions/refTables/templates';
+import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm';
+import {outputFormActions} from 'actions/arr/subNodeForm';
+import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes';
+import {getDescItemsAddTree, getOneSettings} from 'components/arr/ArrUtils';
+import ArrParentPage from './ArrParentPage';
 import {PropTypes} from 'prop-types';
-import defaultKeymap from './ArrOutputPageKeymap.jsx';
+import defaultKeymap from './ArrOutputPageKeymap';
 
 import TemplateSettingsForm from '../../components/arr/TemplateSettingsForm';
 import {FOCUS_KEYS} from '../../constants.tsx';

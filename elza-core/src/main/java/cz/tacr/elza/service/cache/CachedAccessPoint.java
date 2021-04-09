@@ -4,6 +4,7 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApStateEnum;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CachedAccessPoint {
@@ -98,5 +99,20 @@ public class CachedAccessPoint {
 
     public void setBindings(List<CachedBinding> bindings) {
         this.bindings = bindings;
+    }
+
+    public void addPart(CachedPart cachedPart) {
+        if (this.parts == null) {
+            parts = new ArrayList<>();
+        }
+        parts.add(cachedPart);
+
+    }
+
+    public void addBinding(CachedBinding cb) {
+        if (this.bindings == null) {
+            bindings = new ArrayList<>();
+        }
+        bindings.add(cb);
     }
 }

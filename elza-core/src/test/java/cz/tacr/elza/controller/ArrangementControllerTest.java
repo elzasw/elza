@@ -775,10 +775,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // smazání druhého uzlu v první úrovni
         helperTestService.waitForWorkers();
-        ArrangementController.NodeWithParent nodeWithParent = deleteLevel(fundVersion, newNodes.get(2), rootNode);
+        ArrangementController.NodeWithParent nodesWithParent = deleteLevel(fundVersion, newNodes.get(2), rootNode);
 
-        assertTrue(nodeWithParent.getNode().getId().equals(newNodes.get(2).getId()));
-        assertTrue(nodeWithParent.getParentNode().getId().equals(rootNode.getId()));
+        assertTrue(nodesWithParent.getNode().getId().equals(newNodes.get(2).getId()));
+        assertTrue(nodesWithParent.getParentNode().getId().equals(rootNode.getId()));
 
         input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());

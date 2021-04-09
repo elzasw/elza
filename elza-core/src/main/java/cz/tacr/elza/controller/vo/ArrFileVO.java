@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
-import org.apache.commons.lang3.Validate;
-
+import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.repository.FundRepository;
@@ -63,12 +62,15 @@ public class ArrFileVO extends DmsFileVO {
         return result;
     }
 
-    public ArrFile createEntity(FundRepository fundRepository) {
+    public ArrFile createEntity(FundRepository fundRepository, ArrChange createChange) {
         ArrFile result = new ArrFile();
         if (fundId != null) {
             ArrFund fund = fundRepository.findById(fundId)
                     .orElseThrow(fund(fundId));
             result.setFund(fund);
+        }
+        if (createChange != null) {
+            result.setCreateChange(createChange);
         }
         copyTo(result);
         return result;

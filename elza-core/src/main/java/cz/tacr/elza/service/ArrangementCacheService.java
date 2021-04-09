@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -127,14 +128,17 @@ public class ArrangementCacheService {
     /**
      * Vytvoření hodnoty atributu u nodu.
      *
-     * @param nodeId
-     *            identifikátor JP
      * @param descItem
      *            vytvářený hodnota atributu
      * @param flush
      *            priznak na provedeni flush
      */
-    public void createDescItem(final Integer nodeId, final ArrDescItem descItem, BatchChangeContext changeContext) {
+    public void createDescItem(final ArrDescItem descItem, BatchChangeContext changeContext) {
+        Validate.notNull(descItem);
+        Validate.notNull(descItem.getNodeId());
+
+        final Integer nodeId = descItem.getNodeId();
+
         CachedNode cachedNode = nodeCacheService.getNode(nodeId);
 		cachedNode.addDescItem(descItem);
         nodeCacheService.saveNode(cachedNode, changeContext.getFlushNodeCache());

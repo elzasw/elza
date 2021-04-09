@@ -23,7 +23,7 @@ import FundDataGridCellForm from './FundDataGridCellForm';
 import ArrSearchForm from './ArrSearchForm';
 import {Dropdown} from 'react-bootstrap';
 import {Button} from '../ui';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
+import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
 import {
     FILTER_NULL_VALUE,
     fundBulkModifications,
@@ -46,25 +46,25 @@ import {
     fundDataGridSetPageSize,
     fundDataGridSetSelection,
     fundDataInitIfNeeded,
-} from 'actions/arr/fundDataGrid.jsx';
-import {contextMenuHide, contextMenuShow} from 'actions/global/contextMenu.jsx';
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
-import {nodeFormActions} from 'actions/arr/subNodeForm.jsx';
-import {fundSelectSubNode} from 'actions/arr/node.jsx';
-import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx';
+} from 'actions/arr/fundDataGrid';
+import {contextMenuHide, contextMenuShow} from 'actions/global/contextMenu';
+import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes';
+import {nodeFormActions} from 'actions/arr/subNodeForm';
+import {fundSelectSubNode} from 'actions/arr/node';
+import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes';
 import {
     createFundRoot,
     createReferenceMarkFromArray,
     getSpecsIds,
     hasDescItemTypeValue,
-} from 'components/arr/ArrUtils.jsx';
-import {getMapFromList, getSetFromIdsList} from 'stores/app/utils.jsx';
-import {propsEquals} from 'components/Utils.jsx';
+} from 'components/arr/ArrUtils';
+import {getMapFromList, getSetFromIdsList} from 'stores/app/utils';
+import {propsEquals} from 'components/Utils';
 import {COL_DEFAULT_WIDTH, COL_REFERENCE_MARK} from './FundDataGridConst';
 import './FundDataGrid.scss';
 import {getPagesCount} from '../shared/datagrid/DataGridPagination';
 import {toDuration} from '../validate';
-import {DisplayType} from '../../constants.tsx';
+import {DisplayType} from '../../constants';
 import Moment from 'moment';
 import * as groups from '../../actions/refTables/groups';
 import {JAVA_ATTR_CLASS} from '../../constants';

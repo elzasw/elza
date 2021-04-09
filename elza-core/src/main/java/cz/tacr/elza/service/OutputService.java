@@ -53,7 +53,10 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataJsonTable;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrItemSettings;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeOutput;
@@ -74,6 +77,7 @@ import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -82,6 +86,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
@@ -96,6 +101,7 @@ import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
+import cz.tacr.elza.service.ItemService.FundContext;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -108,6 +114,9 @@ import cz.tacr.elza.service.output.OutputSender;
 public class OutputService {
 
     private static final Logger logger = LoggerFactory.getLogger(OutputService.class);
+
+    @Autowired
+    private DataRepository dataRepository;
 
     @Autowired
     private OutputRepository outputRepository;
@@ -130,6 +139,9 @@ public class OutputService {
     @Autowired
     private ArrangementService arrangementService;
 
+    @Autowired
+    ArrangementInternalService arrangementInternalService;
+    
     @Autowired
     private NodeOutputRepository nodeOutputRepository;
 
@@ -225,7 +237,7 @@ public class OutputService {
                     OutputCode.CANNOT_DELETED_IN_STATE).set("state", output.getState());
         }
 
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
         output.setDeleteChange(change);
 
         EventIdsInVersion event = EventFactory.createIdsInVersionEvent(EventType.OUTPUT_CHANGES, fundVersion, output.getOutputId());
@@ -378,7 +390,7 @@ public class OutputService {
                 .orElseThrow(outputType(outputTypeId));
         output.setOutputType(type);
         
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
         output.setCreateChange(change);
         output.setDeleteChange(null);
 
@@ -411,7 +423,7 @@ public class OutputService {
     public void removeNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                        final ArrOutput output,
                                        final List<Integer> nodeIds) {
-        ArrChange change = arrangementService.createChange(ArrChange.Type.REMOVE_NODES_OUTPUT);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.REMOVE_NODES_OUTPUT);
         removeNodesNamedOutput(fundVersion, output, nodeIds, change);
     }
 
@@ -558,7 +570,7 @@ public class OutputService {
     public void addNodesNamedOutput(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                     final ArrOutput output,
                                     final List<Integer> nodeIds) {
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_NODES_OUTPUT);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_NODES_OUTPUT);
         addNodesNamedOutput(fundVersion, output, nodeIds, change);
     }
 
@@ -825,7 +837,7 @@ public class OutputService {
                                           final ArrOutput output,
                                           final ArrFundVersion fundVersion,
                                           @Nullable final ArrChange createChange) {
-        ArrChange change = createChange == null ? arrangementService.createChange(null) : createChange;
+        ArrChange change = createChange == null ? arrangementInternalService.createChange(null) : createChange;
 
         outputItem.setOutput(output);
 
@@ -863,7 +875,8 @@ public class OutputService {
 
         // kontrola validity typu a specifikace
         StaticDataProvider sdp = staticDataService.getData();
-        itemService.checkValidTypeAndSpec(sdp, outputItem);
+        FundContext fundContext = FundContext.newInstance(fundVersion.getFund(), arrangementService, sdp);
+        itemService.checkValidTypeAndSpec(fundContext, outputItem);
 
         int maxPosition = outputItemRepository.findMaxItemPosition(outputItem.getItemType(), outputItem.getOutput());
 
@@ -882,8 +895,12 @@ public class OutputService {
             itemService.copyItem(item, change, item.getPosition() + 1);
         }
 
+        // save data
+        ArrData savedData = this.saveData(outputItem.getItemType(), outputItem.getData());
+
         outputItem.setCreateChange(change);
-        return itemService.save(outputItem);
+        outputItem.setData(savedData);
+        return this.outputItemRepository.save(outputItem);
     }
 
     /**
@@ -902,7 +919,7 @@ public class OutputService {
         Assert.notNull(outputVersion, "Verze výstupu není vyplněna");
         Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
         List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(descItemObjectId);
@@ -1032,11 +1049,25 @@ public class OutputService {
         saveOutput(output);
 
         // vytvoření změny
-        change = arrangementService.createChange(null);
+        change = arrangementInternalService.createChange(null);
 
         ArrOutputItem outputItemUpdated = updateOutputItem(outputItem, outputItemDB, fundVersion, change);
 
         return outputItemUpdated;
+    }
+
+    public ArrData saveData(RulItemType itemType, ArrData data) {
+        if (data == null) {
+            return null;
+        } else {
+            if (data instanceof ArrDataJsonTable) {
+                itemService.checkJsonTableData(((ArrDataJsonTable) data).getValue(),
+                                               (List<ElzaColumn>) itemType.getViewDefinition());
+            }
+
+            ArrData dataNew = ArrData.makeCopyWithoutId(data);
+            return dataRepository.save(dataNew);
+        }
     }
 
     /**
@@ -1094,16 +1125,19 @@ public class OutputService {
 
             // save old value with deleteChange
             outputItemDB.setDeleteChange(change);
-            itemService.save(outputItemDB);
+            outputItemRepository.save(outputItemDB);
+            outputItemRepository.flush();
+
+            ArrData newData = this.saveData(descItemNew.getItemType(), outputItem.getData());
 
             descItemNew.setItemId(null);
             descItemNew.setCreateChange(change);
             descItemNew.setPosition(positionNew);
             // update specification
             descItemNew.setItemSpec(outputItem.getItemSpec());
-            descItemNew.setData(outputItem.getData());
+            descItemNew.setData(newData);
 
-            ArrOutputItem outputItemUpdated = itemService.save(descItemNew);
+            ArrOutputItem outputItemUpdated = outputItemRepository.save(descItemNew);
 
             outputServiceInternal.publishOutputItemChanged(outputItemUpdated, version.getFundVersionId());
             return outputItemUpdated;
@@ -1192,7 +1226,7 @@ public class OutputService {
         if (!allowStates.contains(output.getState())) {
             throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
-        ArrChange change = createChange == null ? arrangementService.createChange(null) : createChange;
+        ArrChange change = createChange == null ? arrangementInternalService.createChange(null) : createChange;
         List<ArrOutputItem> createdItems = new ArrayList<>();
         for (ArrOutputItem outputItem : outputItems) {
             outputItem.setOutput(output);
@@ -1226,7 +1260,7 @@ public class OutputService {
                                              final Integer outputVersion,
                                              final Integer itemTypeId) {
 
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
         ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
 
@@ -1247,7 +1281,7 @@ public class OutputService {
         saveOutput(output);
 
 
-        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItems(itemTypeId, output);
+        List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItemsByItemType(itemTypeId, output);
 
         if (outputItems.size() == 0) {
             throw new IllegalStateException("Nebyla nalezena žádná hodnota atributu ke smazání");
@@ -1289,7 +1323,7 @@ public class OutputService {
 
         ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputAndItemType(output, itemType);
 
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
 
         if (itemSettings == null) {
             if (strict) {
@@ -1302,7 +1336,7 @@ public class OutputService {
             itemSettings.setOutput(output);
             itemSettingsRepository.save(itemSettings);
 
-            List<ArrOutputItem> items = outputItemRepository.findOpenOutputItems(itemType.getItemTypeId(), output);
+            List<ArrOutputItem> items = outputItemRepository.findOpenOutputItemsByItemType(itemType.getItemTypeId(), output);
             for (ArrOutputItem item : items) {
                 outputServiceInternal.publishOutputItemChanged(item, fundVersion.getFundVersionId());
             }
@@ -1381,7 +1415,7 @@ public class OutputService {
                 List<RulAction> actionByCodes = bulkActionService.getBulkActionByCodes(actionCodes);
 
                 if (!actionByCodes.isEmpty()) {
-                    rulItemTypes = itemTypeActionRepository.findByAction(actionByCodes);
+                    rulItemTypes = itemTypeActionRepository.findByActions(actionByCodes);
                 }
             }
         }
@@ -1450,7 +1484,7 @@ public class OutputService {
             }
         }
 
-        ArrChange change = arrangementService.createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
 
         if (outputItemObjectId != null) {
             ArrOutputItem openOutputItem = outputItemRepository.findOpenOutputItem(outputItemObjectId);

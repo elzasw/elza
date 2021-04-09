@@ -473,7 +473,11 @@ public class ArrIOService {
     private void writeNodeData(StaticDataProvider sdp, List<String> columNames, int i, FilterNode node,
                                CSVPrinter csvp)
             throws IOException {
-        for (Map.Entry<Integer, DescItemValues> entry : node.getValuesMap().entrySet()) {
+        Map<Integer, DescItemValues> entriesMap = node.getValuesMap();
+        if (entriesMap == null) {
+            return;
+        }
+        for (Map.Entry<Integer, DescItemValues> entry : entriesMap.entrySet()) {
             ItemType itemType = sdp.getItemTypeById(entry.getKey());
             DescItemValues descItemValues = entry.getValue();
             if (descItemValues != null && !descItemValues.getValues().isEmpty()) {

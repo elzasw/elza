@@ -23,7 +23,7 @@ public class ApChange {
     public static final String USER = "user";
 
     public enum Type {
-        AP_CREATE, AP_UPDATE, AP_DELETE, AP_MIGRATE/***/,
+        AP_CREATE, AP_UPDATE, AP_DELETE, AP_REPLACE, AP_MIGRATE/***/,
         AP_REVALIDATE,
         NAME_CREATE, NAME_UPDATE, NAME_DELETE, NAME_SET_PREFERRED,
         DESC_CREATE, DESC_UPDATE, DESC_DELETE,

@@ -98,7 +98,7 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
     return result;
   };
 
-  const sortedItems = part.items.sort((a, b) => {
+  const sortedItems = part.items?part.items.sort((a, b) => {
 
     const aItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[a.typeId].code, 'code');
     const bItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[b.typeId].code, 'code');
@@ -113,7 +113,7 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
       const bPos = bItemType.position || 9999;
       return aPos - bPos;
     }
-  });
+  }):[];
 
   const showValidationError = () => {
     if (editMode && partValidationError && partValidationError.errors && partValidationError.errors.length > 0) {
@@ -146,7 +146,13 @@ const DetailRelatedPart: FC<Props> = ({label, part,globalEntity, editMode, onDel
             glyph={'fa-pencil'}
             onClick={() => onEdit && onEdit(part)}
         />
-
+        {editMode && (
+            <Icon
+                className={'mr-2 cursor-pointer'}
+                glyph={'fa-trash'}
+                onClick={() => onDelete && onDelete(part)}
+            />
+        )}
         {showValidationError()}
       </Col>
     </Row>

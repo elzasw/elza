@@ -13,8 +13,6 @@ public class PartWrapper implements EntityWrapper {
 
     private final ApPart entity;
 
-    private SaveMethod saveMethod = SaveMethod.CREATE;
-
     private final PartInfo partInfo;
 
     private List<ItemWrapper> itemQueue;
@@ -23,12 +21,6 @@ public class PartWrapper implements EntityWrapper {
         this.entity = Validate.notNull(entity);
         this.partInfo = Validate.notNull(partInfo);
         this.itemQueue = itemWrapperList;
-    }
-
-    public PartWrapper(ApPart entity) {
-        this.entity = Validate.notNull(entity);
-        this.partInfo = null;
-        this.itemQueue = null;
     }
 
     public PartInfo getPartInfo() {
@@ -46,7 +38,8 @@ public class PartWrapper implements EntityWrapper {
 
     @Override
     public SaveMethod getSaveMethod() {
-        return saveMethod;
+        // part save method is same as accesspoint save method
+        return partInfo.getSaveMethod();
     }
 
     @Override

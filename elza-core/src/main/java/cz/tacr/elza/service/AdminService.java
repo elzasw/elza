@@ -81,6 +81,6 @@ public class AdminService {
         if (CollectionUtils.isEmpty(nodeIds)) {
             return Collections.emptyList();
         }
-        return levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId());
+        return levelTreeCacheService.getNodesByIds(nodeIds, fundVersion);
     }
 }

@@ -123,4 +123,9 @@ public enum RegistryCode implements ErrorCode {
      * Archivní entita má jíž existující propojení s externím systémem.
      */
     EXT_SYSTEM_CONNECTED,
+    
+    /**
+     * Archivní entita má nevhodný scope
+     */
+    INVALID_ENTITY_SCOPE,
 }

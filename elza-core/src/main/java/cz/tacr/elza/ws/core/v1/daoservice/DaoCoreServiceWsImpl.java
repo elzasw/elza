@@ -52,6 +52,7 @@ import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoSyncService;
 import cz.tacr.elza.service.DescriptionItemService;
@@ -103,6 +104,9 @@ public class DaoCoreServiceWsImpl {
 
     @Autowired
     private DaoSyncService daoSyncService;
+
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -340,17 +344,17 @@ public class DaoCoreServiceWsImpl {
                                                                     changeContext);
             }
         };
-        ArrLevel level = fundLevelService.addNewLevel(fundVersion, rootNode, rootNode,
+        List<ArrLevel> level = fundLevelService.addNewLevel(fundVersion, rootNode, rootNode,
                                                       AddLevelDirection.CHILD,
                                                       lis.getScenarioName(), Collections.emptySet(),
-                                                      descProvider);
+                                                      descProvider, null);
 
         List<ArrDaoLink> daoLinks = new ArrayList<>(levelDaos.size());
         // attach to the parent
         for (ArrDao dao : levelDaos) {
             Validate.isTrue(dao.getDaoType() == DaoType.LEVEL);
 
-            ArrDaoLink daoLink = daoService.createDaoLink(fundVersion, dao, level.getNode());
+            ArrDaoLink daoLink = daoService.createDaoLink(fundVersion, dao, level.get(0).getNode());
             daoLinks.add(daoLink);
         }
         return daoLinks;
@@ -393,7 +397,7 @@ public class DaoCoreServiceWsImpl {
     private ArrDaoLink createArrDaoLink(ArrDao arrDao, ArrNode arrNode) {
 
         // vytvořit změnu
-        final ArrChange createChange = arrangementService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
+        final ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
 
         // vytvořit připojení
         ArrDaoLink arrDaoLink = new ArrDaoLink();
@@ -412,7 +416,7 @@ public class DaoCoreServiceWsImpl {
         for (ArrDaoLink arrDaoLink : daoLinkList) {
 
             // vytvořit změnu
-            final ArrChange deleteChange = arrangementService.createChange(ArrChange.Type.DELETE_DAO_LINK, arrNode);
+            final ArrChange deleteChange = arrangementInternalService.createChange(ArrChange.Type.DELETE_DAO_LINK, arrNode);
 
             // nastavit připojení na neplatné
             arrDaoLink.setDeleteChange(deleteChange);

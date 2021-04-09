@@ -106,7 +106,7 @@ public class BulkActionService {
     private NodeRepository nodeRepository;
 
     @Autowired
-    private ArrangementService arrangementService;
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private ActionRepository actionRepository;
@@ -154,7 +154,7 @@ public class BulkActionService {
 
         ArrBulkActionRun bulkActionRun = new ArrBulkActionRun();
 
-        bulkActionRun.setChange(arrangementService.createChange(ArrChange.Type.BULK_ACTION));
+        bulkActionRun.setChange(arrangementInternalService.createChange(ArrChange.Type.BULK_ACTION));
         bulkActionRun.setBulkActionCode(bulkActionCode);
         bulkActionRun.setUserId(userId);
         ArrFundVersion arrFundVersion = new ArrFundVersion();
@@ -221,7 +221,7 @@ public class BulkActionService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrBulkActionRun> getAllArrBulkActionRun(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
-        return bulkActionRepository.findByFundVersionId(fundVersionId, PageRequest.of(0, MAX_BULK_ACTIONS_LIST));
+        return bulkActionRepository.findByFundVersionIdPageable(fundVersionId, PageRequest.of(0, MAX_BULK_ACTIONS_LIST));
     }
 
     /**

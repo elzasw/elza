@@ -82,6 +82,8 @@ public class ArrangementFormService {
 	private final NodeCacheService nodeCache;
 
 	private final ArrangementService arrangementService;
+	
+	private final ArrangementInternalService arrangementInternalService;
 
     private final UserService userService;
 
@@ -96,7 +98,8 @@ public class ArrangementFormService {
 								  ClientFactoryDO factoryDo,
 								  NodeCacheService nodeCache,
 								  FundVersionRepository fundVersionRepository,
-								  NodeRepository nodeRepository, final ArrangementService arrangementService) {
+								  NodeRepository nodeRepository, final ArrangementService arrangementService,
+								  final ArrangementInternalService arrangementInternalService) {
 		this.staticData = staticData;
 		this.arrangementInternal = arrangementInternal;
 		this.descriptionItemService = descriptionItemService;
@@ -109,6 +112,7 @@ public class ArrangementFormService {
 		this.nodeCache = nodeCache;
 		this.wsStompService = wsStompService;
 		this.arrangementService = arrangementService;
+		this.arrangementInternalService = arrangementInternalService;
         this.userService = userService;
 	}
 
@@ -234,7 +238,7 @@ public class ArrangementFormService {
 											  final List<ArrDescItem> updateItems,
 											  final List<ArrDescItem> deleteItems) {
 
-		ArrChange change = arrangementService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM, node);
+		ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM, node);
 
 		if (!node.getFundId().equals(fundVersion.getFundId())) {
 			throw new SystemException("Nesedí verze JP s AS", ArrangementCode.INVALID_VERSION);

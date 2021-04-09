@@ -27,7 +27,7 @@ import {WebApi} from "../../../actions/WebApi";
 import {SyncsFilterVO} from "../../../api/SyncsFilterVO";
 import {ExtSyncsQueueItemVO} from "../../../api/ExtSyncsQueueItemVO";
 import * as ExtStateInfo from "../form/filter/ExtStateInfo";
-import {dateToDateTimeString, localUTCToDateTime} from "../../../shared/utils/commons";
+import {dateToDateTimeString, localUTCToDateTime, utcToDateTime} from "../../../shared/utils/commons";
 
 const FORM_NAME = "extSyncs";
 
@@ -140,7 +140,7 @@ const ExtSyncsModal = ({handleSubmit, onClose, submitting, extSystems, scopes, s
     }
 
     const renderResultItem = (item: ExtSyncsQueueItemVO, index: number) => {
-        const date = localUTCToDateTime(item.date);
+        const date = utcToDateTime(item.date);
         return <Row key={index} className="result-item">
             <Col>
                 <Row>

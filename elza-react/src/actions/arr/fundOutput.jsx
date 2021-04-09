@@ -3,14 +3,14 @@
  */
 
 import * as types from '../../actions/constants/ActionTypes';
-import {WebApi} from '../../actions/index.jsx';
+import {WebApi} from '../../actions/index';
 import {i18n} from '../../components/shared';
-import {indexById} from '../../stores/app/utils.jsx';
-import {isFundOutputFilesAction} from './fundOutputFiles.jsx';
-import {isFundOutputFunctionsAction} from './fundOutputFunctions.jsx';
-import {addToastrSuccess} from '../../components/shared/toastr/ToastrActions.jsx';
-import {modalDialogHide} from '../../actions/global/modalDialog.jsx';
-import {savingApiWrapper} from '../../actions/global/status.jsx';
+import {indexById} from '../../stores/app/utils';
+import {isFundOutputFilesAction} from './fundOutputFiles';
+import {isFundOutputFunctionsAction} from './fundOutputFunctions';
+import {addToastrSuccess} from '../../components/shared/toastr/ToastrActions';
+import {modalDialogHide} from '../../actions/global/modalDialog';
+import {savingApiWrapper} from '../../actions/global/status';
 
 export function isFundOutput(action) {
     if (isFundOutputDetail(action)) {

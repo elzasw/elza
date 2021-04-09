@@ -15,7 +15,7 @@ import {
     Search,
     StoreHorizontalLoader,
 } from '../../components/shared';
-import {AddUserForm, Ribbon, UserDetail} from '../../components/index.jsx';
+import {AddUserForm, Ribbon, UserDetail} from '../../components/index';
 import {
     adminPasswordChange,
     adminUserChangeActive,
@@ -24,11 +24,11 @@ import {
     usersSearch,
     usersSelectUser,
     userUpdate,
-} from '../../actions/admin/user.jsx';
-import {indexById} from '../../stores/app/utils.jsx';
-import {modalDialogShow} from '../../actions/global/modalDialog.jsx';
-import {requestScopesIfNeeded} from '../../actions/refTables/scopesData.jsx';
-import {renderUserItem} from '../../components/admin/adminRenderUtils.jsx';
+} from '../../actions/admin/user';
+import {indexById} from '../../stores/app/utils';
+import {modalDialogShow} from '../../actions/global/modalDialog';
+import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
+import {renderUserItem} from '../../components/admin/adminRenderUtils';
 import PasswordForm from '../../components/admin/PasswordForm';
 
 /**

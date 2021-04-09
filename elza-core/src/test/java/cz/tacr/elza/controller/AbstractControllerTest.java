@@ -145,6 +145,7 @@ import cz.tacr.elza.test.ApiClient;
 import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.AccesspointsApi;
 import cz.tacr.elza.test.controller.FundsApi;
+import cz.tacr.elza.test.controller.SearchApi;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.Fund;
 import io.restassured.RestAssured;
@@ -423,7 +424,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
     public static final String SCOPE_GLOBAL = "GLOBAL";
 
     @Value("${local.server.port}")
-    private int port;
+    protected int port;
 
     private List<RulDataTypeVO> dataTypes = null;
     private List<RulDescItemTypeExtVO> descItemTypes = null;
@@ -434,7 +435,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     protected AccesspointsApi accesspointsApi;
 
-    private static Map<String, String> cookies = null;
+    protected SearchApi searchApi;
+
+    protected static Map<String, String> cookies = null;
 
     @Override
     @Before
@@ -452,6 +455,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
         fundsApi = new cz.tacr.elza.test.controller.FundsApi(elzaApiClient);
         accesspointsApi = new cz.tacr.elza.test.controller.AccesspointsApi(elzaApiClient);
+        searchApi = new cz.tacr.elza.test.controller.SearchApi(elzaApiClient);
 
         loginAsAdmin();
 

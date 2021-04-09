@@ -31,19 +31,19 @@ public class ViewTitles {
     private String defaultTitle;
 
     /**
-     * Item type ids for tree level
+     * Builder for tree level
      */
-    private List<Integer> treeItemIds = new ArrayList<>();
+    private TitleBuilder treeItem = new TitleBuilder();
 
     /**
-     * Item type ids for accordion left
+     * Builder for accordion left
      */
-    private List<Integer> accordionLeftIds = new ArrayList<>();
+    private TitleBuilder accordionLeft = new TitleBuilder();
 
     /**
-     * Item type ids for accordion right
+     * Builder for accordion right
      */
-    private List<Integer> accordionRightIds = new ArrayList<>();
+    private TitleBuilder accordionRight = new TitleBuilder();
 
     /**
      * Item type if for level code
@@ -84,16 +84,16 @@ public class ViewTitles {
         levelHierarchyLookup.put(specCode, level);
     }
 
-    public List<Integer> getTreeItemIds() {
-        return treeItemIds;
+    public TitleBuilder getTreeItem() {
+        return treeItem;
     }
 
-    public List<Integer> getAccordionLeftIds() {
-        return accordionLeftIds;
+    public TitleBuilder getAccordionLeft() {
+        return accordionLeft;
     }
 
-    public List<Integer> getAccordionRightIds() {
-        return accordionRightIds;
+    public TitleBuilder getAccordionRight() {
+        return accordionRight;
     }
 
     public String getDefaultTitle() {
@@ -119,15 +119,14 @@ public class ViewTitles {
     /**
      * Create collection of all used item types by given ViewTitles
      * 
-     * 
      * @param viewTitles
      * @return
      */
     public Set<Integer> getAllItemTypeIds() {
         Set<Integer> result = new HashSet<>();
-        result.addAll(accordionLeftIds);
-        result.addAll(accordionRightIds);
-        result.addAll(treeItemIds);
+        result.addAll(accordionLeft.getIds());
+        result.addAll(accordionRight.getIds());
+        result.addAll(treeItem.getIds());
         if (levelTypeId != null) {
             result.add(levelTypeId);
         }
@@ -144,29 +143,20 @@ public class ViewTitles {
         return itemType.getItemTypeId();
     }
 
-    static void addItemIds(@Nullable List<String> src, List<Integer> trg, StaticDataProvider sdp) {
-        if (src == null) {
-            return;
-        }
-        src.forEach(s -> {
-            trg.add(getItemId(s, sdp));
-        });
-    }
-
-    static public ViewTitles valueOf(FundView fundView, StaticDataProvider sdp) {
+    public static ViewTitles valueOf(FundView fundView, StaticDataProvider sdp) {
         ViewTitles result = new ViewTitles();
 
         result.setDefaultTitle(fundView.getTitle());
         result.setStrictMode(fundView.getStrictMode());
-        
-        if(fundView.getAccordionLeft()!=null) {
-            addItemIds(fundView.getAccordionLeft().getValues(), result.accordionLeftIds, sdp);
+
+        if (fundView.getAccordionLeft() != null) {
+            result.accordionLeft.configure(fundView.getAccordionLeft(), sdp);
         }
         if (fundView.getAccordionRight() != null) {
-            addItemIds(fundView.getAccordionRight().getValues(), result.accordionRightIds, sdp);
+            result.accordionRight.configure(fundView.getAccordionRight(), sdp);
         }
         if (fundView.getTree() != null) {
-            addItemIds(fundView.getTree().getValues(), result.treeItemIds, sdp);
+            result.treeItem.configure(fundView.getTree(), sdp);
         }
 
         HierarchyXml hierXml = fundView.getHierarchy();

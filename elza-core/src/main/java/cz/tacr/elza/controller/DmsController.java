@@ -37,6 +37,8 @@ import cz.tacr.elza.controller.vo.ArrFileVO;
 import cz.tacr.elza.controller.vo.ArrOutputFileVO;
 import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
@@ -46,8 +48,10 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.attachment.AttachmentService;
 
@@ -62,19 +66,25 @@ public class DmsController {
     private ThreadLocal<SimpleDateFormat> FORMATTER_DATE_TIME = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss"));
 
     @Autowired
-    private DmsService dmsService;
-
-    @Autowired
     private OutputResultRepository outputResultRepository;
     
     @Autowired
     private OutputRepository outputRepository;
 
     @Autowired
+    private FundRepository fundRepository;
+    
+    @Autowired
+    private NodeRepository nodeRepository;
+
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
+
+    @Autowired
     private AttachmentService attachmentService;
 
     @Autowired
-    private FundRepository fundRepository;
+    private DmsService dmsService;
 
     /**
      * Načtení seznamu editovatelných mime typů.
@@ -107,7 +117,9 @@ public class DmsController {
     public ArrFileVO createFile(final ArrFileVO object) throws IOException {
         dmsService.checkFundWritePermission(object.getFundId());
 
-        ArrFile file = create(object, (fileVO) -> object.createEntity(fundRepository));
+        //ArrNode node = nodeRepository.findBy
+        ArrChange createChange = arrangementInternalService.createChange(Type.ADD_ATTACHMENT);
+        ArrFile file = create(object, (fileVO) -> object.createEntity(fundRepository, createChange));
         return ArrFileVO.newInstance(file, attachmentService);
     }
 
@@ -281,7 +293,7 @@ public class DmsController {
     public void updateFile(@PathVariable(value = "fileId") Integer fileId, final ArrFileVO object) throws IOException {
         ArrFile arrFile = dmsService.getArrFile(fileId);
         dmsService.checkFundWritePermission(arrFile.getFund().getFundId());
-        update(fileId, object, (fileVO) -> object.createEntity(fundRepository));
+        update(fileId, object, (fileVO) -> object.createEntity(fundRepository, null));
     }
 
     /**

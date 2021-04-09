@@ -322,5 +322,15 @@ public class ArrChange {
          * Změna záznamu podle scénářů
          */
         CHANGE_SCENARIO_ITEMS,
+        
+        /**
+         * Vytváření nového záznamu ArrFile.
+         */
+        ADD_ATTACHMENT,
+
+        /**
+         * Smazání záznamu ArrFile.
+         */
+        DELETE_ATTACHMENT,
     }
 }

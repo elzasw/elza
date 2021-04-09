@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,16 +58,25 @@ public class FundLevelService {
 
     @PersistenceContext
     private EntityManager entityManager;
+    
     @Autowired
     private LevelRepository levelRepository;
+    
     @Autowired
     private ArrangementService arrangementService;
+
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
+
     @Autowired
     private RuleService ruleService;
+    
     @Autowired
     private DescItemRepository descItemRepository;
+    
     @Autowired
     private IEventNotificationService eventNotificationService;
+    
     @Autowired
     private DescriptionItemService descriptionItemService;
 
@@ -88,7 +98,7 @@ public class FundLevelService {
 
         Assert.notEmpty(transportNodes, "Musí být vyplněn alespoň jedna JP");
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
         arrangementService.setPrimaryNode(change, staticNode);
 
         ArrLevel staticLevelParent = arrangementService.lockNode(staticParentNode, version, change);
@@ -210,7 +220,7 @@ public class FundLevelService {
                                 final ArrNode transportParentNode) {
         Assert.notEmpty(transportNodes, "Musí být vyplněn alespoň jedna JP");
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
 
         ArrLevel staticLevelParent = arrangementService.lockNode(staticParentNode, version, change);
         ArrLevel transportLevelParent = transportParentNode.equals(staticParentNode)
@@ -321,7 +331,7 @@ public class FundLevelService {
                                 final Collection<ArrNode> transportNodes,
                                 final ArrNode transportParentNode) {
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.MOVE_LEVEL, staticNode);
 
         ArrLevel staticLevel = arrangementService.lockNode(staticNode, version, change);
         if (!staticNode.getNodeId().equals(transportParentNode.getNodeId())) {
@@ -414,7 +424,7 @@ public class FundLevelService {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(deleteNode, "Mazané JP musí být vyplněna");
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.DELETE_LEVEL, deleteNode);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_LEVEL, deleteNode);
 
         ArrLevel deleteLevel = arrangementService.lockNode(deleteNode, version, change);
         if (deleteNodeParent != null) {
@@ -519,87 +529,88 @@ public class FundLevelService {
      * @param staticNodeParent  Rodič statického uzlu (za/před/pod který přidáváme)
      * @param direction         směr přidávání
      * @param scenarionName     Název scénáře, ze kterého se mají převzít výchozí hodnoty atributů.
-     * @param descItemCopyTypes id typů atributl, které budou zkopírovány z uzlu přímo nadřazeným nad přidaným uzlem
-     *                          (jeho mladší sourozenec).
+     * @param descItemCopyTypes id typů atributl, které budou zkopírovány z uzlu přímo nadřazeným nad přidaným uzlem (jeho mladší sourozenec).
+     * @param count             počet přidaných úrovní (pokud je null, přidáme jeden)
      */
     @Transactional(value = TxType.MANDATORY)
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
-    public ArrLevel addNewLevel(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
+    public List<ArrLevel> addNewLevel(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                 final ArrNode staticNode,
                                 @AuthParam(type = AuthParam.Type.NODE) final ArrNode staticNodeParent,
                                 final AddLevelDirection direction,
                                 @Nullable final String scenarionName,
                                 final Set<RulItemType> descItemCopyTypes,
-                                @Nullable final DesctItemProvider desctItemProvider) {
+                                @Nullable final DesctItemProvider desctItemProvider,
+                                @Nullable final Integer countNewLevel) {
 
         Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
         Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
         final ArrLevel staticLevel = levelRepository.findByNode(staticNode, version.getLockChange());
+        int count = countNewLevel == null? 1 : countNewLevel;
 
-        ArrLevel newLevel;
+        List<ArrLevel> levels = new ArrayList<>(count);
         switch (direction){
             case CHILD:
-                newLevel = addLevelUnder(version, staticNode);
+                levels = addLevelUnder(version, staticNode, count);
                 break;
             case BEFORE:
             case AFTER:
-                newLevel = addLevelBeforeAfter(version, staticNode, staticNodeParent, direction);
+                levels = addLevelBeforeAfter(version, staticNode, staticNodeParent, direction, count);
                 break;
             default:
                 throw new IllegalStateException("Neznámý typ směru přidání uzlu " + direction.name());
         }
 
-        Assert.notNull(newLevel, "Level musí být vyplněn");
-        ArrChange change = newLevel.getCreateChange();
+        Assert.notEmpty(levels, "Level musí být vyplněn");
+        
+        for (ArrLevel newLevel : levels) {
+            ArrChange change = newLevel.getCreateChange();
 
-        Map<Integer, RulItemType> descItemTypeCopyMap = ElzaTools
-                .createEntityMap(descItemCopyTypes, t -> t.getItemTypeId());
+            Map<Integer, RulItemType> descItemTypeCopyMap = ElzaTools.createEntityMap(descItemCopyTypes, t -> t.getItemTypeId());
 
-        MultiplItemChangeContext changeContext = descriptionItemService.createChangeContext(version.getFundVersionId());
+            MultiplItemChangeContext changeContext = descriptionItemService.createChangeContext(version.getFundVersionId());
 
-        if (StringUtils.isNotBlank(scenarionName)) {
-            ScenarioOfNewLevel scenario = descriptionItemService
-                    .getDescriptionItamsOfScenario(scenarionName, staticLevel, direction.getDirectionLevel(), version);
+            if (StringUtils.isNotBlank(scenarionName)) {
+                ScenarioOfNewLevel scenario = descriptionItemService
+                        .getDescriptionItamsOfScenario(scenarionName, staticLevel, direction.getDirectionLevel(), version);
 
-            for (ArrDescItem descItem : scenario.getDescItems()) {
-                //pokud se má typ kopírovat z předchozího uzlu, nebudeme ho vkládat ze scénáře
-                if (descItem.getItemType() == null || descItemTypeCopyMap
-                        .containsKey(descItem.getItemType().getItemTypeId())) {
-                    continue;
+                for (ArrDescItem descItem : scenario.getDescItems()) {
+                    //pokud se má typ kopírovat z předchozího uzlu, nebudeme ho vkládat ze scénáře
+                    if (descItem.getItemType() == null || descItemTypeCopyMap
+                            .containsKey(descItem.getItemType().getItemTypeId())) {
+                        continue;
+                    }
+
+                    descItem.setNode(newLevel.getNode());
+                    descriptionItemService
+                        .createDescriptionItemInBatch(descItem, newLevel.getNode(), version, change, changeContext);
                 }
-
-                descItem.setNode(newLevel.getNode());
-                descriptionItemService.createDescriptionItemInBatch(descItem,
-                                                                    newLevel.getNode(), version, change,
-                                                                    changeContext);
             }
+
+            ArrLevel olderSibling = levelRepository.findOlderSibling(newLevel, version.getLockChange());
+            if (olderSibling != null && descItemCopyTypes != null && !descItemCopyTypes.isEmpty()) {
+                List<ArrDescItem> siblingDescItems = descItemRepository
+                        .findOpenByNodeAndTypes(olderSibling.getNode(), descItemCopyTypes);
+                descriptionItemService.copyDescItemWithDataToNode(newLevel.getNode(),
+                                                                  siblingDescItems, change, version,
+                                                                  changeContext);
+            }
+            if (desctItemProvider != null) {
+                desctItemProvider.provide(newLevel, change, version, changeContext);
+            }
+
+            changeContext.flush();
+
+            ruleService.conformityInfo(version.getFundVersionId(),
+                                       Arrays.asList(newLevel.getNode().getNodeId()),
+                                       NodeTypeOperation.CREATE_NODE, null, null, null);
+
+            entityManager.flush(); //aktualizace verzí v nodech
+            eventNotificationService
+                    .publishEvent(EventFactory.createAddNodeEvent(direction.getEventType(), version, staticLevel, newLevel));
         }
 
-
-        ArrLevel olderSibling = levelRepository.findOlderSibling(newLevel, version.getLockChange());
-        if (olderSibling != null && descItemCopyTypes != null && !descItemCopyTypes.isEmpty()) {
-            List<ArrDescItem> siblingDescItems = descItemRepository
-                    .findOpenByNodeAndTypes(olderSibling.getNode(), descItemCopyTypes);
-            descriptionItemService.copyDescItemWithDataToNode(newLevel.getNode(),
-                                                              siblingDescItems, change, version,
-                                                              changeContext);
-        }
-        if (desctItemProvider != null) {
-            desctItemProvider.provide(newLevel, change, version, changeContext);
-        }
-
-        changeContext.flush();
-
-        ruleService.conformityInfo(version.getFundVersionId(),
-                                   Arrays.asList(newLevel.getNode().getNodeId()),
-                                   NodeTypeOperation.CREATE_NODE, null, null, null);
-
-        entityManager.flush(); //aktualizace verzí v nodech
-        eventNotificationService
-                .publishEvent(EventFactory.createAddNodeEvent(direction.getEventType(), version, staticLevel, newLevel)
-                              );
-
-        return newLevel;
+        return levels;
     }
 
     /**
@@ -609,20 +620,21 @@ public class FundLevelService {
      * @param staticNode       statický uzel (před/za který přidáváme)
      * @param staticNodeParent rodič statického uzlu
      * @param direction        směr přidání uzlu
+     * @param count            počet přidaných úrovní
      * @return přidaný uzel
      */
-    private ArrLevel addLevelBeforeAfter(final ArrFundVersion version,
+    private List<ArrLevel> addLevelBeforeAfter(final ArrFundVersion version,
                                          final ArrNode staticNode,
                                          final ArrNode staticNodeParent,
-                                         final AddLevelDirection direction) {
+                                         final AddLevelDirection direction,
+                                         int count) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
         Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
 
-
         arrangementService.isValidAndOpenVersion(version);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL, staticNodeParent);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_LEVEL, staticNodeParent);
 
         final ArrLevel staticLevelParent = arrangementService.lockNode(staticNodeParent, version, change);
         Assert.notNull(staticLevelParent, "Rodič levelu musí být vyplněn");
@@ -636,11 +648,13 @@ public class FundLevelService {
             nodesToShift.add(0, staticLevel);
         }
 
-        shiftNodes(nodesToShift, change, newLevelPosition + 1);
-        ArrLevel newLevel = arrangementService.createLevel(change, staticLevelParent.getNode(), newLevelPosition,
-                version.getFund());
+        List<ArrLevel> levels = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            shiftNodes(nodesToShift, change, newLevelPosition + 1);
+            levels.add(arrangementService.createLevel(change, staticLevelParent.getNode(), newLevelPosition, version.getFund()));
+        }
 
-        return newLevel;
+        return levels;
     }
 
 
@@ -649,30 +663,32 @@ public class FundLevelService {
      *
      * @param version    verze stromu
      * @param staticNode statický uzel (pod který přidáváme)
+     * @param count      počet přidaných úrovní
      * @return přidaný uzel
      */
-    public ArrLevel addLevelUnder(final ArrFundVersion version,
-                                  final ArrNode staticNode) {
+    public List<ArrLevel> addLevelUnder(final ArrFundVersion version,
+                                  final ArrNode staticNode, 
+                                  int count) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
 
-
         arrangementService.isValidAndOpenVersion(version);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_LEVEL, staticNode);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_LEVEL, staticNode);
         final ArrLevel staticLevel = arrangementService.lockNode(staticNode, version, change);
         Assert.notNull(staticLevel, "Referenční level musí být vyplněn");
-
 
         Integer maxPosition = levelRepository.findMaxPositionUnderParent(staticLevel.getNode());
         if (maxPosition == null) {
             maxPosition = 0;
         }
 
-        ArrLevel newLevel = arrangementService.createLevel(change, staticLevel.getNode(), maxPosition + 1,
-                version.getFund());
-
-        return newLevel;
+        List<ArrLevel> levels = new ArrayList<>(count);
+        for (int i = 1; i <= count; i++) {
+            levels.add(arrangementService.createLevel(change, staticLevel.getNode(), maxPosition + i, version.getFund()));
+        }
+        
+        return levels;
     }
 
 

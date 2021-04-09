@@ -53,4 +53,9 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
 
     @Query("SELECT part FROM ApItem i JOIN i.part part JOIN i.data data WHERE data IN :dataRecordRefList AND i.deleteChange IS NULL")
     List<ApPart> findPartsByDataRecordRefList(@Param("dataRecordRefList") List<ArrDataRecordRef> dataRecordRefList);
+
+    @Query(value = "select count(*) from ap_item i" +
+            " join ap_binding_item bi on bi.item_id = i.item_id and bi.delete_change_id is null" +
+            " where i.delete_change_id is not null", nativeQuery = true)
+    int countDeletedItemsWithUndeletedBindingItem();
 }
