@@ -12,6 +12,9 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.search.ElzaSearchConfig;
+import cz.tacr.elza.search.SearchConfigManager;
+import cz.tacr.elza.search.FieldSearchConfig;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 import cz.tacr.elza.service.cache.ApVisibilityChecker;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
@@ -20,17 +23,32 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.hibernate.search.bridge.FieldBridge;
+import org.apache.lucene.document.SortedDocValuesField;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.util.BytesRef;
 import org.hibernate.search.bridge.LuceneOptions;
+import org.hibernate.search.bridge.MetadataProvidingFieldBridge;
 import org.hibernate.search.bridge.StringBridge;
+import org.hibernate.search.bridge.spi.FieldMetadataBuilder;
+import org.hibernate.search.bridge.spi.FieldType;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
-public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge {
+@Component
+public class ApCachedAccessPointClassBridge implements StringBridge, MetadataProvidingFieldBridge, ApplicationContextAware {
+
+    @Autowired
+    private static SearchConfigManager searchConfigManager;
 
     public static final String PREFIX_PREF = "pref";
     public static final String SEPARATOR = "_";
@@ -40,6 +58,7 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
     public static final String AP_TYPE_ID = "ap_type_id";
     public static final String USERNAME = "username";
     public static final String TRANS = "trans";
+    public static final String SORT = "sort";
 
     public static final String PREF_INDEX = "pref_index";
     public static final String PREF_NM_MAIN = "pref_nm_main";
@@ -137,6 +156,7 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
 
                     if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
                         addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX, index.getValue().toLowerCase(), document, luceneOptions, name);
+                        addStringField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SEPARATOR + SORT, index.getValue().toLowerCase(), document);
                     }
 
                     addField(name + SEPARATOR + fieldName.toString().toLowerCase(), index.getValue().toLowerCase(), document, luceneOptions, name);
@@ -146,20 +166,37 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
         }
     }
 
+    private void addStringField(String name, String value, Document document) {
+        document.add(new StringField(name, value, Field.Store.YES));
+        document.add(new SortedDocValuesField(name, new BytesRef(value)));
+    }
+
     private void addField(String name, String value, Document document, LuceneOptions luceneOptions, String prefixName) {
         Field field = new Field(name, value, luceneOptions.getStore(), Field.Index.NOT_ANALYZED, luceneOptions.getTermVector());
         field.setBoost(getBoost(name, prefixName));
         document.add(field);
 
-        if (isFieldForTransliteration(name)) {
+        if (isFieldForTransliteration(name, prefixName)) {
             Field transField = new Field(name + SEPARATOR + TRANS, value, luceneOptions.getStore(), Field.Index.ANALYZED, luceneOptions.getTermVector());
             transField.setBoost(getBoost(name, prefixName));
             document.add(transField);
         }
     }
 
-    private boolean isFieldForTransliteration(String name) {
-        return name.contains(INDEX) || name.contains(NM_MAIN) || name.contains(NM_MINOR);
+    private boolean isFieldForTransliteration(String name, String prefixName) {
+        boolean transliterate = false;
+
+        name = StringUtils.removeStart(name, prefixName + SEPARATOR);
+
+        ElzaSearchConfig elzaSearchConfig = getElzaSearchConfig();
+        if (elzaSearchConfig != null) {
+            FieldSearchConfig fieldSearchConfig = elzaSearchConfig.getFieldSearchConfigByName(name);
+            if (fieldSearchConfig != null && fieldSearchConfig.getTransliterate() != null) {
+                transliterate = fieldSearchConfig.getTransliterate();
+            }
+        }
+
+        return transliterate;
     }
 
     private float getBoost(String name, String prefixName) {
@@ -167,19 +204,37 @@ public class ApCachedAccessPointClassBridge implements FieldBridge, StringBridge
 
         name = StringUtils.removeStart(name, prefixName + SEPARATOR);
 
-        switch (name) {
-            case PREF_INDEX: boost = 1.5f; break;
-            case PREF_NM_MAIN: boost = 2.0f; break;
-            case PREF_NM_MINOR: boost = 1.7f; break;
-            case NM_MAIN: boost = 1.2f; break;
-            case NM_MINOR: boost = 1.1f; break;
+        ElzaSearchConfig elzaSearchConfig = getElzaSearchConfig();
+        if (elzaSearchConfig != null) {
+            FieldSearchConfig fieldSearchConfig = elzaSearchConfig.getFieldSearchConfigByName(name);
+            if (fieldSearchConfig != null && fieldSearchConfig.getBoost() != null) {
+                boost = fieldSearchConfig.getBoost();
+            }
         }
 
         return boost;
     }
 
+    @Nullable
+    private ElzaSearchConfig getElzaSearchConfig() {
+        if (searchConfigManager != null) {
+            return searchConfigManager.getElzaSearchConfig();
+        }
+        return null;
+    }
+
     @Override
     public String objectToString(Object object) {
         return (String) object;
+    }
+
+    @Override
+    public void configureFieldMetadata(String name, FieldMetadataBuilder builder) {
+        builder.field(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SEPARATOR + SORT, FieldType.STRING).sortable(true);
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        searchConfigManager = applicationContext.getBean(SearchConfigManager.class);
     }
 }
