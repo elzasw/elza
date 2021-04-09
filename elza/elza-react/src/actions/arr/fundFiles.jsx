@@ -1,7 +1,7 @@
-import {WebApi} from 'actions/index.jsx';
+import {WebApi} from 'actions/index';
 import * as types from 'actions/constants/ActionTypes';
-import {objectById} from 'stores/app/utils.jsx';
-import {savingApiWrapper} from 'actions/global/status.jsx';
+import {objectById} from 'stores/app/utils';
+import {savingApiWrapper} from 'actions/global/status';
 import {JAVA_ATTR_CLASS} from '../../constants';
 
 export function isFundFilesAction(action) {

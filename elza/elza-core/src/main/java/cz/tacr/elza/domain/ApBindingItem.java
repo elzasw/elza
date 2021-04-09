@@ -1,12 +1,15 @@
 package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
 import javax.persistence.*;
 
 @Entity(name = "ap_binding_item")
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ApBindingItem implements AccessPointCacheSerializable {
 
     @Id
@@ -19,9 +22,13 @@ public class ApBindingItem implements AccessPointCacheSerializable {
     @JoinColumn(name = "bindingId", nullable = false)
     private ApBinding binding;
 
+    @Column(nullable = false, updatable = false, insertable = false)
+    private Integer bindingId;
+
     @Column(length = StringLength.LENGTH_50, nullable = false)
     private String value;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApPart.class)
     @JoinColumn(name = "partId")
     private ApPart part;
@@ -29,6 +36,7 @@ public class ApBindingItem implements AccessPointCacheSerializable {
     @Column(nullable = true, updatable = false, insertable = false)
     private Integer partId;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApItem.class)
     @JoinColumn(name = "itemId")
     private ApItem item;
@@ -62,8 +70,13 @@ public class ApBindingItem implements AccessPointCacheSerializable {
         return binding;
     }
 
+    public Integer getBindingId() {
+        return bindingId;
+    }
+
     public void setBinding(ApBinding binding) {
         this.binding = binding;
+        this.bindingId = binding != null ? binding.getBindingId() : null;
     }
 
     public String getValue() {
@@ -141,4 +154,5 @@ public class ApBindingItem implements AccessPointCacheSerializable {
     public Integer getDeleteChangeId() {
         return deleteChangeId;
     }
+
 }

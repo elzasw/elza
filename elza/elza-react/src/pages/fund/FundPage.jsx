@@ -7,7 +7,7 @@ import {AbstractReactComponent, ListBox, RibbonGroup, SearchWithGoto, Utils} fro
 import {i18n, Icon, ExportForm, FundDetail, FundDetailExt, FundForm, ImportForm, Ribbon} from '../../components';
 import {Button} from '../../components/ui';
 import PageLayout from '../shared/layout/PageLayout';
-import {modalDialogShow} from '../../actions/global/modalDialog.jsx';
+import {modalDialogShow} from '../../actions/global/modalDialog';
 import {
     approveFund,
     createFund,
@@ -16,10 +16,10 @@ import {
     exportFund,
     selectFundTab,
     updateFund,
-} from '../../actions/arr/fund.jsx';
-import {WebApi} from '../../actions/index.jsx';
-import {indexById} from '../../stores/app/utils.jsx';
-import {routerNavigate} from '../../actions/router.jsx';
+} from '../../actions/arr/fund';
+import {WebApi} from '../../actions/index';
+import {indexById} from '../../stores/app/utils';
+import {routerNavigate} from '../../actions/router';
 import {
     DEFAULT_FUND_LIST_MAX_SIZE,
     fundsFetchIfNeeded,
@@ -27,10 +27,10 @@ import {
     fundsFundDetailFetchIfNeeded,
     fundsSearch,
     fundsSelectFund,
-} from '../../actions/fund/fund.jsx';
+} from '../../actions/fund/fund';
 import {getFundFromFundAndVersion} from '../../components/arr/ArrUtils';
-import {scopesDirty} from '../../actions/refTables/scopesData.jsx';
-import * as perms from '../../actions/user/Permission.jsx';
+import {scopesDirty} from '../../actions/refTables/scopesData';
+import * as perms from '../../actions/user/Permission';
 import {globalFundTreeInvalidate} from '../../actions/arr/globalFundTree';
 import SearchFundsForm from '../../components/arr/SearchFundsForm';
 import IssueLists from '../../components/arr/IssueLists';
@@ -498,14 +498,14 @@ class FundPage extends AbstractReactComponent {
             <div className="fund-list-container">
                 <Autocomplete
                     useIdAsValue={true}
-                    items={[{code: null, name: i18n('global.all')}, ...this.state.institutions]}
-                    getItemId={item => (item ? item.code : null)}
+                    items={[{code: undefined, name: i18n('global.all')}, ...this.state.institutions]}
+                    getItemId={item => (item ? item.code : undefined)}
                     getItemName={item =>
                         item
                             ? item.name
                                 ? item.name
                                 : i18n('arr.fund.filterSettings.value.empty') + ' id:' + item.id
-                            : null
+                            : undefined
                     }
                     placeholder={i18n('arr.fund.institution')}
                     value={fundRegion.filter.institutionIdentifier}
@@ -530,12 +530,15 @@ class FundPage extends AbstractReactComponent {
                     onFocus={this.handleSelect}
                     onSelect={this.handleSelect}
                 />
-                {fundRegion.fundsCount > maxSize && (
+                {(
+                    fundRegion.fundsCount > maxSize ||
+                    fundRegion.filter.from !== 0
+                ) && (
                     <ListPager
                         prev={this.handleFilterPrev}
                         next={this.handleFilterNext}
                         from={fundRegion.filter.from}
-                        maxSize={maxSize}
+                        pageSize={maxSize}
                         totalCount={fundRegion.fundsCount}
                     />
                 )}

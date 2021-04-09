@@ -309,6 +309,9 @@
 <#case "ZP2015_UNIT_DATE">
   <@writeUnitDate item />
   <#break>
+<#case "ZP2015_NOTE">
+  <ead:didnote>${item.serializedValue}</ead:didnote>
+  <#break>
 <#case "ZP2015_ORIGINATOR">
   <@writeOriginator item.record />
   <#break>

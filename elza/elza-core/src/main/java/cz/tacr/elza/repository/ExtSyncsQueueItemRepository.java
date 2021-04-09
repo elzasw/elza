@@ -10,9 +10,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ExtSyncsQueueItemRepository extends ElzaJpaRepository<ExtSyncsQueueItem, Integer>, ExtSyncsQueueItemRepositoryCustom{
 
+    /*
     @Query("SELECT COUNT(i) FROM ext_syncs_queue_item i WHERE i.state = :state")
     int countByState(@Param("state") ExtSyncsQueueItem.ExtAsyncQueueState state);
+    */
 
-    @Query("SELECT i FROM ext_syncs_queue_item i WHERE i.state = :state")
+    @Query("SELECT i FROM ext_syncs_queue_item i WHERE i.state = :state ORDER BY i.extSyncsQueueItemId")
     Page<ExtSyncsQueueItem> findByState(@Param("state") ExtSyncsQueueItem.ExtAsyncQueueState state, Pageable pageable);
 }

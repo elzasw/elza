@@ -520,7 +520,7 @@ export class WebApiCls {
         );
     }
 
-    addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems) {
+    addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems, count = 1) {
         const data = {
             versionId,
             direction,
@@ -529,6 +529,7 @@ export class WebApiCls {
             descItemCopyTypes,
             scenarioName,
             createItems,
+            count,
         };
 
         return callWS('/arrangement/levels/add', data);

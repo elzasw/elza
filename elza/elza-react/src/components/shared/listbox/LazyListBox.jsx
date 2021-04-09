@@ -9,12 +9,12 @@ import React from 'react';
 import VirtualList from '../virtual-list/VirtualList';
 import AbstractReactComponent from '../../AbstractReactComponent';
 import ReactDOM from 'react-dom';
-import {indexById} from 'stores/app/utils.jsx';
+import {indexById} from 'stores/app/utils';
 import classNames from 'classnames';
 import {Shortcuts} from 'react-shortcuts';
 import * as Utils from '../../Utils';
 import {PropTypes} from 'prop-types';
-import defaultKeymap from './LazyListBoxKeymap.jsx';
+import defaultKeymap from './LazyListBoxKeymap';
 
 const _LLB_FETCH_DELAY = 32;
 const _LLB_FETCH_BOUNDARY = 200;

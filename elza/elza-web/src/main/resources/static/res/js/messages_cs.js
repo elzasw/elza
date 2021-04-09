@@ -199,6 +199,7 @@ var messages = {
     "exception.reg.NOT_UNIQUE_FULL_NAME": "Celé jméno není unikátní v rámci třídy",
     "exception.reg.CANT_MIGRATE_AP": "Nelze migrovat archivní entitu",
     "exception.reg.EXT_SYSTEM_CONNECTED": "Archivní entita má jíž existující propojení s externím systémem",
+    "exception.reg.INVALID_ENTITY_SCOPE": "Archivní entita má nevhodné scope",
 
     "exception.sobj.NO_VALID_ITEMS":
         "Bez vyplnění alespoň některých prvků popisu nelze položku přidat. Vyplňte příslušné prvky popisu.",
@@ -429,7 +430,7 @@ var messages = {
     "arr.output.title.anonymizedAp.remove": "Odebrat anonymizované AP",
     "arr.output.name": "Název výstupu",
     "arr.output.internalCode": "Interní kód výstupu",
-    "arr.output.outputType": "Typ výstup",
+    "arr.output.outputType": "Typ výstupu",
     "arr.output.template": "Šablona",
     "arr.output.template.set": "Nastavit",
     "arr.output.template.evenPageOffsetX": "Offset liché stránky X",
@@ -547,8 +548,8 @@ var messages = {
 
     "arr.fund.version": "Verze {0}",
     "arr.fund.version.list": "Verze AS",
-    "arr.fund.outputDefinition.active": "Přehled platných AP",
-    "arr.fund.outputDefinition.hist": "Přehled historických AP",
+    "arr.fund.outputDefinition.active": "Výstupy",
+    "arr.fund.outputDefinition.hist": "Starší výstupy",
     "arr.fund.outputDefinition.action.showPDF": "Zobrazit PDF",
     "arr.fund.outputDefinition.version": "Verze {0}",
     "arr.fund.detail": "Detail AS",
@@ -700,6 +701,7 @@ var messages = {
     "arr.fund.addNode.conflict.rename": "Přejmenovat",
     "arr.fund.addNode.conflict.structure": "Obaly",
     "arr.fund.addNode.conflict.scopes": "Cílový AS nemá povolené tyto oblasti entit: {0}",
+    "arr.fund.addNode.count": "Počet",
     "arr.fund.addNode.ignoreRootNodes": "Ignorovat kořenové uzly",
     "arr.fund.addNode.direction": "Umístění",
     "arr.fund.addNode.before": "Před",
@@ -828,6 +830,8 @@ var messages = {
     "arr.history.change.title.ADD_STRUCTURE_ITEM": "založení atributu u strukt. typu",
     "arr.history.change.title.UPDATE_STRUCTURE_ITEM": "změna atributu u strukt. typu",
     "arr.history.change.title.DELETE_STRUCTURE_ITEM": "zrušení atributu u strukt. typu",
+    "arr.history.change.title.ADD_ATTACHMENT": "přidání souboru",
+    "arr.history.change.title.DELETE_ATTACHMENT": "mazání souborů",
 
     "arr.history.change.description.CREATE_AS": "Vytvoření archivního souboru",
     "arr.history.change.description.ADD_NODES_OUTPUT": "Připojení JP ({0}) k výstupu",
@@ -992,6 +996,7 @@ var messages = {
     "registry.usage.tooMany": "Počet nalezených výskytů je příliš velký",
     "registry.replaceText": "Nahrazení hesla ve výskytech za heslo",
     "registry.replace": "Nahradit",
+    "registry.merge": "Sloučit",
     "registry.setValid.confirm": "Opravdu chcete zplatnit toto rejstříkové heslo?",
     "registry.setValid": "Zplatnit heslo",
     "registry.invalid.warning": "Zobrazené heslo je neplatné",

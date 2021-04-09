@@ -1114,6 +1114,62 @@
                                  referencedColumnNames="change_id" referencedTableName="ap_change"/>
     </changeSet>
     
+    <!-- Oprava poskozenych ap_item po migraci z verze 1.x - chybi specifikace u enum (tyka se formy jmena).
+         Oprava nastavi poskozene/prazdne item jako smazane.
+         -->
+    <changeSet id="20210225021900" author="ppyt">
+      <sql>update ap_item set delete_change_id = create_change_id where item_id in (
+             select ai.item_id from ap_item ai
+             join arr_data d on d.data_id = ai.data_id 
+             join rul_data_type rdt on rdt.data_type_id  = d.data_type_id 
+             join rul_item_type rit on ai.item_type_id = rit.item_type_id 
+             where rdt.code  = 'ENUM' and ai.item_spec_id is null and ai.delete_change_id is null)
+      </sql>
+    </changeSet>
+    <!-- Oprava vicenasobnych part v pristupovych bodech, jejich slouceni (cast PT_BODY). -->
+    <changeSet id="20210225021901" author="ppyt">
+      <!-- Presun item do prvni casti daneho typu -->
+      <sql dbms="postgresql">update ap_item i set part_id = si.target_part_id from (
+        select min(p.part_id) target_part_id, ai.item_id from ap_part p
+        join rul_part_type rpt on rpt.part_type_id = p.part_type_id 
+        join ap_part p2 on p.access_point_id = p2.access_point_id and p.part_type_id = p2.part_type_id and p2.delete_change_id is null and p.part_id &lt; p2.part_id 
+        join ap_item ai on ai.part_id = p2.part_id
+        where rpt.code in ('PT_BODY') and p.delete_change_id is null
+        group by ai.item_id ) si 
+        where si.item_id = i.item_id
+      </sql>
+      <!-- Zneplatneni puvodni casti -->
+      <sql>delete from ap_index where part_id in (select p2.part_id from ap_part p
+          join rul_part_type rpt on rpt.part_type_id = p.part_type_id 
+          join ap_part p2 on p.access_point_id = p2.access_point_id and p.part_type_id = p2.part_type_id and p2.delete_change_id is null and p.part_id &lt; p2.part_id 
+          where rpt.code in ('PT_BODY') and p.delete_change_id is null
+          group by p2.part_id
+          )
+      </sql>
+      <sql>delete from ap_key_value where key_value_id in (select p2.part_id from ap_part p
+          join rul_part_type rpt on rpt.part_type_id = p.part_type_id 
+          join ap_part p2 on p.access_point_id = p2.access_point_id and p.part_type_id = p2.part_type_id and p2.delete_change_id is null and p.part_id &lt; p2.part_id 
+          where rpt.code in ('PT_BODY') and p.delete_change_id is null
+          group by p2.part_id
+          )
+      </sql>
+      <sql dbms="postgresql">update ap_part p set delete_change_id = create_change_id from (
+          select p2.part_id from ap_part p
+          join rul_part_type rpt on rpt.part_type_id = p.part_type_id 
+          join ap_part p2 on p.access_point_id = p2.access_point_id and p.part_type_id = p2.part_type_id and p2.delete_change_id is null and p.part_id &lt; p2.part_id 
+          where rpt.code in ('PT_BODY') and p.delete_change_id is null
+          group by p2.part_id) si 
+          where p.part_id = si.part_id      
+      </sql>
+    </changeSet>
+    
+    <changeSet id="20210318032824" author="ppyt">
+        <dropIndex tableName="arr_structured_object" indexName="arr_structured_object_uuid_unique_idx"/>
+        <addUniqueConstraint tableName="arr_structured_object"
+                    constraintName="arr_structured_object_uuid_unique" 
+        			columnNames="uuid, fund_id, structured_type_id, delete_change_id" />  
+    </changeSet>    
+    
     <changeSet id="20210228150900" author="fantis">
         <createTable tableName="ap_cached_access_point">
             <column name="cached_access_point_id" type="int">
@@ -1132,4 +1188,48 @@
             </column>
         </createTable>
     </changeSet>
+    <changeSet id="20210320234400" author="ppyt">
+      <sql>UPDATE ext_syncs_queue_item SET state='NEW' WHERE state='RUNNING'</sql>
+        <addColumn tableName="ext_syncs_queue_item">
+            <column name="batch_id" type="nvarchar(50)">
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20210319133000" author="sergey.iryupin">
+        <addColumn tableName="arr_file">
+            <column name="create_change_id" type="int">
+                <constraints foreignKeyName="fk_arrFile_createChange_arrChange"
+                             referencedTableName="arr_change"
+                             referencedColumnNames="change_id" />
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints foreignKeyName="fk_arrFile_deleteChange_arrChange"
+                             referencedTableName="arr_change"
+                             referencedColumnNames="change_id" />
+            </column>
+        </addColumn>
+        <!-- Vyplňování polí create_change_id -->
+        <sql>UPDATE arr_file f SET create_change_id = (SELECT fv.create_change_id FROM arr_fund_version fv 
+        	WHERE f.fund_id = fv.fund_id AND fv.lock_change_id IS NULL)
+        </sql>
+        <addNotNullConstraint tableName="arr_file" columnName="create_change_id" columnDataType="int" />
+    </changeSet>
+
+    <changeSet id="20210330155924" author="ppyt">
+        <!-- Create uniqueue index for not null items -->
+        <sql dbms="postgresql">CREATE UNIQUE INDEX arr_structured_object_uuid_pidx 
+                               ON arr_structured_object(uuid, fund_id, structured_type_id) 
+                               WHERE delete_change_id IS NULL</sql>
+        <sql dbms="postgresql">CREATE UNIQUE INDEX ap_item_object_pidx 
+                               ON ap_item(object_id) 
+                               WHERE delete_change_id IS NULL</sql>
+        <sql dbms="postgresql">CREATE UNIQUE INDEX arr_item_object_pidx 
+                               ON arr_item(desc_item_object_id) 
+                               WHERE delete_change_id IS NULL</sql>
+    </changeSet>
+
+    <changeSet id="20210405232524" author="ppyt">
+      <delete tableName="ap_cached_access_point" />
+    </changeSet>    
 </databaseChangeLog>

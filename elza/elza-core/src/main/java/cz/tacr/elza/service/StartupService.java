@@ -14,11 +14,14 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.common.db.DatabaseType;
@@ -78,6 +81,10 @@ public class StartupService implements SmartLifecycle {
     private boolean running;
 
     @Autowired
+    @Qualifier("transactionManager")
+    protected PlatformTransactionManager txManager;
+
+    @Autowired
     public StartupService(final NodeRepository nodeRepository,
                           final ArrangementService arrangementService,
                           final BulkActionRunRepository bulkActionRunRepository,
@@ -124,14 +131,19 @@ public class StartupService implements SmartLifecycle {
     private StructObjValueService structureDataService;
 
     @Override
-    @Transactional(value = TxType.REQUIRES_NEW)
     public void start() {
         long startTime = System.currentTimeMillis();
         logger.info("Elza startup service ...");
 
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
-        startInTransaction();
+
+        TransactionTemplate tt = new TransactionTemplate(txManager);
+        tt.executeWithoutResult(r -> startInTransaction());
+
+        syncApCacheService();
+
+        tt.executeWithoutResult(r -> startInTransaction2());
 
         running = true;
         logger.info("Elza startup finished in {} ms", System.currentTimeMillis() - startTime);
@@ -182,7 +194,14 @@ public class StartupService implements SmartLifecycle {
         bulkActionConfigManager.load();
         searchConfigManager.load();
         syncNodeCacheService();
-        syncApCacheService();
+        // kontrola datové struktury
+        accessPointService.checkConsistency();
+    }
+
+    private void startInTransaction2() {
+        if (!TransactionSynchronizationManager.isActualTransactionActive()) {
+            throw new IllegalStateException("Active transaction required");
+        }
         structureDataService.startGenerator();
         indexWorkProcessor.startIndexing();
         extSyncsProcessor.startExtSyncs();

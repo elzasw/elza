@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
-import {requestScopesIfNeeded} from 'actions/refTables/scopesData.jsx';
-import {indexById} from 'stores/app/utils.jsx';
+import {requestScopesIfNeeded} from 'actions/refTables/scopesData';
+import {indexById} from 'stores/app/utils';
 import AbstractReactComponent from '../../AbstractReactComponent';
 import FormInput from 'components/shared/form/FormInput';
 
@@ -26,7 +26,7 @@ class Scope extends AbstractReactComponent {
 
     componentDidMount() {
         const {
-            store: {scopes},
+            scopes,
             versionId,
         } = this.props;
         this.props.dispatch(requestScopesIfNeeded(versionId));
@@ -44,11 +44,11 @@ class Scope extends AbstractReactComponent {
         this.props.dispatch(requestScopesIfNeeded(nextProps.versionId));
 
         const {
-            store: {scopes},
+            scopes,
             versionId,
         } = nextProps;
         const index = indexById(scopes, versionId, 'versionId');
-        const oldIndex = indexById(this.props.store.scopes, versionId, 'versionId');
+        const oldIndex = indexById(scopes, versionId, 'versionId');
         if (index !== null && index !== oldIndex) {
             const data = scopes[index].scopes;
             if (data && data.length === 1) {
@@ -60,17 +60,18 @@ class Scope extends AbstractReactComponent {
     render() {
         let data = [];
         const {
-            store: {scopes},
+            items,
             versionId,
             ...other
         } = this.props;
+        const scopes = items || this.props.scopes
         const index = indexById(scopes, versionId, 'versionId');
         if (index !== null && scopes[index].scopes) {
             data = scopes[index].scopes;
         }
 
         return (
-            <FormInput as="select" options={data} {...other}>
+            <FormInput as="select" {...other}>
                 <option key="null" />
                 {data.map(i => (
                     <option value={i.id} key={i.id}>
@@ -82,4 +83,6 @@ class Scope extends AbstractReactComponent {
     }
 }
 
-export default connect(state => ({store: state.refTables.scopesData}))(Scope);
+export default connect(state => ({
+    scopes: state.refTables.scopesData.scopes,
+}))(Scope);

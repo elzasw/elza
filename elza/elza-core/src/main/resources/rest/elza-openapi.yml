@@ -7,6 +7,8 @@ tags:
     description: Archivní soubory
   - name: accesspoints
     description: Přístupové body a archivní entity
+  - name: search
+    description: Vyhledávání
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -176,6 +178,57 @@ paths:
           description: Změna scénáře provedena
         404:
           description: Dao neexistuje
+  /search-ap:
+    post:
+      tags:
+        - search
+      summary: searches for entity
+      operationId: searchEntity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchParams"
+        description: search parameters
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Result_EntityRef"
+        "400":
+          description: Bad Request, query with incorrect parameters
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+  /search-arr:
+    post:
+      tags:
+        - search
+#        - accesspoints
+      summary: searches for entity
+      operationId: searchArchDesc
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SearchParams"
+        description: search parameters
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Result_EntityRef"
+        "400":
+          description: Bad Request, query with incorrect parameters
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
 components:
   schemas:
     CreateFund:
@@ -368,3 +421,159 @@ components:
         replacedBy:
           description: Id entity, kterou je odstraňovaná nahrazena
           type: string
+        replaceType:
+          description: Způsob provedení náhrady
+          type: string
+          enum:
+            - SIMPLE
+            - COPY_ALL
+    AbstractFilter:
+      title: Abstract filter
+      description: Used as a parent for all other filters
+      type: object
+      discriminator:
+        propertyName: filterType
+        mapping:
+          fieldValue: "#/components/schemas/FieldValueFilter"
+          contains: "#/components/schemas/MultimatchContainsFilter"
+          logical: "#/components/schemas/LogicalFilter"
+      properties:
+        filterType:
+          type: string
+      required:
+        - filterType
+    FieldValueFilter:
+      title: FieldValueFilter
+      description: Compares specified attribute of the entity with specified value using specified operation.      
+      allOf:
+        - $ref: '#/components/schemas/AbstractFilter'
+        - type: object
+          properties:
+            field:
+              title: Searched field
+              type: string
+            operation:
+              description: Operator
+              type: string
+              enum:
+                - EQ
+                - NEQ
+                - GT
+                - LT
+                - GTE
+                - LTE
+                - STARTWITH
+                - ENDWITH
+                - CONTAINS
+                - IS_NULL
+                - NOT_NULL
+            value:
+              description: Searched value
+              type: string
+          required:
+            - field
+            - operation
+            - value
+    MultimatchContainsFilter:
+      title: Fulltext filter
+      description: Performs fulltext search over the whole entity.
+      allOf:
+        - $ref: '#/components/schemas/AbstractFilter'
+        - type: object
+          properties:
+            value:
+              description: Searched value
+              type: string
+          required:
+            - value
+    LogicalFilter:
+      title: LogicalFilter
+      description: Join subfilters using logical operator, result may be used in other LogicalFilter as one of subfilter.
+      allOf:
+        - $ref: '#/components/schemas/AbstractFilter'
+        - type: object      
+          properties:
+            filters:
+              description: Collection of filters
+              type: array
+              items:
+                $ref: "#/components/schemas/AbstractFilter"
+            operation:
+              description: Operation type
+              type: string
+              enum:
+                - AND
+                - OR
+          required:
+            - filters
+            - operation
+    SearchParams:
+      type: object      
+      properties:
+        filters:
+          description: Array of conditions. Conditions are joined by AND operator.
+          type: array          
+          items:
+            $ref: "#/components/schemas/AbstractFilter"
+        offset:
+          description: Page offset
+          type: integer
+          format: int32
+        size:
+          description: Page size
+          type: integer
+          format: int32
+        sort:
+          description: Array of sort conditions
+          type: array          
+          items:
+            $ref: "#/components/schemas/Sorting"
+      title: Search parameters
+      description: Query is defined by filter, optional sort conditions,
+         page size and page offset.
+    Sorting:
+      title: Sorting
+      description: Allows to define sorting.
+      type: object
+      properties:
+        field:
+          type: string
+          description: Attribute name to sort on.
+        order:
+          type: string
+          description: Order of sorting.
+          enum:
+            - asc
+            - desc
+      required:
+        - field
+    EntityRef:
+      title: EntityRef
+      description: Found entity
+      type: object
+      properties:
+        id:
+          description: ID of entity
+          type: string
+        label:          
+          description: Visible name of entity
+          type: string
+        note:
+          description: Optional description of entity
+          type: string
+      required:
+        - id
+        - label
+    Result_EntityRef:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int64
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EntityRef"
+      required:
+        - count
+      title: Result«EntityRef»

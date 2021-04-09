@@ -136,6 +136,7 @@ import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrangementFormService;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.DaoSyncService;
@@ -195,6 +196,9 @@ public class ArrangementController {
 
     @Autowired
     private ArrangementService arrangementService;
+
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private DescItemRepository descItemRepository;
@@ -1593,9 +1597,9 @@ public class ArrangementController {
         }
 
 
-        ArrLevel newLevel = fundLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
-                addLevelParam.getDirection(), addLevelParam.getScenarioName(),
-                                                         descItemCopyTypes, null);
+        List<ArrLevel> newLevels = fundLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
+                addLevelParam.getDirection(), addLevelParam.getScenarioName(), descItemCopyTypes, null, null);
+        ArrLevel newLevel = newLevels.get(0);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
             UpdateDescItemsParam params = new UpdateDescItemsParam(
@@ -1606,7 +1610,7 @@ public class ArrangementController {
         }
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
-                .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), fundVersion.getFundVersionId());
+                .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), fundVersion);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         return new NodeWithParent(ArrNodeVO.valueOf(newLevel.getNode()), nodeClients.iterator().next());
     }
@@ -1633,7 +1637,7 @@ public class ArrangementController {
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
-                        fundVersion.getFundVersionId());
+                               fundVersion);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         return new NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
     }
@@ -1657,7 +1661,7 @@ public class ArrangementController {
         RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
 
         ArrNode node = factoryDO.createNode(nodeVO);
-        ArrChange change = arrangementService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
         ArrLevel level = arrangementService.lockNode(node, fundVersion, change);
 
         List<ArrDescItem> newDescItems = arrangementService.copyOlderSiblingAttribute(fundVersion, descItemType, level, change);
@@ -2688,7 +2692,7 @@ public class ArrangementController {
     public void synchronizeNodes(@PathVariable (value = "nodeId") final Integer nodeId,
                                  @PathVariable (value = "nodeVersion") final Integer nodeVersion,
                                  @RequestParam (value = "childrenNodes") final Boolean childrenNodes) {
-        ArrChange change = arrangementService.createChange(ArrChange.Type.SYNCHRONIZE_JP);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.SYNCHRONIZE_JP);
         arrangementService.synchronizeNodes(nodeId, nodeVersion, childrenNodes, change);
     }
 
@@ -3450,6 +3454,46 @@ public class ArrangementController {
 
         public NodeWithParent(final ArrNodeVO node, final TreeNodeVO parentNode) {
             this.node = node;
+            this.parentNode = parentNode;
+        }
+    }
+
+    /**
+     * Jednotky popisu - node + node parent
+     */
+    public static class NodesWithParent {
+
+        /**
+         * Jednotky popisu.
+         */
+        private List<ArrNodeVO> nodes;
+
+        /**
+         * Rodič jednotky popisu.
+         */
+        private TreeNodeVO parentNode;
+
+        public List<ArrNodeVO> getNodes() {
+            return nodes;
+        }
+
+        public void setNodes(final List<ArrNodeVO> nodes) {
+            this.nodes = nodes;
+        }
+
+        public TreeNodeVO getParentNode() {
+            return parentNode;
+        }
+
+        public void setParentNode(final TreeNodeVO parentNode) {
+            this.parentNode = parentNode;
+        }
+
+        public NodesWithParent() {
+        }
+
+        public NodesWithParent(final List<ArrNodeVO> nodes, final TreeNodeVO parentNode) {
+            this.nodes = nodes;
             this.parentNode = parentNode;
         }
     }

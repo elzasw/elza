@@ -3,15 +3,15 @@ import './ArrMovementsPage.scss';
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {indexById} from '../../stores/app/utils.jsx';
+import {indexById} from '../../stores/app/utils';
 import {connect} from 'react-redux';
-import {getNodeParent, getNodeParents} from '../../components/arr/ArrUtils.jsx';
-import {moveNodes} from '../../actions/arr/nodes.jsx';
+import {getNodeParent, getNodeParents} from '../../components/arr/ArrUtils';
+import {moveNodes} from '../../actions/arr/nodes';
 
-import ArrParentPage from './ArrParentPage.jsx';
+import ArrParentPage from './ArrParentPage';
 
 import {i18n, Icon, RibbonGroup} from '../../components/shared';
-import {FundTreeMovementsLeft, FundTreeMovementsRight, Ribbon} from '../../components/index.jsx';
+import {FundTreeMovementsLeft, FundTreeMovementsRight, Ribbon} from '../../components/index';
 import {Button} from '../../components/ui';
 
 /**

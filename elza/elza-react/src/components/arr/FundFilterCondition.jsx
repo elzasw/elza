@@ -6,7 +6,7 @@ import './FundFilterSettings.scss';
 
 import React from 'react';
 import {AbstractReactComponent, FormInput} from 'components/shared';
-import {getMapFromList} from 'stores/app/utils.jsx';
+import {getMapFromList} from 'stores/app/utils';
 
 class FundFilterCondition extends AbstractReactComponent {
     constructor(props) {

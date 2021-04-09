@@ -1,10 +1,11 @@
 package ZP2015;
 
-
 import java.util.Arrays;
 import cz.tacr.elza.drools.model.Level
 import cz.tacr.elza.drools.model.ActiveLevel
 import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.Structured;
+import cz.tacr.elza.drools.model.StructObjItem;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
 
@@ -13,36 +14,44 @@ global DataValidationResults results;
 // Kontrola, zda každý list má ukládací jednotku
 rule "List musí mít ukládací jednotku směrem ke kořeni"
 when
-	$activeLevel: ActiveLevel( !hasChildren )
-	not ( $level: Level( $items: descItems ) and
-		DescItem(type in ("ZP2015_STORAGE_ID", "ZP2015_AIP_ID")) from $items 
-		)
+	$activeLevel: ActiveLevel( !hasChildren && $items: descItems )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $items
+	not ( DescItem(type in ("ZP2015_STORAGE_ID", "ZP2015_AIP_ID", "ZP2015_ITEM_LINK")) from $items )
 then
 	results.createMissing("ZP2015_STORAGE_ID", "Chybí ukládací jednotka", "ZP2015_POL_STORAGE_ID");
 end
 
 rule "List musí mít strojovou dataci směrem ke kořeni"
 when
-	$activeLevel: ActiveLevel( !hasChildren )
-	not ( $level: Level( $items: descItems ) and
-		DescItem(type in
-		  ( "ZP2015_UNIT_DATE" ) )
-		  from $items )
+	$activeLevel: ActiveLevel( !hasChildren && $items: descItems )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $items
+	not ( DescItem(type in ( "ZP2015_UNIT_DATE" ) ) from $items )
 then
 	results.createMissing("ZP2015_UNIT_DATE", "Není uvedena datace", "ZP2015_POL_BASIC");
 end
 
-// Kontrola, zda každá hromadina s EJ má uvedenu ukládací jednotku s druhem KAR,FAS,DAJ
-// TODO slapa: upravit na nové entity
-/*rule "Každá hromadina s EJ má uvedenu ukládací jednotku"
+rule "Nadřazená datace zahrnuje dataci úrovně"
 when
-	$activeLevel: ActiveLevel( $items: descItems )
-	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE") ) ) from $items
-	not ( DescItem(type=="ZP2015_STORAGE_ID"&&packet!=null&&packet.packetType!=null&&
-	                 (packet.packetType.code in ("ZP2015_BOX", "ZP2015_FASCICLE") ) ) from $items )
+	$activeLevel: ActiveLevel( $ownItems: ownDescItems && parent!=null && $parent: parent )
+	$datace: DescItem(type in ("ZP2015_UNIT_DATE") ) from $ownItems
+	Level( $parentItems: descItems ) from $parent 	
+	DescItem( type in ("ZP2015_UNIT_DATE") 
+	           && (normalizedFrom>$datace.normalizedFrom || normalizedTo<$datace.normalizedTo ) ) from $parentItems	
+then
+	results.createMissing("ZP2015_UNIT_DATE", "Datace není zahrnuta v časovém rozsahu vyšší úrovně", "ZP2015_POL_BASIC");
+end
+
+
+// Kontrola, zda každá hromadina s EJ má uvedenu ukládací jednotku s druhem KAR,FAS,DAJ
+rule "Každá hromadina s EJ má uvedenu ukládací jednotku"
+when
+	ActiveLevel( $items: descItems )
+	DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE"))) from $items
+	$descItem: DescItem(type=="ZP2015_STORAGE_ID" && structured != null && $structured: structured) from $items
+	StructObjItem(type=="ZP2015_PACKET_TYPE" && specCode not in ("ZP2015_PACKET_TYPE_KAR", "ZP2015_PACKET_TYPE_FAS")) from $structured.items
 then
 	results.createMissing("ZP2015_STORAGE_ID", "Ukládací jednotka bez uvedení typu hromadiny", "ZP2015_POL_STORAGE_ID");
-end*/
+end
 
 // uplatni se jen pro pomucky dle ZP, neuplatní se pro kartotéku
 rule "Počet jednotek musí být větší roven než 2"

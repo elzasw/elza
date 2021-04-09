@@ -45,6 +45,7 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.FundLevelService;
@@ -116,6 +117,9 @@ public class ImportProcess {
 
     @Autowired
     private ArrangementService arrangementService;
+
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private RuleService ruleService;
@@ -257,7 +261,7 @@ public class ImportProcess {
         itemTypeMap = itemTypeRepository.findAll().stream().collect(Collectors.toMap(RulItemType::getCode, Function.identity()));
         itemSpecMap = itemSpecRepository.findAll().stream().collect(Collectors.toMap(RulItemSpec::getCode, Function.identity()));
         calendarTypeMap = calendarTypeRepository.findAll().stream().collect(Collectors.toMap(ArrCalendarType::getCode, Function.identity()));
-        change = arrangementService.createChange(ArrChange.Type.IMPORT);
+        change = arrangementInternalService.createChange(ArrChange.Type.IMPORT);
     }
 
     /**

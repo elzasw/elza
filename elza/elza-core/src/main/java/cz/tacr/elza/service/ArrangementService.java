@@ -8,7 +8,6 @@ import static cz.tacr.elza.repository.ExceptionThrow.version;
 
 import java.text.Normalizer;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,15 +92,6 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.ArrNodeConformityError;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.UIVisiblePolicy;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
@@ -124,7 +114,6 @@ import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeConformityErrorRepository;
 import cz.tacr.elza.repository.NodeConformityMissingRepository;
@@ -132,20 +121,6 @@ import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FundRegisterScopeRepository;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemRepository;
-import cz.tacr.elza.repository.LevelRepository;
-import cz.tacr.elza.repository.NodeConformityErrorRepository;
-import cz.tacr.elza.repository.NodeConformityMissingRepository;
-import cz.tacr.elza.repository.NodeConformityRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.VisiblePolicyRepository;
-import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
 import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
@@ -177,11 +152,7 @@ public class ArrangementService {
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
     @Autowired
-    private UserService userService;
-    @Autowired
     private RuleService ruleService;
-    @Autowired
-    private ItemRepository itemRepository;
     @Autowired
     private InstitutionRepository institutionRepository;
     @Autowired
@@ -212,8 +183,6 @@ public class ArrangementService {
     private NodeConformityErrorRepository nodeConformityErrorsRepository;
     @Autowired
     private DescItemRepository descItemRepository;
-    @Autowired
-    private AccessPointService accessPointService;
     @Autowired
     private ArrangementInternalService arrangementInternalService;
 
@@ -462,7 +431,7 @@ public class ArrangementService {
                                           final String mark,
                                           String uuid,
                                           List<ApScope> scopes) {
-        ArrChange change = createChange(ArrChange.Type.CREATE_AS);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_AS);
 
         if (uuid == null || uuid.isEmpty()) {
             uuid = generateUuid();
@@ -619,40 +588,6 @@ public class ArrangementService {
     }
 
     /**
-     * Vytvoření objektu pro změny s primárním uzlem.
-     *
-     * @param type        typ změny
-     * @param primaryNode primární uzel
-     * @return objekt změny
-     */
-    public ArrChange createChange(@Nullable final ArrChange.Type type,
-                                  @Nullable final ArrNode primaryNode) {
-        ArrChange change = new ArrChange();
-        UserDetail userDetail = userService.getLoggedUserDetail();
-        change.setChangeDate(OffsetDateTime.now());
-
-        if (userDetail != null && userDetail.getId() != null) {
-            UsrUser user = em.getReference(UsrUser.class, userDetail.getId());
-            change.setUser(user);
-        }
-
-        change.setType(type);
-        change.setPrimaryNode(primaryNode);
-
-        return changeRepository.save(change);
-    }
-
-    /**
-     * Vytvoření objektu pro změny.
-     *
-     * @param type typ změny
-     * @return objekt změny
-     */
-    public ArrChange createChange(@Nullable final ArrChange.Type type) {
-        return createChange(type, null);
-    }
-
-    /**
      * Dodatečné nastavení primární vazby u změny.
      *
      * @param change        změna u které primární uzel nastavujeme
@@ -737,7 +672,7 @@ public class ArrangementService {
             throw new BusinessException("Nelze uzavřít verzi AS s ID=" + fund.getFundId() + ", protože běží validace", ArrangementCode.VERSION_CANNOT_CLOSE_VALIDATION);
         }
 
-        ArrChange change = createChange(null);
+        ArrChange change = arrangementInternalService.createChange(null);
         version.setLockChange(change);
         fundVersionRepository.save(version);
 
@@ -979,7 +914,7 @@ public class ArrangementService {
             List<Integer> nodeIdList = fundToNodeList.getNodeIdList();
             ArrFundVersion fundVersion = getOpenVersionByFundId(fundToNodeList.getFundId());
             List<Integer> sortedList = levelTreeCacheService.sortNodesByTreePosition(nodeIdList, fundVersion);
-            return levelTreeCacheService.getNodesByIds(sortedList, fundVersion.getFundVersionId());
+            return levelTreeCacheService.getNodesByIds(sortedList, fundVersion);
         }
         return Collections.emptyList();
     }
@@ -1629,6 +1564,22 @@ public class ArrangementService {
 
     }
 
+    /**
+     * Získání seznamu id ApScope podle fondu
+     * 
+     * @param arrFund
+     * @return Set<ApScope>
+     */
+    public Set<Integer> findAllConnectedScopeByFund(ArrFund arrFund) {
+        return scopeRepository.findAllConnectedByFundId(arrFund.getFundId());
+    }
+
+    /**
+     * Získání ApScope podle kódu
+     * 
+     * @param s kod
+     * @return ApScope
+     */
     public ApScope getApScope(String s) {
         ApScope entity = scopeRepository.findByCode(s);
         if(entity == null) {
@@ -1638,7 +1589,6 @@ public class ArrangementService {
         }
         return entity;
     }
-
 
     /**
      * @return vrací session uživatele
@@ -1892,7 +1842,7 @@ public class ArrangementService {
                         .collect(Collectors.groupingBy(ArrItem::getItemTypeId));
 
                 if (change == null) {
-                    change = createChange(ArrChange.Type.SYNCHRONIZE_JP);
+                    change = arrangementInternalService.createChange(ArrChange.Type.SYNCHRONIZE_JP);
                 }
 
                 synchronizeNodes(node, nodeVersion, nodeItemMap, sourceNode, sourceNodeItemMap, dataUriRef.getRefTemplate(), change);

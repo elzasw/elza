@@ -8,7 +8,7 @@ import i18n from '../../i18n';
 import AbstractReactComponent from '../../AbstractReactComponent';
 import {FormCheck} from 'react-bootstrap';
 import {Button} from '../../ui';
-import {getSetFromIdsList} from 'stores/app/utils.jsx';
+import {getSetFromIdsList} from 'stores/app/utils';
 
 /**
  *  ListBox komponenta s možností filtrování, hledání a označování.

@@ -40,7 +40,7 @@ public interface OutputItemRepository extends JpaRepository<ArrOutputItem, Integ
     List<ArrOutputItem> findOpenOutputItems(@Param("itemObjectId") Integer descItemObjectId);
 
     @Query("SELECT i FROM arr_output_item i WHERE i.deleteChange IS NULL AND i.itemTypeId = :itemTypeId AND i.output = :output")
-    List<ArrOutputItem> findOpenOutputItems(@Param("itemTypeId") Integer itemTypeId,
+    List<ArrOutputItem> findOpenOutputItemsByItemType(@Param("itemTypeId") Integer itemTypeId,
                                             @Param("output") ArrOutput output);
 
     /**

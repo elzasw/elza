@@ -423,19 +423,19 @@ public class ClientFactoryVO {
         ArrFundVO fundVO = mapper.map(fund, ArrFundVO.class);
         fundVO.setInstitutionId(fund.getInstitution().getInstitutionId());
 
+        StaticDataProvider staticData = staticDataService.getData();
+
+        Set<ApScope> apScopes = scopeRepository.findByFund(fund);
+        fundVO.setApScopes(FactoryUtils.transformList(apScopes, s -> ApScopeVO.newInstance(s, staticData)));
+
         if (includeVersions) {
 
             List<ArrFundVersion> versions = fundVersionRepository
                     .findVersionsByFundIdOrderByCreateDateDesc(fund.getFundId());
 
             List<ArrFundVersionVO> versionVOs = new ArrayList<>(versions.size());
-            StaticDataProvider staticData = staticDataService.getData();
             for (ArrFundVersion version : versions) {
                 ArrFundVersionVO fundVersion = createFundVersion(version, user);
-                if (fundVersion.getLockDate() == null) {
-                    Set<ApScope> apScopes = scopeRepository.findByFund(fund);
-                    fundVO.setApScopes(FactoryUtils.transformList(apScopes, s -> ApScopeVO.newInstance(s, staticData)));
-                }
                 versionVOs.add(fundVersion);
             }
             fundVO.setVersions(versionVOs);
@@ -1303,7 +1303,7 @@ public class ClientFactoryVO {
         
         List<ArrNodeOutput> nodes = outputServiceInternal.getOutputNodes(output, fundVersion.getLockChange());
         List<Integer> nodeIds = nodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
-        outputExt.setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()));
+        outputExt.setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion));
         outputExt.setScopes(outputServiceInternal.getRestrictedScopeVOs(output));
         ApAccessPoint anonymizedAp = output.getAnonymizedAp();
         if (anonymizedAp != null) {
@@ -1434,7 +1434,8 @@ public class ClientFactoryVO {
         Set<ArrDaoLinkRequest> requestForDaoLinks = new HashSet<>();
 
         Map<ArrRequest, ArrRequestQueueItem> requestQueuedMap = new HashMap<>();
-        List<ArrRequestQueueItem> requestQueueItems = CollectionUtils.isEmpty(requests) ? Collections.emptyList() : requestQueueItemRepository.findByRequest(requests);
+        List<ArrRequestQueueItem> requestQueueItems = CollectionUtils.isEmpty(requests) ? Collections.emptyList()
+                : requestQueueItemRepository.findByRequests(requests);
         for (ArrRequestQueueItem requestQueueItem : requestQueueItems) {
             requestQueuedMap.put(requestQueueItem.getRequest(), requestQueueItem);
         }
@@ -1540,7 +1541,8 @@ public class ClientFactoryVO {
         for (ArrNode node : nodes) {
             nodeIds.add(node.getNodeId());
         }
-        Map<Integer, TreeNodeVO> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
+        Map<Integer, TreeNodeVO> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion).stream()
+                .collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
 
         for (ArrNode node : nodes) {
             result.put(node.getUuid(), treeNodeClientMap.get(node.getNodeId()));
@@ -1554,7 +1556,7 @@ public class ClientFactoryVO {
                                                             final Map<ArrDaoRequest, List<ArrDao>> daosRequestMap) {
         Map<ArrDaoRequest, Integer> countDaosRequestMap;
         countDaosRequestMap = new HashMap<>();
-        List<ArrDaoRequestDao> daoRequestDaos = daoRequestDaoRepository.findByDaoRequest(requestForDaos);
+        List<ArrDaoRequestDao> daoRequestDaos = daoRequestDaoRepository.findByDaoRequests(requestForDaos);
 
         Set<Integer> daoIds = new HashSet<>();
         for (ArrDaoRequestDao daoRequestDao : daoRequestDaos) {
@@ -1593,7 +1595,8 @@ public class ClientFactoryVO {
             nodeIds.add(digitizationRequestNode.getNode().getNodeId());
         }
 
-        Map<Integer, TreeNodeVO> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream().collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
+        Map<Integer, TreeNodeVO> treeNodeClientMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion).stream()
+                .collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
 
         for (ArrDigitizationRequestNode digitizationRequestNode : digitizationRequestNodes) {
             ArrNode node = digitizationRequestNode.getNode();

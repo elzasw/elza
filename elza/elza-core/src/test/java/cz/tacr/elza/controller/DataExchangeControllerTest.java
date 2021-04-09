@@ -127,7 +127,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
 
         // check structured object item count
         Integer structObjId = structObjResult.getRows().iterator().next().getId();
-        List<ArrStructuredItem> structItems = structItemRepository.findByStructuredObjectAndDeleteChangeIsNullFetchData(structObjId);
+        List<ArrStructuredItem> structItems = structItemRepository.findByStructObjIdAndDeleteChangeIsNullFetchData(structObjId);
         Assert.assertTrue(structItems.size() == 2);
 
         // check structured object item data

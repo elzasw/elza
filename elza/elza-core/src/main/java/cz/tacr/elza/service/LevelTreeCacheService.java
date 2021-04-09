@@ -115,7 +115,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     private int maxCacheSize = 30;
 
     /**
-     * Maximální počet verzí stromů ukládaných současně v paměti.
+     * Příznak zobrazení DaoId.
      */
     @Value("${elza.levelTreeCache.display.daoId:true}")
     private boolean displayDaoId = true;
@@ -174,6 +174,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     @Subscribe
     public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
         if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.LEVEL_TREE)) {
+            logger.info("Invalidating LevelTreeCacheService");
             versionCache = new CapacityMap<>();
         }
     }
@@ -192,31 +193,24 @@ public class LevelTreeCacheService implements NodePermissionChecker {
                               final Set<Integer> expandedIds,
                               final Set<Integer> includeIds) {
 
-
-        Set<Integer> nodesToExpandIDs = new HashSet<>();
-        if (expandedIds != null) {
-            nodesToExpandIDs.addAll(expandedIds);
-        }
-
         ArrFundVersion version = arrangementService.getFundVersion(versionId);
-
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(version);
-        Set<Integer> expandedIdsExtended = createExpandedIdsExtension(includeIds, treeMap);
 
-
+        Set<Integer> parentNodeIds = getAllParentsWithoutError(includeIds, treeMap);
         if (nodeId == null) {
-            expandedIdsExtended.add(version.getRootNode().getNodeId());
+            // add root node
+            parentNodeIds.add(version.getRootNode().getNodeId());
         } else {
-            //pokud vracíme podstrom, přidáme pro jistotu nodeid do otevřených uzlů
-            nodesToExpandIDs.add(nodeId);
+            parentNodeIds.add(nodeId);
         }
-
-        //do rozbalených uzlů přidáme ty, které je nutné rozbalit, aby byly included vidět
-        nodesToExpandIDs.addAll(expandedIdsExtended);
-
+        if (expandedIds != null) {
+            // pridani rodicu rozbalenych uzlu
+            parentNodeIds.addAll(getAllParentsWithoutError(expandedIds, treeMap));
+            parentNodeIds.addAll(expandedIds);
+        }
 
         Map<Integer, TreeNode> expandedNodes = new TreeMap<Integer, TreeNode>();
-        for (Integer expandedId : nodesToExpandIDs) {
+        for (Integer expandedId : parentNodeIds) {
             TreeNode treeNode = treeMap.get(expandedId);
             if(treeNode != null){
                 createExpandedTreeNodeMap(treeNode, expandedNodes);
@@ -227,9 +221,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         TreeSet<TreeNode> expandedSort = new TreeSet<>(expandedNodes.values());
         Iterator<TreeNode> expandedIterator = expandedSort.iterator();
 
-
         LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
-
 
         if (nodeId == null) {
             TreeNode nextNode = expandedIterator.next();
@@ -261,7 +253,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         LinkedHashMap<Integer, Node> nodes = getNodes(nodesMap, rootNode, param, version);
 
         boolean fullArrPerm = userService.hasFullArrPerm(version.getFundId());
-        return new TreeData(convertToTreeNodeWithPerm(nodes.values(), version, fullArrPerm), expandedIdsExtended, fullArrPerm);
+        return new TreeData(convertToTreeNodeWithPerm(nodes.values(), version, fullArrPerm), parentNodeIds, fullArrPerm);
     }
 
     /**
@@ -271,33 +263,46 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @param versionId id verze stromu
      * @return nalezené uzly
      */
-    public List<TreeNodeVO> getNodesByIds(final Collection<Integer> nodeIds, final Integer versionId) {
+    public List<TreeNodeVO> getNodesByIds(final Collection<Integer> nodeIds,
+                                          final Integer versionId) {
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
+        return getNodesByIds(nodeIds, version);
+    }
 
+    public List<TreeNodeVO> getNodesByIds(final Collection<Integer> nodeIds,
+                                          final ArrFundVersion version) {
         Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(version);
 
-        Map<Integer, TreeNode> subMap = new LinkedHashMap<>();
+        Map<Integer, TreeNode> subTreeMap = new LinkedHashMap<>();
         for (Integer nodeId : nodeIds) {
             TreeNode treeNode = versionTreeCache.get(nodeId);
             if (treeNode != null) {
-
                 TreeNode parent = treeNode;
-                while(parent != null){
-                    subMap.put(parent.getId(), parent);
+                while (parent != null && subTreeMap.get(parent) == null) {
+                    subTreeMap.put(parent.getId(), parent);
                     parent = parent.getParent();
                 }
+            } else {
+                logger.error("Node not found in levelTreeCache, nodeId: {}", nodeId);
+                throw new SystemException("Node not found, nodeId: " + nodeId, BaseCode.INVALID_STATE)
+                        .set("nodeId", nodeId);
             }
         }
+        return getNodesByIds(nodeIds, version, subTreeMap);
+    }
 
-        Map<Integer, TitleItemsByType> valuesMap = createValuesMap(subMap, version, null);
-        Map<Integer, TreeNodeVO> clientMap = createNodesWithTitles(subMap, valuesMap, null, version);
+    public List<TreeNodeVO> getNodesByIds(final Collection<Integer> nodeIds,
+                                          final ArrFundVersion version,
+                                          Map<Integer, TreeNode> subTreeMap) {
+        Map<Integer, TitleItemsByType> valuesMap = createValuesMap(subTreeMap, version, null);
+        Map<Integer, TreeNodeVO> clientMap = createNodesWithTitles(subTreeMap, valuesMap, null, version);
 
         List<TreeNodeVO> result = new LinkedList<>();
         ViewTitles viewTitles = configView.getViewTitles(version.getRuleSetId(), version.getFund().getFundId());
 
         for (Integer nodeId : nodeIds) {
-            TreeNode treeNode = versionTreeCache.get(nodeId);
+            TreeNode treeNode = subTreeMap.get(nodeId);
             if(treeNode != null){
                 String[] referenceMark = createClientReferenceMarkFromRoot(treeNode, viewTitles, valuesMap);
                 TreeNodeVO clientNode = clientMap.get(nodeId);
@@ -434,7 +439,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @param treeMap     mapa všech uzlů ve stromu
      * @return množinu nodeid uzlů, které musejí být rozbalené, aby byly vybrané uzly viditelné
      */
-    private Set<Integer> createExpandedIdsExtension(final Set<Integer> includedIds,
+    private Set<Integer> getAllParentsWithoutError(final Set<Integer> includedIds,
                                                     final Map<Integer, TreeNode> treeMap) {
         Set<Integer> result = new HashSet<>();
 
@@ -443,6 +448,8 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             for (Integer includedId : includedIds) {
                 TreeNode node = treeMap.get(includedId);
                 if (node == null) {
+                    // pripadne neexistujici uzly jsou ignorovany
+                    // jejich ID mohou zustat v cache klienta
                     continue;
                 }
                 TreeNode parent = node.getParent();
@@ -807,7 +814,6 @@ private void processEvent(AbstractEventSimple event) {
 
         Map<Integer, TreeNodeVO> result = new LinkedHashMap<>(treeNodeMap.size());
 
-
         String[] rootReferenceMark = new String[0];
         if (subtreeRoot != null) {
             rootReferenceMark = createClientReferenceMarkFromRoot(subtreeRoot,
@@ -823,7 +829,6 @@ private void processEvent(AbstractEventSimple event) {
                     parentReferenceMark = result.get(treeNode.getParent().getId()).getReferenceMark();
                 }
             }
-
 
             TreeNodeVO client = new TreeNodeVO(treeNode.getId(), treeNode.getDepth(), null, 
                     !treeNode.getChilds().isEmpty(),
@@ -872,56 +877,6 @@ private void processEvent(AbstractEventSimple event) {
         return result;
     }
 
-    private void createTitle(final List<String> titleParts,
-                                     final List<Integer> itemTypeIds,
-                             final TitleItemsByType descItemCodeToValueMap,
-                             ArrDao dao) {
-        if (itemTypeIds != null && descItemCodeToValueMap != null) {
-            for (Integer itemTypeId : itemTypeIds) {
-                TitleValues titleValues = descItemCodeToValueMap.getTitles(itemTypeId);
-                if (titleValues != null) {
-                    TitleValue titleValue = titleValues.getValues().iterator().next();
-
-                    String value = titleValue.getValue();
-                    if (StringUtils.isNotBlank(value)) {
-                        titleParts.add(value);
-                    }
-                }
-            }
-        }
-        if (dao != null && this.displayDaoId) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("(");
-            if (StringUtils.isNotBlank(dao.getLabel())) {
-                sb.append("dao: ");
-                sb.append(dao.getLabel());
-            } else if (StringUtils.isNotBlank(dao.getCode())) {
-                sb.append("dao: ");
-                sb.append(dao.getCode());
-            } else {
-                sb.append("daoId: ");
-                sb.append(dao.getDaoId().toString());
-            }
-            sb.append(")");
-            titleParts.add(sb.toString());
-        }
-    }
-
-    private String createTitle(final List<Integer> itemTypeIds,
-                               final TitleItemsByType descItemCodeToValueMap,
-                               final ArrDao dao,
-                               final String defaultNodeTitle) {
-
-        List<String> titleParts = new ArrayList<String>();
-        createTitle(titleParts, itemTypeIds, descItemCodeToValueMap, dao);
-
-        if (titleParts.size() == 0 && StringUtils.isNotEmpty(defaultNodeTitle)) {
-            titleParts.add(defaultNodeTitle);
-        }
-        String title = StringUtils.join(titleParts, " ");
-        return title;
-    }
-
     /**
      * Nastavení hodnot (icon, name) ve třídě TreeNodeVO.
      * 
@@ -943,21 +898,16 @@ private void processEvent(AbstractEventSimple event) {
             treeNodeClient.setIcon(icon);
         }
 
-        List<String> titles = new ArrayList<>();
-        createTitle(titles, viewTitles.getTreeItemIds(), descItemCodeToValueMap, dao);
-        if (titles.size() == 0) {
-            String defaultTitle;
-            if (treeNodeClient.getDepth() > 1) {
-                defaultTitle = createDefaultTitle(viewTitles, treeNodeClient.getId());
-            } else {
-                defaultTitle = createRootTitle(version.getFund(), viewTitles, treeNodeClient.getId());
-            }
-
-            titles.add(defaultTitle);
+        String defaultTitle;
+        if (treeNodeClient.getDepth() > 1) {
+            defaultTitle = createDefaultTitle(viewTitles, treeNodeClient.getId());
+        } else {
+            defaultTitle = createRootTitle(version.getFund(), viewTitles, treeNodeClient.getId());
         }
-        String title = StringUtils.join(titles, " ");
 
-        treeNodeClient.setName(title);
+        ArrDao displayDao = displayDaoId? dao : null;
+
+        treeNodeClient.setName(viewTitles.getTreeItem().build(descItemCodeToValueMap, displayDao, defaultTitle));
     }
 
     /**
@@ -1267,7 +1217,7 @@ private void processEvent(AbstractEventSimple event) {
 
 
     public List<Integer> sortNodesByTreePosition(final Collection<Integer> nodeIds, final ArrFundVersion version) {
-        List<TreeNodeVO> nodes = getNodesByIds(nodeIds, version.getFundVersionId());
+        List<TreeNodeVO> nodes = getNodesByIds(nodeIds, version);
 
         nodes.sort((node1, node2) -> {
             Integer[] referenceMark1 = node1.getReferenceMarkInt();
@@ -2023,14 +1973,14 @@ private void processEvent(AbstractEventSimple event) {
             defaultTitle = createDefaultTitle(viewTitles, id);
         }
 
+        ArrDao displayDao = displayDaoId? dao : null;
+
         if (param.isName()) {
-            node.setName(createTitle(viewTitles.getTreeItemIds(), descItemCodeToValueMap, dao, defaultTitle));
+            node.setName(viewTitles.getTreeItem().build(descItemCodeToValueMap, displayDao, defaultTitle));
         }
         if (param.isAccordion()) {
-            node.setAccordionLeft(createTitle(viewTitles.getAccordionLeftIds(), descItemCodeToValueMap, dao,
-                                              defaultTitle));
-            node.setAccordionRight(createTitle(viewTitles.getAccordionRightIds(), descItemCodeToValueMap,
-                                               null, null));
+            node.setAccordionLeft(viewTitles.getAccordionLeft().build(descItemCodeToValueMap, displayDao, defaultTitle));
+            node.setAccordionRight(viewTitles.getAccordionRight().build(descItemCodeToValueMap, displayDao, defaultTitle));
         }
         if (param.isIcon()) {
             if (descItemCodeToValueMap != null) {
@@ -2349,18 +2299,42 @@ private void processEvent(AbstractEventSimple event) {
     /**
      * Sestaví informace o zanoření
      *
-     * @param fundId identifikátor archivního souboru
-     * @param nodeIds seznam identifikátorů jednotek popisu
+     * Pokud node neexistuje (byl vymazan), tak je ignorovan.
+     * 
+     * @param fundId
+     *            identifikátor archivního souboru
+     * @param nodeIds
+     *            seznam identifikátorů jednotek popisu
      */
-    public Map<Integer, TreeNodeVO> findNodeReferenceMark(@NotNull Integer fundId, Collection<Integer> nodeIds) {
-        if (nodeIds != null && !nodeIds.isEmpty()) {
-            ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fundId);
-            if (fundVersion != null) {
-                List<TreeNodeVO> nodes = getNodesByIds(nodeIds, fundVersion.getFundVersionId());
-                return nodes.stream().collect(Collectors.toMap(TreeNodeVO::getId, node -> node));
+    public Map<Integer, TreeNodeVO> findNodeReferenceMark(@NotNull Integer fundId,
+                                                          Collection<Integer> nodeIds) {
+        if (CollectionUtils.isEmpty(nodeIds)) {
+            return Collections.emptyMap();
+        }
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fundId);
+        if (fundVersion == null) {
+            logger.error("Fund not found, foundId: {}", fundId);
+            throw new IllegalStateException("Fund not found, foundId: "+fundId);
+        }
+
+        // filter only existing nodes
+        Map<Integer, TreeNode> versionTreeCache = getVersionTreeCache(fundVersion);
+        Collection<Integer> nodeIdList = new ArrayList<>(nodeIds.size());
+        Map<Integer, TreeNode> subTreeMap = new LinkedHashMap<>();
+        for (Integer nodeId : nodeIds) {
+            TreeNode treeNode = versionTreeCache.get(nodeId);
+            if (treeNode != null) {
+                nodeIdList.add(nodeId);
+
+                TreeNode parent = treeNode;
+                while (parent != null && subTreeMap.get(parent) == null) {
+                    subTreeMap.put(parent.getId(), parent);
+                    parent = parent.getParent();
+                }
             }
         }
-        return Collections.emptyMap();
+        List<TreeNodeVO> nodes = getNodesByIds(nodeIdList, fundVersion, subTreeMap);
+        return nodes.stream().collect(Collectors.toMap(TreeNodeVO::getId, node -> node));
     }
 
     /**

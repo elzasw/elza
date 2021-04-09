@@ -24,8 +24,11 @@ import java.util.List;
 @Repository
 public interface ItemRepository extends JpaRepository<ArrItem, Integer>, DeleteFundHistory {
 
-    @Query(value = "SELECT coalesce(max(i.descItemObjectId), 0) FROM arr_item i")
+    @Query("SELECT coalesce(max(i.descItemObjectId), 0) FROM arr_item i")
     Integer findMaxItemObjectId();
+
+    @Query("SELECT i FROM arr_item i WHERE i.deleteChange IS NULL")
+    List<ArrItem> findByDeleteChangeIsNull();
 
     @Query("SELECT i FROM arr_item i LEFT JOIN FETCH i.data WHERE i.descItemObjectId = ?1 AND i.deleteChange IS NULL")
     ArrItem findByItemObjectIdAndDeleteChangeIsNullFetchData(int descItemObjectId);

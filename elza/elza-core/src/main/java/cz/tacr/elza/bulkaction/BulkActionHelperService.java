@@ -25,6 +25,7 @@ import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.IEventNotificationService;
@@ -53,7 +54,7 @@ public class BulkActionHelperService {
     private IEventNotificationService eventNotificationService;
 
     @Autowired
-    private ArrangementService arrangementService;
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private OutputServiceInternal outputServiceInternal;
@@ -149,7 +150,7 @@ public class BulkActionHelperService {
             @Override
             public ArrChange get() {
                 if (change == null) {
-                    change = arrangementService.createChange(ArrChange.Type.UPDATE_OUTPUT);
+                    change = arrangementInternalService.createChange(ArrChange.Type.UPDATE_OUTPUT);
                 }
                 return change;
             }

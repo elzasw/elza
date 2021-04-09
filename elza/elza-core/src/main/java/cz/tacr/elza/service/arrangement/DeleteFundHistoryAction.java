@@ -4,6 +4,7 @@ import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundStructureExtension;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -22,6 +23,7 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ArrFileRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
@@ -53,6 +55,7 @@ import cz.tacr.elza.repository.RequestRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.repository.vo.ItemChange;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.DmsService;
@@ -77,6 +80,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static cz.tacr.elza.repository.ExceptionThrow.fund;
 
@@ -177,7 +181,10 @@ public class DeleteFundHistoryAction {
     private NodeConformityRepository nodeConformityRepository;
 
     @Autowired
-    private ArrangementService arrangementService;
+    ArrangementService arrangementService;
+    
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private ItemRepository itemRepository;
@@ -191,6 +198,8 @@ public class DeleteFundHistoryAction {
     @Autowired
     private ItemSettingsRepository itemSettingsRepository;
 
+    @Autowired
+    private ArrFileRepository arrFileRepository;
 
     /**
      * Prepare fund history deletion
@@ -252,6 +261,13 @@ public class DeleteFundHistoryAction {
         }
         em.flush();
 
+        // odstranění všech arr_file a soubory na disku
+        final List<ArrFile> arrFiles = arrFileRepository.findHistoricalByFund(fund);
+        final List<Integer> fileIds = arrFiles.stream().map(p -> p.getFileId()).collect(Collectors.toList());
+        dmsService.deleteFilesAfterCommitByIds(fileIds);
+        iterateAction(arrFiles, arrFileRepository::deleteAll);
+        em.flush();
+
         // delete arr_level, které mají vyplněn delete_change_id
         final List<ArrLevel> arrLevelList = levelRepository.findHistoricalByFund(fund);
         iterateAction(arrLevelList, levelRepository::deleteAll);
@@ -269,7 +285,7 @@ public class DeleteFundHistoryAction {
         outputRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
         structuredObjectRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
 
-        ArrChange change = arrangementService.createChange(ArrChange.Type.CREATE_AS);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_AS);
 
         // arr_node se také smazají, pokud se na ně neodkazuje žádný level a musí se smazat i návazné entity jako výstupy, a podobně
         List<Integer> unusedNodeIdsByFund = nodeRepository.findUnusedNodeIdsByFund(fund);
@@ -283,7 +299,7 @@ public class DeleteFundHistoryAction {
             dropNodeInfo(unusedNodeIdsByFund);
 
             iterateAction(changesIds, (ids) -> levelRepository.updateCreateChangeByChangeIds(ids, change));
-            changeRepository.deleteByPrimaryNodeIds(unusedNodeIdsByFund, change.getChangeId());
+            changeRepository.deleteByPrimaryNodeIdsWithIgnoredId(unusedNodeIdsByFund, change.getChangeId());
 
             dataUriRefRepository.updateByNodesIdIn(unusedNodeIdsByFund);
 
@@ -322,9 +338,7 @@ public class DeleteFundHistoryAction {
         // odeslání informace o změně verze na klienta
         eventNotificationService.publishEvent(new EventFund(EventType.APPROVE_VERSION, fundVersion.getFund().getFundId(), fundVersion.getFundVersionId()));
 
-
         logger.info("Fund history deleted: {}", fundId);
-
     }
 
     /**
