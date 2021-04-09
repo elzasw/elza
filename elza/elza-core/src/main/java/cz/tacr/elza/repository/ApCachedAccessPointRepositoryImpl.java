@@ -17,6 +17,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.hibernate.search.jpa.FullTextEntityManager;
@@ -37,10 +38,12 @@ import java.util.regex.Pattern;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.AP_TYPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.INDEX;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.NM_MAIN;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.PREFIX_PREF;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.SCOPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.SEPARATOR;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.STATE;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.TRANS;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.USERNAME;
 
 public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRepositoryCustom {
@@ -90,10 +93,12 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
         QueryBuilder queryBuilder = createQueryBuilder(ApCachedAccessPoint.class);
         Query query = buildQueryFromParams(queryBuilder, search, searchFilter, apTypeIdTree, scopeIds, state);
+        Sort sort = queryBuilder.sort().byScore().createSort();
 
         FullTextQuery fullTextQuery = createFullTextQuery(query, ApCachedAccessPoint.class);
         fullTextQuery.setFirstResult(from);
         fullTextQuery.setMaxResults(count);
+        fullTextQuery.setSort(sort);
 
         return fullTextQuery.getResultList();
     }
@@ -147,7 +152,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
             if (StringUtils.isNotEmpty(search)) {
                 List<String> keyWords = getKeyWordsFromSearch(search);
                 for (String keyWord : keyWords) {
-                    bool.must(processIndexCondDef(keyWord, null));
+                    bool.must(processIndexCondDef(queryBuilder, keyWord, null));
                 }
             }
         }
@@ -185,7 +190,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 if (searchFilterVO.getOnlyMainPart() && !area.equals(Area.ALL_PARTS)) {
                     searchQuery.must(processValueCondDef(queryBuilder, keyWord, "NM_MAIN", null, partTypeCode));
                 } else {
-                    searchQuery.must(processIndexCondDef(keyWord, partTypeCode));
+                    searchQuery.must(processIndexCondDef(queryBuilder, keyWord, partTypeCode));
                 }
             }
         }
@@ -221,13 +226,29 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         return searchQuery.createQuery();
     }
 
-    private Query processIndexCondDef(String value, String partTypeCode) {
+    private Query processIndexCondDef(QueryBuilder queryBuilder, String value, String partTypeCode) {
+        BooleanJunction<BooleanJunction> indexQuery = queryBuilder.bool();
         StringBuilder fieldName = new StringBuilder(DATA + SEPARATOR);
+        StringBuilder itemFieldName = new StringBuilder(DATA + SEPARATOR);
         if (StringUtils.isNotEmpty(partTypeCode)) {
             fieldName.append(partTypeCode).append(SEPARATOR);
+
+            if (partTypeCode.equals(PREFIX_PREF)) {
+                itemFieldName.append(partTypeCode).append(SEPARATOR);
+            }
         }
         fieldName.append(INDEX);
-        return new WildcardQuery(new Term(fieldName.toString().toLowerCase(), STAR + value.toLowerCase() + STAR));
+        itemFieldName.append(NM_MAIN);
+        indexQuery.should(new WildcardQuery(new Term(itemFieldName.toString().toLowerCase(), STAR + value.toLowerCase() + STAR)));
+        indexQuery.should(new WildcardQuery(new Term(itemFieldName.toString().toLowerCase() + SEPARATOR + TRANS, STAR + value.toLowerCase() + STAR)));
+
+        BooleanJunction<BooleanJunction> transQuery = queryBuilder.bool();
+        transQuery.minimumShouldMatchNumber(1);
+        transQuery.should(new WildcardQuery(new Term(fieldName.toString().toLowerCase() + SEPARATOR + TRANS, STAR + value.toLowerCase() + STAR)));
+        transQuery.should(new WildcardQuery(new Term(fieldName.toString().toLowerCase(), STAR + value.toLowerCase() + STAR)));
+
+        indexQuery.must(transQuery.createQuery());
+        return indexQuery.createQuery();
     }
 
     private Query processValueCondDef(QueryBuilder queryBuilder, String value, String itemTypeCode, String itemSpecCode, String partTypeCode) {
@@ -246,9 +267,11 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
             if (value == null) {
                 value = itemSpecCode;
             }
-            valueQuery.should(new TermQuery(new Term(fieldName.toString().toLowerCase(), value.toLowerCase())));
+            valueQuery.must(new TermQuery(new Term(fieldName.toString().toLowerCase(), value.toLowerCase())));
         } else {
+            valueQuery.minimumShouldMatchNumber(1);
             valueQuery.should(new WildcardQuery(new Term(fieldName.toString().toLowerCase(), STAR + value.toLowerCase() + STAR)));
+            valueQuery.should(new WildcardQuery(new Term(fieldName.toString().toLowerCase() + SEPARATOR + TRANS, STAR + value.toLowerCase() + STAR)));
         }
 
         return valueQuery.createQuery();
