@@ -202,8 +202,8 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             CachedAccessPoint cap = apMap.get(apState.getAccessPointId());
             cap.setApState(apState);
         }
-        
-        createCachedPartMap(accessPointIds, accessPointList, apMap);
+
+        createCachedPartMap(accessPointList, apMap);
         createCachedBindingMap(accessPointList, apMap);
 
         List<ApCachedAccessPoint> apCachedAccessPoints = new ArrayList<>();
@@ -260,24 +260,33 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         return cachedPart;
     }
 
-    // TODO: change parameters to use only IDS or only entities
-    private void createCachedPartMap(List<Integer> accessPointIds,
-                                     List<ApAccessPoint> accessPointList,
+    private void createCachedPartMap(List<ApAccessPoint> accessPointList,
                                      Map<Integer, CachedAccessPoint> apMap) {
+
+        Map<Integer, CachedPart> partMap = fillCachedPartMap(accessPointList, apMap);
+
+        addItemsToCachedPartMap(accessPointList, partMap);
+
+        addIndexesToCachedPartMap(accessPointList, partMap);
+    }
+
+    private Map<Integer, CachedPart> fillCachedPartMap(List<ApAccessPoint> accessPointList, Map<Integer, CachedAccessPoint> apMap) {
         Map<Integer, CachedPart> partMap = new HashMap<>();
-        // result
-        
+
         List<ApPart> parts = partRepository.findValidPartByAccessPoints(accessPointList);
         for(ApPart part: parts) {
             part = HibernateUtils.unproxy(part);
             CachedPart cachedPart = createCachedPart(part);
             partMap.put(cachedPart.getPartId(), cachedPart);
-            
+
             CachedAccessPoint cap = apMap.get(part.getAccessPointId());
             Validate.notNull(cap, "AP not in the result");
             cap.addPart(cachedPart);
         }
+        return partMap;
+    }
 
+    private void addItemsToCachedPartMap(List<ApAccessPoint> accessPointList, Map<Integer, CachedPart> partMap) {
         List<ApItem> apItems = itemRepository.findValidItemsByAccessPoints(accessPointList);
         if (CollectionUtils.isNotEmpty(apItems)) {
             for (ApItem item : apItems) {
@@ -287,8 +296,10 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                 part.addItem(item);
             }
         }
+    }
 
-        List<ApIndex> apIndices = indexRepository.findIndicesByAccessPoints(accessPointIds);
+    private void addIndexesToCachedPartMap(List<ApAccessPoint> accessPointList, Map<Integer, CachedPart> partMap) {
+        List<ApIndex> apIndices = indexRepository.findIndicesByAccessPoints(accessPointList);
         if (CollectionUtils.isNotEmpty(apIndices)) {
             for (ApIndex index : apIndices) {
                 index = HibernateUtils.unproxy(index);
