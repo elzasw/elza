@@ -152,6 +152,23 @@ paths:
           description: Potvrzení o úspěšném odstranění
         404:
           description: AP neexistuje
+  /accesspoints:
+    delete:
+      summary: Zneplatnění přístupovych bodu
+      operationId: deleteAccessPoints
+      tags:
+        - accesspoints
+      requestBody:
+        description: Seznam přístupových bodů
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/DeleteAccessPointsDetail'
+      responses:
+        200:
+          description: Potvrzení o úspěšném odstranění
+        404:
+          description: AP neexistuje
   /daos/{id}/change-scenario:
     post:
       summary: Změna scénáře napojení dao
@@ -427,6 +444,15 @@ components:
           enum:
             - SIMPLE
             - COPY_ALL
+    DeleteAccessPointsDetail:
+      type: object
+      description: Seznam přístupových bodů
+      properties:
+        ids:
+          description: Seznam id nebo uuid
+          type: array
+          items:
+            type: string
     AbstractFilter:
       title: Abstract filter
       description: Used as a parent for all other filters
