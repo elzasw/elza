@@ -540,6 +540,9 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @return dotaz
      */
     private Query createTextQuery(final String text, final QueryBuilder queryBuilder) {
+        if (text == null) {
+            return null;
+        }
         /* rozdělení zadaného výrazu podle mezer */
         String[] tokens = StringUtils.split(text.toLowerCase(), ' ');
 
