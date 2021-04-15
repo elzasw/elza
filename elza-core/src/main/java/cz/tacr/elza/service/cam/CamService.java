@@ -122,9 +122,6 @@ public class CamService {
     private PartService partService;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private AccessPointItemService apItemService;
 
     @Autowired
@@ -612,6 +609,13 @@ public class CamService {
                               OffsetDateTime.now(),
                               e.getMessage());
             log.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
+            return false;
+        } catch (Exception e) {
+            setQueueItemState(extSyncsQueueItem,
+                              ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
+                              OffsetDateTime.now(),
+                              e.getMessage());
+            log.error("Failed to synchronize items", e);
             return false;
         }
         return true;
