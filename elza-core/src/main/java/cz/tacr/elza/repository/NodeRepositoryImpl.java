@@ -144,9 +144,20 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
 
         QueryBuilder queryBuilder = ctx.getQueryBuilder();
-
-        Query textQuery = createTextQuery(text, queryBuilder);
-        Query fundIdsQuery = createFundIdsQuery(fundList.stream().map(o -> o.getFundId()).collect(toList()), queryBuilder);
+        
+        Query textQuery;
+        if(text!=null) {
+            textQuery = createTextQuery(text, queryBuilder);
+        } else {
+            textQuery = null;
+        }
+        Query fundIdsQuery;
+        if(fundList==null) {
+            fundIdsQuery = null;
+        } else {
+            fundIdsQuery = createFundIdsQuery(fundList.stream().map(o -> o.getFundId()).collect(toList()),
+                                              queryBuilder);
+        }
 
         Query query = queryBuilder.bool().must(textQuery).must(fundIdsQuery).createQuery();
 

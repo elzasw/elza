@@ -360,22 +360,29 @@ public class SearchController implements SearchApi {
         // get funds to search in
         UserDetail userDetail = userService.getLoggedUserDetail();
 
-        // TODO: If user can read all funds then list of fund should not be prepared here at all
-        Integer userId = userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL) ? null : userDetail.getId();
-        List<ArrFund> fundList = fundRepository.findFundByFulltext(null, userId);
-        if (fundList.isEmpty()) {
-            log.debug("No matching funds");
-            ResultEntityRef rer = new ResultEntityRef();
-            rer.setCount((long) 0);
-            return ResponseEntity.ok(rer);
+        // If user can read all funds then list of fund should not be prepared here at all
+        List<ArrFund> fundList;
+        if(userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL) ||
+                userDetail.hasPermission(UsrPermission.Permission.FUND_ADMIN) ||
+                userDetail.hasPermission(UsrPermission.Permission.ADMIN)) {
+            fundList = null;
+            log.debug("Searching in all funds");
+        } else {
+            Integer userId = userDetail.getId();
+            fundList = fundRepository.findFundByFulltext(null, userId);
+            if (fundList.isEmpty()) {
+                log.debug("No matching funds");
+                ResultEntityRef rer = new ResultEntityRef();
+                rer.setCount((long) 0);
+                return ResponseEntity.ok(rer);
+            }
+            log.debug("Searching funds: {}", fundList);
         }
-
-        log.debug("Searching funds: {}", fundList);
 
         // full text query
         List<AbstractFilter> filters = searchParams.getFilters();
         String searchedText = null;
-        if (filters != null) {
+        if (filters != null && filters.size() > 0) {
             if(filters.size() == 1) {                
                 if (filters.get(0) instanceof MultimatchContainsFilter) {                    
                     MultimatchContainsFilter mcf = (MultimatchContainsFilter) filters.get(0);
