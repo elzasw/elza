@@ -1240,7 +1240,7 @@
 	</changeSet>
 
     <changeSet id="20210413151500" author="sergey.iryupin">
-    	<sql dbms="postgresql">UPDATE ap_binding SET value = 'missing_value_' || CAST(binding_id AS text) 
+    	<sql dbms="postgresql">UPDATE ap_binding SET value = CONCAT('missing_value_', CAST(binding_id AS text)) 
     						   WHERE value IS NULL</sql>
         <addNotNullConstraint tableName="ap_binding" columnName="value" columnDataType="nvarchar(50)"/>
     </changeSet>
