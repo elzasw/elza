@@ -261,6 +261,8 @@ public class SearchController implements SearchApi {
     @RequestMapping(value = { "/cuni-ais-api/search-ap", "/api/v1/search-ap" })
     @Transactional
 	public ResponseEntity<ResultEntityRef> searchEntity(@RequestBody SearchParams searchParams) {
+
+        log.debug("Received request on: /api/v1/search-ap, query: {}", searchParams);
 		
 		StaticDataProvider sdp = staticDataService.createProvider();
 		final RulPartType bodyType = sdp.getPartTypeByCode(StaticDataProvider.DEFAULT_BODY_PART_TYPE);
@@ -353,19 +355,22 @@ public class SearchController implements SearchApi {
     @Transactional
     public ResponseEntity<ResultEntityRef> searchArchDesc(@RequestBody SearchParams searchParams) {
 
+        log.debug("Received request on: /api/v1/search-arr, query: {}", searchParams);
+
         // get funds to search in
         UserDetail userDetail = userService.getLoggedUserDetail();
 
-        List<ArrFund> fundList = fundRepository.findFundByFulltext(null, userDetail.hasPermission(
-                                                                                                  UsrPermission.Permission.FUND_RD_ALL)
-                                                                                                          ? null
-                                                                                                          : userDetail
-                                                                                                                  .getId());
+        // TODO: If user can read all funds then list of fund should not be prepared here at all
+        Integer userId = userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL) ? null : userDetail.getId();
+        List<ArrFund> fundList = fundRepository.findFundByFulltext(null, userId);
         if (fundList.isEmpty()) {
+            log.debug("No matching funds");
             ResultEntityRef rer = new ResultEntityRef();
             rer.setCount((long) 0);
             return ResponseEntity.ok(rer);
         }
+
+        log.debug("Searching funds: {}", fundList);
 
         // full text query
         List<AbstractFilter> filters = searchParams.getFilters();
