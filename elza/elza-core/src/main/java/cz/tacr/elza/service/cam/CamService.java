@@ -7,6 +7,7 @@ import cz.tacr.cam.schema.cam.BatchUpdateErrorXml;
 import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
 import cz.tacr.cam.schema.cam.BatchUpdateSavedXml;
 import cz.tacr.cam.schema.cam.BatchUpdateXml;
+import cz.tacr.cam.schema.cam.CreateEntityXml;
 import cz.tacr.cam.schema.cam.EntityRecordRevInfoXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
@@ -294,31 +295,30 @@ public class CamService {
     }
 
 
-    public BatchUpdateXml createCreateEntityBatchUpdate(final ApAccessPoint accessPoint, final String externalSystemCode, final String userName) {
-        ApState state = accessPointService.getStateInternal(accessPoint);
+    public BatchUpdateXml createCreateEntityBatchUpdate(final ApAccessPoint accessPoint,
+                                                        final ApState state,
+                                                        final ApBindingState bindingState,
+                                                        final String externalSystemCode,
+                                                        final String userName) {
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
 
         List<ApPart> partList = partService.findPartsByAccessPoint(state.getAccessPoint());
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(i -> i.getPartId()));
-
-        ApBinding binding = externalSystemService.createApBinding(state.getScope(), null, apExternalSystem);
-        ApBindingState bindingState = externalSystemService.createApBindingState(binding, accessPoint, change,
-                EntityRecordStateXml.ERS_NEW.value(), null, userName, null);
 
         BatchUpdateXml batchUpdate = new BatchUpdateXml();
         batchUpdate.setInf(createBatchInfo(userName));
         CreateEntityBuilder ceb = new CreateEntityBuilder(this.externalSystemService,
                 this.staticDataService.getData(),
                 accessPoint,
-                binding,
+                bindingState,
                 state,
-                change,
+                apExternalSystem,
                 this.groovyService,
                 this.apDataService,
                 state.getScope());
-        batchUpdate.getChanges().add(ceb.build(partList, itemMap, apExternalSystem.getType().toString()));
+        CreateEntityXml createEntityXml = ceb.build(partList, itemMap, apExternalSystem.getType().toString());
+        batchUpdate.getChanges().add(createEntityXml);
         return batchUpdate;
     }
 
@@ -581,15 +581,30 @@ public class CamService {
      */
     @Transactional
     public boolean synchronizeExtItem(ExtSyncsQueueItem extSyncsQueueItem, ApExternalSystem apExternalSystem) {
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(extSyncsQueueItem.getAccessPointId());
-        ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
         String externalSystemCode = apExternalSystem.getCode();
         String userName = extSyncsQueueItem.getUsername();
+
+        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(extSyncsQueueItem.getAccessPointId());
+        ApState state = accessPointService.getStateInternal(accessPoint);
+
+        ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
+        // TODO: get current bindings
+        if (bindingState == null) {
+            // create binding with uuid?
+            ApBinding binding = externalSystemService.createApBinding(state.getScope(),
+                                                                      accessPoint.getUuid(),
+                                                                      apExternalSystem);
+            ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
+            bindingState = externalSystemService.createApBindingState(binding, accessPoint, change,
+                                                                      EntityRecordStateXml.ERS_NEW.value(),
+                                                                      null, userName, null);
+        }
 
         BatchUpdateXml batchUpdate;
         if (bindingState == null) {
             // založení nové entity
-            batchUpdate = createCreateEntityBatchUpdate(accessPoint, externalSystemCode, userName);
+            batchUpdate = createCreateEntityBatchUpdate(accessPoint, state, bindingState,
+                                                        externalSystemCode, userName);
         } else {
             // update entity
             EntityXml entity;

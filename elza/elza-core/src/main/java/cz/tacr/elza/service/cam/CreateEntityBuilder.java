@@ -5,40 +5,74 @@ import java.util.Map;
 
 import cz.tacr.cam.schema.cam.CodeXml;
 import cz.tacr.cam.schema.cam.CreateEntityXml;
+import cz.tacr.cam.schema.cam.EntityIdXml;
+import cz.tacr.cam.schema.cam.EntityRecordRefXml;
 import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
+import cz.tacr.elza.service.cam.CamXmlFactory.EntityRefHandler;
 
 public class CreateEntityBuilder extends CamXmlBuilder {
 
-    private ApState apState;
+    final private ApState apState;
     final private ExternalSystemService externalSystemService;
-    final private ApBinding binding;
     final ApChange change;
+    final private ApBindingState bindingState;
+
+    private static class NewApRefHandler implements EntityRefHandler {
+
+        private final ApExternalSystem apExternalSystem;
+
+        public NewApRefHandler(final ApExternalSystem apExternalSystem) {
+            this.apExternalSystem = apExternalSystem;
+        }
+
+        @Override
+        public EntityRecordRefXml createEntityRef(ArrDataRecordRef recordRef) {
+            // create record ref only for records with same binding
+            ApBinding binding = recordRef.getBinding();
+            if ( binding == null) {
+                return null;
+            }
+            ApExternalSystem bindedExtSystem = binding.getApExternalSystem();
+            if (!bindedExtSystem.getExternalSystemId().equals(apExternalSystem.getExternalSystemId())) {
+                return null;
+            }
+
+            EntityRecordRefXml entityRecordRef = new EntityRecordRefXml();
+            long entityId = Long.parseLong(binding.getValue());
+            entityRecordRef.setEid(new EntityIdXml(entityId));
+            return entityRecordRef;
+        }
+
+    };
 
     public CreateEntityBuilder(final ExternalSystemService externalSystemService,
                                final StaticDataProvider sdp,
                                final ApAccessPoint accessPoint,
-                               final ApBinding binding,
+                               final ApBindingState bindingState,
                                final ApState state,
-                               final ApChange change,
+                               final ApExternalSystem apExternalSystem,
                                final GroovyService groovyService,
                                final AccessPointDataService apDataService,
                                final ApScope scope) {
-        super(sdp, accessPoint, new BindingRecordRefHandler(binding), groovyService, apDataService, scope);
+        super(sdp, accessPoint, new NewApRefHandler(apExternalSystem), groovyService, apDataService, scope);
+        this.bindingState = bindingState;
         this.apState = state;
         this.externalSystemService = externalSystemService;
-        this.binding = binding;
-        this.change = change;
+        this.change = bindingState.getCreateChange();
     }
 
     public CreateEntityXml build(List<ApPart> partList,
@@ -54,11 +88,11 @@ public class CreateEntityBuilder extends CamXmlBuilder {
 
     @Override
     protected void onItemCreated(ApItem item, String uuid) {
-        externalSystemService.createApBindingItem(binding, change, uuid, null, item);
+        externalSystemService.createApBindingItem(bindingState.getBinding(), change, uuid, null, item);
     }
 
     @Override
     protected void onPartCreated(ApPart apPart, String uuid) {
-        externalSystemService.createApBindingItem(binding, change, uuid, apPart, null);
+        externalSystemService.createApBindingItem(bindingState.getBinding(), change, uuid, apPart, null);
     }
 }
