@@ -374,13 +374,25 @@ public class SearchController implements SearchApi {
 
         // full text query
         List<AbstractFilter> filters = searchParams.getFilters();
-        if (filters != null && filters.size() == 1) {
-            if (filters.get(0) instanceof MultimatchContainsFilter) {
-                MultimatchContainsFilter mcf = (MultimatchContainsFilter) filters.get(0);
-                return searchEntityFulltext(fundList, searchParams.getOffset(), searchParams.getSize(), mcf.getValue());
+        String searchedText = null;
+        if (filters != null) {
+            if(filters.size() == 1) {                
+                if (filters.get(0) instanceof MultimatchContainsFilter) {                    
+                    MultimatchContainsFilter mcf = (MultimatchContainsFilter) filters.get(0);
+                    searchedText = mcf.getValue();
+                } else {
+                    log.debug("Received unexpected search request, query: {}", searchParams);
+                    return ResponseEntity.badRequest().build();                    
+                }
+            } else {
+                log.debug("Received unexpected search request, query: {}", searchParams);
+                return ResponseEntity.badRequest().build();
             }
+
+        } else {
+            // filter not specified
         }
-        return ResponseEntity.badRequest().build();
+        return searchEntityFulltext(fundList, searchParams.getOffset(), searchParams.getSize(), searchedText);
     }
 
     private ResponseEntity<ResultEntityRef> searchEntityFulltext(List<ArrFund> fundList, Integer offset, Integer size,
