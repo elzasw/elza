@@ -563,6 +563,12 @@ public class CamService {
         }
     }
 
+    /**
+     * 
+     * @param extSyncsQueueItem
+     * @return return true if item was processed. return false if failed and will be
+     *         rertried later
+     */
     @Transactional
     public boolean synchronizeExtItem(ExtSyncsQueueItem extSyncsQueueItem) {
         Integer apExternalSystemId = extSyncsQueueItem.getExternalSystemId();
@@ -570,17 +576,38 @@ public class CamService {
                 .orElseThrow(() -> new ObjectNotFoundException("Externí systém neexistuje", BaseCode.ID_NOT_EXIST)
                         .setId(apExternalSystemId));
 
-        return synchronizeExtItem(extSyncsQueueItem, apExternalSystem);
+        try {
+            synchronizeExtItem(extSyncsQueueItem, apExternalSystem);
+            return true;
+        } catch (ApiException e) {
+            // if ApiException -> it means we connected server and it is logical failure 
+            setQueueItemState(extSyncsQueueItem,
+                              ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
+                              OffsetDateTime.now(),
+                              e.getMessage());
+            log.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
+            return true;
+        } catch (Exception e) {
+            // other exception -> retry later
+            setQueueItemState(extSyncsQueueItem,
+                              ExtSyncsQueueItem.ExtAsyncQueueState.NEW,
+                              OffsetDateTime.now(),
+                              e.getMessage());
+            return false;
+        }
     }
 
     /**
      * Založí nebo upraví entitu v externím systému
      *
-     * @param extSyncsQueueItem info o ap pro synchronizaci
-     * @param apExternalSystem externí systém
+     * @param extSyncsQueueItem
+     *            info o ap pro synchronizaci
+     * @param apExternalSystem
+     *            externí systém
+     * @throws ApiException
      */
-    @Transactional
-    public boolean synchronizeExtItem(ExtSyncsQueueItem extSyncsQueueItem, ApExternalSystem apExternalSystem) {
+    private void synchronizeExtItem(ExtSyncsQueueItem extSyncsQueueItem, ApExternalSystem apExternalSystem)
+            throws ApiException {
         String externalSystemCode = apExternalSystem.getCode();
         String userName = extSyncsQueueItem.getUsername();
 
@@ -607,32 +634,11 @@ public class CamService {
                                                         externalSystemCode, userName);
         } else {
             // update entity
-            EntityXml entity;
-            try {
-                entity = camConnector.getEntityById(bindingState.getBinding().getValue(), externalSystemCode);
-            } catch (ApiException e) {
-                throw prepareSystemException(e);
-            }
+            EntityXml entity = camConnector.getEntityById(bindingState.getBinding().getValue(), externalSystemCode);
             batchUpdate = createUpdateEntityBatchUpdate(accessPoint, bindingState, entity, apExternalSystem, userName);
         }
-        try {
-            BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
-            updateBindingAfterSave(batchUpdateResult, accessPoint, externalSystemCode, extSyncsQueueItem);
-        } catch (ApiException e) {
-            setQueueItemState(extSyncsQueueItem,
-                              ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
-                              OffsetDateTime.now(),
-                              e.getMessage());
-            log.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
-            return false;
-        } catch (Exception e) {
-            setQueueItemState(extSyncsQueueItem,
-                              ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
-                              OffsetDateTime.now(),
-                              e.getMessage());
-            log.error("Failed to synchronize items", e);
-            return false;
-        }
-        return true;
+
+        BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
+        updateBindingAfterSave(batchUpdateResult, accessPoint, externalSystemCode, extSyncsQueueItem);
     }
 }
