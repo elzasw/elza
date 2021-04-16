@@ -137,9 +137,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @param text The query text.
      */
     @Override
-    public List<ArrFundToNodeList> findFundIdsByFulltext(final String text, final Collection<ArrFund> fundList) {
-
-        Assert.notEmpty(fundList, "Nebyl vyplněn identifikátor AS");
+    public List<ArrFundToNodeList> findFundIdsByFulltext(final String text, final Collection<ArrFund> fundList) {        
 
         FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
 
