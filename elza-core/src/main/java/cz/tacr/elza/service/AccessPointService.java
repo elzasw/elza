@@ -1926,22 +1926,26 @@ public class AccessPointService {
     }
 
     private List<ExtSyncsQueueItemVO> createExtSyncsQueueItemVOList(List<ExtSyncsQueueItem> items) {
-        List<ExtSyncsQueueItemVO> extSyncsQueueItemVOList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(items)) {
-
-            final List<ApAccessPoint> accessPoints = items.stream()
-                    .map(ExtSyncsQueueItem::getAccessPoint)
-                    .collect(Collectors.toList());
-            final Map<Integer, ApIndex> nameMap = findPreferredPartIndexMap(accessPoints);
-            final Map<Integer, ApState> stateMap = apStateRepository.findLastByAccessPoints(accessPoints).stream()
-                    .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
-
-            for (ExtSyncsQueueItem extSyncsQueueItem : items) {
-                String name = nameMap.get(extSyncsQueueItem.getAccessPointId()) != null ? nameMap.get(extSyncsQueueItem.getAccessPointId()).getValue() : null;
-                ApState state = stateMap.get(extSyncsQueueItem.getAccessPointId());
-                extSyncsQueueItemVOList.add(createExtSyncsQueueItemVO(extSyncsQueueItem, name, state.getScopeId()));
-            }
+        if (CollectionUtils.isEmpty(items)) {
+            return Collections.emptyList();
         }
+
+        List<ExtSyncsQueueItemVO> extSyncsQueueItemVOList = new ArrayList<>(items.size());
+
+        final List<ApAccessPoint> accessPoints = items.stream()
+                .map(ExtSyncsQueueItem::getAccessPoint)
+                .collect(Collectors.toList());
+        final Map<Integer, ApIndex> nameMap = findPreferredPartIndexMap(accessPoints);
+        final Map<Integer, ApState> stateMap = apStateRepository.findLastByAccessPoints(accessPoints).stream()
+                .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
+
+        for (ExtSyncsQueueItem extSyncsQueueItem : items) {
+            String name = nameMap.get(extSyncsQueueItem.getAccessPointId()) != null ? nameMap.get(extSyncsQueueItem
+                    .getAccessPointId()).getValue() : null;
+            ApState state = stateMap.get(extSyncsQueueItem.getAccessPointId());
+            extSyncsQueueItemVOList.add(createExtSyncsQueueItemVO(extSyncsQueueItem, name, state.getScopeId()));
+        }
+
         return extSyncsQueueItemVOList;
     }
 
