@@ -621,11 +621,11 @@ class DescItemType extends AbstractReactComponent {
     }
 
     handleCoordinatesUploadButtonClick() {
-        ReactDOM.findDOMNode(this.refUploadInput.refs.input).click();
+        if(this.refUploadInput){this.refUploadInput.click()}
     }
 
     handleJsonTableUploadButtonClick() {
-        ReactDOM.findDOMNode(this.refUploadInput.refs.input).click();
+        if(this.refUploadInput){this.refUploadInput.click()}
     }
 
     handleCoordinatesUpload(e) {
