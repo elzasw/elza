@@ -11,10 +11,10 @@ import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.search.ElzaSearchConfig;
-import cz.tacr.elza.search.SearchConfigManager;
-import cz.tacr.elza.search.FieldSearchConfig;
+import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
+import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 import cz.tacr.elza.service.cache.ApVisibilityChecker;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
@@ -41,6 +41,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
@@ -48,7 +49,7 @@ import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 public class ApCachedAccessPointClassBridge implements StringBridge, MetadataProvidingFieldBridge, ApplicationContextAware {
 
     @Autowired
-    private static SearchConfigManager searchConfigManager;
+    private static SettingsService settingsService;
 
     public static final String PREFIX_PREF = "pref";
     public static final String SEPARATOR = "_";
@@ -186,9 +187,9 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
 
         name = StringUtils.removeStart(name, prefixName + SEPARATOR);
 
-        ElzaSearchConfig elzaSearchConfig = getElzaSearchConfig();
+        SettingIndexSearch elzaSearchConfig = getElzaSearchConfig();
         if (elzaSearchConfig != null) {
-            FieldSearchConfig fieldSearchConfig = elzaSearchConfig.getFieldSearchConfigByName(name);
+            SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(elzaSearchConfig.getFields(), name);
             if (fieldSearchConfig != null && fieldSearchConfig.getTransliterate() != null) {
                 transliterate = fieldSearchConfig.getTransliterate();
             }
@@ -198,9 +199,25 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
     }
 
     @Nullable
-    private ElzaSearchConfig getElzaSearchConfig() {
-        if (searchConfigManager != null) {
-            return searchConfigManager.getElzaSearchConfig();
+    private SettingIndexSearch.Field getFieldSearchConfigByName(List<SettingIndexSearch.Field> fields, String name) {
+        if (CollectionUtils.isNotEmpty(fields)) {
+            for (SettingIndexSearch.Field field : fields) {
+                if (field.getName().equals(name)) {
+                    return field;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private SettingIndexSearch getElzaSearchConfig() {
+        if (settingsService != null) {
+            UISettings.SettingsType indexSearch = UISettings.SettingsType.INDEX_SEARCH;
+            List<UISettings> uiSettings = settingsService.getGlobalSettings(indexSearch.toString(), indexSearch.getEntityType());
+            if (CollectionUtils.isNotEmpty(uiSettings)) {
+                return SettingIndexSearch.newInstance(uiSettings.get(0));
+            }
         }
         return null;
     }
@@ -217,6 +234,6 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        searchConfigManager = applicationContext.getBean(SearchConfigManager.class);
+        settingsService = applicationContext.getBean(SettingsService.class);
     }
 }

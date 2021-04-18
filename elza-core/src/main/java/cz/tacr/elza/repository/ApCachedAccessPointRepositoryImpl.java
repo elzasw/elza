@@ -10,10 +10,10 @@ import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.search.ElzaSearchConfig;
-import cz.tacr.elza.search.SearchConfigManager;
-import cz.tacr.elza.search.FieldSearchConfig;
+import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
+import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -35,6 +35,7 @@ import org.hibernate.search.query.dsl.BooleanJunction;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
@@ -65,7 +66,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     private StaticDataService staticDataService;
 
     @Autowired
-    private SearchConfigManager searchConfigManager;
+    private SettingsService settingsService;
 
     public static final String STAR = "*";
 
@@ -338,9 +339,9 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
     private void boostWildcardQuery(BooleanJunction<BooleanJunction> query, String fieldName, String value, boolean trans, boolean exact) {
         float boost = 1.0f;
-        ElzaSearchConfig elzaSearchConfig = searchConfigManager.getElzaSearchConfig();
+        SettingIndexSearch elzaSearchConfig = getElzaSearchConfig();
         if (elzaSearchConfig != null && elzaSearchConfig.getFields() != null) {
-            FieldSearchConfig fieldSearchConfig = elzaSearchConfig.getFieldSearchConfigByName(fieldName);
+            SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(elzaSearchConfig.getFields(), fieldName);
             if (fieldSearchConfig != null && fieldSearchConfig.getBoost() != null) {
                 boost = fieldSearchConfig.getBoost();
             }
@@ -357,10 +358,9 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
     private void boostExactQuery(BooleanJunction<BooleanJunction> query, String fieldName, String value) {
         float boost;
-        ElzaSearchConfig elzaSearchConfig = searchConfigManager.getElzaSearchConfig();
+        SettingIndexSearch elzaSearchConfig = getElzaSearchConfig();
         if (elzaSearchConfig != null && elzaSearchConfig.getFields() != null) {
-
-            FieldSearchConfig fieldSearchConfig = elzaSearchConfig.getFieldSearchConfigByName(fieldName);
+            SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(elzaSearchConfig.getFields(), fieldName);
             if (fieldSearchConfig != null && fieldSearchConfig.getBoostExact() != null) {
                 boost = fieldSearchConfig.getBoostExact();
             } else {
@@ -380,6 +380,28 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
 //        query.should(new BoostQuery(parseTransQuery(fieldName + SEPARATOR + TRANS, value), boost));
         query.should(new BoostQuery(new WildcardQuery(new Term(DATA + SEPARATOR + fieldName, value)), boost));
+    }
+
+    @Nullable
+    private SettingIndexSearch.Field getFieldSearchConfigByName(List<SettingIndexSearch.Field> fields, String name) {
+        if (CollectionUtils.isNotEmpty(fields)) {
+            for (SettingIndexSearch.Field field : fields) {
+                if (field.getName().equals(name)) {
+                    return field;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private SettingIndexSearch getElzaSearchConfig() {
+        UISettings.SettingsType indexSearch = UISettings.SettingsType.INDEX_SEARCH;
+        List<UISettings> uiSettings = settingsService.getGlobalSettings(indexSearch.toString(), indexSearch.getEntityType());
+        if (CollectionUtils.isNotEmpty(uiSettings)) {
+            return SettingIndexSearch.newInstance(uiSettings.get(0));
+        }
+        return null;
     }
 
     private Query parseTransQuery(String fieldName, String value) {
