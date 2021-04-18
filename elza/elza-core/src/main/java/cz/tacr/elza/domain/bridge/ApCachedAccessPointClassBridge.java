@@ -173,12 +173,10 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
 
     private void addField(String name, String value, Document document, LuceneOptions luceneOptions, String prefixName) {
         Field field = new Field(name, value, luceneOptions.getStore(), Field.Index.NOT_ANALYZED, luceneOptions.getTermVector());
-        field.setBoost(getBoost(name, prefixName));
         document.add(field);
 
         if (isFieldForTransliteration(name, prefixName)) {
             Field transField = new Field(name + SEPARATOR + TRANS, value, luceneOptions.getStore(), Field.Index.ANALYZED, luceneOptions.getTermVector());
-            transField.setBoost(getBoost(name, prefixName));
             document.add(transField);
         }
     }
@@ -197,22 +195,6 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
         }
 
         return transliterate;
-    }
-
-    private float getBoost(String name, String prefixName) {
-        float boost = 1.0f;
-
-        name = StringUtils.removeStart(name, prefixName + SEPARATOR);
-
-        ElzaSearchConfig elzaSearchConfig = getElzaSearchConfig();
-        if (elzaSearchConfig != null) {
-            FieldSearchConfig fieldSearchConfig = elzaSearchConfig.getFieldSearchConfigByName(name);
-            if (fieldSearchConfig != null && fieldSearchConfig.getBoost() != null) {
-                boost = fieldSearchConfig.getBoost();
-            }
-        }
-
-        return boost;
     }
 
     @Nullable
