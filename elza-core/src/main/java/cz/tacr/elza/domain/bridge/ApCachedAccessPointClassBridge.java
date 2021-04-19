@@ -21,11 +21,14 @@ import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
+import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.RamUsageEstimator;
 import org.hibernate.search.bridge.LuceneOptions;
 import org.hibernate.search.bridge.MetadataProvidingFieldBridge;
 import org.hibernate.search.bridge.StringBridge;
@@ -168,8 +171,9 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
     }
 
     private void addStringField(String name, String value, Document document) {
-        document.add(new StringField(name, value, Field.Store.YES));
-        document.add(new SortedDocValuesField(name, new BytesRef(value)));
+        String valueTrans = removeDiacritic(value);
+        document.add(new StringField(name, valueTrans, Field.Store.YES));
+        document.add(new SortedDocValuesField(name, new BytesRef(valueTrans)));
     }
 
     private void addField(String name, String value, Document document, LuceneOptions luceneOptions, String prefixName) {
@@ -180,6 +184,17 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
             Field transField = new Field(name + SEPARATOR + TRANS, value, luceneOptions.getStore(), Field.Index.ANALYZED, luceneOptions.getTermVector());
             document.add(transField);
         }
+    }
+
+    private String removeDiacritic(String value) {
+        char[] chars = new char[512];
+        final int maxSizeNeeded = 4 * value.length();
+        if (chars.length < maxSizeNeeded) {
+            chars = new char[ArrayUtil.oversize(maxSizeNeeded, RamUsageEstimator.NUM_BYTES_CHAR)];
+        }
+        ASCIIFoldingFilter.foldToASCII(value.toCharArray(), 0, chars, 0, value.length());
+
+        return String.valueOf(chars).trim();
     }
 
     private boolean isFieldForTransliteration(String name, String prefixName) {

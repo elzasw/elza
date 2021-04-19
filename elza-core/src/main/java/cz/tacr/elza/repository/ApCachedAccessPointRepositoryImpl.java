@@ -13,6 +13,7 @@ import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
+import cz.tacr.elza.repository.vo.ApCachedAccessPointResult;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
@@ -100,7 +101,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     }
 
     @Override
-    public List<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
+    public ApCachedAccessPointResult findApCachedAccessPointisByQuery(String search,
                                                                       SearchFilterVO searchFilter,
                                                                       Set<Integer> apTypeIdTree,
                                                                       Set<Integer> scopeIds,
@@ -122,7 +123,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         fullTextQuery.setMaxResults(count);
         fullTextQuery.setSort(sort);
 
-        return fullTextQuery.getResultList();
+        return new ApCachedAccessPointResult(fullTextQuery.getResultSize(), fullTextQuery.getResultList());
     }
 
     private Query buildQueryFromParams(QueryBuilder queryBuilder,
