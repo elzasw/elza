@@ -11,10 +11,10 @@ import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.search.ElzaSearchConfig;
-import cz.tacr.elza.search.SearchConfigManager;
-import cz.tacr.elza.search.FieldSearchConfig;
+import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
+import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 import cz.tacr.elza.service.cache.ApVisibilityChecker;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
@@ -41,6 +41,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
@@ -48,7 +49,7 @@ import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 public class ApCachedAccessPointClassBridge implements StringBridge, MetadataProvidingFieldBridge, ApplicationContextAware {
 
     @Autowired
-    private static SearchConfigManager searchConfigManager;
+    private static SettingsService settingsService;
 
     public static final String PREFIX_PREF = "pref";
     public static final String SEPARATOR = "_";
@@ -173,12 +174,10 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
 
     private void addField(String name, String value, Document document, LuceneOptions luceneOptions, String prefixName) {
         Field field = new Field(name, value, luceneOptions.getStore(), Field.Index.NOT_ANALYZED, luceneOptions.getTermVector());
-        field.setBoost(getBoost(name, prefixName));
         document.add(field);
 
         if (isFieldForTransliteration(name, prefixName)) {
             Field transField = new Field(name + SEPARATOR + TRANS, value, luceneOptions.getStore(), Field.Index.ANALYZED, luceneOptions.getTermVector());
-            transField.setBoost(getBoost(name, prefixName));
             document.add(transField);
         }
     }
@@ -188,9 +187,9 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
 
         name = StringUtils.removeStart(name, prefixName + SEPARATOR);
 
-        ElzaSearchConfig elzaSearchConfig = getElzaSearchConfig();
+        SettingIndexSearch elzaSearchConfig = getElzaSearchConfig();
         if (elzaSearchConfig != null) {
-            FieldSearchConfig fieldSearchConfig = elzaSearchConfig.getFieldSearchConfigByName(name);
+            SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(elzaSearchConfig.getFields(), name);
             if (fieldSearchConfig != null && fieldSearchConfig.getTransliterate() != null) {
                 transliterate = fieldSearchConfig.getTransliterate();
             }
@@ -199,26 +198,26 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
         return transliterate;
     }
 
-    private float getBoost(String name, String prefixName) {
-        float boost = 1.0f;
-
-        name = StringUtils.removeStart(name, prefixName + SEPARATOR);
-
-        ElzaSearchConfig elzaSearchConfig = getElzaSearchConfig();
-        if (elzaSearchConfig != null) {
-            FieldSearchConfig fieldSearchConfig = elzaSearchConfig.getFieldSearchConfigByName(name);
-            if (fieldSearchConfig != null && fieldSearchConfig.getBoost() != null) {
-                boost = fieldSearchConfig.getBoost();
+    @Nullable
+    private SettingIndexSearch.Field getFieldSearchConfigByName(List<SettingIndexSearch.Field> fields, String name) {
+        if (CollectionUtils.isNotEmpty(fields)) {
+            for (SettingIndexSearch.Field field : fields) {
+                if (field.getName().equals(name)) {
+                    return field;
+                }
             }
         }
-
-        return boost;
+        return null;
     }
 
     @Nullable
-    private ElzaSearchConfig getElzaSearchConfig() {
-        if (searchConfigManager != null) {
-            return searchConfigManager.getElzaSearchConfig();
+    private SettingIndexSearch getElzaSearchConfig() {
+        if (settingsService != null) {
+            UISettings.SettingsType indexSearch = UISettings.SettingsType.INDEX_SEARCH;
+            List<UISettings> uiSettings = settingsService.getGlobalSettings(indexSearch.toString(), indexSearch.getEntityType());
+            if (CollectionUtils.isNotEmpty(uiSettings)) {
+                return SettingIndexSearch.newInstance(uiSettings.get(0));
+            }
         }
         return null;
     }
@@ -235,6 +234,6 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        searchConfigManager = applicationContext.getBean(SearchConfigManager.class);
+        settingsService = applicationContext.getBean(SettingsService.class);
     }
 }

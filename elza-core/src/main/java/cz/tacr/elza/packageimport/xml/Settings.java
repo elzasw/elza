@@ -32,6 +32,7 @@ public class Settings {
             @XmlElement(name = "structure-type-settings", type = SettingStructTypeSettings.class),
             @XmlElement(name = "parts-order", type = SettingPartsOrder.class),
             @XmlElement(name = "item-types", type = SettingItemTypes.class),
+            @XmlElement(name = "index-search", type = SettingIndexSearch.class),
             @XmlElement(name = "dao-import-level-settings", type = SettingDaoImportLevel.class),
     })
     private List<Setting> settings;

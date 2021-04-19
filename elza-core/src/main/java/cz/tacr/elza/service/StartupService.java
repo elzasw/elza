@@ -8,7 +8,6 @@ import javax.transaction.Transactional.TxType;
 
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
-import cz.tacr.elza.search.SearchConfigManager;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -76,8 +75,6 @@ public class StartupService implements SmartLifecycle {
 
     private final AccessPointCacheService accessPointCacheService;
 
-    private final SearchConfigManager searchConfigManager;
-
     private boolean running;
 
     @Autowired
@@ -103,8 +100,7 @@ public class StartupService implements SmartLifecycle {
                           final ApplicationContext applicationContext,
                           final AsyncRequestService asyncRequestService,
                           final ExtSyncsProcessor extSyncsProcessor,
-                          final AccessPointCacheService accessPointCacheService,
-                          final SearchConfigManager searchConfigManager) {
+                          final AccessPointCacheService accessPointCacheService) {
         this.nodeRepository = nodeRepository;
         this.arrangementService = arrangementService;
         this.bulkActionRunRepository = bulkActionRunRepository;
@@ -124,7 +120,6 @@ public class StartupService implements SmartLifecycle {
         this.asyncRequestService = asyncRequestService;
         this.extSyncsProcessor = extSyncsProcessor;
         this.accessPointCacheService = accessPointCacheService;
-        this.searchConfigManager = searchConfigManager;
     }
 
     @Autowired
@@ -192,7 +187,6 @@ public class StartupService implements SmartLifecycle {
         clearTempStructureData();
         clearOrphanedNodes();
         bulkActionConfigManager.load();
-        searchConfigManager.load();
         syncNodeCacheService();
         // kontrola datové struktury
         accessPointService.checkConsistency();
