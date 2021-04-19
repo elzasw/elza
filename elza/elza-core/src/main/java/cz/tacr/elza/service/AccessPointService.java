@@ -458,6 +458,8 @@ public class AccessPointService {
             bindingItemRepository.invalidateByAccessPoint(accessPoint, change);
         }
 
+        accessPointCacheService.deleteCachedAccessPoint(accessPoint);
+
         publishAccessPointDeleteEvent(accessPoint);
         reindexDescItem(accessPoint);
     }
