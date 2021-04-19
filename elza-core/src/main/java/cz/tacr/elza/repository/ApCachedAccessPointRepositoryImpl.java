@@ -132,11 +132,13 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                                        Set<Integer> scopeIds,
                                        ApState.StateApproval state) {
         BooleanJunction<BooleanJunction> bool = queryBuilder.bool();
+        boolean empty = true;
 
         if (state != null) {
             BooleanJunction<BooleanJunction> stateQuery = queryBuilder.bool();
             stateQuery.should(new WildcardQuery(new Term(DATA + SEPARATOR + STATE, state.name().toLowerCase())));
             bool.must(stateQuery.createQuery());
+            empty = false;
         }
 
         if (CollectionUtils.isNotEmpty(apTypeIdTree)) {
@@ -145,6 +147,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 aeTypeQuery.should(new WildcardQuery(new Term(DATA + SEPARATOR + AP_TYPE_ID, apTypeId.toString().toLowerCase())));
             }
             bool.must(aeTypeQuery.createQuery());
+            empty = false;
         }
 
         if (CollectionUtils.isNotEmpty(scopeIds)) {
@@ -153,6 +156,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 scopeQuery.should(new WildcardQuery(new Term(DATA + SEPARATOR + SCOPE_ID, scopeId.toString().toLowerCase())));
             }
             bool.must(scopeQuery.createQuery());
+            empty = false;
         }
 
         if (searchFilter != null) {
@@ -160,14 +164,17 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 BooleanJunction<BooleanJunction> codeQuery = queryBuilder.bool();
                 codeQuery.should(new WildcardQuery(new Term(DATA + SEPARATOR + CachedAccessPoint.ACCESS_POINT_ID, searchFilter.getCode().toLowerCase())));
                 bool.must(codeQuery.createQuery());
+                empty = false;
             }
 
             if (StringUtils.isNotEmpty(searchFilter.getUser())) {
                 bool.must(new WildcardQuery(new Term(DATA + SEPARATOR + USERNAME, STAR + searchFilter.getUser().toLowerCase() + STAR)));
+                empty = false;
             }
 
             if (searchFilter.getArea() != Area.ENTITY_CODE) {
                 bool.must(process(queryBuilder, searchFilter));
+                empty = false;
             }
 
         } else {
@@ -175,11 +182,12 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 List<String> keyWords = getKeyWordsFromSearch(search);
                 for (String keyWord : keyWords) {
                     bool.must(processIndexCondDef(queryBuilder, keyWord, null));
+                    empty = false;
                 }
             }
         }
 
-        if (bool == null) {
+        if (empty) {
             return queryBuilder.all().createQuery();
         }
         return bool.createQuery();
