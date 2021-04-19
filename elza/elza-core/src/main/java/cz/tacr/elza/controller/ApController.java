@@ -23,6 +23,7 @@ import javax.transaction.Transactional;
 
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
+import cz.tacr.elza.repository.vo.ApCachedAccessPointResult;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
@@ -345,18 +346,18 @@ public class ApController {
 
         final Map<Integer, Integer> typeRuleSetMap = apFactory.getTypeRuleSetMap();
 
-        List<ApCachedAccessPoint> cachedAccessPoints = apCachedAccessPointRepository.findApCachedAccessPointisByQuery(search, searchFilter, apTypeIdTree, scopeIds,
+        ApCachedAccessPointResult cachedAccessPointResult = apCachedAccessPointRepository.findApCachedAccessPointisByQuery(search, searchFilter, apTypeIdTree, scopeIds,
                 state, from, count, sdp);
 
         List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
 
-        for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPoints) {
+        for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPointResult.getApCachedAccessPoints()) {
             CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData());
             String name = apFactory.findAeCachedEntityName(entity);
             accessPointVOList.add(apFactory.createVO(entity.getApState(), typeRuleSetMap, entity, name));
         }
 
-        return new FilteredResultVO<>(accessPointVOList, accessPointVOList.size());
+        return new FilteredResultVO<>(accessPointVOList, cachedAccessPointResult.getCount());
     }
 
     /**
