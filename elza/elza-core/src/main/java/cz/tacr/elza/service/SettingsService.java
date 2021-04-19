@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import org.drools.core.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -181,6 +182,9 @@ public class SettingsService {
         settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.ITEM_TYPES,
                 SettingItemTypes::newInstance,
                 SettingItemTypes.class ));
+        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.INDEX_SEARCH,
+                SettingIndexSearch::newInstance,
+                SettingIndexSearch.class ));
         settingsConvertors.add(new StructTypeSettingsConvertor());
 		
 		// default convertor
