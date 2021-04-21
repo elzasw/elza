@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKBWriter;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.io.WKTWriter;
 
@@ -36,6 +37,14 @@ public class GeometryConvertor {
         }
         WKTWriter writer = new WKTWriter();
         writer.setFormatted(false);
+        return writer.write(value);
+    }
+
+    public static byte[] convertToWkb(Geometry value) {
+        if (value == null) {
+            return null;
+        }
+        WKBWriter writer = new WKBWriter();
         return writer.write(value);
     }
 
