@@ -20,6 +20,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.analyzing.AnalyzingQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -29,6 +30,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.util.ArrayUtil;
+import org.apache.lucene.util.RamUsageEstimator;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
@@ -366,29 +369,35 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     }
 
     private void boostExactQuery(BooleanJunction<BooleanJunction> query, String fieldName, String value) {
-        float boost;
+        Float boost = null;
+        Float boostTrans = null;
         SettingIndexSearch elzaSearchConfig = getElzaSearchConfig();
         if (elzaSearchConfig != null && elzaSearchConfig.getFields() != null) {
             SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(elzaSearchConfig.getFields(), fieldName);
-            if (fieldSearchConfig != null && fieldSearchConfig.getBoostExact() != null) {
+            if (fieldSearchConfig != null) {
                 boost = fieldSearchConfig.getBoostExact();
-            } else {
-                return;
+                boostTrans = fieldSearchConfig.getBoostTransExact();
             }
-        } else {
-            return;
         }
 
-//        query.should(new BoostQuery(new WildcardQuery(new Term(fieldName, STAR + " " + value + " " + STAR)), boost));
-//        query.should(new BoostQuery(new WildcardQuery(new Term(fieldName, value + " " + STAR)), boost));
-//        query.should(new BoostQuery(new WildcardQuery(new Term(fieldName, STAR + " " + value)), boost));
-//
-//        query.should(new BoostQuery(parseTransQuery(fieldName + SEPARATOR + TRANS, STAR + " " + value + " " + STAR), boost));
-//        query.should(new BoostQuery(parseTransQuery(fieldName + SEPARATOR + TRANS, value + " " + STAR), boost));
-//        query.should(new BoostQuery(parseTransQuery(fieldName + SEPARATOR + TRANS, STAR + " " + value), boost));
+        if (boostTrans != null) {
+            query.should(new BoostQuery(new WildcardQuery(new Term(DATA + SEPARATOR + fieldName + SEPARATOR + TRANS, removeDiacritic(value))), boostTrans));
+        }
 
-//        query.should(new BoostQuery(parseTransQuery(fieldName + SEPARATOR + TRANS, value), boost));
-        query.should(new BoostQuery(new WildcardQuery(new Term(DATA + SEPARATOR + fieldName, value)), boost));
+        if (boost != null) {
+            query.should(new BoostQuery(new WildcardQuery(new Term(DATA + SEPARATOR + fieldName, value)), boost));
+        }
+    }
+
+    private String removeDiacritic(String value) {
+        char[] chars = new char[512];
+        final int maxSizeNeeded = 4 * value.length();
+        if (chars.length < maxSizeNeeded) {
+            chars = new char[ArrayUtil.oversize(maxSizeNeeded, RamUsageEstimator.NUM_BYTES_CHAR)];
+        }
+        ASCIIFoldingFilter.foldToASCII(value.toCharArray(), 0, chars, 0, value.length());
+
+        return String.valueOf(chars).trim();
     }
 
     @Nullable
