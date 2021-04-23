@@ -86,9 +86,7 @@ public class StartupService implements SmartLifecycle {
     public static boolean fullTextReindex = false;
 
     @Autowired
-    private IndexerProgressMonitor indexerProgressMonitor;
-
-    private Future<?> indexerStatus;
+    AdminService adminService;
 
     @Autowired
     @Qualifier("transactionManager")
@@ -153,12 +151,7 @@ public class StartupService implements SmartLifecycle {
 
         if (fullTextReindex) {
             logger.info("Full text reindex ...");
-            tt.executeWithoutResult(r -> {
-                FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(em);
-                MassIndexer createIndexer = fullTextEntityManager.createIndexer();
-                createIndexer.progressMonitor(indexerProgressMonitor);
-                indexerStatus = createIndexer.start();
-            });
+            tt.executeWithoutResult(r -> adminService.reindexInternal());
         }
 
         tt.executeWithoutResult(r -> startInTransaction2());
