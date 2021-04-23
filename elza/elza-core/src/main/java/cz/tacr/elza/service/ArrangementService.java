@@ -884,6 +884,7 @@ public class ArrangementService {
             }
             ArrFundToNodeList nl = mapFund.computeIfAbsent(r.getFundId(), id -> {
                 ArrFundToNodeList nnl = new ArrFundToNodeList(id, new ArrayList<>());
+                fundToNodeList.add(nnl);
                 return nnl;
             });
             nl.getNodeIdList().add(r.getNodeId());
@@ -928,6 +929,7 @@ public class ArrangementService {
         return null;
     }
 
+    @Transactional
     public List<TreeNodeVO> getNodeListByFulltext(Integer fundId) {
         ArrFundToNodeList fundToNodeList = getFundToNodeListFromSession(fundId);
         if (fundToNodeList != null) {
