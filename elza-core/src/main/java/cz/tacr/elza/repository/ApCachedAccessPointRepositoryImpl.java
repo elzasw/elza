@@ -13,12 +13,14 @@ import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
+import cz.tacr.elza.repository.vo.ApCachedAccessPointResult;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.analyzing.AnalyzingQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -28,6 +30,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.util.ArrayUtil;
+import org.apache.lucene.util.RamUsageEstimator;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
@@ -100,7 +104,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     }
 
     @Override
-    public List<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
+    public ApCachedAccessPointResult findApCachedAccessPointisByQuery(String search,
                                                                       SearchFilterVO searchFilter,
                                                                       Set<Integer> apTypeIdTree,
                                                                       Set<Integer> scopeIds,
@@ -122,7 +126,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         fullTextQuery.setMaxResults(count);
         fullTextQuery.setSort(sort);
 
-        return fullTextQuery.getResultList();
+        return new ApCachedAccessPointResult(fullTextQuery.getResultSize(), fullTextQuery.getResultList());
     }
 
     private Query buildQueryFromParams(QueryBuilder queryBuilder,
@@ -132,11 +136,13 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                                        Set<Integer> scopeIds,
                                        ApState.StateApproval state) {
         BooleanJunction<BooleanJunction> bool = queryBuilder.bool();
+        boolean empty = true;
 
         if (state != null) {
             BooleanJunction<BooleanJunction> stateQuery = queryBuilder.bool();
             stateQuery.should(new WildcardQuery(new Term(DATA + SEPARATOR + STATE, state.name().toLowerCase())));
             bool.must(stateQuery.createQuery());
+            empty = false;
         }
 
         if (CollectionUtils.isNotEmpty(apTypeIdTree)) {
@@ -145,6 +151,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 aeTypeQuery.should(new WildcardQuery(new Term(DATA + SEPARATOR + AP_TYPE_ID, apTypeId.toString().toLowerCase())));
             }
             bool.must(aeTypeQuery.createQuery());
+            empty = false;
         }
 
         if (CollectionUtils.isNotEmpty(scopeIds)) {
@@ -153,6 +160,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 scopeQuery.should(new WildcardQuery(new Term(DATA + SEPARATOR + SCOPE_ID, scopeId.toString().toLowerCase())));
             }
             bool.must(scopeQuery.createQuery());
+            empty = false;
         }
 
         if (searchFilter != null) {
@@ -160,14 +168,17 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 BooleanJunction<BooleanJunction> codeQuery = queryBuilder.bool();
                 codeQuery.should(new WildcardQuery(new Term(DATA + SEPARATOR + CachedAccessPoint.ACCESS_POINT_ID, searchFilter.getCode().toLowerCase())));
                 bool.must(codeQuery.createQuery());
+                empty = false;
             }
 
             if (StringUtils.isNotEmpty(searchFilter.getUser())) {
                 bool.must(new WildcardQuery(new Term(DATA + SEPARATOR + USERNAME, STAR + searchFilter.getUser().toLowerCase() + STAR)));
+                empty = false;
             }
 
             if (searchFilter.getArea() != Area.ENTITY_CODE) {
                 bool.must(process(queryBuilder, searchFilter));
+                empty = false;
             }
 
         } else {
@@ -175,11 +186,12 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 List<String> keyWords = getKeyWordsFromSearch(search);
                 for (String keyWord : keyWords) {
                     bool.must(processIndexCondDef(queryBuilder, keyWord, null));
+                    empty = false;
                 }
             }
         }
 
-        if (bool == null) {
+        if (empty) {
             return queryBuilder.all().createQuery();
         }
         return bool.createQuery();
@@ -357,29 +369,35 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     }
 
     private void boostExactQuery(BooleanJunction<BooleanJunction> query, String fieldName, String value) {
-        float boost;
+        Float boost = null;
+        Float boostTrans = null;
         SettingIndexSearch elzaSearchConfig = getElzaSearchConfig();
         if (elzaSearchConfig != null && elzaSearchConfig.getFields() != null) {
             SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(elzaSearchConfig.getFields(), fieldName);
-            if (fieldSearchConfig != null && fieldSearchConfig.getBoostExact() != null) {
+            if (fieldSearchConfig != null) {
                 boost = fieldSearchConfig.getBoostExact();
-            } else {
-                return;
+                boostTrans = fieldSearchConfig.getBoostTransExact();
             }
-        } else {
-            return;
         }
 
-//        query.should(new BoostQuery(new WildcardQuery(new Term(fieldName, STAR + " " + value + " " + STAR)), boost));
-//        query.should(new BoostQuery(new WildcardQuery(new Term(fieldName, value + " " + STAR)), boost));
-//        query.should(new BoostQuery(new WildcardQuery(new Term(fieldName, STAR + " " + value)), boost));
-//
-//        query.should(new BoostQuery(parseTransQuery(fieldName + SEPARATOR + TRANS, STAR + " " + value + " " + STAR), boost));
-//        query.should(new BoostQuery(parseTransQuery(fieldName + SEPARATOR + TRANS, value + " " + STAR), boost));
-//        query.should(new BoostQuery(parseTransQuery(fieldName + SEPARATOR + TRANS, STAR + " " + value), boost));
+        if (boostTrans != null) {
+            query.should(new BoostQuery(new WildcardQuery(new Term(DATA + SEPARATOR + fieldName + SEPARATOR + TRANS, removeDiacritic(value))), boostTrans));
+        }
 
-//        query.should(new BoostQuery(parseTransQuery(fieldName + SEPARATOR + TRANS, value), boost));
-        query.should(new BoostQuery(new WildcardQuery(new Term(DATA + SEPARATOR + fieldName, value)), boost));
+        if (boost != null) {
+            query.should(new BoostQuery(new WildcardQuery(new Term(DATA + SEPARATOR + fieldName, value)), boost));
+        }
+    }
+
+    private String removeDiacritic(String value) {
+        char[] chars = new char[512];
+        final int maxSizeNeeded = 4 * value.length();
+        if (chars.length < maxSizeNeeded) {
+            chars = new char[ArrayUtil.oversize(maxSizeNeeded, RamUsageEstimator.NUM_BYTES_CHAR)];
+        }
+        ASCIIFoldingFilter.foldToASCII(value.toCharArray(), 0, chars, 0, value.length());
+
+        return String.valueOf(chars).trim();
     }
 
     @Nullable
