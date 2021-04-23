@@ -12,10 +12,11 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.restassured.response.Response;
-
+import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.ArrangementController.FaTreeParam;
 import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
@@ -30,9 +31,11 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 
 /**
@@ -46,11 +49,16 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
     private final static String STRUCT_OBJ_1_ITEM_1_SPEC = "SRD_PACKET_TYPE_BOX";
     private final static int STRUCT_OBJ_1_ITEM_2_VALUE = 5238455;
 
+    private final static String POINT_WKT = "POINT (13.84883008449354 49.44732132890184)";
+
     // final static String TRANSFORMATIONS = DE_IMPORT_CONTROLLER_URL + "/transformations";
     // final static String SUZAP_XML = "suzap-import.xml";
 
     @Autowired
     private StructuredItemRepository structItemRepository;
+
+    @Autowired
+    DataCoordinatesRepository dataCoordinatesRepository;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -148,6 +156,13 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
             }
         }
         Assert.assertTrue(foundStructData == 2);
+        
+        // coordinate control
+        Geometry geoPoint = GeometryConvertor.convert(POINT_WKT);
+        List<ArrDataCoordinates> dataCoordinates = dataCoordinatesRepository.findAll();
+        for (ArrDataCoordinates coordinate : dataCoordinates) {
+            Assert.assertEquals(coordinate.getValue(), geoPoint);
+        }
     }
 
     private void checkNoData() {

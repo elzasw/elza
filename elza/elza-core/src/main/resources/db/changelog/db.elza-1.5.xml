@@ -1256,4 +1256,12 @@
       <delete tableName="arr_cached_node" />
     </changeSet>
 
+    <changeSet id="20210419133000" author="sergey.iryupin">
+    	<sql dbms="postgresql">DELETE FROM ap_cached_access_point WHERE access_point_id NOT IN
+  			(SELECT p.access_point_id FROM ap_access_point p
+    		  JOIN ap_state s ON s.access_point_id = p.access_point_id
+  			WHERE s.delete_change_id IS NULL)</sql>
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20210419133000" />
+	</changeSet>
+
 </databaseChangeLog>
