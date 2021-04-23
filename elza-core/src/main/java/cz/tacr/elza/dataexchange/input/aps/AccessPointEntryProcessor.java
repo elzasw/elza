@@ -292,12 +292,16 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         accessPoint.setUuid(StringUtils.trimToNull(entry.getUuid()));
         accessPoint.setState(ApStateEnum.OK);
 
+        StateApproval stateApproval = StateApproval.NEW;
+        if (entry.getS() != null) {
+            stateApproval = StateApproval.valueOf(entry.getS().toString());
+        }
+
         ApState apState = new ApState();
         apState.setAccessPoint(accessPoint);
         apState.setApType(apType);
         apState.setScope(context.getScope());
-        StateApproval state = entry.getS() == null? StateApproval.NEW : StateApproval.valueOf(entry.getS().toString()); 
-        apState.setStateApproval(state);
+        apState.setStateApproval(stateApproval);
         apState.setCreateChange(context.getCreateChange());
 
         return new ApEntity(accessPoint, apState);
