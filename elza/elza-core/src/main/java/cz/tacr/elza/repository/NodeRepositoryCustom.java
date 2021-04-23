@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.hibernate.ScrollableResults;
 
+import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -21,6 +22,40 @@ import cz.tacr.elza.filter.DescItemTypeFilter;
  *
  */
 public interface NodeRepositoryCustom {
+
+    public static class ArrDescItemInfo {
+
+        private final Integer itemId;
+        private final Integer nodeId;
+        private final Integer fundId;
+        private final Float score;
+
+        public Integer getItemId() {
+            return itemId;
+        }
+
+        public Integer getNodeId() {
+            return nodeId;
+        }
+
+        public Integer getFundId() {
+            return fundId;
+        }
+
+        public Float getScore() {
+            return score;
+        }
+
+        public ArrDescItemInfo(final Integer itemId,
+                               final Integer nodeId,
+                               final Integer fundId,
+                               final Float score) {
+            this.itemId = itemId;
+            this.nodeId = nodeId;
+            this.fundId = fundId;
+            this.score = score;
+        }
+    }
 
     /**
      * Najde všechny uzly v daném směru prohledávání.
@@ -40,7 +75,7 @@ public interface NodeRepositoryCustom {
      * @param text hledaná hodnota
      * @return množina id uzlů odopovídající hledané hodnotě
      */
-    List<ArrFundToNodeList> findFundIdsByFulltext(String text, Collection<ArrFund> fundList);
+    //List<ArrFundToNodeList> findFundIdsByFulltext(String text, Collection<ArrFund> fundList);
 
     /**
      * Najde uzly s danou hodnotou.
@@ -49,7 +84,9 @@ public interface NodeRepositoryCustom {
      * @param text hledaná hodnota
      * @return množina id uzlů odopovídající hledané hodnotě
      */
-    List<ArrFundToNodeList> findFundIdsByFulltext(String text, Collection<ArrFund> fundList, Integer max, Integer from);
+    QueryResults<ArrDescItemInfo> findFundIdsByFulltext(String text, Collection<ArrFund> fundList,
+                                                  Integer size,
+                                                  Integer offset);
     /**
      * Najde uzly s danou hodnotou.
      *

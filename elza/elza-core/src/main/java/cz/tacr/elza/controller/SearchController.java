@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.base.Functions;
 
 import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.vo.AbstractFilter;
 import cz.tacr.elza.controller.vo.EntityRef;
 import cz.tacr.elza.controller.vo.FieldValueFilter;
@@ -45,6 +46,7 @@ import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.LevelTreeCacheService;
@@ -402,12 +404,13 @@ public class SearchController implements SearchApi {
         return searchEntityFulltext(fundList, searchParams.getOffset(), searchParams.getSize(), searchedText);
     }
 
-    private ResponseEntity<ResultEntityRef> searchEntityFulltext(List<ArrFund> fundList, Integer offset, Integer size,
+    private ResponseEntity<ResultEntityRef> searchEntityFulltext(List<ArrFund> fundList,
+                                                                 Integer offset, Integer size,
                                                                  String value) {
-        List<ArrFundToNodeList> results = nodeRepository.findFundIdsByFulltext(value, fundList);
+        QueryResults<ArrDescItemInfo> results = nodeRepository.findFundIdsByFulltext(value, fundList, size, offset);
 
         ResponseBuilder rb = new ResponseBuilder(fundVersionRepository,
-                levelTreeCacheService, nodeRepository, offset, size);
+                levelTreeCacheService, nodeRepository);
         ResultEntityRef rer = rb.build(results);
 
         return ResponseEntity.ok(rer);

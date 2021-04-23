@@ -48,6 +48,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.filter.SearchParamType;
 import cz.tacr.elza.controller.vo.filter.TextSearchParam;
@@ -125,21 +126,14 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     }
     */
 
-    public List<ArrFundToNodeList> findFundIdsByFulltext(final String text, final Collection<ArrFund> fundList, Integer max, Integer from) {
-        if(from == null) from = 0;
-        if(max == null) max = Integer.MAX_VALUE;
-        return findFundIdsByFulltext(text, fundList).subList(from, Math.min(from + max, fundList.size()));
-    }
-
-    /**
-     * Vrátí id nodů, přes všechny AS.
-     *
-     * @param text The query text.
-     */
     @Override
-    public List<ArrFundToNodeList> findFundIdsByFulltext(final String text, final Collection<ArrFund> fundList) {        
-
+    public QueryResults<ArrDescItemInfo> findFundIdsByFulltext(final String text,
+                                                                 final Collection<ArrFund> fundList,
+                                                                 Integer size,
+                                                                 Integer offset) {
         FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
+        ctx.setOffset(offset);
+        ctx.setPageSize(size);
 
         QueryBuilder queryBuilder = ctx.getQueryBuilder();
         
@@ -157,19 +151,39 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
                                               queryBuilder);
         }
 
-        Query query = queryBuilder.bool().must(textQuery).must(fundIdsQuery).createQuery();
+        Query query;
+
+        if (textQuery == null && fundIdsQuery == null) {
+            query = queryBuilder.all().createQuery();
+        } else {
+            query = queryBuilder.bool().must(textQuery).must(fundIdsQuery).createQuery();
+        }
+
+        /*
+        if(from == null) {
+            from = 0;
+        }
+        if(max == null) {
+            max = Integer.MAX_VALUE;
+        }
+        return findFundIdsByFulltext(text, fundList).subList(from, Math.min(from + max, fundList.size()));
+        */
 
         List<ArrDescItemInfo> itemList = findNodeIdsByValidDescItems(null, query, ctx);
 
+        QueryResults<ArrDescItemInfo> result = new QueryResults<>(ctx.getResultSize(), itemList);
+
         // mapa ( fundId -> nodeId )
+        /*
         Map<Integer, Set<Integer>> fundNodeMap = itemList.stream().collect(groupingBy(
                                                                                       ArrDescItemInfo::getFundId,
                                                                                       Collectors.mapping(
                                                                                                          ArrDescItemInfo::getNodeId,
                                                                                                          toSet())));
-        List<ArrFundToNodeList> result = fundNodeMap.entrySet().stream().map(entry -> {
+                                                                                                         */
+        /*List<ArrFundToNodeList> result = fundNodeMap.entrySet().stream().map(entry -> {
             return new ArrFundToNodeList(entry.getKey(), entry.getValue().stream().collect(toList()));
-        }).collect(toList());
+        }).collect(toList());*/
         
         return result;
     }
@@ -598,7 +612,9 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      *
      * @return id nodů které mají před danou změnou nějaký atribut
      */
-    private List<ArrDescItemInfo> findNodeIdsByValidDescItems(final Integer lockChangeId, final Query descItemIdsQuery, FullTextQueryContext<ArrDescItem> ctx) {
+    private List<ArrDescItemInfo> findNodeIdsByValidDescItems(final Integer lockChangeId,
+                                                              final Query descItemIdsQuery,
+                                                              FullTextQueryContext<ArrDescItem> ctx) {
 
         if (descItemIdsQuery == null) {
             return Collections.emptyList();
@@ -620,7 +636,17 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
                                                                                    ArrDescItem.FIELD_NODE_ID,
                                                                                    ArrDescItem.FIELD_FUND_ID,
                                                                                    ProjectionConstants.SCORE);
+        if (ctx.getOffset() != null) {
+            fullTextQuery.setFirstResult(ctx.getOffset());
+        }
+        if (ctx.getPageSize() != null) {
+            fullTextQuery.setMaxResults(ctx.getPageSize());
+        }
 
+        int totalResultSize = fullTextQuery.getResultSize();
+        ctx.setResultSize(totalResultSize);
+
+        @SuppressWarnings("unchecked")
         List<Object[]> resultList = fullTextQuery.getResultList();
 
         return resultList.stream()
@@ -636,56 +662,53 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
      * @param text hodnota podle které se hledá
      * @return id atributů které mají danou hodnotu
      */
+    /*
     private List<Facet> countItemsByFundId(final String text, final Collection<Integer> fundIds) {
-
+    
         if (StringUtils.isBlank(text) || CollectionUtils.isEmpty(fundIds)) {
             return Collections.emptyList();
         }
-
+    
         FullTextQueryContext<ArrDescItem> ctx = new FullTextQueryContext<>(ArrDescItem.class);
-
+    
         QueryBuilder queryBuilder = ctx.getQueryBuilder();
-
+    
         Query changeQuery = createChangeQuery(queryBuilder, null);
         Query textQuery = createTextQuery(text, queryBuilder);
         Query fundIdQuery = createFundIdsQuery(fundIds, queryBuilder);
         // Query validDescItemInVersionQuery = createValidDescItemInVersionQuery(queryBuilder);
-
+    
         Query query = queryBuilder.bool()
                 .must(changeQuery)
                 .must(textQuery)
                 .must(fundIdQuery)
                 // .must(validDescItemInVersionQuery)
                 .createQuery();
-
+    
         // FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(ArrDescItem.ITEM_ID, ArrDescItem.NODE_ID, ArrDescItem.FUND_ID);
         FullTextQuery fullTextQuery = ctx.createFullTextQuery(query).setProjection(ArrDescItem.FIELD_ITEM_ID);
-
+    
         List<Object[]> resultList = fullTextQuery.getResultList();
-
+    
         final String fundFacet = "fund_facet";
-
+    
         FacetManager facetManager = fullTextQuery.getFacetManager();
-
+    
         facetManager.enableFaceting(queryBuilder.facet().name(fundFacet).onField(ArrDescItem.FIELD_FUND_ID_STRING)
                 .discrete()
                 .includeZeroCounts(false)
                 .orderedBy(FacetSortOrder.COUNT_DESC)
                 // .maxFacetCount(20)
                 .createFacetingRequest());
-
-        /*
-        resultList.stream()
-                .map(row -> new ArrDescItemInfo((Integer) row[0], (Integer) row[1], (Integer) row[2]))
-                .collect(toList());
-        */
-
+    
         return facetManager.getFacets(fundFacet);
-    }
+    }*/
 
+    /*
     private Query createValidDescItemInVersionQuery(QueryBuilder queryBuilder) {
         return queryBuilder.all().createQuery();
     }
+    */
 
     /**
      * Vytvoří query pro hledání podle aktuální nebo uzavžené verze.
@@ -805,6 +828,34 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         private final Class<T> entityClass;
         private final QueryBuilder queryBuilder;
 
+        Integer offset;
+        Integer pageSize;
+        Integer resultSize;
+
+        public Integer getOffset() {
+            return offset;
+        }
+
+        public void setOffset(Integer offset) {
+            this.offset = offset;
+        }
+
+        public Integer getPageSize() {
+            return pageSize;
+        }
+
+        public void setPageSize(Integer pageSize) {
+            this.pageSize = pageSize;
+        }
+
+        public Integer getResultSize() {
+            return resultSize;
+        }
+
+        public void setResultSize(Integer resultSize) {
+            this.resultSize = resultSize;
+        }
+
         /**
          * Vytvoří query builder pro danou třídu.
          *
@@ -834,38 +885,4 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         }
     }
 
-    private static class ArrDescItemInfo {
-
-        private final Integer itemId;
-        private final Integer nodeId;
-        private final Integer fundId;
-        private final Float score;
-
-        public Integer getItemId() {
-            return itemId;
-        }
-
-        public Integer getNodeId() {
-            return nodeId;
-        }
-
-
-        public Integer getFundId() {
-            return fundId;
-        }
-
-        public Float getScore() {
-            return score;
-        }
-
-        public ArrDescItemInfo(final Integer itemId,
-                               final Integer nodeId,
-                               final Integer fundId,
-                               final Float score) {
-            this.itemId = itemId;
-            this.nodeId = nodeId;
-            this.fundId = fundId;
-            this.score = score;
-        }
-    }
 }
