@@ -16,11 +16,9 @@ import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
-import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
@@ -54,8 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
-
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
 @Service
 public class AccessPointCacheService implements SearchIndexSupport<ApCachedAccessPoint> {
@@ -463,6 +459,13 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             throw new SystemException("Nastal problém při serializaci objektu, accessPointId: " +
                     cachedAccessPoint.getAccessPointId(), e)
                             .set("accessPointId", cachedAccessPoint.getAccessPointId());
+        }
+    }
+
+    public void deleteCachedAccessPoint(ApAccessPoint accessPoint) {
+        ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPoint.getAccessPointId());
+        if (oldApCachedAccessPoint != null) {
+            cachedAccessPointRepository.delete(oldApCachedAccessPoint);
         }
     }
 
