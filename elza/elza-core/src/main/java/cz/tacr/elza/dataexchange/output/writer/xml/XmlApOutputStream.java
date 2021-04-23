@@ -148,9 +148,15 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
     public static AccessPointEntry createEntry(ApState apState, Collection<ApBindingState> eids) {
         ApAccessPoint ap = apState.getAccessPoint();
 
+        AccessPointState accessPointState = AccessPointState.NEW;
+        if (apState.getStateApproval() != null) {
+            accessPointState = AccessPointState.valueOf(apState.getStateApproval().toString());
+        }
+
         AccessPointEntry entry = new AccessPointEntry();
         entry.setId(ap.getAccessPointId().toString());
         entry.setT(apState.getApType().getCode());
+        entry.setS(accessPointState);
         entry.setUuid(ap.getUuid());
 
         // prepare external id
