@@ -158,12 +158,15 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         Assert.assertTrue(foundStructData == 2);
 
         // coordinate control
+        int foundCoordinates = 0;
         DescFormDataNewVO descFormData = getNodeFormData(nodes.get(0).getId(), fVersion.getId());
         for (ArrItemVO item : descFormData.getDescItems()) {
             if (item instanceof ArrItemCoordinatesVO) {
                 Assert.assertEquals(((ArrItemCoordinatesVO) item).getValue(), POINT_WKT);
+                foundCoordinates++;
             }
         }
+        Assert.assertTrue(foundCoordinates == 2);
     }
 
     private void checkNoData() {
