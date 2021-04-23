@@ -14,6 +14,7 @@ import cz.tacr.elza.dataexchange.input.parts.context.PartInfo;
 import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import cz.tacr.elza.dataexchange.input.parts.context.PartsContext;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -295,7 +296,8 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         apState.setAccessPoint(accessPoint);
         apState.setApType(apType);
         apState.setScope(context.getScope());
-        apState.setStateApproval(ApState.StateApproval.APPROVED);
+        StateApproval state = entry.getS() == null? StateApproval.NEW : StateApproval.valueOf(entry.getS().toString()); 
+        apState.setStateApproval(state);
         apState.setCreateChange(context.getCreateChange());
 
         return new ApEntity(accessPoint, apState);
