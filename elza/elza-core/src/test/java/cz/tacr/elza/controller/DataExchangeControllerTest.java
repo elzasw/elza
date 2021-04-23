@@ -12,11 +12,10 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.restassured.response.Response;
-import cz.tacr.elza.common.GeometryConvertor;
+import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
 import cz.tacr.elza.controller.ArrangementController.FaTreeParam;
 import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
@@ -26,12 +25,13 @@ import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -156,12 +156,13 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
             }
         }
         Assert.assertTrue(foundStructData == 2);
-        
+
         // coordinate control
-        Geometry geoPoint = GeometryConvertor.convert(POINT_WKT);
-        List<ArrDataCoordinates> dataCoordinates = dataCoordinatesRepository.findAll();
-        for (ArrDataCoordinates coordinate : dataCoordinates) {
-            Assert.assertEquals(coordinate.getValue(), geoPoint);
+        DescFormDataNewVO descFormData = getNodeFormData(nodes.get(0).getId(), fVersion.getId());
+        for (ArrItemVO item : descFormData.getDescItems()) {
+            if (item instanceof ArrItemCoordinatesVO) {
+                Assert.assertEquals(((ArrItemCoordinatesVO) item).getValue(), POINT_WKT);
+            }
         }
     }
 
