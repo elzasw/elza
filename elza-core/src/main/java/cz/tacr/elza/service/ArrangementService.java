@@ -48,6 +48,7 @@ import com.google.common.collect.Iterables;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
@@ -121,6 +122,7 @@ import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
+import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
 import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
@@ -869,7 +871,25 @@ public class ArrangementService {
      */
     public List<ArrFundFulltextResult> findFundsByFulltext(final String searchValue, final Collection<ArrFund> fundList) {
 
-        List<ArrFundToNodeList> fundToNodeList = nodeRepository.findFundIdsByFulltext(searchValue, fundList);
+        // TODO: find all nodes in Lucene - has to be grouped by folder  
+        QueryResults<ArrDescItemInfo> foundItems = nodeRepository.findFundIdsByFulltext(searchValue, fundList,
+                                                                                        null, null);
+
+        List<ArrFundToNodeList> fundToNodeList = new ArrayList<>();
+        Map<Integer, ArrFundToNodeList> mapFund = new HashMap<>();
+        Set<Integer> processedNodes = new HashSet<>();
+        for (ArrDescItemInfo r : foundItems.getRecords()) {
+            if (processedNodes.contains(r.getNodeId())) {
+                continue;
+            }
+            ArrFundToNodeList nl = mapFund.computeIfAbsent(r.getFundId(), id -> {
+                ArrFundToNodeList nnl = new ArrFundToNodeList(id, new ArrayList<>());
+                return nnl;
+            });
+            nl.getNodeIdList().add(r.getNodeId());
+            processedNodes.add(r.getNodeId());
+        }
+
         fundFulltextSession().set(fundToNodeList);
 
         List<ArrFundFulltextResult> resultList = new ArrayList<>();
@@ -1603,17 +1623,18 @@ public class ArrangementService {
         return nodeRepository.findOneByUuid(nodeUuid);
     }
 
+    /*
     public FindFundsResult findFundsByFullTextInsIdentifier(List<ArrFund> fundList, String fulltext, String institutionIdentifier, Integer max, Integer from) {
         FindFundsResult fundsResult = new FindFundsResult();
         List<ArrFundToNodeList> fundToNodeList = nodeRepository.findFundIdsByFulltext(fulltext, fundList, max, from);
         fundFulltextSession().set(fundToNodeList);
-
+    
         if (!fundToNodeList.isEmpty()) {
             List<Integer> fundIds = fundList.stream().map(ArrFund::getFundId).collect(Collectors.toList());
             Map<Integer, ArrFundVersion> fundIdVersionsMap = getOpenVersionsByFundIds(fundIds).stream()
                     .collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
             Map<Integer, ArrFund> fundMap = fundList.stream().collect(Collectors.toMap(ArrFund::getFundId, Function.identity()));
-
+    
             for (ArrFundToNodeList fundCount : fundToNodeList) {
                 Fund result = new Fund();
                 ArrFund fund = fundMap.get(fundCount.getFundId());
@@ -1624,7 +1645,7 @@ public class ArrangementService {
             fundsResult.setTotalCount(fundToNodeList.size());
         }
         return fundsResult;
-    }
+    }*/
 
     public ArrRefTemplateVO createRefTemplate(Integer fundId) {
         ArrFund fund = getFund(fundId);
