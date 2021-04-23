@@ -114,13 +114,15 @@ public class SearchController implements SearchApi {
 			}
 			
 			List<AbstractFilter> filters = searchParams.getFilters();
-			if(!processAndFilters(filters)) {
-				return false;
+            if (filters != null) {
+                if (!processAndFilters(filters)) {
+                    return false;
+                }
 			}
 			return true;			
 		}
 		
-		private boolean processAndFilters(List<AbstractFilter> filters) {
+        private boolean processAndFilters(List<AbstractFilter> filters) {
 			for(AbstractFilter filter: filters) {
 				if(filter instanceof MultimatchContainsFilter) {
 					MultimatchContainsFilter mcf = (MultimatchContainsFilter)filter;
