@@ -4,7 +4,6 @@ import static cz.tacr.elza.repository.ExceptionThrow.ap;
 import static cz.tacr.elza.repository.ExceptionThrow.scope;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -46,8 +45,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.cam.client.ApiException;
-import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
-import cz.tacr.cam.schema.cam.BatchUpdateXml;
+import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.QueryResultXml;
 import cz.tacr.elza.common.FactoryUtils;
@@ -999,6 +997,7 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
+        entity.setEns(EntityRecordStateXml.ERS_NEW);
 
         ApScope scope = accessPointService.getScope(scopeId);
         ApBinding binding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId,
