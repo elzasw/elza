@@ -997,7 +997,6 @@ public class ApController {
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        entity.setEns(EntityRecordStateXml.ERS_NEW);
 
         ApScope scope = accessPointService.getScope(scopeId);
         ApBinding binding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId,
