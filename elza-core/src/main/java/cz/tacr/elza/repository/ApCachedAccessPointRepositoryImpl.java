@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.vo.Area;
 import cz.tacr.elza.controller.vo.ExtensionFilterVO;
 import cz.tacr.elza.controller.vo.RelationFilterVO;
@@ -13,7 +14,6 @@ import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
-import cz.tacr.elza.repository.vo.ApCachedAccessPointResult;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
@@ -104,7 +104,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     }
 
     @Override
-    public ApCachedAccessPointResult findApCachedAccessPointisByQuery(String search,
+    public QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
                                                                       SearchFilterVO searchFilter,
                                                                       Set<Integer> apTypeIdTree,
                                                                       Set<Integer> scopeIds,
@@ -126,7 +126,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         fullTextQuery.setMaxResults(count);
         fullTextQuery.setSort(sort);
 
-        return new ApCachedAccessPointResult(fullTextQuery.getResultSize(), fullTextQuery.getResultList());
+        return new QueryResults<ApCachedAccessPoint>(fullTextQuery.getResultSize(), fullTextQuery.getResultList());
     }
 
     private Query buildQueryFromParams(QueryBuilder queryBuilder,
