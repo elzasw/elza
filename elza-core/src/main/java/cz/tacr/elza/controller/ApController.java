@@ -4,7 +4,6 @@ import static cz.tacr.elza.repository.ExceptionThrow.ap;
 import static cz.tacr.elza.repository.ExceptionThrow.scope;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -45,11 +44,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.cam.client.ApiException;
-import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
-import cz.tacr.cam.schema.cam.BatchUpdateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.QueryResultXml;
 import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
@@ -118,7 +116,6 @@ import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
-import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cam.CamService;
 import cz.tacr.elza.service.cam.ProcessingContext;
 
@@ -161,9 +158,6 @@ public class ApController {
 
     @Autowired
     private PartService partService;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private SearchFilterFactory searchFilterFactory;
@@ -345,18 +339,18 @@ public class ApController {
 
         final Map<Integer, Integer> typeRuleSetMap = apFactory.getTypeRuleSetMap();
 
-        List<ApCachedAccessPoint> cachedAccessPoints = apCachedAccessPointRepository.findApCachedAccessPointisByQuery(search, searchFilter, apTypeIdTree, scopeIds,
+        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository.findApCachedAccessPointisByQuery(search, searchFilter, apTypeIdTree, scopeIds,
                 state, from, count, sdp);
 
         List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
 
-        for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPoints) {
+        for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPointResult.getRecords()) {
             CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData());
             String name = apFactory.findAeCachedEntityName(entity);
             accessPointVOList.add(apFactory.createVO(entity.getApState(), typeRuleSetMap, entity, name));
         }
 
-        return new FilteredResultVO<>(accessPointVOList, accessPointVOList.size());
+        return new FilteredResultVO<>(accessPointVOList, cachedAccessPointResult.getRecordCount());
     }
 
     /**

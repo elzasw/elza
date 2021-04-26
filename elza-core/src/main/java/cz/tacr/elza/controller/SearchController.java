@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.base.Functions;
 
 import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.vo.AbstractFilter;
 import cz.tacr.elza.controller.vo.EntityRef;
 import cz.tacr.elza.controller.vo.FieldValueFilter;
@@ -45,6 +46,7 @@ import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.LevelTreeCacheService;
@@ -112,13 +114,15 @@ public class SearchController implements SearchApi {
 			}
 			
 			List<AbstractFilter> filters = searchParams.getFilters();
-			if(!processAndFilters(filters)) {
-				return false;
+            if (filters != null) {
+                if (!processAndFilters(filters)) {
+                    return false;
+                }
 			}
 			return true;			
 		}
 		
-		private boolean processAndFilters(List<AbstractFilter> filters) {
+        private boolean processAndFilters(List<AbstractFilter> filters) {
 			for(AbstractFilter filter: filters) {
 				if(filter instanceof MultimatchContainsFilter) {
 					MultimatchContainsFilter mcf = (MultimatchContainsFilter)filter;
@@ -261,6 +265,8 @@ public class SearchController implements SearchApi {
     @RequestMapping(value = { "/cuni-ais-api/search-ap", "/api/v1/search-ap" })
     @Transactional
 	public ResponseEntity<ResultEntityRef> searchEntity(@RequestBody SearchParams searchParams) {
+
+        log.debug("Received request on: /api/v1/search-ap, query: {}", searchParams);
 		
 		StaticDataProvider sdp = staticDataService.createProvider();
 		final RulPartType bodyType = sdp.getPartTypeByCode(StaticDataProvider.DEFAULT_BODY_PART_TYPE);
@@ -353,37 +359,60 @@ public class SearchController implements SearchApi {
     @Transactional
     public ResponseEntity<ResultEntityRef> searchArchDesc(@RequestBody SearchParams searchParams) {
 
+        log.debug("Received request on: /api/v1/search-arr, query: {}", searchParams);
+
         // get funds to search in
         UserDetail userDetail = userService.getLoggedUserDetail();
 
-        List<ArrFund> fundList = fundRepository.findFundByFulltext(null, userDetail.hasPermission(
-                                                                                                  UsrPermission.Permission.FUND_RD_ALL)
-                                                                                                          ? null
-                                                                                                          : userDetail
-                                                                                                                  .getId());
-        if (fundList.isEmpty()) {
-            ResultEntityRef rer = new ResultEntityRef();
-            rer.setCount((long) 0);
-            return ResponseEntity.ok(rer);
+        // If user can read all funds then list of fund should not be prepared here at all
+        List<ArrFund> fundList;
+        if(userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL) ||
+                userDetail.hasPermission(UsrPermission.Permission.FUND_ADMIN) ||
+                userDetail.hasPermission(UsrPermission.Permission.ADMIN)) {
+            fundList = null;
+            log.debug("Searching in all funds");
+        } else {
+            Integer userId = userDetail.getId();
+            fundList = fundRepository.findFundByFulltext(null, userId);
+            if (fundList.isEmpty()) {
+                log.debug("No matching funds");
+                ResultEntityRef rer = new ResultEntityRef();
+                rer.setCount((long) 0);
+                return ResponseEntity.ok(rer);
+            }
+            log.debug("Searching funds: {}", fundList);
         }
 
         // full text query
         List<AbstractFilter> filters = searchParams.getFilters();
-        if (filters != null && filters.size() == 1) {
-            if (filters.get(0) instanceof MultimatchContainsFilter) {
-                MultimatchContainsFilter mcf = (MultimatchContainsFilter) filters.get(0);
-                return searchEntityFulltext(fundList, searchParams.getOffset(), searchParams.getSize(), mcf.getValue());
+        String searchedText = null;
+        if (filters != null && filters.size() > 0) {
+            if(filters.size() == 1) {                
+                if (filters.get(0) instanceof MultimatchContainsFilter) {                    
+                    MultimatchContainsFilter mcf = (MultimatchContainsFilter) filters.get(0);
+                    searchedText = mcf.getValue();
+                } else {
+                    log.debug("Received unexpected search request, query: {}", searchParams);
+                    return ResponseEntity.badRequest().build();                    
+                }
+            } else {
+                log.debug("Received unexpected search request, query: {}", searchParams);
+                return ResponseEntity.badRequest().build();
             }
+
+        } else {
+            // filter not specified
         }
-        return ResponseEntity.badRequest().build();
+        return searchEntityFulltext(fundList, searchParams.getOffset(), searchParams.getSize(), searchedText);
     }
 
-    private ResponseEntity<ResultEntityRef> searchEntityFulltext(List<ArrFund> fundList, Integer offset, Integer size,
+    private ResponseEntity<ResultEntityRef> searchEntityFulltext(List<ArrFund> fundList,
+                                                                 Integer offset, Integer size,
                                                                  String value) {
-        List<ArrFundToNodeList> results = nodeRepository.findFundIdsByFulltext(value, fundList);
+        QueryResults<ArrDescItemInfo> results = nodeRepository.findFundIdsByFulltext(value, fundList, size, offset);
 
         ResponseBuilder rb = new ResponseBuilder(fundVersionRepository,
-                levelTreeCacheService, nodeRepository, offset, size);
+                levelTreeCacheService, nodeRepository);
         ResultEntityRef rer = rb.build(results);
 
         return ResponseEntity.ok(rer);

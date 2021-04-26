@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.restassured.response.Response;
-
+import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
 import cz.tacr.elza.controller.ArrangementController.FaTreeParam;
 import cz.tacr.elza.controller.DEExportController.DEExportParamsVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
@@ -25,6 +25,8 @@ import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -33,6 +35,7 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 
 /**
@@ -46,11 +49,16 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
     private final static String STRUCT_OBJ_1_ITEM_1_SPEC = "SRD_PACKET_TYPE_BOX";
     private final static int STRUCT_OBJ_1_ITEM_2_VALUE = 5238455;
 
+    private final static String POINT_WKT = "POINT (13.84883008449354 49.44732132890184)";
+
     // final static String TRANSFORMATIONS = DE_IMPORT_CONTROLLER_URL + "/transformations";
     // final static String SUZAP_XML = "suzap-import.xml";
 
     @Autowired
     private StructuredItemRepository structItemRepository;
+
+    @Autowired
+    DataCoordinatesRepository dataCoordinatesRepository;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -148,6 +156,17 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
             }
         }
         Assert.assertTrue(foundStructData == 2);
+
+        // coordinate control
+        int foundCoordinates = 0;
+        DescFormDataNewVO descFormData = getNodeFormData(nodes.get(0).getId(), fVersion.getId());
+        for (ArrItemVO item : descFormData.getDescItems()) {
+            if (item instanceof ArrItemCoordinatesVO) {
+                Assert.assertEquals(((ArrItemCoordinatesVO) item).getValue(), POINT_WKT);
+                foundCoordinates++;
+            }
+        }
+        Assert.assertTrue(foundCoordinates == 2);
     }
 
     private void checkNoData() {

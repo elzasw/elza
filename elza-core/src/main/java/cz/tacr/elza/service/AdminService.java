@@ -48,6 +48,11 @@ public class AdminService {
     /** Přeindexuje všechna data. */
     @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     public void reindex() {
+        reindexInternal();
+    }
+
+    /** Volání bez kontroly práv */
+    public void reindexInternal() {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
 
         if (isIndexingRunning()) {

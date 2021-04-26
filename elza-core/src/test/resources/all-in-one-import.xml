@@ -18,6 +18,15 @@
 					<de s="SRD_LANGUAGE_3" t="SRD_LANGUAGE" />
 					<dl schm="https" t="ODKAZ_OBECNY" uri="https://www.google.com/" />
 					<dl schm="elza-node" t="ODKAZ_OBECNY" uri="elza-node://f4b883cd-b140-4282-9d42-5a080a7a8333" />
+                    <ds t="SRD_TITLE">
+                        <v>mapa</v>
+                    </ds>
+                    <ds t="SRD_POSITION">
+                        <v>POINT (13.84883008449354 49.44732132890184)</v>
+                    </ds>
+                    <dg t="SRD_POSITION">
+                        <d>AAAAAAFAK7KZ21mFd0BIuUHTRzfl</d>
+                    </dg>
 				</lvl>
 				<lvl id="2" pid="1" uuid="f4b883cd-b140-4282-9d42-5a080a7a8333">
 					<de s="SRD_LANGUAGE_3" t="SRD_LANGUAGE" />

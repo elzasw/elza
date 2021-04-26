@@ -42,6 +42,8 @@ elza:
     h2:
        # Enable H2 DB console on URL .../console
        console: false
+    # Log http requets
+    # requests: true
   workingDir: ./work
   locale: cs
   asyncActions:
@@ -60,3 +62,5 @@ elza:
 logging:
   level:
     cz.tacr.elza: DEBUG
+#    Request logging
+#    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
