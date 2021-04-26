@@ -244,7 +244,7 @@ const DetailHeader: FC<Props> = ({
                             <h4>{apType.name}</h4>
                             <DetailDescriptions>
                                 {id && <DetailDescriptionsItem label="ID:">{id}</DetailDescriptionsItem>}
-                                {item.state && (
+                                {item.stateApproval && (
                                     <DetailDescriptionsItem>
                                         <DetailState state={item.stateApproval} />
                                     </DetailDescriptionsItem>
