@@ -347,6 +347,26 @@ public class AccessPointService {
     }
 
     /**
+     * Získání seznam objektu pomocí id nebo uuid
+     * 
+     * @param ids seznam is nebo uuid
+     * @return List<ApAccessPoint>
+     */
+    public List<ApAccessPoint> getAccessPointsByIdOrUuid(List<String> ids) {
+        List<ApAccessPoint> accessPoints;
+        if (CollectionUtils.isEmpty(ids)) {
+            return Collections.emptyList();
+        }
+        if (!StringUtils.isNumeric(ids.get(0))) {
+            accessPoints = apAccessPointRepository.findApAccessPointsByUuids(ids);
+        } else {
+            List<Integer> integerIds = ids.stream().map(p -> Integer.valueOf(p)).collect(Collectors.toList());
+            accessPoints = apAccessPointRepository.findAllById(integerIds);
+        }
+        return accessPoints;
+    }
+
+    /**
      * Kontrola, jestli je používán přístupový bod v navázaných tabulkách.
      *
      * @param accessPoint přístupový bod
@@ -378,11 +398,12 @@ public class AccessPointService {
     public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState,
                                   final ApAccessPoint replacedBy, boolean copyAll) {
 
+        ApChange.Type changeType = replacedBy != null ? ApChange.Type.AP_REPLACE : ApChange.Type.AP_DELETE; 
+        ApChange change = apDataService.createChange(changeType);
+
         apDataService.validationNotDeleted(apState);
 
         ApAccessPoint accessPoint = apState.getAccessPoint();
-
-        ApChange change = apDataService.createChange(ApChange.Type.AP_REPLACE);
 
         if (replacedBy != null) {
             ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
@@ -398,6 +419,31 @@ public class AccessPointService {
                 accessPointCacheService.createApCachedAccessPoint(replacedBy.getAccessPointId());
             }
         }
+        deleteAccessPointPublichAndReindex(apState, accessPoint, change);
+    }
+
+    /**
+     * Mazání seznamů objektů ApAccessPoint
+     * 
+     * @param apStates seznam
+     */
+    public void deleteAccessPoints(final List<ApState> apStates) {
+        ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
+        for (ApState apState : apStates) {
+            apDataService.validationNotDeleted(apState);
+            ApAccessPoint accessPoint = apState.getAccessPoint();
+            deleteAccessPointPublichAndReindex(apState, accessPoint, change);
+        }
+    }
+
+    /**
+     * Mazání ApAccessPoint, zveřejnění a reindexování
+     * 
+     * @param apState
+     * @param accessPoint
+     * @param change
+     */
+    private void deleteAccessPointPublichAndReindex(final ApState apState, ApAccessPoint accessPoint, final ApChange change) {
         checkDeletion(accessPoint);
         partService.deleteParts(accessPoint, change);
         apState.setDeleteChange(change);
@@ -411,6 +457,8 @@ public class AccessPointService {
             bindingStateRepository.saveAll(eids);
             bindingItemRepository.invalidateByAccessPoint(accessPoint, change);
         }
+
+        accessPointCacheService.deleteCachedAccessPoint(accessPoint);
 
         publishAccessPointDeleteEvent(accessPoint);
         reindexDescItem(accessPoint);
@@ -1305,6 +1353,17 @@ public class AccessPointService {
         return state;
     }
 
+    /**
+     * Získání seznam stavu přístupovih bodu.
+     * 
+     * @param accessPoints seznam
+     * @return List<ApState>
+     */
+    public List<ApState> getStatesInternal(final List<ApAccessPoint> accessPoints) {
+        return stateRepository.findLastByAccessPoints(accessPoints);
+        
+    }
+
     public Map<Integer, ApState> groupStateByAccessPointId(final List<Integer> accessPointIds) {
         if (accessPointIds.isEmpty()) {
             return Collections.emptyMap();
@@ -1869,22 +1928,26 @@ public class AccessPointService {
     }
 
     private List<ExtSyncsQueueItemVO> createExtSyncsQueueItemVOList(List<ExtSyncsQueueItem> items) {
-        List<ExtSyncsQueueItemVO> extSyncsQueueItemVOList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(items)) {
-
-            final List<ApAccessPoint> accessPoints = items.stream()
-                    .map(ExtSyncsQueueItem::getAccessPoint)
-                    .collect(Collectors.toList());
-            final Map<Integer, ApIndex> nameMap = findPreferredPartIndexMap(accessPoints);
-            final Map<Integer, ApState> stateMap = apStateRepository.findLastByAccessPoints(accessPoints).stream()
-                    .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
-
-            for (ExtSyncsQueueItem extSyncsQueueItem : items) {
-                String name = nameMap.get(extSyncsQueueItem.getAccessPointId()) != null ? nameMap.get(extSyncsQueueItem.getAccessPointId()).getValue() : null;
-                ApState state = stateMap.get(extSyncsQueueItem.getAccessPointId());
-                extSyncsQueueItemVOList.add(createExtSyncsQueueItemVO(extSyncsQueueItem, name, state.getScopeId()));
-            }
+        if (CollectionUtils.isEmpty(items)) {
+            return Collections.emptyList();
         }
+
+        List<ExtSyncsQueueItemVO> extSyncsQueueItemVOList = new ArrayList<>(items.size());
+
+        final List<ApAccessPoint> accessPoints = items.stream()
+                .map(ExtSyncsQueueItem::getAccessPoint)
+                .collect(Collectors.toList());
+        final Map<Integer, ApIndex> nameMap = findPreferredPartIndexMap(accessPoints);
+        final Map<Integer, ApState> stateMap = apStateRepository.findLastByAccessPoints(accessPoints).stream()
+                .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
+
+        for (ExtSyncsQueueItem extSyncsQueueItem : items) {
+            String name = nameMap.get(extSyncsQueueItem.getAccessPointId()) != null ? nameMap.get(extSyncsQueueItem
+                    .getAccessPointId()).getValue() : null;
+            ApState state = stateMap.get(extSyncsQueueItem.getAccessPointId());
+            extSyncsQueueItemVOList.add(createExtSyncsQueueItemVO(extSyncsQueueItem, name, state.getScopeId()));
+        }
+
         return extSyncsQueueItemVOList;
     }
 

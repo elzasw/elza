@@ -1,10 +1,17 @@
 package cz.tacr.elza.domain;
 
 import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
+import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
+import org.apache.lucene.analysis.core.WhitespaceTokenizerFactory;
+import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilterFactory;
 import org.hibernate.annotations.Type;
+import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.ClassBridge;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.annotations.TokenFilterDef;
+import org.hibernate.search.annotations.TokenizerDef;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -20,9 +27,17 @@ import javax.persistence.Table;
 
 @Table
 @Indexed
+@AnalyzerDef(name = "cz",
+        tokenizer = @TokenizerDef(factory = WhitespaceTokenizerFactory.class),
+        filters = {
+                @TokenFilterDef(factory = LowerCaseFilterFactory.class),
+                @TokenFilterDef(factory = ASCIIFoldingFilterFactory.class)
+        })
 @ClassBridge(name = "data",
         impl = ApCachedAccessPointClassBridge.class,
+        analyzer = @Analyzer(definition = "cz"),
         store = Store.YES)
+@Analyzer(definition = "cz")
 @Entity(name = "ap_cached_access_point")
 public class ApCachedAccessPoint {
 

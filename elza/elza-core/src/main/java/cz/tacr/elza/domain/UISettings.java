@@ -251,7 +251,12 @@ public class UISettings {
         /**
          * Nastavení atributů dle části v detailu přístupového bodu.
          */
-        ITEM_TYPES(true, EntityType.RULE);
+        ITEM_TYPES(true, EntityType.RULE),
+
+        /**
+         * Nastavení vyhledávání v indexech.
+         */
+        INDEX_SEARCH(true, null);
 
         /**
          * If settings can be global or has to be defined on some entity.

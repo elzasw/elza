@@ -45,8 +45,6 @@ public class CamConnector {
     @Autowired
     private SchemaManager schemaManager;
 
-    // schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL)
-
     private static final Logger logger = LoggerFactory.getLogger(CamConnector.class);
 
     private final Map<String, CamInstance> instanceMap = new HashMap<>();

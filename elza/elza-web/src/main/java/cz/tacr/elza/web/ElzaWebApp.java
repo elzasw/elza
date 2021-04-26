@@ -23,6 +23,7 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.util.unit.DataSize;
+import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import org.springframework.web.filter.ForwardedHeaderFilter;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
@@ -120,5 +121,16 @@ public class ElzaWebApp {
         factory.setMaxFileSize(DataSize.parse(uploadMaxFileSize));
         factory.setMaxRequestSize(DataSize.parse(uploadMaxRequestSize));
         return factory.createMultipartConfig();
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "elza.debug", name = "requests", havingValue = "true")
+    public CommonsRequestLoggingFilter requestLoggingFilter() {
+        CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
+        loggingFilter.setIncludeClientInfo(true);
+        loggingFilter.setIncludeQueryString(true);
+        loggingFilter.setIncludePayload(true);
+        loggingFilter.setMaxPayloadLength(64000);
+        return loggingFilter;
     }
 }

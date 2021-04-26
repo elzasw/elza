@@ -152,9 +152,8 @@ public class XmlUtils {
         }
         GregorianCalendar gcal = new GregorianCalendar();
         gcal.setTime(localDate);
-        return DATATYPE_FACTORY.newXMLGregorianCalendar(
-                                                        gcal.get(Calendar.YEAR),
-                                                        gcal.get(Calendar.MONTH),
+        return DATATYPE_FACTORY.newXMLGregorianCalendar(gcal.get(Calendar.YEAR),
+                                                        gcal.get(Calendar.MONTH) + 1, // měsíce začínají na 0, ne 1
                                                         gcal.get(Calendar.DAY_OF_MONTH),
                                                         DatatypeConstants.FIELD_UNDEFINED,
                                                         DatatypeConstants.FIELD_UNDEFINED,

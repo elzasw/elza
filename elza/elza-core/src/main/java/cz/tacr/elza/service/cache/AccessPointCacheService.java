@@ -16,11 +16,9 @@ import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
-import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
@@ -54,8 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
-
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
 @Service
 public class AccessPointCacheService implements SearchIndexSupport<ApCachedAccessPoint> {
@@ -202,8 +198,8 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             CachedAccessPoint cap = apMap.get(apState.getAccessPointId());
             cap.setApState(apState);
         }
-        
-        createCachedPartMap(accessPointIds, accessPointList, apMap);
+
+        createCachedPartMap(accessPointList, apMap);
         createCachedBindingMap(accessPointList, apMap);
 
         List<ApCachedAccessPoint> apCachedAccessPoints = new ArrayList<>();
@@ -260,24 +256,33 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         return cachedPart;
     }
 
-    // TODO: change parameters to use only IDS or only entities
-    private void createCachedPartMap(List<Integer> accessPointIds,
-                                     List<ApAccessPoint> accessPointList,
+    private void createCachedPartMap(List<ApAccessPoint> accessPointList,
                                      Map<Integer, CachedAccessPoint> apMap) {
+
+        Map<Integer, CachedPart> partMap = fillCachedPartMap(accessPointList, apMap);
+
+        addItemsToCachedPartMap(accessPointList, partMap);
+
+        addIndexesToCachedPartMap(accessPointList, partMap);
+    }
+
+    private Map<Integer, CachedPart> fillCachedPartMap(List<ApAccessPoint> accessPointList, Map<Integer, CachedAccessPoint> apMap) {
         Map<Integer, CachedPart> partMap = new HashMap<>();
-        // result
-        
+
         List<ApPart> parts = partRepository.findValidPartByAccessPoints(accessPointList);
         for(ApPart part: parts) {
             part = HibernateUtils.unproxy(part);
             CachedPart cachedPart = createCachedPart(part);
             partMap.put(cachedPart.getPartId(), cachedPart);
-            
+
             CachedAccessPoint cap = apMap.get(part.getAccessPointId());
             Validate.notNull(cap, "AP not in the result");
             cap.addPart(cachedPart);
         }
+        return partMap;
+    }
 
+    private void addItemsToCachedPartMap(List<ApAccessPoint> accessPointList, Map<Integer, CachedPart> partMap) {
         List<ApItem> apItems = itemRepository.findValidItemsByAccessPoints(accessPointList);
         if (CollectionUtils.isNotEmpty(apItems)) {
             for (ApItem item : apItems) {
@@ -287,8 +292,10 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                 part.addItem(item);
             }
         }
+    }
 
-        List<ApIndex> apIndices = indexRepository.findIndicesByAccessPoints(accessPointIds);
+    private void addIndexesToCachedPartMap(List<ApAccessPoint> accessPointList, Map<Integer, CachedPart> partMap) {
+        List<ApIndex> apIndices = indexRepository.findIndicesByAccessPoints(accessPointList);
         if (CollectionUtils.isNotEmpty(apIndices)) {
             for (ApIndex index : apIndices) {
                 index = HibernateUtils.unproxy(index);
@@ -452,6 +459,13 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             throw new SystemException("Nastal problém při serializaci objektu, accessPointId: " +
                     cachedAccessPoint.getAccessPointId(), e)
                             .set("accessPointId", cachedAccessPoint.getAccessPointId());
+        }
+    }
+
+    public void deleteCachedAccessPoint(ApAccessPoint accessPoint) {
+        ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPoint.getAccessPointId());
+        if (oldApCachedAccessPoint != null) {
+            cachedAccessPointRepository.delete(oldApCachedAccessPoint);
         }
     }
 

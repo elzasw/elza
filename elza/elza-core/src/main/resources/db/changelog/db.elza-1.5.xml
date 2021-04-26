@@ -1231,5 +1231,37 @@
 
     <changeSet id="20210405232524" author="ppyt">
       <delete tableName="ap_cached_access_point" />
-    </changeSet>    
+    </changeSet>
+
+    <changeSet id="20210410101000" author="sergey.iryupin">
+        <createIndex indexName="ap_binding_item_id_idx" tableName="ap_binding_item">
+            <column name="binding_id"/>
+        </createIndex>
+	</changeSet>
+
+    <changeSet id="20210413151500" author="sergey.iryupin">
+    	<sql dbms="postgresql">UPDATE ap_binding SET value = CONCAT('missing_value_', CAST(binding_id AS text)) 
+    						   WHERE value IS NULL</sql>
+        <addNotNullConstraint tableName="ap_binding" columnName="value" columnDataType="nvarchar(50)"/>
+    </changeSet>
+
+    <changeSet id="20210416121600" author="sergey.iryupin">
+    	<sql dbms="postgresql">UPDATE arr_data_coordinates SET value = ST_Point(d.y, d.x)
+			FROM (SELECT data_id, ST_AsText(value), ST_X(value) x, ST_Y(value) y FROM arr_data_coordinates
+  			  WHERE data_id IN (SELECT d.data_id FROM arr_data_coordinates d
+			  JOIN arr_item i ON i.data_id = d.data_id
+			  WHERE ST_GeometryType(d.value) = 'ST_Point')
+			) AS d
+			WHERE arr_data_coordinates.data_id = d.data_id</sql>
+      <delete tableName="arr_cached_node" />
+    </changeSet>
+
+    <changeSet id="20210419133000" author="sergey.iryupin">
+    	<sql dbms="postgresql">DELETE FROM ap_cached_access_point WHERE access_point_id NOT IN
+  			(SELECT p.access_point_id FROM ap_access_point p
+    		  JOIN ap_state s ON s.access_point_id = p.access_point_id
+  			WHERE s.delete_change_id IS NULL)</sql>
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20210419133000" />
+	</changeSet>
+
 </databaseChangeLog>

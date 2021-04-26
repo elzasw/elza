@@ -991,9 +991,7 @@ public class UserService {
                 throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
             }
 
-            String oldPasswordHash = encodePassword(oldPassword);
-
-            if (!oldPasswordHash.equals(authentication.getValue())) {
+            if (!matchesPassword(oldPassword, authentication.getValue(), user.getUsername())) {
                 throw new BusinessException("Původní heslo se neshoduje", UserCode.PASSWORD_NOT_MATCH);
             }
         }

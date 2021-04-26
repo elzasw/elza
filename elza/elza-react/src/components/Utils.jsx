@@ -598,15 +598,16 @@ export function objectFromWKT(value) {
     const state = {type: null, data: null};
     const start = value.indexOf('(');
     state.type = value.substr(0, start).trim();
+    const data = value.substr(start + 1, value.length - start - 2)
     if (state.type === 'POINT') {
-        state.data = value
-            .substr(start + 1, value.length - start - 2)
-            .split(', ')
-            .join('\n')
-            .split(' ')
-            .join(',');
+        const xy = data.split(' ');
+        if (xy.length == 2) {
+            state.data = xy[1] + ',' + xy[0]; // výměna párů hodnot
+        } else {
+            state.data = data;
+        }
     } else {
-        state.data = value.substr(start + 2, value.length - start - 4);
+        state.data = data;
     }
     return state;
 }
@@ -621,18 +622,25 @@ export function objectFromWKT(value) {
  * type = POLYGON, val = 1.423,13.456\n12.423,13.456\n1.423,1.456 => POLYGON(( 1.423 13.456, 12.423 13.456, 1.423 1.456, 1.423 13.456 ))
  *
  * @param type POINT,LINESTRING,POLYGON
- * @param val body(s desetinou ".") oddělené čárkou a 1 bod na 1 řádku
+ * @param value body(s desetinou ".") oddělené čárkou a 1 bod na 1 řádku
  * @returns string WK Text
  */
-export function wktFromTypeAndData(type, val) {
-    let points = val
-        .split(',')
-        .map(function(dat) {
-            return normalizeDoubleWithDot(dat);
-        })
-        .join(' ')
-        .split('\n')
-        .join(', ');
+export function wktFromTypeAndData(type, value) {
+    const pairs = value.split('\n');
+    let points = [];
+    pairs.forEach(function(pair, index, array) {
+        const xy = pair
+            .split(',')
+            .map(function(dat) {
+                return normalizeDoubleWithDot(dat);
+            });
+        if (xy.length == 2) {
+            points.push(xy[1] + ' ' + xy[0]); // výměna párů hodnot
+        } else {
+            points.push(pair);
+        }
+    });
+    points = points.join(',');
     if (type === 'POLYGON') {
         points = '(' + points + ', ' + points.substr(0, points.indexOf(',')) + ')';
     }

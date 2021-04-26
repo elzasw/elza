@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.common.ObjectListIterator;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -274,12 +275,12 @@ public class ExternalSystemService {
      * Create binding based on external system code
      * 
      * @param scope
-     * @param eid
+     * @param value
      * @param externalSystemCode
      * @return
      */
     public ApBinding createBinding(final ApScope scope,
-                                   final String eid,
+                                   final String value,
                                    final String externalSystemCode) {
         ApExternalSystem apExternalSystem = apExternalSystemRepository.findByCode(externalSystemCode);
         if (apExternalSystem == null) {
@@ -288,15 +289,27 @@ public class ExternalSystemService {
                             .set("code", externalSystemCode);
         }
 
-        return createApBinding(scope, eid, apExternalSystem);
+        return createApBinding(scope, value, apExternalSystem);
     }
 
+    /**
+     * 
+     * @param scope
+     * @param value
+     *            Might be null
+     * @param apExternalSystem
+     * @return
+     */
     public ApBinding createApBinding(final ApScope scope,
-                                     final String eid,
+                                     final String value,
                                      final ApExternalSystem apExternalSystem) {
+        Validate.notNull(scope);
+        Validate.notNull(value);
+        Validate.notNull(apExternalSystem);
+
         ApBinding apBinding = new ApBinding();
         apBinding.setScope(scope);
-        apBinding.setValue(eid);
+        apBinding.setValue(value);
         apBinding.setApExternalSystem(apExternalSystem);
         return bindingRepository.save(apBinding);
     }

@@ -1,8 +1,10 @@
 package cz.tacr.elza.service;
 
 import java.util.List;
+import java.util.concurrent.Future;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
@@ -10,6 +12,9 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.hibernate.search.MassIndexer;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.Search;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +32,7 @@ import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.search.DbQueueProcessor;
 import cz.tacr.elza.search.IndexWorkProcessor;
+import cz.tacr.elza.search.IndexerProgressMonitor;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 /**
@@ -76,6 +82,11 @@ public class StartupService implements SmartLifecycle {
     private final AccessPointCacheService accessPointCacheService;
 
     private boolean running;
+
+    public static boolean fullTextReindex = false;
+
+    @Autowired
+    AdminService adminService;
 
     @Autowired
     @Qualifier("transactionManager")
@@ -137,6 +148,11 @@ public class StartupService implements SmartLifecycle {
         tt.executeWithoutResult(r -> startInTransaction());
 
         syncApCacheService();
+
+        if (fullTextReindex) {
+            logger.info("Full text reindex ...");
+            tt.executeWithoutResult(r -> adminService.reindexInternal());
+        }
 
         tt.executeWithoutResult(r -> startInTransaction2());
 
