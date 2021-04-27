@@ -20,13 +20,13 @@ import {logout} from 'actions/global/login';
 
 const serverContextPath = window.serverContextPath;
 
-// Nastavení úrovně logování
-const _logCalls = true;
-const _logErrors = true;
-const _logResults = true;
-const _logDuration = false; // moznost logovani delky volani
-
 const clientLog = window.clientLog !== undefined && window.clientLog;
+
+// Nastavení úrovně logování
+const _logCalls = clientLog;
+const _logErrors = clientLog;
+const _logResults = clientLog;
+const _logDuration = false; // moznost logovani delky volani
 
 let _callIndex = 0;
 let _store = null;
@@ -133,7 +133,7 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
             tStart = new Date().getTime();
         }
 
-        if (_logCalls && clientLog) {
+        if (_logCalls) {
             console.info('->', callStr);
         }
 
@@ -149,7 +149,7 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
                 xhr,
             ) {
                 // xhr - responseText, responseJSON, status a statusText
-                if (_logResults && clientLog) {
+                if (_logResults) {
                     const lenStr = '(' + lenToBytesStr(roughSizeOfObject(data)) + ')';
                     if (_logDuration) {
                         const t = new Date().getTime() - tStart;
@@ -196,7 +196,7 @@ function ajaxCall(url, params, method, data) {
             tStart = new Date().getTime();
         }
 
-        if (_logCalls && clientLog) {
+        if (_logCalls) {
             console.info('->', callStr, data);
         }
 
@@ -216,7 +216,7 @@ function ajaxCall(url, params, method, data) {
                 xhr,
             ) {
                 // xhr - responseText, responseJSON, status a statusText
-                if (_logResults && clientLog) {
+                if (_logResults) {
                     const len = JSON.stringify(data).length;
                     const lenStr = '(' + lenToBytesStr(len) + ')';
 
