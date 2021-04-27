@@ -11,12 +11,14 @@ import {WebApi} from '../../actions/WebApi';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
 import ArrHistoryForm from "../../components/arr/ArrHistoryForm";
 
+const clientLog = window.clientLog !== undefined && window.clientLog;
+
 class ArrPageRibbon extends AbstractReactComponent {
     shouldComponentUpdate(nextProps, nextState) {
         if (this.state !== nextState) {
             return true;
         }
-        return !propsEquals(this.props, nextProps, null, true);
+        return !propsEquals(this.props, nextProps, null, clientLog);
     }
 
     /**

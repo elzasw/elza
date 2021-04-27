@@ -20,10 +20,12 @@ import {logout} from 'actions/global/login';
 
 const serverContextPath = window.serverContextPath;
 
+const clientLog = window.clientLog !== undefined && window.clientLog;
+
 // Nastavení úrovně logování
-const _logCalls = true;
-const _logErrors = true;
-const _logResults = true;
+const _logCalls = clientLog;
+const _logErrors = clientLog;
+const _logResults = clientLog;
 const _logDuration = false; // moznost logovani delky volani
 
 let _callIndex = 0;
