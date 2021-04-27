@@ -7,14 +7,14 @@ export function getValues(): AeState[] {
 export function getName(state: AeState): string {
     switch (state) {
         case AeState.APSAPPROVED:
-            return 'Schváleno';
+            return 'schválená';
         case AeState.APSINVALID:
-            return 'Zneplatněný';
+            return 'zneplatněná';
         case AeState.APSNEW:
-            return 'Nový';
+            return 'nová';
         case AeState.APSREPLACED:
-            return 'Nahrazený';
+            return 'nahrazená';
         default:
-            return 'Neznámý stav ' + state;
+            return 'neznámý stav ' + state;
     }
 }
