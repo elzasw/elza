@@ -27,12 +27,15 @@ const _logCollapsed = true;
 
 const appWindow = (window as any) as AppWindow;
 
+const clientLog = (window as any).clientLog !== undefined && (window as any).clientLog;
+
 // Store a middleware
 const loggerMiddleware = createLogger({
           collapsed: _logCollapsed,
           duration: _logActionDuration,
           predicate: (getState, action) =>
             appWindow.__DEV__
+            //&& clientLog
             && action.type !== types.STORE_STATE_DATA
             && action.type !== types.GLOBAL_SPLITTER_RESIZE,
       });
