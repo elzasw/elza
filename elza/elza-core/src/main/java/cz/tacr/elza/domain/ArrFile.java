@@ -28,6 +28,8 @@ public class ArrFile extends DmsFile {
 
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
 
+    public static final String FIELD_DELETE_CHANGE = "deleteChange";
+
     public static final String FIELD_FUND = "fund";
 
     @JsonIgnore
