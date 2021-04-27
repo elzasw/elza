@@ -21,7 +21,6 @@ import {AppWindow} from '../typings/globals';
 import {FormErrors} from 'redux-form';
 
 // Nastavení úrovně logování
-const _logStoreState = true;
 const _logStoreSize = false;
 const _logActionDuration = false;
 const _logCollapsed = true;
@@ -29,14 +28,14 @@ const _logCollapsed = true;
 const appWindow = (window as any) as AppWindow;
 
 // Store a middleware
-const loggerMiddleware = appWindow.__DEV__
-    ? createLogger({
+const loggerMiddleware = createLogger({
           collapsed: _logCollapsed,
           duration: _logActionDuration,
           predicate: (getState, action) =>
-              action.type !== types.STORE_STATE_DATA && action.type !== types.GLOBAL_SPLITTER_RESIZE,
-      })
-    : null;
+            appWindow.__DEV__
+            && action.type !== types.STORE_STATE_DATA
+            && action.type !== types.GLOBAL_SPLITTER_RESIZE,
+      });
 
 /**
  * Třída pro definici inline formulářů.

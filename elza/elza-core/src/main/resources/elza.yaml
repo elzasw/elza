@@ -1,5 +1,6 @@
 elza:
   debug:
+    clientLog: true
     # Enable performance logger, each REST request is logged
     performanceLogger: false
     h2:
