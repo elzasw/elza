@@ -26,6 +26,8 @@ const _logErrors = true;
 const _logResults = true;
 const _logDuration = false; // moznost logovani delky volani
 
+const clientLog = window.clientLog !== undefined && window.clientLog;
+
 let _callIndex = 0;
 let _store = null;
 function setStore(appstore) {
@@ -131,7 +133,7 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
             tStart = new Date().getTime();
         }
 
-        if (_logCalls) {
+        if (_logCalls && clientLog) {
             console.info('->', callStr);
         }
 
@@ -147,7 +149,7 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
                 xhr,
             ) {
                 // xhr - responseText, responseJSON, status a statusText
-                if (_logResults) {
+                if (_logResults && clientLog) {
                     const lenStr = '(' + lenToBytesStr(roughSizeOfObject(data)) + ')';
                     if (_logDuration) {
                         const t = new Date().getTime() - tStart;
@@ -194,7 +196,7 @@ function ajaxCall(url, params, method, data) {
             tStart = new Date().getTime();
         }
 
-        if (_logCalls) {
+        if (_logCalls && clientLog) {
             console.info('->', callStr, data);
         }
 
@@ -214,7 +216,7 @@ function ajaxCall(url, params, method, data) {
                 xhr,
             ) {
                 // xhr - responseText, responseJSON, status a statusText
-                if (_logResults) {
+                if (_logResults && clientLog) {
                     const len = JSON.stringify(data).length;
                     const lenStr = '(' + lenToBytesStr(len) + ')';
 
