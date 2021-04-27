@@ -26,12 +26,11 @@ import cz.tacr.elza.service.AccessPointService;
 @PropertySource(value = "classpath:/META-INF/maven/cz.tacr.elza/elza-core/pom.properties", ignoreResourceNotFound = true)
 public class ElzaWebController {
 
-    /** Logger. */
     static private final Logger logger = LoggerFactory.getLogger(ElzaWebController.class);
 
     @Autowired
     ApTypeRepository apTypeRepository;
-    
+
     @Autowired
     AccessPointService accessPointService;
 
@@ -42,12 +41,24 @@ public class ElzaWebController {
     public Boolean isDevBuild() {
         return "DEV".equals(buildType);
     }
+
     @Value("${elza.security.allowDefaultUser:true}")
     private Boolean allowDefaultUser;
 
     @ModelAttribute("isDefaultUserEnabled")
     public Boolean isDefaultUserEnabled() {
         return allowDefaultUser;
+    }
+
+    /**
+     * Display logs in the browser console
+     */
+    @Value("${elza.debug.clientLog:false}")
+    private Boolean clientLog;
+
+    @ModelAttribute("isClientLog")
+    public Boolean isClientLog() {
+        return clientLog;
     }
 
     /**
