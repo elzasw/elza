@@ -12,13 +12,13 @@ export enum StateApproval {
 export const StateApprovalCaption = (value: StateApproval): string => {
     switch (value) {
         case StateApproval.NEW:
-            return 'Nový';
+            return 'nová';
         case StateApproval.TO_APPROVE:
-            return 'Připraven ke schválení';
+            return 'ke schválení';
         case StateApproval.APPROVED:
-            return "Schválený";
+            return "schválená";
         case StateApproval.TO_AMEND:
-            return "K doplnění";
+            return "k doplnění";
         default:
             console.warn('Nepřeložená hodnota', value);
             return '?';
