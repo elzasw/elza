@@ -273,6 +273,8 @@ public class DmsService {
         ArrChange deleteChange = arrangementInternalService.createChange(Type.DELETE_ATTACHMENT);
         file.setDeleteChange(deleteChange);
         fileRepository.save(file);
+
+        publishFileChange(file);
     }
 
     /**
