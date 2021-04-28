@@ -26,9 +26,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.util.ArrayUtil;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.RamUsageEstimator;
@@ -60,12 +62,13 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
 
     static private SettingsService settingsService;
 
-    public static final String PREFIX_PREF = "pref";
-    public static final String SEPARATOR = "_";
-    public static final String INDEX = "index";
     public static final String SCOPE_ID = "scope_id";
     public static final String STATE = "state";
     public static final String AP_TYPE_ID = "ap_type_id";
+
+    public static final String PREFIX_PREF = "pref";
+    public static final String SEPARATOR = "_";
+    public static final String INDEX = "index";
     public static final String USERNAME = "username";
     public static final String TRANS = "trans";
     public static final String SORT = "sort";
@@ -99,10 +102,11 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
 
         try {
             CachedAccessPoint cachedAccessPoint = mapper.readValue(apCachedAccessPoint.getData(), CachedAccessPoint.class);
-            addField(name + SEPARATOR + CachedAccessPoint.ACCESS_POINT_ID, cachedAccessPoint.getAccessPointId().toString().toLowerCase(), document, luceneOptions, name);
-            addField(name + SEPARATOR + STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document, luceneOptions, name);
-            addField(name + SEPARATOR + AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document, luceneOptions, name);
-            addField(name + SEPARATOR + SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document, luceneOptions, name);
+            addStringField(STATE, cachedAccessPoint.getApState().getStateApproval().name().toLowerCase(), document,
+                           luceneOptions);
+            addStringField(AP_TYPE_ID, cachedAccessPoint.getApState().getApTypeId().toString(), document,
+                           luceneOptions);
+            addStringField(SCOPE_ID, cachedAccessPoint.getApState().getScopeId().toString(), document, luceneOptions);
 
             if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
                 for (CachedPart part : cachedAccessPoint.getParts()) {
@@ -201,6 +205,11 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
         // TODO: Proc?
         document.add(new StringField(name, valueTrans, Field.Store.YES));
         document.add(new SortedDocValuesField(name, new BytesRef(valueTrans)));
+    }
+
+    private void addStringField(String name, String value, Document document, LuceneOptions luceneOptions) {
+        StringField field = new StringField(name, value, Store.YES);
+        document.add(field);
     }
 
     private void addField(String name, String value, Document document, LuceneOptions luceneOptions, String prefixName) {
