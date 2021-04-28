@@ -1207,4 +1207,15 @@ public class ApController {
         return accessPointService.importCoordinates(fileType, body);
     }
 
+    /**
+     * Odstranění záznamu z tabulky ExtSyncsQueueItem
+     *
+     * @param itemId
+     */
+    @Transactional
+    @RequestMapping(value = "/external/syncs/{extSyncItemId}", method = RequestMethod.DELETE) 
+    public void deleteExternalSync(@PathVariable("extSyncItemId") final Integer itemId) {
+        externalSystemService.deleteQueueItem(itemId);
+    }
+
 }
