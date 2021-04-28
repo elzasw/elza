@@ -45,8 +45,11 @@ public class FundFileRepositoryImpl extends AbstractFileRepository<ArrFile> impl
         Predicate equal = builder.equal(file.get(ArrFile.FIELD_FUND), fund);
         Predicate equalCount = builder.equal(fileCount.get(ArrFile.FIELD_FUND), fund);
 
-        query.where(predicate != null ? builder.and(equal,predicate):builder.and(equal));
-        queryCount.where(predicateCount != null ? builder.and(equalCount,predicateCount):builder.and(equal));
+        Predicate undelete = builder.isNull(file.get(ArrFile.FIELD_DELETE_CHANGE));
+        Predicate undeleteCount = builder.isNull(fileCount.get(ArrFile.FIELD_DELETE_CHANGE));
+
+        query.where(predicate != null ? builder.and(undelete,equal,predicate):builder.and(undelete,equal));
+        queryCount.where(predicateCount != null ? builder.and(undeleteCount,equalCount,predicateCount):builder.and(undeleteCount,equalCount));
 
         return getFilteredResult(query, queryCount, file, fileCount, firstResult, maxResults);
     }

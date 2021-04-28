@@ -222,17 +222,13 @@ public class ApController {
             fund = version.getFund();
         }
 
-        if (StringUtils.isNotEmpty(search) && (!accessPointService.isQueryComplex(searchFilter))) {
-            return findAccessPointFulltext(search, from, count, fund, apTypeId, state, scopeId, searchFilter, sdp);
-        }
-
         // TODO: Use StaticDataProvider
         //
         Set<Integer> apTypeIds = new HashSet<>();
         if (apTypeId != null) {
             apTypeIds.add(apTypeId);
         }
-        Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
+        apTypeIds = apTypeRepository.findSubtreeIds(apTypeIds);
 
         if (itemSpecId != null) {
             RulItemSpec spec = sdp.getItemSpecById(itemSpecId);
@@ -246,7 +242,7 @@ public class ApController {
                 throw new SystemException("Configuration error, specification without associated classes",
                         BaseCode.SYSTEM_ERROR).set("itemSpecId", itemSpecId);
             }
-            apTypeIdTree = applyApTypeFilter(sdp, apTypeIdTree, extraApTypeLimit);
+            apTypeIds = applyApTypeFilter(sdp, apTypeIds, extraApTypeLimit);
         } else if (itemTypeId != null) {
             ItemType itemType = sdp.getItemTypeById(itemTypeId);
             if (itemType == null) {
@@ -259,7 +255,11 @@ public class ApController {
                 throw new SystemException("Configuration error, item type without associated classes",
                         BaseCode.SYSTEM_ERROR).set("itemTypeId", itemTypeId);
             }
-            apTypeIdTree = applyApTypeFilter(sdp, apTypeIdTree, extraApTypeLimit);
+            apTypeIds = applyApTypeFilter(sdp, apTypeIds, extraApTypeLimit);
+        }
+
+        if (StringUtils.isNotEmpty(search) && (!accessPointService.isQueryComplex(searchFilter))) {
+            return findAccessPointFulltext(search, from, count, fund, apTypeIds, state, scopeId, searchFilter, sdp);
         }
 
         if (searchFilter == null) {
@@ -269,15 +269,20 @@ public class ApController {
             SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
             SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.DISABLED;
 
-            foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIdTree, fund, scopeId, states, searchTypeNameFinal, searchTypeUsernameFinal);
+            foundRecordsCount = accessPointService.findApAccessPointByTextAndTypeCount(search, apTypeIds, fund, scopeId,
+                                                                                       states, searchTypeNameFinal,
+                                                                                       searchTypeUsernameFinal);
 
-            foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIdTree, from, count, fund, scopeId, states, searchTypeNameFinal, searchTypeUsernameFinal);
+            foundRecords = accessPointService.findApAccessPointByTextAndType(search, apTypeIds, from, count, fund,
+                                                                             scopeId, states, searchTypeNameFinal,
+                                                                             searchTypeUsernameFinal);
 
         } else {
 
             Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId);
 
-	        Page<ApState> page = accessPointService.findApAccessPointBySearchFilter(searchFilter, apTypeIdTree, scopeIds, state, from, count, sdp);
+            Page<ApState> page = accessPointService.findApAccessPointBySearchFilter(searchFilter, apTypeIds, scopeIds,
+                                                                                    state, from, count, sdp);
             foundRecords = page.getContent();
             foundRecordsCount = page.getTotalElements();
         }
@@ -323,23 +328,18 @@ public class ApController {
                                                                       Integer from,
                                                                       Integer count,
                                                                       ArrFund fund,
-                                                                      Integer apTypeId,
+                                                                      Set<Integer> apTypeIds,
                                                                       ApState.StateApproval state,
                                                                       Integer scopeId,
                                                                       SearchFilterVO searchFilter,
                                                                       StaticDataProvider sdp) {
 
-        Set<Integer> apTypeIds = new HashSet<>();
-        if (apTypeId != null) {
-            apTypeIds.add(apTypeId);
-        }
-        Set<Integer> apTypeIdTree = apTypeRepository.findSubtreeIds(apTypeIds);
-
         Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId);
 
         final Map<Integer, Integer> typeRuleSetMap = apFactory.getTypeRuleSetMap();
 
-        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository.findApCachedAccessPointisByQuery(search, searchFilter, apTypeIdTree, scopeIds,
+        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
+                .findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds,
                 state, from, count, sdp);
 
         List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
