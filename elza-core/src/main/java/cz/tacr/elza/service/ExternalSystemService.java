@@ -8,7 +8,6 @@ import java.util.Optional;
 import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.common.ObjectListIterator;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +38,7 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
+import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -51,6 +51,9 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  */
 @Service
 public class ExternalSystemService {
+
+    @Autowired
+    ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
 
     @Autowired
     private ExternalSystemRepository externalSystemRepository;
@@ -166,6 +169,16 @@ public class ExternalSystemService {
         staticDataService.reloadOnCommit();
     }
 
+    /**
+     * Smazání záznamu z tabulky ExtSyncsQueueItem
+     * 
+     * @param extSyncItemId
+     */
+    @AuthMethod(permission = UsrPermission.Permission.ADMIN)
+    public void deleteQueueItem(final Integer extSyncItemId) {
+        extSyncsQueueItemRepository.deleteById(extSyncItemId);
+    }
+    
     /**
      * Externí systém typu - Digitalizační linka.
      *
