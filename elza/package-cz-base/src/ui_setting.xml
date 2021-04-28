@@ -7,13 +7,13 @@
 
     <index-search>
         <ns10:field name="id" boost="2.0" boost-exact="1.0" transliterate="false"/>
-        <ns10:field name="pref_index" boost="1.5" boost-exact="1.5" transliterate="true"/>
-        <ns10:field name="index" boost="1.0" boost-exact="1.2" transliterate="true"/>
-        <ns10:field name="pt_name_index" boost="1.0" boost-exact="1.2" transliterate="true"/>
-        <ns10:field name="pref_nm_main" boost="2.0" boost-exact="2.0" boost-trans-exact="2.0" transliterate="true"/>
-        <ns10:field name="pref_nm_minor" boost="1.7" boost-exact="1.7" transliterate="true"/>
-        <ns10:field name="nm_main" boost="1.2" boost-exact="1.2" transliterate="true"/>
-        <ns10:field name="nm_minor" boost="1.1" boost-exact="1.1" transliterate="true"/>
+        <ns10:field name="pref_index" boost="10.0" boost-exact="50.0" boost-trans-exact="40.0" transliterate="true"/>
+        <ns10:field name="index" boost="1.0" boost-exact="30.0" boost-trans-exact="20.0" transliterate="true"/>
+        <ns10:field name="pt_name_index" boost="3.0" boost-exact="6.0" boost-trans-exact="5.4" transliterate="true"/>
+        <ns10:field name="pref_nm_main" boost="20.0" boost-exact="100.0" boost-trans-exact="80.0" transliterate="true"/>
+        <ns10:field name="pref_nm_minor" boost="4.0" boost-exact="8.0" boost-trans-exact="7.2" transliterate="true"/>
+        <ns10:field name="nm_main" boost="10.0" boost-exact="50.0" boost-trans-exact="40.0" transliterate="true"/>
+        <ns10:field name="nm_minor" boost="1.0" boost-exact="2.0" boost-trans-exact="1.8" transliterate="true"/>
     </index-search>
 
 
