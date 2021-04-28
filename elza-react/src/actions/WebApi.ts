@@ -1880,6 +1880,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxDelete(WebApiCls.adminUrl + '/externalSystems/' + id, null);
     }
 
+	deleteExtSyncsQueueItem(itemId) {
+		return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/external/syncs/' + itemId, null);
+	}
+
     findFundStructureExtension(fundVersionId, structureTypeCode) {
         return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/extension/' + fundVersionId + '/' + structureTypeCode);
     }

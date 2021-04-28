@@ -18,7 +18,7 @@ import './ExtSyncsModal.scss';
 import {ArchiveEntityVO} from "../../../api/ArchiveEntityVO";
 import {getMapFromList, indexById} from "../../../shared/utils";
 import InifiniteList from "../../../shared/list/InifiniteList";
-import {FormInputField, HorizontalLoader} from "../../shared";
+import {FormInputField, HorizontalLoader, Icon} from "../../shared";
 import {ExtAsyncQueueState} from "../../../api/ExtAsyncQueueState";
 import {ExtStatesField} from "../field/ExtStatesField";
 import {ScopesField} from "../../admin/ScopesField";
@@ -139,6 +139,18 @@ const ExtSyncsModal = ({handleSubmit, onClose, submitting, extSystems, scopes, s
         return fetchWithState(tmpData, count, data.externalSystemCode, data.filter);
     }
 
+    const onDelete = (id: number) => {
+        return WebApi.deleteExtSyncsQueueItem(id).then(result => {
+            const count = data.lastCount;
+            let tmpData = {
+                ...data,
+                lastCount: count,
+                isFetching: true,
+            };
+            return fetchWithState(tmpData, count, data.externalSystemCode, data.filter);
+        });
+    }
+
     const renderResultItem = (item: ExtSyncsQueueItemVO, index: number) => {
         const date = utcToDateTime(item.date);
         return <Row key={index} className="result-item">
@@ -147,10 +159,15 @@ const ExtSyncsModal = ({handleSubmit, onClose, submitting, extSystems, scopes, s
                     <Col xs={12}><Button className="ap" variant="link" onClick={() => onNavigateAp(item.accessPointId)}>{item.accessPointName}</Button></Col>
                 </Row>
                 <Row>
-                    <Col xs={5}><span className="label">{i18n('ap.ext-syncs.date')}</span>{date ? dateToDateTimeString(date) : '-'}</Col>
-                    <Col xs={2}><span className="label">{i18n('ap.ext-syncs.scope')}</span>{scopesMap[item.scopeId].name}</Col>
-                    <Col title={item.stateMessage} xs={5}><span className="label">{i18n('ap.ext-syncs.state')}</span>{ExtStateInfo.getName(item.state)}</Col>
+                    <Col xs={6}><span className="label">{i18n('ap.ext-syncs.date')}</span>{date ? dateToDateTimeString(date) : '-'}</Col>
+                    <Col xs={3}><span className="label">{i18n('ap.ext-syncs.scope')}</span>{scopesMap[item.scopeId].name}</Col>
+                    <Col xs={3} title={item.stateMessage}><span className="label">{i18n('ap.ext-syncs.state')}</span>{ExtStateInfo.getName(item.state)}</Col>
                 </Row>
+            </Col>
+            <Col xs lg="2">
+                <Button size="small" variant="outline-danger" onClick={() => onDelete(item.id)}>
+                    <Icon glyph="fa-trash"/>
+                </Button>
             </Col>
         </Row>
     };
