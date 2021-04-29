@@ -72,7 +72,7 @@ public class UserController {
      */
     @RequestMapping(value = "/detail", method = RequestMethod.GET)
     public UserInfoVO getUserDetail() {
-        UserInfoVO userInfo = userService.getLoggeUserInfo();
+        UserInfoVO userInfo = userService.getLoggedUserInfo();
         // init user settings for other than default user
         if (userInfo.getId() != null) {
             List<UISettings> settingsList = settingsService.getSettings(userInfo.getId());
