@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -1513,6 +1515,12 @@ public class AccessPointService {
             newApScope = null;
         }
 
+        if (!getNextStates(accessPoint).contains(newStateApproval)) {
+            throw new SystemException("Požadovaný stav entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+            .set("accessPointId", accessPoint.getAccessPointId())
+            .set("scopeId", newApScope.getScopeId());
+        }
+
         ApType newApType;
         if (newTypeId != null && !newTypeId.equals(oldApState.getApTypeId())) {
             // get ap type
@@ -1557,6 +1565,44 @@ public class AccessPointService {
         reindexDescItem(accessPoint);
 
         return newApState;
+    }
+
+    /**
+     * Získání seznamu stavů do niž může být přístupový bod přepnut
+     * 
+     * @param accessPoint
+     * @return seznam stavů
+     */
+    public List<StateApproval> getNextStates(@NotNull ApAccessPoint accessPoint) {
+        ApState apState = getStateInternal(accessPoint);
+        ApScope apScope = apState.getScope();
+        UserDetail user = userService.getLoggedUserDetail();
+
+        List<StateApproval> statesNewToApprove = Arrays.asList(StateApproval.NEW, StateApproval.TO_APPROVE);
+
+        if (user.hasPermission(Permission.ADMIN)) {
+            return Arrays.asList(StateApproval.values());
+        }
+        if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL) 
+                || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
+            if (statesNewToApprove.contains(apState.getStateApproval())) {
+                return statesNewToApprove;
+            }
+        }
+        if (userService.hasPermission(Permission.AP_CONFIRM_ALL) 
+                || userService.hasPermission(Permission.AP_CONFIRM_ALL, apScope.getScopeId())) {
+            if (apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
+                return Arrays.asList(StateApproval.APPROVED);
+            }
+        }
+        if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
+                || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId())) {
+            if (apState.getStateApproval().equals(StateApproval.APPROVED)) {
+                return Arrays.asList(StateApproval.APPROVED);
+            }
+        }
+
+        return Collections.emptyList();
     }
 
     /**
