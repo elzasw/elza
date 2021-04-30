@@ -586,6 +586,9 @@ public class ApFactory {
     }
 
     private List<ApPartVO> createVO(List<CachedPart> parts) {
+        if (CollectionUtils.isEmpty(parts)) {
+            return Collections.emptyList();
+        }
         List<ApPartVO> partVOList = new ArrayList<>();
         for (CachedPart part : parts) {
             partVOList.add(createVO(part));
