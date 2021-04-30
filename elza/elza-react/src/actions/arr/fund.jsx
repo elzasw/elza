@@ -141,10 +141,11 @@ export function deleteFundHistory(fundId) {
     };
 }
 
-export function exportFund(fundId, transformationName) {
+export function exportFund(fundId, transformationName, exportFilterId) {
     let requestData = {
         fundsSections: [{fundVersionId: fundId}],
         transformationName: transformationName,
+        exportFilterId: exportFilterId,
     };
     return dispatch => {
         dispatch(downloadAjaxFile(UrlFactory.exportFund(), 'elza-data.xml', 'POST', requestData));
