@@ -16,6 +16,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import cz.tacr.elza.controller.vo.RulExportFilterVO;
+import cz.tacr.elza.controller.vo.RulOutputFilterVO;
+import cz.tacr.elza.domain.RulExportFilter;
+import cz.tacr.elza.domain.RulOutputFilter;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -866,6 +870,9 @@ public class ConfigMapperConfiguration {
                 byDefault().
                 exclude("nodeIds").
                 register();
+
+        mapperFactory.classMap(RulOutputFilter.class, RulOutputFilterVO.class).byDefault().field("outputFilterId", "id").register();
+        mapperFactory.classMap(RulExportFilter.class, RulExportFilterVO.class).byDefault().field("exportFilterId", "id").register();
     }
 
     /**

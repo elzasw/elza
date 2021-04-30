@@ -72,12 +72,22 @@ public class DEExportController {
 
         private String transformationName;
 
+        private Integer exportFilterId;
+
         public String getTransformationName() {
             return transformationName;
         }
 
         public void setTransformationName(String transformationName) {
             this.transformationName = transformationName;
+        }
+
+        public Integer getExportFilterId() {
+            return exportFilterId;
+        }
+
+        public void setExportFilterId(Integer exportFilterId) {
+            this.exportFilterId = exportFilterId;
         }
     }
 }

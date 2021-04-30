@@ -119,4 +119,8 @@ public class ExceptionThrow {
         return () -> new ObjectNotFoundException("Nenalezen typ partu: " + partTypeId, BaseCode.ID_NOT_EXIST).setId(partTypeId);
     }
 
+    public static Supplier<ObjectNotFoundException> outputFilter(final Integer outputFilterId) {
+        return () -> new ObjectNotFoundException("Filter výstupu nenalezen: " + outputFilterId, BaseCode.ID_NOT_EXIST).setId(outputFilterId);
+    }
+
 }
