@@ -60,6 +60,8 @@ public class ArrOutputVO {
     private List<ApScopeVO> scopes;
 
     private ApAccessPointVO anonymizedAp;
+
+    private Integer outputFilterId;
     
     public ArrOutputVO() {
     	
@@ -77,6 +79,9 @@ public class ArrOutputVO {
 		if(output.getDeleteChange()!=null) {
           deleteDate = Date.from(output.getDeleteChange().getChangeDate().toInstant());
 		}
+		if (output.getOutputFilter() != null) {
+		    outputFilterId = output.getOutputFilter().getOutputFilterId();
+        }
 	}
 
 	// --- getters/setters ---
@@ -208,7 +213,15 @@ public class ArrOutputVO {
     public void setAnonymizedAp(ApAccessPointVO anonymizedAp) {
         this.anonymizedAp = anonymizedAp;
     }
-    
+
+    public Integer getOutputFilterId() {
+        return outputFilterId;
+    }
+
+    public void setOutputFilterId(Integer outputFilterId) {
+        this.outputFilterId = outputFilterId;
+    }
+
     /**
      * Create basic vo object
      * @param outputData

@@ -1263,5 +1263,78 @@
   			WHERE s.delete_change_id IS NULL)</sql>
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20210419133000" />
 	</changeSet>
+    
+    <changeSet id="20210430094500" author="fantis">
+        <createTable tableName="rul_output_filter">
+            <column name="output_filter_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="nvarchar(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="filename" type="nvarchar(250)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_rul_output_filter_rul_rule_set"
+                                 baseTableName="rul_output_filter"
+                                 baseColumnNames="rule_set_id"
+                                 referencedTableName="rul_rule_set"
+                                 referencedColumnNames="rule_set_id"/>
+        <addForeignKeyConstraint constraintName="fk_rul_output_filter_package"
+                                 baseTableName="rul_output_filter"
+                                 baseColumnNames="package_id"
+                                 referencedTableName="rul_package"
+                                 referencedColumnNames="package_id"/>
+
+        <addColumn tableName="arr_output">
+            <column name="output_filter_id" type="int"/>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="fk_arr_output_output_filter"
+                                 baseTableName="arr_output"
+                                 baseColumnNames="output_filter_id"
+                                 referencedTableName="rul_output_filter"
+                                 referencedColumnNames="output_filter_id"/>
+
+        <createTable tableName="rul_export_filter">
+            <column name="export_filter_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="nvarchar(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="filename" type="nvarchar(250)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_rul_export_filter_rul_rule_set"
+                                 baseTableName="rul_export_filter"
+                                 baseColumnNames="rule_set_id"
+                                 referencedTableName="rul_rule_set"
+                                 referencedColumnNames="rule_set_id"/>
+        <addForeignKeyConstraint constraintName="fk_rul_export_filter_package"
+                                 baseTableName="rul_export_filter"
+                                 baseColumnNames="package_id"
+                                 referencedTableName="rul_package"
+                                 referencedColumnNames="package_id"/>
+    </changeSet>
 
 </databaseChangeLog>

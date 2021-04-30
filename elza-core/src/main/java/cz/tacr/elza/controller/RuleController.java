@@ -17,6 +17,12 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.RulExportFilterVO;
+import cz.tacr.elza.controller.vo.RulOutputFilterVO;
+import cz.tacr.elza.domain.RulExportFilter;
+import cz.tacr.elza.domain.RulOutputFilter;
+import cz.tacr.elza.repository.RulExportFilterRepository;
+import cz.tacr.elza.repository.RulOutputFilterRepository;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +99,12 @@ public class RuleController {
     private RuleSetRepository ruleSetRepository;
 
     @Autowired
+    private RulOutputFilterRepository outputFilterRepository;
+
+    @Autowired
+    private RulExportFilterRepository exportFilterRepository;
+
+    @Autowired
     private RuleService ruleService;
 
     @Autowired
@@ -167,6 +179,18 @@ public class RuleController {
             dependenciesBy.add(new PackageDependencyVO(pSource.getCode(), pSource.getVersion()));
         }
         return packageVO;
+    }
+
+    @RequestMapping(value = "/outputFilters", method = RequestMethod.GET)
+    public List<RulOutputFilterVO> getOutputFilters() {
+        List<RulOutputFilter> outputFilters = outputFilterRepository.findAll();
+        return factoryVo.createOutputFilterList(outputFilters);
+    }
+
+    @RequestMapping(value = "/exportFilters", method = RequestMethod.GET)
+    public List<RulExportFilterVO> getExportFilters() {
+        List<RulExportFilter> exportFilters = exportFilterRepository.findAll();
+        return factoryVo.createExportFilterList(exportFilters);
     }
 
     @RequestMapping(value = "/deletePackage/{code}", method = RequestMethod.GET)
