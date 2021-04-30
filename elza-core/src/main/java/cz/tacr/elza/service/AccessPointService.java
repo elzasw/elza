@@ -1338,7 +1338,21 @@ public class AccessPointService {
     }
 
     /**
-     * Získání stavu přístupového bodu.
+     * Získání stavu přístupového bodu podle accessPointId.
+     * 
+     * Metoda neověřuje uživatelská oprávnění
+     *
+     * @param accessPointId
+     *            přístupový bod
+     * @return stav přístupového bodu
+     */
+    public ApState getStateInternal(final Integer accessPointId) {
+        final ApState state = stateRepository.findLastByAccessPointId(accessPointId);
+        return controlApState(state, accessPointId);
+    }
+
+    /**
+     * Získání stavu přístupového bodu podle accessPoint.
      * 
      * Metoda neověřuje uživatelská oprávnění
      *
@@ -1348,11 +1362,22 @@ public class AccessPointService {
      */
     public ApState getStateInternal(final ApAccessPoint accessPoint) {
         final ApState state = stateRepository.findLastByAccessPoint(accessPoint);
-        if (state == null) {
+        return controlApState(state, accessPoint.getAccessPointId());
+    }
+
+    /**
+     * Kontrola stavu přístupového bodu.
+     * 
+     * @param apState
+     * @param accessPointId
+     * @return stav přístupového bodu
+     */
+    private ApState controlApState(final ApState apState, final Integer accessPointId) {
+        if (apState == null) {
             throw new ObjectNotFoundException("Stav pro přístupový bod neexistuje", BaseCode.INVALID_STATE)
-                    .set("accessPointId", accessPoint.getAccessPointId());
+                    .set("accessPointId", accessPointId);
         }
-        return state;
+        return apState;
     }
 
     /**
@@ -1363,7 +1388,6 @@ public class AccessPointService {
      */
     public List<ApState> getStatesInternal(final List<ApAccessPoint> accessPoints) {
         return stateRepository.findLastByAccessPoints(accessPoints);
-        
     }
 
     public Map<Integer, ApState> groupStateByAccessPointId(final List<Integer> accessPointIds) {
@@ -1515,7 +1539,7 @@ public class AccessPointService {
             newApScope = null;
         }
 
-        if (!getNextStates(accessPoint).contains(newStateApproval)) {
+        if (!getNextStates(oldApState).contains(newStateApproval)) {
             throw new SystemException("Požadovaný stav entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
             .set("accessPointId", accessPoint.getAccessPointId())
             .set("scopeId", newApScope.getScopeId());
@@ -1570,39 +1594,40 @@ public class AccessPointService {
     /**
      * Získání seznamu stavů do niž může být přístupový bod přepnut
      * 
-     * @param accessPoint
+     * @param apState
      * @return seznam stavů
      */
-    public List<StateApproval> getNextStates(@NotNull ApAccessPoint accessPoint) {
-        ApState apState = getStateInternal(accessPoint);
+    public List<StateApproval> getNextStates(@NotNull ApState apState) {
         ApScope apScope = apState.getScope();
         UserDetail user = userService.getLoggedUserDetail();
-
-        List<StateApproval> statesNewToApprove = Arrays.asList(StateApproval.NEW, StateApproval.TO_APPROVE);
 
         if (user.hasPermission(Permission.ADMIN)) {
             return Arrays.asList(StateApproval.values());
         }
+
+        List<StateApproval> statesNewToApprove = Arrays.asList(StateApproval.NEW, StateApproval.TO_APPROVE);
+        Set<StateApproval> result = new HashSet<>();
+
         if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL) 
                 || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
             if (statesNewToApprove.contains(apState.getStateApproval())) {
-                return statesNewToApprove;
+                result.addAll(statesNewToApprove);
             }
         }
         if (userService.hasPermission(Permission.AP_CONFIRM_ALL) 
                 || userService.hasPermission(Permission.AP_CONFIRM_ALL, apScope.getScopeId())) {
             if (apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
-                return Arrays.asList(StateApproval.APPROVED);
+                result.add(StateApproval.APPROVED);
             }
         }
         if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
                 || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId())) {
             if (apState.getStateApproval().equals(StateApproval.APPROVED)) {
-                return Arrays.asList(StateApproval.APPROVED);
+                result.add(StateApproval.APPROVED);
             }
         }
 
-        return Collections.emptyList();
+        return new ArrayList<>(result);
     }
 
     /**

@@ -482,8 +482,8 @@ public class ApController {
     public List<String> getStateApproval(@PathVariable final Integer accessPointId) {
         Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
 
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        List<StateApproval> states = accessPointService.getNextStates(accessPoint);
+        ApState apState = accessPointService.getStateInternal(accessPointId);
+        List<StateApproval> states = accessPointService.getNextStates(apState);
 
         return states.stream().map(p -> p.name()).collect(Collectors.toList());
     }
