@@ -9,8 +9,6 @@ import java.util.List;
 
 public class CachedAccessPoint {
 
-    public static final String ACCESS_POINT_ID = "id";
-
     private Integer accessPointId;
 
     private String uuid;
