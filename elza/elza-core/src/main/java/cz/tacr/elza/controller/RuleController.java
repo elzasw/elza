@@ -21,8 +21,8 @@ import cz.tacr.elza.controller.vo.RulExportFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulOutputFilter;
-import cz.tacr.elza.repository.RulExportFilterRepository;
-import cz.tacr.elza.repository.RulOutputFilterRepository;
+import cz.tacr.elza.repository.ExportFilterRepository;
+import cz.tacr.elza.repository.OutputFilterRepository;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,10 +99,10 @@ public class RuleController {
     private RuleSetRepository ruleSetRepository;
 
     @Autowired
-    private RulOutputFilterRepository outputFilterRepository;
+    private OutputFilterRepository outputFilterRepository;
 
     @Autowired
-    private RulExportFilterRepository exportFilterRepository;
+    private ExportFilterRepository exportFilterRepository;
 
     @Autowired
     private RuleService ruleService;

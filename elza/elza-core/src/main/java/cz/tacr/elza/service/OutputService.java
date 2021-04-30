@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
-import cz.tacr.elza.repository.RulOutputFilterRepository;
+import cz.tacr.elza.repository.OutputFilterRepository;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.drools.core.util.StringUtils;
@@ -190,7 +190,7 @@ public class OutputService {
     private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
-    private RulOutputFilterRepository outputFilterRepository;
+    private OutputFilterRepository outputFilterRepository;
 
     private OutputSender outputSender;
 

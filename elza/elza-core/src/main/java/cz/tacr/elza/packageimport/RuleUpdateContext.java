@@ -44,6 +44,10 @@ public class RuleUpdateContext {
 
 	private File dirTemplates;
 
+	private File dirOutputFilters;
+
+	private File dirExportFilters;
+
 	/**
 	 * Base path into byteStreams map
 	 *
@@ -95,6 +99,16 @@ public class RuleUpdateContext {
 			dirTemplates.mkdirs();
 		}
 
+		dirOutputFilters = resourcePathResolver.getOutputFiltersDir(rulPackage, rulRuleSet).toFile();
+		if (!dirOutputFilters.exists()) {
+			dirOutputFilters.mkdirs();
+		}
+
+		dirExportFilters = resourcePathResolver.getExportFiltersDir(rulPackage, rulRuleSet).toFile();
+		if (!dirExportFilters.exists()) {
+			dirExportFilters.mkdirs();
+		}
+
 	}
 
     public PackageContext getPackageUpdateContext() {
@@ -111,6 +125,14 @@ public class RuleUpdateContext {
 
 	public File getActionsDir() {
 		return dirActions;
+	}
+
+	public File getOutputFiltersDir() {
+		return dirOutputFilters;
+	}
+
+	public File getExportFiltersDir() {
+		return dirExportFilters;
 	}
 
 	public RulPackage getRulPackage() {

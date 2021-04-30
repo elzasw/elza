@@ -88,10 +88,6 @@ public class RulExportFilter {
         return packageId;
     }
 
-    public void setPackageId(Integer packageId) {
-        this.packageId = packageId;
-    }
-
     public RulRuleSet getRuleSet() {
         return ruleSet;
     }
@@ -103,9 +99,5 @@ public class RulExportFilter {
 
     public Integer getRuleSetId() {
         return ruleSetId;
-    }
-
-    public void setRuleSetId(Integer ruleSetId) {
-        this.ruleSetId = ruleSetId;
     }
 }
