@@ -12,16 +12,19 @@ import FF from '../shared/form/FF';
 import * as perms from '../../actions/user/Permission';
 import {StateApproval, StateApprovalCaption} from '../../api/StateApproval';
 import {AppState} from "typings/store";
+import {WebApi} from 'actions';
 
 const stateToOption = (item: StateApproval) => ({
     id: item,
     name: StateApprovalCaption(item),
 });
+
 type OwnProps = {
     accessPointId: number;
     versionId?: number;
     hideType?: boolean;
     onClose?: Function;
+    states: string[];
 };
 
 type ApStateChangeVO = {
@@ -46,10 +49,18 @@ class ApStateChangeForm extends React.Component<Props> {
     };
 
     getStateWithAll() {
-        return Object.values(StateApproval).map(stateToOption);
+        console.log(this.props.states);
+        if (this.props.states) {
+            return Object.values(this.props.states).map(stateToOption);
+        } else {
+            return [];
+        }
     }
 
     componentDidMount() {
+        WebApi.getStateApproval(this.props.accessPointId).then(data => {
+            this.props.change('states', data);
+        });
         if (!this.props.scopeId) {
             const {
                 refTables: {scopesData},
@@ -136,6 +147,7 @@ const mapStateToProps = (state:AppState) => {
         state: selector(state, 'state'),
         refTables: state.refTables,
         userDetail: state.userDetail as any,
+        states: selector(state, 'states'),
     };
 };
 
