@@ -288,7 +288,9 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             for (ApItem item : apItems) {
                 item = HibernateUtils.unproxy(item);
                 CachedPart part = partMap.get(item.getPartId());
-                Validate.notNull(part, "Missing part, partId: %s", item.getPartId());
+                if (part == null) {
+                    Validate.notNull(part, "Missing part, partId: %s", item.getPartId());
+                }
                 part.addItem(item);
             }
         }
@@ -300,7 +302,9 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             for (ApIndex index : apIndices) {
                 index = HibernateUtils.unproxy(index);
                 CachedPart part = partMap.get(index.getPartId());
-                Validate.notNull(part, "Missing part, partId: %s", index.getPartId());
+                if (part == null) {
+                    Validate.notNull(part, "Missing part, partId: %s", index.getPartId());
+                }
                 part.addIndex(index);
             }
         }        
