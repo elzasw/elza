@@ -54,6 +54,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
@@ -872,7 +873,7 @@ public class AccessPointService {
         }
 
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
-        ApState apState = createAccessPoint(scope, type, apChange, null);
+        ApState apState = createAccessPoint(scope, type, EntityRecordStateXml.ERS_NEW, apChange, null);
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         ApPart apPart = partService.createPart(partType, accessPoint, apChange, null);
@@ -1414,8 +1415,8 @@ public class AccessPointService {
      * @param change změna
      * @return přístupový bod
      */
-    public ApState createAccessPoint(final ApScope scope, final ApType type,
-                                      final ApChange change,
+    public ApState createAccessPoint(final ApScope scope, final ApType type, final EntityRecordStateXml state,
+                                     final ApChange change,
                                      String uuid) {
         ApAccessPoint accessPoint = new ApAccessPoint();
         if (uuid == null) {
@@ -1424,15 +1425,23 @@ public class AccessPointService {
         accessPoint.setUuid(uuid);
         accessPoint.setState(ApStateEnum.OK);
         accessPoint = saveWithLock(accessPoint);
-        return createAccessPointState(accessPoint, scope, type, change);
+        return createAccessPointState(accessPoint, scope, type, state, change);
     }
 
-    public ApState createAccessPointState(ApAccessPoint ap, ApScope scope, ApType type, ApChange change) {
+    public ApState createAccessPointState(ApAccessPoint ap, ApScope scope, ApType type, EntityRecordStateXml state, ApChange change) {
         ApState apState = new ApState();
         apState.setAccessPoint(ap);
-        apState.setApType(type);
         apState.setScope(scope);
-        apState.setStateApproval(StateApproval.NEW);
+        apState.setApType(type);
+        switch (state) {
+        case ERS_APPROVED:
+            apState.setStateApproval(StateApproval.APPROVED);
+            break;
+        case ERS_NEW:
+        default:
+            apState.setStateApproval(StateApproval.NEW);
+            break;
+        }
         // apState.setComment(comment);
         apState.setCreateChange(change);
         apState.setDeleteChange(null);
