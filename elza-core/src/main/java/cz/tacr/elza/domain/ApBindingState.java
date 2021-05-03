@@ -106,7 +106,13 @@ public class ApBindingState implements AccessPointCacheSerializable {
     }
 
     public Integer getAccessPointId() {
-        return accessPointId;
+        if (accessPointId != null) {
+            return accessPointId;
+        } else if (accessPoint != null) {
+            return accessPoint.getAccessPointId();
+        } else {
+            return null;
+        }
     }
 
     public String getExtState() {
