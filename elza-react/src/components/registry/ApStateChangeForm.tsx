@@ -49,7 +49,6 @@ class ApStateChangeForm extends React.Component<Props> {
     };
 
     getStateWithAll() {
-        console.log(this.props.states);
         if (this.props.states) {
             return Object.values(this.props.states).map(stateToOption);
         } else {
