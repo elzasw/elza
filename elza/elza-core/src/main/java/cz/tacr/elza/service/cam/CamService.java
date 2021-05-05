@@ -35,6 +35,7 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -108,9 +109,6 @@ public class CamService {
     private ExternalSystemService externalSystemService;
 
     @Autowired
-    private ApExternalSystemRepository apExternalSystemRepository;
-
-    @Autowired
     private AccessPointService accessPointService;
 
     @Autowired
@@ -142,6 +140,9 @@ public class CamService {
 
     @Autowired
     private AccessPointCacheService accessPointCacheService;
+
+    @Autowired
+    private UserService userService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -294,7 +295,6 @@ public class CamService {
 
     }
 
-
     public BatchUpdateXml createCreateEntityBatchUpdate(final ApAccessPoint accessPoint,
                                                         final ApState state,
                                                         final ApBindingState bindingState,
@@ -416,20 +416,19 @@ public class CamService {
             // TODO: ? is it error
             return;
         }
+
+        UsrUser user = userService.getLoggedUser();
+        List<ExtSyncsQueueItem> extSyncsQueueItems = new ArrayList<>(bindingStateList.size());
         for (ApBindingState bindingState : bindingStateList) {
-            ApState state = accessPointService.getStateInternal(bindingState.getAccessPoint());
-            EntityXml entity;
-            try {
-                // download entity from CAM
-                entity = camConnector.getEntityById(bindingState.getBinding().getValue(),
-                                                    externalSystem.getCode());
-            } catch (ApiException e) {
-                throw prepareSystemException(e);
-            }
-            ProcessingContext procCtx = new ProcessingContext(state.getScope(), externalSystem,
-                    staticDataService);
-            synchronizeAccessPoint(procCtx, state, entity, bindingState, true);
+            ExtSyncsQueueItem extSyncsQueue = new ExtSyncsQueueItem();
+            extSyncsQueue.setAccessPoint(bindingState.getAccessPoint());
+            extSyncsQueue.setExternalSystem(externalSystem);
+            extSyncsQueue.setDate(OffsetDateTime.now());
+            extSyncsQueue.setState(ExtAsyncQueueState.UPDATE);
+            extSyncsQueue.setUsername(user == null? "admin" : user.getUsername());
+            extSyncsQueueItems.add(extSyncsQueue);
         }
+        extSyncsQueueItemRepository.saveAll(extSyncsQueueItems);
     }
 
     private List<String> getRecordCodes(List<EntityRecordRevInfoXml> entityRecordRevInfoXmls) {
@@ -564,20 +563,19 @@ public class CamService {
     }
 
     /**
+     * Synchronizace záznamů ELZA -> CAM
      * 
      * @param extSyncsQueueItem
      * @return return true if item was processed. return false if failed and will be
-     *         rertried later
+     *         retried later
      */
     @Transactional
     public boolean synchronizeExtItem(ExtSyncsQueueItem extSyncsQueueItem) {
-        Integer apExternalSystemId = extSyncsQueueItem.getExternalSystemId();
-        ApExternalSystem apExternalSystem = this.apExternalSystemRepository.findById(apExternalSystemId)
-                .orElseThrow(() -> new ObjectNotFoundException("Externí systém neexistuje", BaseCode.ID_NOT_EXIST)
-                        .setId(apExternalSystemId));
+        Integer externalSystemId = extSyncsQueueItem.getExternalSystemId();
+        ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
 
         try {
-            synchronizeExtItem(extSyncsQueueItem, apExternalSystem);
+            synchronizeExtItem(extSyncsQueueItem, externalSystem);
             return true;
         } catch (ApiException e) {
             // if ApiException -> it means we connected server and it is logical failure 
@@ -597,6 +595,53 @@ public class CamService {
         }
     }
 
+    /**
+     * Synchronizace záznamů CAM -> ELZA
+     * 
+     * @param extSyncsQueueItem
+     * @return return true if item was processed. return false if failed and will be
+     *         retried later
+     */
+    @Transactional
+    public boolean synchronizeIntItem(ExtSyncsQueueItem extSyncsQueueItem) {
+        Integer accessPointId = extSyncsQueueItem.getAccessPointId();
+        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+
+        Integer externalSystemId = extSyncsQueueItem.getExternalSystemId();
+        ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
+
+        ApState state = accessPointService.getStateInternal(accessPoint);
+        ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
+
+        EntityXml entity;
+        try {
+            // download entity from CAM
+            entity = camConnector.getEntityById(bindingState.getBinding().getValue(), externalSystem.getCode());
+        } catch (ApiException e) {
+            // if ApiException -> it means we connected server and it is logical failure 
+            setQueueItemState(extSyncsQueueItem,
+                              ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
+                              OffsetDateTime.now(),
+                              e.getMessage());
+            log.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
+            return true;
+        } catch (Exception e) {
+            // other exception -> retry later
+            setQueueItemState(extSyncsQueueItem,
+                              ExtSyncsQueueItem.ExtAsyncQueueState.UPDATE,
+                              OffsetDateTime.now(),
+                              e.getMessage());
+            return false;
+        }
+        ProcessingContext procCtx = new ProcessingContext(state.getScope(), externalSystem, staticDataService);
+        synchronizeAccessPoint(procCtx, state, entity, bindingState, true);
+        setQueueItemState(extSyncsQueueItem,
+                          ExtSyncsQueueItem.ExtAsyncQueueState.OK,
+                          OffsetDateTime.now(),
+                          "Synchronized: ES -> ELZA");
+        return true;
+    }
+    
     /**
      * Založí nebo upraví entitu v externím systému
      *
