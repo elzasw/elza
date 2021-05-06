@@ -11,6 +11,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
  * Externí systémy pro rejstříky/osoby.
@@ -21,7 +22,7 @@ import cz.tacr.elza.api.ApExternalSystemType;
 public class ApExternalSystem extends SysExternalSystem {
 
     @Enumerated(EnumType.STRING)
-    @Column
+    @Column(length = StringLength.LENGTH_ENUM, nullable = false)
     private ApExternalSystemType type;
 
     public ApExternalSystemType getType() {
