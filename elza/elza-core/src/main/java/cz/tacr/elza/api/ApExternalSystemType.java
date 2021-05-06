@@ -11,6 +11,10 @@ public enum ApExternalSystemType {
     /**
      * Same as CAM except UUID is preferred as ID
      */
-    CAM_UUID
+    CAM_UUID,
+    /**
+     * Automatické přebírání nových záznamů z CAMu
+     */
+    CAM_COMPLETE
 
 }

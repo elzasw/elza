@@ -126,6 +126,8 @@ public class ExtSyncsQueueItem {
 
         NEW("Nový"),
 
+        UPDATE("Aktualizace"),
+
         OK("Odesláno"),
 
         ERROR("Chyba");

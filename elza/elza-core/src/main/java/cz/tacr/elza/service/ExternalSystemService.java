@@ -30,6 +30,7 @@ import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -126,6 +127,17 @@ public class ExternalSystemService {
                     .set("code", code);
         }
         return extSystem;
+    }
+
+    /**
+     * Vyhledání externího systému podle identifikátoru bez kontroly práv.
+     *
+     * @param id identifikátor externího systému
+     * @return nalezený externí systém
+     */
+    public ApExternalSystem getExternalSystemInternal(final Integer id) {
+        return apExternalSystemRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException("Externí systém neexistuje", BaseCode.ID_NOT_EXIST).setId(id));
     }
 
     /**
