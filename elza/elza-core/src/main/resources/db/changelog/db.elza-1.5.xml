@@ -1264,10 +1264,21 @@
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20210419133000" />
 	</changeSet>
 
-    <changeSet id="20210506130600" author="sergey.iryupin">
+    <changeSet id="20210507142500" author="sergey.iryupin">
     	<modifyDataType columnName="type"  
             newDataType="nvarchar(50)"  
             tableName="ap_external_system" />
+        <dropNotNullConstraint columnName="access_point_id" 
+        	columnDataType="int"
+        	tableName="ext_syncs_queue_item" />
+        <addColumn tableName="ext_syncs_queue_item">
+            <column name="binding_id" type="int">
+                <constraints foreignKeyName="fk_ext_syncs_queue_item_binding"
+                             referencedTableName="ap_binding"
+                             referencedColumnNames="binding_id"
+                             nullable="true" />
+            </column>
+		</addColumn>
     </changeSet>
 
 </databaseChangeLog>
