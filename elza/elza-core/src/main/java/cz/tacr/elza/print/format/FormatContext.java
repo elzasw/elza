@@ -1,16 +1,24 @@
 package cz.tacr.elza.print.format;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import cz.tacr.elza.print.item.ItemSpec;
 
 /**
  * Context of active formatting
  */
 public class FormatContext {
     
+    private static final Logger log = LoggerFactory.getLogger(FormatContext.class);
+
     /**
      * Helper class to store block on stack
      */
@@ -104,6 +112,8 @@ public class FormatContext {
      */
     private boolean groupBySpec = true;
 
+    private Map<String, String> specNames = new HashMap<>();
+
     public String getItemSeparator() {
         return itemSeparator;
     }
@@ -185,6 +195,8 @@ public class FormatContext {
      * @param value
      */
     public void appendValue(String value) {
+        log.debug("Append value, value: {}", value);
+
         if (StringUtils.isBlank(value)) {
             return;
         }
@@ -210,6 +222,8 @@ public class FormatContext {
      * @param values
      */
     public void appendSpecWithValues(String spec, List<String> values) {
+        log.debug("Append values, spec: {}, values: {}", spec, values);
+
         boolean hasPrefix = StringUtils.isNotBlank(specificationPrefix);
         String value = String.join(sameSpecItemSeparator, values);
         boolean hasValue = StringUtils.isNotBlank(value);
@@ -335,6 +349,32 @@ public class FormatContext {
 
     public boolean getGroupBySpec() {
         return groupBySpec;
+    }
+
+    /**
+     * Set specification name
+     * 
+     * @param code
+     *            spec code
+     * @param name
+     *            spec name
+     */
+    public void setSpecName(String code, String name) {
+        log.debug("Set spec name, code: {}, name: {}", code, name);
+        if (name == null) {
+            this.specNames.remove(code);
+        } else {
+            this.specNames.put(code, name);
+        }
+
+    }
+
+    public String getSpecName(ItemSpec spec) {
+        String specName = this.specNames.get(spec.getCode());
+        if (specName != null) {
+            return specName;
+        }
+        return specTitleSource.getValue(spec);
     }
 
 }
