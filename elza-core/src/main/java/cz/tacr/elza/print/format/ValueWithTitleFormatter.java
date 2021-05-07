@@ -2,6 +2,7 @@ package cz.tacr.elza.print.format;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.print.item.Item;
@@ -43,6 +44,10 @@ public class ValueWithTitleFormatter implements FormatAction {
 
     @Override
     public void format(FormatContext ctx, List<Item> items) {
+        if (CollectionUtils.isEmpty(items)) {
+            return;
+        }
+
         boolean firstItem = true;
         for (Item item : items) {
             if (item.getType().getCode().equals(itemType)) {
@@ -93,8 +98,7 @@ public class ValueWithTitleFormatter implements FormatAction {
         ItemSpec spec = item.getSpecification();
         if (spec != null) {
             // get specification
-        	SpecTitleSource specTitleSource = ctx.getSpecTitleSource();
-        	String specName = specTitleSource.getValue(spec);
+            String specName = ctx.getSpecName(spec);
 
             // convert name
             if (titleLowerCase) {

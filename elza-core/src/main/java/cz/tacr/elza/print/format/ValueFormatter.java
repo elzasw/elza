@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemSpec;
 
@@ -23,9 +25,9 @@ public class ValueFormatter implements FormatAction {
 
     @Override
     public void format(FormatContext ctx, List<Item> items) {
-
-        // write value with specification
-        SpecTitleSource specTitleSource = ctx.getSpecTitleSource();
+        if (CollectionUtils.isEmpty(items)) {
+            return;
+        }
 
         List<String> specs = new ArrayList<>();
         Map<String, List<String>> specValues = new HashMap<>();
@@ -40,7 +42,7 @@ public class ValueFormatter implements FormatAction {
                     ctx.appendValue(value);
                 } else {
                     // store spec value for later processing
-                    String specName = specTitleSource.getValue(spec).toLowerCase();
+                    String specName = ctx.getSpecName(spec).toLowerCase();
                     if (ctx.getGroupBySpec()) {
                         List<String> values = specValues.computeIfAbsent(specName, a -> new ArrayList<>());
                         if (values.size() == 0) {
@@ -55,7 +57,7 @@ public class ValueFormatter implements FormatAction {
             }
         }
 
-        // process values with specification
+        // process values with same specification
         for (String specName : specs) {
             List<String> values = specValues.get(specName);
             ctx.appendSpecWithValues(specName, values);
