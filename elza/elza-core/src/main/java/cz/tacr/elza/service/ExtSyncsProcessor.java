@@ -53,22 +53,31 @@ public class ExtSyncsProcessor implements Runnable {
 
     private boolean processItem() {
         Pageable pageable = PageRequest.of(0, 1);
-        // find first items
-        Page<ExtSyncsQueueItem> page = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.NEW,
-                                                                               pageable);
-        if (page.isEmpty()) {
+        // find items for update
+        Page<ExtSyncsQueueItem> updPage = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.UPDATE, pageable);
+        if (!updPage.isEmpty()) {
+            List<ExtSyncsQueueItem> items = updPage.getContent();
+            for (ExtSyncsQueueItem item : items) {
+                if (!camService.synchronizeIntItem(item)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // find new items
+        Page<ExtSyncsQueueItem> newPage = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.NEW, pageable);
+        if (newPage.isEmpty()) {
             return false;
         }
-        List<ExtSyncsQueueItem> items = page.getContent();
+        List<ExtSyncsQueueItem> items = newPage.getContent();
         for (ExtSyncsQueueItem item : items) {
             if (!camService.synchronizeExtItem(item)) {
                 return false;
             }
         }
-
         return true;
     }
-
 
     @Override
     public void run() {

@@ -8,7 +8,6 @@ import java.util.Optional;
 import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.common.ObjectListIterator;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +30,7 @@ import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -39,6 +39,7 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
+import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -51,6 +52,9 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  */
 @Service
 public class ExternalSystemService {
+
+    @Autowired
+    ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
 
     @Autowired
     private ExternalSystemRepository externalSystemRepository;
@@ -126,6 +130,17 @@ public class ExternalSystemService {
     }
 
     /**
+     * Vyhledání externího systému podle identifikátoru bez kontroly práv.
+     *
+     * @param id identifikátor externího systému
+     * @return nalezený externí systém
+     */
+    public ApExternalSystem getExternalSystemInternal(final Integer id) {
+        return apExternalSystemRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException("Externí systém neexistuje", BaseCode.ID_NOT_EXIST).setId(id));
+    }
+
+    /**
      * Vyhledání externího systému podle identifikátoru.
      *
      * @param id identifikátor externího systému
@@ -166,6 +181,16 @@ public class ExternalSystemService {
         staticDataService.reloadOnCommit();
     }
 
+    /**
+     * Smazání záznamu z tabulky ExtSyncsQueueItem
+     * 
+     * @param extSyncItemId
+     */
+    @AuthMethod(permission = UsrPermission.Permission.ADMIN)
+    public void deleteQueueItem(final Integer extSyncItemId) {
+        extSyncsQueueItemRepository.deleteById(extSyncItemId);
+    }
+    
     /**
      * Externí systém typu - Digitalizační linka.
      *

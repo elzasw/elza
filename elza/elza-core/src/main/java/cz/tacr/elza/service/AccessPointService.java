@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -52,6 +54,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
@@ -870,7 +873,7 @@ public class AccessPointService {
         }
 
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
-        ApState apState = createAccessPoint(scope, type, apChange, null);
+        ApState apState = createAccessPoint(scope, type, EntityRecordStateXml.ERS_NEW, apChange, null);
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         ApPart apPart = partService.createPart(partType, accessPoint, apChange, null);
@@ -1336,7 +1339,21 @@ public class AccessPointService {
     }
 
     /**
-     * Získání stavu přístupového bodu.
+     * Získání stavu přístupového bodu podle accessPointId.
+     * 
+     * Metoda neověřuje uživatelská oprávnění
+     *
+     * @param accessPointId
+     *            přístupový bod
+     * @return stav přístupového bodu
+     */
+    public ApState getStateInternal(final Integer accessPointId) {
+        final ApState state = stateRepository.findLastByAccessPointId(accessPointId);
+        return controlApState(state, accessPointId);
+    }
+
+    /**
+     * Získání stavu přístupového bodu podle accessPoint.
      * 
      * Metoda neověřuje uživatelská oprávnění
      *
@@ -1346,11 +1363,22 @@ public class AccessPointService {
      */
     public ApState getStateInternal(final ApAccessPoint accessPoint) {
         final ApState state = stateRepository.findLastByAccessPoint(accessPoint);
-        if (state == null) {
+        return controlApState(state, accessPoint.getAccessPointId());
+    }
+
+    /**
+     * Kontrola stavu přístupového bodu.
+     * 
+     * @param apState
+     * @param accessPointId
+     * @return stav přístupového bodu
+     */
+    private ApState controlApState(final ApState apState, final Integer accessPointId) {
+        if (apState == null) {
             throw new ObjectNotFoundException("Stav pro přístupový bod neexistuje", BaseCode.INVALID_STATE)
-                    .set("accessPointId", accessPoint.getAccessPointId());
+                    .set("accessPointId", accessPointId);
         }
-        return state;
+        return apState;
     }
 
     /**
@@ -1361,7 +1389,6 @@ public class AccessPointService {
      */
     public List<ApState> getStatesInternal(final List<ApAccessPoint> accessPoints) {
         return stateRepository.findLastByAccessPoints(accessPoints);
-        
     }
 
     public Map<Integer, ApState> groupStateByAccessPointId(final List<Integer> accessPointIds) {
@@ -1388,8 +1415,8 @@ public class AccessPointService {
      * @param change změna
      * @return přístupový bod
      */
-    public ApState createAccessPoint(final ApScope scope, final ApType type,
-                                      final ApChange change,
+    public ApState createAccessPoint(final ApScope scope, final ApType type, final EntityRecordStateXml state,
+                                     final ApChange change,
                                      String uuid) {
         ApAccessPoint accessPoint = new ApAccessPoint();
         if (uuid == null) {
@@ -1398,15 +1425,23 @@ public class AccessPointService {
         accessPoint.setUuid(uuid);
         accessPoint.setState(ApStateEnum.OK);
         accessPoint = saveWithLock(accessPoint);
-        return createAccessPointState(accessPoint, scope, type, change);
+        return createAccessPointState(accessPoint, scope, type, state, change);
     }
 
-    public ApState createAccessPointState(ApAccessPoint ap, ApScope scope, ApType type, ApChange change) {
+    public ApState createAccessPointState(ApAccessPoint ap, ApScope scope, ApType type, EntityRecordStateXml state, ApChange change) {
         ApState apState = new ApState();
         apState.setAccessPoint(ap);
-        apState.setApType(type);
         apState.setScope(scope);
-        apState.setStateApproval(StateApproval.NEW);
+        apState.setApType(type);
+        switch (state) {
+        case ERS_APPROVED:
+            apState.setStateApproval(StateApproval.APPROVED);
+            break;
+        case ERS_NEW:
+        default:
+            apState.setStateApproval(StateApproval.NEW);
+            break;
+        }
         // apState.setComment(comment);
         apState.setCreateChange(change);
         apState.setDeleteChange(null);
@@ -1513,6 +1548,12 @@ public class AccessPointService {
             newApScope = null;
         }
 
+        if (!getNextStates(oldApState).contains(newStateApproval)) {
+            throw new SystemException("Požadovaný stav entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+            .set("accessPointId", accessPoint.getAccessPointId())
+            .set("scopeId", newApScope.getScopeId());
+        }
+
         ApType newApType;
         if (newTypeId != null && !newTypeId.equals(oldApState.getApTypeId())) {
             // get ap type
@@ -1557,6 +1598,45 @@ public class AccessPointService {
         reindexDescItem(accessPoint);
 
         return newApState;
+    }
+
+    /**
+     * Získání seznamu stavů do niž může být přístupový bod přepnut
+     * 
+     * @param apState
+     * @return seznam stavů
+     */
+    public List<StateApproval> getNextStates(@NotNull ApState apState) {
+        ApScope apScope = apState.getScope();
+        UserDetail user = userService.getLoggedUserDetail();
+
+        if (user.hasPermission(Permission.ADMIN)) {
+            return Arrays.asList(StateApproval.values());
+        }
+
+        List<StateApproval> statesNewToApprove = Arrays.asList(StateApproval.NEW, StateApproval.TO_APPROVE);
+        Set<StateApproval> result = new HashSet<>();
+
+        if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL) 
+                || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
+            if (statesNewToApprove.contains(apState.getStateApproval())) {
+                result.addAll(statesNewToApprove);
+            }
+        }
+        if (userService.hasPermission(Permission.AP_CONFIRM_ALL) 
+                || userService.hasPermission(Permission.AP_CONFIRM_ALL, apScope.getScopeId())) {
+            if (apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
+                result.add(StateApproval.APPROVED);
+            }
+        }
+        if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
+                || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId())) {
+            if (apState.getStateApproval().equals(StateApproval.APPROVED)) {
+                result.add(StateApproval.APPROVED);
+            }
+        }
+
+        return new ArrayList<>(result);
     }
 
     /**

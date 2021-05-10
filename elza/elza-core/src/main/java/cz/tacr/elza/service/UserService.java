@@ -1659,7 +1659,7 @@ public class UserService {
 	 * @return
 	 */
 	@Transactional
-	public UserInfoVO getLoggeUserInfo() {
+	public UserInfoVO getLoggedUserInfo() {
         final UserDetail userDetail = getLoggedUserDetail();
 		Integer userId = userDetail.getId();
 		String preferredName = null;

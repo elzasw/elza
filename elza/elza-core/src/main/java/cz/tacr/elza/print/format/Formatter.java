@@ -191,6 +191,19 @@ public class Formatter {
     }
 
     /**
+     * Set custom specification name
+     * 
+     * @param code
+     *            spec code
+     * @param name
+     *            spec name
+     * @return
+     */
+    public Formatter setSpecName(String code, String name) {
+        return addAction(new SetSpecName(code, name));
+    }
+
+    /**
 	 * Format items from node
 	 * @param node Node to be formatted
 	 * @return Return string

@@ -194,7 +194,13 @@ public class ApItem implements Item, AccessPointCacheSerializable {
     }
 
     public Integer getPartId() {
-        return partId;
+        if (partId != null) {
+            return partId;
+        } else if (part != null) {
+            return part.getPartId();
+        } else {
+            return null;
+        }
     }
 
     public boolean isUndefined() {

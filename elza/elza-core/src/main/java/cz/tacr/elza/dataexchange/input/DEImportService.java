@@ -62,6 +62,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 import static cz.tacr.elza.core.db.HibernateConfiguration.MAX_IN_SIZE;
@@ -83,6 +84,8 @@ public class DEImportService {
     private final StaticDataService staticDataService;
 
     private final NodeCacheService nodeCacheService;
+
+    private final AccessPointCacheService accessPointCacheService;
 
     private final ScopeRepository scopeRepository;
 
@@ -110,6 +113,7 @@ public class DEImportService {
                            UserService userService,
                            StaticDataService staticDataService,
                            NodeCacheService nodeCacheService,
+                           AccessPointCacheService accessPointCacheService,
                            ApExternalSystemRepository externalSystemRepository,
                            InstitutionTypeRepository institutionTypeRepository,
                            GroovyScriptService groovyScriptService,
@@ -137,6 +141,7 @@ public class DEImportService {
         this.userService = userService;
         this.staticDataService = staticDataService;
         this.nodeCacheService = nodeCacheService;
+        this.accessPointCacheService = accessPointCacheService;
         this.scopeRepository = scopeRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.levelTreeCacheService = levelTreeCacheService;
@@ -190,6 +195,8 @@ public class DEImportService {
 
             // finish import
             context.finish();
+
+            accessPointCacheService.syncCache();
 
             // restore all uri refs
             restoreNodeUriRefs();

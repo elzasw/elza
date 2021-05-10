@@ -96,6 +96,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.drools.model.ItemSpec;
 import cz.tacr.elza.drools.model.ModelAvailable;
 import cz.tacr.elza.exception.AbstractException;
@@ -469,6 +470,22 @@ public class ApController {
             return apFactory.createVO(cachedAccessPoint);
         }
         return apFactory.createVO(newState, true);
+    }
+
+    /**
+     * Získání seznamu stavů do niž může být přístupový bod přepnut
+     * 
+     * @param accessPointId
+     * @return seznam stavů
+     */
+    @RequestMapping(value = "/{accessPointId}/nextStates", method = RequestMethod.GET)
+    public List<String> getStateApproval(@PathVariable final Integer accessPointId) {
+        Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
+
+        ApState apState = accessPointService.getStateInternal(accessPointId);
+        List<StateApproval> states = accessPointService.getNextStates(apState);
+
+        return states.stream().map(p -> p.name()).collect(Collectors.toList());
     }
 
     /**
@@ -1205,6 +1222,17 @@ public class ApController {
     public String importCoordinates(@RequestParam final FileType fileType,
                                     @RequestBody(required = false) Resource body) {
         return accessPointService.importCoordinates(fileType, body);
+    }
+
+    /**
+     * Odstranění záznamu z tabulky ExtSyncsQueueItem
+     *
+     * @param itemId
+     */
+    @Transactional
+    @RequestMapping(value = "/external/syncs/{extSyncItemId}", method = RequestMethod.DELETE) 
+    public void deleteExternalSync(@PathVariable("extSyncItemId") final Integer itemId) {
+        externalSystemService.deleteQueueItem(itemId);
     }
 
 }

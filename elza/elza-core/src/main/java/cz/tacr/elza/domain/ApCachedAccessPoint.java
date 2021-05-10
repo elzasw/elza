@@ -8,6 +8,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.ClassBridge;
+import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
@@ -41,7 +42,9 @@ import javax.persistence.Table;
 @Entity(name = "ap_cached_access_point")
 public class ApCachedAccessPoint {
 
+    // Constants for fulltext indexing
     public static final String DATA = "data";
+    public static final String FIELD_ACCESSPOINT_ID = "accessPointId";
 
     @Id
     @GeneratedValue
@@ -53,6 +56,7 @@ public class ApCachedAccessPoint {
     private ApAccessPoint accessPoint;
 
     @Column(nullable = false, updatable = false, insertable = false)
+    @Field(name = FIELD_ACCESSPOINT_ID, store = Store.YES)
     private Integer accessPointId;
 
     @Lob
