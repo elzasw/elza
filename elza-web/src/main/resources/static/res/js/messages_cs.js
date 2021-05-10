@@ -1278,6 +1278,7 @@ var messages = {
     "admin.extSystem.password": "Heslo",
     "admin.extSystem.elzaCode": "Kód ELZA",
     "admin.extSystem.type": "Typ",
+    "admin.extSystem.sysScope": "Oblast entit",
     "admin.extSystem.viewDaoUrl": "DaoURL",
     "admin.extSystem.viewFileUrl": "FileURL",
     "admin.extSystem.viewThumbnailUrl": "ThumbnailURL",
