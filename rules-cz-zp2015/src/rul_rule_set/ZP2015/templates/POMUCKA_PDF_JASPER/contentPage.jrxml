@@ -848,40 +848,41 @@
 				<textFieldExpression><![CDATA[$V{otherIds}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="18" splitType="Prevent">
-			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+		<band height="18" splitType="Immediate">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[$V{unitDate}.isEmpty()]]></printWhenExpression>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Title" positionType="Float" stretchType="ContainerHeight" mode="Opaque" x="0" y="0" width="455" height="18" isRemoveLineWhenBlank="true" uuid="ca455b78-f786-469e-a192-7a3149b1d7e1"/>
-				<box topPadding="0" bottomPadding="0"/>
-				<textElement markup="none">
-					<font pdfEncoding=""/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{levelName}]]></textFieldExpression>
-			</textField>
-		</band>
-		<band height="18" splitType="Prevent">
 			<printWhenExpression><![CDATA[!$V{unitDate}.isEmpty()]]></printWhenExpression>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Title" positionType="Float" stretchType="ContainerHeight" mode="Opaque" x="0" y="0" width="290" height="18" isRemoveLineWhenBlank="true" uuid="d3ba98f4-7cb2-4911-b38d-1c06cbf29560">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<box topPadding="0" bottomPadding="0"/>
-				<textElement markup="none">
+				<textElement verticalAlignment="Top" markup="none">
 					<font pdfEncoding=""/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{levelName}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[cz.tacr.elza.print.format.Helper.getParagraph($V{levelName}, 0, 1)]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" pattern="">
 				<reportElement style="Title" positionType="Float" stretchType="ContainerHeight" mode="Opaque" x="290" y="0" width="165" height="18" isRemoveLineWhenBlank="true" uuid="e9882b24-119b-4b5f-8dcf-0557d6729a92">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<box topPadding="0" bottomPadding="0"/>
-				<textElement textAlignment="Right" markup="html">
+				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{unitDate}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="18" splitType="Immediate">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$V{unitDate}.isEmpty()||StringUtils.isNotBlank(cz.tacr.elza.print.format.Helper.getParagraph($V{levelName},1,null))]]></printWhenExpression>
+			<textField textAdjust="StretchHeight">
+				<reportElement style="Title" positionType="Float" stretchType="ContainerHeight" mode="Opaque" x="0" y="0" width="455" height="18" isRemoveLineWhenBlank="true" uuid="ca455b78-f786-469e-a192-7a3149b1d7e1"/>
+				<box topPadding="0" bottomPadding="0"/>
+				<textElement verticalAlignment="Top" markup="none">
+					<font pdfEncoding=""/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{unitDate}.isEmpty()?$V{levelName}:cz.tacr.elza.print.format.Helper.getParagraph($V{levelName}, 1, null)]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="19">

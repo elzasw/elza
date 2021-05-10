@@ -57,4 +57,61 @@ abstract public class Helper {
         }
         return realObj.toString();
     }
+
+
+    static public String getParagraph(String text, Integer from, Integer to) {
+        StringBuilder result = new StringBuilder();
+        int l = text.length();
+        int parCounter = 0;
+        int charCounter = 0;
+
+        for (int i = 0; i < l; i++) {
+            char ch = text.charAt(i);
+            boolean addChar = false;
+
+            if (ch == '\r' || ch == '\n') {
+                if (charCounter != 0) {
+                    // some data found
+                    parCounter++;
+                    charCounter = 0;
+                }
+                // whitespace character after from
+                if (from != null) {
+                    if (from < parCounter) {
+                        addChar = true;
+                    }
+                } else {
+                    addChar = true;
+                }
+            } else {
+                charCounter++;
+                // real character after from
+                if (from != null) {
+                    if (from <= parCounter) {
+                        addChar = true;
+                    }
+                } else {
+                    addChar = true;
+                }
+            }
+
+            // safety check
+            if (to != null) {
+                if (parCounter >= to) {
+                    addChar = false;
+                }
+            } else {
+                // to is null
+                if (from != null && parCounter < from) {
+                    addChar = false;
+                }
+            }
+
+            // write char to output
+            if (addChar) {
+                result.append(ch);
+            }
+        }
+        return result.toString();
+    }
 }
