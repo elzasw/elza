@@ -19,11 +19,18 @@ public class ExtSyncsQueueItem {
     private Integer extSyncsQueueItemId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
-    @JoinColumn(name = "accessPointId", nullable = false)
+    @JoinColumn(name = "accessPointId", nullable = true)
     private ApAccessPoint accessPoint;
 
-    @Column(nullable = false, updatable = false, insertable = false)
+    @Column(nullable = true, updatable = false, insertable = false)
     private Integer accessPointId;
+
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApBinding.class)
+    @JoinColumn(name = "bindingId", nullable = false)
+    private ApBinding binding;
+
+    @Column(nullable = true, updatable = false, insertable = false)
+    private Integer bindingId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApExternalSystem.class)
     @JoinColumn(name = "externalSystemId", nullable = false)
@@ -125,6 +132,8 @@ public class ExtSyncsQueueItem {
     public enum ExtAsyncQueueState {
 
         NEW("Nový"),
+
+        UPDATE("Aktualizace"),
 
         OK("Odesláno"),
 

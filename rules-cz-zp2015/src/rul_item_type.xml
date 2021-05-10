@@ -68,6 +68,14 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="ZP2015_DAO_ID" data-type="STRING">
+        <name>Číslo digitalizátu</name>
+        <shortcut>Digitalizát</shortcut>
+        <description>ZP4.5.3 Existence kopií jednotky popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
     <item-type code="ZP2015_EXTRA_UNITS" data-type="INT">
         <name>Další evidenční jednotky ve složce</name>
         <shortcut>Další EJ</shortcut>

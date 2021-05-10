@@ -671,6 +671,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/name/' + objectId);
     }
 
+	getStateApproval(accessPointId) {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/nextStates');
+	}
+
     findAccessPoint(
         search = null,
         registryParent = null,
@@ -1879,6 +1883,10 @@ export class WebApiCls {
     deleteExtSystem(id) {
         return AjaxUtils.ajaxDelete(WebApiCls.adminUrl + '/externalSystems/' + id, null);
     }
+
+	deleteExtSyncsQueueItem(itemId) {
+		return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/external/syncs/' + itemId, null);
+	}
 
     findFundStructureExtension(fundVersionId, structureTypeCode) {
         return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/extension/' + fundVersionId + '/' + structureTypeCode);

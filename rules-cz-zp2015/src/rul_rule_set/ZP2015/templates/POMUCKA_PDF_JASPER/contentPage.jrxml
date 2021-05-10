@@ -250,110 +250,6 @@
 		.addValueWithTitle("ZP2015_NOTE")
 	.endBlock()]]></defaultValueExpression>
 	</parameter>
-	<parameter name="unitFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
-		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
-	.setTitleSeparator(": ")
-	.setItemSeparator("<br>")
-	.setSpecSeparator(" ")
-	.setBlockSeparators("<br>","")
-	.addValue("ZP2015_TITLE")
-	.beginBlock().addValueWithTitle("ZP2015_OTHER_ID").endBlock()
-	.beginBlock().addValueWithTitle("ZP2015_UNIT_COUNT").endBlock()
-	.beginBlock()
-		.addValueWithTitle("ZP2015_DATE_OTHER")
-		.addValueWithTitle("ZP2015_FORMAL_TITLE")
-		.addValueWithTitle("ZP2015_ITEM_TITLE")
-		.addValueWithTitle("ZP2015_PART")
-		.addValueWithTitle("ZP2015_ENTITY_ROLE")
-		.setSpecSeparator(": ")
-		.addValue("ZP2015_ENTITY_ROLE")
-		.addValueWithTitle("ZP2015_UNIT_HIST")
-		.addValueWithTitle("ZP2015_UNIT_SOURCE")
-		.addValueWithTitle("ZP2015_UNIT_ARR")
-		.addValueWithTitle("ZP2015_FUTURE_UNITS")
-		.addValueWithTitle("ZP2015_UNIT_CONTENT")
-		.addValueWithTitle("ZP2015_UNIT_ACCESS")
-		.addValueWithTitle("ZP2015_UNIT_INFO_RIGHTS")
-		.addValueWithTitle("ZP2015_UNIT_COPY_RIGHTS")
-		.addValueWithTitle("ZP2015_IMPRINT_COUNT")
-		.addValueWithTitle("ZP2015_EXERQUE")
-		.addValueWithTitle("ZP2015_PAINTING_CHAR")
-		.addValueWithTitle("ZP2015_CORROBORATION")
-		.addValueWithTitle("ZP2015_IMPRINT_ORDER")
-		.addValueWithTitle("ZP2015_SCALE")
-		.addValueWithTitle("ZP2015_POSITION")
-		.addValueWithTitle("ZP2015_ORIENTATION")
-		.addValueWithTitle("ZP2015_LEGEND")
-		.addValueWithTitle("ZP2015_MOVIE_LENGTH")
-		.addValueWithTitle("ZP2015_UNIT_CURRENT_STATUS")
-		.addValueWithTitle("ZP2015_STORAGE_COND")
-		.addValueWithTitle("ZP2015_SIZE")
-		.addValueWithTitle("ZP2015_SIZE_WIDTH")
-		.addValueWithTitle("ZP2015_SIZE_HEIGHT")
-		.addValueWithTitle("ZP2015_SIZE_DEPTH")
-		.addValueWithTitle("ZP2015_SIZE_UNITS")		
-		.addValueWithTitle("ZP2015_WEIGHT")
-		.addValueWithTitle("ZP2015_AMOUNT")
-		.addValueWithTitle("ZP2015_ITEM_MAT")
-		.addValueWithTitle("ZP2015_LANGUAGE")
-		.addValueWithTitle("ZP2015_RELATED_UNITS")
-		.addValueWithTitle("ZP2015_EXISTING_COPY")
-		.addValueWithTitle("ZP2015_COPY_SOURCE")
-		.addValueWithTitle("ZP2015_ARRANGE_RULES")
-		.addValueWithTitle("ZP2015_EDITION")
-		.addValueWithTitle("ZP2015_NOTE")
-		.addValueWithTitle("ZP2015_ARRANGER")
-		.addValueWithTitle("ZP2015_DESCRIPTION_DATE")
-	.endBlock()]]></defaultValueExpression>
-	</parameter>
-	<parameter name="folderFormater" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
-		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
-	.setTitleSeparator(": ")
-	.setItemSeparator("<br>")
-	.setSpecSeparator(" ")
-	.setBlockSeparators("<br>","")
-	.addValue("ZP2015_TITLE")
-	.beginBlock().addValueWithTitle("ZP2015_OTHER_ID").endBlock()
-	.beginBlock().addValueWithTitle("ZP2015_UNIT_COUNT").endBlock()
-	.beginBlock()
-		.addValueWithTitle("ZP2015_DATE_OTHER")
-		.addValueWithTitle("ZP2015_FORMAL_TITLE")
-		.addValueWithTitle("ZP2015_ITEM_TITLE")
-		.addValueWithTitle("ZP2015_PART")
-		.addValueWithTitle("ZP2015_ENTITY_ROLE")
-		.setSpecSeparator(": ")
-		.addValue("ZP2015_ENTITY_ROLE")
-		.addValueWithTitle("ZP2015_UNIT_HIST")
-		.addValueWithTitle("ZP2015_UNIT_SOURCE")
-		.addValueWithTitle("ZP2015_UNIT_ARR")
-		.addValueWithTitle("ZP2015_FUTURE_UNITS")
-		.addValueWithTitle("ZP2015_UNIT_CONTENT")
-		.addValueWithTitle("ZP2015_UNIT_ACCESS")
-		.addValueWithTitle("ZP2015_UNIT_INFO_RIGHTS")
-		.addValueWithTitle("ZP2015_UNIT_COPY_RIGHTS")
-		.addValueWithTitle("ZP2015_UNIT_CURRENT_STATUS")
-		.addValueWithTitle("ZP2015_STORAGE_COND")
-		.addValueWithTitle("ZP2015_SIZE")
-		.addValueWithTitle("ZP2015_SIZE_WIDTH")
-		.addValueWithTitle("ZP2015_SIZE_HEIGHT")
-		.addValueWithTitle("ZP2015_SIZE_DEPTH")
-		.addValueWithTitle("ZP2015_SIZE_UNITS")		
-		.addValueWithTitle("ZP2015_WEIGHT")
-		.addValueWithTitle("ZP2015_AMOUNT")
-		.addValueWithTitle("ZP2015_ITEM_MAT")
-		.addValueWithTitle("ZP2015_LANGUAGE")
-		.addValueWithTitle("ZP2015_RELATED_UNITS")
-		.addValueWithTitle("ZP2015_EXISTING_COPY")
-		.addValueWithTitle("ZP2015_COPY_SOURCE")
-		.addValueWithTitle("ZP2015_ARRANGE_RULES")
-		.addValueWithTitle("ZP2015_EDITION")
-		.addValueWithTitle("ZP2015_NOTE")
-		.addValueWithTitle("ZP2015_ARRANGER")
-		.addValueWithTitle("ZP2015_DESCRIPTION_DATE")
-	.endBlock()]]></defaultValueExpression>
-	</parameter>
 	<parameter name="seriesFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
@@ -445,10 +341,24 @@
 		.setSpecFormat("", ": ", false)
 		.setItemSeparator("<br>")
 		.setTitleSeparator(" - ")
-		.setSpecTitleSource(cz.tacr.elza.print.format.SpecTitleSource.NAME)
+	    .setSpecName("ZP2015_DATE_OF_CONTENT", "datace obsahu")
+  	    .setSpecName("ZP2015_DATE_DECLARED", "datace deklarovaná")
+  	    .setSpecName("ZP2015_DATE_ORIG", "datace vzniku předlohy")
+  	    .setSpecName("ZP2015_DATE_OF_COPY", "datace vzniku kopie")
+   	    .setSpecName("ZP2015_DATE_SEALING", "datace zpečetění")
+   	    .setSpecName("ZP2015_DATE_ACT_PUBLISHING", "datace vydání listiny")
+   	    .setSpecName("ZP2015_DATE_INSERT", "datace insertu/transeptu")
+   	    .setSpecName("ZP2015_DATE_MOLD_CREATION", "datace vzniku matrice")
+   	    .setSpecName("ZP2015_DATE_USAGE", "datace užívání typáře")
+   	    .setSpecName("ZP2015_DATE_PUBLISHING", "datace vydání dokumentu")
+   	    .setSpecName("ZP2015_DATE_MAP_UPDATE", "datace reambulace mapy")
+   	    .setSpecName("ZP2015_DATE_CAPTURING", "datace pořízení obrazového záznamu")
+   	    .setSpecName("ZP2015_DATE_RECORDING", "datace pořízení filmového / zvukového záznamu")
+   	    .setSpecName("ZP2015_DATE_AWARDING", "datace udělení / propůjčení faleristického předmětu")
+  	    .setSpecName("ZP2015_DATE_AWARD_CER", "datace předání faleristického předmětu")
+  	    .setSpecName("ZP2015_DATE_WITHDRAWAL", "datace odnětí / vrácení faleristického předmětu")
 		.addValue("ZP2015_DATE_OTHER")
       	.setTitleSeparator(": ")
-      	.setSpecTitleSource(cz.tacr.elza.print.format.SpecTitleSource.SHORTCUT)
 		.addValueWithTitle("ZP2015_ITEM_TITLE_REF")
 		.addValueWithTitle("ZP2015_PART")
 		.setGroupFormat("; ")
@@ -938,40 +848,41 @@
 				<textFieldExpression><![CDATA[$V{otherIds}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="18" splitType="Prevent">
-			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+		<band height="18" splitType="Immediate">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[$V{unitDate}.isEmpty()]]></printWhenExpression>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Title" positionType="Float" stretchType="ContainerHeight" mode="Opaque" x="0" y="0" width="455" height="18" isRemoveLineWhenBlank="true" uuid="ca455b78-f786-469e-a192-7a3149b1d7e1"/>
-				<box topPadding="0" bottomPadding="0"/>
-				<textElement markup="none">
-					<font pdfEncoding=""/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{levelName}]]></textFieldExpression>
-			</textField>
-		</band>
-		<band height="18" splitType="Prevent">
 			<printWhenExpression><![CDATA[!$V{unitDate}.isEmpty()]]></printWhenExpression>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Title" positionType="Float" stretchType="ContainerHeight" mode="Opaque" x="0" y="0" width="290" height="18" isRemoveLineWhenBlank="true" uuid="d3ba98f4-7cb2-4911-b38d-1c06cbf29560">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<box topPadding="0" bottomPadding="0"/>
-				<textElement markup="none">
+				<textElement verticalAlignment="Top" markup="none">
 					<font pdfEncoding=""/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{levelName}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[cz.tacr.elza.print.format.Helper.getParagraph($V{levelName}, 0, 1)]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" pattern="">
 				<reportElement style="Title" positionType="Float" stretchType="ContainerHeight" mode="Opaque" x="290" y="0" width="165" height="18" isRemoveLineWhenBlank="true" uuid="e9882b24-119b-4b5f-8dcf-0557d6729a92">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<box topPadding="0" bottomPadding="0"/>
-				<textElement textAlignment="Right" markup="html">
+				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{unitDate}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="18" splitType="Immediate">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.HorizontalRowLayout"/>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$V{unitDate}.isEmpty()||StringUtils.isNotBlank(cz.tacr.elza.print.format.Helper.getParagraph($V{levelName},1,null))]]></printWhenExpression>
+			<textField textAdjust="StretchHeight">
+				<reportElement style="Title" positionType="Float" stretchType="ContainerHeight" mode="Opaque" x="0" y="0" width="455" height="18" isRemoveLineWhenBlank="true" uuid="ca455b78-f786-469e-a192-7a3149b1d7e1"/>
+				<box topPadding="0" bottomPadding="0"/>
+				<textElement verticalAlignment="Top" markup="none">
+					<font pdfEncoding=""/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{unitDate}.isEmpty()?$V{levelName}:cz.tacr.elza.print.format.Helper.getParagraph($V{levelName}, 1, null)]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="19">

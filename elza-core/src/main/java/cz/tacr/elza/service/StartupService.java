@@ -9,6 +9,7 @@ import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -143,6 +144,7 @@ public class StartupService implements SmartLifecycle {
 
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);
+        ApCachedAccessPointClassBridge.init(applicationContext.getBean(SettingsService.class));
 
         TransactionTemplate tt = new TransactionTemplate(txManager);
         tt.executeWithoutResult(r -> startInTransaction());

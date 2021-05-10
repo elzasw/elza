@@ -178,17 +178,17 @@ class HomePage extends AbstractReactComponent {
     renderHistory = () => {
         const {stateRegion} = this.props;
         //eslint-disable-next-line array-callback-return
-        const registryItems = stateRegion.registryRegionFront.map((x, index) => {
-            if (x.data) {
-                const name = x.data.record;
-                const desc = x.data.characteristics;
-                return this.renderHistoryItem(name, desc, 'REGISTRY_REGION', x, index);
+        const registryItems = stateRegion.registryRegionFront.map((item, index) => {
+            if (item.data) {
+                const name = item.data.name;
+                const desc = item.data.description;
+                return this.renderHistoryItem(name, desc, 'REGISTRY_REGION', item, index);
             }
         });
-        const arrItems = stateRegion.arrRegionFront.map((x, index) => {
-            const name = x.name + (x.lockDate ? ' ' + Utils.dateToString(new Date(x.lockDate)) : '');
-            const desc = this.getFundDesc(x);
-            return this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', x, index);
+        const arrItems = stateRegion.arrRegionFront.map((item, index) => {
+            const name = item.name + (item.lockDate ? ' ' + Utils.dateToString(new Date(item.lockDate)) : '');
+            const desc = this.getFundDesc(item);
+            return this.renderHistoryItem(name, desc, 'ARR_REGION_FUND', item, index);
         });
 
         if (arrItems.length === 0) {

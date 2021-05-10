@@ -6,30 +6,69 @@
 }
 
 ::-webkit-scrollbar-button {
-    width: 0;
-    height: 0;
+    width: 10px;
+    height: 10px;
+    background: $scrollbar-color;
+    border: 5px solid $scrollbar-bg;
+
+    &:single-button:vertical {
+        &:decrement {
+            border-bottom: 7px solid $scrollbar-color;
+            border-top: none;
+
+            &:hover {
+                border-bottom: 7px solid $scrollbar-active-color;
+            }
+        }
+        &:increment {
+            border-top: 7px solid $scrollbar-color;
+            border-bottom: none;
+
+            &:hover {
+                border-top: 7px solid $scrollbar-active-color;
+            }
+        }
+    }
+
+    &:single-button:horizontal {
+        &:decrement{
+            border-right: 7px solid $scrollbar-color;
+            border-left: none;
+
+            &:hover {
+                border-right: 7px solid $scrollbar-active-color;
+            }
+        }
+        &:increment {
+            border-left: 7px solid $scrollbar-color;
+            border-right: none;
+
+            &:hover {
+                border-left: 7px solid $scrollbar-active-color;
+            }
+        }
+    }
 }
+
 
 ::-webkit-scrollbar-thumb {
     background: $scrollbar-color;
     border: 0 none #ffffff;
     border-radius: 0;
-}
 
-::-webkit-scrollbar-thumb:hover,
-::-webkit-scrollbar-thumb:active {
-    background: $scrollbar-active-color;
+    &:hover, &:active {
+        background: $scrollbar-active-color;
+    }
 }
 
 ::-webkit-scrollbar-track {
+    background: $scrollbar-bg;
     border: 0 none #ffffff;
     border-radius: 0;
-    background: $scrollbar-bg;
-}
 
-::-webkit-scrollbar-track:hover,
-::-webkit-scrollbar-track:active {
-    background: $scrollbar-active-bg;
+    &:hover, &:active {
+        background: $scrollbar-active-bg;
+    }
 }
 
 ::-webkit-scrollbar-corner {

@@ -687,9 +687,9 @@
         <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_PRINTID">
-        <name>pořadové číslo pro tisk</name>
-        <description>pořadové číslo pro tisk</description>
-        <shortcut>poř. č.</shortcut>
+        <name>neplatné pořadové číslo</name>
+        <description>neplatné pořadové číslo</description>
+        <shortcut>nepl. poř. č.</shortcut>
         <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_PICID">

@@ -1112,7 +1112,9 @@ when
       // ZP5.2.8 Technika, adjustace, nosič a látka záznamu
       "ZP2015_ITEM_MAT",
       // ZP5.2.9 Díl, část, pořadí vydání jednotky popisu
-      "ZP2015_PART"
+      "ZP2015_PART",
+      // číslo digitalizátu
+      "ZP2015_DAO_ID"
      ) )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
 then

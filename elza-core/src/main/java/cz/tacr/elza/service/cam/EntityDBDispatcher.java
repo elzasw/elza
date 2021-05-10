@@ -336,8 +336,7 @@ public class EntityDBDispatcher {
      * @param accessPoint
      * @return
      */
-    private ApState restoreAccessPoint(EntityXml entity, ApBinding binding,
-                                       ApAccessPoint accessPoint) {
+    private ApState restoreAccessPoint(EntityXml entity, ApBinding binding, ApAccessPoint accessPoint) {
         Validate.notNull(procCtx, "Context cannot be null");
         ApChange apChange = procCtx.getApChange();
         Validate.notNull(apChange, "Change cannot be null");
@@ -346,7 +345,7 @@ public class EntityDBDispatcher {
 
         ApType type = sdp.getApTypeByCode(entity.getEnt().getValue());
         accessPoint = accessPointService.saveWithLock(accessPoint);
-        ApState apState = accessPointService.createAccessPointState(accessPoint, procCtx.getScope(), type, apChange);
+        ApState apState = accessPointService.createAccessPointState(accessPoint, procCtx.getScope(), type, entity.getEns(), apChange);
 
         createPartsFromEntityXml(entity, accessPoint, apChange, apState, binding);
 
@@ -431,9 +430,7 @@ public class EntityDBDispatcher {
         return bindingPart;
     }
 
-    private ApState createAccessPoint(final EntityXml entity,
-                                     ApBinding binding,
-                                     String uuid) {
+    private ApState createAccessPoint(final EntityXml entity, ApBinding binding, String uuid) {
         Validate.notNull(procCtx, "Context cannot be null");
         ApChange apChange = procCtx.getApChange();
         Validate.notNull(apChange, "Change cannot be null");
@@ -441,7 +438,7 @@ public class EntityDBDispatcher {
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
 
         ApType type = sdp.getApTypeByCode(entity.getEnt().getValue());
-        ApState apState = accessPointService.createAccessPoint(procCtx.getScope(), type, apChange, uuid);
+        ApState apState = accessPointService.createAccessPoint(procCtx.getScope(), type, entity.getEns(), apChange, uuid);
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         createPartsFromEntityXml(entity, accessPoint, apChange, apState, binding);
