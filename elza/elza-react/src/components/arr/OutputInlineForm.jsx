@@ -83,7 +83,7 @@ class OutputInlineForm extends AbstractReactComponent {
     }
 
     render() {
-        const {outputTypeId, disabled, outputDetail} = this.props;
+        const {outputTypeId, disabled, outputDetail, outputFilters} = this.props;
 
         const outputType = this.getOutputType(outputTypeId);
         const outputTypeName = outputType ? outputType.name : "Unknown";
@@ -130,6 +130,21 @@ class OutputInlineForm extends AbstractReactComponent {
                             }}/>
                         </div>
                     </div>
+                    <Field
+                        component={FormInputField}
+                        as="select"
+                        label={i18n('arr.output.outputFilter')}
+                        name={'outputFilterId'}
+                        disabled={disabled}
+                    >
+                        <option key="-outputFilterId" />
+                        {outputFilters.data &&
+                        outputFilters.data.map(i => (
+                            <option key={i.id} value={i.id}>
+                                {i.name}
+                            </option>
+                        ))}
+                    </Field>
                     <div>
                         <label className="control-label">{i18n('arr.output.title.anonymizedAp')}</label>
                         <Field

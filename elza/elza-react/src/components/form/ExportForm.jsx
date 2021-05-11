@@ -7,29 +7,27 @@ import {Field, reduxForm} from 'redux-form';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
-import {WebApi} from 'actions/index.jsx';
 import AbstractReactComponent from '../AbstractReactComponent';
 import HorizontalLoader from '../shared/loading/HorizontalLoader';
 import i18n from '../i18n';
 import FormInputField from '../shared/form/FormInputField';
+import {connect} from "react-redux";
+import * as exportFilters from "../../actions/refTables/exportFilters";
 
 class ExportForm extends AbstractReactComponent {
     static propTypes = {};
 
-    state = {
-        defaultScopes: [],
-        transformationNames: [],
-        iExportFormsFetching: true,
-        isFetching: true,
-    };
-
     componentDidMount() {
-        WebApi.getExportTransformations().then(json => {
-            this.setState({
-                transformationNames: json,
-                isFetching: false,
-            });
-        });
+        this.fetch();
+    }
+
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        this.fetch();
+    }
+
+    fetch = () => {
+        const {dispatch} = this.props;
+        dispatch(exportFilters.fetchIfNeeded());
     }
 
     validate = (values, props) => {
@@ -46,8 +44,9 @@ class ExportForm extends AbstractReactComponent {
         const {
             onClose,
             handleSubmit,
+            exportFilters,
         } = this.props;
-        const {isFetching} = this.state;
+        const isFetching = exportFilters.isFetching;
 
         return (
             <Form onSubmit={handleSubmit(this.submitReduxForm)}>
@@ -56,16 +55,16 @@ class ExportForm extends AbstractReactComponent {
                         <HorizontalLoader />
                     ) : (
                         <Field
-                            name="code"
+                            name="exportFilterId"
                             component={FormInputField}
                             as="select"
-                            label={i18n('export.transformationName')}
+                            label={i18n('export.exportFilter')}
                         >
                             <option key="blankName" />
-                            {this.state.transformationNames.map((i, index) => {
+                            {exportFilters.data && exportFilters.data.map((i, index) => {
                                 return (
-                                    <option key={index + 'name'} value={i}>
-                                        {i}
+                                    <option key={index + 'name'} value={i.id}>
+                                        {i.name}
                                     </option>
                                 );
                             })}
@@ -83,6 +82,12 @@ class ExportForm extends AbstractReactComponent {
     }
 }
 
-export default reduxForm({
+const form = reduxForm({
     form: 'exportForm',
 })(ExportForm);
+
+export default connect((state, props) => {
+    return {
+        exportFilters: state.refTables.exportFilters,
+    };
+})(form);

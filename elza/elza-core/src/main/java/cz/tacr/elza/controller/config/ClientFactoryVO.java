@@ -19,7 +19,11 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.RulExportFilterVO;
+import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.RulExportFilter;
+import cz.tacr.elza.domain.RulOutputFilter;
 import cz.tacr.elza.repository.ApIndexRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -1997,5 +2001,13 @@ public class ClientFactoryVO {
             return ApExternalSystemSimpleVO.newInstance((ApExternalSystem) extSystem);
         }
         return createSimpleEntity(extSystem, SysExternalSystemSimpleVO.class);
+    }
+
+    public List<RulOutputFilterVO> createOutputFilterList(final List<RulOutputFilter> outputFilters) {
+        return createList(outputFilters, RulOutputFilterVO.class, null);
+    }
+
+    public List<RulExportFilterVO> createExportFilterList(final List<RulExportFilter> exportFilters) {
+        return createList(exportFilters, RulExportFilterVO.class, null);
     }
 }

@@ -1220,6 +1220,14 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/getRuleSets');
     }
 
+    findExportFilters() {
+        return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/exportFilters');
+    }
+
+    findOutputFilters() {
+        return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/outputFilters');
+    }
+
     approveVersion(versionId) {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/approveVersion', {versionId});
     }

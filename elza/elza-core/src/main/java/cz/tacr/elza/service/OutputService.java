@@ -4,6 +4,7 @@ import static cz.tacr.elza.domain.RulItemType.Type.RECOMMENDED;
 import static cz.tacr.elza.domain.RulItemType.Type.REQUIRED;
 import static cz.tacr.elza.repository.ExceptionThrow.ap;
 import static cz.tacr.elza.repository.ExceptionThrow.output;
+import static cz.tacr.elza.repository.ExceptionThrow.outputFilter;
 import static cz.tacr.elza.repository.ExceptionThrow.outputType;
 import static cz.tacr.elza.repository.ExceptionThrow.scope;
 import static cz.tacr.elza.repository.ExceptionThrow.template;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.repository.OutputFilterRepository;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.drools.core.util.StringUtils;
@@ -187,6 +189,9 @@ public class OutputService {
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
 
+    @Autowired
+    private OutputFilterRepository outputFilterRepository;
+
     private OutputSender outputSender;
 
     /**
@@ -330,12 +335,15 @@ public class OutputService {
         	templateIds = null;
         }
 
+        Integer outputfilterId = originalOutput.getOutputFilter() != null ? originalOutput.getOutputFilter().getOutputFilterId() : null;
+
         // create output
         final OutputData createdOutput = createOutput(fundVersion,
                 newName,
                 originalOutput.getInternalCode(),
                 originalOutput.getOutputType().getOutputTypeId(),
-                templateIds
+                templateIds,
+                outputfilterId
         );
 
         final ArrChange change = createdOutput.getCreateChange();
@@ -370,7 +378,8 @@ public class OutputService {
                                   final String name,
                                   final String internalCode,
                                   final Integer outputTypeId,
-                                  final Collection<Integer> templateIds) {
+                                  final Collection<Integer> templateIds,
+                                  final Integer outputFilterId) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(name, "Název musí být vyplněn");
         Assert.notNull(outputTypeId, "Identifikátor typu vystupu musí být vyplněn");
@@ -393,6 +402,13 @@ public class OutputService {
         ArrChange change = arrangementInternalService.createChange(null);
         output.setCreateChange(change);
         output.setDeleteChange(null);
+
+        if (outputFilterId != null) {
+            output.setOutputFilter(outputFilterRepository.findById(outputFilterId)
+                    .orElseThrow(outputFilter(outputFilterId)));
+        } else {
+            output.setOutputFilter(null);
+        }
 
         ArrOutput savedOutput = outputRepository.save(output);
 
@@ -504,7 +520,8 @@ public class OutputService {
                                        final String name,
                                        final String internalCode,
                                        final Integer templateId,
-                                       final ApAccessPointVO anonymizedAp) {
+                                       final ApAccessPointVO anonymizedAp,
+                                       final Integer outputFilterId) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(output, "Výstup musí být vyplněn");
         Assert.notNull(name, "Název musí být vyplněn");
@@ -536,6 +553,13 @@ public class OutputService {
             output.setAnonymizedAp(accessPoint);
         } else {
             output.setAnonymizedAp(null);
+        }
+
+        if (outputFilterId != null) {
+            output.setOutputFilter(outputFilterRepository.findById(outputFilterId)
+                    .orElseThrow(outputFilter(outputFilterId)));
+        } else {
+            output.setOutputFilter(null);
         }
 
         outputRepository.save(output);

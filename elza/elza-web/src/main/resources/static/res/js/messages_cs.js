@@ -431,6 +431,7 @@ var messages = {
     "arr.output.name": "Název výstupu",
     "arr.output.internalCode": "Interní kód výstupu",
     "arr.output.outputType": "Typ výstupu",
+    "arr.output.outputFilter": "Výstupní filtr",
     "arr.output.template": "Šablona",
     "arr.output.template.set": "Nastavit",
     "arr.output.template.evenPageOffsetX": "Offset liché stránky X",
@@ -1518,7 +1519,7 @@ var messages = {
     "extMapperForm.update": "Aktualizovat",
 
     "export.title.fund": "Export archivního souboru",
-    "export.transformationName": "Šablona transformace",
+    "export.exportFilter": "Exportní filtr",
 
     "validate.validateInt.notInt": "Nejedná se o celé číslo",
     "validate.validateInt.outOfRange": "Zadané číslo je mimo rozsah celého čísla typu INT",

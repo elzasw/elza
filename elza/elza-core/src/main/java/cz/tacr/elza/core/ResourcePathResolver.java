@@ -6,6 +6,8 @@ import java.nio.file.Paths;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 
+import cz.tacr.elza.domain.RulExportFilter;
+import cz.tacr.elza.domain.RulOutputFilter;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +43,8 @@ public class ResourcePathResolver {
     private static final String RULESET_FUNCTIONS = "functions";
     private static final String RULESET_DROOLS = "drools";
     private static final String RULESET_SCRIPTS = "scripts";
+    private static final String RULESET_OUTPUT_FILTERS = "output_filters";
+    private static final String RULESET_EXPORT_FILTERS = "export_filters";
 
     private final StaticDataService staticDataService;
 
@@ -292,6 +296,32 @@ public class ResourcePathResolver {
         return path;
     }
 
+    /**
+     * @return Path to output filter file (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getOutputFilterFile(RulOutputFilter outputFilter) {
+        Path outputFiltersDir = getOutputFiltersDir(outputFilter.getPackageId(), outputFilter.getRuleSetId());
+        String outputFilterFile = outputFilter.getFilename();
+
+        Path path = outputFiltersDir.resolve(outputFilterFile);
+
+        return path;
+    }
+
+    /**
+     * @return Path to export filter file (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getExportFilterFile(RulExportFilter exportFilter) {
+        Path exportFiltersDir = getExportFiltersDir(exportFilter.getPackageId(), exportFilter.getRuleSetId());
+        String exportFilterFile = exportFilter.getFilename();
+
+        Path path = exportFiltersDir.resolve(exportFilterFile);
+
+        return path;
+    }
+
     @Transactional
     public Path getGroovyDir(int packageId, int ruleSetId) {
         StaticDataProvider staticData = staticDataService.getData();
@@ -359,6 +389,58 @@ public class ResourcePathResolver {
         Path ruleSetPath = getRuleSetDir(rulPackage, ruleSet);
 
         Path path = ruleSetPath.resolve(RULESET_FUNCTIONS);
+
+        return path;
+    }
+
+    /**
+     * @return Path to rule set output filters directory (may not exist).
+     */
+    @Transactional
+    public Path getOutputFiltersDir(int packageId, int ruleSetId) {
+        StaticDataProvider staticData = staticDataService.getData();
+        RulPackage rulPackage = staticData.getPackageById(packageId);
+        RuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
+
+        Path path = getOutputFiltersDir(rulPackage, ruleSet.getEntity());
+
+        return path;
+    }
+
+    /**
+     * @return Path to rule set output filters directory (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getOutputFiltersDir(RulPackage rulPackage, RulRuleSet ruleSet) {
+        Path ruleSetPath = getRuleSetDir(rulPackage, ruleSet);
+
+        Path path = ruleSetPath.resolve(RULESET_OUTPUT_FILTERS);
+
+        return path;
+    }
+
+    /**
+     * @return Path to rule set export filters directory (may not exist).
+     */
+    @Transactional
+    public Path getExportFiltersDir(int packageId, int ruleSetId) {
+        StaticDataProvider staticData = staticDataService.getData();
+        RulPackage rulPackage = staticData.getPackageById(packageId);
+        RuleSet ruleSet = staticData.getRuleSetById(ruleSetId);
+
+        Path path = getExportFiltersDir(rulPackage, ruleSet.getEntity());
+
+        return path;
+    }
+
+    /**
+     * @return Path to rule set export filters directory (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
+    public Path getExportFiltersDir(RulPackage rulPackage, RulRuleSet ruleSet) {
+        Path ruleSetPath = getRuleSetDir(rulPackage, ruleSet);
+
+        Path path = ruleSetPath.resolve(RULESET_EXPORT_FILTERS);
 
         return path;
     }
