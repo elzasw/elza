@@ -6,6 +6,7 @@ import {storeFromArea} from 'shared/utils';
 
 import './AdminExtSystemDetail.scss';
 import {JAVA_ATTR_CLASS} from '../../constants';
+import {WebApi} from 'actions/index.jsx';
 
 const EXT_SYSTEM_CLASS = {
     ApExternalSystem: '.ApExternalSystemVO',
@@ -23,8 +24,17 @@ const EXT_SYSTEM_CLASS_LABEL = {
  * Komponenta detailu osoby
  */
 class AdminExtSystemDetail extends AbstractReactComponent {
+    static state = {
+        defaultScopes: []
+    };
+
     componentDidMount() {
         this.fetchIfNeeded();
+        WebApi.getAllScopes().then(json => {
+            this.setState({
+                defaultScopes: json,
+            });
+        });
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -46,6 +56,16 @@ class AdminExtSystemDetail extends AbstractReactComponent {
             return <>
                 <h4>{i18n('admin.extSystem.' + field)}</h4>
                 <span>{value}</span>
+            </>
+        }
+    };
+
+    scopeValue = (id) => {
+        const scope = this.state.defaultScopes.find(e => e.id === id);
+        if (scope != null) {
+            return <>
+                <h4>{i18n('admin.extSystem.sysScope')}</h4>
+                <span>{scope.name}</span>
             </>
         }
     };
@@ -75,6 +95,8 @@ class AdminExtSystemDetail extends AbstractReactComponent {
 
                             <h4>{i18n('admin.extSystem.type')}</h4>
                             <span>{extSystem.type}</span>
+
+                            {this.scopeValue(extSystem.scope)}
                         </div>
                     )}
                     {classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository && (

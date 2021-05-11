@@ -1613,6 +1613,20 @@ public class ArrangementService {
     }
 
     /**
+     * Získání ApScope podle id
+     * 
+     * @param id
+     * @return ApScope
+     */
+    public ApScope getApScope(Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return scopeRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException("Scope neexistuje", BaseCode.ID_NOT_EXIST).setId(id));
+    }
+
+    /**
      * @return vrací session uživatele
      */
     @Bean
