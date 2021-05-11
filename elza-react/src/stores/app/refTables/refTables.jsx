@@ -35,6 +35,8 @@ const initialState = {
     eidTypes: DetailReducer(),
     issueStates: DetailReducer(),
     issueTypes: DetailReducer(),
+    outputFilters: DetailReducer(),
+    exportFilters: DetailReducer(),
 };
 
 export default function refTables(state = initialState, action = {}) {
