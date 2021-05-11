@@ -87,6 +87,19 @@ class ExtSystemForm extends AbstractReactComponent {
         });
     }
 
+    optionScopes() {
+        if (this.state != null) {
+            return <>
+                <option key={null} />
+                {Object.values(this.state.defaultScopes).map((i, index) => (
+                    <option key={index} value={i.id}>
+                        {i.name}
+                    </option>
+                ))}
+            </>
+        }
+    }
+
     submitReduxForm = (values, dispatch) =>
         submitForm(ExtSystemForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
@@ -133,14 +146,8 @@ class ExtSystemForm extends AbstractReactComponent {
                                 type="select"
                                 component={FormInputField}
                                 label={i18n('admin.extSystem.sysScope')}
-                                disabled={isUpdate}
                             >
-                                <option key={null} />
-                                {Object.values(this.state.defaultScopes).map((i, index) => (
-                                    <option key={index} value={i.code}>
-                                        {i.name}
-                                    </option>
-                                ))}
+                                {this.optionScopes()}
                             </Field>
                         </div>
                     )}

@@ -1281,4 +1281,15 @@
 		</addColumn>
     </changeSet>
 
+    <changeSet id="20210510122100" author="sergey.iryupin">
+        <addColumn tableName="ap_external_system">
+            <column name="scope_id" type="int">
+                <constraints foreignKeyName="fk_ap_external_system_ap_scope"
+                             referencedTableName="ap_scope"
+                             referencedColumnNames="scope_id"
+                             nullable="true" />
+            </column>
+		</addColumn>
+    </changeSet>
+
 </databaseChangeLog>

@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -107,8 +108,9 @@ public class AdminController {
      */
     @RequestMapping(value = "/externalSystems", method = RequestMethod.POST)
     @Transactional
-    public SysExternalSystemVO createExternalSystem(@RequestBody final SysExternalSystemVO externalSystemVO) {
-        SysExternalSystem externalSystem = externalSystemVO.createEntity();
+    public SysExternalSystemVO createExternalSystem(@RequestBody final ApExternalSystemVO externalSystemVO) {
+        ApScope apScope = arrangementService.getApScope(externalSystemVO.getScope());
+        SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope);
         // TODO: zvážit vytvoření specializovaných  metod pro konkrétní typy external system
         externalSystem = externalSystemService.create(externalSystem);
         return factoryVo.createExtSystem(externalSystem);
@@ -135,8 +137,9 @@ public class AdminController {
      */
     @RequestMapping(value = "/externalSystems/{externalSystemId}", method = RequestMethod.PUT)
     @Transactional
-    public SysExternalSystemVO updateExternalSystem(@RequestBody final SysExternalSystemVO externalSystemVO) {
-        SysExternalSystem externalSystem = externalSystemVO.createEntity();
+    public SysExternalSystemVO updateExternalSystem(@RequestBody final ApExternalSystemVO externalSystemVO) {
+        ApScope apScope = arrangementService.getApScope(externalSystemVO.getScope());
+        SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope);
         externalSystem = externalSystemService.update(externalSystem);
         camConnector.invalidate(externalSystem.getCode());
         return factoryVo.createExtSystem(externalSystem);
