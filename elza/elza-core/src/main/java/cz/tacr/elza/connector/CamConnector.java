@@ -106,7 +106,8 @@ public class CamConnector {
         ApExternalSystem apExternalSystem = apExternalSystemRepository.findByCode(code);
         if (apExternalSystem != null &&
                 (apExternalSystem.getType() == ApExternalSystemType.CAM ||
-                        apExternalSystem.getType() == ApExternalSystemType.CAM_UUID)) {
+                        apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
+                        apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE)) {
             instanceMap.remove(code);
         }
     }
@@ -115,7 +116,8 @@ public class CamConnector {
         try {
             ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(code);
             if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
-                    apExternalSystem.getType() == ApExternalSystemType.CAM_UUID) {
+                    apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
+                    apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
                 CamInstance camInstance = instanceMap.get(apExternalSystem.getCode());
                 if (camInstance == null) {
                     camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue());
@@ -137,7 +139,8 @@ public class CamConnector {
         }
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(code);
         if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
-                apExternalSystem.getType() == ApExternalSystemType.CAM_UUID) {
+                apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
+                apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
             camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue());
             instanceMap.put(apExternalSystem.getCode(), camInstance);
             return camInstance;

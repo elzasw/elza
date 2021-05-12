@@ -144,7 +144,9 @@ public class ExtSyncsQueueItem {
 
     public enum ExtAsyncQueueState {
 
-        NEW("Nový"),
+        EXPORT_NEW("Nový v ELZA"),
+
+        IMPORT_NEW("Nový v CAM"),
 
         UPDATE("Aktualizace"),
 
