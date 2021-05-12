@@ -27,7 +27,8 @@ public class CamScheduler {
         if (CollectionUtils.isNotEmpty(externalSystems)) {
             for (ApExternalSystem externalSystem : externalSystems) {
                 if (externalSystem.getType() == ApExternalSystemType.CAM ||
-                        externalSystem.getType() == ApExternalSystemType.CAM_UUID) {
+                        externalSystem.getType() == ApExternalSystemType.CAM_UUID ||
+                        externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
                     camService.synchronizeAccessPointsForExternalSystem(externalSystem);
                 }
             }

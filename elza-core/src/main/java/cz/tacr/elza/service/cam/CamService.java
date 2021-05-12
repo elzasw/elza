@@ -416,24 +416,29 @@ public class CamService {
                 .collect(Collectors.toMap(p -> p.getBinding().getValue(), p -> p));
 
         UsrUser user = userService.getLoggedUser();
-        List<ExtSyncsQueueItem> extSyncsQueueItems = new ArrayList<>(recordCodes.size());
+        List<ExtSyncsQueueItem> extSyncsQueueItems = new ArrayList<>();
         for (String recordCode : recordCodes) {
-            ExtSyncsQueueItem extSyncsQueue = new ExtSyncsQueueItem();
             ApBindingState bindingState = bindingStateMap.get(recordCode);
-            if (bindingState != null) {
-                extSyncsQueue.setAccessPoint(bindingState.getAccessPoint());
-                extSyncsQueue.setState(ExtAsyncQueueState.UPDATE);
-            } else {
-                ApBinding binding = externalSystemService.createApBinding(externalSystem.getScope(), recordCode, externalSystem);
-                extSyncsQueue.setBinding(binding);
-                extSyncsQueue.setState(ExtAsyncQueueState.NEW);
+            // update or add new items from CAM_COMPLETE
+            if (bindingState != null || externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
+                ExtSyncsQueueItem extSyncsQueue = new ExtSyncsQueueItem();
+                if (bindingState != null) {
+                    extSyncsQueue.setAccessPoint(bindingState.getAccessPoint());
+                    extSyncsQueue.setState(ExtAsyncQueueState.UPDATE);
+                } else {
+                    ApBinding binding = externalSystemService.createApBinding(externalSystem.getScope(), recordCode, externalSystem);
+                    extSyncsQueue.setBinding(binding);
+                    extSyncsQueue.setState(ExtAsyncQueueState.IMPORT_NEW);
+                }
+                extSyncsQueue.setExternalSystem(externalSystem);
+                extSyncsQueue.setDate(OffsetDateTime.now());
+                extSyncsQueue.setUsername(user == null? "admin" : user.getUsername());
+                extSyncsQueueItems.add(extSyncsQueue);
             }
-            extSyncsQueue.setExternalSystem(externalSystem);
-            extSyncsQueue.setDate(OffsetDateTime.now());
-            extSyncsQueue.setUsername(user == null? "admin" : user.getUsername());
-            extSyncsQueueItems.add(extSyncsQueue);
         }
-        extSyncsQueueItemRepository.saveAll(extSyncsQueueItems);
+        if (!extSyncsQueueItems.isEmpty()) {
+            extSyncsQueueItemRepository.saveAll(extSyncsQueueItems);
+        }
     }
 
     private List<String> getRecordCodes(List<EntityRecordRevInfoXml> entityRecordRevInfoXmls) {
@@ -593,7 +598,7 @@ public class CamService {
         } catch (Exception e) {
             // other exception -> retry later
             setQueueItemState(extSyncsQueueItem,
-                              ExtSyncsQueueItem.ExtAsyncQueueState.NEW,
+                              ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW,
                               OffsetDateTime.now(),
                               e.getMessage());
             return false;
