@@ -478,7 +478,7 @@ public class CamService {
      * @param bindingState stav propojení s externím systémem
      * @param binding při vytváření nové entity
      * @param entity entita z externího systému
-     * @param syncQueue zda-li se jedná o volání z časovače
+     * @param syncQueue zda-li se jedná o volání z fronty
      */
     public void synchronizeAccessPoint(ProcessingContext procCtx, ApState state, ApBindingState bindingState, ApBinding binding,
                                        EntityXml entity, boolean syncQueue) {
@@ -499,7 +499,9 @@ public class CamService {
             //        ExternalCode.RECORD_NOT_FOUND);
         }
 
-        if (binding != null) {
+        // Kontrola na zalozeni nove entity
+        // overeni existence UUID
+        if (bindingState == null && binding != null) {
             ApAccessPoint accessPoint = apAccessPointRepository.findApAccessPointByUuid(entity.getEuid().getValue());
             if (accessPoint != null) {
                 log.error("Entity with uuid:{} already exists", entity.getEuid().getValue());
@@ -661,6 +663,7 @@ public class CamService {
         EntityXml entity;
         try {
             // download entity from CAM
+            log.debug("Download entity from CAM, bindingValue: {} externalSystem: {}", bindingValue, externalSystem.getCode());
             entity = camConnector.getEntityById(bindingValue, externalSystem.getCode());
         } catch (ApiException e) {
             // if ApiException -> it means we connected server and it is logical failure 
