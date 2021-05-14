@@ -1105,7 +1105,7 @@ public class ApController {
             throw prepareSystemException(e);
         }
         ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
-        camService.synchronizeAccessPoint(procCtx, state, entity, bindingState, false);
+        camService.synchronizeAccessPoint(procCtx, state, bindingState, null, entity, false);
     }
 
     /**
