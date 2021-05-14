@@ -65,7 +65,9 @@ public class ExtSyncsProcessor implements Runnable {
         if (!newToElza.isEmpty()) {
             List<ExtSyncsQueueItem> items = newToElza.getContent();
             for (ExtSyncsQueueItem item : items) {
-                // TODO
+                if (!camService.synchronizeIntItem(item)) {
+                    return false;
+                }
             }
         }
 
