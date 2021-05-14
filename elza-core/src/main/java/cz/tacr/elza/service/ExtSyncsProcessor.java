@@ -69,6 +69,7 @@ public class ExtSyncsProcessor implements Runnable {
                     return false;
                 }
             }
+            return true;
         }
 
         // add new items from ELZA
