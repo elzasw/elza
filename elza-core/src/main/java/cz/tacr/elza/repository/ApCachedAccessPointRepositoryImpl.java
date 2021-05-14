@@ -5,11 +5,13 @@ import cz.tacr.elza.controller.vo.Area;
 import cz.tacr.elza.controller.vo.ExtensionFilterVO;
 import cz.tacr.elza.controller.vo.RelationFilterVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
@@ -120,18 +122,23 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         }
 
         private void addWildcardQuery(BooleanJunction<BooleanJunction> query, String fieldName, String value,
-                                      boolean trans, boolean exact) {
+                                      boolean trans, boolean exact, boolean wildcard) {
             float boost = 1.0f;
             SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(fieldName);
             if (fieldSearchConfig != null && fieldSearchConfig.getBoost() != null) {
                 boost = fieldSearchConfig.getBoost();
             }
+            String wildCardValue = value;
 
-            query.should(new BoostQuery(new WildcardQuery(new Term(DATA + SEPARATOR + fieldName, STAR + value + STAR)),
+            if (wildcard) {
+                wildCardValue = STAR + value + STAR;
+            }
+
+            query.should(new BoostQuery(new WildcardQuery(new Term(DATA + SEPARATOR + fieldName, wildCardValue)),
                     boost));
             if (trans) {
-                query.should(new BoostQuery(parseTransQuery(DATA + SEPARATOR + fieldName + SEPARATOR + TRANS, STAR
-                        + value + STAR), boost));
+                query.should(new BoostQuery(parseTransQuery(DATA + SEPARATOR + fieldName + SEPARATOR + TRANS,
+                        wildCardValue), boost));
             }
             if (exact) {
                 addExactQuery(query, fieldName, value, DATA + SEPARATOR);
@@ -399,22 +406,22 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
         if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
             // boost o preferované indexi a jména
-            fcf.addWildcardQuery(indexQuery, PREFIX_PREF + SEPARATOR + INDEX, valueLowerCase, true, true);
-            fcf.addWildcardQuery(indexQuery, PREFIX_PREF + SEPARATOR + NM_MAIN, valueLowerCase, true, true);
-            fcf.addWildcardQuery(indexQuery, PREFIX_PREF + SEPARATOR + NM_MINOR, valueLowerCase, true, true);
+            fcf.addWildcardQuery(indexQuery, PREFIX_PREF + SEPARATOR + INDEX, valueLowerCase, true, true, true);
+            fcf.addWildcardQuery(indexQuery, PREFIX_PREF + SEPARATOR + NM_MAIN, valueLowerCase, true, true, true);
+            fcf.addWildcardQuery(indexQuery, PREFIX_PREF + SEPARATOR + NM_MINOR, valueLowerCase, true, true, true);
         }
         fieldName.append(INDEX);
 
         //boost hlavního jména
-        fcf.addWildcardQuery(indexQuery, itemFieldName.toString().toLowerCase() + NM_MAIN, valueLowerCase, true, true);
+        fcf.addWildcardQuery(indexQuery, itemFieldName.toString().toLowerCase() + NM_MAIN, valueLowerCase, true, true, true);
 
         //boost minor jména
-        fcf.addWildcardQuery(indexQuery, itemFieldName.toString().toLowerCase() + NM_MINOR, valueLowerCase, true, true);
+        fcf.addWildcardQuery(indexQuery, itemFieldName.toString().toLowerCase() + NM_MINOR, valueLowerCase, true, true, true);
 
         //index
         BooleanJunction<BooleanJunction> transQuery = queryBuilder.bool();
         transQuery.minimumShouldMatchNumber(1);
-        fcf.addWildcardQuery(transQuery, fieldName.toString().toLowerCase(), valueLowerCase, true, false);
+        fcf.addWildcardQuery(transQuery, fieldName.toString().toLowerCase(), valueLowerCase, true, false, true);
         try {
             // accessPointId
             int accessPointId = Integer.parseInt(valueLowerCase);
@@ -440,6 +447,11 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         }
         fieldName.append(itemTypeCode);
 
+        StaticDataProvider sdp = staticDataService.getData();
+        RulItemType itemType = sdp.getItemType(itemTypeCode);
+        DataType dataType = DataType.fromCode(itemType.getDataType().getCode());
+        boolean wildcard = !(dataType == DataType.INT || dataType == DataType.RECORD_REF || dataType == DataType.BIT);
+
         if (StringUtils.isNotEmpty(itemSpecCode)) {
             StringBuilder fieldSpecName = new StringBuilder(fieldName.toString());
             fieldSpecName.append(SEPARATOR).append(itemSpecCode);
@@ -451,14 +463,14 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
                     //boost o preferovaný item
                     fcf.addWildcardQuery(valueQuery, PREFIX_PREF + SEPARATOR + itemTypeCode.toLowerCase() + SEPARATOR +
-                            itemSpecCode.toLowerCase(), value.toLowerCase(), true, true);
+                            itemSpecCode.toLowerCase(), value.toLowerCase(), true, true, wildcard);
                 }
 
                 //item
                 BooleanJunction<BooleanJunction> transQuery = queryBuilder.bool();
                 transQuery.minimumShouldMatchNumber(1);
                 fcf.addWildcardQuery(transQuery, fieldSpecName.toString().toLowerCase(), value.toLowerCase(), true,
-                                     false);
+                                     false, wildcard);
 
                 valueQuery.must(transQuery.createQuery());
                 fcf.addExactQuery(valueQuery, fieldSpecName.toString().toLowerCase(), value.toLowerCase(), DATA
@@ -469,13 +481,13 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
             if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
                 //boost o preferovaný item
                 fcf.addWildcardQuery(valueQuery, PREFIX_PREF + SEPARATOR + itemTypeCode.toLowerCase(), value
-                        .toLowerCase(), true, true);
+                        .toLowerCase(), true, true, wildcard);
             }
 
             //item
             BooleanJunction<BooleanJunction> transQuery = queryBuilder.bool();
             transQuery.minimumShouldMatchNumber(1);
-            fcf.addWildcardQuery(transQuery, fieldName.toString().toLowerCase(), value.toLowerCase(), true, false);
+            fcf.addWildcardQuery(transQuery, fieldName.toString().toLowerCase(), value.toLowerCase(), true, false, wildcard);
 
             valueQuery.must(transQuery.createQuery());
             fcf.addExactQuery(valueQuery, fieldName.toString().toLowerCase(), value.toLowerCase(), DATA + SEPARATOR);
