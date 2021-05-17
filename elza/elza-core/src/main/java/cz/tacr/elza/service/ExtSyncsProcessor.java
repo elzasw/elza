@@ -61,13 +61,12 @@ public class ExtSyncsProcessor implements Runnable {
         }
 
         // add new item to Elza
-        Page<ExtSyncsQueueItem> newToElza = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.IMPORT_NEW, pageable);
+        Pageable pageableAdd = PageRequest.of(0, 10);
+        Page<ExtSyncsQueueItem> newToElza = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.IMPORT_NEW, pageableAdd);
         if (!newToElza.isEmpty()) {
             List<ExtSyncsQueueItem> items = newToElza.getContent();
-            for (ExtSyncsQueueItem item : items) {
-                if (!camService.synchronizeIntItem(item)) {
-                    return false;
-                }
+            if (!camService.synchronizeIntItems(items)) {
+                return false;
             }
             return true;
         }
