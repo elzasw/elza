@@ -10,6 +10,7 @@ import {connect} from 'react-redux';
 import {FormInputField} from 'components/shared';
 import {AP_EXT_SYSTEM_TYPE} from 'constants.tsx';
 import {JAVA_ATTR_CLASS} from '../../constants';
+import {WebApi} from 'actions/index.jsx';
 
 const EXT_SYSTEM_CLASS = {
     ApExternalSystem: '.ApExternalSystemVO',
@@ -51,6 +52,10 @@ class ExtSystemForm extends AbstractReactComponent {
         ...FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk],
     ];
 
+    static state = {
+        defaultScopes: [],
+    };
+
     static requireFields = (...names) => data =>
         names.reduce((errors, name) => {
             if (!data[name]) {
@@ -73,6 +78,27 @@ class ExtSystemForm extends AbstractReactComponent {
         }
         return ExtSystemForm.requireFields(...requiredFields)(values);
     };
+
+    componentDidMount() {
+        WebApi.getAllScopes().then(json => {
+            this.setState({
+                defaultScopes: json,
+            });
+        });
+    }
+
+    optionScopes() {
+        if (this.state != null) {
+            return <>
+                <option key={null} />
+                {Object.values(this.state.defaultScopes).map((i, index) => (
+                    <option key={index} value={i.id}>
+                        {i.name}
+                    </option>
+                ))}
+            </>
+        }
+    }
 
     submitReduxForm = (values, dispatch) =>
         submitForm(ExtSystemForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
@@ -114,6 +140,14 @@ class ExtSystemForm extends AbstractReactComponent {
                                         {AP_EXT_SYSTEM_LABEL[i]}
                                     </option>
                                 ))}
+                            </Field>
+                            <Field
+                                name="scope"
+                                type="select"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.sysScope')}
+                            >
+                                {this.optionScopes()}
                             </Field>
                         </div>
                     )}
