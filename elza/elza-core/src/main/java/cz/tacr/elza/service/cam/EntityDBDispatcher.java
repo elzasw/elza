@@ -421,13 +421,27 @@ public class EntityDBDispatcher {
         } else {
             parentPart = null; 
         }
-        
 
         ApPart apPart = partService.createPart(partType, accessPoint, apChange, parentPart);
         ApBindingItem bindingPart = externalSystemService.createApBindingItem(binding, apChange, part.getPid()
                 .getValue(), apPart, null);
 
         return bindingPart;
+    }
+
+    /**
+     * Vytvoření nového ApState a ApAccessPoint
+     *  
+     * @param procCtx
+     * @param entity 
+     * @param binding
+     * @return ApState
+     */
+    public ApState createAccessPoint(ProcessingContext procCtx, EntityXml entity, ApBinding binding) {
+        Validate.notNull(procCtx.getApChange());
+        this.procCtx = procCtx;
+
+        return createAccessPoint(entity, binding, entity.getEuid().getValue());
     }
 
     private ApState createAccessPoint(final EntityXml entity, ApBinding binding, String uuid) {

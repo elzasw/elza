@@ -53,14 +53,14 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
+import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
-import cz.tacr.elza.controller.vo.FindFundsResult;
-import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
@@ -1610,6 +1610,33 @@ public class ArrangementService {
             entity.setName(s);
         }
         return entity;
+    }
+
+    /**
+     * Získání ApScope podle id
+     * 
+     * @param id
+     * @return ApScope nebo null
+     */
+    public ApScope getApScope(Integer id) {
+        if (id == null) {
+            return null;
+        }
+        return scopeRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException("Scope neexistuje", BaseCode.ID_NOT_EXIST).setId(id));
+    }
+
+    /**
+     * Získání ApScope podle External System 
+     * 
+     * @param extSystem
+     * @return ApScope nebo null
+     */
+    public ApScope getApScope(SysExternalSystemVO extSystem) {
+        if (extSystem instanceof ApExternalSystemVO) {
+            return getApScope(((ApExternalSystemVO)extSystem).getScope());
+        }
+        return null;
     }
 
     /**

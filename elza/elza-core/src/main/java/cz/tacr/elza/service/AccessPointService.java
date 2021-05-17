@@ -2049,7 +2049,7 @@ public class AccessPointService {
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         UserDetail userDetail = userService.getLoggedUserDetail();
         ExtSyncsQueueItem extSyncsQueueItem = createExtSyncsQueueItem(accessPoint, apExternalSystem, null,
-                ExtSyncsQueueItem.ExtAsyncQueueState.NEW, OffsetDateTime.now(), userDetail.getUsername());
+                ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW, OffsetDateTime.now(), userDetail.getUsername());
         extSyncsQueueItemRepository.save(extSyncsQueueItem);
     }
 

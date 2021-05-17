@@ -1,11 +1,6 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.api.ApExternalSystemType;
-import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.service.cam.CamService;
 import org.slf4j.Logger;
@@ -53,7 +48,7 @@ public class ExtSyncsProcessor implements Runnable {
 
     private boolean processItem() {
         Pageable pageable = PageRequest.of(0, 1);
-        // find items for update
+        // sync updated items from ExtSystem
         Page<ExtSyncsQueueItem> updPage = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.UPDATE, pageable);
         if (!updPage.isEmpty()) {
             List<ExtSyncsQueueItem> items = updPage.getContent();
@@ -65,12 +60,24 @@ public class ExtSyncsProcessor implements Runnable {
             return true;
         }
 
-        // find new items
-        Page<ExtSyncsQueueItem> newPage = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.NEW, pageable);
-        if (newPage.isEmpty()) {
+        // add new item to Elza
+        Page<ExtSyncsQueueItem> newToElza = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.IMPORT_NEW, pageable);
+        if (!newToElza.isEmpty()) {
+            List<ExtSyncsQueueItem> items = newToElza.getContent();
+            for (ExtSyncsQueueItem item : items) {
+                if (!camService.synchronizeIntItem(item)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // add new items from ELZA
+        Page<ExtSyncsQueueItem> newFromElza = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW, pageable);
+        if (newFromElza.isEmpty()) {
             return false;
         }
-        List<ExtSyncsQueueItem> items = newPage.getContent();
+        List<ExtSyncsQueueItem> items = newFromElza.getContent();
         for (ExtSyncsQueueItem item : items) {
             if (!camService.synchronizeExtItem(item)) {
                 return false;
