@@ -610,7 +610,7 @@ public class CamService {
      *         retried later
      */
     @Transactional
-    public boolean synchronizeExtItem(ExtSyncsQueueItem extSyncsQueueItem) {
+    public boolean exportNew(ExtSyncsQueueItem extSyncsQueueItem) {
         Integer externalSystemId = extSyncsQueueItem.getExternalSystemId();
         ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
 
@@ -715,7 +715,7 @@ public class CamService {
      *         retried later
      */
     @Transactional
-    public boolean synchronizeIntItems(List<ExtSyncsQueueItem> queueItems) {
+    public boolean importNew(List<ExtSyncsQueueItem> queueItems) {
         if (queueItems.isEmpty()) {
             return true;
         }
