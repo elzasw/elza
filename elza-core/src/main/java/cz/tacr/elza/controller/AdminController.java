@@ -59,6 +59,9 @@ public class AdminController {
     private ArrangementService arrangementService;
 
     @Autowired
+    private AccessPointService accessPointService;
+
+    @Autowired
     private AsyncRequestService asyncRequestService;
 
     @Autowired
@@ -109,7 +112,7 @@ public class AdminController {
     @RequestMapping(value = "/externalSystems", method = RequestMethod.POST)
     @Transactional
     public SysExternalSystemVO createExternalSystem(@RequestBody final SysExternalSystemVO externalSystemVO) {
-        ApScope apScope = arrangementService.getApScope(externalSystemVO);
+        ApScope apScope = accessPointService.getApScope(externalSystemVO);
         SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope);
         // TODO: zvážit vytvoření specializovaných  metod pro konkrétní typy external system
         externalSystem = externalSystemService.create(externalSystem);
@@ -138,7 +141,7 @@ public class AdminController {
     @RequestMapping(value = "/externalSystems/{externalSystemId}", method = RequestMethod.PUT)
     @Transactional
     public SysExternalSystemVO updateExternalSystem(@RequestBody final SysExternalSystemVO externalSystemVO) {
-        ApScope apScope = arrangementService.getApScope(externalSystemVO);
+        ApScope apScope = accessPointService.getApScope(externalSystemVO);
         SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope);
         externalSystem = externalSystemService.update(externalSystem);
         camConnector.invalidate(externalSystem.getCode());

@@ -30,6 +30,8 @@ public class ExtSyncsProcessor implements Runnable {
 
     private static int QUEUE_CHECK_TIME_INTERVAL = 10000;
 
+    private static int IMPORT_LIST_SIZE = 100;
+
     private enum ThreadStatus {
         RUNNING, STOP_REQUEST, STOPPED
     }
@@ -61,11 +63,11 @@ public class ExtSyncsProcessor implements Runnable {
         }
 
         // add new item to Elza
-        Pageable pageableAdd = PageRequest.of(0, 10);
-        Page<ExtSyncsQueueItem> newToElza = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.IMPORT_NEW, pageableAdd);
+        Pageable pageImport = PageRequest.of(0, IMPORT_LIST_SIZE);
+        Page<ExtSyncsQueueItem> newToElza = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.IMPORT_NEW, pageImport);
         if (!newToElza.isEmpty()) {
             List<ExtSyncsQueueItem> items = newToElza.getContent();
-            if (!camService.synchronizeIntItems(items)) {
+            if (!camService.importNew(items)) {
                 return false;
             }
             return true;
@@ -78,7 +80,7 @@ public class ExtSyncsProcessor implements Runnable {
         }
         List<ExtSyncsQueueItem> items = newFromElza.getContent();
         for (ExtSyncsQueueItem item : items) {
-            if (!camService.synchronizeExtItem(item)) {
+            if (!camService.exportNew(item)) {
                 return false;
             }
         }
