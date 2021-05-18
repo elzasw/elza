@@ -43,13 +43,19 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     @Column(name = "calendarTypeId", updatable = false, insertable = false)
     private Integer calendarTypeId;
 
-    @Column(length = 19, nullable = true)
+    /* Příklad:
+     * -0015-01-01T00:00:00 - datum může mít znaménko minus
+     */
+    @Column(length = 20, nullable = true)
     private String valueFrom;
 
     @Column(nullable = false)
     private Boolean valueFromEstimated;
 
-    @Column(length = 19, nullable = true)
+    /* Příklad:
+     * -0015-01-01T00:00:00 - datum může mít znaménko minus
+     */
+    @Column(length = 20, nullable = true)
     private String valueTo;
 
     @Column(nullable = false)

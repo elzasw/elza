@@ -1074,10 +1074,23 @@ var messages = {
     "ap.binding.syncState.SYNC_OK": "Aktivní synchronizace",
     "ap.binding.syncState.NOT_SYNCED": "Nesynchronizuje se",
 
-    "ap.binding.extState.ERS_APPROVED": "schválená",
-    "ap.binding.extState.ERS_INVALID": "neplatná",
-    "ap.binding.extState.ERS_NEW": "nová",
-    "ap.binding.extState.ERS_REPLACED": "nahrazená",
+    "ap.binding.extstate.ers_approved": "schválená",
+    "ap.binding.extstate.ers_invalid": "neplatná",
+    "ap.binding.extstate.ers_new": "nová",
+    "ap.binding.extstate.ers_replaced": "nahrazená",
+
+    "ap.detail.info": "popis záznamu entity",
+    "ap.detail.edit": "Upravit {0}",
+    "ap.detail.delete": "Smazat",
+    "ap.detail.add.related": "Přidat vztah",
+    "ap.detail.add": "Přidat {0}",
+    "ap.detail.setPreferred": "Označit jako preferované",
+    "ap.detail.noInfo": "Sekce neobsahuje žádné informace",
+    "ap.detail.expandInfo": "zobrazit podrobnosti",
+    "ap.detail.collapseInfo": "skrýt podrobnosti",
+
+    "validationResult.show": "Zobrazit výsledek validace",
+    "validationResult.title": "Výsledek validace archivní entity",
 
     "ap.push-to-ext.title": "Zápis entity do externího systému",
     "ap.push-to-ext": "Zápis entity do externího systému",
@@ -1128,7 +1141,6 @@ var messages = {
     "ap.ext-search.section.relations.only-main-part": "Pouze hlavní část",
     "ap.ext-search.section.relations.obj": "Návazná archivní entita",
 
-    "ap.validation.title": "Výsledek validace archivní entity",
 
     "ap.form.ref.value": "Externí entita [{0}]",
 

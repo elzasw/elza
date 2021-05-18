@@ -414,12 +414,12 @@ public class UnitDateConvertor {
     private static String convertYear(final String format, final IUnitdate unitdate, final boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
+                LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom().trim());
                 return format.replaceFirst("(" + YEAR + ")", "" + date.getYear());
             }
         } else {
             if (unitdate.getValueTo() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo());
+                LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo().trim());
                 return format.replaceFirst("(" + YEAR + ")", "" + date.getYear());
             }
         }

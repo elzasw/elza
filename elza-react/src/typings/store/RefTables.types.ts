@@ -1,6 +1,7 @@
-import { RulDescItemTypeVO } from '../../api/RulDescItemTypeVO';
+import { RulDescItemTypeExtVO } from '../../api/RulDescItemTypeExtVO';
 import { ApTypeVO } from '../../api/ApTypeVO';
 import { BaseRefTableStore } from '../BaseRefTableStore';
+import {RulPartTypeVO} from '../../api/RulPartTypeVO';
 
 export interface CalendarType {
     code: string;
@@ -34,18 +35,10 @@ export enum PartTypeCodes {
     PT_EVENT = "PT_EVENT",
 }
 
-export interface PartType {
-    childPartId: number | null;
-    code: PartTypeCodes;
-    id: number;
-    name: string;
-    repeatable: boolean;
-}
-
 export interface RefTablesState {
     apTypes: BaseRefTableStore<ApTypeVO>;
     calendarTypes: BaseRefTableStore<CalendarType>;
-    descItemTypes: BaseRefTableStore<RulDescItemTypeVO>;
+    descItemTypes: BaseRefTableStore<RulDescItemTypeExtVO>;
     eidTypes: unknown;
     externalSystems: unknown;
     groups: unknown;
@@ -53,7 +46,7 @@ export interface RefTablesState {
     issueStates: unknown;
     issueTypes: unknown;
     outputTypes: unknown;
-    partTypes: BaseRefTableStore<PartType>;
+    partTypes: BaseRefTableStore<RulPartTypeVO>;
     recordTypes: unknown;
     rulDataTypes: BaseRefTableStore<unknown>;
     ruleSet: unknown;
