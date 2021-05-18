@@ -1,16 +1,60 @@
 .detail-header-wrapper {
+    .header-container {
+        padding: 15px; 
+        position: relative;
+
+        .header {
+            flex: 1;
+
+            .name {
+                .text {
+                    margin-left: 10px;
+                }
+            }
+
+            &.collapsed{
+                display: flex;
+                align-items: center;
+
+                .name {
+                    margin: 0;
+                    flex-shrink: 0;
+                }
+
+                .description {
+                    padding: 0 10px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+
+            &.expanded {
+                .description {
+                    padding: 5px 10px;
+                }
+            }
+        }
+
+        .collapse-button {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+        }
+    }
+
     .ap-type {
         background-color: #333333;
         color: #adadad;
         font-size: 1.2em;
+        padding: 5px 10px;
         .hierarchy-level {
             &.main {
                 color: #ffffff;
             }
         }
         .hierarchy-delimiter {
-            margin-left: 4px;
-            margin-right: 4px;
+            margin: 0 10px;
         }
     }
     .bindings {

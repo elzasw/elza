@@ -1,25 +1,31 @@
-import React, {FC} from 'react';
-import {connect} from 'react-redux';
-import DetailItemContent from "./DetailItemContent";
+import React, { FC } from 'react';
+import { useSelector } from 'react-redux';
+import { ApItemVO } from "../../../api/ApItemVO";
+import { Bindings } from "../../../types";
+import { AppState } from "../../../typings/store";
 import "./DetailItem.scss";
-import {ApItemVO} from "../../../api/ApItemVO";
-import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
-import {Bindings} from "../../../types";
-import Icon from "../../shared/icon/Icon";
-import i18n from "../../i18n";
+import DetailItemContent from "./DetailItemContent";
 
-interface Props extends ReturnType<typeof mapStateToProps> {
+interface Props {
     bindings?: Bindings;
     item: ApItemVO;
     globalEntity: boolean;
 }
 
-const DetailItem: FC<Props> = ({item, globalEntity, descItemTypesMap, bindings}) => {
-    const itemType = descItemTypesMap[item.typeId];
+const DetailItem: FC<Props> = ({
+    item, 
+    globalEntity, 
+    bindings
+}) => {
+    const descItemTypesMap = useSelector((state: AppState)=> state.refTables.descItemTypes.itemsMap || {})
+    const typeId = item.typeId;
+    const itemType = descItemTypesMap[typeId];
+    const itemTypeName = itemType ? itemType.name : `UNKNOWN_AE_TYPE: ${typeId}`;
+
     return (
         <div className="detail-item">
-            <div className="detail-item-header mt-1">
-                {itemType ? itemType.name : `UNKNOWN_AE_TYPE: ${item.typeId}`}
+            <div className="detail-item-header">
+                {itemTypeName}
             </div>
             <div className="detail-item-content">
                 <DetailItemContent item={item} bindings={bindings} globalEntity={globalEntity}/>
@@ -28,8 +34,4 @@ const DetailItem: FC<Props> = ({item, globalEntity, descItemTypesMap, bindings})
     );
 };
 
-const mapStateToProps = (state) => ({
-    descItemTypesMap: state.refTables.descItemTypes.itemsMap as RulDescItemTypeExtVO[],
-});
-
-export default connect(mapStateToProps)(DetailItem);
+export default DetailItem;
