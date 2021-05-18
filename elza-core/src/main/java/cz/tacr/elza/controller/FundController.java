@@ -42,6 +42,7 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.UserService;
 
@@ -57,6 +58,9 @@ public class FundController implements FundsApi {
     @Autowired
     private ArrangementService arrangementService;
 
+    @Autowired
+    private AccessPointService accessPointService;
+    
     @Autowired
     private FundRepository fundRepository;
 
@@ -211,7 +215,7 @@ public class FundController implements FundsApi {
 
         ParInstitution institution = arrangementService.getInstitution(updateFund.getInstitutionIdentifier());
 
-        List<ApScope> apScopes = FactoryUtils.transformList(updateFund.getScopes(), s -> arrangementService.getApScope(s));
+        List<ApScope> apScopes = FactoryUtils.transformList(updateFund.getScopes(), s -> accessPointService.getApScope(s));
 
         return ResponseEntity.ok(factoryVo.createFundDetail(arrangementService.updateFund(
                 factoryDO.createFund(updateFund, institution, id),

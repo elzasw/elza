@@ -2,6 +2,7 @@ package cz.tacr.elza.connector;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.validation.Schema;
@@ -23,6 +24,7 @@ import cz.tacr.cam.client.controller.UpdatesApi;
 import cz.tacr.cam.client.controller.vo.QueryParamsDef;
 import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
 import cz.tacr.cam.schema.cam.BatchUpdateXml;
+import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.QueryResultXml;
 import cz.tacr.elza.api.ApExternalSystemType;
@@ -64,6 +66,13 @@ public class CamConnector {
         ApiResponse<File> fileApiResponse = getEntityApiByCode(externalSystemCode)
                 .getEntityByIdWithHttpInfo(archiveEntityId);
         return JaxbUtils.unmarshal(EntityXml.class, fileApiResponse.getData());
+    }
+
+    public EntitiesXml getEntitiesByIds(final List<String> archiveEntityIds,
+                                   final String externalSystemCode) throws ApiException {
+        ApiResponse<File> fileApiResponse = getExportApiByCode(externalSystemCode)
+                .exportSnapshotsWithHttpInfo(archiveEntityIds);
+        return JaxbUtils.unmarshal(EntitiesXml.class, fileApiResponse.getData());
     }
 
     public BatchUpdateResultXml postNewBatch(final BatchUpdateXml batchUpdate,

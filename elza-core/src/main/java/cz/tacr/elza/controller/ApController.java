@@ -366,7 +366,7 @@ public class ApController {
         Integer typeId = accessPoint.getTypeId();
         Integer scopeId = accessPoint.getScopeId();
 
-        ApScope scope = accessPointService.getScope(scopeId);
+        ApScope scope = accessPointService.getApScope(scopeId);
         ApType type = accessPointService.getType(typeId);
         SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
 
@@ -1010,7 +1010,7 @@ public class ApController {
             throw prepareSystemException(e);
         }
 
-        ApScope scope = accessPointService.getScope(scopeId);
+        ApScope scope = accessPointService.getApScope(scopeId);
         ApBinding binding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId,
                                                                                          apExternalSystem);
         if (binding != null) {
