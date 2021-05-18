@@ -1597,49 +1597,6 @@ public class ArrangementService {
     }
 
     /**
-     * Získání ApScope podle kódu
-     * 
-     * @param s kod
-     * @return ApScope
-     */
-    public ApScope getApScope(String s) {
-        ApScope entity = scopeRepository.findByCode(s);
-        if(entity == null) {
-            entity = new ApScope();
-            entity.setCode(s);
-            entity.setName(s);
-        }
-        return entity;
-    }
-
-    /**
-     * Získání ApScope podle id
-     * 
-     * @param id
-     * @return ApScope nebo null
-     */
-    public ApScope getApScope(Integer id) {
-        if (id == null) {
-            return null;
-        }
-        return scopeRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException("Scope neexistuje", BaseCode.ID_NOT_EXIST).setId(id));
-    }
-
-    /**
-     * Získání ApScope podle External System 
-     * 
-     * @param extSystem
-     * @return ApScope nebo null
-     */
-    public ApScope getApScope(SysExternalSystemVO extSystem) {
-        if (extSystem instanceof ApExternalSystemVO) {
-            return getApScope(((ApExternalSystemVO)extSystem).getScope());
-        }
-        return null;
-    }
-
-    /**
      * @return vrací session uživatele
      */
     @Bean

@@ -30,6 +30,7 @@ import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
+import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
@@ -57,6 +58,7 @@ import org.springframework.util.MultiValueMap;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
+import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
@@ -1295,14 +1297,46 @@ public class AccessPointService {
     }
 
     /**
-     * Získání třídy.
-     *
-     * @param scopeId identifikátor třídy
-     * @return třída
+     * Získání ApScope podle kódu
+     * 
+     * @param s kod
+     * @return ApScope
      */
-    public ApScope getScope(final Integer scopeId) {
+    public ApScope getApScope(String s) {
+        ApScope entity = scopeRepository.findByCode(s);
+        if(entity == null) {
+            entity = new ApScope();
+            entity.setCode(s);
+            entity.setName(s);
+        }
+        return entity;
+    }
+
+    /**
+     * Získání ApScope podle id
+     * 
+     * @param id
+     * @return ApScope nebo null
+     */
+    public ApScope getApScope(final Integer scopeId) {
+        if (scopeId == null) {
+            return null;
+        }
         return scopeRepository.findById(scopeId)
-                .orElseThrow(() -> new ObjectNotFoundException("Třída neexistuje", BaseCode.ID_NOT_EXIST).setId(scopeId));
+                .orElseThrow(() -> new ObjectNotFoundException("ApScope neexistuje", BaseCode.ID_NOT_EXIST).setId(scopeId));
+    }
+
+    /**
+     * Získání ApScope podle External System 
+     * 
+     * @param extSystem
+     * @return ApScope nebo null
+     */
+    public ApScope getApScope(SysExternalSystemVO extSystem) {
+        if (extSystem instanceof ApExternalSystemVO) {
+            return getApScope(((ApExternalSystemVO)extSystem).getScope());
+        }
+        return null;
     }
 
     /**
@@ -1537,7 +1571,7 @@ public class AccessPointService {
 
         ApScope newApScope;
         if (newScopeId != null && !newScopeId.equals(oldApScope.getScopeId())) {
-            newApScope = getScope(newScopeId);
+            newApScope = getApScope(newScopeId);
             if (!hasApPermission(newApScope, oldStateApproval, newStateApproval)) {
                 throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
                         .set("accessPointId", accessPoint.getAccessPointId())
