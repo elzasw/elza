@@ -1292,4 +1292,13 @@
 		</addColumn>
     </changeSet>
 
+    <changeSet id="20210518121200" author="sergey.iryupin">
+    	<modifyDataType columnName="value_from"  
+            newDataType="char(20)"  
+            tableName="arr_data_unitdate" />
+    	<modifyDataType columnName="value_to"  
+            newDataType="char(20)"  
+            tableName="arr_data_unitdate" />
+    </changeSet>
+
 </databaseChangeLog>
