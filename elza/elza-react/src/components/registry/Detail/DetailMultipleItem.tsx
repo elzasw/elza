@@ -1,11 +1,11 @@
-import React, {FC} from 'react';
+import React, { FC } from 'react';
 // import {CodelistState} from '../../shared/reducers/codelist/CodelistReducer';
-import {connect} from 'react-redux';
-import DetailItemContent from './DetailItemContent';
+import { connect } from 'react-redux';
+import { ApItemVO } from '../../../api/ApItemVO';
+import { Bindings } from '../../../types';
+import { AppState } from '../../../typings/store';
 import './DetailItem.scss';
-import {ApItemVO} from '../../../api/ApItemVO';
-import {Bindings} from '../../../types';
-import {RulDescItemTypeExtVO} from '../../../api/RulDescItemTypeExtVO';
+import DetailItemContent from './DetailItemContent';
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     bindings?: Bindings;
@@ -14,27 +14,31 @@ interface Props extends ReturnType<typeof mapStateToProps> {
 }
 
 const DetailMultipleItem: FC<Props> = ({items, globalEntity, descItemTypesMap, bindings}) => {
-    let firstItem = items[0];
-    const itemType = descItemTypesMap[firstItem.typeId];
+    const typeId = items.length > 0 ? items[0].typeId : undefined;
+    const itemType = typeId !== undefined ? descItemTypesMap[typeId] : undefined;
+    const itemTypeName = itemType ? itemType.name : `UNKNOWN_AE_TYPE: ${typeId}`;
 
     return (
-        <div className="detail-item detail-item-multiple">
-            <div className="detail-item-header mt-2">
-                {itemType ? itemType.name : `UNKNOWN_AE_TYPE: ${firstItem.typeId}`}
+        <div className="detail-item">
+            <div className="detail-item-header">
+                {itemTypeName}
             </div>
             <div className="detail-item-content">
                 {items.map((item, index) => (
-                    <div key={index} className="detail-item-partvalue">
-                        <DetailItemContent item={item} bindings={bindings} globalEntity={globalEntity} />
-                    </div>
+                        <DetailItemContent 
+                            item={item} 
+                            key={index}
+                            bindings={bindings} 
+                            globalEntity={globalEntity} 
+                            />
                 ))}
             </div>
         </div>
     );
 };
 
-const mapStateToProps = state => ({
-    descItemTypesMap: state.refTables.descItemTypes.itemsMap as RulDescItemTypeExtVO[],
+const mapStateToProps = (state: AppState) => ({
+    descItemTypesMap: state.refTables.descItemTypes.itemsMap || {},
 });
 
 export default connect(mapStateToProps)(DetailMultipleItem);

@@ -1,24 +1,22 @@
-import React, {FC} from 'react';
-import DetailState from './DetailState';
-import {Col, Dropdown, DropdownButton, Row} from 'react-bootstrap';
+import React, { FC } from 'react';
+import { Dropdown, DropdownButton } from 'react-bootstrap';
+import { connect } from 'react-redux';
+import { showAsyncWaiting } from '../../../actions/global/modalDialog';
+import * as perms from '../../../actions/user/Permission';
+import { WebApi } from '../../../actions/WebApi';
+import { ApAccessPointVO } from '../../../api/ApAccessPointVO';
+import { ApBindingVO } from '../../../api/ApBindingVO';
+import { SyncState } from '../../../api/SyncState';
+import { indexById, objectById } from '../../../shared/utils';
+import { FundScope } from '../../../types';
+import i18n from '../../i18n';
+import { Icon } from '../../index';
+import { Button } from '../../ui';
+import ValidationResultIcon from '../../ValidationResultIcon';
 import DetailDescriptions from './DetailDescriptions';
 import DetailDescriptionsItem from './DetailDescriptionsItem';
-import {connect} from 'react-redux';
-import ArchiveEntityName from './ArchiveEntityName';
-import {ApValidationErrorsVO} from '../../../api/ApValidationErrorsVO';
-import {ApAccessPointVO} from '../../../api/ApAccessPointVO';
 import './DetailHeader.scss';
-import {Icon} from '../../index';
-import {Button} from '../../ui';
-import {indexById, objectById} from '../../../shared/utils';
-import i18n from '../../i18n';
-import {SyncState} from '../../../api/SyncState';
-import {ApBindingVO} from '../../../api/ApBindingVO';
-import {showAsyncWaiting} from '../../../actions/global/modalDialog';
-import {WebApi} from '../../../actions/WebApi';
-import ValidationResultIcon from '../../ValidationResultIcon';
-import * as perms from '../../../actions/user/Permission';
-import {FundScope} from '../../../types';
+import DetailState from './DetailState';
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     item: ApAccessPointVO;
@@ -56,12 +54,13 @@ const DetailHeader: FC<Props> = ({
     const apType = apTypesMap[item.typeId];
 
     const showValidationError = () => {
+            console.log("show validation error", validationErrors);
         if (validationErrors && validationErrors.length > 0) {
             return <ValidationResultIcon message={validationErrors} />;
         }
     };
 
-    const renderApTypeNames = (delimiter = '>') => {
+    const renderApTypeNames = (delimiter: React.ReactNode = '>') => {
         let elements: JSX.Element[] = [];
 
         if (apType.parents) {
@@ -182,7 +181,6 @@ const DetailHeader: FC<Props> = ({
                                         className={binding.syncState == SyncState.NOT_SYNCED ? 'disabled' : ''}
                                     />
                                     <DropdownButton
-                                        className="d-inline-block ml-3 fixheight"
                                         variant="action"
                                         id={'binding-action-' + binding.id}
                                         title={((<Icon glyph="fa-ellipsis-v" />) as any) as string}
@@ -221,27 +219,39 @@ const DetailHeader: FC<Props> = ({
 
     return (
         <div className={'detail-header-wrapper'}>
-            <Row className={collapsed ? 'ml-3 mt-1 mr-3 pb-1' : 'ml-3 mt-3 mr-3 pb-3 space-between middle'}>
+            <div className='header-container'>
                 {collapsed && (
-                    <Col className={'p-0'} style={{flex: 1}}>
-                        <h4 className={'m-0'}>
-                            <ArchiveEntityName name={item.name} description={item.description} />{' '}
+                    <div className="header collapsed">
+                        <h4 className="name">
+                            <Icon glyph={'fa-file-o'}/>
+                            <span className="text">{item.name}</span>
                             {showValidationError()}
                         </h4>
-                    </Col>
+                        {item.description &&
+                            <div title={item.description} className="description">
+                                {item.description}
+                            </div>
+                        }
+                    </div>
                 )}
 
                 {!collapsed && (
-                    <Col className={'p-0'} style={{flex: 1}}>
-                        <div className={'d-inline-block mr-3 mt-3 pull-left'}>
-                            <Icon glyph={'fa-file-o'} className={'fa-4x'} />
+                    <div className="header expanded">
+                        <div>
+                            <div className="name">
+                                <h1 style={{margin: 0}}>
+                                    <Icon glyph={'fa-file-o'}/>
+                                    <span className="text">{item.name}</span>
+                                    {showValidationError()}
+                                </h1>
+                            </div>
+                            {item.description &&
+                                <div className="description">
+                                    {item.description}
+                                </div>
+                            }
                         </div>
-                        <div className={'d-inline-block'}>
-                            <h1 className={'m-0'}>
-                                <ArchiveEntityName name={item.name} description={item.description} />{' '}
-                                {showValidationError()}
-                            </h1>
-                            <h4>{apType.name}</h4>
+                        <div style={{padding: "5px"}}>
                             <DetailDescriptions>
                                 {id && <DetailDescriptionsItem label="ID:">{id}</DetailDescriptionsItem>}
                                 {item.stateApproval && (
@@ -266,24 +276,22 @@ const DetailHeader: FC<Props> = ({
                             </DetailDescriptions>
                             {renderBindings()}
                         </div>
-                    </Col>
+                    </div>
                 )}
-                <Col xs={collapsed ? true : 'auto'}>
+                <div>
                     <Button
                         onClick={onToggleCollapsed}
                         variant={'light'}
-                        style={{position: 'absolute', right: 0, bottom: 0}}
+                        className="collapse-button"
                         title={collapsed ? 'Zobrazit podrobnosti' : 'Skrýt podrobnosti'}
                     >
-                        <Icon className={''} glyph={collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'} />
+                        <Icon glyph={collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'} />
                     </Button>
-                </Col>
-            </Row>
-            <Row>
-                <Col className={'ap-type'}>
-                    <div className={'p-1 pl-3'}>{renderApTypeNames()}</div>
-                </Col>
-            </Row>
+                </div>
+            </div>
+            <div className="ap-type">
+                    {renderApTypeNames(<Icon glyph="fa-angle-right"/>)}
+            </div>
         </div>
     );
 };

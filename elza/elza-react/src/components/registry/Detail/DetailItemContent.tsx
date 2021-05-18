@@ -33,7 +33,14 @@ interface OwnProps extends ReturnType<typeof mapStateToProps> {
 
 type Props = OwnProps & ReturnType<typeof mapDispatchToProps>;
 
-const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descItemTypes, bindings, selectAp}) => {
+const DetailItemContent: FC<Props> = ({
+    item, 
+    globalEntity, 
+    rulDataTypes, 
+    descItemTypes, 
+    bindings, 
+    selectAp
+}) => {
     const itemType = descItemTypes.itemsMap[item.typeId];
     const dataType: RulDataTypeVO = rulDataTypes.itemsMap[itemType.dataTypeId];
 
@@ -42,9 +49,7 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
     // pro ty, co chtějí jinak renderovat skupinu...,  pokud je true, task se nerenderuje specifikace, ale pouze valueField a v tom musí být již vše...
     let customFieldRender = false;
 
-    let valueField;
-    let textValue;
-    let displayValue;
+    let valueField: React.ReactNode;
 
     switch (dataType.code) {
         case RulDataTypeCodeEnum.INT:
@@ -69,8 +74,9 @@ const DetailItemContent: FC<Props> = ({item, globalEntity, rulDataTypes, descIte
         case RulDataTypeCodeEnum.RECORD_REF:
             customFieldRender = true;
             let recordRefItem = item as ApItemAccessPointRefVO;
+            let displayValue: string;
 
-            textValue = '?';
+            let textValue = '?';
             if (recordRefItem.value && recordRefItem.accessPoint) {
                 textValue = recordRefItem.accessPoint.name;
             } else if (recordRefItem.externalName) {

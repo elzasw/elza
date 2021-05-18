@@ -1,7 +1,17 @@
 .detail-item {
+    display: flex;
+    padding: 3px;
   .detail-item-header {
     font-size: 11px;
-    margin-bottom: 4px;
+    // margin-bottom: 4px;
+    margin-right: 10px;
+    font-weight: bold;
+    width: 150px;
+    text-align: right;
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .detail-item-content {
   }

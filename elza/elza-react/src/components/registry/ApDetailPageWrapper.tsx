@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 import {PartType} from '../../api/generated/model';
 import * as PartTypeInfo from '../../api/old/PartTypeInfo';
 import DetailMultiSection from './Detail/DetailMultiSection';
+import DetailBodySection from './Detail/DetailBodySection';
 import Loading from '../shared/loading/Loading';
 import {globalFundTreeInvalidate} from '../../actions/arr/globalFundTree';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
@@ -27,50 +28,31 @@ import {ApViewSettingRule, ApViewSettings} from '../../api/ApViewSettings';
 import {indexById, objectById} from '../../shared/utils';
 import {RulDescItemTypeExtVO} from '../../api/RulDescItemTypeExtVO';
 import {ApItemBitVO} from '../../api/ApItemBitVO';
-
-type OwnProps = {
-    id: number; // ap id
-    sider: ReactElement;
-    editMode: boolean;
-    globalCollapsed: boolean;
-    apValidation: DetailStoreState<ApValidationErrorsVO>;
-    apViewSettings: DetailStoreState<ApViewSettings>;
-    globalEntity: boolean;
-};
-
-type Props = OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps>;
+import {AppState} from '../../typings/store';
+import {Bindings} from '../../types';
+import {BaseRefTableStore} from '../../typings/BaseRefTableStore';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
-    let bindings: any = {
+    let bindings: Bindings = {
         itemsMap: {},
         partsMap: {},
     };
 
-    bindings.addItem = (id, sync) => {
-        const state = bindings.itemsMap[id] || true;
-        bindings.itemsMap[id] = state && sync;
-    };
-
-    bindings.addPart = (id, sync) => {
-        const state = bindings.partsMap[id] || true;
-        bindings.partsMap[id] = state && sync;
-    };
+    const newItem = (id:number, sync:boolean, map: {[key:number]:boolean}) => 
+         (map[id] || true) && sync;
 
     if (accessPoint) {
-        const externalIds = accessPoint.externalIds;
-        if (externalIds) {
-            externalIds.forEach(externalId => {
-                if(externalId.bindingItemList) {
-                    externalId.bindingItemList.forEach(item => {
-                      if (item.itemId) {
-                        bindings.addItem(item.itemId, item.sync);
-                      } else if (item.partId) {
-                        bindings.addPart(item.partId, item.sync);
-                      }
-                    });
-                }
+        const externalIds = accessPoint.externalIds || [];
+        externalIds.forEach(externalId => {
+            const bindingItemList = externalId.bindingItemList || [];
+            bindingItemList.forEach(item => {
+              if (item.itemId) {
+                bindings.itemsMap[item.itemId] = newItem(item.itemId, item.sync, bindings.itemsMap);
+              } else if (item.partId) {
+                bindings.partsMap[item.partId] = newItem(item.partId, item.sync, bindings.partsMap);
+              }
             });
-        }
+        });
     }
     return bindings;
 }
@@ -102,115 +84,66 @@ function sortPrefer(parts: ApPartVO[], preferredPart?: number) {
     return parts;
 }
 
+type OwnProps = {
+    id: number; // ap id
+    sider: ReactElement;
+    editMode: boolean;
+    globalCollapsed: boolean;
+    apValidation: DetailStoreState<ApValidationErrorsVO>;
+    apViewSettings: DetailStoreState<ApViewSettings>;
+    globalEntity: boolean;
+};
+
+type Props = OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps>;
+
 /**
  * Detail globální archivní entity.
  */
-const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
-    const apTypeId = props.detail.fetched && props.detail.data ? props.detail.data.typeId : 0;
-    const refTables = props.refTables;
+const ApDetailPageWrapper: React.FC<Props> = ({
+    id, // ap id
+    editMode,    
+    globalCollapsed,
+    apValidation,
+    apViewSettings,
+    globalEntity,
+    detail,
+    refreshDetail,
+    fetchViewSettings,
+    refreshValidation,
+    setPreferred,
+    deletePart,
+    deleteParts,
+    showPartEditModal,
+    showPartCreateModal,
+    descItemTypesMap,
+    refTables,
+}) => {
+    const apTypeId = detail.fetched && detail.data ? detail.data.typeId : 0;
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
 
     useEffect(() => {
-        if (props.id) {
-            props.refreshDetail(props.id, false);
+        if (id) {
+            refreshDetail(id, false);
         }
     }, []);
 
     useEffect(() => {
-        props.fetchViewSettings();
-        props.refreshValidation(props.id);
-    }, [props.id]);
+        fetchViewSettings();
+        refreshValidation(id);
+    }, [id]);
 
-    const handleSetPreferred = (part: ApPartVO) => {
-        if (part.id) {
-            props.setPreferred(props.id, part.id);
-            props.refreshValidation(props.id);
-        }
-    };
+    const isStoreLoading = (stores: Array<BaseRefTableStore<unknown> | DetailStoreState<unknown>>) => 
+        stores.some((store) => !store.fetched || store.isFetching)
 
-    const handleDelete = (part: ApPartVO) => {
-        if (part.id) {
-            props.deletePart(props.id, part.id);
-        }
-        props.refreshValidation(props.id);
-    };
-
-    const handleEdit = (part: ApPartVO) => {
-        const partType = refTables.partTypes.itemsMap[part.typeId].code;
-        const detail = props.detail.data!;
-
-        part.id &&
-            props.showPartEditModal(
-                part,
-                partType,
-                props.id,
-                apTypeId,
-                detail.ruleSetId,
-                detail.scopeId,
-                props.refTables,
-                props.descItemTypesMap,
-                props.apViewSettings,
-                part.partParentId,
-            );
-        props.refreshValidation(props.id);
-    };
-
-    const handleAdd = (partType: RulPartTypeVO, parentPartId?: number) => {
-        const detail = props.detail.data!;
-
-        props.showPartCreateModal(partType, props.id, apTypeId, detail.scopeId, parentPartId);
-        props.refreshValidation(props.id);
-    };
-
-    const handleDeletePart = (parts: Array<ApPartVO>) => {
-        props.deleteParts(props.id, parts);
-        props.refreshValidation(props.id);
-    };
-
-    const groupBy = (data, key) =>
-        data.reduce((rv, x) => {
-            (rv[x[key]] = rv[x[key]] || []).push(x);
-            return rv;
-        }, {});
-
-    const getRelatedPartSections = (parentParts: ApPartVO[], parentPartType): ApPartVO[] => {
-        if (parentParts.length === 0) {
-            return [];
-        }
-
-        const parentIds = parentParts.filter(value => value.id).map(value => value.id);
-        const allParts = props.detail.data ? (props.detail.data.parts as ApPartVO[]) : [];
-        return allParts
-            .filter(value => value.partParentId)
-            .filter(value => value.partParentId && parentIds.includes(value.partParentId));
-    };
-
-    // TODO: find better way to check if all reftables are fetched
-    const isFetchingPartyTypes = !props.refTables.partTypes.fetched || props.refTables.partTypes.isFetching;
-
-    const isFetchingApTypes =
-        !props.refTables.apTypes.fetched ||
-        props.refTables.apTypes.isFetching ||
-        !props.refTables.recordTypes.fetched ||
-        props.refTables.recordTypes.isFetching;
-
-    const isFetchingItemTypes = !props.refTables.descItemTypes.fetched || props.refTables.descItemTypes.isFetching;
-
-    const isFetching = !props.detail.fetched || props.detail.isFetching;
-
-    const isFetchingViewSettings = props.apViewSettings.isFetching;
-
-    console.warn(
-        isFetchingPartyTypes,
-        props.detail.fetched,
-        props.detail.isFetching,
-        isFetching,
-        isFetchingViewSettings,
-        isFetchingApTypes,
-        isFetchingItemTypes,
-    );
-    if (isFetchingPartyTypes || isFetching || isFetchingViewSettings || isFetchingApTypes || isFetchingItemTypes) {
+    if (isStoreLoading([
+        refTables.partTypes,
+        refTables.recordTypes as any,
+        refTables.apTypes,
+        refTables.descItemTypes,
+        detail,
+        apViewSettings
+    ])) {
         return (
             <div className={'detail-page-wrapper'}>
                 <Loading />
@@ -218,50 +151,111 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         );
     }
 
-    if (!props.detail.id || !props.detail.data) {
+    if (!detail.id || !detail.data) {
         return <div className={'detail-page-wrapper'} />;
     }
 
-    const accessPoint = props.detail.data;
+    const handleSetPreferred = (part: ApPartVO) => {
+        if (part.id) {
+            setPreferred(id, part.id);
+            refreshValidation(id);
+        }
+    };
 
-    const bindings = createBindings(accessPoint);
+    const handleDelete = (part: ApPartVO) => {
+        if (part.id) {
+            deletePart(id, part.id);
+        }
+        refreshValidation(id);
+    };
 
-    const allParts = accessPoint ? (accessPoint.parts as ApPartVO[]) : [];
-    const typedParts = groupBy(
+    const handleEdit = (part: ApPartVO) => {
+        const partType = refTables.partTypes.itemsMap ? refTables.partTypes.itemsMap[part.typeId].code : null;
+
+        part.id && detail.data &&
+            showPartEditModal(
+                part,
+                partType,
+                id,
+                apTypeId,
+                detail.data.ruleSetId,
+                detail.data.scopeId,
+                refTables,
+                descItemTypesMap as any,
+                apViewSettings,
+                part.partParentId,
+            );
+        refreshValidation(id);
+    };
+
+    const handleAdd = (partType: RulPartTypeVO, parentPartId?: number) => {
+        if(detail.data){
+            showPartCreateModal(partType, id, apTypeId, detail.data.scopeId, parentPartId);
+        }
+        refreshValidation(id);
+    };
+
+    const handleDeletePart = (parts: Array<ApPartVO>) => {
+        deleteParts(id, parts);
+        refreshValidation(id);
+    };
+
+    const allParts = detail.data ? detail.data.parts : [];
+
+    const getRelatedPartSections = (parentParts: ApPartVO[]) => {
+        if (parentParts.length === 0) { return []; }
+
+        const parentIds = parentParts
+            .filter(value => value.id)
+            .map(value => value.id);
+            
+        return allParts
+            .filter(value => value.partParentId && parentIds.includes(value.partParentId));
+    };
+
+    const bindings = createBindings(detail.data);
+
+
+    const groupPartsByType = (data: ApPartVO[]):Record<string, ApPartVO[]> => 
+        data.reduce<Record<string, ApPartVO[]>>((accumulator, value) => {
+            (accumulator[value.typeId.toString()] = accumulator[value.typeId] || []).push(value);
+            return accumulator;
+        }, {});
+
+    const groupedParts = groupPartsByType(
         sortPrefer(
             allParts.filter(part => !part.partParentId),
-            accessPoint?.preferredPart,
-        ),
-        'typeId',
+            detail.data?.preferredPart,
+        )
     );
 
-    const validationResult = props.apValidation.data;
+    const validationResult = apValidation.data;
 
-    const sortedParts = accessPoint
-        ? sortPart(props.refTables.partTypes.items, props.apViewSettings.data?.rules[accessPoint.ruleSetId])
+    const sortedParts = detail.data && refTables.partTypes.items
+        ? sortPart(refTables.partTypes.items, apViewSettings.data?.rules[detail.data.ruleSetId])
         : [];
 
     return (
         <div className={'detail-page-wrapper'}>
             <div key="1" className="layout-scroll">
                 <DetailHeader
-                    item={props.detail.data!}
-                    id={props.detail.data!.id}
+                    item={detail.data!}
+                    id={detail.data!.id}
                     collapsed={collapsed}
                     onToggleCollapsed={() => {
                         setCollapsed(!collapsed);
                     }}
                     validationErrors={validationResult && validationResult.errors}
-                    onInvalidateDetail={() => props.refreshDetail(props.detail.data!.id)}
+                    onInvalidateDetail={() => refreshDetail(detail.data!.id)}
                 />
 
                 {allParts && (
                     <div key="part-sections">
-                        {sortedParts.map((partType: RulPartTypeVO, index) => {
+                        {sortedParts.map((partType: RulPartTypeVO) => {
                             const onAddRelated = partType.childPartId
-                                ? parentPartId => {
+                                ? (parentPartId:number) => {
                                       const childPartType = objectById(
-                                          props.refTables.partTypes.items,
+                                          refTables.partTypes.items,
                                           partType.childPartId,
                                       );
                                       if (childPartType !== null) {
@@ -271,30 +265,44 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
                                       }
                                   }
                                 : undefined;
-                            const apViewSettingRule = props.apViewSettings.data!.rules[props.detail.data!.ruleSetId];
+                            const apViewSettingRule = apViewSettings.data!.rules[detail.data!.ruleSetId];
+                            if(partType.code === "PT_BODY"){
+                                return (
+                                    <DetailBodySection
+                                        key={partType.code}
+                                        label={partType.name}
+                                        editMode={editMode}
+                                        parts={groupedParts[partType.id] || []}
+                                        onEdit={handleEdit}
+                                        bindings={bindings}
+                                        onAdd={() => handleAdd(partType)}
+                                        partValidationErrors={validationResult && validationResult.partErrors}
+                                        itemTypeSettings={apViewSettingRule?.itemTypes || []}
+                                        globalEntity={globalEntity}
+                                        partType={partType}
+                                    />
+                                );
+                            }
                             return (
                                 <DetailMultiSection
                                     key={partType.code}
                                     label={partType.name}
                                     singlePart={!partType.repeatable}
-                                    editMode={props.editMode}
-                                    parts={typedParts[partType.id] ? typedParts[partType.id] : []}
-                                    relatedParts={getRelatedPartSections(
-                                        typedParts[partType.id] ? typedParts[partType.id] : [],
-                                        partType.id,
-                                    )}
-                                    preferred={props.detail.data ? props.detail.data.preferredPart : undefined}
-                                    globalCollapsed={props.globalCollapsed}
+                                    editMode={editMode}
+                                    parts={groupedParts[partType.id] || []}
+                                    relatedParts={getRelatedPartSections(groupedParts[partType.id] || [])}
+                                    preferred={detail.data ? detail.data.preferredPart : undefined}
+                                    globalCollapsed={globalCollapsed}
                                     onSetPreferred={handleSetPreferred}
                                     onEdit={handleEdit}
                                     onDelete={handleDelete}
                                     bindings={bindings}
                                     onAdd={() => handleAdd(partType)}
-                                    onDeleteParts={handleDeletePart}
                                     onAddRelated={onAddRelated}
                                     partValidationErrors={validationResult && validationResult.partErrors}
                                     itemTypeSettings={apViewSettingRule?.itemTypes || []}
-                                    globalEntity={props.globalEntity}
+                                    globalEntity={globalEntity}
+                                    partType={partType}
                                 />
                             );
                         })}
@@ -304,6 +312,10 @@ const ApDetailPageWrapper: React.FC<Props> = (props: Props) => {
         </div>
     );
 };
+
+interface ApPartData {
+    partForm: ApPartFormVO;
+}
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => ({
     showPartEditModal: (
@@ -324,14 +336,10 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
                 PartTypeInfo.getPartEditDialogLabel(partType, false),
                 <PartEditModal
                     partTypeId={objectById(refTables.partTypes.items, partType, 'code').id}
-                    onSubmit={data => {
-                        if (!part.id) {
-                            return;
-                        }
-                        const formData: ApPartFormVO = data.partForm;
-
+                    onSubmit={({ partForm }: ApPartData) => {
+                        if (!part.id) { return; }
                         const submitData = {
-                            items: formData.items.filter(i => {
+                            items: partForm.items.filter(i => {
                                 if (i['@class'] === '.ApItemEnumVO') {
                                     return i.specId !== undefined;
                                 } else {
@@ -485,7 +493,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
     },
 });
 
-const mapStateToProps = (state: any, props: OwnProps) => {
+const mapStateToProps = (state: AppState) => {
     return {
         detail: storeFromArea(state, registry.AREA_REGISTRY_DETAIL) as DetailStoreState<ApAccessPointVO>,
         apValidation: storeFromArea(state, AP_VALIDATION) as DetailStoreState<ApValidationErrorsVO>,

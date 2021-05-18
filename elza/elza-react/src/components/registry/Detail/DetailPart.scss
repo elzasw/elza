@@ -1,10 +1,27 @@
 .detail-part {
-    .cursor-pointer {
-        cursor: pointer;
+    //padding: 10px;
+    &:hover {
+        .actions {
+            width: auto;
+        }
+    }
+    .actions {
+        display: flex;
+        align-items: center;
+        margin-left: 5px;
+        margin-right: 5px;
+        width: auto;
+        overflow: hidden;
+
+        .info-icon {
+            margin: 2px;
+            padding: 3px;
+        }
     }
     .detail-part-header {
         font-size: 14px;
-        font-weight: bold;
+        // font-weight: bold;
+        // margin-bottom: 5px;
 
         .detail-part-actions {
         }
@@ -25,6 +42,16 @@
                 font-style: italic;
             }
         }
+    }
+    .detail-part-expanded {
+        //border-left: 1px solid #ccc;
+        padding: 7px 17px;
+        background-color: #eee;
+        margin: 10px;
+        margin-top: 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+
     }
     .opened {
         color: #1A5EBB;
