@@ -24,7 +24,8 @@ import {AP_VIEW_SETTINGS} from '../../../constants';
 import storeFromArea from '../../../shared/utils/storeFromArea';
 import {ApViewSettings} from '../../../api/ApViewSettings';
 import {DetailStoreState} from '../../../types';
-import { AppState, PartType, ScopeData, UserDetail } from "../../../typings/store";
+import {RulPartTypeVO} from '../../../api/RulPartTypeVO';
+import { AppState, ScopeData, UserDetail } from "../../../typings/store";
 
 const FORM_NAME = 'createAccessPointForm';
 
@@ -153,7 +154,7 @@ const CreateAccessPointModal:FC<Props> = ({
     );
 };
 
-const getPartTypeId = (partTypes: PartType[] = [], partTypeName: "PT_NAME") => {
+const getPartTypeId = (partTypes: RulPartTypeVO[] = [], partTypeName: "PT_NAME") => {
     const partType = partTypes.find((item:any)=>item.code === partTypeName);
     return partType ? partType.id : undefined;
 }
