@@ -20,10 +20,10 @@ const DetailMultipleItem: FC<Props> = ({items, globalEntity, descItemTypesMap, b
 
     return (
         <div className="detail-item">
-            <div className="detail-item-header">
+            <div className="detail-cell header">
                 {itemTypeName}
             </div>
-            <div className="detail-item-content">
+            <div className="detail-cell content">
                 {items.map((item, index) => (
                         <DetailItemContent 
                             item={item} 
