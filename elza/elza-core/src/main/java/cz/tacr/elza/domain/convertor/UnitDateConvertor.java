@@ -38,7 +38,7 @@ public class UnitDateConvertor {
     /**
      * Výraz pro rok
      */
-    public static final String EXP_YEAR = "(\\d+)";
+    public static final String EXP_YEAR = "(-?\\d+)";
 
     /**
      * Zkratka roku
@@ -90,6 +90,11 @@ public class UnitDateConvertor {
      */
     public static final String ESTIMATE_INTERVAL_DELIMITER = "/";
 
+    /**
+     * Nesprávný oddělovač když rok je negativní
+     */
+    public static final String INVALID_INTERVAL_DELIMITER = ".-";
+    
     /**
      * Suffix př. n. l.
      */
@@ -148,7 +153,7 @@ public class UnitDateConvertor {
             if (unitdate.getValueFrom() != null) {
                 String valueFrom = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
                         LocalDateTime.parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-                if (valueFrom.length() != 19) {
+                if (valueFrom.length() != 19 && valueFrom.length() != 20) {
                     throw new IllegalArgumentException("Neplatná délka ISO datumů");
                 }
             }
@@ -156,7 +161,7 @@ public class UnitDateConvertor {
             if (unitdate.getValueTo() != null) {
                 String valueTo = DateTimeFormatter.ISO_LOCAL_DATE_TIME
                         .format(LocalDateTime.parse(unitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-                if (valueTo.length() != 19) {
+                if (valueTo.length() != 19 && valueTo.length() != 20) {
                     throw new IllegalArgumentException("Neplatná délka ISO datumů");
                 }
             }
@@ -414,12 +419,12 @@ public class UnitDateConvertor {
     private static String convertYear(final String format, final IUnitdate unitdate, final boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom().trim());
+                LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
                 return format.replaceFirst("(" + YEAR + ")", "" + date.getYear());
             }
         } else {
             if (unitdate.getValueTo() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo().trim());
+                LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo());
                 return format.replaceFirst("(" + YEAR + ")", "" + date.getYear());
             }
         }
@@ -479,7 +484,12 @@ public class UnitDateConvertor {
      */
     private static void parseInterval(final String input, final IUnitdate unitdate) {
 
-        String[] data = input.split(DEFAULT_INTERVAL_DELIMITER + "|" + ESTIMATE_INTERVAL_DELIMITER);
+        String[] data;
+        if (input.contains(ESTIMATE_INTERVAL_DELIMITER)) {
+            data = input.split(ESTIMATE_INTERVAL_DELIMITER);
+        } else {
+            data = input.split(DEFAULT_INTERVAL_DELIMITER);
+        }
 
         Token token;
 
@@ -696,12 +706,41 @@ public class UnitDateConvertor {
 
     /**
      * Detekce, zda-li se jedná o interval
+     * Interval existuje, pokud je nalezen oddělovač '/' nebo '-', ale vylučujeme situace:
+     * Intervaly:
+     *      1900-1912 
+     *      1900/1912      
+     *      -7-2      
+     *      -7/-2
+     *      -7--2      
+     *      [-10--8]
+     * Samostatne:
+     *      12.3.-44 - chyba
+     *      -12.3.44      
+     *      -8
+     *      [-8]
      *
      * @param input vstupní řetězec
      * @return true - jedná se o interval
      */
     private static boolean isInterval(final String input) {
-        return input.contains(DEFAULT_INTERVAL_DELIMITER) || input.contains(ESTIMATE_INTERVAL_DELIMITER);
+        if (input.contains(ESTIMATE_INTERVAL_DELIMITER)) {
+            return true; // 1900/1902
+        }
+        String dateString = input;
+        if (input.startsWith("-")) {
+            dateString = dateString.substring(1);
+        }
+        if (input.startsWith("[-")) {
+            dateString = dateString.substring(2);
+        }
+        if (input.contains(INVALID_INTERVAL_DELIMITER)) {
+            dateString = dateString.replaceAll(INVALID_INTERVAL_DELIMITER, "");
+        }
+        if (dateString.contains(DEFAULT_INTERVAL_DELIMITER)) {
+            return true;
+        }
+        return false;
     }
 
     public static <T extends IUnitdate> T convertIsoToUnitDate(final String input, final T unitDate) {
