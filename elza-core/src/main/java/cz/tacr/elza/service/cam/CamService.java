@@ -492,7 +492,7 @@ public class CamService {
     public void synchronizeAccessPoint(ProcessingContext procCtx, ApState state, ApBindingState bindingState, ApBinding binding,
                                        EntityXml entity, boolean syncQueue) {
         if (binding != null) {
-            log.debug("Entity creation request, bindingId: {}, revId: {}", binding.getBindingId(), entity.getRevi().getRid().getValue());
+            log.debug("Entity creation request, bindingId: {}, bindingValue: {}, revId: {}", binding.getBindingId(), binding.getValue(), entity.getRevi().getRid().getValue());
         } else {
             log.debug("Entity synchronization request, accesPointId: {}, revId: {}", state.getAccessPointId(), entity.getRevi().getRid().getValue());
         }
@@ -514,7 +514,7 @@ public class CamService {
             ApAccessPoint accessPoint = apAccessPointRepository.findApAccessPointByUuid(entity.getEuid().getValue());
             if (accessPoint != null) {
                 log.error("Entity with uuid:{} already exists", entity.getEuid().getValue());
-                throw new BusinessException("Entity with uuid: " + entity.getEuid().getValue() + "  already exists", ExternalCode.IMPORT_FAIL);
+                throw new BusinessException("Entity with uuid: " + entity.getEuid().getValue() + " already exists", ExternalCode.IMPORT_FAIL);
             }
         }
 
@@ -723,6 +723,8 @@ public class CamService {
         ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
         ApScope scope = externalSystem.getScope();
 
+        Map<Integer, ExtSyncsQueueItem> queueMap = queueItems.stream().collect(Collectors.toMap(q -> q.getBindingId(), q -> q));
+
         List<Integer> bindingIds = queueItems.stream().map(p -> p.getBindingId()).collect(Collectors.toList());
         List<ApBinding> bindings = bindingRepository.findAllById(bindingIds);
         List<String> bindingValues = bindings.stream().map(p -> p.getValue()).collect(Collectors.toList());
@@ -752,20 +754,22 @@ public class CamService {
         for (EntityXml entity : entities.getList()) {
             String value = String.valueOf(entity.getEid().getValue());
             ApBinding binding = bindingMap.get(value);
+            ExtSyncsQueueItem queueItem = queueMap.get(binding.getBindingId());
             try {
                 synchronizeAccessPoint(procCtx, null, null, binding, entity, true);
             } catch (Exception e) {
-                setQueueItemState(queueItems,
+                log.error("Failed to synchro, entityId: {}, bindingId: {}", value, binding.getBindingId(), e);
+                setQueueItemState(queueItem,
                                   ExtSyncsQueueItem.ExtAsyncQueueState.ERROR, 
                                   OffsetDateTime.now(),
                                   e.getMessage());
                 return true;
             }
+            setQueueItemState(queueItem,
+                              ExtSyncsQueueItem.ExtAsyncQueueState.OK,
+                              OffsetDateTime.now(),
+                              "Synchronized: ES -> ELZA");
         }
-        setQueueItemState(queueItems,
-                          ExtSyncsQueueItem.ExtAsyncQueueState.OK,
-                          OffsetDateTime.now(),
-                          "Synchronized: ES -> ELZA");
         return true;
     }
 
