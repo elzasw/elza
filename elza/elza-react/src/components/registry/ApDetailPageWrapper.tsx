@@ -1,36 +1,37 @@
-import React, {ReactElement, useEffect, useState} from 'react';
-import {ThunkDispatch} from 'redux-thunk';
-import {Action} from 'redux';
-import {connect} from 'react-redux';
-import {PartType} from '../../api/generated/model';
-import * as PartTypeInfo from '../../api/old/PartTypeInfo';
-import DetailMultiSection from './Detail/DetailMultiSection';
-import DetailBodySection from './Detail/DetailBodySection';
-import Loading from '../shared/loading/Loading';
-import {globalFundTreeInvalidate} from '../../actions/arr/globalFundTree';
-import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
-import {WebApi} from '../../actions/WebApi';
-import {DetailActions} from '../../shared/detail';
-import {AP_VALIDATION, AP_VIEW_SETTINGS} from '../../constants';
-import storeFromArea from '../../shared/utils/storeFromArea';
+import React, { ReactElement, useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { Action } from 'redux';
+import { ThunkDispatch } from 'redux-thunk';
+import { objectByProperty } from "stores/app/utils";
+import { globalFundTreeInvalidate } from '../../actions/arr/globalFundTree';
+import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
 import * as registry from '../../actions/registry/registry';
-import {ApAccessPointVO} from '../../api/ApAccessPointVO';
-import {ApValidationErrorsVO} from '../../api/ApValidationErrorsVO';
-import {ApPartVO} from '../../api/ApPartVO';
-import {DetailStoreState} from '../../types';
+import { registryDetailFetchIfNeeded } from '../../actions/registry/registry';
+import { WebApi } from '../../actions/WebApi';
+import { ApAccessPointVO } from '../../api/ApAccessPointVO';
+import { ApItemBitVO } from '../../api/ApItemBitVO';
+import { ApPartFormVO } from '../../api/ApPartFormVO';
+import { ApPartVO } from '../../api/ApPartVO';
+import { ApValidationErrorsVO } from '../../api/ApValidationErrorsVO';
+import { ApViewSettingRule, ApViewSettings } from '../../api/ApViewSettings';
+import { PartType } from '../../api/generated/model';
+import * as PartTypeInfo from '../../api/old/PartTypeInfo';
+import { PartValidationErrorsVO } from '../../api/PartValidationErrorsVO';
+import { RulDescItemTypeExtVO } from '../../api/RulDescItemTypeExtVO';
+import { RulPartTypeVO } from '../../api/RulPartTypeVO';
+import { AP_VALIDATION, AP_VIEW_SETTINGS } from '../../constants';
+import { DetailActions } from '../../shared/detail';
+import { indexById, objectById } from '../../shared/utils';
+import storeFromArea from '../../shared/utils/storeFromArea';
+import { Bindings, DetailStoreState } from '../../types';
+import { BaseRefTableStore } from '../../typings/BaseRefTableStore';
+import { AppState } from '../../typings/store';
+import { sortItems } from '../../utils/ItemInfo';
+import Loading from '../shared/loading/Loading';
+import DetailBodySection from './Detail/DetailBodySection';
 import DetailHeader from './Detail/DetailHeader';
-import {ApPartFormVO} from '../../api/ApPartFormVO';
+import DetailMultiSection from './Detail/DetailMultiSection';
 import PartEditModal from './modal/PartEditModal';
-import {sortItems} from '../../utils/ItemInfo';
-import {RulPartTypeVO} from '../../api/RulPartTypeVO';
-import {registryDetailFetchIfNeeded} from '../../actions/registry/registry';
-import {ApViewSettingRule, ApViewSettings} from '../../api/ApViewSettings';
-import {indexById, objectById} from '../../shared/utils';
-import {RulDescItemTypeExtVO} from '../../api/RulDescItemTypeExtVO';
-import {ApItemBitVO} from '../../api/ApItemBitVO';
-import {AppState} from '../../typings/store';
-import {Bindings} from '../../types';
-import {BaseRefTableStore} from '../../typings/BaseRefTableStore';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     let bindings: Bindings = {
@@ -112,7 +113,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     refreshValidation,
     setPreferred,
     deletePart,
-    deleteParts,
+    // deleteParts,
     showPartEditModal,
     showPartCreateModal,
     descItemTypesMap,
@@ -195,10 +196,12 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         refreshValidation(id);
     };
 
+    /*
     const handleDeletePart = (parts: Array<ApPartVO>) => {
         deleteParts(id, parts);
         refreshValidation(id);
     };
+    */
 
     const allParts = detail.data ? detail.data.parts : [];
 
@@ -231,6 +234,15 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     const validationResult = apValidation.data;
 
+    const getSectionValidationErrors = (parts:ApPartVO[] = []) => {
+        const errors:PartValidationErrorsVO[] = [];
+        parts.forEach((part)=>{
+            const error = objectByProperty(validationResult?.partErrors, part.id, "id");
+            if(error){errors.push(error)}
+        })
+        return errors;
+    };
+
     const sortedParts = detail.data && refTables.partTypes.items
         ? sortPart(refTables.partTypes.items, apViewSettings.data?.rules[detail.data.ruleSetId])
         : [];
@@ -252,19 +264,22 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 {allParts && (
                     <div key="part-sections">
                         {sortedParts.map((partType: RulPartTypeVO) => {
+                            const parts = groupedParts[partType.id] || [];
+                            console.log(parts);
                             const onAddRelated = partType.childPartId
-                                ? (parentPartId:number) => {
-                                      const childPartType = objectById(
-                                          refTables.partTypes.items,
-                                          partType.childPartId,
-                                      );
-                                      if (childPartType !== null) {
-                                          handleAdd(childPartType, parentPartId);
-                                      } else {
-                                          console.error('childPartType ' + partType.childPartId + ' not found');
-                                      }
-                                  }
-                                : undefined;
+                            ? (parentPartId:number) => {
+                                const childPartType = partType.childPartId ? objectByProperty(
+                                    refTables.partTypes.items,
+                                    partType.childPartId,
+                                    "id"
+                                ) : null;
+                                if (childPartType !== null) {
+                                    handleAdd(childPartType, parentPartId);
+                                } else {
+                                    console.error('childPartType ' + partType.childPartId + ' not found');
+                                }
+                            }
+                            : undefined;
                             const apViewSettingRule = apViewSettings.data!.rules[detail.data!.ruleSetId];
                             if(partType.code === "PT_BODY"){
                                 return (
@@ -272,11 +287,11 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                         key={partType.code}
                                         label={partType.name}
                                         editMode={editMode}
-                                        parts={groupedParts[partType.id] || []}
+                                        parts={parts}
                                         onEdit={handleEdit}
                                         bindings={bindings}
                                         onAdd={() => handleAdd(partType)}
-                                        partValidationErrors={validationResult && validationResult.partErrors}
+                                        partValidationErrors={getSectionValidationErrors(parts)}
                                         itemTypeSettings={apViewSettingRule?.itemTypes || []}
                                         globalEntity={globalEntity}
                                         partType={partType}
@@ -289,8 +304,8 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                     label={partType.name}
                                     singlePart={!partType.repeatable}
                                     editMode={editMode}
-                                    parts={groupedParts[partType.id] || []}
-                                    relatedParts={getRelatedPartSections(groupedParts[partType.id] || [])}
+                                    parts={parts}
+                                    relatedParts={getRelatedPartSections(parts)}
                                     preferred={detail.data ? detail.data.preferredPart : undefined}
                                     globalCollapsed={globalCollapsed}
                                     onSetPreferred={handleSetPreferred}
@@ -299,7 +314,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                     bindings={bindings}
                                     onAdd={() => handleAdd(partType)}
                                     onAddRelated={onAddRelated}
-                                    partValidationErrors={validationResult && validationResult.partErrors}
+                                    partValidationErrors={getSectionValidationErrors(parts)}
                                     itemTypeSettings={apViewSettingRule?.itemTypes || []}
                                     globalEntity={globalEntity}
                                     partType={partType}

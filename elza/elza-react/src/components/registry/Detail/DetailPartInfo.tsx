@@ -6,7 +6,7 @@ import { objectById } from '../../../shared/utils';
 import { Bindings } from '../../../types';
 import { AppState } from '../../../typings/store';
 import DetailMultipleItem from './DetailMultipleItem';
-import './DetailPart.scss';
+import './DetailPartInfo.scss';
 
 interface Props {
     items: ApItemVO[];
@@ -26,9 +26,7 @@ export const DetailPartInfo: FC<Props> = ({
     const renderItems = (items: ApItemVO[]) => {
         if (items.length === 0) {
             return (
-                <div className={''}>
-                    <i>Nejsou definovány žádné hodnoty atributů</i>
-                </div>
+                <i>Nejsou definovány žádné hodnoty atributů</i>
             );
         }
 
@@ -57,19 +55,20 @@ export const DetailPartInfo: FC<Props> = ({
             // typeId group.
             if(item.typeId !== nextItem?.typeId){
                 result.push(
-                    <div key={groupStartIndex}>
                         <DetailMultipleItem
+                            key={groupStartIndex}
                             items={itemGroup}
                             globalEntity={globalEntity}
                             bindings={bindings}
                             />
-                    </div>
                 )
             }
         })
 
         return result;
     };
+
+    console.log(items);
 
     const sortedItems = items.sort((a, b) => {
         const aItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[a.typeId].code, 'code');
@@ -87,7 +86,7 @@ export const DetailPartInfo: FC<Props> = ({
         }
     });
 
-    return <div>
+    return <div className="detail-part-info">
         {renderItems(sortedItems)}
     </div>
 }

@@ -1,5 +1,6 @@
 import i18n from 'components/i18n';
 import { SmallButton } from 'components/shared/button/small-button';
+import ValidationResultIcon from 'components/ValidationResultIcon';
 import React, { FC } from 'react';
 import { ApPartVO } from '../../../api/ApPartVO';
 import { ItemType } from '../../../api/ApViewSettings';
@@ -9,6 +10,7 @@ import { Bindings } from '../../../types';
 import Icon from '../../shared/icon/Icon';
 import './DetailMultiSelection.scss';
 import { DetailPartInfo } from './DetailPartInfo';
+import { objectByProperty } from "stores/app/utils";
 
 interface Props {
     label: string;
@@ -34,9 +36,24 @@ const DetailBodySection: FC<Props> = ({
     bindings,
     itemTypeSettings,
     partType,
+    partValidationErrors = [],
 }) => {
     if (!editMode && parts.length === 0) {
         return null;
+    }
+
+    const showValidationError = () => {
+        return partValidationErrors.map((partValidationError, index) => {
+            if (partValidationError?.errors && partValidationError.errors.length > 0) {
+                return <ValidationResultIcon key={index} message={partValidationError.errors} />;
+            }
+        })
+    };
+
+    const hasInfo = (parts: ApPartVO[]) => {
+        if(parts.length === 0) return false;
+        if(parts.length === 1 && (parts[0].items?.length === 0 || parts[0].items === null)) return false;
+        return true;
     }
 
     return (
@@ -56,21 +73,26 @@ const DetailBodySection: FC<Props> = ({
                         </SmallButton>
                     )}
                 </div>
+                <div className="actions" style={{fontSize: "0.8em", marginLeft: "10px"}}>
+                    {showValidationError()}
+                </div>
             </div>
 
             <div className={`parts single-part`}>
-                {parts.length === 0 && <span>{i18n("ap.detail.noInfo")}</span>}
-                {parts.map((part, index) => {
-                    return (
-                        <div key={index} className={`part`}>
-                            <DetailPartInfo
-                                globalEntity={globalEntity}
-                                itemTypeSettings={itemTypeSettings}
-                                bindings={bindings}
-                                items={part.items}
-                                />
-                        </div>
-                    );
+                {!hasInfo(parts) ? <span>{i18n("ap.detail.noInfo")}</span> :
+                parts.map((part, index) => {
+                    if(part.items){
+                        return (
+                            <div key={index} className={`part`}>
+                                <DetailPartInfo
+                                    globalEntity={globalEntity}
+                                    itemTypeSettings={itemTypeSettings}
+                                    bindings={bindings}
+                                    items={part.items}
+                                    />
+                            </div>
+                        );
+                    }
                 })}
             </div>
         </div>
