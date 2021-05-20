@@ -273,6 +273,7 @@ static Map<String, String> createCamItemSpecMap() {
     camItemSpecMap.put("LNG_kas", "LNG_kas")
     camItemSpecMap.put("LNG_csb", "LNG_csb")
     camItemSpecMap.put("LNG_cat", "LNG_cat")
+    camItemSpecMap.put("LNG_kaz", "LNG_kaz")
     camItemSpecMap.put("LNG_khm", "LNG_khm")
     camItemSpecMap.put("LNG_kok", "LNG_kok")
     camItemSpecMap.put("LNG_cop", "LNG_cop")

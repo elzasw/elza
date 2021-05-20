@@ -1374,4 +1374,8 @@
             tableName="arr_data_unitdate" />
     </changeSet>
 
+    <changeSet id="20210520101700" author="ppyt">
+      <!-- Oprava typo chyby v kodu prvku popisu -->
+      <sql>UPDATE rul_item_spec SET code='RT_ENTITYRISE' WHERE code='RT_ENTINTYRISE'</sql>
+    </changeSet>
 </databaseChangeLog>
