@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import cz.tacr.cam.client.ApiException;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.service.cam.CamService;
@@ -10,17 +11,23 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Component
 public class ExtSyncsProcessor implements Runnable {
 
     @Autowired
+    private CamService camService;
+
+    @Autowired
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
 
     @Autowired
-    private CamService camService;
+    protected PlatformTransactionManager transactionManager;
 
     private static final Logger logger = LoggerFactory.getLogger(ExtSyncsProcessor.class);
 
@@ -30,7 +37,9 @@ public class ExtSyncsProcessor implements Runnable {
 
     private static int QUEUE_CHECK_TIME_INTERVAL = 10000;
 
-    private static int IMPORT_LIST_SIZE = 100;
+    private static int DEFAULT_IMPORT_LIST_SIZE = 100;
+
+    private int importListSize;
 
     private enum ThreadStatus {
         RUNNING, STOP_REQUEST, STOPPED
@@ -63,12 +72,31 @@ public class ExtSyncsProcessor implements Runnable {
         }
 
         // add new item to Elza
-        Pageable pageImport = PageRequest.of(0, IMPORT_LIST_SIZE);
+        Pageable pageImport = PageRequest.of(0, importListSize);
         Page<ExtSyncsQueueItem> newToElza = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.IMPORT_NEW, pageImport);
         if (!newToElza.isEmpty()) {
             List<ExtSyncsQueueItem> items = newToElza.getContent();
-            if (!camService.importNew(items)) {
+            try {
+                camService.importNew(items);
+            } catch (ApiException e) {
+                // if ApiException -> it means we connected server and it is logical failure 
+                logger.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
                 return false;
+            } catch (Exception e) {
+                // handling other errors -> if it is one record - write the error
+                if (importListSize == 1) {
+                    new TransactionTemplate(transactionManager).execute(status -> {
+                        camService.setQueueItemState(items,
+                                                     ExtSyncsQueueItem.ExtAsyncQueueState.ERROR, 
+                                                     OffsetDateTime.now(),
+                                                     e.getMessage());
+                        return true;
+                    });
+                    importListSize = DEFAULT_IMPORT_LIST_SIZE;
+                    return true;
+                }
+                importListSize = 1;
+                return true;
             }
             return true;
         }
@@ -91,6 +119,7 @@ public class ExtSyncsProcessor implements Runnable {
     public void run() {
         synchronized (lock) {
             try {
+                importListSize = DEFAULT_IMPORT_LIST_SIZE;
                 while (status == ThreadStatus.RUNNING) {
                     boolean wait = true;
                     try {
