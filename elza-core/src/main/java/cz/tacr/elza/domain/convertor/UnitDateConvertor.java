@@ -708,15 +708,15 @@ public class UnitDateConvertor {
      * Detekce, zda-li se jedná o interval
      * Interval existuje, pokud je nalezen oddělovač '/' nebo '-', ale vylučujeme situace:
      * Intervaly:
-     *      1900-1912 
-     *      1900/1912      
-     *      -7-2      
+     *      1900-1912
+     *      1900/1912
+     *      -7-2
      *      -7/-2
-     *      -7--2      
+     *      -7--2
      *      [-10--8]
      * Samostatne:
      *      12.3.-44 - chyba
-     *      -12.3.44      
+     *      -12.3.44
      *      -8
      *      [-8]
      *
@@ -729,13 +729,12 @@ public class UnitDateConvertor {
         }
         String dateString = input;
         if (input.startsWith("-")) {
-            dateString = dateString.substring(1);
-        }
-        if (input.startsWith("[-")) {
-            dateString = dateString.substring(2);
+            dateString = dateString.substring(1); // -8
+        } else if (input.startsWith("[-")) {
+            dateString = dateString.substring(2); // [-8]
         }
         if (input.contains(INVALID_INTERVAL_DELIMITER)) {
-            dateString = dateString.replaceAll(INVALID_INTERVAL_DELIMITER, "");
+            dateString = dateString.replaceAll(INVALID_INTERVAL_DELIMITER, ""); // 12.3.-44
         }
         if (dateString.contains(DEFAULT_INTERVAL_DELIMITER)) {
             return true;
