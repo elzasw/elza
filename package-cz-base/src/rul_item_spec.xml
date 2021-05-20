@@ -263,10 +263,16 @@
         <shortcut>zánik z důvodu živelní pohromy</shortcut>
         <item-type-assign code="EXT_TYPE"/>
     </item-spec>
-    <item-spec code="EXT_CHANGE">
-        <name>zánik zrušením/změnou</name>
+	<item-spec code="EXT_CANCELCHANGE">
+		<name>zánik zrušením/změnou</name>
         <description>zánik zrušením/změnou</description>
-        <shortcut>zánik zrušením/změnou</shortcut>
+		<shortcut>zánik zrušením/změnou</shortcut>
+		<item-type-assign code="EXT_TYPE"/>
+	</item-spec>
+    <item-spec code="EXT_CHANGE">
+        <name>zánik změnou</name>
+        <description>zánik změnou</description>
+        <shortcut>zánik změnou</shortcut>
         <item-type-assign code="EXT_TYPE"/>
     </item-spec>
     <item-spec code="EXT_CANCEL">
@@ -1698,6 +1704,15 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
     </item-spec>
+	<item-spec code="LNG_kaz">
+		<name>kazaština</name>
+		<shortcut>kazaština</shortcut>
+		<category>ALTAJSKÉ</category>
+		<category>turkické</category>
+		<description>ALTAJSKÉ/turkické/kazaština</description>
+		<item-type-assign code="NM_LANG"/>
+		<item-type-assign code="LANG"/>
+	</item-spec>
     <item-spec code="LNG_khm">
         <name>khmérština</name>
         <shortcut>khmérština</shortcut>
@@ -2652,7 +2667,7 @@
         <shortcut>entita související s úmrtím</shortcut>
         <item-type-assign code="REL_ENTITY"/>
     </item-spec>
-    <item-spec code="RT_ENTINTYRISE">
+    <item-spec code="RT_ENTITYRISE">
         <name>entita související se vznikem</name>
         <description>entita související se vznikem</description>
         <shortcut>entita související se vznikem</shortcut>
@@ -3250,8 +3265,8 @@
         </item-aptypes>
     </item-spec>
     <item-spec code="RT_ROOF">
-        <name>zjednodušená zastřešující entita</name>
-        <description>zjednodušená zastřešující entita</description>
+        <name>zjednodušená podniková entita</name>
+        <description>zjednodušená podniková entita</description>
         <shortcut>zjednodušená zastřešující entita</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>

@@ -10,7 +10,7 @@ import cz.tacr.elza.drools.model.PartType;
 rule "R_NAM_002 Použití prvků popisu pro označení"
 when $it: ItemType(code in ("NM_MINOR"))
 then
-    $it.setRequired();
+    $it.setPossible();
 end
 
 rule "R_NAM_002.2 Použití prvků popisu pro označení"
@@ -19,4 +19,11 @@ when $it: ItemType(code == "NM_TYPE")
 then
     $it.setPossible();
     $is.setPossible();
+end
+
+rule "R_NAM_002.3 Použití prvků popisu pro označení"
+when $part: Part(preferred)
+     $it: ItemType(code in ("NM_MINOR"))
+then
+    $it.setRequired();
 end
