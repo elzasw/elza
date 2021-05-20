@@ -71,9 +71,6 @@ const DetailPart: FC<Props> = ({
                         onClick={() => setCollapsed(!collapsed)}
                     />
                     <div className="actions">
-                        {renderActions(part)}
-                    </div>
-                    <div className="actions">
                         {partBinding != null && (
                             <Icon
                                 glyph="fa-refresh"
@@ -83,13 +80,16 @@ const DetailPart: FC<Props> = ({
                         )}
                         {showValidationError()}
                     </div>
+                    <div className="actions hidable">
+                        {renderActions(part)}
+                    </div>
                 </div>
             </div>
 
             {!collapsed && (
                 <div className={classNameContent}>
                     <DetailPartInfo
-                        items={part.items}
+                        items={part.items || []}
                         globalEntity={globalEntity}
                         bindings={bindings}
                         itemTypeSettings={itemTypeSettings}

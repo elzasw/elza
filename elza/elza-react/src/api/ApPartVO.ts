@@ -35,5 +35,5 @@ export interface ApPartVO {
     /**
      * Seznam hodnot atributů
      */
-    items: ApItemVO[];
+    items: ApItemVO[] | null;
 }

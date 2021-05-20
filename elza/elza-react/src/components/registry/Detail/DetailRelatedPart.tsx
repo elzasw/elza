@@ -58,7 +58,7 @@ const DetailRelatedPart: FC<Props> = ({
 
     return <div className="detail-related-part">
         <div className={classNameHeader + " align-items-center"}>
-            <div>
+            <div style={{display: "flex", alignItems: "center"}}>
                 <div
                     className={'detail-part-label d-inline-block'}
                     onClick={() => setCollapsed(!collapsed)}
@@ -72,32 +72,42 @@ const DetailRelatedPart: FC<Props> = ({
                     </span>
                 </div>
 
-                {partBinding != null && <Icon glyph="fa-refresh" title={i18n('ap.binding.syncState.' + (partBinding ? 'SYNC_OK' : 'NOT_SYNCED'))} className={partBinding ? ' ' : ' disabled'} />}
+                <div className="actions">
+                    {partBinding != null && 
+                        <Icon
+                            glyph="fa-refresh"
+                            title={i18n('ap.binding.syncState.' + (partBinding ? 'SYNC_OK' : 'NOT_SYNCED'))}
+                            className={`info-icon ${partBinding ? '' : 'disabled'}`}
+                            />
+                    }
+                    {showValidationError()}
+                </div>
 
-                { editMode &&
-                    <SmallButton
-                        onClick={() => onEdit && onEdit(part)}
-                        title={i18n("ap.detail.edit", "")}
-                    >
-                        <Icon glyph={'fa-pencil'} />
-                    </SmallButton>
-                }
-                {editMode && (
-                    <SmallButton
-                        onClick={() => onDelete && onDelete(part)}
-                        title={i18n("ap.detail.delete")}
-                    >
-                        <Icon glyph={'fa-trash'} />
-                    </SmallButton>
-                )}
-                {showValidationError()}
+                <div className="actions hidable">
+                    { editMode &&
+                        <SmallButton
+                            onClick={() => onEdit && onEdit(part)}
+                            title={i18n("ap.detail.edit", "")}
+                        >
+                            <Icon glyph={'fa-pencil'} />
+                        </SmallButton>
+                    }
+                    {editMode && (
+                        <SmallButton
+                            onClick={() => onDelete && onDelete(part)}
+                            title={i18n("ap.detail.delete")}
+                        >
+                            <Icon glyph={'fa-trash'} />
+                        </SmallButton>
+                    )}
+                </div>
             </div>
         </div>
 
         {!collapsed && <div className={classNameContent}>
             <div>
                 <DetailPartInfo
-                    items={part.items}
+                    items={part.items || []}
                     globalEntity={globalEntity}
                     bindings={bindings}
                     itemTypeSettings={itemTypeSettings}
