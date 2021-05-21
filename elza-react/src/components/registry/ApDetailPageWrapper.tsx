@@ -28,9 +28,8 @@ import { BaseRefTableStore } from '../../typings/BaseRefTableStore';
 import { AppState } from '../../typings/store';
 import { sortItems } from '../../utils/ItemInfo';
 import Loading from '../shared/loading/Loading';
-import DetailBodySection from './Detail/DetailBodySection';
-import DetailHeader from './Detail/DetailHeader';
-import DetailMultiSection from './Detail/DetailMultiSection';
+import { DetailBodySection, DetailMultiSection } from './Detail/section';
+import { DetailHeader } from './Detail/header';
 import PartEditModal from './modal/PartEditModal';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {

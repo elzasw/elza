@@ -1,13 +1,13 @@
 import classNames from "classnames";
 import { SmallButton } from "components/shared/button/small-button";
 import React, { FC, useEffect, useState } from 'react';
-import { ApPartVO } from "../../../api/ApPartVO";
-import { ItemType } from "../../../api/ApViewSettings";
-import { PartValidationErrorsVO } from "../../../api/PartValidationErrorsVO";
-import { Bindings } from "../../../types";
-import i18n from "../../i18n";
-import Icon from '../../shared/icon/Icon';
-import ValidationResultIcon from "../../ValidationResultIcon";
+import { ApPartVO } from "../../../../api/ApPartVO";
+import { ItemType } from "../../../../api/ApViewSettings";
+import { PartValidationErrorsVO } from "../../../../api/PartValidationErrorsVO";
+import { Bindings } from "../../../../types";
+import i18n from "../../../i18n";
+import Icon from '../../../shared/icon/Icon';
+import ValidationResultIcon from "../../../ValidationResultIcon";
 import { DetailPartInfo } from "./DetailPartInfo";
 import "./DetailRelatedPart.scss";
 

@@ -2,15 +2,14 @@ import i18n from 'components/i18n';
 import { SmallButton } from 'components/shared/button/small-button';
 import ValidationResultIcon from 'components/ValidationResultIcon';
 import React, { FC } from 'react';
-import { ApPartVO } from '../../../api/ApPartVO';
-import { ItemType } from '../../../api/ApViewSettings';
-import { PartValidationErrorsVO } from '../../../api/PartValidationErrorsVO';
-import { RulPartTypeVO } from '../../../api/RulPartTypeVO';
-import { Bindings } from '../../../types';
-import Icon from '../../shared/icon/Icon';
+import { ApPartVO } from '../../../../api/ApPartVO';
+import { ItemType } from '../../../../api/ApViewSettings';
+import { PartValidationErrorsVO } from '../../../../api/PartValidationErrorsVO';
+import { RulPartTypeVO } from '../../../../api/RulPartTypeVO';
+import { Bindings } from '../../../../types';
+import Icon from '../../../shared/icon/Icon';
 import './DetailMultiSelection.scss';
-import { DetailPartInfo } from './DetailPartInfo';
-import { objectByProperty } from "stores/app/utils";
+import { DetailPartInfo } from '../part';
 
 interface Props {
     label: string;
