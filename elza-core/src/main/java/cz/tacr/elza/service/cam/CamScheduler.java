@@ -20,19 +20,31 @@ public class CamScheduler {
 
     @Autowired
     private ExternalSystemService externalSystemService;
+    
+    private boolean isSwithOn = false;
 
     @Scheduled(cron = "${elza.synchronizeAP.cam:0 0 2 * * *}")
     public void synchronizeAccessPoints() {
-        List<ApExternalSystem> externalSystems = externalSystemService.findAllApSystem();
-        if (CollectionUtils.isNotEmpty(externalSystems)) {
-            for (ApExternalSystem externalSystem : externalSystems) {
-                if (externalSystem.getType() == ApExternalSystemType.CAM ||
-                        externalSystem.getType() == ApExternalSystemType.CAM_UUID ||
-                        externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
-                    camService.synchronizeAccessPointsForExternalSystem(externalSystem);
+        if (isSwithOn) {
+            List<ApExternalSystem> externalSystems = externalSystemService.findAllApSystem();
+            if (CollectionUtils.isNotEmpty(externalSystems)) {
+                for (ApExternalSystem externalSystem : externalSystems) {
+                    if (externalSystem.getType() == ApExternalSystemType.CAM ||
+                            externalSystem.getType() == ApExternalSystemType.CAM_UUID ||
+                            externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
+                        camService.synchronizeAccessPointsForExternalSystem(externalSystem);
+                    }
                 }
             }
         }
+    }
+
+    public void start() {
+        isSwithOn = true;
+    }
+
+    public void stop() {
+        isSwithOn = false;
     }
 
 }
