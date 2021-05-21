@@ -81,10 +81,21 @@ public class ExtSyncsProcessor implements Runnable {
             } catch (ApiException e) {
                 // if ApiException -> it means we connected server and it is logical failure 
                 logger.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
+                new TransactionTemplate(transactionManager).execute(status -> {
+                    camService.setQueueItemState(items,
+                                                 null, // state se nemění
+                                                 OffsetDateTime.now(),
+                                                 e.getMessage());
+                    return true;
+                });
                 return false;
             } catch (Exception e) {
                 // handling other errors -> if it is one record - write the error
-                if (importListSize == 1) {
+                logger.error("Failed to synchronize item(s), list size: {}", items.size(), e);
+                // zmenšení velikosti dávky
+                importListSize = 1;
+                // pokud došlo k chybě při čtení 1 záznam najednou
+                if (items.size() == 1) {
                     new TransactionTemplate(transactionManager).execute(status -> {
                         camService.setQueueItemState(items,
                                                      ExtSyncsQueueItem.ExtAsyncQueueState.ERROR, 
@@ -92,10 +103,10 @@ public class ExtSyncsProcessor implements Runnable {
                                                      e.getMessage());
                         return true;
                     });
+                    // chybný záznam je označen, návrat standardní dávky
                     importListSize = DEFAULT_IMPORT_LIST_SIZE;
                     return true;
                 }
-                importListSize = 1;
                 return true;
             }
             return true;
