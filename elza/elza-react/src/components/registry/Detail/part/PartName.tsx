@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import React, { FC } from 'react';
-import i18n from '../../i18n';
+import i18n from '../../../i18n';
 import './DetailPart.scss';
 
 export const PartName:FC<{

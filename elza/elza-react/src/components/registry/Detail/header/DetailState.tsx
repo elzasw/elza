@@ -1,6 +1,6 @@
 import React from 'react';
-import {Icon} from "../../index";
-import {StateApproval, StateApprovalCaption, StateApprovalIcon} from "../../../api/StateApproval";
+import {Icon} from "../../../index";
+import {StateApproval, StateApprovalCaption, StateApprovalIcon} from "../../../../api/StateApproval";
 
 interface Props {
     state: StateApproval;

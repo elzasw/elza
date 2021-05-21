@@ -1,17 +1,17 @@
-import React, {useEffect, useState} from 'react';
-import DetailHistoryItem from './DetailHistoryItem';
-import {ThunkDispatch} from 'redux-thunk';
-import {Action} from 'redux';
-import {SimpleListActions as SimpleListAction} from '../../../shared/list';
-import {connect} from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { Action } from 'redux';
+import { ThunkDispatch } from 'redux-thunk';
+import { WebApi } from "../../../../actions/WebApi";
+import { ApStateHistoryVO } from "../../../../api/ApStateHistoryVO";
+import * as Constants from '../../../../constants';
+import { SimpleListActions as SimpleListAction } from '../../../../shared/list';
+import { storeFromArea } from "../../../../shared/utils";
+import { SimpleListStoreState } from "../../../../types";
+import Icon from '../../../shared/icon/Icon';
+import Loading from '../../../shared/loading/Loading';
 import './DetailHistory.scss';
-import Icon from '../../shared/icon/Icon';
-import Loading from '../../shared/loading/Loading';
-import {WebApi} from "../../../actions/WebApi";
-import * as Constants from '../../../constants';
-import {ApStateHistoryVO} from "../../../api/ApStateHistoryVO";
-import {SimpleListStoreState} from "../../../types";
-import {storeFromArea} from "../../../shared/utils";
+import DetailHistoryItem from './DetailHistoryItem';
 
 type Props = {
     apId: number;
