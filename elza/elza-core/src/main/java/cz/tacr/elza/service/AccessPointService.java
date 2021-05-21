@@ -1648,25 +1648,48 @@ public class AccessPointService {
             return Arrays.asList(StateApproval.values());
         }
 
-        List<StateApproval> statesNewToApprove = Arrays.asList(StateApproval.NEW, StateApproval.TO_APPROVE);
         Set<StateApproval> result = new HashSet<>();
 
+        // zakládání a změny nových 
         if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL) 
                 || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
-            if (statesNewToApprove.contains(apState.getStateApproval())) {
-                result.addAll(statesNewToApprove);
+            if (apState.getStateApproval().equals(StateApproval.NEW)) {
+                result.add(StateApproval.TO_APPROVE);
+                result.add(StateApproval.TO_AMEND);
+            }
+            if (apState.getStateApproval().equals(StateApproval.TO_AMEND)) {
+                result.add(StateApproval.NEW);
+                result.add(StateApproval.TO_APPROVE);
+            }
+            if (apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
+                result.add(StateApproval.NEW);
+                result.add(StateApproval.TO_AMEND);
             }
         }
+
+        // schvalování
         if (userService.hasPermission(Permission.AP_CONFIRM_ALL) 
                 || userService.hasPermission(Permission.AP_CONFIRM_ALL, apScope.getScopeId())) {
-            if (apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
+            if (apState.getStateApproval().equals(StateApproval.TO_APPROVE) ||
+                    apState.getStateApproval().equals(StateApproval.REV_PREPARED)) {
                 result.add(StateApproval.APPROVED);
             }
         }
+
+        // změna schválených
         if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
                 || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId())) {
             if (apState.getStateApproval().equals(StateApproval.APPROVED)) {
-                result.add(StateApproval.APPROVED);
+                result.add(StateApproval.REV_NEW);
+            }
+            if (apState.getStateApproval().equals(StateApproval.REV_NEW)) {
+                result.add(StateApproval.REV_PREPARED);
+            }
+            if (apState.getStateApproval().equals(StateApproval.REV_PREPARED)) {
+                result.add(StateApproval.REV_AMEND);
+            }
+            if (apState.getStateApproval().equals(StateApproval.REV_AMEND)) {
+                result.add(StateApproval.REV_PREPARED);
             }
         }
 

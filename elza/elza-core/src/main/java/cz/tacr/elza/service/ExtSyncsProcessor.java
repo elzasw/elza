@@ -130,6 +130,7 @@ public class ExtSyncsProcessor implements Runnable {
     public void run() {
         synchronized (lock) {
             try {
+                // nastavíme velikost dávky pro čtení
                 importListSize = DEFAULT_IMPORT_LIST_SIZE;
                 while (status == ThreadStatus.RUNNING) {
                     boolean wait = true;
