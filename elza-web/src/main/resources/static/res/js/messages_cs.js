@@ -1074,10 +1074,10 @@ var messages = {
     "ap.binding.syncState.SYNC_OK": "Aktivní synchronizace",
     "ap.binding.syncState.NOT_SYNCED": "Nesynchronizuje se",
 
-    "ap.binding.extstate.ers_approved": "schválená",
-    "ap.binding.extstate.ers_invalid": "neplatná",
-    "ap.binding.extstate.ers_new": "nová",
-    "ap.binding.extstate.ers_replaced": "nahrazená",
+    "ap.binding.extstate.ERS_APPROVED": "schválená",
+    "ap.binding.extstate.ERS_INVALID": "neplatná",
+    "ap.binding.extstate.ERS_NEW": "nová",
+    "ap.binding.extstate.ERS_REPLACED": "nahrazená",
 
     "ap.detail.info": "popis záznamu entity",
     "ap.detail.edit": "Upravit {0}",
