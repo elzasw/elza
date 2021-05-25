@@ -68,8 +68,6 @@ export const DetailPartInfo: FC<Props> = ({
         return result;
     };
 
-    console.log(items);
-
     const sortedItems = items.sort((a, b) => {
         const aItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[a.typeId].code, 'code');
         const bItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[b.typeId].code, 'code');

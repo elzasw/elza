@@ -78,7 +78,7 @@ const DetailBodySection: FC<Props> = ({
             </div>
 
             <div className={`parts single-part`}>
-                {!hasInfo(parts) ? <span>{i18n("ap.detail.noInfo")}</span> :
+                {!hasInfo(parts) ? <span className="no-info-msg">{i18n("ap.detail.noInfo")}</span> :
                 parts.map((part, index) => {
                     if(part.items){
                         return (

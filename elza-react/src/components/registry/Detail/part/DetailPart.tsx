@@ -10,6 +10,8 @@ import Icon from '../../../shared/icon/Icon';
 import './DetailPart.scss';
 import { DetailPartInfo } from './DetailPartInfo';
 import { PartName } from "./PartName";
+import { SyncIcon } from "../sync-icon";
+import { SyncState } from '../../../../api/SyncState';
 
 type Props = {
     label: string;
@@ -72,11 +74,13 @@ const DetailPart: FC<Props> = ({
                     />
                     <div className="actions">
                         {partBinding != null && (
-                            <Icon
-                                glyph="fa-refresh"
-                                title={i18n('ap.binding.syncState.' + (partBinding ? 'SYNC_OK' : 'NOT_SYNCED'))}
-                                className={partBinding ? 'info-icon' : 'info-icon disabled'}
-                                />
+                            <SyncIcon 
+                                syncState={
+                                    partBinding ? 
+                                    SyncState.SYNC_OK : 
+                                    SyncState.NOT_SYNCED
+                                }
+                            />
                         )}
                         {showValidationError()}
                     </div>

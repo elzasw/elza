@@ -1,0 +1,1 @@
+export { SyncIcon } from "./SyncIcon";

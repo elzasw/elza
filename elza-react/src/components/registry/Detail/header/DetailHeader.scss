@@ -61,16 +61,19 @@
         margin-top: 0.5rem;
         font-size: 1.2em;
         font-weight: 500;
-        display: table;
         .binding {
-            display: table-row;
+            display: flex;
+            align-items: center;
             .info {
                 .system, .link, .user {
                     font-weight: 700;
                 }
             }
             .action {
-                display: table-cell;
+                padding-left: 10px;
+                display: flex;
+                align-items: center;
+
                 .disabled {
                     color: #A7A7A7;
                 }
