@@ -81,13 +81,10 @@ public class ExtSyncsProcessor implements Runnable {
             } catch (ApiException e) {
                 // if ApiException -> it means we connected server and it is logical failure 
                 logger.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
-                new TransactionTemplate(transactionManager).execute(status -> {
-                    camService.setQueueItemState(items,
-                                                 null, // state se nemění
-                                                 OffsetDateTime.now(),
-                                                 e.getMessage());
-                    return true;
-                });
+                camService.setQueueItemStateTA(items,
+                                               null, // state se nemění
+                                               OffsetDateTime.now(),
+                                               e.getMessage());
                 return false;
             } catch (Exception e) {
                 // handling other errors -> if it is one record - write the error
@@ -96,13 +93,10 @@ public class ExtSyncsProcessor implements Runnable {
                 importListSize = 1;
                 // pokud došlo k chybě při čtení 1 záznam najednou
                 if (items.size() == 1) {
-                    new TransactionTemplate(transactionManager).execute(status -> {
-                        camService.setQueueItemState(items,
-                                                     ExtSyncsQueueItem.ExtAsyncQueueState.ERROR, 
-                                                     OffsetDateTime.now(),
-                                                     e.getMessage());
-                        return true;
-                    });
+                    camService.setQueueItemStateTA(items,
+                                                   ExtSyncsQueueItem.ExtAsyncQueueState.ERROR, 
+                                                   OffsetDateTime.now(),
+                                                   e.getMessage());
                     // chybný záznam je označen, návrat standardní dávky
                     importListSize = DEFAULT_IMPORT_LIST_SIZE;
                     return true;
