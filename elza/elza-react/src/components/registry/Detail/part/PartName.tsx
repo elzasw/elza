@@ -19,14 +19,14 @@ export const PartName:FC<{
 
     return <div
         title={collapsed ? i18n("ap.detail.expandInfo") : i18n("ap.detail.collapseInfo")}
+        className="detail-part-label"
         onClick={onClick}
     >
         <span
-            className={classNames(
-                'detail-part-label',
-                preferred ? 'preferred' : '',
-                collapsed ? false : 'opened',
-            )}
+            className={classNames({
+                "preferred": preferred,
+                "opened": !collapsed,
+            })}
         >
             {label || <i>{i18n("ap.detail.info")}</i>}
         </span>

@@ -23,6 +23,8 @@ import { Button } from '../../../ui';
 import { formatDate } from '../../../validate';
 import DetailCoordinateItem from '../coordinate/DetailCoordinateItem';
 import './DetailItem.scss';
+import { SyncIcon } from '../sync-icon';
+import { SyncState } from '../../../../api/SyncState';
 
 interface OwnProps extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
@@ -165,11 +167,9 @@ const DetailItemContent: FC<Props> = ({
             {valueSpecification && valueField && ': '}
             {valueField}
             {itemBinding != null && (
-                <Icon
-                    glyph="fa-refresh"
-                    title={i18n('ap.binding.syncState.' + (itemBinding ? 'SYNC_OK' : 'NOT_SYNCED'))}
-                    className={itemBinding ? 'ml-2 ' : 'ml-2 disabled'}
-                />
+                <span className="sync-wrapper">
+                    <SyncIcon syncState={ itemBinding ? SyncState.SYNC_OK : SyncState.NOT_SYNCED}/>
+                </span>
             )}
         </div>
     );
