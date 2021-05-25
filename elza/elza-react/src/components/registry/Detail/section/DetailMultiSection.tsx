@@ -1,16 +1,15 @@
 import i18n from 'components/i18n';
 import { SmallButton } from 'components/shared/button/small-button';
 import React, { FC } from 'react';
-import { ApPartVO } from '../../../api/ApPartVO';
-import { ItemType } from '../../../api/ApViewSettings';
-import { PartValidationErrorsVO } from '../../../api/PartValidationErrorsVO';
-import { RulPartTypeVO } from '../../../api/RulPartTypeVO';
-import { objectById } from '../../../shared/utils';
-import { Bindings } from '../../../types';
-import Icon from '../../shared/icon/Icon';
+import { ApPartVO } from '../../../../api/ApPartVO';
+import { ItemType } from '../../../../api/ApViewSettings';
+import { PartValidationErrorsVO } from '../../../../api/PartValidationErrorsVO';
+import { RulPartTypeVO } from '../../../../api/RulPartTypeVO';
+import { objectById } from '../../../../shared/utils';
+import { Bindings } from '../../../../types';
+import Icon from '../../../shared/icon/Icon';
+import { DetailPart, DetailRelatedPart } from '../part';
 import './DetailMultiSelection.scss';
-import DetailPart from './DetailPart';
-import DetailRelatedPart from './DetailRelatedPart';
 
 interface Props {
     label: string;
@@ -134,7 +133,7 @@ const DetailMultiSection: FC<Props> = ({
             </div>
 
             <div className={`parts ${singlePart ? "single-part" : ""}`}>
-            {parts.length === 0 && <span>{i18n("ap.detail.noInfo")}</span>}
+            {parts.length === 0 && <span className="no-info-msg">{i18n("ap.detail.noInfo")}</span>}
             {parts.map((part, index) => {
                     const relatedParts = part.id != null && relatedPartsMap[part.id] ? relatedPartsMap[part.id] : []
                     return (

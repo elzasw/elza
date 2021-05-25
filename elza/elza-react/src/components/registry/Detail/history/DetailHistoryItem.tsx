@@ -1,8 +1,8 @@
 import React from 'react';
 import {Col, Row} from 'react-bootstrap';
-import {ApStateHistoryVO} from "../../../api/ApStateHistoryVO";
-import {formatDate} from "../../validate";
-import {StateApprovalCaption} from "../../../api/StateApproval";
+import {ApStateHistoryVO} from "../../../../api/ApStateHistoryVO";
+import {formatDate} from "../../../validate";
+import {StateApprovalCaption} from "../../../../api/StateApproval";
 
 type Props = {
     historyItem: ApStateHistoryVO

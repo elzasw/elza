@@ -58,6 +58,9 @@ var messages = {
     "global.action.search": "Vyhledat",
     "global.action.filter.clean": "Zrušit filtr",
 
+    "confirmDialog.default.title": "Potvrzení",
+    "confirmDialog.default.message": "Přejete si pokračovat?",
+
     "download.allreadyDownloading": "Požadavek na stažení souboru již byl odeslán",
     "download.error.title": "Chyba stahování",
     "download.error.timeout": "Vypršel časový limit na obsluhu požadavku",
@@ -1074,14 +1077,15 @@ var messages = {
     "ap.binding.syncState.SYNC_OK": "Aktivní synchronizace",
     "ap.binding.syncState.NOT_SYNCED": "Nesynchronizuje se",
 
-    "ap.binding.extstate.ers_approved": "schválená",
-    "ap.binding.extstate.ers_invalid": "neplatná",
-    "ap.binding.extstate.ers_new": "nová",
-    "ap.binding.extstate.ers_replaced": "nahrazená",
+    "ap.binding.extState.ERS_APPROVED": "schválená",
+    "ap.binding.extState.ERS_INVALID": "neplatná",
+    "ap.binding.extState.ERS_NEW": "nová",
+    "ap.binding.extState.ERS_REPLACED": "nahrazená",
 
     "ap.detail.info": "popis záznamu entity",
     "ap.detail.edit": "Upravit {0}",
     "ap.detail.delete": "Smazat",
+    "ap.detail.delete.confirm": "Smazat část: {0}?",
     "ap.detail.add.related": "Přidat vztah",
     "ap.detail.add": "Přidat {0}",
     "ap.detail.setPreferred": "Označit jako preferované",

@@ -1,11 +1,11 @@
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
-import { ApItemVO } from '../../../api/ApItemVO';
-import { ItemType } from '../../../api/ApViewSettings';
-import { objectById } from '../../../shared/utils';
-import { Bindings } from '../../../types';
-import { AppState } from '../../../typings/store';
-import DetailMultipleItem from './DetailMultipleItem';
+import { ApItemVO } from '../../../../api/ApItemVO';
+import { ItemType } from '../../../../api/ApViewSettings';
+import { objectById } from '../../../../shared/utils';
+import { Bindings } from '../../../../types';
+import { AppState } from '../../../../typings/store';
+import { DetailMultipleItem } from '../item';
 import './DetailPartInfo.scss';
 
 interface Props {
@@ -67,8 +67,6 @@ export const DetailPartInfo: FC<Props> = ({
 
         return result;
     };
-
-    console.log(items);
 
     const sortedItems = items.sort((a, b) => {
         const aItemType: ItemType = objectById(itemTypeSettings, descItemTypesMap[a.typeId].code, 'code');

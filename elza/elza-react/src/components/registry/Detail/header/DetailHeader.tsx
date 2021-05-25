@@ -1,22 +1,23 @@
 import React, { FC } from 'react';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { showAsyncWaiting } from '../../../actions/global/modalDialog';
-import * as perms from '../../../actions/user/Permission';
-import { WebApi } from '../../../actions/WebApi';
-import { ApAccessPointVO } from '../../../api/ApAccessPointVO';
-import { ApBindingVO } from '../../../api/ApBindingVO';
-import { SyncState } from '../../../api/SyncState';
-import { indexById, objectById } from '../../../shared/utils';
-import { FundScope } from '../../../types';
-import i18n from '../../i18n';
-import { Icon } from '../../index';
-import { Button } from '../../ui';
-import ValidationResultIcon from '../../ValidationResultIcon';
+import { showAsyncWaiting } from '../../../../actions/global/modalDialog';
+import * as perms from '../../../../actions/user/Permission';
+import { WebApi } from '../../../../actions/WebApi';
+import { ApAccessPointVO } from '../../../../api/ApAccessPointVO';
+import { ApBindingVO } from '../../../../api/ApBindingVO';
+import { SyncState } from '../../../../api/SyncState';
+import { indexById, objectById } from '../../../../shared/utils';
+import { FundScope } from '../../../../types';
+import i18n from '../../../i18n';
+import { Icon } from '../../../index';
+import { Button } from '../../../ui';
+import ValidationResultIcon from '../../../ValidationResultIcon';
 import DetailDescriptions from './DetailDescriptions';
 import DetailDescriptionsItem from './DetailDescriptionsItem';
 import './DetailHeader.scss';
 import DetailState from './DetailState';
+import { SyncIcon } from "../sync-icon";
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     item: ApAccessPointVO;
@@ -54,7 +55,6 @@ const DetailHeader: FC<Props> = ({
     const apType = apTypesMap[item.typeId];
 
     const showValidationError = () => {
-            console.log("show validation error", validationErrors);
         if (validationErrors && validationErrors.length > 0) {
             return <ValidationResultIcon message={validationErrors} />;
         }
@@ -139,11 +139,11 @@ const DetailHeader: FC<Props> = ({
     };
 
     const renderBindings = () => {
-        if (item.externalIds.length > 0 && externalSystems.length > 0) {
+        if (item.bindings.length > 0 && externalSystems.length > 0) {
             const apExternalWr = userDetail.hasOne(perms.AP_EXTERNAL_WR);
             return (
                 <div className="bindings" key="bindings">
-                    {item.externalIds.map(binding => {
+                    {item.bindings.map(binding => {
                         const externalSystem = objectById(externalSystems, binding.externalSystemCode, 'code');
                         const tooltip = ('id: '+binding.value)+(binding.extRevision?(', uuid: '+binding.extRevision):'');
                         return (
@@ -174,16 +174,14 @@ const DetailHeader: FC<Props> = ({
                                     )}
                                     , {i18n('ap.binding.user')}: <span className="user">{binding.extUser}</span>
                                 </div>
-                                <div className="action pl-3" key={'binding-action-' + binding.id}>
-                                    <Icon
-                                        glyph="fa-refresh"
-                                        title={i18n('ap.binding.syncState.' + binding.syncState)}
-                                        className={binding.syncState == SyncState.NOT_SYNCED ? 'disabled' : ''}
-                                    />
+                                <div className="action">
+                                    <SyncIcon syncState={binding.syncState || undefined}/>
+                                </div>
+                                <div className="action">
                                     <DropdownButton
                                         variant="action"
                                         id={'binding-action-' + binding.id}
-                                        title={((<Icon glyph="fa-ellipsis-v" />) as any) as string}
+                                        title={((<Icon glyph="fa-ellipsis-h" />) as any) as string}
                                     >
                                         <Dropdown.Item key="synchronize" onClick={() => handleSynchronize(binding)}>
                                             {i18n('ap.binding.action.synchronize')}
