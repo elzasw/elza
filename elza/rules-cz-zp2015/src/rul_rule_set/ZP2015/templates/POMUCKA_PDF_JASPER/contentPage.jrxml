@@ -31,11 +31,11 @@
 		<paragraph lineSpacingSize="1.0" spacingBefore="0"/>
 		<conditionalStyle>
 			<conditionExpression><![CDATA[$V{isSection} || $V{isRoot}]]></conditionExpression>
-			<style fontSize="12" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+			<style fontSize="11" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 		</conditionalStyle>
 		<conditionalStyle>
 			<conditionExpression><![CDATA[$V{isSeries}]]></conditionExpression>
-			<style fontSize="12" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
+			<style fontSize="11" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 		</conditionalStyle>
 	</style>
 	<style name="OuterFrame" mode="Transparent" backcolor="#EEEEEE">
