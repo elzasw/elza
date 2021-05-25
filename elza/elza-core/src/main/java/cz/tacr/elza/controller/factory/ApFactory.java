@@ -301,7 +301,7 @@ public class ApFactory {
             }
 
             List<ApBindingVO> eidsVO = FactoryUtils.transformList(eids, ApBindingVO::newInstance);
-            apVO.setExternalIds(eidsVO);
+            apVO.setBindings(eidsVO);
             fillBindingUrls(eidsVO);
             fillBindingItems(eidsVO, bindings, bindingItemsMap);
 
@@ -326,7 +326,7 @@ public class ApFactory {
 
         //prepare eids
         List<ApBindingVO> eidsVO = createApBindingsVO(cachedAccessPoint);
-        apVO.setExternalIds(eidsVO);
+        apVO.setBindings(eidsVO);
         fillBindingUrls(eidsVO);
 
         apVO.setParts(createVO(cachedAccessPoint.getParts()));
@@ -350,7 +350,7 @@ public class ApFactory {
         vo.setComment(apState.getComment());
         vo.setStateApproval(apState.getStateApproval());
         vo.setUuid(ap.getUuid());
-        vo.setExternalIds(Collections.emptyList());
+        vo.setBindings(Collections.emptyList());
         vo.setErrorDescription(ap.getErrorDescription());
         if (typeRuleSetMap != null) {
             vo.setRuleSetId(typeRuleSetMap.get(apState.getApTypeId()));
@@ -384,7 +384,7 @@ public class ApFactory {
         vo.setComment(apState.getComment());
         vo.setStateApproval(apState.getStateApproval());
         vo.setUuid(uuid);
-        vo.setExternalIds(Collections.emptyList());
+        vo.setBindings(Collections.emptyList());
         vo.setErrorDescription(errorDescription);
         if (typeRuleSetMap != null) {
             vo.setRuleSetId(typeRuleSetMap.get(apState.getApTypeId()));
