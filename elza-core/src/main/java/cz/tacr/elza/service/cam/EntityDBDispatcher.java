@@ -208,7 +208,8 @@ public class EntityDBDispatcher {
 
         // Read existing binding from DB
         List<String> values;
-        if (apExternalSystem.getType() == ApExternalSystemType.CAM) {
+        if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
+                apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
             values = CamHelper.getEids(entities);
             idGetter = CamHelper::getEntityId;
         } else if (apExternalSystem.getType() == ApExternalSystemType.CAM_UUID) {
