@@ -46,6 +46,7 @@ import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
+import cz.tacr.elza.controller.vo.SyncStateVO;
 import cz.tacr.elza.controller.vo.UserVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
@@ -87,11 +88,13 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.packageimport.xml.SettingItemTypes;
 import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
@@ -135,6 +138,8 @@ public class ApFactory {
 
     private final UserRepository userRepository;
 
+    private final ApChangeRepository changeRepository;
+
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
@@ -148,7 +153,8 @@ public class ApFactory {
                      final CamConnector camConnector,
                      final ApIndexRepository indexRepository,
                      final ApTypeRepository apTypeRepository,
-                     final UserRepository userRepository) {
+                     final UserRepository userRepository,
+                     final ApChangeRepository changeRepository) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
         this.scopeRepository = scopeRepository;
@@ -162,6 +168,7 @@ public class ApFactory {
         this.indexRepository = indexRepository;
         this.apTypeRepository = apTypeRepository;
         this.userRepository = userRepository;
+        this.changeRepository = changeRepository;
     }
 
     /**
@@ -300,7 +307,16 @@ public class ApFactory {
                         .collect(Collectors.groupingBy(i -> i.getBinding().getBindingId()));
             }
 
-            List<ApBindingVO> eidsVO = FactoryUtils.transformList(eids, ApBindingVO::newInstance);
+            Integer lastChangeId = apRepository.getLastCreateChange(state.getAccessPointId());
+            if (lastChangeId < state.getCreateChangeId()) {
+                lastChangeId = state.getCreateChangeId();
+            }
+            ApChange lastChange = changeRepository.findById(lastChangeId).get();
+
+            List<ApBindingVO> eidsVO = null;
+            if (eids != null) {
+                eidsVO = eids.stream().map(s -> ApBindingVO.newInstance(s, lastChange)).collect(Collectors.toList()); 
+            }            
             apVO.setBindings(eidsVO);
             fillBindingUrls(eidsVO);
             fillBindingItems(eidsVO, bindings, bindingItemsMap);
@@ -311,7 +327,7 @@ public class ApFactory {
                 apVO.setDescription(description);
             }
             apVO.setPreferredPart(preferredPart.getPartId());
-            apVO.setLastChange(createVO(state.getCreateChange()));
+            apVO.setLastChange(createVO(lastChange));
             apVO.setOwnerUser(createVO(ownerUser));
         }
         return apVO;
@@ -416,7 +432,18 @@ public class ApFactory {
         bindingVO.setExtRevision(binding.getBindingState().getExtRevision());
         bindingVO.setExtUser(binding.getBindingState().getExtUser());
         bindingVO.setExtReplacedBy(binding.getBindingState().getExtReplacedBy());
-        bindingVO.setSyncState(binding.getBindingState().getSyncOk());
+        if (binding.getBindingState().getSyncOk() != null) {
+            switch (binding.getBindingState().getSyncOk()) {
+            case SYNC_OK:
+                bindingVO.setSyncState(SyncStateVO.SYNC_OK);
+                break;
+            case NOT_SYNCED:
+                bindingVO.setSyncState(SyncStateVO.NOT_SYNCED);
+                break;
+            default:
+                throw new SystemException("Chyba datových polí ApBindingState.SyncOk");
+            }
+        }
         bindingVO.setBindingItemList(createApBindingItemsVO(binding, parts));
         return bindingVO;
     }
