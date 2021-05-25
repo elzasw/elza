@@ -1,7 +1,9 @@
 package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.exception.SystemException;
 
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class ApBindingVO {
 
     private String detailUrlExtReplacedBy;
 
-    private SyncState syncState;
+    private SyncStateVO syncState;
 
     private List<ApBindingItemVO> bindingItemList;
 
@@ -85,11 +87,11 @@ public class ApBindingVO {
         this.extReplacedBy = extReplacedBy;
     }
 
-    public SyncState getSyncState() {
+    public SyncStateVO getSyncState() {
         return syncState;
     }
 
-    public void setSyncState(SyncState syncState) {
+    public void setSyncState(SyncStateVO syncState) {
         this.syncState = syncState;
     }
 
@@ -120,7 +122,7 @@ public class ApBindingVO {
     /**
      * Creates value object from AP external id.
      */
-    public static ApBindingVO newInstance(ApBindingState src) {
+    public static ApBindingVO newInstance(ApBindingState src, ApChange lastChange) {
         ApBindingVO vo = new ApBindingVO();
         vo.setId(src.getBinding().getBindingId());
         vo.setExternalSystemCode(src.getBinding().getApExternalSystem().getCode());
@@ -129,7 +131,20 @@ public class ApBindingVO {
         vo.setExtRevision(src.getExtRevision());
         vo.setExtUser(src.getExtUser());
         vo.setExtReplacedBy(src.getExtReplacedBy());
-        vo.setSyncState(src.getSyncOk());
+        switch (src.getSyncOk()) {
+        case SYNC_OK:
+            if (lastChange.getChangeId() > src.getSyncChangeId()) {
+                vo.setSyncState(SyncStateVO.LOCAL_CHANGE);
+            } else {
+                vo.setSyncState(SyncStateVO.SYNC_OK);
+            }
+            break;
+        case NOT_SYNCED:
+            vo.setSyncState(SyncStateVO.NOT_SYNCED);
+            break;
+        default:
+            throw new SystemException("Chyba datových polí ApBindingState.SyncOk");
+        }
         return vo;
     }
 }
