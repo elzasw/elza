@@ -1,0 +1,17 @@
+.sync-icon {
+    display: flex;
+    align-items: center;
+    font-size: 0.6em;
+
+    .sync {
+        &.not-synced {
+            color: #b83131;
+        }
+        &.sync-ok {
+            color: #3fba3f;
+        }
+        &.local-change {
+            color: #eab304;
+        }
+    }
+}

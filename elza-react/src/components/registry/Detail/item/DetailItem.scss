@@ -19,13 +19,12 @@
         }
     }
 
-    &.detail-item-multiple {
-        .detail-item-content {
-            .detail-item-partvalue ~ .detail-item-partvalue {
-                //margin-top: 4px;
-                //padding-top: 4px;
-                //border-top: 1px solid #D6DBED;
-            }
+    .detail-item-content-value {
+        display: flex;
+        align-items: center;
+
+        .sync-wrapper {
+            padding: 10px;
         }
     }
 }

@@ -1,29 +1,30 @@
-import React, {FC} from 'react';
-import {connect} from 'react-redux';
+import React, { FC } from 'react';
+import { connect } from 'react-redux';
+import { Action } from 'redux';
+import { ThunkDispatch } from 'redux-thunk';
+import { registryDetailFetchIfNeeded } from '../../../../actions/registry/registry';
+import { ApItemAccessPointRefVO } from '../../../../api/ApItemAccessPointRefVO';
+import { ApItemBitVO } from '../../../../api/ApItemBitVO';
+import { ApItemCoordinatesVO } from '../../../../api/ApItemCoordinatesVO';
+import { ApItemDateVO } from '../../../../api/ApItemDateVO';
+import { ApItemStringVO } from '../../../../api/ApItemStringVO';
+import { ApItemUnitdateVO } from '../../../../api/ApItemUnitdateVO';
+import { ApItemUriRefVO } from '../../../../api/ApItemUriRefVO';
+import { ApItemVO } from '../../../../api/ApItemVO';
+import { RulDataTypeCodeEnum } from '../../../../api/RulDataTypeCodeEnum';
+import { RulDataTypeVO } from '../../../../api/RulDataTypeVO';
+import { RulDescItemSpecExtVO } from '../../../../api/RulDescItemSpecExtVO';
+import { RulDescItemTypeExtVO } from '../../../../api/RulDescItemTypeExtVO';
+import { getMapFromList, objectById } from '../../../../shared/utils';
+import { Bindings } from '../../../../types';
+import i18n from '../../../i18n';
+import Icon from '../../../shared/icon/Icon';
+import { Button } from '../../../ui';
+import { formatDate } from '../../../validate';
+import DetailCoordinateItem from '../coordinate/DetailCoordinateItem';
 import './DetailItem.scss';
-import {NavLink} from 'react-router-dom';
-import DetailCoordinateItem from './coordinate/DetailCoordinateItem';
-import {ApItemVO} from '../../../api/ApItemVO';
-import {ApItemCoordinatesVO} from '../../../api/ApItemCoordinatesVO';
-import {ApItemAccessPointRefVO} from '../../../api/ApItemAccessPointRefVO';
-import {ApItemUriRefVO} from '../../../api/ApItemUriRefVO';
-import {RulDataTypeCodeEnum} from '../../../api/RulDataTypeCodeEnum';
-import {RulDataTypeVO} from '../../../api/RulDataTypeVO';
-import {ApItemBitVO} from '../../../api/ApItemBitVO';
-import {formatDate} from '../../validate';
-import {ApItemStringVO} from '../../../api/ApItemStringVO';
-import {ApItemDateVO} from '../../../api/ApItemDateVO';
-import {ApItemUnitdateVO} from '../../../api/ApItemUnitdateVO';
-import {RulDescItemTypeExtVO} from '../../../api/RulDescItemTypeExtVO';
-import {getMapFromList, objectById} from '../../../shared/utils';
-import {RulDescItemSpecExtVO} from '../../../api/RulDescItemSpecExtVO';
-import {Bindings} from '../../../types';
-import Icon from '../../shared/icon/Icon';
-import i18n from '../../i18n';
-import {ThunkDispatch} from 'redux-thunk';
-import {Action} from 'redux';
-import {registryDetailFetchIfNeeded} from '../../../actions/registry/registry';
-import {Button} from '../../ui';
+import { SyncIcon } from '../sync-icon';
+import { SyncState } from '../../../../api/SyncState';
 
 interface OwnProps extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
@@ -166,11 +167,9 @@ const DetailItemContent: FC<Props> = ({
             {valueSpecification && valueField && ': '}
             {valueField}
             {itemBinding != null && (
-                <Icon
-                    glyph="fa-refresh"
-                    title={i18n('ap.binding.syncState.' + (itemBinding ? 'SYNC_OK' : 'NOT_SYNCED'))}
-                    className={itemBinding ? 'ml-2 ' : 'ml-2 disabled'}
-                />
+                <span className="sync-wrapper">
+                    <SyncIcon syncState={ itemBinding ? SyncState.SYNC_OK : SyncState.NOT_SYNCED}/>
+                </span>
             )}
         </div>
     );

@@ -1,8 +1,8 @@
 import React, { FC } from 'react';
 import { useSelector } from 'react-redux';
-import { ApItemVO } from "../../../api/ApItemVO";
-import { Bindings } from "../../../types";
-import { AppState } from "../../../typings/store";
+import { ApItemVO } from "../../../../api/ApItemVO";
+import { Bindings } from "../../../../types";
+import { AppState } from "../../../../typings/store";
 import "./DetailItem.scss";
 import DetailItemContent from "./DetailItemContent";
 

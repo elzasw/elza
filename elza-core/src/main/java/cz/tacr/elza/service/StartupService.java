@@ -35,6 +35,7 @@ import cz.tacr.elza.search.DbQueueProcessor;
 import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.search.IndexerProgressMonitor;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cam.CamScheduler;
 
 /**
  * Serviska pro úlohy, které je nutné spustit těsně po spuštění.
@@ -82,6 +83,8 @@ public class StartupService implements SmartLifecycle {
 
     private final AccessPointCacheService accessPointCacheService;
 
+    private final CamScheduler camScheduler; 
+
     private boolean running;
 
     public static boolean fullTextReindex = false;
@@ -112,7 +115,8 @@ public class StartupService implements SmartLifecycle {
                           final ApplicationContext applicationContext,
                           final AsyncRequestService asyncRequestService,
                           final ExtSyncsProcessor extSyncsProcessor,
-                          final AccessPointCacheService accessPointCacheService) {
+                          final AccessPointCacheService accessPointCacheService,
+                          final CamScheduler camScheduler) {
         this.nodeRepository = nodeRepository;
         this.arrangementService = arrangementService;
         this.bulkActionRunRepository = bulkActionRunRepository;
@@ -132,6 +136,7 @@ public class StartupService implements SmartLifecycle {
         this.asyncRequestService = asyncRequestService;
         this.extSyncsProcessor = extSyncsProcessor;
         this.accessPointCacheService = accessPointCacheService;
+        this.camScheduler = camScheduler;
     }
 
     @Autowired
@@ -158,6 +163,8 @@ public class StartupService implements SmartLifecycle {
 
         tt.executeWithoutResult(r -> startInTransaction2());
 
+        camScheduler.start();
+
         running = true;
         logger.info("Elza startup finished in {} ms", System.currentTimeMillis() - startTime);
     }
@@ -169,6 +176,7 @@ public class StartupService implements SmartLifecycle {
         indexWorkProcessor.stopIndexing();
         structureDataService.stopGenerator();
         outputServiceInternal.stop();
+        camScheduler.stop();
         running = false;
     }
 

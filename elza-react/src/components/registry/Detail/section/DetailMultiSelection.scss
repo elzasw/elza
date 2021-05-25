@@ -50,7 +50,16 @@
                 padding-top: 5px;
             }
         }
+
+        .no-info-msg {
+            display: inline-block;
+        }
+
         &.single-part {
+            padding: 0;
+            .no-info-msg {
+                padding: 10px;
+            }
             .part{
                 border: none;
             }

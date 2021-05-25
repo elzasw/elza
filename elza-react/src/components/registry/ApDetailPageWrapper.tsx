@@ -28,13 +28,14 @@ import { BaseRefTableStore } from '../../typings/BaseRefTableStore';
 import { AppState } from '../../typings/store';
 import { sortItems } from '../../utils/ItemInfo';
 import Loading from '../shared/loading/Loading';
-import DetailBodySection from './Detail/DetailBodySection';
-import DetailHeader from './Detail/DetailHeader';
-import DetailMultiSection from './Detail/DetailMultiSection';
+import { DetailBodySection, DetailMultiSection } from './Detail/section';
+import { DetailHeader } from './Detail/header';
 import PartEditModal from './modal/PartEditModal';
+import i18n from 'components/i18n';
+import { showConfirmDialog } from "components/shared/dialog";
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
-    let bindings: Bindings = {
+    const bindingsMaps: Bindings = {
         itemsMap: {},
         partsMap: {},
     };
@@ -43,19 +44,19 @@ function createBindings(accessPoint: ApAccessPointVO | undefined) {
          (map[id] || true) && sync;
 
     if (accessPoint) {
-        const externalIds = accessPoint.externalIds || [];
-        externalIds.forEach(externalId => {
+        const bindings = accessPoint.bindings || [];
+        bindings.forEach(externalId => {
             const bindingItemList = externalId.bindingItemList || [];
             bindingItemList.forEach(item => {
               if (item.itemId) {
-                bindings.itemsMap[item.itemId] = newItem(item.itemId, item.sync, bindings.itemsMap);
+                bindingsMaps.itemsMap[item.itemId] = newItem(item.itemId, item.sync, bindingsMaps.itemsMap);
               } else if (item.partId) {
-                bindings.partsMap[item.partId] = newItem(item.partId, item.sync, bindings.partsMap);
+                bindingsMaps.partsMap[item.partId] = newItem(item.partId, item.sync, bindingsMaps.partsMap);
               }
             });
         });
     }
-    return bindings;
+    return bindingsMaps;
 }
 
 function sortPart(items: RulPartTypeVO[], data: ApViewSettingRule | undefined) {
@@ -114,6 +115,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     setPreferred,
     deletePart,
     // deleteParts,
+    showConfirmDialog,
     showPartEditModal,
     showPartCreateModal,
     descItemTypesMap,
@@ -164,10 +166,24 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     };
 
     const handleDelete = (part: ApPartVO) => {
+        /*
+        if(!confirm(i18n("ap.detail.delete.confirm",part.value))){return;}
         if (part.id) {
             deletePart(id, part.id);
         }
+
         refreshValidation(id);
+            */
+
+        showConfirmDialog(i18n("ap.detail.delete.confirm", part.value)).then((result)=>{
+            if(result){
+                if (part.id) {
+                    deletePart(id, part.id);
+                }
+
+                refreshValidation(id);
+            }
+        })
     };
 
     const handleEdit = (part: ApPartVO) => {
@@ -265,7 +281,6 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     <div key="part-sections">
                         {sortedParts.map((partType: RulPartTypeVO) => {
                             const parts = groupedParts[partType.id] || [];
-                            console.log(parts);
                             const onAddRelated = partType.childPartId
                             ? (parentPartId:number) => {
                                 const childPartType = partType.childPartId ? objectByProperty(
@@ -332,7 +347,8 @@ interface ApPartData {
     partForm: ApPartFormVO;
 }
 
-const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => ({
+const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<string>>) => ({
+    showConfirmDialog: (message: string) => dispatch(showConfirmDialog(message)),
     showPartEditModal: (
         part: ApPartVO,
         partType,
