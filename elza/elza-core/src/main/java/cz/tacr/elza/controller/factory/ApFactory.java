@@ -605,7 +605,7 @@ public class ApFactory {
         apPartVO.setTypeId(rulPartType.getPartTypeId());
         apPartVO.setState(part.getState() == null ? null : ApStateVO.valueOf(part.getState().name()));
         apPartVO.setErrorDescription(part.getErrorDescription());
-        apPartVO.setValue(CollectionUtils.isNotEmpty(part.getIndices()) ? findDisplayIndexValue(part.getIndices()) : null);
+        apPartVO.setValue(findDisplayIndexValue(part.getIndices()));
         apPartVO.setPartParentId(part.getParentPartId());
         apPartVO.setItems(CollectionUtils.isNotEmpty(part.getItems()) ? createItemsVO(part.getItems()) : null);
 
@@ -613,7 +613,10 @@ public class ApFactory {
     }
 
     @Nullable
-    private String findDisplayIndexValue(List<ApIndex> indices) {
+    static public String findDisplayIndexValue(List<ApIndex> indices) {
+        if (indices == null) {
+            return null;
+        }
         for (ApIndex index : indices) {
             if (index.getIndexType().equals(DISPLAY_NAME)) {
                 return index.getValue();
