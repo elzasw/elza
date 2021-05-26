@@ -49,6 +49,7 @@ import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -100,7 +101,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
          */
         @Nullable
         private SettingIndexSearch.Field getFieldSearchConfigByName(String name) {
-            if (CollectionUtils.isEmpty(sis.getFields())) {
+            if (sis == null || CollectionUtils.isEmpty(sis.getFields())) {
                 return null;
             }
             for (SettingIndexSearch.Field field : sis.getFields()) {
@@ -225,8 +226,8 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
     @Override
     public QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
-                                                                      SearchFilterVO searchFilter,
-                                                                      Set<Integer> apTypeIdTree,
+                                                                              SearchFilterVO searchFilter,
+                                                                              Collection<Integer> apTypeIdTree,
                                                                       Set<Integer> scopeIds,
                                                                       ApState.StateApproval state,
                                                                       Integer from,
@@ -252,7 +253,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     private Query buildQueryFromParams(QueryBuilder queryBuilder,
                                        String search,
                                        SearchFilterVO searchFilter,
-                                       Set<Integer> apTypeIdTree,
+                                       Collection<Integer> apTypeIdTree,
                                        Set<Integer> scopeIds,
                                        ApState.StateApproval state) {
         BooleanJunction<BooleanJunction> bool = queryBuilder.bool();
@@ -302,8 +303,11 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
             if (searchFilter.getArea() != Area.ENTITY_CODE) {
                 // prepare fulltext query
-                bool.must(process(queryBuilder, searchFilter, fcf));
-                empty = false;
+                Query q = process(queryBuilder, searchFilter, fcf);
+                if (q != null) {
+                    bool.must(q);
+                    empty = false;
+                }
             }
 
         } else {
@@ -323,6 +327,15 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         return bool.createQuery();
     }
 
+    /**
+     * Return prepared query
+     * 
+     * @param queryBuilder
+     * @param searchFilterVO
+     * @param fcf
+     * @return Might return null if empty query
+     */
+    @Nullable
     private Query process(QueryBuilder queryBuilder, SearchFilterVO searchFilterVO, FulltextCondFactory fcf) {
         StaticDataProvider sdp = staticDataService.getData();
         String search = searchFilterVO.getSearch();
@@ -385,8 +398,11 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                                                  "PT_EXT", fcf));
         }
 
-
-        return searchQuery.createQuery();
+        if (searchQuery.isEmpty()) {
+            return null;
+        } else {
+            return searchQuery.createQuery();
+        }
     }
 
     private Query processIndexCondDef(QueryBuilder queryBuilder, String value, String partTypeCode,

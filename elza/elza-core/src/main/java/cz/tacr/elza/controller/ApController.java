@@ -66,6 +66,7 @@ import cz.tacr.elza.controller.vo.ApStateHistoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
+import cz.tacr.elza.controller.vo.ArchiveEntityVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
@@ -774,9 +775,34 @@ public class ApController {
         if (from < 0) {
             throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
         }
+        StaticDataProvider sdp = staticDataService.getData();
         List<Integer> apTypes = accessPointService.findApTypeIdsByItemTypeAndItemSpec(itemTypeId, itemSpecId);
+        Set<Integer> apTypeIds = apTypeRepository.findSubtreeIds(apTypes);
+        Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(null, scopeId);
+        QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
+                .findApCachedAccessPointisByQuery(null, filter, apTypeIds, scopeIds,
+                                                  null, from, max, sdp);
+
+        /*
         filter.setAeTypeIds(apTypes);
         return accessPointService.findAccessPointsForRel(from, max, scopeId, filter);
+        */
+        ArchiveEntityResultListVO ret = new ArchiveEntityResultListVO();
+        ret.setTotal(cachedAccessPointResult.getRecordCount());
+        List<ArchiveEntityVO> data;
+        List<ApCachedAccessPoint> records = cachedAccessPointResult.getRecords();
+        if (CollectionUtils.isEmpty(records)) {
+            data = Collections.emptyList();
+        } else {
+            data = new ArrayList(records.size());
+            for (ApCachedAccessPoint record : records) {
+                CachedAccessPoint entity = accessPointCacheService.deserialize(record.getData());
+                ArchiveEntityVO ae = ArchiveEntityVO.valueOf(entity);
+                data.add(ae);
+            }
+        }
+        ret.setData(data);
+        return ret;
     }
 
     /**
