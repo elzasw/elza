@@ -16,6 +16,7 @@ import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -109,7 +110,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.setVisibility(new ApVisibilityChecker(AccessPointCacheSerializable.class,
-                String.class, Number.class, Boolean.class, Iterable.class,
+                String.class, Number.class, Boolean.class, Iterable.class, SyncState.class,
                 LocalDate.class, LocalDateTime.class));
     }
 
