@@ -4,7 +4,6 @@ import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.cache.CachedBinding;
 import cz.tacr.elza.service.cache.CachedPart;
@@ -189,7 +188,6 @@ public class ApBindingVO {
                 bindingItemVOList.add(createApBindingItemVO(bindingItem, binding.getBindingState(), parts));
             }
         }
-
         return bindingItemVOList;
     }
 
