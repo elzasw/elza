@@ -28,7 +28,7 @@ public interface ApCachedAccessPointRepositoryCustom {
     QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
                                                                        SearchFilterVO searchFilter,
                                                                        Collection<Integer> apTypeIdTree,
-                                                                       Set<Integer> scopeIds,
+                                                                       Collection<Integer> scopeIds,
                                                                        ApState.StateApproval state, Integer from,
                                                                        Integer count, StaticDataProvider sdp);
 }

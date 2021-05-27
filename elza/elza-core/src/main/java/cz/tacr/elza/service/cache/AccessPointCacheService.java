@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.common.db.QueryResults;
+import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
@@ -41,6 +44,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -50,6 +55,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
@@ -370,6 +376,15 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         }
     }
 
+    /**
+     * Deserializace entity
+     * 
+     * Must be called inside transaction
+     * 
+     * @param data
+     * @return
+     */
+    @Transactional(value = TxType.MANDATORY)
     public CachedAccessPoint deserialize(String data) {
         try {
             CachedAccessPoint cap = mapper.readValue(data, CachedAccessPoint.class);
@@ -471,6 +486,36 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         if (oldApCachedAccessPoint != null) {
             cachedAccessPointRepository.delete(oldApCachedAccessPoint);
         }
+    }
+
+    @Transactional(value = TxType.MANDATORY)
+    public QueryResults<CachedAccessPoint> search(SearchFilterVO searchFilter,
+                                                  Collection<Integer> apTypeIds,
+                                                  Collection<Integer> scopeIds,
+                                                  ApState.StateApproval state,
+                                                  Integer from,
+                                                  Integer count, StaticDataProvider sdp) {
+        String searchText = (searchFilter != null) ? searchFilter.getSearch() : null;
+
+        QueryResults<ApCachedAccessPoint> r = cachedAccessPointRepository
+                .findApCachedAccessPointisByQuery(searchText,
+                                                  searchFilter,
+                                                  apTypeIds,
+                                                  scopeIds,
+                                                  state,
+                                                  from, count,
+                                                  sdp);
+        if (CollectionUtils.isEmpty(r.getRecords())) {
+            return QueryResults.emptyResult(r.getRecordCount());
+        }
+
+        List<CachedAccessPoint> capList = new ArrayList<>(r.getRecords().size());
+        for (ApCachedAccessPoint capd : r.getRecords()) {
+            CachedAccessPoint cap = deserialize(capd.getData());
+            capList.add(cap);
+        }
+        QueryResults<CachedAccessPoint> result = new QueryResults<>(r.getRecordCount(), capList);
+        return result;
     }
 
     @Override
