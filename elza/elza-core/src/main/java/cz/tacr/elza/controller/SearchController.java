@@ -275,7 +275,9 @@ public class SearchController implements SearchApi {
 	 * - filter na typ a textovy filter
 	 */
 	@Override
-    @RequestMapping(value = { "/cuni-ais-api/search-ap", "/api/v1/search-ap" })
+    @RequestMapping(value = { "/cuni-ais-api/search-ap",
+            "/cuni-ais-api/search-ap/search",
+            "/api/v1/search-ap" })
     @Transactional
 	public ResponseEntity<ResultEntityRef> searchEntity(@RequestBody SearchParams searchParams) {
 
@@ -347,7 +349,9 @@ public class SearchController implements SearchApi {
     LevelTreeCacheService levelTreeCacheService;
 
     @Override
-    @RequestMapping(value = { "/cuni-ais-api/search-arr", "/api/v1/search-arr" })
+    @RequestMapping(value = { "/cuni-ais-api/search-arr",
+            "/cuni-ais-api/search-arr/search",
+            "/api/v1/search-arr" })
     @Transactional
     public ResponseEntity<ResultEntityRef> searchArchDesc(@RequestBody SearchParams searchParams) {
 
