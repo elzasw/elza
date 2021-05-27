@@ -1076,6 +1076,7 @@ var messages = {
 
     "ap.binding.syncState.SYNC_OK": "Aktivní synchronizace",
     "ap.binding.syncState.NOT_SYNCED": "Nesynchronizuje se",
+    "ap.binding.syncState.LOCAL_CHANGE": "Existuje lokální změna",
 
     "ap.binding.extState.ERS_APPROVED": "schválená",
     "ap.binding.extState.ERS_INVALID": "neplatná",
