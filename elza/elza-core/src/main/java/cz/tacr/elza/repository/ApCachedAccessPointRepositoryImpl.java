@@ -228,11 +228,11 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     public QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
                                                                               SearchFilterVO searchFilter,
                                                                               Collection<Integer> apTypeIdTree,
-                                                                      Set<Integer> scopeIds,
-                                                                      ApState.StateApproval state,
-                                                                      Integer from,
-                                                                      Integer count,
-                                                                      StaticDataProvider sdp) {
+                                                                              Collection<Integer> scopeIds,
+                                                                              ApState.StateApproval state,
+                                                                              Integer from,
+                                                                              Integer count,
+                                                                              StaticDataProvider sdp) {
 
         QueryBuilder queryBuilder = createQueryBuilder(ApCachedAccessPoint.class);
         Query query = buildQueryFromParams(queryBuilder, search, searchFilter, apTypeIdTree, scopeIds, state);
@@ -254,7 +254,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                                        String search,
                                        SearchFilterVO searchFilter,
                                        Collection<Integer> apTypeIdTree,
-                                       Set<Integer> scopeIds,
+                                       Collection<Integer> scopeIds,
                                        ApState.StateApproval state) {
         BooleanJunction<BooleanJunction> bool = queryBuilder.bool();
         boolean empty = true;
@@ -340,6 +340,9 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         StaticDataProvider sdp = staticDataService.getData();
         String search = searchFilterVO.getSearch();
         Area area = searchFilterVO.getArea();
+        if (area == null) {
+            area = Area.ALL_NAMES;
+        }
         BooleanJunction<BooleanJunction> searchQuery = queryBuilder.bool();
 
         if (StringUtils.isNotEmpty(search)) {
@@ -347,20 +350,27 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
             RulPartType defaultPartType = sdp.getDefaultPartType();
             for (String keyWord : keyWords) {
                 String partTypeCode;
+                boolean onlyMainPart = false;
                 switch (area) {
                     case PREFER_NAMES:
                         partTypeCode = PREFIX_PREF;
+                        if (searchFilterVO.getOnlyMainPart() != null && searchFilterVO.getOnlyMainPart()) {
+                            onlyMainPart = true;
+                        }
                         break;
                     case ALL_PARTS:
                         partTypeCode = null;
                         break;
                     case ALL_NAMES:
                         partTypeCode = defaultPartType.getCode().toLowerCase();
+                        if (searchFilterVO.getOnlyMainPart() != null && searchFilterVO.getOnlyMainPart()) {
+                            onlyMainPart = true;
+                        }
                         break;
                     default:
                         throw new NotImplementedException("Neimplementovaný stav oblasti: " + area);
                 }
-                if (searchFilterVO.getOnlyMainPart() && !area.equals(Area.ALL_PARTS)) {
+                if (onlyMainPart) {
                     searchQuery.must(processValueCondDef(queryBuilder, keyWord, "NM_MAIN", null, partTypeCode, fcf));
                 } else {
                     searchQuery.must(processIndexCondDef(queryBuilder, keyWord, partTypeCode, fcf));
