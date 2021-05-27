@@ -76,7 +76,7 @@ const DetailRelatedPart: FC<Props> = ({
 
                 <div className="actions">
                     {partBinding != null && 
-                        <SyncIcon syncState={partBinding ? SyncState.SYNC_OK : SyncState.NOT_SYNCED}/>
+                        <SyncIcon syncState={partBinding ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
                     }
                     {showValidationError()}
                 </div>
