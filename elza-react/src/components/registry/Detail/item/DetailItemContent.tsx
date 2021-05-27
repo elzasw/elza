@@ -161,6 +161,7 @@ const DetailItemContent: FC<Props> = ({
         }
     }
 
+
     return (
         <div className="detail-item-content-value">
             {valueSpecification}
@@ -168,7 +169,7 @@ const DetailItemContent: FC<Props> = ({
             {valueField}
             {itemBinding != null && (
                 <span className="sync-wrapper">
-                    <SyncIcon syncState={ itemBinding ? SyncState.SYNC_OK : SyncState.NOT_SYNCED}/>
+                    <SyncIcon syncState={ itemBinding ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
                 </span>
             )}
         </div>

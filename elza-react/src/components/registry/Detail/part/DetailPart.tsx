@@ -78,7 +78,7 @@ const DetailPart: FC<Props> = ({
                                 syncState={
                                     partBinding ? 
                                     SyncState.SYNC_OK : 
-                                    SyncState.NOT_SYNCED
+                                    SyncState.LOCAL_CHANGE
                                 }
                             />
                         )}
