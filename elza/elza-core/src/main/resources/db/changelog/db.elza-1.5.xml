@@ -1378,4 +1378,9 @@
       <!-- Oprava typo chyby v kodu prvku popisu -->
       <sql>UPDATE rul_item_spec SET code='RT_ENTITYRISE' WHERE code='RT_ENTINTYRISE'</sql>
     </changeSet>
+
+    <changeSet id="20210526144300" author="sergey.iryupin">
+      <delete tableName="ap_cached_access_point" />
+    </changeSet>
+
 </databaseChangeLog>

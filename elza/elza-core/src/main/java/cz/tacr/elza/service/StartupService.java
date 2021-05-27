@@ -172,11 +172,11 @@ public class StartupService implements SmartLifecycle {
     @Override
     public void stop() {
         logger.info("Elza stopping ...");
+        camScheduler.stop();
         asyncRequestService.stop();
         indexWorkProcessor.stopIndexing();
         structureDataService.stopGenerator();
         outputServiceInternal.stop();
-        camScheduler.stop();
         running = false;
     }
 

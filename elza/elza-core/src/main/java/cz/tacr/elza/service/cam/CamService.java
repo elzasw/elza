@@ -306,6 +306,13 @@ public class CamService {
         extSyncsQueueItemRepository.saveAll(items);
     }
 
+    @Transactional
+    public void setQueueItemStateTA(List<ExtSyncsQueueItem> items, ExtAsyncQueueState state,
+                                    OffsetDateTime dateTime,
+                                    String message) {
+        setQueueItemState(items, state, dateTime, message);
+    }
+
     public BatchUpdateXml createCreateEntityBatchUpdate(final ApAccessPoint accessPoint,
                                                         final ApState state,
                                                         final ApBindingState bindingState,

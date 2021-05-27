@@ -4,7 +4,6 @@ public enum SyncState {
 
     SYNC_OK,
 
-    NOT_SYNCED,
-    
-    LOCAL_CHANGE
+    NOT_SYNCED
+
 }
