@@ -1,0 +1,3 @@
+﻿<package-export-filters>
+    <package-export-filter code="SRD_TEST_EXPORT_FILTER" name="SRD_TEST_EXPORT_FILTER" filename="SRD_TEST_EXPORT_FILTER.yaml" />
+</package-export-filters>
