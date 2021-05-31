@@ -6,6 +6,8 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +40,7 @@ public class UnitDateConvertor {
     /**
      * Výraz pro rok
      */
-    public static final String EXP_YEAR = "(-?\\d+)";
+    public static final String EXP_YEAR = "(-?\\d{1,4})";
 
     /**
      * Zkratka roku
@@ -49,6 +51,11 @@ public class UnitDateConvertor {
      * Formát datumu
      */
     public static final String FORMAT_DATE = "d.M.u";
+
+    /**
+     * Výraz pro datum
+     */
+    public static final String EXP_FORMAT_DATE = "(\\d{1,2}.\\d{1,2}.-?\\d{1,4})";
 
     /**
      * Zkratka datumu
@@ -91,10 +98,14 @@ public class UnitDateConvertor {
     public static final String ESTIMATE_INTERVAL_DELIMITER = "/";
 
     /**
-     * Nesprávný oddělovač když rok je negativní
+     * Když rok je negativní
      */
-    public static final String INVALID_INTERVAL_DELIMITER = ".-";
-    
+    public static final String YEAR_DATE_IS_NEGATIVE = ".-";
+
+    public static final String YEAR_DATE_IS_NEGATIVE_REGEXP = "\\.-";
+
+    public static final String YEAR_IS_NEGATIVE = "--";
+
     /**
      * Suffix př. n. l.
      */
@@ -130,12 +141,12 @@ public class UnitDateConvertor {
 
                 LocalDateTime from = null;
                 if (unitdate.getValueFrom() != null) {
-                    from = LocalDateTime.parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                    from = LocalDateTime.parse(unitdate.getValueFrom(), FORMATTER_ISO);
                 }
 
                 LocalDateTime to = null;
                 if (unitdate.getValueTo() != null) {
-                    to = LocalDateTime.parse(unitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                    to = LocalDateTime.parse(unitdate.getValueTo(), FORMATTER_ISO);
                 }
 
                 if (from != null && to != null && from.isAfter(to)) {
@@ -184,6 +195,90 @@ public class UnitDateConvertor {
      */
     private static String normalizeInput(final String input) {
         return input.replace("(", "[").replace(")", "]").trim();
+    }
+
+    /**
+     * Detekce, zda-li se jedná o interval
+     * Interval existuje, pokud je nalezen oddělovač '/' nebo '-', ale vylučujeme situace:
+     * Intervaly:
+     *      1900-1912
+     *      1900/1912
+     *      -7-2
+     *      -7/-2
+     *      -7--2
+     *      [-10--8]
+     * Samostatne:
+     *      12.3.-44
+     *      -18
+     *      [-20]
+     *
+     * @param input vstupní řetězec
+     * @return true - jedná se o interval
+     */
+    private static boolean isInterval(final String input) {
+        if (input.contains(ESTIMATE_INTERVAL_DELIMITER)) {
+            return true; // 1900/1902
+        }
+        String dateString = input;
+        if (input.startsWith("-")) {
+            dateString = dateString.substring(1); // -8
+        } else if (input.startsWith("[-")) {
+            dateString = dateString.substring(2); // [-8]
+        }
+        if (input.contains(YEAR_DATE_IS_NEGATIVE)) {
+            dateString = dateString.replaceAll(YEAR_DATE_IS_NEGATIVE_REGEXP, "."); // 12.3.-44
+        }
+
+        return dateString.contains(DEFAULT_INTERVAL_DELIMITER);
+    }
+
+    /**
+     * Parsování intervalu.
+     *
+     * @param input    textový vstup
+     * @param unitdate doplňovaný objekt
+     */
+    private static void parseInterval(final String input, final IUnitdate unitdate) {
+        Token token;
+        String[] data = splitInterval(input);
+
+        if (data.length != 2) {
+            throw new IllegalStateException("Neplatný interval: " + input);
+        }
+
+        boolean estimateBoth = input.contains(ESTIMATE_INTERVAL_DELIMITER);
+
+        token = parseToken(data[0], unitdate);
+        unitdate.setValueFrom(FORMATTER_ISO.format(token.dateFrom));
+        unitdate.setValueFromEstimated(token.estimate || estimateBoth);
+        unitdate.formatAppend(DEFAULT_INTERVAL_DELIMITER);
+        token = parseToken(data[1], unitdate);
+        unitdate.setValueTo(FORMATTER_ISO.format(token.dateTo));
+        unitdate.setValueToEstimated(token.estimate || estimateBoth);
+    }
+
+    /**
+     * Rozdělení řetězce s informací o datu na dva řádky
+     * 
+     * @param input
+     * @return
+     */
+    private static String[] splitInterval(final String input) {
+        if (input.contains(ESTIMATE_INTERVAL_DELIMITER)) {
+            return input.split(ESTIMATE_INTERVAL_DELIMITER);
+        }
+        if (!input.contains(YEAR_DATE_IS_NEGATIVE) && !input.contains(YEAR_IS_NEGATIVE)) {
+            return input.split(DEFAULT_INTERVAL_DELIMITER);
+        }
+        
+        String dateRegexp = input.contains(YEAR_DATE_IS_NEGATIVE)? EXP_FORMAT_DATE : EXP_YEAR;
+        
+        List<String> interval = new ArrayList<>();
+        Matcher matcher = Pattern.compile(dateRegexp).matcher(input);
+        while (matcher.find()) {
+            interval.add(matcher.group(1));
+        }
+        return interval.toArray(new String[interval.size()]);
     }
 
     /**
@@ -477,38 +572,6 @@ public class UnitDateConvertor {
     }
 
     /**
-     * Parsování intervalu.
-     *
-     * @param input    textový vstup
-     * @param unitdate doplňovaný objekt
-     */
-    private static void parseInterval(final String input, final IUnitdate unitdate) {
-
-        String[] data;
-        if (input.contains(ESTIMATE_INTERVAL_DELIMITER)) {
-            data = input.split(ESTIMATE_INTERVAL_DELIMITER);
-        } else {
-            data = input.split(DEFAULT_INTERVAL_DELIMITER);
-        }
-
-        Token token;
-
-        if (data.length != 2) {
-            throw new IllegalStateException("Neplatný interval: " + input);
-        }
-
-        boolean estimateBoth = input.contains(ESTIMATE_INTERVAL_DELIMITER);
-
-        token = parseToken(data[0], unitdate);
-        unitdate.setValueFrom(FORMATTER_ISO.format(token.dateFrom));
-        unitdate.setValueFromEstimated(token.estimate || estimateBoth);
-        unitdate.formatAppend(DEFAULT_INTERVAL_DELIMITER);
-        token = parseToken(data[1], unitdate);
-        unitdate.setValueTo(FORMATTER_ISO.format(token.dateTo));
-        unitdate.setValueToEstimated(token.estimate || estimateBoth);
-    }
-
-    /**
      * Parsování tokenu.
      *
      * @param tokenString výraz
@@ -702,44 +765,6 @@ public class UnitDateConvertor {
         } catch (Exception e) {
             return false;
         }
-    }
-
-    /**
-     * Detekce, zda-li se jedná o interval
-     * Interval existuje, pokud je nalezen oddělovač '/' nebo '-', ale vylučujeme situace:
-     * Intervaly:
-     *      1900-1912
-     *      1900/1912
-     *      -7-2
-     *      -7/-2
-     *      -7--2
-     *      [-10--8]
-     * Samostatne:
-     *      12.3.-44 - chyba
-     *      -12.3.44
-     *      -8
-     *      [-8]
-     *
-     * @param input vstupní řetězec
-     * @return true - jedná se o interval
-     */
-    private static boolean isInterval(final String input) {
-        if (input.contains(ESTIMATE_INTERVAL_DELIMITER)) {
-            return true; // 1900/1902
-        }
-        String dateString = input;
-        if (input.startsWith("-")) {
-            dateString = dateString.substring(1); // -8
-        } else if (input.startsWith("[-")) {
-            dateString = dateString.substring(2); // [-8]
-        }
-        if (input.contains(INVALID_INTERVAL_DELIMITER)) {
-            dateString = dateString.replaceAll(INVALID_INTERVAL_DELIMITER, ""); // 12.3.-44
-        }
-        if (dateString.contains(DEFAULT_INTERVAL_DELIMITER)) {
-            return true;
-        }
-        return false;
     }
 
     public static <T extends IUnitdate> T convertIsoToUnitDate(final String input, final T unitDate) {
