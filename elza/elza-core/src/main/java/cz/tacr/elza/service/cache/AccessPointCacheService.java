@@ -343,11 +343,8 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
         List<ApBindingItem> bindingItems = bindingItemRepository.findByBindings(bindings);
         for (ApBindingItem bindingItem : bindingItems) {
-            //Validate.isTrue(bindingItem.getItemId() != null && bindingItem.getPartId() != null,
-            //        "ItemId and PartId should not be NULL together, bindingId: %s", bindingItem.getBindingId());
-            if (bindingItem.getItemId() == null && bindingItem.getPartId() == null) {
-                logger.error("ItemId and PartId should not be NULL together, bindingId: {}", bindingItem.getBindingId());
-            }
+            Validate.isTrue(bindingItem.getItemId() != null && bindingItem.getPartId() != null,
+                    "ItemId and PartId should not be NULL together, bindingId: %s", bindingItem.getBindingId());
             bindingItem = HibernateUtils.unproxy(bindingItem);
             Integer bindingId = bindingItem.getBindingId();
             CachedBinding b = bindingMap.get(bindingId);
