@@ -445,8 +445,6 @@ public class ClientFactoryVO {
             fundVO.setVersions(versionVOs);
 
             fundVO.setValidNamedOutputs(createOutputList(outputRepository.findValidOutputByFund(fund)));
-            // fundVO.setHistoricalNamedOutputs(createOutputs(outputRepository.findHistoricalOutputByFund(fund)));
-            fundVO.setHistoricalNamedOutputs(Collections.emptyList());
         }
 
         return fundVO;

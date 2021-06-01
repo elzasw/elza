@@ -1035,15 +1035,15 @@ public class ArrangementController {
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public OutputItemResult deleteOutputItem(@RequestBody final ArrItemVO outputItemVO,
+    public OutputItemResult deleteOutputItem(@RequestBody final Integer outputItemId,
                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                              @PathVariable(value = "outputVersion") final Integer outputVersion) {
-        Validate.notNull(outputItemVO, "Výstup musí být vyplněn");
+        Validate.notNull(outputItemId, "ID není definováno");
         Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
         Validate.notNull(outputVersion, "Verze definice výstupu musí být vyplněna");
 
         ArrOutputItem outputItemDeleted = outputService
-                .deleteOutputItem(outputItemVO.getDescItemObjectId(), outputVersion, fundVersionId);
+                .deleteOutputItem(outputItemId, outputVersion, fundVersionId);
 
         OutputItemResult outputItemResult = new OutputItemResult();
         outputItemResult.setItem(null);
