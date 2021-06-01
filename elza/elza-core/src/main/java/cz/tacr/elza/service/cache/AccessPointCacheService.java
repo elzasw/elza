@@ -33,6 +33,7 @@ import cz.tacr.elza.search.SearchIndexSupport;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.ScrollableResults;
+import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,7 @@ import java.util.stream.Collectors;
 @Service
 public class AccessPointCacheService implements SearchIndexSupport<ApCachedAccessPoint> {
 
-    private static final Logger logger = LoggerFactory.getLogger(NodeCacheService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AccessPointCacheService.class);
 
     private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock.ReadLock readLock = rwl.readLock();
@@ -342,6 +343,8 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
         List<ApBindingItem> bindingItems = bindingItemRepository.findByBindings(bindings);
         for (ApBindingItem bindingItem : bindingItems) {
+            Validate.isTrue(bindingItem.getItemId() != null || bindingItem.getPartId() != null,
+                    "ItemId and PartId should not be NULL together, bindingId: %s", bindingItem.getBindingId());
             bindingItem = HibernateUtils.unproxy(bindingItem);
             Integer bindingId = bindingItem.getBindingId();
             CachedBinding b = bindingMap.get(bindingId);
@@ -349,7 +352,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             Validate.notNull(b, "Cached binding not found, bindingId: %s", bindingId);
             b.addBindingItem(bindingItem);
         }
-
+        logger.debug("Update AccessPointCache, count: {}, bindingId: {}", bindingItems.size(), bindingItems.isEmpty()? null : bindingItems.get(0).getBindingId());
     }
 
     private CachedBinding createCachedBinding(ApBinding binding, ApBindingState bindingState) {
@@ -359,7 +362,6 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         cachedBinding.setValue(binding.getValue());
         cachedBinding.setBindingState(bindingState);
         return cachedBinding;
-
     }
 
     @Transactional
