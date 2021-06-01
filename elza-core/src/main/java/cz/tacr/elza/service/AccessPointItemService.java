@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -349,6 +350,9 @@ public class AccessPointItemService {
         // Map for position counting
         Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
 
+        // Map for replacing ApItem
+        Map<Integer, ApItem> itemsMap = new HashMap<>();
+
         StaticDataProvider sdp = staticDataService.getData();
         List<ArrData> dataToSave = new ArrayList<>(createItems.size());
         List<ApItem> itemsCreated = new ArrayList<>();
@@ -410,12 +414,15 @@ public class AccessPointItemService {
             itemCreated.setData(data);
             itemsCreated.add(itemCreated);
 
+            itemsMap.put(createItem.getId(), itemCreated);
+
             existsItems.add(itemCreated);
 
-            changeBindingItemsItems(createItem.getId(), itemCreated, bindingItemList);
         }
         dataRepository.saveAll(dataToSave);
         itemRepository.saveAll(itemsCreated);
+        changeBindingItemsItems(itemsMap, bindingItemList);
+        log.debug("Items created, ItemIds: {}", itemsCreated.stream().map(ApItem::getItemId).collect(Collectors.toList()));
         return itemsCreated;
     }
 
@@ -466,19 +473,21 @@ public class AccessPointItemService {
 
     }
 
-    // Vyhleda aktualni BindingItem dle puvodniho item a nahradi vazbou na novy
-    private void changeBindingItemsItems(Integer itemId, ApItem itemCreated, List<ApBindingItem> bindingItemList) {
+    /**
+     * Nahradit všechna pole ApItem tabulky ApBindingItem podle mapy
+     * 
+     * @param itemsMap mapa zmen
+     * @param bindingItemList
+     */
+    private void changeBindingItemsItems(Map<Integer, ApItem> itemsMap, List<ApBindingItem> bindingItemList) {
         if (CollectionUtils.isEmpty(bindingItemList)) {
             return;
         }
         List<ApBindingItem> currentItemBindings = new ArrayList<>();
         for (ApBindingItem bindingItem : bindingItemList) {
-            if (bindingItem.getItem() != null &&
-                    bindingItem.getItem().getItemId() != null &&
-                    bindingItem.getItem().getItemId().equals(itemId)) {
-                //? toto asi nema zadny efekt, pokud to tam jiz je, 
-                //  potom to meni na to same
-                bindingItem.setItem(itemCreated);
+            ApItem item = itemsMap.get(bindingItem.getItemId());
+            if (item != null) {
+                bindingItem.setItem(item);
                 currentItemBindings.add(bindingItem);
             }
         }

@@ -91,10 +91,12 @@ public interface ApAccessPointRepository extends ElzaJpaRepository<ApAccessPoint
             "  WHERE b.create_change_id > :fromId OR b.delete_change_id > :fromId", nativeQuery = true)
     List<String> findAccessPointUuidChangedOrDeleted(@Param("fromId") Integer fromId);
 
-    @Query(value = "SELECT MAX(u.create_change_id) FROM" +
-            "(SELECT p.create_change_id FROM ap_part p WHERE p.access_point_id = ?1" +
+    @Query(value = "SELECT MAX(u.change_id) FROM" +
+            "(SELECT GREATEST(p.create_change_id, p.delete_change_id) AS change_id" +
+            " FROM ap_part p WHERE p.access_point_id = ?1" +
             " UNION " + 
-            " SELECT i.create_change_id FROM ap_item i where i.part_id IN" +
+            " SELECT GREATEST(i.create_change_id, i.delete_change_id) AS change_id" +
+            " FROM ap_item i where i.part_id IN" +
             "   (SELECT p.part_id FROM ap_part p WHERE p.access_point_id = ?1)) u", nativeQuery = true)
     int getLastCreateChange(Integer accessPointId);
 }
