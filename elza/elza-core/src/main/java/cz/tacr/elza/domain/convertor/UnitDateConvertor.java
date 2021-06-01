@@ -57,6 +57,8 @@ public class UnitDateConvertor {
      */
     public static final String EXP_FORMAT_DATE = "(\\d{1,2}.\\d{1,2}.-?\\d{1,4})";
 
+    public static final String EXP_FORMAT_DATE_EXT = "(-?\\d{1,2}.\\d{1,2}.\\d{1,4})";
+
     /**
      * Zkratka datumu
      */
@@ -98,13 +100,9 @@ public class UnitDateConvertor {
     public static final String ESTIMATE_INTERVAL_DELIMITER = "/";
 
     /**
-     * Když rok je negativní
+     * Když druhý rok v intervalu je negativní
      */
-    public static final String YEAR_DATE_IS_NEGATIVE = ".-";
-
-    public static final String YEAR_DATE_IS_NEGATIVE_REGEXP = "\\.-";
-
-    public static final String YEAR_IS_NEGATIVE = "--";
+    public static final String SECOND_YEAR_IS_NEGATIVE = "--";
 
     /**
      * Suffix př. n. l.
@@ -154,7 +152,7 @@ public class UnitDateConvertor {
                 }
 
             } else {
-                Token token = parseToken(normalizedInput, unitdate);
+                Token token = parseToken(moveMinusToYearDate(normalizedInput), unitdate);
                 unitdate.setValueFrom(FORMATTER_ISO.format(token.dateFrom));
                 unitdate.setValueFromEstimated(token.estimate);
                 unitdate.setValueTo(FORMATTER_ISO.format(token.dateTo));
@@ -206,9 +204,10 @@ public class UnitDateConvertor {
      *      -7-2
      *      -7/-2
      *      -7--2
+     *      -1.3.7--14.10.2
      *      [-10--8]
      * Samostatne:
-     *      12.3.-44
+     *      -12.3.44
      *      -18
      *      [-20]
      *
@@ -221,12 +220,9 @@ public class UnitDateConvertor {
         }
         String dateString = input;
         if (input.startsWith("-")) {
-            dateString = dateString.substring(1); // -8
+            dateString = dateString.substring(1); // vyloučit -8
         } else if (input.startsWith("[-")) {
-            dateString = dateString.substring(2); // [-8]
-        }
-        if (input.contains(YEAR_DATE_IS_NEGATIVE)) {
-            dateString = dateString.replaceAll(YEAR_DATE_IS_NEGATIVE_REGEXP, "."); // 12.3.-44
+            dateString = dateString.substring(2); // vyloučit [-8]
         }
 
         return dateString.contains(DEFAULT_INTERVAL_DELIMITER);
@@ -267,12 +263,12 @@ public class UnitDateConvertor {
         if (input.contains(ESTIMATE_INTERVAL_DELIMITER)) {
             return input.split(ESTIMATE_INTERVAL_DELIMITER);
         }
-        if (!input.contains(YEAR_DATE_IS_NEGATIVE) && !input.contains(YEAR_IS_NEGATIVE)) {
+        if (!input.contains(SECOND_YEAR_IS_NEGATIVE)) {
             return input.split(DEFAULT_INTERVAL_DELIMITER);
         }
-        
-        String dateRegexp = input.contains(YEAR_DATE_IS_NEGATIVE)? EXP_FORMAT_DATE : EXP_YEAR;
-        
+
+        String dateRegexp = input.contains(SECOND_YEAR_IS_NEGATIVE)? EXP_FORMAT_DATE_EXT : EXP_YEAR;
+
         List<String> interval = new ArrayList<>();
         Matcher matcher = Pattern.compile(dateRegexp).matcher(input);
         while (matcher.find()) {
@@ -469,12 +465,12 @@ public class UnitDateConvertor {
         if (first) {
             if (unitdate.getValueFrom() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
-                return format.replaceFirst("(" + DATE + ")", "" + FORMATTER_DATE.format(date));
+                return format.replaceFirst("(" + DATE + ")", moveMinusToDayDate(FORMATTER_DATE.format(date)));
             }
         } else {
             if (unitdate.getValueTo() != null) {
                 LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo());
-                return format.replaceFirst("(" + DATE + ")", "" + FORMATTER_DATE.format(date));
+                return format.replaceFirst("(" + DATE + ")", moveMinusToDayDate(FORMATTER_DATE.format(date)));
             }
         }
         return format;
@@ -613,12 +609,11 @@ public class UnitDateConvertor {
             return parseYearMonth(expression, unitdate);
         } else if (tryParseDate(FORMATTER_DATE_TIME, expression) || tryParseDate(FORMATTER_DATE_TIME2, expression) ) {
             return parseDateTime(expression, unitdate);
-        } else if (tryParseDate(FORMATTER_DATE, expression)) {
-            return parseDate(expression, unitdate);
+        } else if (tryParseDate(FORMATTER_DATE, moveMinusToYearDate(expression))) {
+            return parseDate(moveMinusToYearDate(expression), unitdate);
         } else {
             throw new IllegalStateException();
         }
-
     }
 
     /**
@@ -713,6 +708,7 @@ public class UnitDateConvertor {
             throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
                     .set("value", yearString);
         }
+
         return token;
     }
 
@@ -747,6 +743,7 @@ public class UnitDateConvertor {
             throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
                     .set("value", centuryString);
         }
+
         return token;
     }
 
@@ -765,6 +762,40 @@ public class UnitDateConvertor {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    /**
+     * Přesunutí znaménka minus z začátku data na rok 
+     * 
+     * @param s datum, např -1.2.1024
+     * @return String, např 1.2.-1024
+     */
+    private static String moveMinusToYearDate(final String s) {
+        if (!s.startsWith("-")) {
+            return s;
+        }
+        String[] parts = s.split("\\.");
+        if (parts.length != 3) {
+            throw new IllegalStateException("Chyba formátu data: " + s);
+        }
+        return String.format("%s.%s.-%s", parts[0].substring(1), parts[1], parts[2]);  
+    }
+
+    /**
+     * Přesunutí znaménka mínus z roku na začátek data 
+     * 
+     * @param s datum, např 1.2.-1024
+     * @return String, např -1.2.1024
+     */
+    private static String moveMinusToDayDate(final String s) {
+        if (!s.matches(EXP_FORMAT_DATE)) {
+            return s;
+        }
+        String[] parts = s.split("\\.");
+        if (parts.length != 3) {
+            throw new IllegalStateException("Chyba formátu data: " + s);
+        }
+        return String.format("-%s.%s.%s", parts[0], parts[1], parts[2].substring(1));  
     }
 
     public static <T extends IUnitdate> T convertIsoToUnitDate(final String input, final T unitDate) {
@@ -790,6 +821,7 @@ public class UnitDateConvertor {
             unitDate.setValueTo(to);
             unitDate.setValueToEstimated(false);
         }
+
         return unitDate;
     }
 
