@@ -370,11 +370,11 @@ export class WebApiCls {
         );
     }
 
-    deleteOutputItem(versionId, outputVersion, descItem) {
+    deleteOutputItem(versionId, outputVersion, parentVersionId, descItemObjectId) {
         return AjaxUtils.ajaxPost(
             WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputVersion + '/delete',
             null,
-            descItem,
+            descItemObjectId,
         );
     }
 
