@@ -2265,7 +2265,7 @@ export class UrlFactory {
     }
 
     static downloadOutputResults(outputId:number) {
-        return `${serverContextPath}'/api/outputResults/'${outputId}`;
+        return `${serverContextPath}/api/outputResults/${outputId}`;
     }
 
     static exportIssueList(issueListId) {

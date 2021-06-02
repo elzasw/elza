@@ -30,13 +30,13 @@ public class ValidationControllerTest extends AbstractControllerTest {
                 "1968/1970",
                 "21.8.1968 0:00-27.6.1989",
                 "(16.8.1977)",
+                "-1.1.20",
         });
 
         this.invalid(new String[]{
                 "1968-1950",
                 "19680",
                 "21.8.1968-",
-                "-21.8.1968",
                 "..",
                 "..dwklfhewiofle",
         });
