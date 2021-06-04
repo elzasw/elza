@@ -163,7 +163,7 @@ public class AccessPointItemService {
      *            změna
      */
     public DeletedItems deleteItems(List<ApItem> items, ApChange change) {
-        if (items.size() == 0) {
+        if (items.isEmpty()) {
             return new DeletedItems(Collections.emptyList(), Collections.emptyList());
         }
 
@@ -347,6 +347,10 @@ public class AccessPointItemService {
                                     final ApChange change,
                                     final List<ApBindingItem> bindingItemList,
                                     final List<ReferencedEntities> dataRefList) {
+        if (createItems.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         // Map for position counting
         Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
 

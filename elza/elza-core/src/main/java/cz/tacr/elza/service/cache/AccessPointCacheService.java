@@ -33,7 +33,6 @@ import cz.tacr.elza.search.SearchIndexSupport;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.ScrollableResults;
-import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +56,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
@@ -254,13 +252,13 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         CachedPart cachedPart = new CachedPart();
         cachedPart.setPartId(part.getPartId());
         cachedPart.setCreateChangeId(part.getCreateChangeId());
+        cachedPart.setLastChangeId(part.getLastChangeId());
         cachedPart.setDeleteChangeId(part.getDeleteChangeId());
         cachedPart.setErrorDescription(part.getErrorDescription());
         cachedPart.setState(part.getState());
         cachedPart.setPartTypeCode(part.getPartType().getCode());
         cachedPart.setKeyValue(HibernateUtils.unproxy(part.getKeyValue()));
         cachedPart.setParentPartId(part.getParentPartId());
-
         return cachedPart;
     }
 

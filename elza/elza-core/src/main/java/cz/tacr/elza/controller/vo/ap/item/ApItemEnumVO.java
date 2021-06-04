@@ -4,12 +4,10 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataString;
 
 import javax.persistence.EntityManager;
 
-/**
- * @since 18.07.2018
- */
 public class ApItemEnumVO extends ApItemVO {
 
     public ApItemEnumVO() {
@@ -24,5 +22,10 @@ public class ApItemEnumVO extends ApItemVO {
         ArrDataNull data = new ArrDataNull();
         data.setDataType(DataType.ENUM.getEntity());
         return data;
+    }
+
+    @Override
+    public boolean equalsValue(ApItem apItem) {
+        return equalsBase(apItem); 
     }
 }

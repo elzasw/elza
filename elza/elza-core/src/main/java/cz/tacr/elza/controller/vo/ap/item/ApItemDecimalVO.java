@@ -7,15 +7,12 @@ import cz.tacr.elza.domain.ArrDataDecimal;
 
 import javax.persistence.EntityManager;
 import java.math.BigDecimal;
+import java.util.Objects;
 
-
-/**
- * @since 18.07.2018
- */
 public class ApItemDecimalVO extends ApItemVO {
 
     /**
-     * desetinné číslo
+     * Desetinné číslo
      */
     private BigDecimal value;
 
@@ -24,8 +21,12 @@ public class ApItemDecimalVO extends ApItemVO {
 
     public ApItemDecimalVO(final ApItem item) {
         super(item);
+        value = getBigDecimalValue(item);
+    }
+
+    final public BigDecimal getBigDecimalValue(final ApItem item) {
         ArrDataDecimal data = (ArrDataDecimal) item.getData();
-        value = data == null ? null : data.getValue();
+        return data == null ? null : data.getValue();
     }
 
     public BigDecimal getValue() {
@@ -42,5 +43,10 @@ public class ApItemDecimalVO extends ApItemVO {
         data.setValue(value);
         data.setDataType(DataType.DECIMAL.getEntity());
         return data;
+    }
+
+    @Override
+    public boolean equalsValue(ApItem item) {
+        return equalsBase(item) && Objects.equals(value, getBigDecimalValue(item));
     }
 }

@@ -227,7 +227,7 @@ public class ApBindingVO {
         if (CollectionUtils.isNotEmpty(parts)) {
             for (CachedPart part : parts) {
                 if (part.getPartId().equals(partId)) {
-                    return syncChangeId >= part.getCreateChangeId();
+                    return syncChangeId >= part.getLastChangeId();
                 }
             }
         }

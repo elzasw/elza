@@ -116,6 +116,7 @@ public class PartService {
         part.setState(ApStateEnum.OK);
         part.setAccessPoint(accessPoint);
         part.setCreateChange(createChange);
+        part.setLastChange(createChange);
         part.setParentPart(parentPart);
 
         return partRepository.save(part);
@@ -128,6 +129,7 @@ public class PartService {
         part.setState(oldPart.getState());
         part.setAccessPoint(oldPart.getAccessPoint());
         part.setCreateChange(createChange);
+        part.setLastChange(createChange);
         part.setParentPart(oldPart.getParentPart());
         part.setKeyValue(oldPart.getKeyValue());
 
@@ -201,6 +203,7 @@ public class PartService {
             keyValueRepository.delete(keyValue);
         }
         part.setDeleteChange(apChange);
+        part.setLastChange(apChange);
         part.setKeyValue(null);
         partRepository.save(part);
     }

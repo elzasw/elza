@@ -5,15 +5,15 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
 
+import java.math.BigDecimal;
+import java.util.Objects;
+
 import javax.persistence.EntityManager;
 
-/**
- * @since 18.07.2018
- */
 public class ApItemFormattedTextVO extends ApItemVO {
 
     /**
-     * formátovaný text
+     * Formátovaný text
      */
     private String value;
 
@@ -22,8 +22,12 @@ public class ApItemFormattedTextVO extends ApItemVO {
 
     public ApItemFormattedTextVO(final ApItem item) {
         super(item);
+        value = getStringValue(item);
+    }
+
+    final public String getStringValue(final ApItem item) {
         ArrDataText data = (ArrDataText) item.getData();
-        value = data == null ? null : data.getTextValue();
+        return data == null ? null : data.getTextValue();
     }
 
     public String getValue() {
@@ -40,5 +44,10 @@ public class ApItemFormattedTextVO extends ApItemVO {
         data.setTextValue(value);
         data.setDataType(DataType.FORMATTED_TEXT.getEntity());
         return data;
+    }
+
+    @Override
+    public boolean equalsValue(ApItem item) {
+        return equalsBase(item) && Objects.equals(value, getStringValue(item));
     }
 }
