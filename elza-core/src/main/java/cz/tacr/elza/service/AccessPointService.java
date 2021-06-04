@@ -2356,6 +2356,7 @@ public class AccessPointService {
         ApPart partTo = new ApPart();
         partTo.setAccessPoint(accessPoint);
         partTo.setCreateChange(change);
+        partTo.setLastChange(change);
         partTo.setKeyValue(null);
         partTo.setParentPart(parent);
         partTo.setPartType(part.getPartType());
