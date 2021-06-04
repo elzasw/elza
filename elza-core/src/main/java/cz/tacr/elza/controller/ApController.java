@@ -836,13 +836,13 @@ public class ApController {
     public void updatePart(@PathVariable final Integer accessPointId,
                            @PathVariable final Integer partId,
                            @RequestBody final ApPartFormVO apPartFormVO) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
-                .orElseThrow(ap(accessPointId));
+        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId).orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.getPart(partId);
-        accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO);
-        accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        if (accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO)) {
+            accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        }
     }
 
 

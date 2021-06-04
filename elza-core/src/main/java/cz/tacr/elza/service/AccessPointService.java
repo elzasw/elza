@@ -65,6 +65,7 @@ import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.usage.FundVO;
 import cz.tacr.elza.controller.vo.usage.NodeVO;
 import cz.tacr.elza.controller.vo.usage.OccurrenceType;
@@ -940,36 +941,51 @@ public class AccessPointService {
         return apBindingItem.getPart();
     }
 
-    public void updatePart(final ApAccessPoint apAccessPoint,
+    public boolean updatePart(final ApAccessPoint apAccessPoint,
                            final ApPart apPart,
                            final ApPartFormVO apPartFormVO) {
-//        if (areItemsChanged(apPart, apPartFormVO)) {
-            ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
-            List<ApItem> itemList = itemRepository.findValidItemsByPart(apPart);
-            List<ApBindingItem> bindingItemList = bindingItemRepository.findByItems(itemList);
+        List<ApItem> deleteItems = itemRepository.findValidItemsByPart(apPart);
+        List<ApBindingItem> bindingItemList = bindingItemRepository.findByItems(deleteItems);
 
-            /*
-            ApPart newPart = partService.createPart(apPart, change);
-            partService.deletePart(apPart, change);
-            
-            changeBindingItemParts(apPart, newPart, change);
-            changeIndicesToNewPart(apPart, newPart); */
+        Map<Integer, ApItem> itemMap = deleteItems.stream().collect(Collectors.toMap(ApItem::getItemId, i -> i));
 
-            List<ReferencedEntities> dataRefList = new ArrayList<>();
+        List<ApItemVO> itemListVO = apPartFormVO.getItems();
+        List<ApItemVO> createItems = new ArrayList<>();
 
-            apItemService.createItems(apPart, apPartFormVO.getItems(), change, bindingItemList, dataRefList);
-            bindingItemRepository.flush();
+        // určujeme, které záznamy: přidat, odstranit, nebo ponechat
+        for (ApItemVO itemVO : itemListVO) {
+            if (itemVO.getId() == null) {
+                createItems.add(itemVO); // new -> add
+            } else {
+                ApItem item = itemMap.get(itemVO.getId());
+                if (item != null) {
+                    if (itemVO.equalsValue(item)) {
+                        deleteItems.remove(item); // no change -> don't delete
+                    } else {
+                        createItems.add(itemVO); // changed -> add + delete
+                    }
+                }
+            }
+        }
 
-            DeletedItems deletedItems = apItemService.deleteItems(itemList, change);
+        // pokud nedojde ke změně
+        if (createItems.isEmpty() && deleteItems.isEmpty()) {
+            return false;
+        }
 
-            // partService.changeParentPart(apPart, newPart);
-            /*if (apAccessPoint.getPreferredPartId().equals(apPart.getPartId())) {
-                apAccessPoint.setPreferredPart(newPart);
-                saveWithLock(apAccessPoint);
-            }*/
+        ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
 
-            generateSync(apAccessPoint.getAccessPointId(), apPart);
-//        }
+        apPart.setLastChange(change);
+
+        List<ReferencedEntities> dataRefList = new ArrayList<>();
+        apItemService.createItems(apPart, createItems, change, bindingItemList, dataRefList);
+        bindingItemRepository.flush();
+
+        apItemService.deleteItems(deleteItems, change);
+
+        generateSync(apAccessPoint.getAccessPointId(), apPart);
+
+        return true;
     }
 
     public void changeIndicesToNewPart(ApPart apPart, ApPart newPart) {

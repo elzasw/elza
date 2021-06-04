@@ -2,17 +2,20 @@ package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+
+import java.util.Objects;
 
 import javax.persistence.EntityManager;
 
-/**
- * @since 18.07.2018
- */
 public class ApItemAccessPointRefVO extends ApItemVO {
 
     /**
-     * přístupový bod
+     * Přístupový bod
      */
     private ApAccessPointVO accessPoint;
 
@@ -34,8 +37,8 @@ public class ApItemAccessPointRefVO extends ApItemVO {
                 setExternalName(binding.getValue());
                 setExternalUrl(getExternalUrl.getUrl(binding.getExternalSystemId(), binding.getValue()));
             }
+            value = data.getRecordId();
         }
-        value = data == null ? null : data.getRecordId();;
     }
 
     public ApAccessPointVO getAccessPoint() {
@@ -89,5 +92,11 @@ public class ApItemAccessPointRefVO extends ApItemVO {
     @FunctionalInterface
     public interface GetExternalUrl {
         String getUrl(Integer externalSystemId, String value);
+    }
+
+    @Override
+    public boolean equalsValue(ApItem item) {
+        ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
+        return equalsBase(item) && Objects.equals(value, data.getRecordId());
     }
 }
