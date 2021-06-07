@@ -453,6 +453,15 @@ public class UnitDateConvertor {
         return format;
     }
 
+    private static String formatSingleString(final String format, final String value) {
+        LocalDateTime date = LocalDateTime.parse(value);
+        String formatted = FORMATTER_DATE.format(date);
+        if(date.getYear()<0) {
+            formatted = moveMinusToDayDate(formatted);
+        }
+        return format.replaceFirst("(" + DATE + ")", formatted);
+    }
+
     /**
      * Konverze datumu.
      *
@@ -464,13 +473,11 @@ public class UnitDateConvertor {
     private static String convertDate(final String format, final IUnitdate unitdate, final boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
-                return format.replaceFirst("(" + DATE + ")", moveMinusToDayDate(FORMATTER_DATE.format(date)));
+                return formatSingleString(format, unitdate.getValueFrom());
             }
         } else {
             if (unitdate.getValueTo() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo());
-                return format.replaceFirst("(" + DATE + ")", moveMinusToDayDate(FORMATTER_DATE.format(date)));
+                return formatSingleString(format, unitdate.getValueTo());
             }
         }
         return format;
@@ -788,9 +795,6 @@ public class UnitDateConvertor {
      * @return String, např -1.2.1024
      */
     private static String moveMinusToDayDate(final String s) {
-        if (!s.matches(EXP_FORMAT_DATE)) {
-            return s;
-        }
         String[] parts = s.split("\\.");
         if (parts.length != 3) {
             throw new IllegalStateException("Chyba formátu data: " + s);
