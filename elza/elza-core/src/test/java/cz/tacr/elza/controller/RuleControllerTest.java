@@ -3,6 +3,8 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.RulExportFilterVO;
+import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
@@ -196,5 +198,25 @@ public class RuleControllerTest extends AbstractControllerTest {
         extension.setRulPackage(ruleSet.getPackage());
         extension.setRuleSet(ruleSet);
         return arrExtsRepo.save(extension);
+    }
+
+    @Test
+    public void getOutputFiltersTest() {
+        List<RulOutputFilterVO> rulOutputFilterVOS = getOutputFilters();
+
+        Assert.assertEquals(1, rulOutputFilterVOS.size());
+
+        Assert.assertEquals("SRD_TEST_OUTPUT_FILTER", rulOutputFilterVOS.get(0).getCode());
+        Assert.assertEquals("SRD_TEST_OUTPUT_FILTER.yaml", rulOutputFilterVOS.get(0).getFilename());
+    }
+
+    @Test
+    public void getExportFiltersTest() {
+        List<RulExportFilterVO> rulExportFilterVOS = getExportFilters();
+
+        Assert.assertEquals(1, rulExportFilterVOS.size());
+
+        Assert.assertEquals("SRD_TEST_EXPORT_FILTER", rulExportFilterVOS.get(0).getCode());
+        Assert.assertEquals("SRD_TEST_EXPORT_FILTER.yaml", rulExportFilterVOS.get(0).getFilename());
     }
 }
