@@ -143,6 +143,8 @@ public class ItemService {
 
         item.setDeleteChange(change); // save by commit
 
+        em.flush();
+
         T newItem = (T) item.makeCopy();
         newItem.setCreateChange(change);
         newItem.setPosition(position);
