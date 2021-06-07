@@ -34,6 +34,7 @@ import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -137,7 +138,7 @@ public class ItemService {
 
     @SuppressWarnings("unchecked")
     @Transactional(TxType.MANDATORY)
-    public <T extends ArrItem> T copyItem(T item, ArrChange change, int position) {
+    public ArrOutputItem moveItem(ArrOutputItem item, ArrChange change, int position) {
         Validate.isTrue(em.contains(item));
         Validate.notNull(change);
 
@@ -145,7 +146,7 @@ public class ItemService {
 
         em.flush();
 
-        T newItem = (T) item.makeCopy();
+        ArrOutputItem newItem = item.makeCopy();
         newItem.setCreateChange(change);
         newItem.setPosition(position);
         newItem.setDeleteChange(null);
