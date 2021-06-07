@@ -1040,7 +1040,10 @@ var messages = {
     "ap.history.title.state.TO_APPROVE": "ke schválení",
     "ap.history.title.state.APPROVED": "schválená",
     "ap.history.title.state.TO_AMEND": "k doplnění",
-
+    "ap.history.title.state.REV_NEW": "příprava revize",
+    "ap.history.title.state.REV_PREPARED": "revize ke schválení",
+    "ap.history.title.state.REV_AMEND": "revize k doplnění",
+    
     "ap.changeState": "Změna stavu",
     "ap.state.title.noComment": "[bez komentáře]",
     "ap.state.change": "Změna stavu",
