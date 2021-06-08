@@ -27,7 +27,8 @@
                 border-right: $node-panel-border 1px solid;
                 padding: 2px 5px;
                 .comment-text {
-                    white-space: pre;
+                    text-align: justify;
+                    padding: 6px;
                 }
             }
             .state-change {
