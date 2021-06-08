@@ -399,7 +399,13 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                         continue;
                     }
                 }
-                searchQuery.must(processValueCondDef(queryBuilder, String.valueOf(ext.getValue()),
+                String value;
+                if (ext.getValue() != null) {
+                    value = ext.getValue().toString();
+                } else {
+                    value = null;
+                }
+                searchQuery.must(processValueCondDef(queryBuilder, value,
                                                      itemType.getEntity(), itemSpec,
                                                      ext.getPartTypeCode().toLowerCase(), fcf));
             }
@@ -415,7 +421,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                     } else {
                         itemSpec = null;
                     }
-                    searchQuery.must(processValueCondDef(queryBuilder, String.valueOf(rel.getCode()),
+                    searchQuery.must(processValueCondDef(queryBuilder, rel.getCode().toString(),
                                                          itemType.getEntity(), itemSpec, null, fcf));
                 }
             }
