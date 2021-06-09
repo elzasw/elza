@@ -346,19 +346,18 @@ public class RevertingChangesService {
                     : descItemRepository.findIdByFundAndCreatedAfterChange(fund, toChange)
             );
 
+            Query deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", "arr_item", toChange);
+            int count = deleteEntityQuery.executeUpdate();
+
+            logger.debug("Deleted {} item(s), fundId:{}, nodeId:{}", count, fundId, nodeId);
+
             Query updateEntityQuery = createExtendUpdateEntityQuery(fund, node, "deleteChange", "arr_desc_item", "arr_item", toChange);
-            updateEntityQuery.executeUpdate();
+            count = updateEntityQuery.executeUpdate();
+
+            logger.debug("Set deleteChange = NULL {} item(s), fundId:{}, nodeId:{}", count, fundId, nodeId);
 
             TypedQuery<ArrData> arrDataQuery = findChangeArrDataQuery(fund, node, toChange);
             Set<ArrData> arrDataList = new HashSet<>(arrDataQuery.getResultList());
-
-            /*
-            Query deleteEntityQuery = createDeleteForeignEntityQuery(fund, node, "createChange", "arr_desc_item", "item", "arr_data", toChange);
-            deleteEntityQuery.executeUpdate();
-            */
-
-            Query deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", /*"item",*/ "arr_item", toChange);
-            deleteEntityQuery.executeUpdate();
 
             dataRepository.deleteAll(arrDataList);
 
@@ -1001,7 +1000,6 @@ public class RevertingChangesService {
                                                 @Nullable final ArrNode node,
                                                 @NotNull final String changeNameColumn,
                                                 @NotNull final String table,
-                                                /*@NotNull final String joinNameColumn,*/
                                                 @NotNull final String subTable,
                                                 @NotNull final ArrChange change) {
         String nodesHql = createHQLFindChanges(changeNameColumn, table, createHqlSubNodeQuery(fund, node));
