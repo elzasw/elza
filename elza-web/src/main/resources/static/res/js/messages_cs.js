@@ -246,7 +246,7 @@ var messages = {
     "global.validation.datation.invalidInterval": "Neplatný interval ISO datumů: od > do",
     "global.validation.datation.invalidISODateLength": "Neplatná délka ISO datumů",
 
-    "global.websocket.title": "Odpojení od severu",
+    "global.websocket.title": "Odpojení od serveru",
     "global.websocket.message": "Vyčkejte na automatické obnovení spojení",
     "global.websocket.disconnectedOnError.title": "Při komunikaci nastala chyba",
     "global.websocket.disconnectedOnError.action.refresh": "Aktualizovat aplikaci",
