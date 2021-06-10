@@ -448,7 +448,6 @@ public class IssueService {
                 "Stav",
                 "U\u017Eivatel",
                 "Datum",
-                "Popis",
                 "Koment\u00E1\u0159e"
         };
 
@@ -462,7 +461,7 @@ public class IssueService {
             printer.print(issue.getNumber());
             printer.print(issue.getIssueType().getName());
             printer.print(issue.getIssueState().getName());
-
+            printer.print(issue.getUserCreate().getUsername());
             printer.print(CVS_DATE_TIME_FORMATTER.format(issue.getTimeCreated()));
             printer.print(issue.getDescription());
 
