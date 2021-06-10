@@ -10,7 +10,6 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -54,11 +53,11 @@ public class IssueService {
     private final WfIssueRepository issueRepository;
     private final WfIssueStateRepository issueStateRepository;
     private final WfIssueTypeRepository issueTypeRepository;
+    private final PermissionRepository permissionRepository;
     private final IssueDataService issueDataService;
 
     // --- services ---
 
-    private final AccessPointService accessPointService;
     private final ArrangementService arrangementService;
     private final LevelTreeCacheService levelTreeCacheService;
     private final IEventNotificationService eventNotificationService;
@@ -67,7 +66,6 @@ public class IssueService {
 
     @Autowired
     public IssueService(
-            AccessPointService accessPointService,
             ArrangementService arrangementService,
             LevelTreeCacheService levelTreeCacheService,
             IEventNotificationService eventNotificationService,
@@ -76,8 +74,8 @@ public class IssueService {
             WfIssueRepository issueRepository,
             WfIssueStateRepository issueStateRepository,
             WfIssueTypeRepository issueTypeRepository,
+            PermissionRepository permissionRepository,
             IssueDataService issueDataService) {
-        this.accessPointService = accessPointService;
         this.arrangementService = arrangementService;
         this.levelTreeCacheService = levelTreeCacheService;
         this.eventNotificationService = eventNotificationService;
@@ -86,6 +84,7 @@ public class IssueService {
         this.issueRepository = issueRepository;
         this.issueStateRepository = issueStateRepository;
         this.issueTypeRepository = issueTypeRepository;
+        this.permissionRepository = permissionRepository;
         this.issueDataService = issueDataService;
     }
 
@@ -233,6 +232,23 @@ public class IssueService {
         publishEvent(issueList.getIssueListId(), EventType.ISSUE_LIST_UPDATE);
 
         return issueList;
+    }
+
+    /**
+     * Odebrání existujícího protokolu
+     */
+    @Transactional
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_WR})
+    public void deleteIssueList(@NotNull Integer issueListId) {
+
+        WfIssueList issueList = getIssueList(issueListId);        
+        List<WfIssue> issues = findIssueByIssueListId(issueList, null, null);
+
+        Validate.isTrue(issues.isEmpty(), "Cannot be deleted: comments exist, issueListId=" + issueListId);
+
+        List<UsrPermission> permissions = permissionRepository.findByIssueListId(issueListId);
+        permissionRepository.deleteAll(permissions);
+        issueListRepository.delete(issueList);
     }
 
     /**
