@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {WebApi} from 'actions/index.jsx';
 import {AbstractReactComponent, Autocomplete} from 'components/shared';
+import ListItem from 'components/shared/tree-list/list-item/ListItem.jsx';
 
 class FundField extends AbstractReactComponent {
     static propTypes = {
@@ -46,6 +47,10 @@ class FundField extends AbstractReactComponent {
                 items={dataList}
                 onSearchChange={this.handleSearchChange}
                 onChange={onChange}
+                renderItem={(props) => <ListItem 
+                    {...props}
+                    renderName={(item)=> `${item.name} [${item.internalCode}]`} 
+                />}
                 {...otherProps}
                 tags={false}
             />
