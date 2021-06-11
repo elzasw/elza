@@ -90,16 +90,7 @@ export function renderGroupItem(props) {
 }
 
 export function renderFundItem(props) {
-    return <EntityItem 
-        {...props} 
-        getName={item => {
-            let name = item.name;
-            if(item.internalCode != null){
-                name += ` [${item.internalCode}]`
-            }
-            return name;
-        }}
-        />;
+    return <EntityItem {...props} />;
 }
 
 export function renderScopeItem(props) {

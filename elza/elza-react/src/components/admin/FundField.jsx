@@ -49,7 +49,7 @@ class FundField extends AbstractReactComponent {
                 onChange={onChange}
                 renderItem={(props) => <ListItem 
                     {...props}
-                    renderName={(item)=> `${item.name} [${item.internalCode}]`} 
+                    renderName={(item) => item.name + (item.internalCode? " [" + item.internalCode + "]":"")}
                 />}
                 {...otherProps}
                 tags={false}
