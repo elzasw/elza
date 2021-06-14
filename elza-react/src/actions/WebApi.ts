@@ -2085,6 +2085,15 @@ export class WebApiCls {
     }
 
     /**
+     * Odebrání existujícího protokolu
+     * 
+     * @param issueListId identifikátor protokolu
+     */
+    deleteIssueList(issueListId: number) {
+        return AjaxUtils.ajaxDelete(WebApiCls.issueUrl + '/issue_lists/' + issueListId);
+    }
+
+    /**
      * Získání detailu připomínky.
      *
      * @param issueId identifikátor připomínky

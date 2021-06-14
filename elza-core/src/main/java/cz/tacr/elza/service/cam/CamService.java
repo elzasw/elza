@@ -550,7 +550,7 @@ public class CamService {
                 item.setDeleteChange(apChange);
                 itemList.add(item);
     
-                ApItem newItem = apItemService.createItem(item, apChange, apPart);
+                ApItem newItem = apItemService.copyItem(item, apChange, apPart);
                 itemList.add(newItem);
     
                 bindingItem.setItem(newItem);
@@ -568,7 +568,7 @@ public class CamService {
                 item.setDeleteChange(apChange);
                 itemList.add(item);
 
-                ApItem newItem = apItemService.createItem(item, apChange, apPart);
+                ApItem newItem = apItemService.copyItem(item, apChange, apPart);
                 itemList.add(newItem);
             }
             itemRepository.saveAll(itemList);
