@@ -302,7 +302,7 @@ public class DmsService {
 
         fileRepository.delete(dmsFile);
 
-        deleteFilesAfterCommit(Arrays.asList((ArrOutputFile) dmsFile));
+        deleteFilesAfterCommitByIds(Arrays.asList(dmsFile.getFileId()));
         publishFileChange(dmsFile);
     }
 

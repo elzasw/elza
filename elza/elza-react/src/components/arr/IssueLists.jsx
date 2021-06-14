@@ -54,6 +54,12 @@ class IssueLists extends AbstractReactComponent {
         this.setState({id: data.id, initialValues: data});
     };
 
+    delete = () => {
+        WebApi.deleteIssueList(this.state.id);
+        this.props.dispatch(issuesActions.protocolsConfig.fetchIfNeeded(this.props.fundId, true));
+        this.setState({id: null, initialValues: undefined});
+    }
+
     onSave = data => {
         this.props.dispatch(issuesActions.protocolsConfig.invalidate(this.props.fundId));
         // @ts-ignore
@@ -93,6 +99,9 @@ class IssueLists extends AbstractReactComponent {
                             <div>
                                 <Button variant={'action'} onClick={this.create}>
                                     <Icon glyph="fa-plus" />
+                                </Button>
+                                <Button variant={'action'} disabled={id === null} onClick={this.delete}>
+                                    <Icon glyph="fa-trash"/>
                                 </Button>
                             </div>
                         </Col>

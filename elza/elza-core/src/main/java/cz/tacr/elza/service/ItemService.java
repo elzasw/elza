@@ -164,24 +164,24 @@ public class ItemService {
     /**
      * Kontrola typu a specifikace.
      *
-     * @param descItem hodnota atributu
+     * @param arrItem hodnota atributu
      */
     @Transactional(TxType.MANDATORY)
     public void checkValidTypeAndSpec(@NotNull final FundContext fundContext,
-                                      @NotNull final ArrItem descItem) {
+                                      @NotNull final ArrItem arrItem) {
 
-        Integer itemTypeId = descItem.getItemTypeId();
+        Integer itemTypeId = arrItem.getItemTypeId();
         Validate.notNull(itemTypeId, "Invalid description item type: " + itemTypeId);
 
         ItemType itemType = fundContext.getSdp().getItemTypeById(itemTypeId);
         Validate.notNull(itemType, "Invalid description item type: " + itemTypeId);
 
         // extra check for data
-        ArrData data = descItem.getData();
+        ArrData data = arrItem.getData();
         RulItemType rulItemType = itemType.getEntity();
 
         // check if defined specification
-        Integer itemSpecId = descItem.getItemSpecId();
+        Integer itemSpecId = arrItem.getItemSpecId();
         if (itemType.hasSpecifications()) {
 
             if (itemSpecId == null) {
@@ -194,7 +194,7 @@ public class ItemService {
                 throw new SystemException("Specifikace neodpovídá typu hodnoty atributu");
             }
 
-            if (data != null && !descItem.isUndefined()) {
+            if (data != null && !arrItem.isUndefined()) {
                 // check record_ref
                 if (itemType.getDataType().equals(DataType.RECORD_REF)) {
                     ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
@@ -207,7 +207,7 @@ public class ItemService {
                 throw new BusinessException("Pro typ atributu nesmí být specifikace vyplněná",
                         ArrangementCode.ITEM_SPEC_FOUND).level(Level.WARNING);
             } else {
-                if (data != null && !descItem.isUndefined()) {
+                if (data != null && !arrItem.isUndefined()) {
                     if (itemType.getDataType().equals(DataType.RECORD_REF)) {
                         ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
                         checkRecordRef(fundContext, recordRef, rulItemType, null);
@@ -216,10 +216,21 @@ public class ItemService {
             }
         }
 
-        if (itemType.getDataType() == DataType.STRING && itemType.getEntity().getStringLengthLimit() != null) {
+        // item length control
+        checkItemLengthLimit(rulItemType, data);
+    }
+
+    /**
+     * Kontrola délky řetězce
+     * 
+     * @param rulItemType 
+     * @param data
+     */
+    public void checkItemLengthLimit(RulItemType rulItemType, ArrData data) {
+        if (DataType.fromId(rulItemType.getDataTypeId()) == DataType.STRING && rulItemType.getStringLengthLimit() != null) {
             ArrDataString dataString = (ArrDataString) data;
-            if(dataString.getStringValue().length() > itemType.getEntity().getStringLengthLimit()) {
-                throw new BusinessException("Délka řetězce je delší než maximální povolená : " +itemType.getEntity().getStringLengthLimit(), BaseCode.INVALID_LENGTH);
+            if(dataString.getStringValue().length() > rulItemType.getStringLengthLimit()) {
+                throw new BusinessException("Délka řetězce je delší než maximální povolená : " + rulItemType.getStringLengthLimit(), BaseCode.INVALID_LENGTH);
             }
         }
     }

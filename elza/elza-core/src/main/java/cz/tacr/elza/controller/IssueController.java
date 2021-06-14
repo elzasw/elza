@@ -40,6 +40,7 @@ import cz.tacr.elza.domain.WfIssueList;
 import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.IssueDataService;
 import cz.tacr.elza.service.IssueService;
@@ -219,6 +220,20 @@ public class IssueController {
     }
 
     /**
+     * Odebrání existujícího protokolu
+     * 
+     * @param issueListId identifikátor protokolu
+     */
+    @RequestMapping(value = "/issue_lists/{issueListId}", method = RequestMethod.DELETE)
+    @Transactional
+    public void deleteIssueList(@PathVariable Integer issueListId) {
+
+        issueService.deleteIssueList(issueListId);
+
+        logger.debug("ISSUE_LIST deleted, issueListId:{}", issueListId);
+    }
+
+    /**
      * Export protokolu ve formátu CSV.
      *
      * @param issueListId identifikátor protokolu
@@ -229,8 +244,6 @@ public class IssueController {
 
         // kontrola existence a opravneni
         WfIssueList issueList = issueService.getIssueList(issueListId);
-
-        List<WfIssue> issues = issueService.findIssueByIssueListId(issueList, null, null);
 
         MediaType mediaType = new MediaType("text", "csv", CsvUtils.CSV_EXCEL_CHARSET);
         response.setHeader(HttpHeaders.CONTENT_TYPE, mediaType.toString());
