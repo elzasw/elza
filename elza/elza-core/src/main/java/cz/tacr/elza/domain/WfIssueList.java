@@ -37,6 +37,9 @@ public class WfIssueList implements IArrFund, IWfIssueList {
     @JoinColumn(name = "fund_id", nullable = false)
     private ArrFund fund;
 
+    @Column(name = "fund_id", updatable = false, insertable = false)
+    private Integer fundId;
+
     /**
      * Stav protokolu (otevřený/uzavřený)
      */
@@ -64,8 +67,13 @@ public class WfIssueList implements IArrFund, IWfIssueList {
         return fund;
     }
 
+    public Integer getFundId() {
+        return fundId;
+    }
+
     public void setFund(ArrFund fund) {
         this.fund = fund;
+        this.fundId = fund == null ? null : fund.getFundId();
     }
 
     public Boolean getOpen() {
