@@ -615,20 +615,20 @@
         <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_SIG_ORIG">
-        <name>signatura přidělená původcem</name>
+        <name>původní signatura</name>
         <description>signatura přidělená původcem</description>
         <shortcut>sign. pův.</shortcut>
         <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_SIG">
-        <name>signatura přidělená při zpracování archiválie</name>
+        <name>signatura</name>
         <description>signatura přidělená při zpracování archiválie</description>
         <shortcut>sign.</shortcut>
         <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_STORAGE_ID">
         <name>ukládací znak</name>
-        <description>Ukládací znak</description>
+        <description>ukládací znak</description>
         <shortcut>ukl. znak</shortcut>
         <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
@@ -653,11 +653,11 @@
     <item-spec code="ZP2015_OTHERID_ADDID">
         <name>přírůstkové číslo</name>
         <description>přírůstkové číslo</description>
-        <shortcut>č. př.</shortcut>
+        <shortcut>přír. č.</shortcut>
         <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_OLDSIG">
-        <name>signatura přidělená při předchozím zpracování</name>
+        <name>neplatná signatura</name>
         <description>signatura přidělená při předchozím zpracování</description>
         <shortcut>nepl. sign.</shortcut>
         <item-type-assign code="ZP2015_OTHER_ID"/>
@@ -677,7 +677,7 @@
     <item-spec code="ZP2015_OTHERID_INVALID_UNITID">
         <name>neplatné ukládací číslo</name>
         <description>neplatné ukládací číslo</description>
-        <shortcut>neplatné ukládací číslo</shortcut>
+        <shortcut>nepl. ukl. č.</shortcut>
         <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
     <item-spec code="ZP2015_OTHERID_INVALID_REFNO">
@@ -731,7 +731,7 @@
     <item-spec code="ZP2015_OTHERID_MATRIXID">
         <name>matriční číslo</name>
         <description>matriční číslo</description>
-        <shortcut>matriční číslo</shortcut>
+        <shortcut>matr. č.</shortcut>
         <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
     <item-spec code="ZP2015_LANGUAGE_1">
