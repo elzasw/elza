@@ -411,10 +411,6 @@
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </extension-rule>
-    <extension-rule filename="available_items/REGION/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/REGION/PT_BODY" compatibility-rul-package="31">
-        <rule-type>ATTRIBUTE_TYPES</rule-type>
-        <priority>100</priority>
-    </extension-rule>
     <extension-rule filename="available_items/TERM/PT_BODY.drl" arrangement-extension="AVAILABLE_ITEMS/TERM/PT_BODY" compatibility-rul-package="31">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>

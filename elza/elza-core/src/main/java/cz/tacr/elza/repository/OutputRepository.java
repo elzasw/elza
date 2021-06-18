@@ -32,15 +32,6 @@ public interface OutputRepository extends ElzaJpaRepository<ArrOutput, Integer>,
     @Query("SELECT o FROM arr_output o WHERE o.fund=?1 AND o.deleteChange IS NULL")
     List<ArrOutput> findValidOutputByFund(ArrFund fund);
 
-    /**
-     * Najde platné AP (není deleted), pro které existuje alespoň jedna uzavřená verze
-     *
-     * @param fund archivní fond
-     * @return seznam platných historických AP pro fond
-     */
-    // @Query("SELECT o FROM arr_output o LEFT JOIN FETCH o.deleteChange lc WHERE o.fund=?1 AND o.deleteChange IS NULL AND o.lockChange IS NOT NULL")
-    // List<ArrOutput> findHistoricalOutputByFund(ArrFund fund);
-
     @Query("SELECT o FROM arr_output o WHERE o.outputId=?1")
     ArrOutput findByOutputId(Integer outputId);
 

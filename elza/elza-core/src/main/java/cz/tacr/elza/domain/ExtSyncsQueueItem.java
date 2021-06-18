@@ -76,6 +76,19 @@ public class ExtSyncsQueueItem {
         return accessPointId;
     }
 
+    public ApBinding getBinding() {
+        return binding;
+    }
+
+    public void setBinding(ApBinding binding) {
+        this.binding = binding;
+        this.bindingId = binding != null ? binding.getBindingId() : null;
+    }
+
+    public Integer getBindingId() {
+        return bindingId;
+    }
+    
     public ApExternalSystem getExternalSystem() {
         return externalSystem;
     }
@@ -131,7 +144,9 @@ public class ExtSyncsQueueItem {
 
     public enum ExtAsyncQueueState {
 
-        NEW("Nový"),
+        EXPORT_NEW("Nový v ELZA"),
+
+        IMPORT_NEW("Nový v CAM"),
 
         UPDATE("Aktualizace"),
 

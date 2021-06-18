@@ -1,39 +1,36 @@
-import React, {FC} from "react";
-import {Action, Dispatch} from "redux";
-import {connect} from "react-redux";
-import "./ValidationResultIcon.scss"
-import {modalDialogHide, modalDialogShow} from "../actions/global/modalDialog";
-import {Icon} from "./index";
-import ValidationResultModal from "./ValidationResultModal";
+import React, { FC } from "react";
+import { useDispatch } from "react-redux";
+import { modalDialogHide, modalDialogShow } from "../actions/global/modalDialog";
 import i18n from "./i18n";
+import { Icon } from "./index";
+import "./ValidationResultIcon.scss";
+import ValidationResultModal from "./ValidationResultModal";
+import { SmallButton } from "./shared/button/small-button";
 
-type OwnProps = {
+type Props = {
     message?: string[];
 };
 
-type Props = ReturnType<typeof mapDispatchToProps> & OwnProps;
+const ValidationResultIcon: FC<Props> = ({
+    message,
+}) => {
+    const dispatch = useDispatch();
 
-const ValidationResultIcon: FC<Props> = props => {
-    if (props.message) {
-        const data = props.message;
-
-        return <Icon className="validation-icon" glyph="fa-exclamation-triangle" onClick={() => props.onClick(data)}/>
-    }
-    return null;
-};
-
-const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
-    onClick: (message: string[]) => {
+    const openValidationDialog = (message: string[]) => {
         return dispatch(modalDialogShow(
             this,
-            i18n('ap.validation.title'),
+            i18n('validationResult.title'),
             <ValidationResultModal onClose={() => {
                 dispatch(modalDialogHide())
             }} message={message}/>));
     }
-});
 
-export default connect(
-    null,
-    mapDispatchToProps
-)(ValidationResultIcon);
+    if (message) {
+        return <SmallButton title={i18n("validationResult.show")} onClick={() => openValidationDialog(message)} >
+            <Icon className="validation-icon" glyph="fa-exclamation-triangle" />
+        </SmallButton>
+    }
+    return null;
+};
+
+export default ValidationResultIcon;

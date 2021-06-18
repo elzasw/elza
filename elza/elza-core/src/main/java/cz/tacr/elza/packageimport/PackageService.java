@@ -33,6 +33,14 @@ import javax.xml.bind.Marshaller;
 
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.RulExportFilter;
+import cz.tacr.elza.domain.RulOutputFilter;
+import cz.tacr.elza.packageimport.xml.ExportFilterXml;
+import cz.tacr.elza.packageimport.xml.ExportFiltersXml;
+import cz.tacr.elza.packageimport.xml.OutputFilterXml;
+import cz.tacr.elza.packageimport.xml.OutputFiltersXml;
+import cz.tacr.elza.repository.ExportFilterRepository;
+import cz.tacr.elza.repository.OutputFilterRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
@@ -217,6 +225,16 @@ public class PackageService {
     public static final String PACKAGE_ACTIONS_XML = "rul_package_actions.xml";
 
     /**
+     * výstupní filtry v zipu
+     */
+    public static final String PACKAGE_OUTPUT_FILTERS_XML = "rul_package_output_filters.xml";
+
+    /**
+     * exportní filtry v zipu
+     */
+    public static final String PACKAGE_EXPORT_FILTERS_XML = "rul_package_export_filters.xml";
+
+    /**
      * základní pravidla v zipu
      */
     public static final String ARRANGEMENT_RULE_XML = "rul_arrangement_rule.xml";
@@ -283,6 +301,16 @@ public class PackageService {
      * adresář pro hromadné akce v zip
      */
     static public final String ZIP_DIR_ACTIONS = "bulk_actions";
+
+    /**
+     * adresář pro výstupní filtry v zip
+     */
+    static public final String ZIP_DIR_OUTPUT_FILTERS = "output_filters";
+
+    /**
+     * adresář pro exportní filtry v zip
+     */
+    static public final String ZIP_DIR_EXPORT_FILTERS = "export_filters";
 
     /**
      * adresář pro pravidla v zip
@@ -434,6 +462,12 @@ public class PackageService {
 
     @Autowired
     private ScopeRepository scopeRepository;
+
+    @Autowired
+    private OutputFilterRepository outputFilterRepository;
+
+    @Autowired
+    private ExportFilterRepository exportFilterRepository;
 
     private Set<Integer> accessPoints;
 
@@ -596,6 +630,8 @@ public class PackageService {
                     this);
             steu.run(pkgCtx);
             processPackageActions(ruc);
+            processPackageOutputFilters(ruc);
+            processPackageExportFilters(ruc);
         }
         // import item types
         processItemTypes(pkgCtx);
@@ -1707,6 +1743,108 @@ public class PackageService {
         }
     }
 
+    private void processPackageOutputFilters(RuleUpdateContext ruc) {
+        logger.info("Processing package output filters, code: {}", ruc.getRulSetCode());
+
+        RulPackage rulPackage = ruc.getRulPackage();
+
+        OutputFiltersXml outputFiltersXml = ruc
+                .convertXmlStreamToObject(OutputFiltersXml.class, PACKAGE_OUTPUT_FILTERS_XML);
+
+        List<RulOutputFilter> dbOutputFilters = outputFilterRepository.findByRulPackage(rulPackage);
+        List<RulOutputFilter> rulPackageOutputFiltersNew = new ArrayList<>();
+
+        if (outputFiltersXml != null && !CollectionUtils.isEmpty(outputFiltersXml.getPackageOutputFilters())) {
+            // procházím všechny definice výstupních filtrů
+            for (OutputFilterXml packageOutputFilter : outputFiltersXml.getPackageOutputFilters()) {
+
+                //vyhledám výstupní filtr podle záznamů v DB, pokud existuje
+                Optional<RulOutputFilter> findItems = dbOutputFilters.stream().filter(
+                        (r) -> r.getCode().equals(packageOutputFilter
+                                .getCode())).findFirst();
+                // jinak založím prázdné seznamy
+                RulOutputFilter dbOutputFilter = findItems.orElseGet(
+                        RulOutputFilter::new
+                );
+
+                // vytvořím/úpravím a uložím
+                convertRulPackageOutputFilter(rulPackage, packageOutputFilter, dbOutputFilter, ruc.getRulSet());
+
+                rulPackageOutputFiltersNew.add(dbOutputFilter);
+            }
+        }
+
+        // uložení nově vytvořených výstupních filtrů
+        rulPackageOutputFiltersNew = outputFilterRepository.saveAll(rulPackageOutputFiltersNew);
+
+        // smazání nedefinovaných výstupních filtrů
+        List<RulOutputFilter> rulPackageOutputFiltersDelete = new ArrayList<>(dbOutputFilters);
+        rulPackageOutputFiltersDelete.removeAll(rulPackageOutputFiltersNew);
+        outputFilterRepository.deleteAll(rulPackageOutputFiltersDelete);
+
+        // odstranění/vytvoření definičních souborů pro výstupní filtry
+        try {
+            for (RulOutputFilter outputFilter : rulPackageOutputFiltersNew) {
+                ruc.getPackageUpdateContext().saveFile(ruc.getOutputFiltersDir(),
+                        ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_OUTPUT_FILTERS, outputFilter.getFilename());
+            }
+
+        } catch (IOException e) {
+            throw new SystemException(e);
+        }
+    }
+
+    private void processPackageExportFilters(RuleUpdateContext ruc) {
+        logger.info("Processing package export filters, code: {}", ruc.getRulSetCode());
+
+        RulPackage rulPackage = ruc.getRulPackage();
+
+        ExportFiltersXml exportFiltersXml = ruc
+                .convertXmlStreamToObject(ExportFiltersXml.class, PACKAGE_EXPORT_FILTERS_XML);
+
+        List<RulExportFilter> dbExportFilters = exportFilterRepository.findByRulPackage(rulPackage);
+        List<RulExportFilter> rulPackageExportFiltersNew = new ArrayList<>();
+
+        if (exportFiltersXml != null && !CollectionUtils.isEmpty(exportFiltersXml.getPackageExportFilters())) {
+            // procházím všechny definice exportních filtrů
+            for (ExportFilterXml packageExportFilter : exportFiltersXml.getPackageExportFilters()) {
+
+                //vyhledám exportní filtr podle záznamů v DB, pokud existuje
+                Optional<RulExportFilter> findItems = dbExportFilters.stream().filter(
+                        (r) -> r.getCode().equals(packageExportFilter
+                                .getCode())).findFirst();
+                // jinak založím prázdné seznamy
+                RulExportFilter dbExportFilter = findItems.orElseGet(
+                        RulExportFilter::new
+                );
+
+                // vytvořím/úpravím a uložím
+                convertRulPackageExportFilter(rulPackage, packageExportFilter, dbExportFilter, ruc.getRulSet());
+
+                rulPackageExportFiltersNew.add(dbExportFilter);
+            }
+        }
+
+        // uložení nově vytvořených exportních filtrů
+        rulPackageExportFiltersNew = exportFilterRepository.saveAll(rulPackageExportFiltersNew);
+
+        // smazání nedefinovaných exportních filtrů
+        List<RulExportFilter> rulPackageExportFiltersDelete = new ArrayList<>(dbExportFilters);
+        rulPackageExportFiltersDelete.removeAll(rulPackageExportFiltersNew);
+        exportFilterRepository.deleteAll(rulPackageExportFiltersDelete);
+
+        // odstranění/vytvoření definičních souborů pro exportní filtry
+        try {
+            for (RulExportFilter exportFilter : rulPackageExportFiltersNew) {
+                ruc.getPackageUpdateContext().saveFile(ruc.getExportFiltersDir(),
+                        ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_EXPORT_FILTERS, exportFilter.getFilename());
+            }
+
+        } catch (IOException e) {
+            throw new SystemException(e);
+        }
+    }
+
     /**
      * Smazání (reálně přesun) souboru.
      *
@@ -1739,6 +1877,44 @@ public class PackageService {
         rulPackageAction.setPackage(rulPackage);
         rulPackageAction.setFilename(packageAction.getFilename());
         rulPackageAction.setRuleSet(rulRuleSet);
+    }
+
+    /**
+     * Převod VO na DAO výstupního filtru.
+     *
+     * @param rulPackage       balíček
+     * @param packageOutputFilter    VO výstupního filtru
+     * @param rulOutputFilter  DAO výstupního filtru
+     * @param rulRuleSet       pravidla
+     */
+    private void convertRulPackageOutputFilter(final RulPackage rulPackage,
+                                         final OutputFilterXml packageOutputFilter,
+                                         final RulOutputFilter rulOutputFilter,
+                                         final RulRuleSet rulRuleSet) {
+        rulOutputFilter.setRulPackage(rulPackage);
+        rulOutputFilter.setCode(packageOutputFilter.getCode());
+        rulOutputFilter.setName(packageOutputFilter.getName());
+        rulOutputFilter.setFilename(packageOutputFilter.getFilename());
+        rulOutputFilter.setRuleSet(rulRuleSet);
+    }
+
+    /**
+     * Převod VO na DAO exportního filtru.
+     *
+     * @param rulPackage       balíček
+     * @param packageExportFilter    VO exportního filtru
+     * @param rulExportFilter  DAO exportního filtru
+     * @param rulRuleSet       pravidla
+     */
+    private void convertRulPackageExportFilter(final RulPackage rulPackage,
+                                               final ExportFilterXml packageExportFilter,
+                                               final RulExportFilter rulExportFilter,
+                                               final RulRuleSet rulRuleSet) {
+        rulExportFilter.setRulPackage(rulPackage);
+        rulExportFilter.setCode(packageExportFilter.getCode());
+        rulExportFilter.setName(packageExportFilter.getName());
+        rulExportFilter.setFilename(packageExportFilter.getFilename());
+        rulExportFilter.setRuleSet(rulRuleSet);
     }
 
     /**
@@ -2096,6 +2272,8 @@ public class PackageService {
         List<RulAction> actions = packageActionsRepository.findByRulPackage(rulPackage);
         List<RulOutputType> outputTypes = outputTypeRepository.findByRulPackage(rulPackage);
         List<RulItemType> rulDescItemTypes = itemTypeRepository.findByRulPackage(rulPackage);
+        List<RulOutputFilter> outputFilters = outputFilterRepository.findByRulPackage(rulPackage);
+        List<RulExportFilter> exportFilters = exportFilterRepository.findByRulPackage(rulPackage);
 
         packageActionsRepository.findByRulPackage(rulPackage).forEach(this::deleteActionLink);
 
@@ -2111,6 +2289,8 @@ public class PackageService {
         structureTypeRepository.deleteByRulPackage(rulPackage);
         partTypeRepository.deleteByRulPackage(rulPackage);
         packageActionsRepository.deleteByRulPackage(rulPackage);
+        outputFilterRepository.deleteByRulPackage(rulPackage);
+        exportFilterRepository.deleteByRulPackage(rulPackage);
         arrangementRuleRepository.deleteByRulPackage(rulPackage);
         policyTypeRepository.deleteByRulPackage(rulPackage);
         templateRepository.deleteByRulPackage(rulPackage);
@@ -2132,6 +2312,8 @@ public class PackageService {
                     .toFile();
             File dirActions = resourcePathResolver.getFunctionsDir(rulPackage.getPackageId(), ruleSet.getRuleSetId()).toFile();
             File dirRules = resourcePathResolver.getDroolsDir(rulPackage.getPackageId(), ruleSet.getRuleSetId()).toFile();
+            File dirOutputFilters = resourcePathResolver.getOutputFiltersDir(rulPackage.getPackageId(), ruleSet.getRuleSetId()).toFile();
+            File dirExportFilters = resourcePathResolver.getExportFiltersDir(rulPackage.getPackageId(), ruleSet.getRuleSetId()).toFile();
 
             try {
 
@@ -2183,6 +2365,14 @@ public class PackageService {
                     if (component != null && component.getFilename() != null) {
                         deleteFile(dirRules, component.getFilename());
                     }
+                }
+
+                for (RulOutputFilter rulOutputFilter : outputFilters) {
+                    deleteFile(dirOutputFilters, rulOutputFilter.getFilename());
+                }
+
+                for (RulExportFilter rulExportFilter : exportFilters) {
+                    deleteFile(dirExportFilters, rulExportFilter.getFilename());
                 }
 
                 entityManager.flush();
@@ -2257,6 +2447,8 @@ public class PackageService {
             exportItemSpecs(rulPackage, zos);
             exportItemTypes(rulPackage, zos);
             exportPackageActions(rulPackage, zos);
+            exportPackageOutputFilters(rulPackage, zos);
+            exportPackageExportFilters(rulPackage, zos);
             exportArrangementRules(rulPackage, zos);
             exportArrangementExtensions(rulPackage, zos);
             exportExtensionRules(rulPackage, zos);
@@ -2723,6 +2915,76 @@ public class PackageService {
     }
 
     /**
+     * Exportování výstupních filtrů.
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportPackageOutputFilters(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        List<RulOutputFilter> rulOutputFilters = outputFilterRepository.findByRulPackage(rulPackage);
+        if (rulOutputFilters.size() == 0) {
+            return;
+        }
+
+        Map<RulRuleSet, List<RulOutputFilter>> ruleSetOutputFilterMap = rulOutputFilters.stream()
+                .collect(Collectors.groupingBy(RulOutputFilter::getRuleSet));
+
+        for (Map.Entry<RulRuleSet, List<RulOutputFilter>> entry : ruleSetOutputFilterMap.entrySet()) {
+            OutputFiltersXml packageOutputFilters = new OutputFiltersXml();
+            List<RulOutputFilter> outputFilterList = entry.getValue();
+            List<OutputFilterXml> packageOutputFilterList = new ArrayList<>(outputFilterList.size());
+            packageOutputFilters.setPackageOutputFilters(packageOutputFilterList);
+            String ruleSetCode = entry.getKey().getCode();
+            for (RulOutputFilter rulPackageOutputFilter : outputFilterList) {
+                OutputFilterXml packageOutputFilter = new OutputFilterXml();
+                convertPackageOutputFilter(rulPackageOutputFilter, packageOutputFilter);
+                packageOutputFilterList.add(packageOutputFilter);
+
+                File outputFilterFile = resourcePathResolver.getOutputFilterFile(rulPackageOutputFilter).toFile();
+                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_OUTPUT_FILTERS + "/" + rulPackageOutputFilter.getFilename(),
+                        outputFilterFile, zos);
+            }
+
+            addObjectToZipFile(packageOutputFilters, zos, ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + PACKAGE_OUTPUT_FILTERS_XML);
+        }
+    }
+
+    /**
+     * Exportování exportních filtrů.
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportPackageExportFilters(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        List<RulExportFilter> rulExportFilters = exportFilterRepository.findByRulPackage(rulPackage);
+        if (rulExportFilters.size() == 0) {
+            return;
+        }
+
+        Map<RulRuleSet, List<RulExportFilter>> ruleSetExportFilterMap = rulExportFilters.stream()
+                .collect(Collectors.groupingBy(RulExportFilter::getRuleSet));
+
+        for (Map.Entry<RulRuleSet, List<RulExportFilter>> entry : ruleSetExportFilterMap.entrySet()) {
+            ExportFiltersXml packageExportFilters = new ExportFiltersXml();
+            List<RulExportFilter> exportFilterList = entry.getValue();
+            List<ExportFilterXml> packageExportFilterList = new ArrayList<>(exportFilterList.size());
+            packageExportFilters.setPackageExportFilters(packageExportFilterList);
+            String ruleSetCode = entry.getKey().getCode();
+            for (RulExportFilter rulPackageExportFilter : exportFilterList) {
+                ExportFilterXml packageExportFilter = new ExportFilterXml();
+                convertPackageExportFilter(rulPackageExportFilter, packageExportFilter);
+                packageExportFilterList.add(packageExportFilter);
+
+                File exportFilterFile = resourcePathResolver.getExportFilterFile(rulPackageExportFilter).toFile();
+                addToZipFile(ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + ZIP_DIR_EXPORT_FILTERS + "/" + rulPackageExportFilter.getFilename(),
+                        exportFilterFile, zos);
+            }
+
+            addObjectToZipFile(packageExportFilters, zos, ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + PACKAGE_EXPORT_FILTERS_XML);
+        }
+    }
+
+    /**
      * Exportování typů atributů.
      *
      * @param rulPackage balíček
@@ -2933,6 +3195,30 @@ public class PackageService {
             actionRecommended.setOutputType(rulActionRecommended.getOutputType().getCode());
             actionRecommendedList.add(actionRecommended);
         }
+    }
+
+    /**
+     * Převod DAO na VO výstupního filtru.
+     *
+     * @param rulPackageOutputFilter DAO výstupního filtru
+     * @param packageOutputFilter    VO výstupního filtru
+     */
+    private void convertPackageOutputFilter(final RulOutputFilter rulPackageOutputFilter, final OutputFilterXml packageOutputFilter) {
+        packageOutputFilter.setCode(rulPackageOutputFilter.getCode());
+        packageOutputFilter.setName(rulPackageOutputFilter.getName());
+        packageOutputFilter.setFilename(rulPackageOutputFilter.getFilename());
+    }
+
+    /**
+     * Převod DAO na VO exportního filtru.
+     *
+     * @param rulPackageExportFilter DAO exportního filtru
+     * @param packageExportFilter    VO exportního filtru
+     */
+    private void convertPackageExportFilter(final RulExportFilter rulPackageExportFilter, final ExportFilterXml packageExportFilter) {
+        packageExportFilter.setCode(rulPackageExportFilter.getCode());
+        packageExportFilter.setName(rulPackageExportFilter.getName());
+        packageExportFilter.setFilename(rulPackageExportFilter.getFilename());
     }
 
     /**

@@ -219,7 +219,7 @@ abstract public class CamXmlBuilder {
      * @return
      */
     private PartXml createPart(ApPart apPart, List<ApItem> partItems, String externalSystemTypeCode) {
-        Validate.isTrue(partItems.size() > 0, "Empty part list, entityId: {}", apPart.getAccessPointId());
+        Validate.isTrue(partItems.size() > 0, "Empty part list, entityId: ", apPart.getAccessPointId());
 
         String uuid = getUuidForPart(apPart);
 

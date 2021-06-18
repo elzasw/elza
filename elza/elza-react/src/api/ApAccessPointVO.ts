@@ -56,7 +56,7 @@ export interface ApAccessPointVO {
     /**
      * Externí identifikátory rejstříkového hesla.
      */
-    externalIds: ApBindingVO[];
+    bindings: ApBindingVO[];
 
     /**
      * Kód pravidla pro AP.

@@ -5,6 +5,8 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
 
+import java.util.Objects;
+
 import javax.persistence.EntityManager;
 
 public class ApItemBitVO extends ApItemVO {
@@ -16,8 +18,12 @@ public class ApItemBitVO extends ApItemVO {
 
     public ApItemBitVO(final ApItem item) {
         super(item);
+        value = getBitValue(item);
+    }
+
+    final public Boolean getBitValue(final ApItem item) {
         ArrDataBit data = (ArrDataBit) item.getData();
-        value = data == null ? null : data.isBitValue();
+        return data == null ? null : data.isBitValue();
     }
 
     public Boolean getValue() {
@@ -34,5 +40,10 @@ public class ApItemBitVO extends ApItemVO {
         data.setBitValue(value);
         data.setDataType(DataType.BIT.getEntity());
         return data;
+    }
+
+    @Override
+    public boolean equalsValue(ApItem item) {
+        return equalsBase(item) && Objects.equals(value, getBitValue(item));
     }
 }

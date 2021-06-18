@@ -27,6 +27,7 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
         ApPart entity = new ApPart();
         entity.setPartType(type);
         entity.setCreateChange(context.getCreateChange());
+        entity.setLastChange(context.getCreateChange());
         entity.setState(ApStateEnum.OK);
         return entity;
     }

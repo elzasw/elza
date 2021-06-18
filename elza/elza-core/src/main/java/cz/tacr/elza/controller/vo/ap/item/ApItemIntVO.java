@@ -5,15 +5,14 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 
+import java.util.Objects;
+
 import javax.persistence.EntityManager;
 
-/**
- * @since 18.07.2018
- */
 public class ApItemIntVO extends ApItemVO {
 
     /**
-     * celé číslo
+     * Celé číslo
      */
     private Integer value;
 
@@ -22,8 +21,12 @@ public class ApItemIntVO extends ApItemVO {
 
     public ApItemIntVO(final ApItem item) {
         super(item);
+        value = getIntegerValue(item);
+    }
+
+    final public Integer getIntegerValue(final ApItem item) {
         ArrDataInteger data = (ArrDataInteger) item.getData();
-        value = data == null ? null : data.getIntegerValue();
+        return data == null ? null : data.getIntegerValue();
     }
 
     public Integer getValue() {
@@ -40,5 +43,10 @@ public class ApItemIntVO extends ApItemVO {
         data.setIntegerValue(value);
         data.setDataType(DataType.INT.getEntity());
         return data;
+    }
+
+    @Override
+    public boolean equalsValue(ApItem item) {
+        return equalsBase(item) && Objects.equals(value, getIntegerValue(item));
     }
 }

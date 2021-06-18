@@ -619,6 +619,8 @@ when
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_ITEM" ) from $activeLevel.descItems
     // nemá poděděný typ složky množstevní nebo s EJ
     not DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE") ) ) from $activeLevel.descItems
+    // neni pevne spojeni
+    not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
     // neni ciste digitalni
     not DescItem(type=="ZP2015_AIP_ID" && readOnly) from $activeLevel.descItems
     // jedná se o kartotéku
@@ -1793,6 +1795,9 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     not (
       DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE")) from $activeLevel.descItems
     )
+    // neni pevne spojeni
+    not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
+    
     $itemType: RulItemTypeExt( code in ("ZP2015_UNIT_COUNT") )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);

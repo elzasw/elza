@@ -1035,15 +1035,15 @@ public class ArrangementController {
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public OutputItemResult deleteOutputItem(@RequestBody final ArrItemVO outputItemVO,
+    public OutputItemResult deleteOutputItem(@RequestBody final Integer outputItemId,
                                              @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                              @PathVariable(value = "outputVersion") final Integer outputVersion) {
-        Validate.notNull(outputItemVO, "Výstup musí být vyplněn");
+        Validate.notNull(outputItemId, "ID není definováno");
         Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
         Validate.notNull(outputVersion, "Verze definice výstupu musí být vyplněna");
 
         ArrOutputItem outputItemDeleted = outputService
-                .deleteOutputItem(outputItemVO.getDescItemObjectId(), outputVersion, fundVersionId);
+                .deleteOutputItem(outputItemId, outputVersion, fundVersionId);
 
         OutputItemResult outputItemResult = new OutputItemResult();
         outputItemResult.setItem(null);
@@ -2152,7 +2152,7 @@ public class ArrangementController {
         	templateIds.addAll(param.getTemplateIds());
         }
         OutputData outputData = outputService.createOutput(fundVersion, param.getName(), param.getInternalCode(),
-                param.getOutputTypeId(), templateIds);
+                param.getOutputTypeId(), templateIds, param.getOutputFilterId());
         return factoryVo.createOutputExt(outputData.getOutput(), fundVersion);
     }
 
@@ -2254,7 +2254,7 @@ public class ArrangementController {
         Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId(), param.getAnonymizedAp());
+        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId(), param.getAnonymizedAp(), param.getOutputFilterId());
     }
 
     /**
@@ -3582,6 +3582,8 @@ public class ArrangementController {
 
         private ApAccessPointVO anonymizedAp;
 
+        private Integer outputFilterId;
+
         public String getName() {
             return name;
         }
@@ -3628,6 +3630,14 @@ public class ArrangementController {
 
         public void setAnonymizedAp(ApAccessPointVO anonymizedAp) {
             this.anonymizedAp = anonymizedAp;
+        }
+
+        public Integer getOutputFilterId() {
+            return outputFilterId;
+        }
+
+        public void setOutputFilterId(Integer outputFilterId) {
+            this.outputFilterId = outputFilterId;
         }
     }
 

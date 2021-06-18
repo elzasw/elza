@@ -112,7 +112,6 @@ export interface Fund {
     fundTreeMovementsLeft: unknown;
     fundTreeMovementsRight: unknown;
     fundTreeNodes: unknown;
-    historicalNamedOutputs: unknown | null;
     id: number | unknown;
     institutionId: number | unknown;
     internalCode: string | unknown;

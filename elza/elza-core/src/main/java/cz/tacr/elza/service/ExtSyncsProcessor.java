@@ -1,11 +1,7 @@
 package cz.tacr.elza.service;
 
-import cz.tacr.elza.api.ApExternalSystemType;
-import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.cam.client.ApiException;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
-import cz.tacr.elza.exception.ObjectNotFoundException;
-import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.service.cam.CamService;
 import org.slf4j.Logger;
@@ -15,17 +11,23 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Component
 public class ExtSyncsProcessor implements Runnable {
 
     @Autowired
+    private CamService camService;
+
+    @Autowired
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
 
     @Autowired
-    private CamService camService;
+    protected PlatformTransactionManager transactionManager;
 
     private static final Logger logger = LoggerFactory.getLogger(ExtSyncsProcessor.class);
 
@@ -34,6 +36,10 @@ public class ExtSyncsProcessor implements Runnable {
     private final Object lock = new Object();
 
     private static int QUEUE_CHECK_TIME_INTERVAL = 10000;
+
+    private static int DEFAULT_IMPORT_LIST_SIZE = 100;
+
+    private int importListSize;
 
     private enum ThreadStatus {
         RUNNING, STOP_REQUEST, STOPPED
@@ -53,7 +59,7 @@ public class ExtSyncsProcessor implements Runnable {
 
     private boolean processItem() {
         Pageable pageable = PageRequest.of(0, 1);
-        // find items for update
+        // sync updated items from ExtSystem
         Page<ExtSyncsQueueItem> updPage = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.UPDATE, pageable);
         if (!updPage.isEmpty()) {
             List<ExtSyncsQueueItem> items = updPage.getContent();
@@ -65,14 +71,49 @@ public class ExtSyncsProcessor implements Runnable {
             return true;
         }
 
-        // find new items
-        Page<ExtSyncsQueueItem> newPage = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.NEW, pageable);
-        if (newPage.isEmpty()) {
+        // add new item to Elza
+        Pageable pageImport = PageRequest.of(0, importListSize);
+        Page<ExtSyncsQueueItem> newToElza = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.IMPORT_NEW, pageImport);
+        if (!newToElza.isEmpty()) {
+            List<ExtSyncsQueueItem> items = newToElza.getContent();
+            try {
+                camService.importNew(items);
+            } catch (ApiException e) {
+                // if ApiException -> it means we connected server and it is logical failure 
+                logger.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
+                camService.setQueueItemStateTA(items,
+                                               null, // state se nemění
+                                               OffsetDateTime.now(),
+                                               e.getMessage());
+                return false;
+            } catch (Exception e) {
+                // handling other errors -> if it is one record - write the error
+                logger.error("Failed to synchronize item(s), list size: {}", items.size(), e);
+                // zmenšení velikosti dávky
+                importListSize = 1;
+                // pokud došlo k chybě při čtení 1 záznam najednou
+                if (items.size() == 1) {
+                    camService.setQueueItemStateTA(items,
+                                                   ExtSyncsQueueItem.ExtAsyncQueueState.ERROR, 
+                                                   OffsetDateTime.now(),
+                                                   e.getMessage());
+                    // chybný záznam je označen, návrat standardní dávky
+                    importListSize = DEFAULT_IMPORT_LIST_SIZE;
+                    return true;
+                }
+                return true;
+            }
+            return true;
+        }
+
+        // add new items from ELZA
+        Page<ExtSyncsQueueItem> newFromElza = extSyncsQueueItemRepository.findByState(ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW, pageable);
+        if (newFromElza.isEmpty()) {
             return false;
         }
-        List<ExtSyncsQueueItem> items = newPage.getContent();
+        List<ExtSyncsQueueItem> items = newFromElza.getContent();
         for (ExtSyncsQueueItem item : items) {
-            if (!camService.synchronizeExtItem(item)) {
+            if (!camService.exportNew(item)) {
                 return false;
             }
         }
@@ -83,6 +124,8 @@ public class ExtSyncsProcessor implements Runnable {
     public void run() {
         synchronized (lock) {
             try {
+                // nastavíme velikost dávky pro čtení
+                importListSize = DEFAULT_IMPORT_LIST_SIZE;
                 while (status == ThreadStatus.RUNNING) {
                     boolean wait = true;
                     try {

@@ -431,7 +431,7 @@ public class OutputServiceInternal {
             List<ArrOutputItem> outputItems = outputItemRepository.findOpenOutputItemsAfterPosition(outputItem.getItemType(),
                     outputItem.getOutput(), outputItem.getPosition() - 1);
             for (ArrOutputItem item : outputItems) {
-                itemService.copyItem(item, createChange, item.getPosition() + 1);
+                itemService.moveItem(item, createChange, item.getPosition() + 1);
             }
         }
 

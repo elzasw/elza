@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
+import java.util.Objects;
+
 import javax.persistence.EntityManager;
 
 import org.apache.commons.lang.Validate;
@@ -10,18 +12,15 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
-/**
- * @since 18.07.2018
- */
 public class ApItemUnitdateVO extends ApItemVO {
 
     /**
-     * hodnota
+     * Hodnota UnitDate
      */
     private String value;
 
     /**
-     * identifikátor kalendáře
+     * Identifikátor kalendáře
      */
     private Integer calendarTypeId;
 
@@ -61,5 +60,17 @@ public class ApItemUnitdateVO extends ApItemVO {
 
         ArrDataUnitdate data = ArrDataUnitdate.valueOf(calType, value);
         return data;
+    }
+
+    @Override
+    public boolean equalsValue(ApItem item) {
+        String value = null;
+        Integer calendarTypeId = null;
+        ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
+        if (data != null) {
+            value = UnitDateConvertor.convertToString(data);
+            calendarTypeId = data.getCalendarTypeId();
+        }
+        return equalsBase(item) && Objects.equals(this.value, value) && Objects.equals(this.calendarTypeId, calendarTypeId);
     }
 }

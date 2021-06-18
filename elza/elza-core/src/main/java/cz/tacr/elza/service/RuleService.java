@@ -1073,7 +1073,7 @@ public class RuleService {
 
         Integer apTypeId = form.getTypeId();
         Integer accessPointId = form.getAccessPointId();
-        ApScope scope = accessPointService.getScope(form.getScopeId());
+        ApScope scope = accessPointService.getApScope(form.getScopeId());
 
         Integer preferredPartId = null;
         List<Part> parts = new ArrayList<>();

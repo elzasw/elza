@@ -59,4 +59,11 @@ public class ElzaRow {
     public int hashCode() {
         return Objects.hash(values);
     }
+
+    public String getValue(String columnName) {
+        if (values == null) {
+            return null;
+        }
+        return values.get(columnName);
+    }
 }

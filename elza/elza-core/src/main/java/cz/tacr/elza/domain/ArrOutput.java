@@ -88,6 +88,10 @@ public class ArrOutput extends AbstractVersionableEntity {
     @JoinColumn(name = ANONYMIZED_AP_ID)
     private ApAccessPoint anonymizedAp;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulOutputFilter.class)
+    @JoinColumn(name = "outputFilterId")
+    private RulOutputFilter outputFilter;
+
     /**
      * @return  identifikátor entity
      */
@@ -275,6 +279,14 @@ public class ArrOutput extends AbstractVersionableEntity {
 
     public void setAnonymizedAp(ApAccessPoint anonymizedAp) {
         this.anonymizedAp = anonymizedAp;
+    }
+
+    public RulOutputFilter getOutputFilter() {
+        return outputFilter;
+    }
+
+    public void setOutputFilter(RulOutputFilter outputFilter) {
+        this.outputFilter = outputFilter;
     }
 
     /**

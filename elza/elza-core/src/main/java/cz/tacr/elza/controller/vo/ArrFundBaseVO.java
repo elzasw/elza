@@ -12,22 +12,27 @@ public class ArrFundBaseVO {
 
     private String name;
 
+    private String internalCode;
+
     public ArrFundBaseVO() {
     }
 
-    public ArrFundBaseVO(Integer id, String name) {
+    public ArrFundBaseVO(Integer id, String name, String internalCode) {
         this.id = id;
         this.name = name;
+        this.internalCode = internalCode;
     }
 
     public ArrFundBaseVO(ArrFund fund) {
         this.id = fund.getFundId();
         this.name = fund.getName();
+        this.internalCode = fund.getInternalCode();
     }
 
     public ArrFundBaseVO(Fund fund) {
         this.id = fund.getId();
         this.name = fund.getName();
+        this.internalCode = fund.getInternalCode();
     }
 
     public Integer getId() {
@@ -46,15 +51,24 @@ public class ArrFundBaseVO {
         this.name = name;
     }
 
+    public String getInternalCode() {
+        return internalCode;
+    }
+
+    public void setInternalCode(String internalCode) {
+        this.internalCode = internalCode;
+    }
+
     public ArrFund createEntity() {
         ArrFund entity = new ArrFund();
         entity.setFundId(id);
         entity.setName(name);
+        entity.setInternalCode(internalCode);
         return entity;
     }
 
-    public static ArrFundBaseVO newInstance(Integer id, String name) {
-        return new ArrFundBaseVO(id, name);
+    public static ArrFundBaseVO newInstance(Integer id, String name, String internalCode) {
+        return new ArrFundBaseVO(id, name, internalCode);
     }
 
     public static ArrFundBaseVO newInstance(ArrFund fund) {
@@ -64,6 +78,4 @@ public class ArrFundBaseVO {
     public static ArrFundBaseVO newInstance(Fund fund) {
         return new ArrFundBaseVO(fund);
     }
-
-
 }

@@ -204,6 +204,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         }
         entity.setPartType(type);
         entity.setCreateChange(context.getCreateChange());
+        entity.setLastChange(context.getCreateChange());
         entity.setState(ApStateEnum.OK);
 
         return entity;
