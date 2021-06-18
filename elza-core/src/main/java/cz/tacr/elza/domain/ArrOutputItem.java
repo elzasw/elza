@@ -70,7 +70,7 @@ public class ArrOutputItem extends ArrItem {
     }
 
     @Override
-    public ArrItem makeCopy() {
+    public ArrOutputItem makeCopy() {
         return new ArrOutputItem(this);
     }
 }

@@ -400,7 +400,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         assertNotNull(outputFormData.getParent());
 
-        outputItem = deleteOutputItem(itemCreated, fundVersion.getId(), outputItem.getParent().getVersion());
+        outputItem = deleteOutputItem(itemCreated.getDescItemObjectId(), fundVersion.getId(), outputItem.getParent().getVersion());
         ArrOutputVO parent = outputItem.getParent();
 
         ArrItemVO itemDeleted = outputItem.getItem();

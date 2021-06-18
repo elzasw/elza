@@ -370,11 +370,11 @@ export class WebApiCls {
         );
     }
 
-    deleteOutputItem(versionId, outputVersion, descItem) {
+    deleteOutputItem(versionId, outputVersion, parentVersionId, descItemObjectId) {
         return AjaxUtils.ajaxPost(
             WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputVersion + '/delete',
             null,
-            descItem,
+            descItemObjectId,
         );
     }
 
@@ -1218,6 +1218,14 @@ export class WebApiCls {
 
     getRuleSets() {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/getRuleSets');
+    }
+
+    findExportFilters() {
+        return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/exportFilters');
+    }
+
+    findOutputFilters() {
+        return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/outputFilters');
     }
 
     approveVersion(versionId) {
@@ -2077,6 +2085,15 @@ export class WebApiCls {
     }
 
     /**
+     * Odebrání existujícího protokolu
+     * 
+     * @param issueListId identifikátor protokolu
+     */
+    deleteIssueList(issueListId: number) {
+        return AjaxUtils.ajaxDelete(WebApiCls.issueUrl + '/issue_lists/' + issueListId);
+    }
+
+    /**
      * Získání detailu připomínky.
      *
      * @param issueId identifikátor připomínky
@@ -2257,7 +2274,7 @@ export class UrlFactory {
     }
 
     static downloadOutputResults(outputId:number) {
-        return `${serverContextPath}'/api/outputResults/'${outputId}`;
+        return `${serverContextPath}/api/outputResults/${outputId}`;
     }
 
     static exportIssueList(issueListId) {

@@ -48,6 +48,7 @@ type ComponentProps = {
     calendarTypes: any;
     descItemTypes: any;
     templates: any;
+    outputFilters: any;
     rulDataTypes: any;
     closed: boolean;
     readMode: boolean;
@@ -230,6 +231,7 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
             closed,
             readMode,
             scopeList,
+            outputFilters,
         } = this.props;
 
         if (fundOutputDetail.id === null) {
@@ -247,6 +249,7 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
             fundOutputDetail.fetched &&
             fundOutputDetail.subNodeForm.fetched &&
             calendarTypes.fetched &&
+            outputFilters.fetched &&
             descItemTypes.fetched;
         if (!fetched) {
             return <HorizontalLoader />;
@@ -288,6 +291,7 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
                         // pridan outputDetail navic k initialValues, protoze
                         // zmena initialValues nezpusobi render kvuli redux-form
                         outputDetail={fundOutputDetail}
+                        outputFilters={outputFilters}
                     />
                     {fundOutputDetail.error && (
                         <div>

@@ -52,6 +52,7 @@ import FundNodesSelectForm from '../../components/arr/FundNodesSelectForm';
 import {fundOutputAddNodes} from '../../actions/arr/fundOutput';
 import {versionValidate} from '../../actions/arr/versionValidation';
 import {structureTypesFetchIfNeeded} from '../../actions/refTables/structureTypes';
+import * as outputFilters from "../../actions/refTables/outputFilters";
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -63,6 +64,7 @@ const OutputState = {
 };
 
 const allowSendOutput = window.allowSendOutput !== undefined && window.allowSendOutput;
+const outputStates = Object.values(OutputState).filter((state)=> state !== OutputState.ERROR)
 
 const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     static contextTypes = {shortcuts: PropTypes.object};
@@ -113,6 +115,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     componentDidMount() {
         super.componentDidMount();
         this.props.dispatch(templatesFetchIfNeeded());
+        this.props.dispatch(outputFilters.fetchIfNeeded());
         this.props.dispatch(structureTypesFetchIfNeeded(null));
 
         const fund = this.getActiveFund(this.props);
@@ -126,6 +129,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     UNSAFE_componentWillReceiveProps(nextProps) {
         super.UNSAFE_componentWillReceiveProps(nextProps);
         this.props.dispatch(templatesFetchIfNeeded());
+        this.props.dispatch(outputFilters.fetchIfNeeded());
 
         const fund = this.getActiveFund(nextProps);
         if (fund) {
@@ -562,30 +566,23 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const fund = this.getActiveFund(this.props);
         const fundOutput = fund.fundOutput;
 
+
         let activeIndex = null;
         if (fundOutput.fundOutputDetail.id !== null) {
-            activeIndex = indexById(fundOutput.outputs, fundOutput.id);
-        }
-
-        const filterStates = [];
-        for (const item in OutputState) {
-            if (item === OutputState.ERROR) {
-                continue;
-            }
-            filterStates.push(
-                <option value={item} key={'state' + item}>
-                    {i18n('arr.output.list.state.' + item.toLocaleLowerCase())}
-                </option>,
-            );
+            activeIndex = indexById(fundOutput.outputs, fundOutput.fundOutputDetail.id);
         }
 
         return (
             <div className="fund-output-list-container">
                 <FormInput as="select" onChange={this.handleOutputStateSearch} value={fundOutput.filterState || -1}>
-                    <option value={-1} key="no-filter">
+                    <option value="" key="no-filter">
                         {i18n('arr.output.list.state.all')}
                     </option>
-                    {filterStates}
+                    {outputStates.map((state)=>
+                        <option value={state} key={'state' + state}>
+                            {i18n('arr.output.list.state.' + state.toLocaleLowerCase())}
+                        </option>
+                    )}
                 </FormInput>
                 <StoreHorizontalLoader store={fundOutput} />
                 {fundOutput.fetched && (
@@ -604,7 +601,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const {calendarTypes, templates, rulDataTypes, descItemTypes, userDetail} = this.props;
+        const {calendarTypes, templates, rulDataTypes, descItemTypes, userDetail, outputFilters} = this.props;
 
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
@@ -617,6 +614,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 calendarTypes={calendarTypes}
                 descItemTypes={descItemTypes}
                 templates={templates}
+                outputFilters={outputFilters}
                 rulDataTypes={rulDataTypes}
                 userDetail={userDetail}
                 fundOutputDetail={fundOutputDetail}
@@ -699,9 +697,12 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     handleClone() {
+        const { dispatch } = this.props;
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
-        this.props.dispatch(fundOutputClone(fund.versionId, fundOutputDetail.id));
+
+        // dispatch(outputFilters.invalidate());
+        dispatch(fundOutputClone(fund.versionId, fundOutputDetail.id));
     }
 
     handleOutputStateSearch(e) {
@@ -727,6 +728,7 @@ function mapStateToProps(state) {
         descItemTypes: refTables.descItemTypes,
         ruleSet: refTables.ruleSet,
         templates: refTables.templates,
+        outputFilters: refTables.outputFilters,
         outputTypes: refTables.outputTypes.items,
     };
 }

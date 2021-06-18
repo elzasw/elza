@@ -1277,6 +1277,79 @@ where no.level_id = l.level_id
   			WHERE s.delete_change_id IS NULL)</sql>
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeSet20210419133000" />
 	</changeSet>
+    
+    <changeSet id="20210430094500" author="fantis">
+        <createTable tableName="rul_output_filter">
+            <column name="output_filter_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="nvarchar(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="filename" type="nvarchar(250)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_rul_output_filter_rul_rule_set"
+                                 baseTableName="rul_output_filter"
+                                 baseColumnNames="rule_set_id"
+                                 referencedTableName="rul_rule_set"
+                                 referencedColumnNames="rule_set_id"/>
+        <addForeignKeyConstraint constraintName="fk_rul_output_filter_package"
+                                 baseTableName="rul_output_filter"
+                                 baseColumnNames="package_id"
+                                 referencedTableName="rul_package"
+                                 referencedColumnNames="package_id"/>
+
+        <addColumn tableName="arr_output">
+            <column name="output_filter_id" type="int"/>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="fk_arr_output_output_filter"
+                                 baseTableName="arr_output"
+                                 baseColumnNames="output_filter_id"
+                                 referencedTableName="rul_output_filter"
+                                 referencedColumnNames="output_filter_id"/>
+
+        <createTable tableName="rul_export_filter">
+            <column name="export_filter_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="nvarchar(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="filename" type="nvarchar(250)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_rul_export_filter_rul_rule_set"
+                                 baseTableName="rul_export_filter"
+                                 baseColumnNames="rule_set_id"
+                                 referencedTableName="rul_rule_set"
+                                 referencedColumnNames="rule_set_id"/>
+        <addForeignKeyConstraint constraintName="fk_rul_export_filter_package"
+                                 baseTableName="rul_export_filter"
+                                 baseColumnNames="package_id"
+                                 referencedTableName="rul_package"
+                                 referencedColumnNames="package_id"/>
+    </changeSet>
 
     <changeSet id="20210507142500" author="sergey.iryupin">
     	<modifyDataType columnName="type"  
@@ -1293,6 +1366,48 @@ where no.level_id = l.level_id
                              nullable="true" />
             </column>
 		</addColumn>
+    </changeSet>
+
+    <changeSet id="20210510122100" author="sergey.iryupin">
+        <addColumn tableName="ap_external_system">
+            <column name="scope_id" type="int">
+                <constraints foreignKeyName="fk_ap_external_system_ap_scope"
+                             referencedTableName="ap_scope"
+                             referencedColumnNames="scope_id"
+                             nullable="true" />
+            </column>
+		</addColumn>
+    </changeSet>
+
+    <changeSet id="20210518121200" author="sergey.iryupin">
+    	<modifyDataType columnName="value_from"  
+            newDataType="char(20)"  
+            tableName="arr_data_unitdate" />
+    	<modifyDataType columnName="value_to"  
+            newDataType="char(20)"  
+            tableName="arr_data_unitdate" />
+    </changeSet>
+
+    <changeSet id="20210520101700" author="ppyt">
+      <!-- Oprava typo chyby v kodu prvku popisu -->
+      <sql>UPDATE rul_item_spec SET code='RT_ENTITYRISE' WHERE code='RT_ENTINTYRISE'</sql>
+    </changeSet>
+
+    <changeSet id="20210525155000" author="sergey.iryupin">
+        <addColumn tableName="ap_part">
+            <column name="last_change_id" type="int">
+                <constraints foreignKeyName="fk_ap_part_last_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id" />
+            </column>
+        </addColumn>
+        <sql dbms="postgresql">UPDATE ap_part p SET last_change_id=
+			(SELECT MAX(GREATEST(i.create_change_id, i.delete_change_id)) FROM ap_item i WHERE i.part_id=p.part_id)</sql>
+        <addNotNullConstraint tableName="ap_part" columnName="last_change_id" columnDataType="int" />
+    </changeSet>
+
+    <changeSet id="20210526144300" author="sergey.iryupin">
+      <delete tableName="ap_cached_access_point" />
     </changeSet>
 
 </databaseChangeLog>

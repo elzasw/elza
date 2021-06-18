@@ -210,7 +210,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
      * @return
      */
     protected List<ParInstitution> imporInsts() {
-        ApScope scope = apService.getScope(1);
+        ApScope scope = apService.getApScope(1);
         Validate.notNull(scope);
 
         File instFile = getResourceFile(XML_INSTITUTION);

@@ -367,7 +367,7 @@ public class ApController {
         Integer typeId = accessPoint.getTypeId();
         Integer scopeId = accessPoint.getScopeId();
 
-        ApScope scope = accessPointService.getScope(scopeId);
+        ApScope scope = accessPointService.getApScope(scopeId);
         ApType type = accessPointService.getType(typeId);
         SysLanguage language = StringUtils.isEmpty(accessPoint.getLanguageCode()) ? null : accessPointService.getLanguage(accessPoint.getLanguageCode());
 
@@ -836,13 +836,13 @@ public class ApController {
     public void updatePart(@PathVariable final Integer accessPointId,
                            @PathVariable final Integer partId,
                            @RequestBody final ApPartFormVO apPartFormVO) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
-                .orElseThrow(ap(accessPointId));
+        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId).orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.getPart(partId);
-        accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO);
-        accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        if (accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO)) {
+            accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        }
     }
 
 
@@ -1036,7 +1036,7 @@ public class ApController {
             throw prepareSystemException(e);
         }
 
-        ApScope scope = accessPointService.getScope(scopeId);
+        ApScope scope = accessPointService.getApScope(scopeId);
         ApBinding binding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId,
                                                                                          apExternalSystem);
         if (binding != null) {
@@ -1131,7 +1131,7 @@ public class ApController {
             throw prepareSystemException(e);
         }
         ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
-        camService.synchronizeAccessPoint(procCtx, state, entity, bindingState, false);
+        camService.synchronizeAccessPoint(procCtx, state, bindingState, null, entity, false);
     }
 
     /**

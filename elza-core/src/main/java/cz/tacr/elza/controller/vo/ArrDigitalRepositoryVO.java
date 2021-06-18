@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.SysExternalSystem;
 
@@ -50,7 +51,7 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
     }
 
     @Override
-    public SysExternalSystem createEntity() {
+    public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitalRepository entity = new ArrDigitalRepository();
         this.fillEntity(entity);
 

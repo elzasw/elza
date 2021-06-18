@@ -89,6 +89,7 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import ma.glasnost.orika.impl.mapping.strategy.InstantiateByDefaultAndUseCustomMapperStrategy;
 
 /**
  * Service to check and manage user permissions
@@ -1148,6 +1149,7 @@ public class UserService {
         }
 
         List<UsrPermission> permissions = permissionRepository.getAllPermissions(user);
+        Map<Integer, UserPermission> issueListMap = null;
 
         for (UsrPermission permission : permissions) {
             UserPermission userPermission = userPermissions.get(permission.getPermission());
@@ -1156,29 +1158,51 @@ public class UserService {
                 userPermissions.put(permission.getPermission(), userPermission);
             }
 
-            if (permission.getFund() != null) {
-                userPermission.addFundId(permission.getFund().getFundId());
+            if (permission.getFundId() != null) {
+                userPermission.addFundId(permission.getFundId());
             }
 
-            if (permission.getScope() != null) {
-                userPermission.addScopeId(permission.getScope().getScopeId());
+            if (permission.getScopeId() != null) {
+                userPermission.addScopeId(permission.getScopeId());
             }
 
-            if (permission.getGroupControl() != null) {
+            if (permission.getGroupControlId() != null) {
                 userPermission.addControlGroupId(permission.getGroupControlId());
             }
 
-            if (permission.getUserControl() != null) {
+            if (permission.getUserControlId() != null) {
                 userPermission.addControlUserId(permission.getUserControlId());
             }
 
-            if (permission.getIssueList() != null) {
-                userPermission.addIssueListId(permission.getIssueList().getIssueListId());
-                userPermission.addFundId(permission.getIssueList().getFund().getFundId());
+            if (permission.getIssueListId() != null) {
+                userPermission.addIssueListId(permission.getIssueListId());
+                if (issueListMap == null) {
+                    issueListMap = new HashMap<>();
+                }
+                // TODO: Extend issueListId with corresponding fundId
+                issueListMap.put(permission.getIssueListId(), userPermission);
             }
 
             if (permission.getNodeId() != null && permission.getFundId() != null) {
                 userPermission.addNodeId(permission.getFundId(), permission.getNodeId());
+            }
+        }
+        // Read issue list mapping
+        if (issueListMap != null) {
+            List<WfIssueList> issueLists = this.issueListRepository.findAllById(issueListMap.keySet());
+            if (issueLists.size() != issueListMap.size()) {
+                logger.error("Failed to read all issue lists, user: {}, expected count: {}, received: {}",
+                             user.getUserId(),
+                             issueListMap.size(),
+                             issueLists.size());
+                throw new BusinessException("Failed to read all issue lists", BaseCode.DB_INTEGRITY_PROBLEM)
+                        .set("Expected number", issueListMap.size())
+                        .set("Received Count", issueLists.size())
+                        .set("userId", user.getUserId());
+            }
+            for (WfIssueList issueList : issueLists) {
+                UserPermission perms = issueListMap.get(issueList.getIssueListId());
+                perms.addFundId(issueList.getFundId());
             }
         }
 
@@ -1779,7 +1803,9 @@ public class UserService {
         permissionRepository.flush();
     }
 
-    private Map<Integer, UsrUser> updateIssueListPermissions(@NotNull WfIssueList issueList, @NotNull Collection<UsrUser> users, @NotNull Permission permissionType) {
+    private Map<Integer, UsrUser> updateIssueListPermissions(@NotNull WfIssueList issueList,
+                                                             @NotNull Collection<UsrUser> users,
+                                                             @NotNull Permission permissionType) {
 
         Map<Integer, UsrUser> userMap = users.stream().collect(Collectors.toMap(user -> user.getUserId(), user -> user));
 

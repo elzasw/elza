@@ -30,11 +30,11 @@ import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
+import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -57,6 +57,7 @@ import org.springframework.util.MultiValueMap;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
+import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
@@ -64,6 +65,7 @@ import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.usage.FundVO;
 import cz.tacr.elza.controller.vo.usage.NodeVO;
 import cz.tacr.elza.controller.vo.usage.OccurrenceType;
@@ -939,36 +941,51 @@ public class AccessPointService {
         return apBindingItem.getPart();
     }
 
-    public void updatePart(final ApAccessPoint apAccessPoint,
+    public boolean updatePart(final ApAccessPoint apAccessPoint,
                            final ApPart apPart,
                            final ApPartFormVO apPartFormVO) {
-//        if (areItemsChanged(apPart, apPartFormVO)) {
-            ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
-            List<ApItem> itemList = itemRepository.findValidItemsByPart(apPart);
-            List<ApBindingItem> bindingItemList = bindingItemRepository.findByItems(itemList);
+        List<ApItem> deleteItems = itemRepository.findValidItemsByPart(apPart);
+        List<ApBindingItem> bindingItemList = bindingItemRepository.findByItems(deleteItems);
 
-            /*
-            ApPart newPart = partService.createPart(apPart, change);
-            partService.deletePart(apPart, change);
-            
-            changeBindingItemParts(apPart, newPart, change);
-            changeIndicesToNewPart(apPart, newPart); */
+        Map<Integer, ApItem> itemMap = deleteItems.stream().collect(Collectors.toMap(ApItem::getItemId, i -> i));
 
-            List<ReferencedEntities> dataRefList = new ArrayList<>();
+        List<ApItemVO> itemListVO = apPartFormVO.getItems();
+        List<ApItemVO> createItems = new ArrayList<>();
 
-            apItemService.createItems(apPart, apPartFormVO.getItems(), change, bindingItemList, dataRefList);
-            bindingItemRepository.flush();
+        // určujeme, které záznamy: přidat, odstranit, nebo ponechat
+        for (ApItemVO itemVO : itemListVO) {
+            if (itemVO.getId() == null) {
+                createItems.add(itemVO); // new -> add
+            } else {
+                ApItem item = itemMap.get(itemVO.getId());
+                if (item != null) {
+                    if (itemVO.equalsValue(item)) {
+                        deleteItems.remove(item); // no change -> don't delete
+                    } else {
+                        createItems.add(itemVO); // changed -> add + delete
+                    }
+                }
+            }
+        }
 
-            DeletedItems deletedItems = apItemService.deleteItems(itemList, change);
+        // pokud nedojde ke změně
+        if (createItems.isEmpty() && deleteItems.isEmpty()) {
+            return false;
+        }
 
-            // partService.changeParentPart(apPart, newPart);
-            /*if (apAccessPoint.getPreferredPartId().equals(apPart.getPartId())) {
-                apAccessPoint.setPreferredPart(newPart);
-                saveWithLock(apAccessPoint);
-            }*/
+        ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
 
-            generateSync(apAccessPoint.getAccessPointId(), apPart);
-//        }
+        apPart.setLastChange(change);
+
+        List<ReferencedEntities> dataRefList = new ArrayList<>();
+        apItemService.createItems(apPart, createItems, change, bindingItemList, dataRefList);
+        bindingItemRepository.flush();
+
+        apItemService.deleteItems(deleteItems, change);
+
+        generateSync(apAccessPoint.getAccessPointId(), apPart);
+
+        return true;
     }
 
     public void changeIndicesToNewPart(ApPart apPart, ApPart newPart) {
@@ -1295,14 +1312,46 @@ public class AccessPointService {
     }
 
     /**
-     * Získání třídy.
-     *
-     * @param scopeId identifikátor třídy
-     * @return třída
+     * Získání ApScope podle kódu
+     * 
+     * @param s kod
+     * @return ApScope
      */
-    public ApScope getScope(final Integer scopeId) {
+    public ApScope getApScope(String s) {
+        ApScope entity = scopeRepository.findByCode(s);
+        if(entity == null) {
+            entity = new ApScope();
+            entity.setCode(s);
+            entity.setName(s);
+        }
+        return entity;
+    }
+
+    /**
+     * Získání ApScope podle id
+     * 
+     * @param id
+     * @return ApScope nebo null
+     */
+    public ApScope getApScope(final Integer scopeId) {
+        if (scopeId == null) {
+            return null;
+        }
         return scopeRepository.findById(scopeId)
-                .orElseThrow(() -> new ObjectNotFoundException("Třída neexistuje", BaseCode.ID_NOT_EXIST).setId(scopeId));
+                .orElseThrow(() -> new ObjectNotFoundException("ApScope neexistuje", BaseCode.ID_NOT_EXIST).setId(scopeId));
+    }
+
+    /**
+     * Získání ApScope podle External System 
+     * 
+     * @param extSystem
+     * @return ApScope nebo null
+     */
+    public ApScope getApScope(SysExternalSystemVO extSystem) {
+        if (extSystem instanceof ApExternalSystemVO) {
+            return getApScope(((ApExternalSystemVO)extSystem).getScope());
+        }
+        return null;
     }
 
     /**
@@ -1537,7 +1586,7 @@ public class AccessPointService {
 
         ApScope newApScope;
         if (newScopeId != null && !newScopeId.equals(oldApScope.getScopeId())) {
-            newApScope = getScope(newScopeId);
+            newApScope = getApScope(newScopeId);
             if (!hasApPermission(newApScope, oldStateApproval, newStateApproval)) {
                 throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
                         .set("accessPointId", accessPoint.getAccessPointId())
@@ -1614,25 +1663,48 @@ public class AccessPointService {
             return Arrays.asList(StateApproval.values());
         }
 
-        List<StateApproval> statesNewToApprove = Arrays.asList(StateApproval.NEW, StateApproval.TO_APPROVE);
         Set<StateApproval> result = new HashSet<>();
 
+        // zakládání a změny nových 
         if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL) 
                 || userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId())) {
-            if (statesNewToApprove.contains(apState.getStateApproval())) {
-                result.addAll(statesNewToApprove);
+            if (apState.getStateApproval().equals(StateApproval.NEW)) {
+                result.add(StateApproval.TO_APPROVE);
+                result.add(StateApproval.TO_AMEND);
+            }
+            if (apState.getStateApproval().equals(StateApproval.TO_AMEND)) {
+                result.add(StateApproval.NEW);
+                result.add(StateApproval.TO_APPROVE);
+            }
+            if (apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
+                result.add(StateApproval.NEW);
+                result.add(StateApproval.TO_AMEND);
             }
         }
+
+        // schvalování
         if (userService.hasPermission(Permission.AP_CONFIRM_ALL) 
                 || userService.hasPermission(Permission.AP_CONFIRM_ALL, apScope.getScopeId())) {
-            if (apState.getStateApproval().equals(StateApproval.TO_APPROVE)) {
+            if (apState.getStateApproval().equals(StateApproval.TO_APPROVE) ||
+                    apState.getStateApproval().equals(StateApproval.REV_PREPARED)) {
                 result.add(StateApproval.APPROVED);
             }
         }
+
+        // změna schválených
         if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
                 || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId())) {
             if (apState.getStateApproval().equals(StateApproval.APPROVED)) {
-                result.add(StateApproval.APPROVED);
+                result.add(StateApproval.REV_NEW);
+            }
+            if (apState.getStateApproval().equals(StateApproval.REV_NEW)) {
+                result.add(StateApproval.REV_PREPARED);
+            }
+            if (apState.getStateApproval().equals(StateApproval.REV_PREPARED)) {
+                result.add(StateApproval.REV_AMEND);
+            }
+            if (apState.getStateApproval().equals(StateApproval.REV_AMEND)) {
+                result.add(StateApproval.REV_PREPARED);
             }
         }
 
@@ -2049,7 +2121,7 @@ public class AccessPointService {
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         UserDetail userDetail = userService.getLoggedUserDetail();
         ExtSyncsQueueItem extSyncsQueueItem = createExtSyncsQueueItem(accessPoint, apExternalSystem, null,
-                ExtSyncsQueueItem.ExtAsyncQueueState.NEW, OffsetDateTime.now(), userDetail.getUsername());
+                ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW, OffsetDateTime.now(), userDetail.getUsername());
         extSyncsQueueItemRepository.save(extSyncsQueueItem);
     }
 
@@ -2284,6 +2356,7 @@ public class AccessPointService {
         ApPart partTo = new ApPart();
         partTo.setAccessPoint(accessPoint);
         partTo.setCreateChange(change);
+        partTo.setLastChange(change);
         partTo.setKeyValue(null);
         partTo.setParentPart(parent);
         partTo.setPartType(part.getPartType());

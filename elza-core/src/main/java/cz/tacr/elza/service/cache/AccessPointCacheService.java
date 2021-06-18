@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.common.db.QueryResults;
+import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
@@ -16,6 +19,7 @@ import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -41,6 +45,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -56,7 +62,7 @@ import java.util.stream.Collectors;
 @Service
 public class AccessPointCacheService implements SearchIndexSupport<ApCachedAccessPoint> {
 
-    private static final Logger logger = LoggerFactory.getLogger(NodeCacheService.class);
+    private static final Logger logger = LoggerFactory.getLogger(AccessPointCacheService.class);
 
     private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock.ReadLock readLock = rwl.readLock();
@@ -109,7 +115,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.setVisibility(new ApVisibilityChecker(AccessPointCacheSerializable.class,
-                String.class, Number.class, Boolean.class, Iterable.class,
+                String.class, Number.class, Boolean.class, Iterable.class, SyncState.class,
                 LocalDate.class, LocalDateTime.class));
     }
 
@@ -246,13 +252,13 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         CachedPart cachedPart = new CachedPart();
         cachedPart.setPartId(part.getPartId());
         cachedPart.setCreateChangeId(part.getCreateChangeId());
+        cachedPart.setLastChangeId(part.getLastChangeId());
         cachedPart.setDeleteChangeId(part.getDeleteChangeId());
         cachedPart.setErrorDescription(part.getErrorDescription());
         cachedPart.setState(part.getState());
         cachedPart.setPartTypeCode(part.getPartType().getCode());
         cachedPart.setKeyValue(HibernateUtils.unproxy(part.getKeyValue()));
         cachedPart.setParentPartId(part.getParentPartId());
-
         return cachedPart;
     }
 
@@ -335,6 +341,8 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
         List<ApBindingItem> bindingItems = bindingItemRepository.findByBindings(bindings);
         for (ApBindingItem bindingItem : bindingItems) {
+            Validate.isTrue(bindingItem.getItemId() != null || bindingItem.getPartId() != null,
+                    "ItemId and PartId should not be NULL together, bindingId: %s", bindingItem.getBindingId());
             bindingItem = HibernateUtils.unproxy(bindingItem);
             Integer bindingId = bindingItem.getBindingId();
             CachedBinding b = bindingMap.get(bindingId);
@@ -342,7 +350,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             Validate.notNull(b, "Cached binding not found, bindingId: %s", bindingId);
             b.addBindingItem(bindingItem);
         }
-
+        logger.debug("Update AccessPointCache, count: {}, bindingId: {}", bindingItems.size(), bindingItems.isEmpty()? null : bindingItems.get(0).getBindingId());
     }
 
     private CachedBinding createCachedBinding(ApBinding binding, ApBindingState bindingState) {
@@ -352,7 +360,6 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         cachedBinding.setValue(binding.getValue());
         cachedBinding.setBindingState(bindingState);
         return cachedBinding;
-
     }
 
     @Transactional
@@ -370,6 +377,15 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         }
     }
 
+    /**
+     * Deserializace entity
+     * 
+     * Must be called inside transaction
+     * 
+     * @param data
+     * @return
+     */
+    @Transactional(value = TxType.MANDATORY)
     public CachedAccessPoint deserialize(String data) {
         try {
             CachedAccessPoint cap = mapper.readValue(data, CachedAccessPoint.class);
@@ -471,6 +487,36 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         if (oldApCachedAccessPoint != null) {
             cachedAccessPointRepository.delete(oldApCachedAccessPoint);
         }
+    }
+
+    @Transactional(value = TxType.MANDATORY)
+    public QueryResults<CachedAccessPoint> search(SearchFilterVO searchFilter,
+                                                  Collection<Integer> apTypeIds,
+                                                  Collection<Integer> scopeIds,
+                                                  ApState.StateApproval state,
+                                                  Integer from,
+                                                  Integer count, StaticDataProvider sdp) {
+        String searchText = (searchFilter != null) ? searchFilter.getSearch() : null;
+
+        QueryResults<ApCachedAccessPoint> r = cachedAccessPointRepository
+                .findApCachedAccessPointisByQuery(searchText,
+                                                  searchFilter,
+                                                  apTypeIds,
+                                                  scopeIds,
+                                                  state,
+                                                  from, count,
+                                                  sdp);
+        if (CollectionUtils.isEmpty(r.getRecords())) {
+            return QueryResults.emptyResult(r.getRecordCount());
+        }
+
+        List<CachedAccessPoint> capList = new ArrayList<>(r.getRecords().size());
+        for (ApCachedAccessPoint capd : r.getRecords()) {
+            CachedAccessPoint cap = deserialize(capd.getData());
+            capList.add(cap);
+        }
+        QueryResults<CachedAccessPoint> result = new QueryResults<>(r.getRecordCount(), capList);
+        return result;
     }
 
     @Override

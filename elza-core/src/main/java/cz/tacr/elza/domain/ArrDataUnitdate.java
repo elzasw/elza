@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -18,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Objects;
 
 import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.common.db.CharConverter;
 import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
@@ -43,13 +45,21 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     @Column(name = "calendarTypeId", updatable = false, insertable = false)
     private Integer calendarTypeId;
 
-    @Column(length = 19, nullable = true)
+    /* Příklad:
+     * -0015-01-01T00:00:00 - datum může mít znaménko minus
+     */
+    @Column(length = 20, nullable = true)
+    @Convert(converter = CharConverter.class)
     private String valueFrom;
 
     @Column(nullable = false)
     private Boolean valueFromEstimated;
 
-    @Column(length = 19, nullable = true)
+    /* Příklad:
+     * -0015-01-01T00:00:00 - datum může mít znaménko minus
+     */
+    @Column(length = 20, nullable = true)
+    @Convert(converter = CharConverter.class)
     private String valueTo;
 
     @Column(nullable = false)

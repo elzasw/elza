@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.SysExternalSystem;
 
 /**
@@ -12,6 +13,8 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
 
     private ApExternalSystemType type;
 
+    private Integer scopeId;
+
     public ApExternalSystemType getType() {
         return type;
     }
@@ -20,14 +23,23 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         this.type = type;
     }
 
+    public Integer getScope() {
+        return scopeId;
+    }
+
+    public void setScope(Integer scopeId) {
+        this.scopeId = scopeId;
+    }
+
     @Override
-    public SysExternalSystem createEntity() {
+    public SysExternalSystem createEntity(ApScope scope) {
         ApExternalSystem entity = new ApExternalSystem();
         entity.setType(type);
+        entity.setScope(scope);
         this.fillEntity(entity);
         return entity;
     }
-    
+
     /**
      * Creates value object from AP external system.
      */
@@ -39,6 +51,7 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         vo.setName(src.getName());
         vo.setPassword(src.getPassword());
         vo.setType(src.getType());
+        vo.setScope(src.getScopeId());
         vo.setUrl(src.getUrl());
         vo.setUsername(src.getUsername());
         vo.setApiKeyId(src.getApiKeyId());

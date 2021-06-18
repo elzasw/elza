@@ -8,14 +8,12 @@ import cz.tacr.elza.domain.ArrDataDate;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
+import java.util.Objects;
 
-/**
- * @since 18.07.2018
- */
 public class ApItemDateVO extends ApItemVO {
 
     /**
-     * datum
+     * Datum
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate value;
@@ -25,8 +23,12 @@ public class ApItemDateVO extends ApItemVO {
 
     public ApItemDateVO(final ApItem item) {
         super(item);
+        value = getLocalDateValue(item);
+    }
+
+    final public LocalDate getLocalDateValue(final ApItem item) {
         ArrDataDate data = (ArrDataDate) item.getData();
-        value = data == null ? null : data.getValue();
+        return data == null ? null : data.getValue();
     }
 
     public LocalDate getValue() {
@@ -43,5 +45,10 @@ public class ApItemDateVO extends ApItemVO {
         data.setValue(value);
         data.setDataType(DataType.DATE.getEntity());
         return data;
+    }
+
+    @Override
+    public boolean equalsValue(ApItem item) {
+        return equalsBase(item) && Objects.equals(value, getLocalDateValue(item));
     }
 }

@@ -1,8 +1,10 @@
 package cz.tacr.elza.controller;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -22,12 +24,14 @@ import com.google.common.base.Functions;
 
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.common.db.QueryResults;
+import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.AbstractFilter;
 import cz.tacr.elza.controller.vo.EntityRef;
 import cz.tacr.elza.controller.vo.FieldValueFilter;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.ResultEntityRef;
+import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -40,6 +44,7 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
+import cz.tacr.elza.drools.model.PartType;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApPartRepository;
@@ -52,6 +57,9 @@ import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.arr_search.ResponseBuilder;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
 
 @RestController
 public class SearchController implements SearchApi {
@@ -70,6 +78,8 @@ public class SearchController implements SearchApi {
 	@Autowired
 	ApIndexRepository apIndexRepository;
 	
+    @Autowired
+    AccessPointCacheService apCacheService;
 
     /**
 	 * Maximal count of items in response
@@ -83,12 +93,13 @@ public class SearchController implements SearchApi {
 		int firstResult = 0;
 	    int maxResults = 200;
 	    
-	    Integer scopeId;
+        List<Integer> scopeIds;
 
-	    String searchText = null;
 		List<Integer> apTypeIds = null;
 		private StaticDataProvider sdp;
 		
+        SearchFilterVO searchFilterVO = new SearchFilterVO();
+
 		public ApSearchParams(final StaticDataProvider sdp) {
 			this.sdp = sdp;
 		}
@@ -126,12 +137,12 @@ public class SearchController implements SearchApi {
 			for(AbstractFilter filter: filters) {
 				if(filter instanceof MultimatchContainsFilter) {
 					MultimatchContainsFilter mcf = (MultimatchContainsFilter)filter;
-					if(StringUtils.isNotBlank(searchText)) {
+                    if (StringUtils.isNotBlank(searchFilterVO.getSearch())) {
 						// multiple fulltext values
 						log.warn("Multiple fulltext fields");
 						return false; 
 					}
-					searchText = mcf.getValue();
+                    searchFilterVO.setSearch(mcf.getValue());
 					continue;
 				}
 				
@@ -239,15 +250,17 @@ public class SearchController implements SearchApi {
 		public int getMaxResults() {
 			return maxResults;
 		}
-		public String getSearchText() {
-			return searchText;
-		}
 		public List<Integer> getApTypeIds() {
 			return apTypeIds;
 		}
-		public Integer getScopeId() {
-			return scopeId;
+
+        public List<Integer> getScopeIds() {
+            return scopeIds;
 		}
+
+        public SearchFilterVO getSearchFilter() {
+            return searchFilterVO;
+        }
 		
 	};
 
@@ -262,7 +275,9 @@ public class SearchController implements SearchApi {
 	 * - filter na typ a textovy filter
 	 */
 	@Override
-    @RequestMapping(value = { "/cuni-ais-api/search-ap", "/api/v1/search-ap" })
+    @RequestMapping(value = { "/cuni-ais-api/search-ap",
+            "/cuni-ais-api/search-ap/search",
+            "/api/v1/search-ap" })
     @Transactional
 	public ResponseEntity<ResultEntityRef> searchEntity(@RequestBody SearchParams searchParams) {
 
@@ -275,66 +290,45 @@ public class SearchController implements SearchApi {
 		
 		ApSearchParams apsp = new ApSearchParams(sdp);
 		if(!apsp.prepare(searchParams)) {
+            log.error("Failed to prepare search parameters: {}", searchParams);
 			return ResponseEntity.badRequest().build();
 		}
-	
-		long count = apService.findApAccessPointByTextAndTypeCount(apsp.getSearchText(),
-				apsp.getApTypeIds(), 
-				null, 
-				apsp.getScopeId(),
-				null,
-				null,
-				null);
 		
+		SearchFilterVO searchFilter = apsp.getSearchFilter();
+		
+        QueryResults<CachedAccessPoint> searchResult = apCacheService.search(searchFilter,
+		                      apsp.getApTypeIds(),
+                              apsp.getScopeIds(),
+                              null,
+                              apsp.getFirstResult(),
+                              apsp.getMaxResults(),
+                              sdp);
+
 		ResultEntityRef rer = new ResultEntityRef();
-		rer.setCount(count);
-		if(count>0) {
-			List<ApState> foundAps = apService.findApAccessPointByTextAndType(apsp.getSearchText(), 
-					apsp.getApTypeIds(), 
-					apsp.getFirstResult(),
-					apsp.getMaxResults(), 
-					null, 
-					apsp.getScopeId(),
-					null,
-					null,
-					null);
-			// read parts
-			List<ApAccessPoint> accessPoints = foundAps.stream().map(aps -> aps.getAccessPoint()).collect(Collectors.toList());
-			
-			List<RulPartType> partTypes = new ArrayList<>(2);
-			partTypes.add(nameType);
-			partTypes.add(bodyType);
-			
-			List<ApIndex> indexes = apIndexRepository.findIndexByAccessPointsAndPartTypeAndIndexType(accessPoints, partTypes, GroovyResult.DISPLAY_NAME);
-			Map<Integer, List<ApIndex>> indexApMap = indexes.stream().collect(Collectors.groupingBy(ap -> ap.getPart().getAccessPointId() )); 
-						
-			for(ApState aps: foundAps) {
-				ApAccessPoint ap = aps.getAccessPoint();
-				EntityRef er = new EntityRef();
-				er.setId(ap.getUuid());
-				
-				List<ApIndex> apIndexes = indexApMap.get(ap.getAccessPointId());
-				if(apIndexes!=null)
-				{
-					// set label and note
-					for(ApIndex apIndex: apIndexes) {
-						if(apIndex.getPart().getPartId().equals(ap.getPreferredPartId())) {
-							er.setLabel(apIndex.getValue());
-						} else
-						if(apIndex.getPart().getPartTypeId().equals(bodyType.getPartTypeId())) {
-							er.setNote(apIndex.getValue());
-						}
-					}
-				}
-				
-				if(StringUtils.isBlank(er.getLabel())) {
-					er.setLabel("id="+ap.getAccessPointId());
-				}
-				
-				rer.addItemsItem(er);
-			}
-			
-		}
+        rer.setCount((long) searchResult.getRecordCount());
+        if (CollectionUtils.isNotEmpty(searchResult.getRecords())) {
+            List<EntityRef> rList = searchResult.getRecords().stream().map(entity -> {
+                EntityRef er = new EntityRef();
+                er.setId(entity.getUuid());
+                
+                List<CachedPart> parts = entity.getParts();
+                for (CachedPart part : parts) {
+                    if (part.getPartId().equals(entity.getPreferredPartId())) {
+                        er.setLabel(ApFactory.findDisplayIndexValue(part.getIndices()));
+                    } else {
+                        if (part.getPartTypeCode().equals(PartType.PT_BODY)) {
+                            er.setNote(ApFactory.findDisplayIndexValue(part.getIndices()));
+                        }
+                    }
+                }
+                
+                if (StringUtils.isBlank(er.getLabel())) {
+                    er.setLabel("id=" + entity.getAccessPointId());
+                }
+                return er;
+            }).collect(Collectors.toList());
+            rer.setItems(rList);
+        }
 		
 		return ResponseEntity.ok(rer);
 	}
@@ -355,7 +349,9 @@ public class SearchController implements SearchApi {
     LevelTreeCacheService levelTreeCacheService;
 
     @Override
-    @RequestMapping(value = { "/cuni-ais-api/search-arr", "/api/v1/search-arr" })
+    @RequestMapping(value = { "/cuni-ais-api/search-arr",
+            "/cuni-ais-api/search-arr/search",
+            "/api/v1/search-arr" })
     @Transactional
     public ResponseEntity<ResultEntityRef> searchArchDesc(@RequestBody SearchParams searchParams) {
 

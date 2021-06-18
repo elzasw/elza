@@ -58,6 +58,9 @@ var messages = {
     "global.action.search": "Vyhledat",
     "global.action.filter.clean": "Zrušit filtr",
 
+    "confirmDialog.default.title": "Potvrzení",
+    "confirmDialog.default.message": "Přejete si pokračovat?",
+
     "download.allreadyDownloading": "Požadavek na stažení souboru již byl odeslán",
     "download.error.title": "Chyba stahování",
     "download.error.timeout": "Vypršel časový limit na obsluhu požadavku",
@@ -243,7 +246,7 @@ var messages = {
     "global.validation.datation.invalidInterval": "Neplatný interval ISO datumů: od > do",
     "global.validation.datation.invalidISODateLength": "Neplatná délka ISO datumů",
 
-    "global.websocket.title": "Odpojení od severu",
+    "global.websocket.title": "Odpojení od serveru",
     "global.websocket.message": "Vyčkejte na automatické obnovení spojení",
     "global.websocket.disconnectedOnError.title": "Při komunikaci nastala chyba",
     "global.websocket.disconnectedOnError.action.refresh": "Aktualizovat aplikaci",
@@ -431,6 +434,7 @@ var messages = {
     "arr.output.name": "Název výstupu",
     "arr.output.internalCode": "Interní kód výstupu",
     "arr.output.outputType": "Typ výstupu",
+    "arr.output.outputFilter": "Výstupní filtr",
     "arr.output.template": "Šablona",
     "arr.output.template.set": "Nastavit",
     "arr.output.template.evenPageOffsetX": "Offset liché stránky X",
@@ -1036,7 +1040,10 @@ var messages = {
     "ap.history.title.state.TO_APPROVE": "ke schválení",
     "ap.history.title.state.APPROVED": "schválená",
     "ap.history.title.state.TO_AMEND": "k doplnění",
-
+    "ap.history.title.state.REV_NEW": "příprava revize",
+    "ap.history.title.state.REV_PREPARED": "revize ke schválení",
+    "ap.history.title.state.REV_AMEND": "revize k doplnění",
+    
     "ap.changeState": "Změna stavu",
     "ap.state.title.noComment": "[bez komentáře]",
     "ap.state.change": "Změna stavu",
@@ -1072,11 +1079,26 @@ var messages = {
 
     "ap.binding.syncState.SYNC_OK": "Aktivní synchronizace",
     "ap.binding.syncState.NOT_SYNCED": "Nesynchronizuje se",
+    "ap.binding.syncState.LOCAL_CHANGE": "Existuje lokální změna",
 
     "ap.binding.extState.ERS_APPROVED": "schválená",
     "ap.binding.extState.ERS_INVALID": "neplatná",
     "ap.binding.extState.ERS_NEW": "nová",
     "ap.binding.extState.ERS_REPLACED": "nahrazená",
+
+    "ap.detail.info": "popis záznamu entity",
+    "ap.detail.edit": "Upravit {0}",
+    "ap.detail.delete": "Smazat",
+    "ap.detail.delete.confirm": "Smazat část: {0}?",
+    "ap.detail.add.related": "Přidat vztah",
+    "ap.detail.add": "Přidat {0}",
+    "ap.detail.setPreferred": "Označit jako preferované",
+    "ap.detail.noInfo": "Sekce neobsahuje žádné informace",
+    "ap.detail.expandInfo": "zobrazit podrobnosti",
+    "ap.detail.collapseInfo": "skrýt podrobnosti",
+
+    "validationResult.show": "Zobrazit výsledek validace",
+    "validationResult.title": "Výsledek validace archivní entity",
 
     "ap.push-to-ext.title": "Zápis entity do externího systému",
     "ap.push-to-ext": "Zápis entity do externího systému",
@@ -1127,7 +1149,6 @@ var messages = {
     "ap.ext-search.section.relations.only-main-part": "Pouze hlavní část",
     "ap.ext-search.section.relations.obj": "Návazná archivní entita",
 
-    "ap.validation.title": "Výsledek validace archivní entity",
 
     "ap.form.ref.value": "Externí entita [{0}]",
 
@@ -1278,6 +1299,7 @@ var messages = {
     "admin.extSystem.password": "Heslo",
     "admin.extSystem.elzaCode": "Kód ELZA",
     "admin.extSystem.type": "Typ",
+    "admin.extSystem.sysScope": "Oblast entit",
     "admin.extSystem.viewDaoUrl": "DaoURL",
     "admin.extSystem.viewFileUrl": "FileURL",
     "admin.extSystem.viewThumbnailUrl": "ThumbnailURL",
@@ -1518,7 +1540,7 @@ var messages = {
     "extMapperForm.update": "Aktualizovat",
 
     "export.title.fund": "Export archivního souboru",
-    "export.transformationName": "Šablona transformace",
+    "export.exportFilter": "Exportní filtr",
 
     "validate.validateInt.notInt": "Nejedná se o celé číslo",
     "validate.validateInt.outOfRange": "Zadané číslo je mimo rozsah celého čísla typu INT",

@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.RulExportFilterVO;
+import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -347,6 +349,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
     protected static final String DESC_ITEM_TYPES = RULE_CONTROLLER_URL + "/descItemTypes";
     protected static final String TEMPLATES = RULE_CONTROLLER_URL + "/templates";
     protected static final String PACKAGES = RULE_CONTROLLER_URL + "/getPackages";
+    protected static final String OUTPUT_FILTERS = RULE_CONTROLLER_URL + "/outputFilters";
+    protected static final String EXPORT_FILTERS = RULE_CONTROLLER_URL + "/exportFilters";
     protected static final String POLICY = RULE_CONTROLLER_URL + "/policy";
     protected static final String POLICY_TYPES = POLICY + "/types/{fundVersionId}";
     protected static final String POLICY_ALL_TYPES = POLICY + "/types";
@@ -1057,6 +1061,24 @@ public abstract class AbstractControllerTest extends AbstractTest {
     }
 
     /**
+     * Získání listu RulOutputFilter
+     *
+     * @return list RulOutputFilter
+     */
+    protected List<RulOutputFilterVO> getOutputFilters() {
+        return Arrays.asList(get(OUTPUT_FILTERS).getBody().as(RulOutputFilterVO[].class));
+    }
+
+    /**
+     * Získání listu RulExportFilter
+     *
+     * @return list RulExportFilter
+     */
+    protected List<RulExportFilterVO> getExportFilters() {
+        return Arrays.asList(get(EXPORT_FILTERS).getBody().as(RulExportFilterVO[].class));
+    }
+
+    /**
      * Vytvoření hodnoty atributu.
      *
      * @param descItem     hodnota atributu
@@ -1134,11 +1156,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return response.getBody().as(ArrangementController.OutputItemResult.class);
     }
 
-    public ArrangementController.OutputItemResult deleteOutputItem(final ArrItemVO outputItemVO,
+    public ArrangementController.OutputItemResult deleteOutputItem(final Integer outputItemId,
                                                                    final Integer fundVersionId,
                                                                    final Integer outputVersion) {
         Response response = post(spec -> spec
-                .body(outputItemVO)
+                .body(outputItemId)
                 .pathParam("fundVersionId", fundVersionId)
                 .pathParam("outputVersion", outputVersion), DELETE_OUTPUT_ITEM);
         return response.getBody().as(ArrangementController.OutputItemResult.class);

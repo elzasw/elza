@@ -7,6 +7,8 @@
 import {WebApi} from 'actions/index.jsx';
 import {i18n} from 'components/shared';
 import * as types from 'actions/constants/ActionTypes';
+import * as outputFilters from '../refTables/outputFilters';
+import * as exportFilters from '../refTables/exportFilters';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 
@@ -72,6 +74,8 @@ export function importPackage(data) {
         return savingApiWrapper(dispatch, WebApi.importPackage(data))
             .then(json => dispatch(importPackageReceive()))
             .then(json => {
+                dispatch(outputFilters.invalidate());
+                dispatch(exportFilters.invalidate());
                 dispatch(
                     addToastrSuccess(
                         i18n('admin.packages.message.import.title'),

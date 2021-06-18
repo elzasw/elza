@@ -53,14 +53,14 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
+import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
-import cz.tacr.elza.controller.vo.FindFundsResult;
-import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
@@ -1594,22 +1594,6 @@ public class ArrangementService {
      */
     public Set<Integer> findAllConnectedScopeByFund(ArrFund arrFund) {
         return scopeRepository.findAllConnectedByFundId(arrFund.getFundId());
-    }
-
-    /**
-     * Získání ApScope podle kódu
-     * 
-     * @param s kod
-     * @return ApScope
-     */
-    public ApScope getApScope(String s) {
-        ApScope entity = scopeRepository.findByCode(s);
-        if(entity == null) {
-            entity = new ApScope();
-            entity.setCode(s);
-            entity.setName(s);
-        }
-        return entity;
     }
 
     /**

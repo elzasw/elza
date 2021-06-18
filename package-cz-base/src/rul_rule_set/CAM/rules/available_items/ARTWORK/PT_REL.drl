@@ -31,7 +31,7 @@ when $part: Part(parent != null)
      $parent: Part(type == PartType.PT_CRE) from $part.parent
      $parentItem: Item(type == "CRE_CLASS", spec == "CRC_RISE") from $parent.items
      $it: ItemType(code == "REL_ENTITY")
-     $is : ItemSpec(code in ("RT_DOCUMENT","RT_AUTHOR","RT_PLACE","RT_ENTINTYRISE")) from $it.specs
+     $is : ItemSpec(code in ("RT_DOCUMENT","RT_AUTHOR","RT_PLACE","RT_ENTITYRISE")) from $it.specs
 then
     $is.setPossible();
     $is.setRepeatable(true);
@@ -79,3 +79,4 @@ then
     $is.setPossible();
 end
 
+                        

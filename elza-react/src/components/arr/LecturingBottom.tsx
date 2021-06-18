@@ -210,7 +210,7 @@ class LecturingBottom extends React.Component {
                                         //rows={3}
                                         value={this.state.text}
                                         onChange={({target: {value}}: any) => this.setState({text: value})}
-                                        disabled={textFieldDisabled}
+                                        //disabled={textFieldDisabled}
                                     />
                                 </div>
                                 <div className="text-right">
@@ -220,7 +220,7 @@ class LecturingBottom extends React.Component {
                                         title={i18n('arr.issues.state.change')}
                                         variant={'action' as any}
                                         id="comment-state"
-                                        disabled={!this.state.text || textFieldDisabled}
+                                        //disabled={!this.state.text || textFieldDisabled}
                                     >
                                         {issueStates.data
                                             .filter(i => i.id !== data.issueStateId)

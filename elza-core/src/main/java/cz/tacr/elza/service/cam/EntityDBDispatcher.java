@@ -94,6 +94,8 @@ public class EntityDBDispatcher {
 
     final static Logger log = LoggerFactory.getLogger(EntityDBDispatcher.class);
 
+    final static String SCHEMA_UNKNOWN = "UNKNOWN";
+
     static class EntityStatus {
         private final EntityXml entityXml;
         private ApState apState;
@@ -206,7 +208,8 @@ public class EntityDBDispatcher {
 
         // Read existing binding from DB
         List<String> values;
-        if (apExternalSystem.getType() == ApExternalSystemType.CAM) {
+        if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
+                apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
             values = CamHelper.getEids(entities);
             idGetter = CamHelper::getEntityId;
         } else if (apExternalSystem.getType() == ApExternalSystemType.CAM_UUID) {
@@ -421,13 +424,27 @@ public class EntityDBDispatcher {
         } else {
             parentPart = null; 
         }
-        
 
         ApPart apPart = partService.createPart(partType, accessPoint, apChange, parentPart);
         ApBindingItem bindingPart = externalSystemService.createApBindingItem(binding, apChange, part.getPid()
                 .getValue(), apPart, null);
 
         return bindingPart;
+    }
+
+    /**
+     * Vytvoření nového ApState a ApAccessPoint
+     *  
+     * @param procCtx
+     * @param entity 
+     * @param binding
+     * @return ApState
+     */
+    public ApState createAccessPoint(ProcessingContext procCtx, EntityXml entity, ApBinding binding) {
+        Validate.notNull(procCtx.getApChange());
+        this.procCtx = procCtx;
+
+        return createAccessPoint(entity, binding, entity.getEuid().getValue());
     }
 
     private ApState createAccessPoint(final EntityXml entity, ApBinding binding, String uuid) {
@@ -814,7 +831,12 @@ public class EntityDBDispatcher {
             ArrDataUriRef dataUriRef = new ArrDataUriRef();
             dataUriRef.setUriRefValue(itemLink.getUrl().getValue());
             dataUriRef.setDescription(itemLink.getNm().getValue());
-            dataUriRef.setSchema(ArrDataUriRef.createSchema(itemLink.getUrl().getValue()));
+            String schema = ArrDataUriRef.createSchema(itemLink.getUrl().getValue());
+            if (schema == null) {
+                log.info("Schema URL: {} is null, will be set {}", itemLink.getUrl().getValue(), SCHEMA_UNKNOWN);
+                schema = SCHEMA_UNKNOWN;
+            }
+            dataUriRef.setSchema(schema);
             dataUriRef.setArrNode(null);
             dataUriRef.setDataType(DataType.URI_REF.getEntity());
             data = dataUriRef;

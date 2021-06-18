@@ -61,7 +61,7 @@ class AddOutputForm extends AbstractReactComponent {
         submitForm(AddOutputForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-        const {create, handleSubmit, onClose, outputTypes, allTemplates, outputTypeId} = this.props;
+        const {create, handleSubmit, onClose, outputTypes, allTemplates, outputTypeId, submitting, outputFilters} = this.props;
 
         let templates = false;
         if (outputTypeId) {
@@ -78,12 +78,13 @@ class AddOutputForm extends AbstractReactComponent {
             <div className="add-output-form-container">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <Field component={FormInputField} type="text" label={i18n('arr.output.name')} name={'name'} />
+                        <Field component={FormInputField} disabled={submitting} type="text" label={i18n('arr.output.name')} name={'name'} />
                         <Field
                             component={FormInputField}
                             type="text"
                             label={i18n('arr.output.internalCode')}
                             name={'internalCode'}
+                            disabled={submitting}
                         />
                         {create && (
                             <Field
@@ -91,6 +92,7 @@ class AddOutputForm extends AbstractReactComponent {
                                 as="select"
                                 label={i18n('arr.output.outputType')}
                                 name={'outputTypeId'}
+                                disabled={submitting}
                             >
                                 <option key="-outputTypeId" />
                                 {outputTypes.map(i => (
@@ -105,7 +107,7 @@ class AddOutputForm extends AbstractReactComponent {
                             as="select"
                             label={i18n('arr.output.template')}
                             name={'templateId'}
-                            disabled={!outputTypeId || !templates}
+                            disabled={!outputTypeId || !templates || submitting}
                         >
                             <option key="-templateId" />
                             {templates &&
@@ -115,9 +117,24 @@ class AddOutputForm extends AbstractReactComponent {
                                     </option>
                                 ))}
                         </Field>
+                        <Field
+                            component={FormInputField}
+                            as="select"
+                            label={i18n('arr.output.outputFilter')}
+                            name={'outputFilterId'}
+                            disabled={submitting}
+                        >
+                            <option key="-outputFilterId" />
+                            {outputFilters.data &&
+                            outputFilters.data.map(i => (
+                                <option key={i.id} value={i.id}>
+                                    {i.name}
+                                </option>
+                            ))}
+                        </Field>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" variant="outline-secondary">
+                        <Button type="submit" disabled={submitting} variant="outline-secondary">
                             {create ? i18n('global.action.create') : i18n('global.action.update')}
                         </Button>
                         <Button variant="link" onClick={onClose}>
@@ -141,6 +158,7 @@ export default connect((state, props) => {
         outputTypeId: selector(state, 'outputTypeId'),
         initialValues: props.initData,
         outputTypes: state.refTables.outputTypes.items,
+        outputFilters: state.refTables.outputFilters,
         allTemplates: state.refTables.templates.items,
     };
 })(form);
