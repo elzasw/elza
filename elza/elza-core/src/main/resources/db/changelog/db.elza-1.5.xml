@@ -1403,6 +1403,7 @@ where no.level_id = l.level_id
         </addColumn>
         <sql dbms="postgresql">UPDATE ap_part p SET last_change_id=
 			(SELECT MAX(GREATEST(i.create_change_id, i.delete_change_id)) FROM ap_item i WHERE i.part_id=p.part_id)</sql>
+        <sql dbms="postgresql">UPDATE ap_part p SET last_change_id=GREATEST(create_change_id, delete_change_id) WHERE p.last_change_id IS NULL</sql>
         <addNotNullConstraint tableName="ap_part" columnName="last_change_id" columnDataType="int" />
     </changeSet>
 
