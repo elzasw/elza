@@ -464,6 +464,7 @@ public class IssueService {
                 "Stav",
                 "U\u017Eivatel",
                 "Datum",
+                "Popis",
                 "Koment\u00E1\u0159e"
         };
 

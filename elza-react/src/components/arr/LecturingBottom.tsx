@@ -220,7 +220,7 @@ class LecturingBottom extends React.Component {
                                         title={i18n('arr.issues.state.change')}
                                         variant={'action' as any}
                                         id="comment-state"
-                                        //disabled={!this.state.text || textFieldDisabled}
+                                        disabled={!this.state.text} //disabled={!this.state.text || textFieldDisabled}
                                     >
                                         {issueStates.data
                                             .filter(i => i.id !== data.issueStateId)

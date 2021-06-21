@@ -595,7 +595,6 @@ public class RuleService {
         if (CollectionUtils.isEmpty(deleteDirections)) {
             deleteNodes.addAll(nodes);
         } else {
-
             for (RelatedNodeDirection deleteDirection : deleteDirections) {
                 for (ArrNode node : nodes) {
                     deleteNodes.addAll(nodeRepository.findNodesByDirection(node, version, deleteDirection));

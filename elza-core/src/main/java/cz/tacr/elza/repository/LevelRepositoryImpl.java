@@ -162,6 +162,11 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     @Override
     public List<ArrLevel> findAllChildrenByNode(final ArrNode node, final ArrChange lockChange) {
         Assert.notNull(node, "JP musí být vyplněna");
+        
+        if(lockChange==null) {
+            // call recursive query for current version
+            return findLevelsSubtree(node.getNodeId(), 0, 0, true);
+        }
 
         List<ArrLevel> children = findByParentNode(node, lockChange);
 
@@ -170,12 +175,9 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
             ArrLevel child = children.remove(0);
             result.add(child);
 
-            if (lockChange == null) {
-                children.addAll(
-                        levelRepository.findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(child.getNode()));
-            } else {
-                children.addAll(levelRepository.findByParentNodeOrderByPositionAsc(child.getNode(), lockChange));
-            }
+            Collection<? extends ArrLevel> levels = levelRepository
+                    .findByParentNodeOrderByPositionAsc(child.getNode(), lockChange);
+            children.addAll(levels);
         }
 
         return result;
