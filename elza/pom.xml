@@ -717,8 +717,8 @@
     </repositories>
 
     <scm>
-        <connection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</connection>
-        <developerConnection>scm:git:ssh://frnk.lightcomp.cz/opt/git/elza.git</developerConnection>
+        <connection>scm:git:ssh://gitlab.lightcomp.cz/elza/elza.git</connection>
+        <developerConnection>scm:git:ssh://gitlab.lightcomp.cz/elza/elza.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
     <distributionManagement>
