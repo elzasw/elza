@@ -35,7 +35,7 @@ import {selectTab} from 'actions/global/tab';
 import {userDetailsSaveSettings} from 'actions/user/userDetail';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrPageKeymap';
-import NodeSettingsForm from '../../components/arr/NodeSettingsForm';
+import {NodeSettingsForm} from '../../components/arr/node-settings-form';
 import {FOCUS_KEYS} from '../../constants.tsx';
 import ArrStructurePanel from '../../components/arr/ArrStructurePanel';
 import {structureTypesFetchIfNeeded} from '../../actions/refTables/structureTypes';
