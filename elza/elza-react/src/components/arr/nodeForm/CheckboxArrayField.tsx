@@ -1,41 +1,92 @@
-import React, { memo, useCallback, useState } from 'react';
+import React, { PropsWithChildren, useCallback, useState } from 'react';
 import { Form } from 'react-bootstrap';
-import { FieldArrayFieldsProps } from 'redux-form';
+import { Field, FieldArrayFieldsProps, WrappedFieldProps } from 'redux-form';
+import { VisiblePolicyRefItem } from "../../../typings/store";
 
-type Record = {id: string, checked: boolean};
-type PolicyTypeItem = {code: string, name: string, ruleSetId: number};
+type RecordType = {id: string, checked: boolean};
 
-interface PolicyTypeItems {
-    [x: number]: PolicyTypeItem
+interface ItemWithId {
+    id: number | string;
+    name: string;
 }
 
 interface ICheckboxArrayFieldProps {
-    name: string
-    fields: FieldArrayFieldsProps<Record>
-    items: PolicyTypeItems
-    disabled: boolean
+    name: string;
+    fields: FieldArrayFieldsProps<RecordType>;
+    items: VisiblePolicyRefItem[];
+    item: VisiblePolicyRefItem;
+    disabled: boolean;
 }
 
-export const CheckboxArrayField: React.FC<ICheckboxArrayFieldProps> = memo(({fields, ...props}) => (
+interface CheckboxGroupProps<T extends ItemWithId> {
+    name: string;
+    items: T[];
+    disabled?: boolean;
+}
+
+export const CheckboxGroup = <T extends ItemWithId>({
+    disabled = false,
+    items,
+    name,
+}: PropsWithChildren<CheckboxGroupProps<T>>) => {
+    const renderField = (props:WrappedFieldProps)=>{
+        const {input: { value, onChange }} = props;
+
+        const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            const newVal = {
+                ...value,
+                [e.target.id]: !value[e.target.id] || false,
+            };
+            onChange(newVal);
+        }
+
+        return <div>
+            {items.map(({id, name})=>{
+                return <Form.Check
+                    id={id.toString()}
+                    key={id}
+                    checked={value[id] || false}
+                    onChange={handleChange}
+                    label={name}
+                    disabled={disabled}
+                />
+            })}
+        </div>
+    }
+
+    return <Field 
+        name={name} 
+        component={renderField}
+    />
+}
+
+export const CheckboxArrayField: React.FC<ICheckboxArrayFieldProps> = ({fields, ...props}) => (
     <>
-        {fields.map((field, index) => {
+        {props.items?.map((item, index) => {
             return (
                 <RecordField
+                    {...props}
                     key={index}
                     index={index}
                     fields={fields}
-                    {...props}
+                    item={item}
                 />
             );
         })}
     </>
-));
+);
 
 interface IRecordFieldProps extends ICheckboxArrayFieldProps {
     index: number
 }
 
-const RecordField: React.FC<IRecordFieldProps> = memo(({index, fields, items, ...props}) => {
+const RecordField: React.FC<IRecordFieldProps> = ({
+    index, 
+    fields, 
+    items, 
+    item,
+    ...props
+}) => {
 
     const [id] = useState(fields.get(index).id);
 
@@ -46,10 +97,10 @@ const RecordField: React.FC<IRecordFieldProps> = memo(({index, fields, items, ..
 
     return (
         <Form.Check
+            {...props}
             checked={fields.get(index).checked}
             onChange={onChange}
-            label={items[id]?.name}
-            {...props}
+            label={item.name}
         />
     );
-});
+};
