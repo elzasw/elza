@@ -345,7 +345,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     renderFormActions() {
         const notRoot = !isFundRootId(this.props.nodeId);
 
-        const {fundId, userDetail, issueProtocol, nodeId, nodeSettings} = this.props;
+        const {fundId, userDetail, nodeId, nodeSettings} = this.props;
 
         const editPermAllowed = userDetail.hasOne(
             perms.FUND_ADMIN,
@@ -354,19 +354,12 @@ class NodeSubNodeForm extends AbstractReactComponent {
             {type: perms.FUND_ARR, fundId},
         );
 
-        const isProtocolLoaded = issueProtocol.fetched && issueProtocol.data && fundId === issueProtocol.data.fundId;
-
         const nodeSettingsIndex = indexById(nodeSettings.nodes, nodeId);
         const nodeSetting = nodeSettings.nodes[nodeSettingsIndex];
         const isCopyAll = nodeSetting && nodeSetting.copyAll;
 
-        const haveProtocolPermissionToWrite =
-            isProtocolLoaded &&
-            (userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) ||
-                (userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
-                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
-                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueProtocol.data.id) !==
-                        -1));
+        const haveProtocolPermissionToWrite = userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) ||
+            userDetail.permissionsMap?.[perms.FUND_ISSUE_LIST_WR]?.issueListIds.length > 0;
 
         return (
             <div ref="nodeToolbar" className="node-form-actions-container">
@@ -437,17 +430,15 @@ class NodeSubNodeForm extends AbstractReactComponent {
                             </NoFocusButton>
                         }
                     </div>
-                    {isProtocolLoaded && (
-                        <div className="section">
-                            <NoFocusButton
-                                onClick={this.handleCreateIssueNode}
-                                disabled={!haveProtocolPermissionToWrite}
-                                title={i18n('subNodeForm.issueAdd')}
-                            >
-                                <Icon glyph="fa-commenting" />
-                            </NoFocusButton>
-                        </div>
-                    )}
+                    <div className="section">
+                        <NoFocusButton
+                            onClick={this.handleCreateIssueNode}
+                            disabled={!haveProtocolPermissionToWrite}
+                            title={i18n('subNodeForm.issueAdd')}
+                        >
+                            <Icon glyph="fa-commenting" />
+                        </NoFocusButton>
+                    </div>
                     <div className="section">
                         <DropdownButton
                             variant="default"
@@ -493,7 +484,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     }
 
     handleCreateIssueNode = () => {
-        const {issueProtocol, dispatch, fund} = this.props;
+        const {issueProtocol, issueTypes, dispatch, fund} = this.props;
 
         let node;
         if (fund.nodes && fund.nodes.activeIndex !== null) {
@@ -508,10 +499,13 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     onSubmit={data =>
                         WebApi.addIssue({
                             ...data,
-                            issueListId: issueProtocol.id,
                             nodeId: node.selectedSubNodeId,
                         })
                     }
+                    initialValues={{
+                        issueListId: issueProtocol.id,
+                        issueTypeId: issueTypes?.data?.[0].id,
+                    }}
                     onSubmitSuccess={data => {
                         dispatch(issuesActions.list.invalidate(data.issueListId));
                         dispatch(issuesActions.detail.invalidate(data.id));
@@ -960,6 +954,7 @@ function mapStateToProps(state) {
         userDetail,
         groups: refTables.groups.data,
         issueProtocol: storeFromArea(state, issuesActions.AREA_PROTOCOL),
+        issueTypes: refTables.issueTypes,
     };
 }
 
