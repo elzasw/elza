@@ -128,15 +128,12 @@ class LecturingBottom extends React.Component {
         const {id, data, fetched, isFetching} = issueDetail;
         const {text, comment, submitting} = this.state;
 
-        const canWrite =
-            fetched &&
-            (userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) ||
-                (userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
-                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
-                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(data.issueListId) !== -1));
+        const canWrite = fetched && (
+                userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) ||
+                userDetail.permissionsMap?.[perms.FUND_ISSUE_LIST_WR]?.issueListIds.length > 0
+            );
         const canUpdateIssue =
-            canWrite &&
-            userDetail.id === data.userCreate.id &&
+            userDetail.id === data?.userCreate?.id &&
             issueComments.fetched &&
             issueComments.rows.length === 0;
 
@@ -274,6 +271,7 @@ class LecturingBottom extends React.Component {
 }
 
 export default connect((state: any) => {
+    const { arrRegion } = state;
     return {
         issueTypes: state.refTables.issueTypes,
         issueStates: state.refTables.issueStates,
