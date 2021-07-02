@@ -1,4 +1,4 @@
-import { CheckboxGroup } from 'components/arr/nodeForm/CheckboxArrayField';
+import { CheckboxGroup } from 'components/arr/nodeForm/checkbox-group';
 import { FormInputField, i18n } from 'components/shared';
 import React, { FC, useState } from 'react';
 import { Col, Form, Modal, Nav, Row } from 'react-bootstrap';
