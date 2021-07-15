@@ -135,9 +135,30 @@ export interface Fund {
     versions: unknown;
 }
 
+export interface Extension {
+    id: number;
+    code: string;
+    name: string;
+}
+
+export interface VisiblePolicyOtherData {
+    nodePolicyTypeIdsMap: Record<number, boolean>
+    policyTypeIdsMap: Record<number, boolean>
+    availableExtensions: Extension[],
+    parentExtensions: Extension[],
+    nodeExtensions: Extension[],
+}
+
+export interface VisiblePolicyDataItem {
+    id: number;
+    checked: boolean;
+}
+
 export interface VisiblePolicy {
-    data: null | unknown;
-    otherData: null | unknown;
+    // data: VisiblePolicyDataItem[] | null;
+    otherData: VisiblePolicyOtherData | null;
+    fetched: boolean;
+    fetching: boolean;
 }
 
 export interface ArrRegion {

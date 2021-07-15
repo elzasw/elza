@@ -1,4 +1,4 @@
-@import "../../variables.scss";
+@import "../../../variables.scss";
 
 .node-settings-form {
     .modal-body {
@@ -13,6 +13,7 @@
             border-left: 1px solid $node-panel-border;
 
             .listbox-container {
+                padding: 5px;
                 .checkbox {
                     margin-left: 10px;
                     margin-top: 0;

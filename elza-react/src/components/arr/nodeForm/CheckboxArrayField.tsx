@@ -1,41 +1,45 @@
-import React, { memo, useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Form } from 'react-bootstrap';
 import { FieldArrayFieldsProps } from 'redux-form';
+import { VisiblePolicyRefItem } from "../../../typings/store";
 
-type Record = {id: string, checked: boolean};
-type PolicyTypeItem = {code: string, name: string, ruleSetId: number};
-
-interface PolicyTypeItems {
-    [x: number]: PolicyTypeItem
-}
+type RecordType = {id: string, checked: boolean};
 
 interface ICheckboxArrayFieldProps {
-    name: string
-    fields: FieldArrayFieldsProps<Record>
-    items: PolicyTypeItems
-    disabled: boolean
+    name: string;
+    fields: FieldArrayFieldsProps<RecordType>;
+    items: VisiblePolicyRefItem[];
+    item: VisiblePolicyRefItem;
+    disabled: boolean;
 }
 
-export const CheckboxArrayField: React.FC<ICheckboxArrayFieldProps> = memo(({fields, ...props}) => (
+export const CheckboxArrayField: React.FC<ICheckboxArrayFieldProps> = ({fields, ...props}) => (
     <>
-        {fields.map((field, index) => {
+        {props.items?.map((item, index) => {
             return (
                 <RecordField
+                    {...props}
                     key={index}
                     index={index}
                     fields={fields}
-                    {...props}
+                    item={item}
                 />
             );
         })}
     </>
-));
+);
 
 interface IRecordFieldProps extends ICheckboxArrayFieldProps {
     index: number
 }
 
-const RecordField: React.FC<IRecordFieldProps> = memo(({index, fields, items, ...props}) => {
+const RecordField: React.FC<IRecordFieldProps> = ({
+    index, 
+    fields, 
+    items, 
+    item,
+    ...props
+}) => {
 
     const [id] = useState(fields.get(index).id);
 
@@ -46,10 +50,10 @@ const RecordField: React.FC<IRecordFieldProps> = memo(({index, fields, items, ..
 
     return (
         <Form.Check
+            {...props}
             checked={fields.get(index).checked}
             onChange={onChange}
-            label={items[id]?.name}
-            {...props}
+            label={item.name}
         />
     );
-});
+};

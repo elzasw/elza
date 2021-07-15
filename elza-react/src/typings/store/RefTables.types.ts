@@ -35,6 +35,13 @@ export enum PartTypeCodes {
     PT_EVENT = "PT_EVENT",
 }
 
+export interface VisiblePolicyRefItem {
+    id: number;
+    code: string;
+    name: string;
+    ruleSetId: number;
+}
+
 export interface RefTablesState {
     apTypes: BaseRefTableStore<ApTypeVO>;
     calendarTypes: BaseRefTableStore<CalendarType>;
@@ -53,5 +60,5 @@ export interface RefTablesState {
     scopesData: ScopesData;
     structureTypes: unknown;
     templates: unknown;
-    visiblePolicyTypes: unknown;
+    visiblePolicyTypes: BaseRefTableStore<VisiblePolicyRefItem>;
 }
