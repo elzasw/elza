@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
@@ -855,6 +856,7 @@ public class AccessPointService {
      * @return založený přístupový bod
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
+    @Transactional(TxType.MANDATORY)
     public ApState createAccessPoint(@AuthParam(type = AuthParam.Type.SCOPE) final ApScope scope,
                                      final ApType type,
                                      @Nullable final SysLanguage language,
@@ -941,6 +943,7 @@ public class AccessPointService {
         return apBindingItem.getPart();
     }
 
+    @Transactional(TxType.MANDATORY)
     public boolean updatePart(final ApAccessPoint apAccessPoint,
                            final ApPart apPart,
                            final ApPartFormVO apPartFormVO) {
@@ -1037,6 +1040,15 @@ public class AccessPointService {
         return null;
     }
 
+    /**
+     * Run Groovy scripts on parts
+     * 
+     * @param state
+     * @param partList
+     * @param itemMap
+     * @param async
+     * @return
+     */
     public boolean updatePartValues(final ApState state,
                                     final List<ApPart> partList,
                                     final Map<Integer, List<ApItem>> itemMap,
@@ -1396,9 +1408,14 @@ public class AccessPointService {
      *            přístupový bod
      * @return stav přístupového bodu
      */
+    @Transactional(TxType.MANDATORY)
     public ApState getStateInternal(final Integer accessPointId) {
         final ApState state = stateRepository.findLastByAccessPointId(accessPointId);
-        return controlApState(state, accessPointId);
+        if (state == null) {
+            throw new ObjectNotFoundException("Stav pro přístupový bod neexistuje", BaseCode.INVALID_STATE)
+                    .set("accessPointId", accessPointId);
+        }
+        return state;
     }
 
     /**
@@ -1410,24 +1427,14 @@ public class AccessPointService {
      *            přístupový bod
      * @return stav přístupového bodu
      */
+    @Transactional(TxType.MANDATORY)
     public ApState getStateInternal(final ApAccessPoint accessPoint) {
         final ApState state = stateRepository.findLastByAccessPoint(accessPoint);
-        return controlApState(state, accessPoint.getAccessPointId());
-    }
-
-    /**
-     * Kontrola stavu přístupového bodu.
-     * 
-     * @param apState
-     * @param accessPointId
-     * @return stav přístupového bodu
-     */
-    private ApState controlApState(final ApState apState, final Integer accessPointId) {
-        if (apState == null) {
+        if (state == null) {
             throw new ObjectNotFoundException("Stav pro přístupový bod neexistuje", BaseCode.INVALID_STATE)
-                    .set("accessPointId", accessPointId);
+                    .set("accessPointId", accessPoint.getAccessPointId());
         }
-        return apState;
+        return state;
     }
 
     /**
@@ -1954,6 +1961,7 @@ public class AccessPointService {
         return headers;
     }
 
+    @Transactional(TxType.MANDATORY)
     public void generateSync(final Integer accessPointId, final ApPart apPart) {
         boolean successfulGeneration = updatePartValue(apPart);
         ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPointId);
@@ -1967,15 +1975,17 @@ public class AccessPointService {
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
-        generateSync(accessPointId, apState, partList, itemMap);
+        generateSync(accessPointId, apState, partList, itemMap, false);
     }
 
+    @Transactional(TxType.MANDATORY)
     public void generateSync(final Integer accessPointId,
                              final ApState apState,
                              final List<ApPart> partList,
-                             final Map<Integer, List<ApItem>> itemMap) {
+                             final Map<Integer, List<ApItem>> itemMap,
+                             boolean async) {
 
-        boolean successfulGeneration = updatePartValues(apState, partList, itemMap, false);
+        boolean successfulGeneration = updatePartValues(apState, partList, itemMap, async);
         ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPointId);
         updateValidationErrors(accessPointId, apValidationErrorsVO, successfulGeneration);
     }

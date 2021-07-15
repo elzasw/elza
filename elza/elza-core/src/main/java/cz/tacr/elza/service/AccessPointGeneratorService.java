@@ -60,9 +60,8 @@ public class AccessPointGeneratorService {
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
-        boolean successfulGeneration = accessPointService.updatePartValues(apState, partList, itemMap, true);
-        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(apState.getAccessPoint().getAccessPointId());
-        accessPointService.updateValidationErrors(accessPoint.getAccessPointId(), apValidationErrorsVO, successfulGeneration);
+        accessPointService.generateSync(accessPoint.getAccessPointId(), apState, partList, itemMap, true);
+
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 }

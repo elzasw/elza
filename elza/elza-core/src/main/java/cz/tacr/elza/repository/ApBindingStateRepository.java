@@ -45,6 +45,6 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
             " AND s.deleteChangeId IS NULL")
     List<ApExternalIdInfo> findActiveInfoByTypeIdAndValues(@Param("typeId") Integer typeId, @Param("values") Collection<String> values);
 
-    @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding bin JOIN bis.accessPoint WHERE bis.deleteChangeId IS NULL AND bin.apExternalSystem = :externalSystem AND bin.value IN :recordCodes")
-    List<ApBindingState> findByRecordCodesAndExternalSystem(@Param("recordCodes") Collection<String> recordCodes, @Param("externalSystem") ApExternalSystem externalSystem);
+    @Query("SELECT bis FROM ap_binding_state bis JOIN bis.accessPoint WHERE bis.deleteChangeId IS NULL AND bis.binding IN :bidings")
+    List<ApBindingState> findByBindings(@Param("bidings") Collection<ApBinding> bs);
 }

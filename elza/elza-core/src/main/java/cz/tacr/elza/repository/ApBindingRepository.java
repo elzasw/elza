@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
@@ -25,4 +26,8 @@ public interface ApBindingRepository extends ElzaJpaRepository<ApBinding, Intege
     ApBinding findByScopeAndValueAndApExternalSystem(@Param("scope") ApScope scope,
                                                      @Param("archiveEntityId") String archiveEntityId,
                                                      @Param("externalSystemCode") String externalSystemCode);
+
+    @Query("SELECT bin FROM ap_binding bin WHERE bin.value IN :values AND bin.apExternalSystem = :externalSystem")
+    List<ApBinding> findByValuesAndExternalSystem(@Param("values") Collection<String> values,
+                                                  @Param("externalSystem") ApExternalSystem externalSystem);
 }

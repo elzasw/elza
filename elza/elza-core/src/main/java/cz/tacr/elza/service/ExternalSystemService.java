@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.common.ObjectListIterator;
@@ -99,6 +100,7 @@ public class ExternalSystemService {
      *
      * @return seznam externích systémů
      */
+    @Transactional
     public List<ApExternalSystem> findAllApSystem() {
         return apExternalSystemRepository.findAll();
     }
@@ -436,11 +438,27 @@ public class ExternalSystemService {
         return bindingItemRepository.findByBinding(binding);
     }
 
+    /**
+     * Return active binding state
+     * 
+     * Binding is also fetched.
+     * 
+     * @param accessPoint
+     * @param externalSystem
+     * @return
+     */
     public ApBindingState findByAccessPointAndExternalSystem(final ApAccessPoint accessPoint, final ApExternalSystem externalSystem) {
         return bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
     }
 
-    public List<ApBindingState> findByRecordCodesAndExternalSystem(List<String> recordCodes, ApExternalSystem externalSystem) {
-        return ObjectListIterator.findIterable(recordCodes, rec -> bindingStateRepository.findByRecordCodesAndExternalSystem(rec, externalSystem));
+    public List<ApBinding> findBindings(List<String> recordCodes, ApExternalSystem externalSystem) {
+        return ObjectListIterator.findIterable(recordCodes, recs -> {
+            return bindingRepository.findByValuesAndExternalSystem(recs, externalSystem);
+        });
+    }
+
+    public List<ApBindingState> findBindingStates(List<ApBinding> bindings) {
+        return ObjectListIterator.findIterable(bindings,
+                                               bs -> bindingStateRepository.findByBindings(bs));
     }
 }

@@ -1123,15 +1123,16 @@ public class ApController {
         ApState state = accessPointService.getStateInternal(accessPoint);
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
+        ApBinding binding = bindingState.getBinding();
 
         EntityXml entity;
         try {
-            entity = camConnector.getEntityById(bindingState.getBinding().getValue(), externalSystemCode);
+            entity = camConnector.getEntityById(binding.getValue(), externalSystemCode);
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
         ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
-        camService.synchronizeAccessPoint(procCtx, state, bindingState, null, entity, false);
+        camService.synchronizeAccessPoint(procCtx, state, bindingState, binding, entity, false);
     }
 
     /**
