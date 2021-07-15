@@ -91,45 +91,36 @@ class LecturingTop extends React.Component {
         this.props.dispatch(downloadFile(UrlFactory.exportIssueList(this.state.issueListId)));
     };
 
-    newArr = () => {
+    createIssue = (nodeId?: number) => {
+        const { issueTypes } = this.props;
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.issues.add.arr.title'),
+                nodeId != null ? i18n('arr.issues.add.node.title') : i18n('arr.issues.add.arr.title'),
                 <IssueForm
+                    initialValues={{
+                        issueListId: this.state.issueListId,
+                        issueTypeId: issueTypes?.data?.[0].id,
+                    }}
                     onSubmit={(data: IssueVO) =>
                         WebApi.addIssue({
                             ...data,
-                            issueListId: this.state.issueListId,
-                            nodeId: undefined,
+                            nodeId,
                         })
                     }
                     onSubmitSuccess={this.afterAdd}
                 />,
             ),
         );
-    };
+    }
 
-    newNode = () => {
-        if (!this.props.node || !this.props.node.selectedSubNodeId) {
-            return;
-        }
-        this.props.dispatch(
-            modalDialogShow(
-                this,
-                i18n('arr.issues.add.node.title'),
-                <IssueForm
-                    onSubmit={(data: IssueVO) =>
-                        WebApi.addIssue({
-                            ...data,
-                            issueListId: this.state.issueListId,
-                            nodeId: this.props.node.selectedSubNodeId,
-                        })
-                    }
-                    onSubmitSuccess={this.afterAdd}
-                />,
-            ),
-        );
+    createArrIssue = () => this.createIssue();
+
+    createNodeIssue = () => {
+        const {node} = this.props;
+        if (!node?.selectedSubNodeId) { return; }
+
+        this.createIssue(node.selectedSubNodeId);
     };
 
     afterAdd = data => {
@@ -170,10 +161,7 @@ class LecturingTop extends React.Component {
 
         const canWrite =
             !!issueListId &&
-            (hasAdmin ||
-                (userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
-                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
-                    userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(issueListId) !== -1));
+            (hasAdmin || userDetail.permissionsMap?.[perms.FUND_ISSUE_LIST_WR]?.issueListIds.length > 0)
 
         const config = fund.activeVersion.config;
 
@@ -188,13 +176,13 @@ class LecturingTop extends React.Component {
                             className="d-inline"
                             title={((<Icon glyph="fa-plus-circle" />) as any) as string}
                         >
-                            <Dropdown.Item eventKey="1" onClick={this.newArr}>
+                            <Dropdown.Item eventKey="1" onClick={this.createArrIssue}>
                                 {i18n('arr.issues.add.arr')}
                             </Dropdown.Item>
                             <Dropdown.Item
                                 eventKey="2"
                                 disabled={!this.props.node || !this.props.node.selectedSubNodeId}
-                                onClick={this.newNode}
+                                onClick={this.createNodeIssue}
                             >
                                 {i18n('arr.issues.add.node')}
                             </Dropdown.Item>
@@ -327,7 +315,9 @@ class LecturingTop extends React.Component {
 }
 
 export default (connect((state: any) => {
+    const { arrRegion } = state;
     return {
+        activeFund: arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null,
         issueTypes: state.refTables.issueTypes,
         issueStates: state.refTables.issueStates,
         issueList: storeFromArea(state, issuesActions.AREA_LIST),

@@ -10,6 +10,10 @@ import ConfirmForm from '../../components/shared/form/ConfirmForm';
 import {WebApi} from '../../actions/WebApi';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
 import ArrHistoryForm from "../../components/arr/ArrHistoryForm";
+import IssueForm from '../../components/form/IssueForm';
+import storeFromArea from '../../shared/utils/storeFromArea';
+import * as issuesActions from '../../actions/arr/issues';
+import {nodeWithIssueByFundVersion} from '../../actions/arr/issues';
 
 const clientLog = window.clientLog !== undefined && window.clientLog;
 
@@ -34,17 +38,12 @@ class ArrPageRibbon extends AbstractReactComponent {
     };
 
     handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
-        const activeFund = this.getActiveFund(this.props);
-        const versionId = activeFund.versionId;
+        const { activeFund } = this.props;
+        const versionId = activeFund?.versionId;
         WebApi.revertChanges(versionId, nodeId, fromChangeId, toChangeId).then(() => {
             this.props.dispatch(modalDialogHide());
         });
     };
-
-    getActiveFund(props) {
-        const arrRegion = props.arrRegion;
-        return arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
-    }
 
     /**
      * Zobrazení formuláře pro synchronizaci DAOS pro celé AS.
@@ -70,11 +69,9 @@ class ArrPageRibbon extends AbstractReactComponent {
 
     render() {
         const {
-            activeFundId,
-            activeFundVersionId,
+            activeFund,
             selectedSubNodeId,
             readMode,
-            arrRegionActiveIndex,
             userDetail,
             handleChangeFundSettings,
             handleChangeFundTemplateSettings,
@@ -82,15 +79,13 @@ class ArrPageRibbon extends AbstractReactComponent {
             handleErrorPrevious,
             handleErrorNext,
             handleOpenFundActionForm,
-            issueProtocol,
         } = this.props;
 
         const altActions = [];
 
         const itemActions = [];
 
-        const indexFund = arrRegionActiveIndex;
-        if (indexFund !== null) {
+        if (activeFund) {
             altActions.push(
                 <Button key="fund-settings" onClick={handleChangeFundSettings} variant={'default'}>
                     <Icon glyph="fa-wrench" />
@@ -108,7 +103,7 @@ class ArrPageRibbon extends AbstractReactComponent {
             altActions.push(
                 <Button
                     key="sync-templates"
-                    onClick={handleChangeSyncTemplateSettings.bind(this, activeFundId)}
+                    onClick={handleChangeSyncTemplateSettings.bind(this, activeFund.id)}
                     variant={'default'}
                 >
                     <Icon glyph="fa-wrench" />
@@ -122,15 +117,15 @@ class ArrPageRibbon extends AbstractReactComponent {
                     perms.FUND_ADMIN,
                     {
                         type: perms.FUND_VER_WR,
-                        fundId: activeFundId,
+                        fundId: activeFund.id,
                     },
                     perms.FUND_ARR_ALL,
-                    {type: perms.FUND_ARR, fundId: activeFundId},
+                    {type: perms.FUND_ARR, fundId: activeFund.id},
                 )
             ) {
                 altActions.push(
                     <Button
-                        onClick={() => this.handleShowFundHistory(activeFundVersionId, readMode)}
+                        onClick={() => this.handleShowFundHistory(activeFund.versionId, readMode)}
                         key="show-fund-history"
                         variant={'default'}
                     >
@@ -147,15 +142,15 @@ class ArrPageRibbon extends AbstractReactComponent {
                     perms.FUND_ADMIN,
                     {
                         type: perms.FUND_VER_WR,
-                        fundId: activeFundId,
+                        fundId: activeFund.id,
                     },
                     perms.FUND_ARR_ALL,
-                    {type: perms.FUND_ARR, fundId: activeFundId},
+                    {type: perms.FUND_ARR, fundId: activeFund.id},
                 )
             ) {
                 altActions.push(
                     <Button
-                        onClick={() => this.handleShowSyncDaosByFund(activeFundVersionId)}
+                        onClick={() => this.handleShowSyncDaosByFund(activeFund.versionId)}
                         key="show-sync-daos-by-fund"
                         variant={'default'}
                     >
@@ -180,7 +175,7 @@ class ArrPageRibbon extends AbstractReactComponent {
                         <span className="btnText">{i18n('ribbon.action.arr.validation.error.next')}</span>
                     </Button>,
                 );
-                if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: activeFundId})) {
+                if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: activeFund.id})) {
                     itemActions.push(
                         <Button
                             disabled={readMode}
@@ -194,23 +189,6 @@ class ArrPageRibbon extends AbstractReactComponent {
                     );
                 }
             }
-
-            const isProtocolLoaded =
-                !issueProtocol.isFetching && issueProtocol.data && activeFundId === issueProtocol.data.fundId;
-
-            const haveProtocolPermissionToWrite =
-                isProtocolLoaded &&
-                (userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) ||
-                    (userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR] &&
-                        userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds &&
-                        userDetail.permissionsMap[perms.FUND_ISSUE_LIST_WR].issueListIds.indexOf(
-                            issueProtocol.data.id,
-                        ) !== -1));
-            // const haveProtocolPermissionToRead =
-            //     haveProtocolPermissionToWrite || (isProtocolLoaded &&
-            //     userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD] &&
-            //     userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds &&
-            //     userDetail.permissionsMap[perms.FUND_ISSUE_LIST_RD].issueListIds.indexOf(issueProtocol.data.id) !== -1);
 
             if (selectedSubNodeId !== null) {
                 subNodeId = selectedSubNodeId;
@@ -228,8 +206,8 @@ class ArrPageRibbon extends AbstractReactComponent {
 
             itemActions.push(
                 <DropdownButton
+                    disabled={!this.canCreateIssue()}
                     variant="default"
-                    disabled={!haveProtocolPermissionToWrite}
                     title={
                         <span>
                             <Icon glyph="fa-commenting" />
@@ -280,14 +258,85 @@ class ArrPageRibbon extends AbstractReactComponent {
             );
         }
 
-        return <Ribbon arr subMenu fundId={activeFundId} altSection={altSection} itemSection={itemSection} />;
+        return <Ribbon arr subMenu fundId={activeFund?.id} altSection={altSection} itemSection={itemSection} />;
     }
+
+    canCreateIssue = () => {
+        const { userDetail } = this.props;
+
+        return userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) ||
+            userDetail.permissionsMap?.[perms.FUND_ISSUE_LIST_WR]?.issueListIds.length > 0;
+    }
+
+    createIssue = (nodeId) => {
+        const {dispatch, issueProtocol, issueTypes} = this.props;
+
+        dispatch(
+            modalDialogShow(
+                this,
+                nodeId != null ? i18n('arr.issues.add.node.title') : i18n('arr.issues.add.arr.title'),
+                <IssueForm
+                    initialValues={{
+                        issueListId: issueProtocol.id,
+                        issueTypeId: issueTypes?.data?.[0].id,
+                    }}
+                    onSubmit={data =>
+                        WebApi.addIssue({
+                            ...data,
+                            nodeId,
+                        })
+                    }
+                    onSubmitSuccess={data => {
+                        dispatch(issuesActions.list.invalidate(data.issueListId));
+                        dispatch(issuesActions.detail.invalidate(data.id));
+                        dispatch(modalDialogHide());
+                    }}
+                />,
+            ),
+        );
+    }
+
+    createIssueFund = () => {
+        this.createIssue();
+    };
+
+    createIssueNode = () => {
+        const { activeFund } = this.props;
+
+        let node;
+        if (activeFund?.nodes?.activeIndex !== null) {
+            node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
+        }
+
+        this.createIssue(node.selectedSubNodeId);
+    };
+
+    handleIssuePrevious = () => {
+        this.handleIssue(-1);
+    };
+
+    handleIssueNext = () => {
+        this.handleIssue(1);
+    };
+
+    handleIssue = direction => {
+        const {activeFund, dispatch} = this.props;
+        if (activeFund) {
+            const nodeIndex = activeFund.nodes.activeIndex;
+            if (nodeIndex !== null) {
+                const activeNode = activeFund.nodes.nodes[nodeIndex];
+                dispatch(nodeWithIssueByFundVersion(activeFund, activeNode.selectedSubNodeId, direction));
+            }
+        }
+    };
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion} = state;
+    const {arrRegion, refTables} = state;
     return {
-        arrRegion
+        activeFund: arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null,
+        issueProtocol: storeFromArea(state, issuesActions.AREA_PROTOCOL),
+        issueTypes: refTables.issueTypes,
     }
 }
 
