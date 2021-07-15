@@ -35,6 +35,9 @@ public class ApBindingState implements AccessPointCacheSerializable {
     @JoinColumn(name = "bindingId", nullable = false)
     private ApBinding binding;
 
+    @Column(updatable = false, insertable = false)
+    private Integer bindingId;
+
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
     @JoinColumn(name = "accessPointId")
     private ApAccessPoint accessPoint;
@@ -94,6 +97,16 @@ public class ApBindingState implements AccessPointCacheSerializable {
 
     public void setBinding(ApBinding binding) {
         this.binding = binding;
+    }
+
+    public Integer getBindingId() {
+        if (bindingId != null) {
+            return bindingId;
+        } else if (binding != null) {
+            return binding.getBindingId();
+        } else {
+            return null;
+        }
     }
 
     public ApAccessPoint getAccessPoint() {
