@@ -56,6 +56,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DataBitRepository;
@@ -1051,7 +1052,10 @@ public class DescItemFactory implements InitializingBean {
                 URI tempUri = URI.create(dataTemp.getUriRefValue()).normalize();
                 dataTemp.setDataType(descItem.getItemType().getDataType());
                 if (StringUtils.isEmpty(tempUri.getScheme())) {
-                    throw new IllegalArgumentException("Nebylo zadáno schéme, nebo je prázdné: " + dataTemp.getUriRefValue());
+                    throw new BusinessException("Nebylo zadáno schéma v souladu s RFC2396, hodnota: "
+                            + dataTemp.getUriRefValue(),
+                            BaseCode.PROPERTY_IS_INVALID)
+                                    .set("uri", dataTemp.getUriRefValue());
                 }
                 dataTemp.setSchema(tempUri.getScheme());
 

@@ -1132,6 +1132,7 @@ when
     not DescItem(type=="ZP2015_STORAGE_ID") from $activeLevel.descItems
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setRepeatable(true);
 end
 
 // Podtypy jednotek popisu
