@@ -131,8 +131,8 @@ class LecturingTop extends React.Component {
     };
 
     selectIssue = ([index]) => {
-        const issueId = this.props.issueList.rows[index].id;
-        this.props.dispatch(issuesActions.detail.select(issueId));
+        const issue = this.props.issueList.rows[index];
+        this.props.dispatch(issuesActions.detail.select(issue.id));
     };
 
     selectIssueList = (issueListId, fundId) => {
@@ -245,7 +245,7 @@ class LecturingTop extends React.Component {
                         onChangeSelection={this.selectIssue}
                         items={issueList.rows}
                         renderItemContent={({
-                            item: {description, issueStateId, issueTypeId, number, id, referenceMark},
+                            item: {description, issueStateId, issueTypeId, number, id, referenceMark, levelDeleted},
                             active,
                         }: {
                             item: IssueVO;
@@ -282,7 +282,9 @@ class LecturingTop extends React.Component {
                                                 #{number} - {description}
                                             </span>
                                         </div>
-                                        <div className="reference-mark">{referenceMark && referenceMark.join(' ')}</div>
+                                        <div className="reference-mark">
+                                            {levelDeleted && '[' + i18n('arr.issues.add.deletedLevel') + ']'}{referenceMark && referenceMark.join(' ')}
+                                        </div>
                                     </div>
                                     {canWrite && (
                                         <div className="actions">

@@ -176,7 +176,8 @@ class ArrPage extends ArrParentPage {
             nextProps.dispatch(issuesActions.detail.fetchIfNeeded(nextProps.issueDetail.id));
         }
         if (!this.props.issueDetail.fetched && nextProps.issueDetail.fetched) {
-            if (nextProps.issueDetail.data.nodeId) {
+            const issue = nextProps.issueDetail.data;
+            if (issue.nodeId && !issue.levelDeleted) {
                 this.props.dispatch(
                     fundSelectSubNodeByNodeId(
                         activeFund.versionId,
