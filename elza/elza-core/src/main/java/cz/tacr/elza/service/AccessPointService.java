@@ -1402,13 +1402,12 @@ public class AccessPointService {
     /**
      * Získání stavu přístupového bodu podle accessPointId.
      * 
-     * Metoda neověřuje uživatelská oprávnění
+     * Metoda neověřuje uživatelská oprávnění. Metodu je možné volat vně transakce.
      *
      * @param accessPointId
      *            přístupový bod
      * @return stav přístupového bodu
      */
-    @Transactional(TxType.MANDATORY)
     public ApState getStateInternal(final Integer accessPointId) {
         final ApState state = stateRepository.findLastByAccessPointId(accessPointId);
         if (state == null) {
