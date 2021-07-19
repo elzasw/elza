@@ -14,6 +14,8 @@ import javax.persistence.Transient;
 
 import org.apache.lucene.analysis.core.KeywordTokenizerFactory;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
@@ -31,9 +33,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.repository.DataRepositoryImpl;
 import cz.tacr.elza.search.DescItemIndexingInterceptor;
-
 
 /**
  * Atribut archivního popisu evidovaný k jednotce archivního popisu. Odkaz na uzel stromu AP je
