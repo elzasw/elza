@@ -75,12 +75,6 @@ actions:
             - ZP2015_FUTURE_UNITS
         outputType: ZP2015_FUTURE_UNITS
 
-    # ZP4.4.4 Fyzický stav jednotky popisu a technické požadavky
-    - !TextAggregation
-        inputTypes:
-            - ZP2015_UNIT_CURRENT_STATUS
-        outputType: ZP2015_UNIT_CURRENT_STATUS
-
     # 4.5.2 Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání
     - !TextAggregation
         createEmpty: false
