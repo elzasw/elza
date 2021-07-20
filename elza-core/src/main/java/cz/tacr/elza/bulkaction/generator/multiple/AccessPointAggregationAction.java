@@ -91,7 +91,7 @@ public class AccessPointAggregationAction extends Action {
 
     protected AccessPointAggregationConfig config;
 
-    private Map<Integer, ApResult> apStructItems;
+    private Map<Integer, ApResult> results;
 
     private StaticDataProvider ruleSystem;
 
@@ -102,7 +102,7 @@ public class AccessPointAggregationAction extends Action {
 
     @Override
     public void init(ArrBulkActionRun bulkActionRun) {
-        apStructItems = new LinkedHashMap<>();
+        results = new LinkedHashMap<>();
         ruleSystem = getStaticDataProvider();
         StaticDataProvider sdp = StaticDataProvider.getInstance();
 
@@ -151,7 +151,7 @@ public class AccessPointAggregationAction extends Action {
     private void processAP(Integer apId) {
         logger.debug("Zpracovnání AP ID : " + apId);
 
-        ApResult apResult = apStructItems.get(apId);
+        ApResult apResult = results.get(apId);
         if (apResult != null) {
             logger.debug("Konec zpracování AP : " + apId + " - již byl přidán");
             return;
@@ -165,7 +165,7 @@ public class AccessPointAggregationAction extends Action {
         String apName = index != null ? index.getValue() : null;
 
         apResult = new ApResult();
-        apStructItems.put(ap.getAccessPointId(), apResult);
+        results.put(ap.getAccessPointId(), apResult);
 
         // Procházení prvků PART_VALUE
         createPartValueResults(apResult, parts, apName, indexMap);
@@ -326,7 +326,7 @@ public class AccessPointAggregationAction extends Action {
         AccessPointAggregationResult accessPointAggregationResult = new AccessPointAggregationResult();
         accessPointAggregationResult.setOutputType(outputItemType.getCode());
         List<AccessPointAggregationStructResult> structs = new ArrayList<>();
-        for (ApResult apResult : apStructItems.values()) {
+        for (ApResult apResult : results.values()) {
             AccessPointAggregationStructResult struct = new AccessPointAggregationStructResult();
             struct.setItems(apResult.items);
             structs.add(struct);
