@@ -12,6 +12,7 @@ import org.hibernate.search.MassIndexer;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -51,7 +52,13 @@ public class AdminService {
         reindexInternal();
     }
 
-    /** Volání bez kontroly práv */
+    /** 
+     * Volání reindexu bez kontroly práv
+     * 
+     * Volání s časovačem, ve výchozím stavu: 0 0 4 ? * SAT
+     * co znamená: každou sobotu ve 04:00 
+     */
+    @Scheduled(cron = "${elza.reindex.cron:0 0 4 ? * SAT}")
     public void reindexInternal() {
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
 
