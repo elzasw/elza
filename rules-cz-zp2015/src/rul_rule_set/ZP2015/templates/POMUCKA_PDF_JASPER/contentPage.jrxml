@@ -155,6 +155,7 @@
 	.setSpecSeparator(": ")
 	.setItemSeparator("<br>")
 	.setBlockSeparators("","")
+	.setSpecTitleSource(cz.tacr.elza.print.format.SpecTitleSource.NAME)
 	.beginBlock().addValue("ZP2015_OTHER_ID").endBlock()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="shortDetailFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
