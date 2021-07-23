@@ -194,7 +194,7 @@ public class EntityDBDispatcher {
         }
         this.procCtx = procCtx;
 
-        Function<EntityXml, String> idGetter;
+        Function<EntityXml, ApBinding> prepareBinding;
 
         // prepare list of already used ids
         Map<String, EntityStatus> idEsMap = entities.stream()
@@ -211,38 +211,61 @@ public class EntityDBDispatcher {
         }
 
         // Read existing binding from DB
-        List<String> values;
-        if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
-                apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
-            values = CamHelper.getEids(entities);
-            values.addAll(CamHelper.getEuids(entities));
-            idGetter = CamHelper::getEntityId;
-        } else if (apExternalSystem.getType() == ApExternalSystemType.CAM_UUID) {
-            values = CamHelper.getEuids(entities);
-            idGetter = CamHelper::getEntityUuid;
-        } else {
+        // added all uuid for looking for by uuid 
+        List<String> uuids = CamHelper.getEuids(entities);
+        List<ApBinding> bindingList = bindingRepository.findByValuesAndExternalSystemType(uuids, ApExternalSystemType.CAM_UUID);
+
+        switch (apExternalSystem.getType()) {
+        case CAM:
+        case CAM_COMPLETE:
+            List<String> values = CamHelper.getEids(entities);
+            prepareBinding = (entity) -> {
+                String bindingValue = CamHelper.getEntityId(entity);
+                ApBinding binding = procCtx.getBindingByValue(bindingValue);
+                if (binding == null) {
+                    // try to find by uuid
+                    String srcUuid = CamHelper.getEntityUuid(entity);
+                    binding = procCtx.getBindingByValue(srcUuid);
+                    if (binding == null) {
+                        binding = externalSystemService.createApBinding(procCtx.getScope(), bindingValue, apExternalSystem);
+                        procCtx.addBinding(binding);
+                    }
+                }
+                return binding;
+            };
+
+            List<ApBinding> bindingByValues = bindingRepository.findByValuesAndExternalSystem(values, apExternalSystem);
+            if(CollectionUtils.isNotEmpty(bindingByValues)) {
+                bindingList = new ArrayList<>(bindingList);
+                bindingList.addAll(bindingByValues);
+            }
+            break;
+
+        case CAM_UUID:
+            prepareBinding = (entity) -> {
+                String bindingValue = CamHelper.getEntityUuid(entity);
+                ApBinding binding = procCtx.getBindingByValue(bindingValue);
+                if (binding == null) {
+                    binding = externalSystemService.createApBinding(procCtx.getScope(), bindingValue, apExternalSystem);
+                    procCtx.addBinding(binding);
+                }
+                return binding;
+            };
+            break;
+
+        default:
             throw new IllegalStateException("Unkonw external system type: " + apExternalSystem.getType());
         }
-        List<ApBinding> bindingList = bindingRepository.findByValuesAndExternalSystemType(values, ApExternalSystemType.CAM_UUID);
-        procCtx.addBindings(bindingList);
 
+        procCtx.addBindings(bindingList);
         // get list of connected records
         List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByBindingIn(bindingList);
 
         for (EntityXml entity : entities) {
-            String bindingValue = idGetter.apply(entity);
+            ApBinding binding = prepareBinding.apply(entity);
 
             // prepare uuid - we are directly using uuid from external system
             String srcUuid = CamHelper.getEntityUuid(entity);
-
-            ApBinding binding = procCtx.getBindingByValue(srcUuid);
-            if (binding == null) {
-                binding = procCtx.getBindingByValue(bindingValue);
-            }
-            if (binding == null) {
-                binding = externalSystemService.createApBinding(procCtx.getScope(), bindingValue, apExternalSystem);
-                procCtx.addBinding(binding);
-            }
 
             ApState state;
             EntityStatus entityInfo = idEsMap.get(srcUuid);
