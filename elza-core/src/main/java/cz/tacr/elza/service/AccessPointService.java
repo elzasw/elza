@@ -1807,13 +1807,6 @@ public class AccessPointService {
         generateSync(accessPoint.getAccessPointId());
     }
 
-    public void checkUniqueBinding(ApScope scope, String archiveEntityId, String externalSystemCode) {
-        ApBinding apBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId, externalSystemCode);
-        if (apBinding != null) {
-            throw new IllegalArgumentException("Tato archivní entita již je v tomto scope.");
-        }
-    }
-
     public void disconnectAccessPoint(Integer accessPointId, String externalSystemCode) {
         ApAccessPoint accessPoint = getAccessPoint(accessPointId);
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
@@ -1841,8 +1834,7 @@ public class AccessPointService {
         return archiveEntityIds;
     }
 
-    public void checkUniqueExtSystem(final ApAccessPoint accessPoint, final String externalSystemCode) {
-        ApExternalSystem externalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+    public void checkUniqueExtSystem(final ApAccessPoint accessPoint, final ApExternalSystem externalSystem) {
         ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
         if (bindingState != null) {
             throw new BusinessException("Tato archivní entita má jíž existující propojení s externím systémem", RegistryCode.EXT_SYSTEM_CONNECTED)

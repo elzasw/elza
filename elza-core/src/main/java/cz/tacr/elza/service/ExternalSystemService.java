@@ -306,8 +306,7 @@ public class ExternalSystemService {
      * @param externalSystemCode
      * @return
      */
-    public ApBinding createBinding(final ApScope scope,
-                                   final String value,
+    public ApBinding createBinding(final String value,
                                    final String externalSystemCode) {
         ApExternalSystem apExternalSystem = apExternalSystemRepository.findByCode(externalSystemCode);
         if (apExternalSystem == null) {
@@ -316,7 +315,7 @@ public class ExternalSystemService {
                             .set("code", externalSystemCode);
         }
 
-        return createApBinding(scope, value, apExternalSystem);
+        return createApBinding(value, apExternalSystem);
     }
 
     /**
@@ -327,15 +326,12 @@ public class ExternalSystemService {
      * @param apExternalSystem
      * @return
      */
-    public ApBinding createApBinding(final ApScope scope,
-                                     final String value,
+    public ApBinding createApBinding(final String value,
                                      final ApExternalSystem apExternalSystem) {
-        Validate.notNull(scope);
         Validate.notNull(value);
         Validate.notNull(apExternalSystem);
 
         ApBinding apBinding = new ApBinding();
-        apBinding.setScope(scope);
         apBinding.setValue(value);
         apBinding.setApExternalSystem(apExternalSystem);
         return bindingRepository.save(apBinding);
@@ -416,14 +412,14 @@ public class ExternalSystemService {
         return bindingItemRepository.save(apBindingItem);
     }
 
-    public ApBinding findByScopeAndValueAndApExternalSystem(final ApScope scope, final String archiveEntityId,
+    public ApBinding findByValueAndExternalSystemCode(final String archiveEntityId,
                                                             final String externalSystemCode) {
-        return bindingRepository.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId, externalSystemCode);
+        return bindingRepository.findByValueAndExternalSystemCode(archiveEntityId, externalSystemCode);
     }
 
-    public ApBinding findByScopeAndValueAndApExternalSystem(final ApScope scope, final String archiveEntityId,
+    public ApBinding findByValueAndExternalSystem(final String archiveEntityId,
                                                             final ApExternalSystem externalSystem) {
-        return bindingRepository.findByScopeAndValueAndExternalSystem(scope, archiveEntityId, externalSystem);
+        return bindingRepository.findByValueAndExternalSystem(archiveEntityId, externalSystem);
     }
 
     public Optional<ApBindingState> getBindingState(final ApBinding binding) {

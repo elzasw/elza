@@ -1036,9 +1036,7 @@ public class ApController {
             throw prepareSystemException(e);
         }
 
-        ApScope scope = accessPointService.getApScope(scopeId);
-        ApBinding binding = externalSystemService.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId,
-                                                                                         apExternalSystem);
+        ApBinding binding = externalSystemService.findByValueAndExternalSystem(archiveEntityId, apExternalSystem);
         if (binding != null) {
             // check state
             Optional<ApBindingState> bindingState = externalSystemService.getBindingState(binding);
@@ -1052,6 +1050,7 @@ public class ApController {
             });
         }
 
+        ApScope scope = accessPointService.getApScope(scopeId);
         ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem, staticDataService);
         List<ApState> apStates = camService.createAccessPoints(procCtx, Collections.singletonList(entity));
         if (apStates.size() != 1) {
@@ -1075,15 +1074,15 @@ public class ApController {
                                      @PathVariable("accessPointId") final Integer accessPointId,
                                      @RequestParam("externalSystemCode") final String externalSystemCode,
                                      @RequestParam("replace") final Boolean replace) {
-        Assert.notNull(accessPointId, "Identifikátor přístupového bodu není vyplněn");
+        Validate.notNull(accessPointId, "Identifikátor přístupového bodu není vyplněn");
+
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
 
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getStateInternal(accessPoint);
         ApScope scope = state.getScope();
-        accessPointService.checkUniqueBinding(scope, archiveEntityId.toString(), externalSystemCode);
-        accessPointService.checkUniqueExtSystem(accessPoint, externalSystemCode);
-
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        accessPointService.checkUniqueExtSystem(accessPoint, apExternalSystem);
+        
         ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem, staticDataService);
 
         EntityXml entity;

@@ -227,7 +227,7 @@ public class EntityDBDispatcher {
                     String srcUuid = CamHelper.getEntityUuid(entity);
                     binding = procCtx.getBindingByValue(srcUuid);
                     if (binding == null) {
-                        binding = externalSystemService.createApBinding(procCtx.getScope(), bindingValue, apExternalSystem);
+                        binding = externalSystemService.createApBinding(bindingValue, apExternalSystem);
                         procCtx.addBinding(binding);
                     }
                 }
@@ -246,7 +246,7 @@ public class EntityDBDispatcher {
                 String bindingValue = CamHelper.getEntityUuid(entity);
                 ApBinding binding = procCtx.getBindingByValue(bindingValue);
                 if (binding == null) {
-                    binding = externalSystemService.createApBinding(procCtx.getScope(), bindingValue, apExternalSystem);
+                    binding = externalSystemService.createApBinding(bindingValue, apExternalSystem);
                     procCtx.addBinding(binding);
                 }
                 return binding;
@@ -312,8 +312,7 @@ public class EntityDBDispatcher {
             partService.deleteParts(accessPoint, apChange);
         }
 
-        ApBinding binding = externalSystemService.createApBinding(procCtx.getScope(),
-                                                                  Long.toString(entity.getEid().getValue()),
+        ApBinding binding = externalSystemService.createApBinding(Long.toString(entity.getEid().getValue()),
                                                                   procCtx.getApExternalSystem());
 
         createPartsFromEntityXml(entity, accessPoint, apChange, state, binding, async);
@@ -606,6 +605,8 @@ public class EntityDBDispatcher {
                 itemList = updatePart(partXml, bindingItem.getPart(), binding, dataRefList);
             } else {
                 log.debug("Part with binding does not exists, creating new binding, accessPointId: {}", accessPointId);
+
+                // TODO: check if exists same other part without binding 
 
                 bindingItem = createPart(partXml, accessPoint, binding);
                 itemList = createItems(partXml.getItms().getItems(),
