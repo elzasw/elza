@@ -67,23 +67,18 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointItemService;
-import cz.tacr.elza.service.AccessPointItemService.CreateFunction;
 import cz.tacr.elza.service.AccessPointItemService.DeletedItems;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
-import liquibase.pro.packaged.bi;
-import ma.glasnost.orika.impl.mapping.strategy.InstantiateByDefaultAndUseCustomMapperStrategy;
 
 /**
  * Create or update entities
@@ -220,6 +215,7 @@ public class EntityDBDispatcher {
         if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
                 apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
             values = CamHelper.getEids(entities);
+            values.addAll(CamHelper.getEuids(entities));
             idGetter = CamHelper::getEntityId;
         } else if (apExternalSystem.getType() == ApExternalSystemType.CAM_UUID) {
             values = CamHelper.getEuids(entities);
@@ -227,9 +223,7 @@ public class EntityDBDispatcher {
         } else {
             throw new IllegalStateException("Unkonw external system type: " + apExternalSystem.getType());
         }
-        List<ApBinding> bindingList = bindingRepository.findByScopeAndValuesAndExternalSystem(procCtx.getScope(),
-                                                                                              values,
-                                                                                              apExternalSystem);
+        List<ApBinding> bindingList = bindingRepository.findByValuesAndExternalSystemType(values, ApExternalSystemType.CAM_UUID);
         procCtx.addBindings(bindingList);
 
         // get list of connected records
@@ -238,14 +232,18 @@ public class EntityDBDispatcher {
         for (EntityXml entity : entities) {
             String bindingValue = idGetter.apply(entity);
 
-            ApBinding binding = procCtx.getBindingByValue(bindingValue);
+            // prepare uuid - we are directly using uuid from external system
+            String srcUuid = CamHelper.getEntityUuid(entity);
+
+            ApBinding binding = procCtx.getBindingByValue(srcUuid);
+            if (binding == null) {
+                binding = procCtx.getBindingByValue(bindingValue);
+            }
             if (binding == null) {
                 binding = externalSystemService.createApBinding(procCtx.getScope(), bindingValue, apExternalSystem);
                 procCtx.addBinding(binding);
             }
 
-            // prepare uuid - we are directly using uuid from external system
-            String srcUuid = CamHelper.getEntityUuid(entity);
             ApState state;
             EntityStatus entityInfo = idEsMap.get(srcUuid);
             if (entityInfo != null && entityInfo.getState() != null) {
