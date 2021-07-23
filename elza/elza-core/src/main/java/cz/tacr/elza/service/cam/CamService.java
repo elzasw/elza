@@ -27,7 +27,6 @@ import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApBindingSync;
 import cz.tacr.elza.domain.ApChange;
-import cz.tacr.elza.domain.ApChange.Type;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
@@ -42,7 +41,6 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
@@ -229,17 +227,14 @@ public class CamService {
      * @param procCtx
      */
     private void createBindingForRel(ArrDataRecordRef dataRecordRef, String value, ProcessingContext procCtx) {
-        ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(procCtx.getScope(),
-                                                                                            value,
-                                                                                            procCtx.getApExternalSystem());
+        ApBinding refBinding = externalSystemService.findByValueAndExternalSystem(value,
+                                                                                  procCtx.getApExternalSystem());
         if (refBinding == null) {
             // check if not in the processing context
             refBinding = procCtx.getBindingByValue(value);
             if (refBinding == null) {
                 // we can create new - last resort
-                refBinding = externalSystemService.createApBinding(procCtx.getScope(),
-                                                                   value,
-                        procCtx.getApExternalSystem());
+                refBinding = externalSystemService.createApBinding(value, procCtx.getApExternalSystem());
                 procCtx.addBinding(refBinding);
             }
         } else {
@@ -451,10 +446,9 @@ public class CamService {
             ApBinding binding = bindingMap.get(recordCode);
             ApAccessPoint ap = null;
             if(binding==null) {
-                // prepare binding for CAM Completer
+                // prepare binding for CAM Complete
                 if (externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
-                    binding = externalSystemService.createApBinding(externalSystem.getScope(), recordCode,
-                                                                    externalSystem);
+                    binding = externalSystemService.createApBinding(recordCode, externalSystem);
                 }
             } else {
                 ApBindingState bindingState = bindingStateMap.get(binding.getBindingId());
@@ -561,7 +555,7 @@ public class CamService {
         if (bindingState == null && state == null) {
             ApAccessPoint accessPoint = apAccessPointRepository.findApAccessPointByUuid(entity.getEuid().getValue());
             if (accessPoint != null) {
-
+                // entity exists
                 apChange = apDataService.createChange(ApChange.Type.AP_SYNCH);
                 // we can assign ap to the binding
                 bindingState = externalSystemService.createApBindingState(binding,
@@ -571,16 +565,23 @@ public class CamService {
                                                                           entity.getRevi().getRid().getValue(),
                                                                           entity.getRevi().getUsr().getValue(),
                                                                           null);
-                bindingStateRepository.save(bindingState);
-                log.warn("Entity with uuid:{} already exists, automatically connected with external entity",
-                         entity.getEuid().getValue());
+                log.warn("Entity with uuid:{} already exists (id={}), automatically connected with external entity",
+                         entity.getEuid().getValue(), accessPoint.getAccessPointId());
+                // if async -> has local changes -> mark as not synced
+                if (syncQueue) {
+                    bindingState.setSyncOk(SyncState.NOT_SYNCED);
+                    bindingStateRepository.save(bindingState);
 
-                state = accessPointService.getStateInternal(accessPoint);
+                    accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
+                    return;
+                }
+                // TODO: consider what to do and how to resolve this situation
+                bindingStateRepository.save(bindingState);
             }
         }
 
         if (state != null && bindingState != null) {
-            if (state.getDeleteChangeId() != null ||
+            if (state.getDeleteChangeId() != null || // do not sync deleted aps, mark as not synced
             // check if synced or not
                     (syncQueue && checkLocalChanges(state, bindingState))) {
                 if (!SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())) {
@@ -655,9 +656,15 @@ public class CamService {
         return false;
     }
 
+    /**
+     * Update accesspoint from WSDL/API
+     * 
+     * @param procCtx
+     * @param syncRequests
+     */
     public void updateAccessPoints(final ProcessingContext procCtx,
                                    final List<SyncEntityRequest> syncRequests) {
-        if (syncRequests == null || syncRequests.isEmpty()) {
+        if (CollectionUtils.isEmpty(syncRequests)) {
             return;
         }
 
@@ -838,8 +845,7 @@ public class CamService {
         // TODO: get current bindings
         if (bindingState == null) {
             // create binding with uuid?
-            ApBinding binding = externalSystemService.createApBinding(state.getScope(),
-                                                                      accessPoint.getUuid(),
+            ApBinding binding = externalSystemService.createApBinding(accessPoint.getUuid(),
                                                                       apExternalSystem);
             ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
             bindingState = externalSystemService.createApBindingState(binding, accessPoint, change,

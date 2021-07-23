@@ -1411,4 +1411,14 @@ where no.level_id = l.level_id
       <delete tableName="ap_cached_access_point" />
     </changeSet>
 
+    <changeSet id="20210723163400" author="ppyt">
+      <!-- Odstranění scope_id z ap_binding -->
+      <dropIndex tableName="ap_binding" indexName="ap_binding_value_system_scope_idx"/>
+      <dropForeignKeyConstraint baseTableName="ap_binding" constraintName="fk_ap_binding_scope"/>
+      <dropColumn tableName="ap_binding" columnName="scope_id" />
+        <createIndex indexName="ap_binding_value_system_idx" tableName="ap_binding" unique="true">
+            <column name="value" type="char(50)"/>
+            <column name="external_system_id" type="int"/>
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
