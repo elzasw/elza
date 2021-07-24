@@ -78,6 +78,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -550,6 +551,7 @@ public class CamService {
         // ex      | ex              | true
 
         ApChange apChange = null;
+        ApBindingState origBindingState = bindingState;
         // Kontrola na zalozeni nove entity
         // overeni existence UUID
         if (bindingState == null && state == null) {
@@ -581,14 +583,27 @@ public class CamService {
         }
 
         if (state != null && bindingState != null) {
+            boolean localChanges = checkLocalChanges(state, bindingState);
+
             if (state.getDeleteChangeId() != null || // do not sync deleted aps, mark as not synced
             // check if synced or not
-                    (syncQueue && checkLocalChanges(state, bindingState))) {
+                    (syncQueue && (localChanges || SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())))) {
                 if (!SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())) {
                     bindingState.setSyncOk(SyncState.NOT_SYNCED);
                     bindingStateRepository.save(bindingState);
                 }
                 return;
+            }
+            if (!localChanges) {
+                // check if any update is needed
+                if (SyncState.SYNC_OK.equals(bindingState.getSyncOk()) &&
+                        origBindingState != null &&
+                        Objects.equals(origBindingState.getExtRevision(), entity.getRevi().getRid().toString())) {
+                    // binding already exists and no local changes are detected
+                    // -> nothing to synchronize -> return
+                    return;
+                }
+
             }
         }
 
