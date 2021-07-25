@@ -10,12 +10,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils';
 import {connect} from 'react-redux';
-import {i18n, Icon, LazyListBox, ListBox2, Loading, RibbonGroup, Tabs, Utils} from 'components/shared';
+import {i18n, Icon, LazyListBox, ListBox2, Loading, Tabs, Utils} from 'components/shared';
 
 import ArrParentPage from './ArrParentPage';
 
-import {FundFiles, FundSettingsForm, FundTreeMain, NodeTabs, Ribbon} from '../../components/index';
-import {Dropdown, DropdownButton} from 'react-bootstrap';
+import {FundFiles, FundSettingsForm, FundTreeMain, NodeTabs} from '../../components/index';
 import {Button} from '../../components/ui';
 import {WebApi} from 'actions/index';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
@@ -35,7 +34,7 @@ import {selectTab} from 'actions/global/tab';
 import {userDetailsSaveSettings} from 'actions/user/userDetail';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrPageKeymap';
-import NodeSettingsForm from '../../components/arr/NodeSettingsForm';
+import {NodeSettingsForm} from '../../components/arr/node-settings-form';
 import {FOCUS_KEYS} from '../../constants.tsx';
 import ArrStructurePanel from '../../components/arr/ArrStructurePanel';
 import {structureTypesFetchIfNeeded} from '../../actions/refTables/structureTypes';
@@ -47,9 +46,6 @@ import LecturingTop from '../../components/arr/LecturingTop';
 import LecturingBottom from '../../components/arr/LecturingBottom';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as issuesActions from '../../actions/arr/issues';
-import {nodeWithIssueByFundVersion} from '../../actions/arr/issues';
-import IssueForm from '../../components/form/IssueForm';
-import ConfirmForm from '../../components/shared/form/ConfirmForm';
 import ArrPageRibbon from './ArrPageRibbon';
 import ArrRefTemplates from '../../components/arr/ArrRefTemplates';
 import {MODAL_DIALOG_SIZE} from '../../constants';
@@ -180,7 +176,8 @@ class ArrPage extends ArrParentPage {
             nextProps.dispatch(issuesActions.detail.fetchIfNeeded(nextProps.issueDetail.id));
         }
         if (!this.props.issueDetail.fetched && nextProps.issueDetail.fetched) {
-            if (nextProps.issueDetail.data.nodeId) {
+            const issue = nextProps.issueDetail.data;
+            if (issue.nodeId && !issue.levelDeleted) {
                 this.props.dispatch(
                     fundSelectSubNodeByNodeId(
                         activeFund.versionId,
@@ -485,88 +482,13 @@ class ArrPage extends ArrParentPage {
         this.props.dispatch(modalDialogShow(this, i18n('arr.fund.title.search'), <SearchFundsForm />));
     };
 
-    createIssueFund = () => {
-        const {issueProtocol, dispatch} = this.props;
-
-        dispatch(
-            modalDialogShow(
-                this,
-                i18n('arr.issues.add.arr.title'),
-                <IssueForm
-                    onSubmit={data =>
-                        WebApi.addIssue({
-                            ...data,
-                            issueListId: issueProtocol.id,
-                        })
-                    }
-                    onSubmitSuccess={data => {
-                        dispatch(issuesActions.list.invalidate(data.issueListId));
-                        dispatch(issuesActions.detail.invalidate(data.id));
-                        dispatch(modalDialogHide());
-                    }}
-                />,
-            ),
-        );
-    };
-
-    createIssueNode = () => {
-        const {issueProtocol, dispatch} = this.props;
-        const activeFund = this.getActiveFund(this.props);
-
-        let node;
-        if (activeFund.nodes && activeFund.nodes.activeIndex !== null) {
-            node = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
-        }
-
-        dispatch(
-            modalDialogShow(
-                this,
-                i18n('arr.issues.add.node.title'),
-                <IssueForm
-                    onSubmit={data =>
-                        WebApi.addIssue({
-                            ...data,
-                            issueListId: issueProtocol.id,
-                            nodeId: node.selectedSubNodeId,
-                        })
-                    }
-                    onSubmitSuccess={data => {
-                        dispatch(issuesActions.list.invalidate(data.issueListId));
-                        dispatch(issuesActions.detail.invalidate(data.id));
-                        dispatch(modalDialogHide());
-                    }}
-                />,
-            ),
-        );
-    };
-
-    handleIssuePrevious = () => {
-        this.handleIssue(-1);
-    };
-
-    handleIssueNext = () => {
-        this.handleIssue(1);
-    };
-
-    handleIssue = direction => {
-        const {dispatch, arrRegion} = this.props;
-        const indexFund = arrRegion.activeIndex;
-        if (indexFund !== null) {
-            const activeFund = arrRegion.funds[indexFund];
-            const nodeIndex = activeFund.nodes.activeIndex;
-            if (nodeIndex !== null) {
-                const activeNode = activeFund.nodes.nodes[nodeIndex];
-                dispatch(nodeWithIssueByFundVersion(activeFund, activeNode.selectedSubNodeId, direction));
-            }
-        }
-    };
 
     /**
      * Sestavení Ribbonu.
      * @return {Object} view
      */
     buildRibbon(readMode, closed) {
-        const {arrRegion, userDetail, issueProtocol} = this.props;
+        const {arrRegion, userDetail} = this.props;
         const activeInfo = this.getActiveInfo();
 
         return (
@@ -582,7 +504,6 @@ class ArrPage extends ArrParentPage {
                 handleErrorNext={this.handleErrorNext}
                 handleOpenFundActionForm={this.handleOpenFundActionForm}
                 handleFundsSearchForm={this.handleFundsSearchForm}
-                issueProtocol={issueProtocol}
                 arrRegionActiveIndex={arrRegion.activeIndex}
             />
         );
@@ -1247,7 +1168,6 @@ function mapStateToProps(state) {
         descItemTypes: refTables.descItemTypes,
         ruleSet: refTables.ruleSet,
         selectedTabKey: tab.values[ArrPage.TAB_KEY],
-        issueProtocol: storeFromArea(state, issuesActions.AREA_PROTOCOL),
         issueDetail: storeFromArea(state, issuesActions.AREA_DETAIL),
         issueList: storeFromArea(state, issuesActions.AREA_LIST),
     };

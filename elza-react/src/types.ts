@@ -28,6 +28,8 @@ export interface IssueVO {
     number: number;
     issueTypeId: number;
     issueStateId: number;
+    // flag if level was deleted
+    levelDeleted: boolean;
     description: string;
     userCreate: UsrUserVO;
     timeCreated: string;

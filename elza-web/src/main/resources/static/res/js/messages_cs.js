@@ -470,6 +470,7 @@ var messages = {
     "arr.issues.update.title": "Úprava připomínky",
     "arr.issues.add.arr": "Archivní soubor",
     "arr.issues.add.node": "Zobrazená jednotka popisu",
+    "arr.issues.add.deletedLevel": "smazaná JP",
     "arr.issues.add.node.title": "Přidat připomínku - Jednotka popisu",
     "arr.issues.add.arr.title": "Přidat připomínku - Archivní soubor",
     "arr.issues.type.change": "Změnit druh: {0}",

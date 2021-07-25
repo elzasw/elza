@@ -34,7 +34,7 @@
             <action-item-type item-type="ZP2015_UNIT_ARR" />
             <action-item-type item-type="ZP2015_UNIT_CONTENT" />
             <action-item-type item-type="ZP2015_FUTURE_UNITS" />
-            <action-item-type item-type="ZP2015_UNIT_CURRENT_STATUS" />
+            <action-item-type item-type="ZP2015_EDITION" />
             <action-item-type item-type="ZP2015_RELATED_UNITS" />
             <action-item-type item-type="ZP2015_ARRANGE_RULES" />
             <action-item-type item-type="ZP2015_DESCRIPTION_DATE" />

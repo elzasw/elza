@@ -67,23 +67,18 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
-import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointItemService;
-import cz.tacr.elza.service.AccessPointItemService.CreateFunction;
 import cz.tacr.elza.service.AccessPointItemService.DeletedItems;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.PartService;
-import liquibase.pro.packaged.bi;
-import ma.glasnost.orika.impl.mapping.strategy.InstantiateByDefaultAndUseCustomMapperStrategy;
 
 /**
  * Create or update entities
@@ -181,6 +176,15 @@ public class EntityDBDispatcher {
         this.accessPointCacheService = accessPointCacheService;
     }
 
+    /**
+     * Method to create entities
+     * 
+     * Method should not be called from async queues.
+     * Method will fail if other entity with same key value exists
+     * 
+     * @param procCtx
+     * @param entities
+     */
     public void createEntities(ProcessingContext procCtx,
                                List<EntityXml> entities) {
 
@@ -190,7 +194,7 @@ public class EntityDBDispatcher {
         }
         this.procCtx = procCtx;
 
-        Function<EntityXml, String> idGetter;
+        Function<EntityXml, ApBinding> prepareBinding;
 
         // prepare list of already used ids
         Map<String, EntityStatus> idEsMap = entities.stream()
@@ -207,36 +211,62 @@ public class EntityDBDispatcher {
         }
 
         // Read existing binding from DB
-        List<String> values;
-        if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
-                apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
-            values = CamHelper.getEids(entities);
-            idGetter = CamHelper::getEntityId;
-        } else if (apExternalSystem.getType() == ApExternalSystemType.CAM_UUID) {
-            values = CamHelper.getEuids(entities);
-            idGetter = CamHelper::getEntityUuid;
-        } else {
+        // added all uuid for looking for by uuid 
+        List<String> uuids = CamHelper.getEuids(entities);
+        List<ApBinding> bindingList = bindingRepository.findByValuesAndExternalSystemType(uuids, ApExternalSystemType.CAM_UUID);
+
+        switch (apExternalSystem.getType()) {
+        case CAM:
+        case CAM_COMPLETE:
+            List<String> values = CamHelper.getEids(entities);
+            prepareBinding = (entity) -> {
+                String bindingValue = CamHelper.getEntityId(entity);
+                ApBinding binding = procCtx.getBindingByValue(bindingValue);
+                if (binding == null) {
+                    // try to find by uuid
+                    String srcUuid = CamHelper.getEntityUuid(entity);
+                    binding = procCtx.getBindingByValue(srcUuid);
+                    if (binding == null) {
+                        binding = externalSystemService.createApBinding(bindingValue, apExternalSystem);
+                        procCtx.addBinding(binding);
+                    }
+                }
+                return binding;
+            };
+
+            List<ApBinding> bindingByValues = bindingRepository.findByValuesAndExternalSystem(values, apExternalSystem);
+            if(CollectionUtils.isNotEmpty(bindingByValues)) {
+                bindingList = new ArrayList<>(bindingList);
+                bindingList.addAll(bindingByValues);
+            }
+            break;
+
+        case CAM_UUID:
+            prepareBinding = (entity) -> {
+                String bindingValue = CamHelper.getEntityUuid(entity);
+                ApBinding binding = procCtx.getBindingByValue(bindingValue);
+                if (binding == null) {
+                    binding = externalSystemService.createApBinding(bindingValue, apExternalSystem);
+                    procCtx.addBinding(binding);
+                }
+                return binding;
+            };
+            break;
+
+        default:
             throw new IllegalStateException("Unkonw external system type: " + apExternalSystem.getType());
         }
-        List<ApBinding> bindingList = bindingRepository.findByScopeAndValuesAndExternalSystem(procCtx.getScope(),
-                                                                                              values,
-                                                                                              apExternalSystem);
-        procCtx.addBindings(bindingList);
 
+        procCtx.addBindings(bindingList);
         // get list of connected records
         List<ArrDataRecordRef> dataRecordRefList = dataRecordRefRepository.findByBindingIn(bindingList);
 
         for (EntityXml entity : entities) {
-            String bindingValue = idGetter.apply(entity);
-
-            ApBinding binding = procCtx.getBindingByValue(bindingValue);
-            if (binding == null) {
-                binding = externalSystemService.createApBinding(procCtx.getScope(), bindingValue, apExternalSystem);
-                procCtx.addBinding(binding);
-            }
+            ApBinding binding = prepareBinding.apply(entity);
 
             // prepare uuid - we are directly using uuid from external system
             String srcUuid = CamHelper.getEntityUuid(entity);
+
             ApState state;
             EntityStatus entityInfo = idEsMap.get(srcUuid);
             if (entityInfo != null && entityInfo.getState() != null) {
@@ -245,9 +275,9 @@ public class EntityDBDispatcher {
                 if (state.getDeleteChangeId() == null) {
                     throw new BusinessException("Accespoint already exists", ExternalCode.ALREADY_IMPORTED);
                 }
-                state = restoreAccessPoint(entity, binding, state.getAccessPoint());
+                state = restoreAccessPoint(entity, binding, state.getAccessPoint(), false);
             } else {
-                state = createAccessPoint(entity, binding, srcUuid);
+                state = createAccessPoint(entity, binding, srcUuid, false);
             }
             accessPointService.publishAccessPointCreateEvent(state.getAccessPoint());
             createdEntities.add(state);
@@ -269,7 +299,8 @@ public class EntityDBDispatcher {
 
     public void connectEntity(ProcessingContext procCtx,
                               ApState state,
-                              EntityXml entity, boolean replace) {
+                              EntityXml entity, boolean replace,
+                              boolean async) {
         Validate.notNull(procCtx.getApChange());
 
         this.procCtx = procCtx;
@@ -281,21 +312,31 @@ public class EntityDBDispatcher {
             partService.deleteParts(accessPoint, apChange);
         }
 
-        ApBinding binding = externalSystemService.createApBinding(procCtx.getScope(),
-                                                                  Long.toString(entity.getEid().getValue()),
+        ApBinding binding = externalSystemService.createApBinding(Long.toString(entity.getEid().getValue()),
                                                                   procCtx.getApExternalSystem());
 
-        createPartsFromEntityXml(entity, accessPoint, apChange, state, binding);
+        createPartsFromEntityXml(entity, accessPoint, apChange, state, binding, async);
 
         accessPointService.publishAccessPointUpdateEvent(accessPoint);
 
         this.procCtx = null;
     }
 
+    /**
+     * 
+     * @param procCtx
+     * @param state
+     * @param bindingState
+     * @param entity
+     * @param syncQueue
+     *            True if called from sync queue (without UI and direct user
+     *            feedback)
+     */
     public void synchronizeAccessPoint(ProcessingContext procCtx,
                                        ApState state,
                                        ApBindingState bindingState,
-                                       EntityXml entity) {
+                                       EntityXml entity,
+                                       boolean syncQueue) {
         Validate.notNull(procCtx.getApChange());
 
         this.procCtx = procCtx;
@@ -324,7 +365,8 @@ public class EntityDBDispatcher {
         SynchronizationResult syncRes = synchronizeParts(procCtx, entity, bindingState, accessPoint);
 
         accessPointService.generateSync(accessPoint.getAccessPointId(), state,
-                                        syncRes.getParts(), syncRes.getItemMap());
+                                        syncRes.getParts(), syncRes.getItemMap(),
+                                        syncQueue);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         this.procCtx = null;
@@ -337,9 +379,10 @@ public class EntityDBDispatcher {
      * @param entity
      * @param binding
      * @param accessPoint
+     * @param async
      * @return
      */
-    private ApState restoreAccessPoint(EntityXml entity, ApBinding binding, ApAccessPoint accessPoint) {
+    private ApState restoreAccessPoint(EntityXml entity, ApBinding binding, ApAccessPoint accessPoint, boolean async) {
         Validate.notNull(procCtx, "Context cannot be null");
         ApChange apChange = procCtx.getApChange();
         Validate.notNull(apChange, "Change cannot be null");
@@ -350,7 +393,7 @@ public class EntityDBDispatcher {
         accessPoint = accessPointService.saveWithLock(accessPoint);
         ApState apState = accessPointService.createAccessPointState(accessPoint, procCtx.getScope(), type, entity.getEns(), apChange);
 
-        createPartsFromEntityXml(entity, accessPoint, apChange, apState, binding);
+        createPartsFromEntityXml(entity, accessPoint, apChange, apState, binding, async);
 
         return apState;
     }
@@ -360,10 +403,10 @@ public class EntityDBDispatcher {
                                   final ApAccessPoint accessPoint,
                                   final ApChange apChange,
                                   final ApState apState,
-                                  final ApBinding binding) {
+                                  final ApBinding binding,
+                                  boolean async) {
         Validate.notNull(binding);
 
-        StaticDataProvider sdp = procCtx.getStaticDataProvider();
         externalSystemService.createApBindingState(binding, accessPoint, apChange,
                                                    entity.getEns().value(),
                                                    entity.getRevi().getRid() != null ? entity.getRevi().getRid()
@@ -390,7 +433,7 @@ public class EntityDBDispatcher {
 
         accessPoint.setPreferredPart(accessPointService.findPreferredPart(partList));
 
-        accessPointService.generateSync(accessPoint.getAccessPointId(), apState, partList, itemMap);
+        accessPointService.generateSync(accessPoint.getAccessPointId(), apState, partList, itemMap, async);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
@@ -440,14 +483,14 @@ public class EntityDBDispatcher {
      * @param binding
      * @return ApState
      */
-    public ApState createAccessPoint(ProcessingContext procCtx, EntityXml entity, ApBinding binding) {
+    public ApState createAccessPoint(ProcessingContext procCtx, EntityXml entity, ApBinding binding, boolean async) {
         Validate.notNull(procCtx.getApChange());
         this.procCtx = procCtx;
 
-        return createAccessPoint(entity, binding, entity.getEuid().getValue());
+        return createAccessPoint(entity, binding, entity.getEuid().getValue(), async);
     }
 
-    private ApState createAccessPoint(final EntityXml entity, ApBinding binding, String uuid) {
+    private ApState createAccessPoint(final EntityXml entity, ApBinding binding, String uuid, boolean async) {
         Validate.notNull(procCtx, "Context cannot be null");
         ApChange apChange = procCtx.getApChange();
         Validate.notNull(apChange, "Change cannot be null");
@@ -458,7 +501,7 @@ public class EntityDBDispatcher {
         ApState apState = accessPointService.createAccessPoint(procCtx.getScope(), type, entity.getEns(), apChange, uuid);
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
-        createPartsFromEntityXml(entity, accessPoint, apChange, apState, binding);
+        createPartsFromEntityXml(entity, accessPoint, apChange, apState, binding, async);
 
         return apState;
     }
@@ -530,7 +573,6 @@ public class EntityDBDispatcher {
         log.debug("Synchronizing parts, accessPointId: {}, number of parts: {}", accessPointId,
                   partsXml.getList().size());
 
-        StaticDataProvider sdp = procCtx.getStaticDataProvider();
         ApChange apChange = procCtx.getApChange();
         ApBinding binding = bindingState.getBinding();
         readBindingItems(binding);
@@ -563,6 +605,8 @@ public class EntityDBDispatcher {
                 itemList = updatePart(partXml, bindingItem.getPart(), binding, dataRefList);
             } else {
                 log.debug("Part with binding does not exists, creating new binding, accessPointId: {}", accessPointId);
+
+                // TODO: check if exists same other part without binding 
 
                 bindingItem = createPart(partXml, accessPoint, binding);
                 itemList = createItems(partXml.getItms().getItems(),

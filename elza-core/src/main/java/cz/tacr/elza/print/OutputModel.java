@@ -1,5 +1,7 @@
 package cz.tacr.elza.print;
 
+import static cz.tacr.elza.repository.ExceptionThrow.fund;
+
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,6 +68,8 @@ import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ExceptionThrow;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -112,6 +117,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final Map<Integer, File> fileIdMap = new HashMap<>();
 
+    private final Map<Integer, Fund> fundIdMap = new HashMap<>();
+
     /**
      * Filtered records have references to initialized Nodes (RecordWithLinks) which is reason why
      * we keep only last loaded instance instead of complete map.
@@ -121,6 +128,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     /* managed components */
 
     private final StaticDataService staticDataService;
+
+    private final FundRepository fundRepository;
 
     private final FundTreeProvider fundTreeProvider;
 
@@ -164,6 +173,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     public OutputModel(final StaticDataService staticDataService,
                        final ElzaLocale elzaLocale,
+                       final FundRepository fundRepository,
                        final FundTreeProvider fundTreeProvider,
                        final NodeCacheService nodeCacheService,
                        final InstitutionRepository institutionRepository,
@@ -179,6 +189,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final DaoLinkRepository daoLinkRepository) {
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
+        this.fundRepository = fundRepository;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
@@ -361,29 +372,26 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         Validate.isTrue(isInitialized());
 
         List<Integer> arrNodeIds = new ArrayList<>(nodeIds.size());
-        List<Node> nodes = new ArrayList<>(nodeIds.size());
-
-        for (NodeId nodeId : nodeIds) {
-            arrNodeIds.add(nodeId.getArrNodeId());
-            Node node = new Node(nodeId);
-            nodes.add(node);
-        }
 
         if (fundVersion.getLockChange() != null) {
             throw new NotImplementedException("Load nodes for closed fund version not implemented");
         }
 
-        OutputItemConvertor conv = new OutputItemConvertor(this);
+        for (NodeId nodeId : nodeIds) {
+            arrNodeIds.add(nodeId.getArrNodeId());
+        }
 
         Map<Integer, RestoredNode> cachedNodeMap = nodeCacheService.getNodes(arrNodeIds);
-
+        List<Node> nodes = new ArrayList<>(nodeIds.size());
         Map<Integer, Node> daoLinkMap = new HashMap<>();
 
-        for (Node node : nodes) {
-            Integer arrNodeId = node.getNodeId().getArrNodeId();
+        for (NodeId nodeId : nodeIds) {
+            Integer arrNodeId = nodeId.getArrNodeId();
             RestoredNode cachedNode = cachedNodeMap.get(arrNodeId);
             Validate.notNull(cachedNode);
-            node.load(cachedNode, conv);
+
+            Node node = createNode(nodeId, cachedNode);
+            nodes.add(node);
             // prepare map for daolinks
             if (CollectionUtils.isNotEmpty(cachedNode.getDaoLinks())) {
                 for (ArrDaoLink daoLink : cachedNode.getDaoLinks()) {
@@ -406,6 +414,22 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         return nodes;
+    }
+
+    private Node createNode(NodeId nodeId, RestoredNode cachedNode) {
+        Integer fundId = cachedNode.getNode().getFundId();
+        Fund fund = this.fundIdMap.computeIfAbsent(fundId, id -> {
+            ArrFund arrFund = this.fundRepository.findById(id)
+                    .orElseThrow(ExceptionThrow.fund(id));
+            Fund f = new Fund(arrFund);
+            Institution inst = createInstitution(arrFund);
+            f.setInstitution(inst);
+            return f;
+        });
+
+        Node node = new Node(fund, nodeId);
+        node.load(cachedNode, itemConvertor);
+        return node;
     }
 
     /**
@@ -437,22 +461,16 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
         // init fund
         ArrFund arrFund = output.getFund();
-        this.fund = new Fund(rootNodeId, this);
-        this.fund.setName(arrFund.getName());
-        this.fund.setInternalCode(arrFund.getInternalCode());
-        this.fund.setCreateDate(Date.from(arrFund.getCreateDate().atZone(ZoneId.systemDefault()).toInstant()));
-        this.fund.setFundNumber(arrFund.getFundNumber());
-        this.fund.setUnitdate(arrFund.getUnitdate());
-        this.fund.setMark(arrFund.getMark());
+        this.fund = new Fund(rootNodeId, this, arrFund);
 
         // init fund institution
         Institution inst = createInstitution(arrFund);
         this.fund.setInstitution(inst);
+        this.fundIdMap.put(arrFund.getFundId(), fund);
 
         // init direct items
-        OutputItemConvertor conv = new OutputItemConvertor(this);
         this.outputItems = params.getOutputItems().stream()
-                .map(i -> conv.convert(i))
+                .map(i -> itemConvertor.convert(i))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
@@ -581,12 +599,11 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             return node;
         }
 
-        NodeId nodeId = new RefNodeId(id);
-        node = new Node(nodeId);
-        OutputItemConvertor conv = new OutputItemConvertor(this);
         RestoredNode cachedNode = nodeCacheService.getNode(id);
         Validate.notNull(cachedNode);
-        node.load(cachedNode, conv);
+
+        NodeId nodeId = new RefNodeId(id);
+        node = createNode(nodeId, cachedNode);
 
         nodeIdMap.put(id, node);
         return node;
@@ -716,7 +733,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     public List<cz.tacr.elza.print.item.Item> loadStructItems(Integer structObjId) {
         List<ArrStructuredItem> items = structItemRepos.findByStructObjIdAndDeleteChangeIsNullFetchData(
                 structObjId);
-        List<cz.tacr.elza.print.item.Item> result = convert(items, new OutputItemConvertor(this));
+        List<cz.tacr.elza.print.item.Item> result = convert(items, itemConvertor);
         return result;
     }
 

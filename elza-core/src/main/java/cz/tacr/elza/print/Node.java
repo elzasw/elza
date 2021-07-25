@@ -26,6 +26,8 @@ public class Node {
 
     private final static Logger log = LoggerFactory.getLogger(Node.class);
 
+    private final Fund fund;
+
     private final NodeId nodeId;
 
     private List<Item> items;
@@ -50,7 +52,8 @@ public class Node {
      * @param nodel
      *            vazba na output
      */
-    public Node(NodeId nodeId) {
+    public Node(final Fund fund, final NodeId nodeId) {
+        this.fund = fund;
         this.nodeId = nodeId;
     }
 
@@ -338,6 +341,10 @@ public class Node {
         if (descItems != null) {
             this.items = OutputModel.convert(descItems, conv);
         }
+    }
+
+    public Fund getFund() {
+        return fund;
     }
 
     public void addDao(Dao dao) {

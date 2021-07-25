@@ -188,6 +188,9 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
     public void addStructuredItem(final ItemType itemType,
                                   final StructType structuredType,
                                   final List<ArrStructuredItem> items) {
+        if (isItemTypeIgnored(itemType)) {
+            return;
+        }
         StaticDataProvider data = staticDataService.getData();
         ArrChange change = changeSupplier.get();
         for (ArrStructuredItem item : items) {
