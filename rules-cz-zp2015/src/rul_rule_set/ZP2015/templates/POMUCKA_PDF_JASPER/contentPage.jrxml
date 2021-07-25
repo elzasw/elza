@@ -665,6 +665,7 @@
 		</band>
 		<band height="13">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{node}.getNodeId().isPublished()]]></printWhenExpression>
 			<textField textAdjust="StretchHeight" pattern="">
 				<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="13" isRemoveLineWhenBlank="true" backcolor="#336699" uuid="3c1bed84-a8d7-4689-b873-651991dc790d">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
