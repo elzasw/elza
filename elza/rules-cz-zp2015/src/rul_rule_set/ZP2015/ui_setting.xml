@@ -103,6 +103,7 @@
             <group code="05_GROUP3">
                 <name>Hlavní popis jednotky</name>
                 <type code="ZP2015_TITLE" width="0"/>
+                <type code="ZP2015_TITLE_PUBLIC" width="0"/>
                 <!-- 4.2.4 Formální název jednotky popisu -->
                 <type code="ZP2015_FORMAL_TITLE" width="0"/>
                 <type code="ZP2015_UNIT_DATE" width="1"/>

@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -1141,7 +1142,7 @@ public class RuleService {
         return executeAvailable(PartType.fromValue(partForm.getPartTypeCode()), modelAvailable, scope.getRulRuleSet());
     }
 
-    @Transactional
+    @Transactional(TxType.MANDATORY)
     public ApValidationErrorsVO executeValidation(final Integer accessPointId) {
         ApAccessPoint apAccessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState apState = accessPointService.getStateInternal(apAccessPoint);

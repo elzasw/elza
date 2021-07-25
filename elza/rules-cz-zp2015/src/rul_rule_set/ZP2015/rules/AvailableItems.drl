@@ -65,7 +65,7 @@ no-loop
 when
     $itemType : RulItemTypeExt(code in ("ZP2015_ARRANGEMENT_TYPE", "ZP2015_LEVEL_TYPE", "ZP2015_FOLDER_TYPE",
         "ZP2015_UNIT_TYPE", "ZP2015_UNIT_SUBTYPE", "ZP2015_UNIT_COUNT", "ZP2015_UNIT_ID", 
-        "ZP2015_SERIAL_NUMBER", "ZP2015_TITLE", "ZP2015_STORAGE_ID", "ZP2015_AIP_ID", 
+        "ZP2015_SERIAL_NUMBER", "ZP2015_TITLE", "ZP2015_TITLE_PUBLIC", "ZP2015_STORAGE_ID", "ZP2015_AIP_ID", 
         "ZP2015_FORMAL_TITLE", "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_BULK",
         "ZP2015_UNIT_DATE_TEXT", "ZP2015_UNIT_HIST", "ZP2015_UNIT_ARR", "ZP2015_UNIT_CONTENT",
         "ZP2015_UNIT_SOURCE", "ZP2015_FUTURE_UNITS", "ZP2015_UNIT_ACCESS", "ZP2015_UNIT_INFO_RIGHTS",
@@ -1061,7 +1061,8 @@ when
       // Obecná příloha 
       "ZP2015_ATTACHMENT",
       // Role entit jsou možné vždy
-      "ZP2015_ENTITY_ROLE"
+      "ZP2015_ENTITY_ROLE",
+      "ZP2015_TITLE_PUBLIC"
       ) )
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
@@ -1132,6 +1133,7 @@ when
     not DescItem(type=="ZP2015_STORAGE_ID") from $activeLevel.descItems
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setRepeatable(true);
 end
 
 // Podtypy jednotek popisu

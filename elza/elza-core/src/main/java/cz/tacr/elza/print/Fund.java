@@ -1,5 +1,6 @@
 package cz.tacr.elza.print;
 
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -34,12 +35,38 @@ public class Fund {
 
     private String mark;
 
-    public Fund(NodeId rootNodeId, NodeLoader nodeLoader) {
+    private Integer fundId;
+
+    public Fund(NodeId rootNodeId, NodeLoader nodeLoader, ArrFund fund) {
         this.rootNodeId = Validate.notNull(rootNodeId);
         this.nodeLoader = Validate.notNull(nodeLoader);
+        Validate.notNull(fund);
+
+        initFundData(fund);
     }
 
-	public NodeId getRootNodeId() {
+    public Fund(ArrFund fund) {
+        this.rootNodeId = null;
+        this.nodeLoader = null;
+        Validate.notNull(fund);
+        initFundData(fund);
+    }
+
+    private void initFundData(ArrFund fund) {
+        fundId = fund.getFundId();
+        name = fund.getName();
+        internalCode = fund.getInternalCode();
+        createDate = Date.from(fund.getCreateDate().atZone(ZoneId.systemDefault()).toInstant());
+        fundNumber = fund.getFundNumber();
+        unitdate = fund.getUnitdate();
+        mark = fund.getMark();
+    }
+
+    public Integer getFundId() {
+        return fundId;
+    }
+
+    public NodeId getRootNodeId() {
         return rootNodeId;
     }
 
@@ -53,24 +80,12 @@ public class Fund {
         return name;
     }
 
-    void setName(final String name) {
-        this.name = name;
-    }
-
     public String getInternalCode() {
         return internalCode;
     }
 
-    void setInternalCode(final String internalCode) {
-        this.internalCode = internalCode;
-    }
-
     public Date getCreateDate() {
         return createDate;
-    }
-
-    void setCreateDate(final Date createDate) {
-        this.createDate = createDate;
     }
 
     public String getDateRange() {
@@ -93,23 +108,11 @@ public class Fund {
 		return fundNumber;
 	}
 
-	public void setFundNumber(Integer fundNumber) {
-		this.fundNumber = fundNumber;
-	}
-
 	public String getUnitdate() {
 		return unitdate;
 	}
 
-	public void setUnitdate(final String unitdate) {
-		this.unitdate = unitdate;
-	}
-
 	public String getMark() {
 		return mark;
-	}
-
-	public void setMark(final String mark) {
-		this.mark = mark;
 	}
 }

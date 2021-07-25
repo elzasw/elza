@@ -1,7 +1,11 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.core.data.ItemType;
@@ -19,21 +23,23 @@ public class LevelWithItems {
     /**
      * Description items
      */
-    final List<ArrDescItem> descItems = new ArrayList<>();
-
-    public LevelWithItems(final TreeNode n) {
-        this.treeNode = n;
-    }
-    
-    public LevelWithItems(final TreeNode n, final LevelWithItems parentLevel) {
-        this.treeNode = n;
-		this.parent = parentLevel;
-	}
+    List<ArrDescItem> descItems;
 
     public LevelWithItems(final TreeNode n, final LevelWithItems parentLevel, final List<ArrDescItem> items) {
         this.treeNode = n;
 		this.parent = parentLevel;
-        if (items != null) {
+        if (CollectionUtils.isEmpty(items)) {
+            descItems = Collections.emptyList();
+        } else {
+            descItems = items.stream()
+                    .sorted((a, b) -> {
+                        int r = a.getItemTypeId().compareTo(b.getItemTypeId());
+                        if (r == 0) {
+                            r = a.getPosition().compareTo(b.getPosition());
+                        }
+                        return r;
+                    })
+                    .collect(Collectors.toList());
             descItems.addAll(items);
         }
 	}

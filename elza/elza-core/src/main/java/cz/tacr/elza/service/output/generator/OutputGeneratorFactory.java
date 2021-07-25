@@ -18,6 +18,7 @@ import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -26,6 +27,8 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 public class OutputGeneratorFactory {
 
     private final StaticDataService staticDataService;
+
+    private final FundRepository fundRepository;
 
     private final FundTreeProvider fundTreeProvider;
 
@@ -58,25 +61,27 @@ public class OutputGeneratorFactory {
     private ElzaLocale elzaLocale;
 
     @Autowired
-    public OutputGeneratorFactory(ApplicationContext applicationContext,
-            StaticDataService staticDataService,
-            ElzaLocale elzaLocale,
-            FundTreeProvider fundTreeProvider,
-            NodeCacheService nodeCacheService,
-            InstitutionRepository institutionRepository,
-            ApStateRepository apStateRepository,
-            ApBindingRepository bindingRepository,
-            ApPartRepository partRepository,
-            ApItemRepository itemRepository,
-            ApBindingStateRepository bindingStateRepository,
-            ApIndexRepository indexRepository,
-            EntityManager em,
-            DmsService dmsService,
-                                  DEExportService exportService,
-                                  DaoLinkRepository daoLinkRepository) {
+    public OutputGeneratorFactory(final ApplicationContext applicationContext,
+                                  final StaticDataService staticDataService,
+                                  final ElzaLocale elzaLocale,
+                                  final FundRepository fundRepository,
+                                  final FundTreeProvider fundTreeProvider,
+                                  final NodeCacheService nodeCacheService,
+                                  final InstitutionRepository institutionRepository,
+                                  final ApStateRepository apStateRepository,
+                                  final ApBindingRepository bindingRepository,
+                                  final ApPartRepository partRepository,
+                                  final ApItemRepository itemRepository,
+                                  final ApBindingStateRepository bindingStateRepository,
+                                  final ApIndexRepository indexRepository,
+                                  final EntityManager em,
+                                  final DmsService dmsService,
+                                  final DEExportService exportService,
+                                  final DaoLinkRepository daoLinkRepository) {
         this.applicationContext = applicationContext;
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
+        this.fundRepository = fundRepository;
         this.fundTreeProvider = fundTreeProvider;
         this.nodeCacheService = nodeCacheService;
         this.institutionRepository = institutionRepository;
@@ -106,7 +111,8 @@ public class OutputGeneratorFactory {
     }
 
     public FreemarkerOutputGenerator createFreemarkerOutputGenerator() {
-        return new FreemarkerOutputGenerator(applicationContext, staticDataService, elzaLocale, fundTreeProvider,
+        return new FreemarkerOutputGenerator(applicationContext, staticDataService, elzaLocale,
+                fundRepository, fundTreeProvider,
                 nodeCacheService,
                 institutionRepository, apStateRepository, bindingRepository, partRepository, itemRepository,
                 bindingStateRepository, indexRepository, em, dmsService,
@@ -115,7 +121,8 @@ public class OutputGeneratorFactory {
 
     public JasperOutputGenerator createJasperOutputGenerator() {
         return new JasperOutputGenerator(applicationContext, staticDataService, elzaLocale,
-                fundTreeProvider, nodeCacheService,
+                fundRepository, fundTreeProvider,
+                nodeCacheService,
                 institutionRepository, apStateRepository,
                 bindingRepository, partRepository, itemRepository, bindingStateRepository,
                 indexRepository, em, dmsService, daoLinkRepository);

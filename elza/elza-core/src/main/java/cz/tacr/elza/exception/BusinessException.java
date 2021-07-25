@@ -1,6 +1,5 @@
 package cz.tacr.elza.exception;
 
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ErrorCode;
 
 /**
@@ -9,6 +8,11 @@ import cz.tacr.elza.exception.codes.ErrorCode;
  * @since 09.11.2016
  */
 public class BusinessException extends AbstractException {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
 
     public BusinessException(final String message, final ErrorCode errorCode) {
         super(message, errorCode);
