@@ -21,6 +21,7 @@ import cz.tacr.elza.controller.vo.RulExportFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulOutputFilter;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.OutputFilterRepository;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -388,6 +389,13 @@ public class RuleController {
                 temp.deleteOnExit();
             }
         }
+    }
+
+    @Transactional
+    @RequestMapping(value = "/itemTypeCodes", method = RequestMethod.GET)
+    public List<String> getItemTypeCodesByRuleSet(@RequestParam(value = "code") final String ruleSetCode) {
+        RulRuleSet rulRuleSet = ruleSetRepository.findByCode(ruleSetCode);
+        return ruleService.getItemTypeCodesByRuleSet(rulRuleSet);
     }
 
     /**

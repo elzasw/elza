@@ -2084,6 +2084,18 @@ public class PackageService {
                 pkgCtx.addRuleUpdateContext(ruc);
             }
         }
+        try {
+            for (RulRuleSet rulRuleSet : rulRuleSetsNew) {
+                if (rulRuleSet.getItemTypeComponent() != null) {
+                    RuleUpdateContext ruc = pkgCtx.getRuleUpdateContextByCode(rulRuleSet.getCode());
+                    ruc.getPackageUpdateContext().saveFile(ruc.getRulesDir(),
+                            ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + ZIP_DIR_RULES,
+                            rulRuleSet.getItemTypeComponent().getFilename());
+                }
+            }
+        } catch (IOException e) {
+            throw new SystemException(e);
+        }
     }
 
     /**
@@ -2095,7 +2107,11 @@ public class PackageService {
         for (RuleUpdateContext ruc : pkgCtx.getRuleUpdateContexts()) {
             RuleState ruleState = ruc.getRuleState();
             if (ruleState == RuleState.DELETE) {
+                RulComponent component = ruc.getRulSet().getItemTypeComponent();
                 ruleSetRepository.delete(ruc.getRulSet());
+                if (component != null) {
+                    componentRepository.delete(component);
+                }
             }
         }
     }
@@ -2112,6 +2128,24 @@ public class PackageService {
         rulRuleSet.setName(ruleSet.getName());
         rulRuleSet.setRuleType(RulRuleSet.RuleType.fromValue(ruleSet.getRuleType()));
         rulRuleSet.setPackage(rulPackage);
+
+        String filename = ruleSet.getRuleItemTypeFilter();
+        if (filename != null) {
+            RulComponent component = rulRuleSet.getItemTypeComponent();
+            if (component == null) {
+                component = new RulComponent();
+            }
+            component.setFilename(filename);
+            componentRepository.save(component);
+            rulRuleSet.setItemTypeComponent(component);
+        } else {
+            RulComponent component = rulRuleSet.getItemTypeComponent();
+            rulRuleSet.setItemTypeComponent(null);
+            if (component != null) {
+                ruleSetRepository.save(rulRuleSet);
+                componentRepository.delete(component);
+            }
+        }
     }
 
     /**
@@ -2316,6 +2350,11 @@ public class PackageService {
             File dirExportFilters = resourcePathResolver.getExportFiltersDir(rulPackage.getPackageId(), ruleSet.getRuleSetId()).toFile();
 
             try {
+
+                if (ruleSet.getItemTypeComponent() != null) {
+                    deleteFile(dirRules, ruleSet.getItemTypeComponent().getFilename());
+                    componentRepository.delete(ruleSet.getItemTypeComponent());
+                }
 
                 for (RulArrangementRule rulArrangementRule : arrangementRules) {
                     deleteFile(dirRules, rulArrangementRule.getComponent().getFilename());
@@ -2776,6 +2815,12 @@ public class PackageService {
             RuleSetXml ruleSet = new RuleSetXml();
             covertRuleSet(rulRuleSet, ruleSet);
             ruleSetList.add(ruleSet);
+
+            if (rulRuleSet.getItemTypeComponent() != null) {
+                File ruleFile = resourcePathResolver.getDroolFile(rulRuleSet).toFile();
+                addToZipFile(ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ZIP_DIR_RULES + "/"
+                        + rulRuleSet.getItemTypeComponent().getFilename(), ruleFile, zos);
+            }
         }
 
         addObjectToZipFile(ruleSets, zos, RULE_SET_XML);
@@ -3099,6 +3144,10 @@ public class PackageService {
         ruleSet.setCode(rulRuleSet.getCode());
         ruleSet.setName(rulRuleSet.getName());
         ruleSet.setRuleType(rulRuleSet.getRuleType().value());
+
+        if (rulRuleSet.getItemTypeComponent() != null) {
+            ruleSet.setRuleItemTypeFilter(rulRuleSet.getItemTypeComponent().getFilename());
+        }
     }
 
     /**

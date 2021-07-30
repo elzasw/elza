@@ -1,0 +1,9 @@
+package SimpleDev;
+
+import cz.tacr.elza.drools.model.ItemType;
+
+rule "Filtr item typů"
+when $it: ItemType(code in ("SRD_LEVEL_TYPE","SRD_FOLDER_TYPE","SRD_UNIT_TYPE"))
+then
+    $it.setPossible();
+end
