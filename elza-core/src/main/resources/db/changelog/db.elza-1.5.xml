@@ -1218,14 +1218,14 @@
 
     <changeSet id="20210330155924" author="ppyt">
         <!-- Create uniqueue index for not null items -->
-        <sql dbms="postgresql">CREATE UNIQUE INDEX arr_structured_object_uuid_pidx 
-                               ON arr_structured_object(uuid, fund_id, structured_type_id) 
+        <sql dbms="postgresql">CREATE UNIQUE INDEX arr_structured_object_uuid_pidx
+                               ON arr_structured_object(uuid, fund_id, structured_type_id)
                                WHERE delete_change_id IS NULL</sql>
-        <sql dbms="postgresql">CREATE UNIQUE INDEX ap_item_object_pidx 
-                               ON ap_item(object_id) 
+        <sql dbms="postgresql">CREATE UNIQUE INDEX ap_item_object_pidx
+                               ON ap_item(object_id)
                                WHERE delete_change_id IS NULL</sql>
-        <sql dbms="postgresql">CREATE UNIQUE INDEX arr_item_object_pidx 
-                               ON arr_item(desc_item_object_id) 
+        <sql dbms="postgresql">CREATE UNIQUE INDEX arr_item_object_pidx
+                               ON arr_item(desc_item_object_id)
                                WHERE delete_change_id IS NULL</sql>
     </changeSet>
 
@@ -1352,6 +1352,17 @@
                              nullable="true" />
             </column>
 		</addColumn>
+    </changeSet>
+
+    <changeSet id="20210729104300" author="fantis">
+        <addColumn tableName="rul_rule_set">
+            <column name="item_type_component_id" type="int"/>
+        </addColumn>
+        <addForeignKeyConstraint constraintName="fk_rul_rule_set_item_type_component"
+                                 baseTableName="rul_rule_set"
+                                 baseColumnNames="item_type_component_id"
+                                 referencedTableName="rul_component"
+                                 referencedColumnNames="component_id"/>
     </changeSet>
 
 </databaseChangeLog>

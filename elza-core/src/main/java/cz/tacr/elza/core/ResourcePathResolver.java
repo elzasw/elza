@@ -163,6 +163,19 @@ public class ResourcePathResolver {
      * @return Path to drool file (may not exist).
      */
     @Transactional(TxType.MANDATORY)
+    public Path getDroolFile(RulRuleSet ruleSet) {
+        Path droolsDir = getDroolsDir(ruleSet.getPackage().getPackageId(), ruleSet.getRuleSetId());
+        String droolFile = ruleSet.getItemTypeComponent().getFilename();
+
+        Path path = droolsDir.resolve(droolFile);
+
+        return path;
+    }
+
+    /**
+     * @return Path to drool file (may not exist).
+     */
+    @Transactional(TxType.MANDATORY)
     public Path getDroolFile(RulArrangementRule rule) {
         Path droolsDir = getDroolsDir(rule.getPackageId(), rule.getRuleSetId());
         String droolFile = rule.getComponent().getFilename();
