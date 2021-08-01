@@ -6,10 +6,29 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApState;
 
+import java.util.Collection;
 import java.util.Set;
 
 public interface ApCachedAccessPointRepositoryCustom {
 
-    QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search, SearchFilterVO searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
-                                                               ApState.StateApproval state, Integer from, Integer count, StaticDataProvider sdp);
+    /**
+     * Search all related accesspoints
+     * 
+     * @param search
+     * @param searchFilter
+     * @param apTypeIdTree
+     * @param scopeIds
+     * @param state
+     *            might be null
+     * @param from
+     * @param count
+     * @param sdp
+     * @return
+     */
+    QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
+                                                                       SearchFilterVO searchFilter,
+                                                                       Collection<Integer> apTypeIdTree,
+                                                                       Collection<Integer> scopeIds,
+                                                                       ApState.StateApproval state, Integer from,
+                                                                       Integer count, StaticDataProvider sdp);
 }

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
@@ -58,7 +59,7 @@ public class AccessPointItemService {
     private final SequenceService sequenceService;
     private final ExternalSystemService externalSystemService;
     private final ApBindingItemRepository bindingItemRepository;
-    private final ApBindingRepository bindingRepository;
+    private final ItemService itemService;
 
     public static class DeletedItems {
 
@@ -121,7 +122,7 @@ public class AccessPointItemService {
                                   final SequenceService sequenceService,
                                   final ExternalSystemService externalSystemService,
                                   final ApBindingItemRepository bindingItemRepository,
-                                  final ApBindingRepository bindingRepository) {
+                                  final ItemService itemService) {
         this.em = em;
         this.staticDataService = staticDataService;
         this.itemRepository = itemRepository;
@@ -129,7 +130,7 @@ public class AccessPointItemService {
         this.sequenceService = sequenceService;
         this.externalSystemService = externalSystemService;
         this.bindingItemRepository = bindingItemRepository;
-        this.bindingRepository = bindingRepository;
+        this.itemService = itemService;
     }
 
     // TODO: Kandidat na vymazani
@@ -162,7 +163,7 @@ public class AccessPointItemService {
      *            změna
      */
     public DeletedItems deleteItems(List<ApItem> items, ApChange change) {
-        if (items.size() == 0) {
+        if (items.isEmpty()) {
             return new DeletedItems(Collections.emptyList(), Collections.emptyList());
         }
 
@@ -346,8 +347,15 @@ public class AccessPointItemService {
                                     final ApChange change,
                                     final List<ApBindingItem> bindingItemList,
                                     final List<ReferencedEntities> dataRefList) {
+        if (createItems.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         // Map for position counting
         Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
+
+        // Map for replacing ApItem
+        Map<Integer, ApItem> itemsMap = new HashMap<>();
 
         StaticDataProvider sdp = staticDataService.getData();
         List<ArrData> dataToSave = new ArrayList<>(createItems.size());
@@ -404,18 +412,22 @@ public class AccessPointItemService {
             if (data instanceof ArrDataRecordRef) {
                 setBindingArrDataRecordRef((ArrDataRecordRef) data, createItem, bindingItemList, dataRefList);
             }
-
-            ApItem itemCreated = createItem(part, itemType.getEntity(), itemSpec, change, nextItemObjectId(), position);
             dataToSave.add(data);
-            itemCreated.setData(data);
+
+            itemService.checkItemLengthLimit(itemType.getEntity(), data);
+
+            ApItem itemCreated = createItem(part, data, itemType.getEntity(), itemSpec, change, nextItemObjectId(), position);
             itemsCreated.add(itemCreated);
+
+            itemsMap.put(createItem.getId(), itemCreated);
 
             existsItems.add(itemCreated);
 
-            changeBindingItemsItems(createItem.getId(), itemCreated, bindingItemList);
         }
         dataRepository.saveAll(dataToSave);
         itemRepository.saveAll(itemsCreated);
+        changeBindingItemsItems(itemsMap, bindingItemList);
+        log.debug("Items created, ItemIds: {}", itemsCreated.stream().map(ApItem::getItemId).collect(Collectors.toList()));
         return itemsCreated;
     }
 
@@ -466,19 +478,21 @@ public class AccessPointItemService {
 
     }
 
-    // Vyhleda aktualni BindingItem dle puvodniho item a nahradi vazbou na novy
-    private void changeBindingItemsItems(Integer itemId, ApItem itemCreated, List<ApBindingItem> bindingItemList) {
+    /**
+     * Nahradit všechna pole ApItem tabulky ApBindingItem podle mapy
+     * 
+     * @param itemsMap mapa zmen
+     * @param bindingItemList
+     */
+    private void changeBindingItemsItems(Map<Integer, ApItem> itemsMap, List<ApBindingItem> bindingItemList) {
         if (CollectionUtils.isEmpty(bindingItemList)) {
             return;
         }
         List<ApBindingItem> currentItemBindings = new ArrayList<>();
         for (ApBindingItem bindingItem : bindingItemList) {
-            if (bindingItem.getItem() != null &&
-                    bindingItem.getItem().getItemId() != null &&
-                    bindingItem.getItem().getItemId().equals(itemId)) {
-                //? toto asi nema zadny efekt, pokud to tam jiz je, 
-                //  potom to meni na to same
-                bindingItem.setItem(itemCreated);
+            ApItem item = itemsMap.get(bindingItem.getItemId());
+            if (item != null) {
+                bindingItem.setItem(item);
                 currentItemBindings.add(bindingItem);
             }
         }
@@ -487,7 +501,7 @@ public class AccessPointItemService {
         }
     }
 
-    public ApItem createItem(final ApItem oldItem,
+    public ApItem copyItem(final ApItem oldItem,
                              final ApChange change,
                              final ApPart apPart) {
         ApItem newItem = new ApItem();
@@ -520,9 +534,11 @@ public class AccessPointItemService {
      * @return vytvořená položka
      */
     public ApItem createItem(final ApPart part,
+                             final ArrData data,
                              final RulItemType it, final RulItemSpec is, final ApChange c,
                              final int objectId, final int position) {
         ApItem item = new ApItem();
+        item.setData(data);
         item.setItemType(it);
         item.setItemSpec(is);
         item.setCreateChange(c);
@@ -533,11 +549,12 @@ public class AccessPointItemService {
     }
 
     public ApItem createItem(final ApPart part,
+                             final ArrData data,
                              final RulItemType it, final RulItemSpec is, final ApChange c,
                              List<ApItem> existsItems) {
         int position = nextPosition(existsItems);
         int objectId = nextItemObjectId();
-        return createItem(part, it, is, c, objectId, position);
+        return createItem(part, data, it, is, c, objectId, position);
     }
 
     @Nullable
@@ -656,14 +673,16 @@ public class AccessPointItemService {
      * @param existsItems
      * @param binding
      */
-    public ApItem createItemWithSave(ApPart part, ArrData data, RulItemType itemType, RulItemSpec itemSpec,
+    public ApItem createItemWithSave(ApPart part, ArrData data, RulItemType rulItemType, RulItemSpec itemSpec,
                                      ApChange change,
                                      List<ApItem> existsItems, ApBinding binding,
                                      String bindingValue) {
 
         data = dataRepository.save(data);
-        ApItem itemCreated = createItem(part, itemType, itemSpec, change, existsItems);
-        itemCreated.setData(data);
+
+        itemService.checkItemLengthLimit(rulItemType, data);
+
+        ApItem itemCreated = createItem(part, data, rulItemType, itemSpec, change, existsItems);
         itemCreated = itemRepository.save(itemCreated);
 
         if (binding != null) {

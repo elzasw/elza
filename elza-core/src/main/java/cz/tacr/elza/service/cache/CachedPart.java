@@ -23,6 +23,8 @@ public class CachedPart implements AccessPointCacheSerializable {
 
     private Integer createChangeId;
 
+    private Integer lastChangeId;
+
     private Integer deleteChangeId;
 
     private ApKeyValue keyValue;
@@ -77,6 +79,14 @@ public class CachedPart implements AccessPointCacheSerializable {
 
     public void setCreateChangeId(Integer createChangeId) {
         this.createChangeId = createChangeId;
+    }
+
+    public Integer getLastChangeId() {
+        return lastChangeId;
+    }
+
+    public void setLastChangeId(Integer lastChangeId) {
+        this.lastChangeId = lastChangeId;
     }
 
     public Integer getDeleteChangeId() {

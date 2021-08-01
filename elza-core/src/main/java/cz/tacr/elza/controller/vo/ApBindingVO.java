@@ -1,8 +1,16 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
-import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.service.cache.CachedBinding;
+import cz.tacr.elza.service.cache.CachedPart;
 
+import org.apache.commons.collections4.CollectionUtils;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class ApBindingVO {
@@ -25,7 +33,7 @@ public class ApBindingVO {
 
     private String detailUrlExtReplacedBy;
 
-    private SyncState syncState;
+    private SyncStateVO syncState;
 
     private List<ApBindingItemVO> bindingItemList;
 
@@ -85,11 +93,11 @@ public class ApBindingVO {
         this.extReplacedBy = extReplacedBy;
     }
 
-    public SyncState getSyncState() {
+    public SyncStateVO getSyncState() {
         return syncState;
     }
 
-    public void setSyncState(SyncState syncState) {
+    public void setSyncState(SyncStateVO syncState) {
         this.syncState = syncState;
     }
 
@@ -118,18 +126,112 @@ public class ApBindingVO {
     }
 
     /**
-     * Creates value object from AP external id.
+     * Creates value object from ApBindingState.
+     *
+     * @param bindingState
+     * @param lastChange
+     * @return ApBindingVO
      */
-    public static ApBindingVO newInstance(ApBindingState src) {
+    public static ApBindingVO newInstance(ApBindingState bindingState, ApChange lastChange) {
         ApBindingVO vo = new ApBindingVO();
-        vo.setId(src.getBinding().getBindingId());
-        vo.setExternalSystemCode(src.getBinding().getApExternalSystem().getCode());
-        vo.setValue(src.getBinding().getValue());
-        vo.setExtState(src.getExtState());
-        vo.setExtRevision(src.getExtRevision());
-        vo.setExtUser(src.getExtUser());
-        vo.setExtReplacedBy(src.getExtReplacedBy());
-        vo.setSyncState(src.getSyncOk());
+        vo.setId(bindingState.getBinding().getBindingId());
+        vo.setExternalSystemCode(bindingState.getBinding().getApExternalSystem().getCode());
+        vo.setValue(bindingState.getBinding().getValue());
+        vo.setExtState(bindingState.getExtState());
+        vo.setExtRevision(bindingState.getExtRevision());
+        vo.setExtUser(bindingState.getExtUser());
+        vo.setExtReplacedBy(bindingState.getExtReplacedBy());
+        vo.setSyncState(createSyncStateVO(bindingState, lastChange));
         return vo;
     }
+
+    /**
+     * Creates value object from CachedBinding and List<CachedPart>.
+     *
+     * @param binding
+     * @param parts
+     * @return ApBindingVO
+     */
+    public static ApBindingVO newInstance(CachedBinding binding, List<CachedPart> parts, ApChange lastChange) {
+        ApBindingVO vo = newInstance(binding.getBindingState(), lastChange);
+        vo.setBindingItemList(createApBindingItemsVO(binding, parts));
+        return vo;
+    }
+
+    private static SyncStateVO createSyncStateVO(ApBindingState bindingState, ApChange lastChange) {
+        if (bindingState.getSyncOk() != null) {
+            SyncStateVO syncState;
+            switch (bindingState.getSyncOk()) {
+            case SYNC_OK:
+                if (lastChange.getChangeId() > bindingState.getSyncChangeId()) {
+                    syncState = SyncStateVO.LOCAL_CHANGE;
+                } else {
+                    syncState = SyncStateVO.SYNC_OK;
+                }
+                break;
+            case NOT_SYNCED:
+                syncState = SyncStateVO.NOT_SYNCED;
+                break;
+            default:
+                throw new SystemException("Chyba datových polí ApBindingState.SyncOk");
+            }
+            return syncState;
+        }
+        return null;
+    }
+
+    private static List<ApBindingItemVO> createApBindingItemsVO(CachedBinding binding, List<CachedPart> parts) {
+        List<ApBindingItemVO> bindingItemVOList = new ArrayList<>();
+
+        if (CollectionUtils.isNotEmpty(binding.getBindingItemList())) {
+            for (ApBindingItem bindingItem : binding.getBindingItemList()) {
+                bindingItemVOList.add(createApBindingItemVO(bindingItem, binding.getBindingState(), parts));
+            }
+        }
+        return bindingItemVOList;
+    }
+
+    private static ApBindingItemVO createApBindingItemVO(ApBindingItem bindingItem, ApBindingState bindingState, List<CachedPart> parts) {
+        ApBindingItemVO bindingItemVO = new ApBindingItemVO();
+        bindingItemVO.setValue(bindingItem.getValue());
+        bindingItemVO.setPartId(bindingItem.getPartId());
+        bindingItemVO.setItemId(bindingItem.getItemId());
+        bindingItemVO.setSync(getSync(bindingItem, bindingState.getSyncChangeId(), parts));
+        return bindingItemVO;
+    }
+
+    private static Boolean getSync(ApBindingItem bindingItem, Integer syncChangeId, List<CachedPart> parts) {
+        if (bindingItem.getItemId() != null) {
+            return getSyncFromItem(bindingItem.getItemId(), syncChangeId, parts);
+        } else {
+            return getSyncFromPart(bindingItem.getPartId(), syncChangeId, parts);
+        }
+    }
+
+    private static Boolean getSyncFromItem(Integer itemId, Integer syncChangeId, List<CachedPart> parts) {
+        if (CollectionUtils.isNotEmpty(parts)) {
+            for (CachedPart part : parts) {
+                if (CollectionUtils.isNotEmpty(part.getItems())) {
+                    for (ApItem item : part.getItems()) {
+                        if (item.getItemId().equals(itemId)) {
+                            return syncChangeId >= item.getCreateChangeId();
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static Boolean getSyncFromPart(Integer partId, Integer syncChangeId, List<CachedPart> parts) {
+        if (CollectionUtils.isNotEmpty(parts)) {
+            for (CachedPart part : parts) {
+                if (part.getPartId().equals(partId)) {
+                    return syncChangeId >= part.getLastChangeId();
+                }
+            }
+        }
+        return false;
+    }
+
 }

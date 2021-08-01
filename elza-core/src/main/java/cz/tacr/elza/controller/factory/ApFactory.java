@@ -20,7 +20,6 @@ import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
-import cz.tacr.elza.service.cache.CachedBinding;
 import cz.tacr.elza.service.cache.CachedPart;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -92,6 +91,7 @@ import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
@@ -135,6 +135,8 @@ public class ApFactory {
 
     private final UserRepository userRepository;
 
+    private final ApChangeRepository changeRepository;
+
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
@@ -148,7 +150,8 @@ public class ApFactory {
                      final CamConnector camConnector,
                      final ApIndexRepository indexRepository,
                      final ApTypeRepository apTypeRepository,
-                     final UserRepository userRepository) {
+                     final UserRepository userRepository,
+                     final ApChangeRepository changeRepository) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
         this.scopeRepository = scopeRepository;
@@ -162,6 +165,7 @@ public class ApFactory {
         this.indexRepository = indexRepository;
         this.apTypeRepository = apTypeRepository;
         this.userRepository = userRepository;
+        this.changeRepository = changeRepository;
     }
 
     /**
@@ -285,25 +289,36 @@ public class ApFactory {
 
             //comments
             Integer comments = stateRepository.countCommentsByAccessPoint(ap);
-            //description
+
+            // description
             String description = getDescription(parts, items);
 
-            //vlastník entity
+            // vlastník entity
             UsrUser ownerUser = userRepository.findAccessPointOwner(ap);
 
-            //prepare external ids
-            List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(ap);
-            Map<ApBinding, ApBindingState> bindings = getBindingMap(eids);
+            // prepare bindings
+            List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoint(ap);
+            Map<ApBinding, ApBindingState> bindings = getBindingMap(bindingStates);
             Map<Integer, List<ApBindingItem>> bindingItemsMap = new HashMap<>();
             if (MapUtils.isNotEmpty(bindings)) {
                 bindingItemsMap = bindingItemRepository.findByBindings(bindings.keySet()).stream()
                         .collect(Collectors.groupingBy(i -> i.getBinding().getBindingId()));
             }
 
-            List<ApBindingVO> eidsVO = FactoryUtils.transformList(eids, ApBindingVO::newInstance);
-            apVO.setExternalIds(eidsVO);
-            fillBindingUrls(eidsVO);
-            fillBindingItems(eidsVO, bindings, bindingItemsMap);
+            // prepare last change
+            Integer lastChangeId = apRepository.getLastCreateChange(state.getAccessPointId());
+            if (lastChangeId < state.getCreateChangeId()) {
+                lastChangeId = state.getCreateChangeId();
+            }
+            ApChange lastChange = changeRepository.findById(lastChangeId).get();
+
+            List<ApBindingVO> bindingsVO = Collections.emptyList();
+            if (bindingStates != null) {
+                bindingsVO = bindingStates.stream().map(s -> ApBindingVO.newInstance(s, lastChange)).collect(Collectors.toList()); 
+            }            
+            apVO.setBindings(bindingsVO);
+            fillBindingUrls(bindingsVO);
+            fillBindingItems(bindingsVO, bindings, bindingItemsMap);
 
             apVO.setParts(createVO(parts, items, indices));
             apVO.setComments(comments);
@@ -311,7 +326,7 @@ public class ApFactory {
                 apVO.setDescription(description);
             }
             apVO.setPreferredPart(preferredPart.getPartId());
-            apVO.setLastChange(createVO(state.getCreateChange()));
+            apVO.setLastChange(createVO(lastChange));
             apVO.setOwnerUser(createVO(ownerUser));
         }
         return apVO;
@@ -321,13 +336,24 @@ public class ApFactory {
         String name = findAeCachedEntityName(cachedAccessPoint);
         ApAccessPointVO apVO = createVO(cachedAccessPoint.getApState(), getTypeRuleSetMap(), cachedAccessPoint, name);
 
-        //description
+        // description
         String description = getDescription(cachedAccessPoint);
 
-        //prepare eids
-        List<ApBindingVO> eidsVO = createApBindingsVO(cachedAccessPoint);
-        apVO.setExternalIds(eidsVO);
-        fillBindingUrls(eidsVO);
+        // prepare last change
+        Integer lastChangeId = apRepository.getLastCreateChange(cachedAccessPoint.getAccessPointId());
+        if (lastChangeId < cachedAccessPoint.getApState().getCreateChangeId()) {
+            lastChangeId = cachedAccessPoint.getApState().getCreateChangeId();
+        }
+        ApChange lastChange = changeRepository.findById(lastChangeId).get();
+
+        // prepare bindings
+        List<ApBindingVO> bindingsVO = Collections.emptyList();
+        if (cachedAccessPoint.getBindings() != null) {
+            bindingsVO = cachedAccessPoint.getBindings().stream()
+                    .map(s -> ApBindingVO.newInstance(s, cachedAccessPoint.getParts(), lastChange)).collect(Collectors.toList());
+        }
+        apVO.setBindings(bindingsVO);
+        fillBindingUrls(bindingsVO);
 
         apVO.setParts(createVO(cachedAccessPoint.getParts()));
         if (description != null) {
@@ -350,7 +376,7 @@ public class ApFactory {
         vo.setComment(apState.getComment());
         vo.setStateApproval(apState.getStateApproval());
         vo.setUuid(ap.getUuid());
-        vo.setExternalIds(Collections.emptyList());
+        vo.setBindings(Collections.emptyList());
         vo.setErrorDescription(ap.getErrorDescription());
         if (typeRuleSetMap != null) {
             vo.setRuleSetId(typeRuleSetMap.get(apState.getApTypeId()));
@@ -384,7 +410,7 @@ public class ApFactory {
         vo.setComment(apState.getComment());
         vo.setStateApproval(apState.getStateApproval());
         vo.setUuid(uuid);
-        vo.setExternalIds(Collections.emptyList());
+        vo.setBindings(Collections.emptyList());
         vo.setErrorDescription(errorDescription);
         if (typeRuleSetMap != null) {
             vo.setRuleSetId(typeRuleSetMap.get(apState.getApTypeId()));
@@ -393,87 +419,6 @@ public class ApFactory {
         vo.setState(state == null ? null : ApStateVO.valueOf(state.name()));
         vo.setName(name);
         return vo;
-    }
-
-    private List<ApBindingVO> createApBindingsVO(CachedAccessPoint cachedAccessPoint) {
-        List<ApBindingVO> bindingVOList = new ArrayList<>();
-
-        if (CollectionUtils.isNotEmpty(cachedAccessPoint.getBindings())) {
-            for (CachedBinding binding : cachedAccessPoint.getBindings()) {
-                bindingVOList.add(createApBindingVO(binding, cachedAccessPoint.getParts()));
-            }
-        }
-
-        return bindingVOList;
-    }
-
-    private ApBindingVO createApBindingVO(CachedBinding binding, List<CachedPart> parts) {
-        ApBindingVO bindingVO = new ApBindingVO();
-        bindingVO.setId(binding.getId());
-        bindingVO.setExternalSystemCode(binding.getExternalSystemCode());
-        bindingVO.setValue(binding.getValue());
-        bindingVO.setExtState(binding.getBindingState().getExtState());
-        bindingVO.setExtRevision(binding.getBindingState().getExtRevision());
-        bindingVO.setExtUser(binding.getBindingState().getExtUser());
-        bindingVO.setExtReplacedBy(binding.getBindingState().getExtReplacedBy());
-        bindingVO.setSyncState(binding.getBindingState().getSyncOk());
-        bindingVO.setBindingItemList(createApBindingItemsVO(binding, parts));
-        return bindingVO;
-    }
-
-    private List<ApBindingItemVO> createApBindingItemsVO(CachedBinding binding, List<CachedPart> parts) {
-        List<ApBindingItemVO> bindingItemVOList = new ArrayList<>();
-
-        if (CollectionUtils.isNotEmpty(binding.getBindingItemList())) {
-            for (ApBindingItem bindingItem : binding.getBindingItemList()) {
-                bindingItemVOList.add(createApBindingItemVO(bindingItem, binding.getBindingState(), parts));
-            }
-        }
-
-        return bindingItemVOList;
-    }
-
-    private ApBindingItemVO createApBindingItemVO(ApBindingItem bindingItem, ApBindingState bindingState, List<CachedPart> parts) {
-        ApBindingItemVO bindingItemVO = new ApBindingItemVO();
-        bindingItemVO.setValue(bindingItem.getValue());
-        bindingItemVO.setPartId(bindingItem.getPartId());
-        bindingItemVO.setItemId(bindingItem.getItemId());
-        bindingItemVO.setSync(getSync(bindingItem, bindingState.getSyncChangeId(), parts));
-        return bindingItemVO;
-    }
-
-    private Boolean getSync(ApBindingItem bindingItem, Integer syncChangeId, List<CachedPart> parts) {
-        if (bindingItem.getItemId() != null) {
-            return getSyncFromItem(bindingItem.getItemId(), syncChangeId, parts);
-        } else {
-            return getSyncFromPart(bindingItem.getPartId(), syncChangeId, parts);
-        }
-    }
-
-    private Boolean getSyncFromItem(Integer itemId, Integer syncChangeId, List<CachedPart> parts) {
-        if (CollectionUtils.isNotEmpty(parts)) {
-            for (CachedPart part : parts) {
-                if (CollectionUtils.isNotEmpty(part.getItems())) {
-                    for (ApItem item : part.getItems()) {
-                        if (item.getItemId().equals(itemId)) {
-                            return syncChangeId >= item.getCreateChangeId();
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private Boolean getSyncFromPart(Integer partId, Integer syncChangeId, List<CachedPart> parts) {
-        if (CollectionUtils.isNotEmpty(parts)) {
-            for (CachedPart part : parts) {
-                if (part.getPartId().equals(partId)) {
-                    return syncChangeId >= part.getCreateChangeId();
-                }
-            }
-        }
-        return false;
     }
 
     private void fillBindingUrls(final List<ApBindingVO> bindings) {
@@ -605,7 +550,7 @@ public class ApFactory {
         apPartVO.setTypeId(rulPartType.getPartTypeId());
         apPartVO.setState(part.getState() == null ? null : ApStateVO.valueOf(part.getState().name()));
         apPartVO.setErrorDescription(part.getErrorDescription());
-        apPartVO.setValue(CollectionUtils.isNotEmpty(part.getIndices()) ? findDisplayIndexValue(part.getIndices()) : null);
+        apPartVO.setValue(findDisplayIndexValue(part.getIndices()));
         apPartVO.setPartParentId(part.getParentPartId());
         apPartVO.setItems(CollectionUtils.isNotEmpty(part.getItems()) ? createItemsVO(part.getItems()) : null);
 
@@ -613,7 +558,10 @@ public class ApFactory {
     }
 
     @Nullable
-    private String findDisplayIndexValue(List<ApIndex> indices) {
+    static public String findDisplayIndexValue(List<ApIndex> indices) {
+        if (indices == null) {
+            return null;
+        }
         for (ApIndex index : indices) {
             if (index.getIndexType().equals(DISPLAY_NAME)) {
                 return index.getValue();

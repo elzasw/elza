@@ -14,8 +14,8 @@ import java.util.Objects;
 
 public class ApItemUriRefVO extends ApItemVO {
 
-    /*
-     ** Node
+    /**
+     * Node
      */
     private String schema;
 
@@ -30,6 +30,10 @@ public class ApItemUriRefVO extends ApItemVO {
     public ApItemUriRefVO() {
     }
 
+    public String getValue() {
+        return value;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -41,10 +45,12 @@ public class ApItemUriRefVO extends ApItemVO {
     public ApItemUriRefVO(final ApItem item) {
         super(item);
         ArrDataUriRef data = (ArrDataUriRef) item.getData();
-        value = data == null ? null : data.getUriRefValue();
-        schema = data == null ? null : data.getSchema();
-        description  = data == null ? null : data.getDescription();
-        nodeId = data == null ? null : data.getNodeId();
+        if (data != null) {
+            value = data.getUriRefValue();
+            schema = data.getSchema();
+            description = data.getDescription();
+            nodeId = data.getNodeId();
+        }
     }
 
     @Override
@@ -73,7 +79,21 @@ public class ApItemUriRefVO extends ApItemVO {
        return data;
     }
 
-    public String getValue() {
-        return value;
+    @Override
+    public boolean equalsValue(ApItem item) {
+        String value = null;
+        String schema = null;
+        String description = null;
+        Integer nodeId = null;
+        ArrDataUriRef data = (ArrDataUriRef) item.getData();
+        if (data != null) {
+            value = data.getUriRefValue();
+            schema = data.getSchema();
+            description = data.getDescription();
+            nodeId = data.getNodeId();
+        }
+        return equalsBase(item)
+                && Objects.equals(value, this.value) && Objects.equals(schema, this.schema) 
+                && Objects.equals(description, this.description) && Objects.equals(nodeId, this.nodeId);
     }
 }

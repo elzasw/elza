@@ -149,7 +149,7 @@ public class PolicyService {
         for (Integer nodeId : nodeIds) {
             Map<Integer, Boolean> parentPolicy = null;
 
-            // chci zohlednit i zděděné oprávnění od předů
+            // chci zohlednit i zděděné oprávnění od předků
             if (includeParents) {
                 List<Integer> parentNodeIds = getParentNodeIds(versionTreeCache, nodeId);
 
@@ -195,12 +195,15 @@ public class PolicyService {
             for (RulPolicyType policyType : policyTypes) {
                 Boolean visible = policyTypeIdsVisible.get(policyType.getPolicyTypeId());
 
-                // pokud neexistuje hodnota u typu, je přidána s true
                 if (visible == null) {
-                    visible = true;
+                    // pokud neexistuje hodnota u typu a chceme dedit
+                    // je přidána výchozí hodnota s true 
+                    if (includeParents) {
+                        policyTypeVisible.put(policyType, true);
+                    }
+                } else {
+                    policyTypeVisible.put(policyType, visible);
                 }
-
-                policyTypeVisible.put(policyType, visible);
             }
 
             result.put(nodeId, policyTypeVisible);

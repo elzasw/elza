@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.common.ObjectListIterator;
@@ -99,6 +100,7 @@ public class ExternalSystemService {
      *
      * @return seznam externích systémů
      */
+    @Transactional
     public List<ApExternalSystem> findAllApSystem() {
         return apExternalSystemRepository.findAll();
     }
@@ -304,8 +306,7 @@ public class ExternalSystemService {
      * @param externalSystemCode
      * @return
      */
-    public ApBinding createBinding(final ApScope scope,
-                                   final String value,
+    public ApBinding createBinding(final String value,
                                    final String externalSystemCode) {
         ApExternalSystem apExternalSystem = apExternalSystemRepository.findByCode(externalSystemCode);
         if (apExternalSystem == null) {
@@ -314,7 +315,7 @@ public class ExternalSystemService {
                             .set("code", externalSystemCode);
         }
 
-        return createApBinding(scope, value, apExternalSystem);
+        return createApBinding(value, apExternalSystem);
     }
 
     /**
@@ -325,15 +326,12 @@ public class ExternalSystemService {
      * @param apExternalSystem
      * @return
      */
-    public ApBinding createApBinding(final ApScope scope,
-                                     final String value,
+    public ApBinding createApBinding(final String value,
                                      final ApExternalSystem apExternalSystem) {
-        Validate.notNull(scope);
         Validate.notNull(value);
         Validate.notNull(apExternalSystem);
 
         ApBinding apBinding = new ApBinding();
-        apBinding.setScope(scope);
         apBinding.setValue(value);
         apBinding.setApExternalSystem(apExternalSystem);
         return bindingRepository.save(apBinding);
@@ -414,14 +412,14 @@ public class ExternalSystemService {
         return bindingItemRepository.save(apBindingItem);
     }
 
-    public ApBinding findByScopeAndValueAndApExternalSystem(final ApScope scope, final String archiveEntityId,
+    public ApBinding findByValueAndExternalSystemCode(final String archiveEntityId,
                                                             final String externalSystemCode) {
-        return bindingRepository.findByScopeAndValueAndApExternalSystem(scope, archiveEntityId, externalSystemCode);
+        return bindingRepository.findByValueAndExternalSystemCode(archiveEntityId, externalSystemCode);
     }
 
-    public ApBinding findByScopeAndValueAndApExternalSystem(final ApScope scope, final String archiveEntityId,
+    public ApBinding findByValueAndExternalSystem(final String archiveEntityId,
                                                             final ApExternalSystem externalSystem) {
-        return bindingRepository.findByScopeAndValueAndExternalSystem(scope, archiveEntityId, externalSystem);
+        return bindingRepository.findByValueAndExternalSystem(archiveEntityId, externalSystem);
     }
 
     public Optional<ApBindingState> getBindingState(final ApBinding binding) {
@@ -436,11 +434,27 @@ public class ExternalSystemService {
         return bindingItemRepository.findByBinding(binding);
     }
 
+    /**
+     * Return active binding state
+     * 
+     * Binding is also fetched.
+     * 
+     * @param accessPoint
+     * @param externalSystem
+     * @return
+     */
     public ApBindingState findByAccessPointAndExternalSystem(final ApAccessPoint accessPoint, final ApExternalSystem externalSystem) {
         return bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
     }
 
-    public List<ApBindingState> findByRecordCodesAndExternalSystem(List<String> recordCodes, ApExternalSystem externalSystem) {
-        return ObjectListIterator.findIterable(recordCodes, rec -> bindingStateRepository.findByRecordCodesAndExternalSystem(rec, externalSystem));
+    public List<ApBinding> findBindings(List<String> recordCodes, ApExternalSystem externalSystem) {
+        return ObjectListIterator.findIterable(recordCodes, recs -> {
+            return bindingRepository.findByValuesAndExternalSystem(recs, externalSystem);
+        });
+    }
+
+    public List<ApBindingState> findBindingStates(List<ApBinding> bindings) {
+        return ObjectListIterator.findIterable(bindings,
+                                               bs -> bindingStateRepository.findByBindings(bs));
     }
 }

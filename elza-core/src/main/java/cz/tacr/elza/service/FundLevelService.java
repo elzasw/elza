@@ -19,6 +19,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.CompareToBuilder;
+import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -631,6 +632,7 @@ public class FundLevelService {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
         Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
+        Validate.isTrue(count > 0, "Počet uzlů musí být větší než 0", count);
 
         arrangementService.isValidAndOpenVersion(version);
 
@@ -649,9 +651,11 @@ public class FundLevelService {
         }
 
         List<ArrLevel> levels = new ArrayList<>(count);
+        shiftNodes(nodesToShift, change, newLevelPosition + count);
         for (int i = 0; i < count; i++) {
-            shiftNodes(nodesToShift, change, newLevelPosition + 1);
-            levels.add(arrangementService.createLevel(change, staticLevelParent.getNode(), newLevelPosition, version.getFund()));
+            levels.add(arrangementService.createLevel(change, staticLevelParent.getNode(),
+                                                      newLevelPosition + i,
+                                                      version.getFund()));
         }
 
         return levels;

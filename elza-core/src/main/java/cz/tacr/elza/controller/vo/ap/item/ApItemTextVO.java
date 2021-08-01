@@ -5,15 +5,14 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataText;
 
+import java.util.Objects;
+
 import javax.persistence.EntityManager;
 
-/**
- * @since 18.07.2018
- */
 public class ApItemTextVO extends ApItemVO {
 
     /**
-     * text
+     * Text
      */
     private String value;
 
@@ -22,8 +21,12 @@ public class ApItemTextVO extends ApItemVO {
 
     public ApItemTextVO(final ApItem item) {
         super(item);
+        value = getStringValue(item);
+    }
+
+    final public String getStringValue(final ApItem item) {
         ArrDataText data = (ArrDataText) item.getData();
-        value = data == null ? null : data.getTextValue();
+        return data == null ? null : data.getTextValue();
     }
 
     public String getValue() {
@@ -40,5 +43,10 @@ public class ApItemTextVO extends ApItemVO {
         data.setTextValue(value);
         data.setDataType(DataType.TEXT.getEntity());
         return data;
+    }
+
+    @Override
+    public boolean equalsValue(ApItem item) {
+        return equalsBase(item) && Objects.equals(value, getStringValue(item));
     }
 }

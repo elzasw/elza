@@ -28,14 +28,13 @@ import {WebApi} from 'actions/index';
 import {Shortcuts} from 'react-shortcuts';
 import {canSetFocus, focusWasSet, isFocusExactFor, isFocusFor, setFocus} from 'actions/global/focus';
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm';
-import {setVisiblePolicyReceive} from 'actions/arr/visiblePolicy';
 import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes';
 import * as perms from 'actions/user/Permission';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './NodePanelKeymap';
 
 import './NodePanel.scss';
-import NodeSettingsForm, {VIEW_POLICY_STATE} from './NodeSettingsForm';
+import { NodeSettingsModal } from './node-settings-form';
 import {FOCUS_KEYS} from '../../constants';
 import ConfirmForm from '../shared/form/ConfirmForm';
 import getMapFromList from 'shared/utils/getMapFromList';
@@ -431,56 +430,14 @@ class NodePanel extends AbstractReactComponent {
     };
 
     handleVisiblePolicy() {
-        const {nodeExtensions, node, versionId} = this.props;
+        const { dispatch, node, versionId } = this.props;
 
-        WebApi.getVisiblePolicy(node.selectedSubNodeId, versionId).then(visiblePolicy => {
-            let rules = null;
-            if (visiblePolicy !== null) {
-                const {nodePolicyTypeIdsMap} = visiblePolicy;
-                rules =
-                    Object.values(nodePolicyTypeIdsMap).length > 0 ? VIEW_POLICY_STATE.NODE : VIEW_POLICY_STATE.PARENT;
-            }
-
-            const records = Object.keys(visiblePolicy.policyTypeIdsMap).map(id => ({
-                id: id,
-                checked: visiblePolicy.policyTypeIdsMap[id],
-            }));
-
-            const initialValues = {
-                rules,
-                records,
-                nodeExtensions,
-            };
-            const form = (
-                <NodeSettingsForm
-                    initialValues={initialValues}
-                    nodeId={node.selectedSubNodeId}
-                    fundVersionId={versionId}
-                    onSubmit={this.handleSetVisiblePolicy}
-                    onSubmitSuccess={() => this.props.dispatch(modalDialogHide())}
-                />
-            );
-            this.props.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
-        });
-    }
-
-    handleSetVisiblePolicy(data) {
-        const {node, versionId, dispatch} = this.props;
-        const mapIds = {};
-        const {records, rules, nodeExtensions, ...others} = data;
-        if (rules !== 'PARENT') {
-            records.forEach((val, index) => {
-                mapIds[parseInt(val.id)] = val.checked;
-            });
-        }
-
-        const nodeExtensionsIds = Object.values(nodeExtensions)
-            .filter(i => i.checked)
-            .map(i => i.id);
-
-        return WebApi.setVisiblePolicy(node.selectedSubNodeId, versionId, mapIds, false, nodeExtensionsIds).then(() => {
-            dispatch(setVisiblePolicyReceive(node.selectedSubNodeId, versionId));
-        });
+        dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), (
+            <NodeSettingsModal
+                nodeId={node.selectedSubNodeId}
+                fundVersionId={versionId}
+            />
+        )));
     }
 
     /**
@@ -1257,29 +1214,9 @@ class NodePanel extends AbstractReactComponent {
 }
 
 function mapState(state) {
-    const {focus, userDetail} = state;
-    const {visiblePolicy} = state.arrRegion;
-    const allExtensions = [];
-    let rules = null;
-    if (visiblePolicy.otherData !== null) {
-        const {nodeExtensions, availableExtensions, nodePolicyTypeIdsMap} = visiblePolicy.otherData;
-        const nodeExtensionsMap = getMapFromList(nodeExtensions, 'code');
-        availableExtensions.forEach(i => {
-            const checked = nodeExtensionsMap.hasOwnProperty(i.code);
-            allExtensions.push({...i, checked});
-            if (checked) {
-                delete nodeExtensionsMap[i.code];
-            }
-        });
-        allExtensions.concat(Object.values(nodeExtensionsMap).map(i => ({...i, checked: true})));
-        rules = Object.values(nodePolicyTypeIdsMap).length > 0 ? VIEW_POLICY_STATE.NODE : VIEW_POLICY_STATE.PARENT;
-    }
     return {
-        focus,
-        userDetail,
-        rules,
-        records: visiblePolicy.data,
-        nodeExtensions: allExtensions,
+        focus: state.focus,
+        userDetail: state.userDetail,
     };
 }
 

@@ -2,17 +2,15 @@ package cz.tacr.elza.controller.vo.ap.item;
 
 import org.locationtech.jts.geom.Geometry;
 import cz.tacr.elza.common.GeometryConvertor;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 
+import java.util.Objects;
+
 import javax.persistence.EntityManager;
 
-/**
- * @since 18.07.2018
- */
 public class ApItemCoordinatesVO extends ApItemVO {
 
     /**
@@ -25,8 +23,12 @@ public class ApItemCoordinatesVO extends ApItemVO {
 
     public ApItemCoordinatesVO(final ApItem item) {
         super(item);
+        value = getCoordinatesValue(item);
+    }
+
+    final public String getCoordinatesValue(final ApItem item) {
         ArrDataCoordinates data = (ArrDataCoordinates) item.getData();
-        value = data == null ? null : GeometryConvertor.convert(data.getValue());
+        return data == null ? null : GeometryConvertor.convert(data.getValue());
     }
 
     public String getValue() {
@@ -39,11 +41,15 @@ public class ApItemCoordinatesVO extends ApItemVO {
 
     @Override
     public ArrData createDataEntity(EntityManager em) {
-
         ArrDataCoordinates data = new ArrDataCoordinates();
         Geometry geo = GeometryConvertor.convert(value);
         data.setValue(geo);
         data.setDataType(DataType.COORDINATES.getEntity());
         return data;
+    }
+
+    @Override
+    public boolean equalsValue(ApItem item) {
+        return equalsBase(item) && Objects.equals(value, getCoordinatesValue(item));
     }
 }

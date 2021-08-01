@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
+import java.util.Objects;
+
 import javax.persistence.EntityManager;
 
 import cz.tacr.elza.core.data.DataType;
@@ -7,13 +9,10 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitid;
 
-/**
- * @since 18.07.2018
- */
 public class ApItemUnitidVO extends ApItemVO {
 
     /**
-     * unikátní identifikátor
+     * Unikátní identifikátor
      */
     private String value;
 
@@ -22,8 +21,12 @@ public class ApItemUnitidVO extends ApItemVO {
 
     public ApItemUnitidVO(final ApItem item) {
         super(item);
+        value = getStringValue(item);
+    }
+
+    final public String getStringValue(final ApItem item) {
         ArrDataUnitid data = (ArrDataUnitid) item.getData();
-        value = data == null ? null : data.getUnitId();
+        return data == null ? null : data.getUnitId();
     }
 
     public String getValue() {
@@ -40,5 +43,10 @@ public class ApItemUnitidVO extends ApItemVO {
         data.setUnitId(value);
         data.setDataType(DataType.UNITID.getEntity());
         return data;
+    }
+
+    @Override
+    public boolean equalsValue(ApItem item) {
+        return equalsBase(item) && Objects.equals(value, getStringValue(item));
     }
 }

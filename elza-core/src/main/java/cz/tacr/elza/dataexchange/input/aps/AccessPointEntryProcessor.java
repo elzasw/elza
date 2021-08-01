@@ -121,7 +121,6 @@ public class AccessPointEntryProcessor implements ItemProcessor {
             // create external id
             ApBinding entity = new ApBinding();
             entity.setValue(eid.getV());
-            entity.setScope(context.getScope());
             entity.setApExternalSystem(apExternalSystem);
 
             ApBindingState state = new ApBindingState();
@@ -204,6 +203,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         }
         entity.setPartType(type);
         entity.setCreateChange(context.getCreateChange());
+        entity.setLastChange(context.getCreateChange());
         entity.setState(ApStateEnum.OK);
 
         return entity;

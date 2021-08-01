@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -595,7 +596,6 @@ public class RuleService {
         if (CollectionUtils.isEmpty(deleteDirections)) {
             deleteNodes.addAll(nodes);
         } else {
-
             for (RelatedNodeDirection deleteDirection : deleteDirections) {
                 for (ArrNode node : nodes) {
                     deleteNodes.addAll(nodeRepository.findNodesByDirection(node, version, deleteDirection));
@@ -1073,7 +1073,7 @@ public class RuleService {
 
         Integer apTypeId = form.getTypeId();
         Integer accessPointId = form.getAccessPointId();
-        ApScope scope = accessPointService.getScope(form.getScopeId());
+        ApScope scope = accessPointService.getApScope(form.getScopeId());
 
         Integer preferredPartId = null;
         List<Part> parts = new ArrayList<>();
@@ -1142,7 +1142,7 @@ public class RuleService {
         return executeAvailable(PartType.fromValue(partForm.getPartTypeCode()), modelAvailable, scope.getRulRuleSet());
     }
 
-    @Transactional
+    @Transactional(TxType.MANDATORY)
     public ApValidationErrorsVO executeValidation(final Integer accessPointId) {
         ApAccessPoint apAccessPoint = accessPointService.getAccessPointInternal(accessPointId);
         ApState apState = accessPointService.getStateInternal(apAccessPoint);

@@ -1,6 +1,9 @@
 package cz.tacr.elza.common.db;
 
+import java.util.Collections;
 import java.util.List;
+
+import cz.tacr.elza.service.cache.CachedAccessPoint;
 
 public class QueryResults<T> {
 
@@ -24,6 +27,11 @@ public class QueryResults<T> {
 
     public List<T> getRecords() {
         return records;
+    }
+
+    public static <T> QueryResults<T> emptyResult(final int recordCount) {
+        final List<T> records = Collections.emptyList();
+        return new QueryResults(recordCount, records);
     }
 
 }

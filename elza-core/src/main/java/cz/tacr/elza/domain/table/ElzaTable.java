@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tacr.elza.exception.SystemException;
@@ -75,6 +78,27 @@ public class ElzaTable {
      */
     public void clear() {
         this.rows = null;
+    }
+
+    /**
+     * Return column sum
+     * 
+     * @param columnName
+     *            name of columne
+     * @return
+     */
+    public int sum(String columnName) {
+        int result = 0;
+        if (CollectionUtils.isNotEmpty(rows)) {
+            for (ElzaRow row : rows) {
+                String v = row.getValue(columnName);
+                if (StringUtils.isNotEmpty(v)) {
+                    int i = Integer.parseInt(v);
+                    result += i;
+                }
+            }
+        }
+        return result;
     }
 
     @Override

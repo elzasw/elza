@@ -8,3 +8,9 @@ when $it: ItemType(code in ("HISTORY","GENEALOGY"))
 then
     $it.setPossible();
 end
+
+rule "R_BOD_002 Použití prvků popisu pro záznam (tělo entity - BRIEF_DESC)"
+when $it: ItemType(code in ("BRIEF_DESC"))
+then
+    $it.setRequired();
+end

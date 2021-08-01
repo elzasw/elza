@@ -916,7 +916,7 @@ public class OutputService {
 
         // posun prvků
         for (ArrOutputItem item : outputItems) {
-            itemService.copyItem(item, change, item.getPosition() + 1);
+            itemService.moveItem(item, change, item.getPosition() + 1);
         }
 
         // save data
@@ -1006,7 +1006,7 @@ public class OutputService {
                     outputItem.getOutput(),
                     outputItem.getPosition());
             for (ArrOutputItem item : outputItems) {
-                itemService.copyItem(item, change, item.getPosition() - 1);
+                itemService.moveItem(item, change, item.getPosition() - 1);
             }
         }
 
@@ -1139,7 +1139,7 @@ public class OutputService {
             }
 
             for (ArrOutputItem item : outputItemsMove) {
-                itemService.copyItem(item, change, item.getPosition() + diff);
+                itemService.moveItem(item, change, item.getPosition() + diff);
             }
         }
 

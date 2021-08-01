@@ -2,6 +2,7 @@ package cz.tacr.elza.connector;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.validation.Schema;
@@ -23,6 +24,7 @@ import cz.tacr.cam.client.controller.UpdatesApi;
 import cz.tacr.cam.client.controller.vo.QueryParamsDef;
 import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
 import cz.tacr.cam.schema.cam.BatchUpdateXml;
+import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.QueryResultXml;
 import cz.tacr.elza.api.ApExternalSystemType;
@@ -66,6 +68,13 @@ public class CamConnector {
         return JaxbUtils.unmarshal(EntityXml.class, fileApiResponse.getData());
     }
 
+    public EntitiesXml getEntitiesByIds(final List<String> archiveEntityIds,
+                                   final String externalSystemCode) throws ApiException {
+        ApiResponse<File> fileApiResponse = getExportApiByCode(externalSystemCode)
+                .exportSnapshotsWithHttpInfo(archiveEntityIds);
+        return JaxbUtils.unmarshal(EntitiesXml.class, fileApiResponse.getData());
+    }
+
     public BatchUpdateResultXml postNewBatch(final BatchUpdateXml batchUpdate,
                                              final String externalSystemCode) throws ApiException {
         Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL);
@@ -106,7 +115,8 @@ public class CamConnector {
         ApExternalSystem apExternalSystem = apExternalSystemRepository.findByCode(code);
         if (apExternalSystem != null &&
                 (apExternalSystem.getType() == ApExternalSystemType.CAM ||
-                        apExternalSystem.getType() == ApExternalSystemType.CAM_UUID)) {
+                        apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
+                        apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE)) {
             instanceMap.remove(code);
         }
     }
@@ -115,7 +125,8 @@ public class CamConnector {
         try {
             ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(code);
             if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
-                    apExternalSystem.getType() == ApExternalSystemType.CAM_UUID) {
+                    apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
+                    apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
                 CamInstance camInstance = instanceMap.get(apExternalSystem.getCode());
                 if (camInstance == null) {
                     camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue());
@@ -137,7 +148,8 @@ public class CamConnector {
         }
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(code);
         if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
-                apExternalSystem.getType() == ApExternalSystemType.CAM_UUID) {
+                apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
+                apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
             camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(), apExternalSystem.getApiKeyValue());
             instanceMap.put(apExternalSystem.getCode(), camInstance);
             return camInstance;
