@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.SysExternalSystem;
 
 /**
@@ -77,7 +78,7 @@ public abstract class SysExternalSystemVO
      * 
      * @return
      */
-    abstract public SysExternalSystem createEntity();
+    abstract public SysExternalSystem createEntity(ApScope scope);
 
     protected void fillEntity(SysExternalSystem entity) {
         entity.setCode(getCode());

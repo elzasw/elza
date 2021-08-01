@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.13.0.final using JasperReports Library version 6.13.0-46ada4d1be8f3c5985fd0b6146f3ed44caed6f05  -->
+<!-- Created with Jaspersoft Studio version 6.16.0.final using JasperReports Library version 6.16.0-48579d909b7943b64690c65c71e07e0b80981928  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="intro" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="7dadc22d-1241-4907-8921-52170562f815">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -258,6 +258,7 @@
 		<band height="95" splitType="Prevent">
 			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{arrangerFormatter}.format($P{output}))||
 StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_DESCRIPTION_DATE" ))||
+StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_EDITION" ))||
 StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></printWhenExpression>
 			<textField textAdjust="StretchHeight" bookmarkLevel="1">
 				<reportElement style="Heading 1" positionType="Float" x="0" y="0" width="455" height="50" isPrintInFirstWholeBand="true" uuid="94323b71-a6d1-430e-ac07-24a7cae72910">
@@ -291,6 +292,26 @@ StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" 
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="26">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue("ZP2015_EDITION"))]]></printWhenExpression>
+			<textField textAdjust="StretchHeight">
+				<reportElement style="Heading 3" x="0" y="0" width="455" height="13" uuid="06108af3-8986-4fd5-8158-ac42a04476bb">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Edice a literatura:"]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement style="Text" x="0" y="13" width="455" height="12" uuid="c4cc4ce9-dc99-4f31-8c78-c7da8d14a85e">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$P{formatter}.format($P{output}.getSingleItemValue( "ZP2015_EDITION" ))]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="24">

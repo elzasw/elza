@@ -433,7 +433,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
         if (item.id === FundsPermissionPanel.ALL_ID) {
             return <div>{i18n('admin.perms.tabs.funds.items.fundAll')}</div>;
         } else if (item.fund) {
-            return <div>{item.fund.name}</div>;
+            return <div>{item.fund.name + (item.fund.internalCode? " [" + item.fund.internalCode + "]":"")}</div>;
         }
     };
 

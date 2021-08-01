@@ -43,6 +43,7 @@ import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -79,6 +80,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
     JasperOutputGenerator(ApplicationContext applicationContext, StaticDataService staticDataService,
                           ElzaLocale elzaLocale,
+                          FundRepository fundRepository,
                           FundTreeProvider fundTreeProvider,
                           NodeCacheService nodeCacheService,
                           InstitutionRepository institutionRepository,
@@ -98,7 +100,8 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
         pdfAttProvider = new PdfAttProvider(applicationContext);
         outputModel = new OutputModel(staticDataService, elzaLocale,
-                fundTreeProvider, nodeCacheService, institutionRepository,
+                fundRepository, fundTreeProvider,
+                nodeCacheService, institutionRepository,
                 apStateRepository, bindingRepository,
                 pdfAttProvider, structObjRepos, structItemRepos, partRepository, itemRepository, bindingStateRepository,
                 indexRepository, daoLinkRepository);

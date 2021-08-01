@@ -20,7 +20,7 @@ public class PartWrapper implements EntityWrapper {
     public PartWrapper(ApPart entity, PartInfo partInfo, List<ItemWrapper> itemWrapperList) {
         this.entity = Validate.notNull(entity);
         this.partInfo = Validate.notNull(partInfo);
-        this.itemQueue = itemWrapperList;
+        this.itemQueue = Validate.notEmpty(itemWrapperList);
     }
 
     public PartInfo getPartInfo() {

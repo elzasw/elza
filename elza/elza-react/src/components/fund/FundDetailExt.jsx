@@ -38,7 +38,7 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
     }
 
     handleDownload = id => {
-        this.props.dispatch(downloadFile(UrlFactory.downloadOutputResult(id)));
+        this.props.dispatch(downloadFile(UrlFactory.downloadOutputResults(id)));
     };
 
     render() {
@@ -55,7 +55,7 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                         <div className="output-label">{arrOutput.name}</div>
                         <Button
                             onClick={() => {
-                                this.handleDownload(arrOutput.outputResultId);
+                                this.handleDownload(arrOutput.id);
                             }}
                             variant="link"
                         >
@@ -67,33 +67,6 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
             return null;
         });
 
-        const histOutputs = fundDetail.historicalNamedOutputs.map((output, index) => {
-            return (
-                <div className="output with-versions" key={index}>
-                    <div className="output-label">{output.name}</div>
-                    <div className="versions-container">
-                        {output.outputs.map(output => (
-                            <div className="version">
-                                <div className="version-label">
-                                    {i18n(
-                                        'arr.fund.outputDefinition.version',
-                                        dateToString(new Date(output.deleteDate)),
-                                    )}
-                                </div>
-                                <Button
-                                    onClick={() => {
-                                        this.handleDownload(output.outputResultId);
-                                    }}
-                                    variant="link"
-                                >
-                                    {i18n('global.action.download')}
-                                </Button>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            );
-        });
 
         return (
             <div className="fund-detail-ext-container">
@@ -101,12 +74,6 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                     <div className="outputs-container">
                         <h1>{i18n('arr.fund.outputDefinition.active')}</h1>
                         {validOutputs}
-                    </div>
-                )}
-                {histOutputs.length > 0 && (
-                    <div className="outputs-container">
-                        <h1>{i18n('arr.fund.outputDefinition.hist')}</h1>
-                        {histOutputs}
                     </div>
                 )}
                 <div className="versions-container">

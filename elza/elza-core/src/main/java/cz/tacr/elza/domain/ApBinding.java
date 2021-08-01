@@ -34,10 +34,6 @@ public class ApBinding implements AccessPointCacheSerializable {
     @Column(nullable = false, updatable = false, insertable = false)
     private Integer externalSystemId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApScope.class)
-    @JoinColumn(name = "scopeId", nullable = false)
-    private ApScope scope;
-
     public Integer getBindingId() {
         return bindingId;
     }
@@ -65,13 +61,5 @@ public class ApBinding implements AccessPointCacheSerializable {
 
     public Integer getExternalSystemId() {
         return externalSystemId;
-    }
-
-    public ApScope getScope() {
-        return scope;
-    }
-
-    public void setScope(ApScope scope) {
-        this.scope = scope;
     }
 }

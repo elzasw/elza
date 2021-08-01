@@ -1351,7 +1351,7 @@ class OutputFormActions extends ItemFormActions {
 
     // @Override
     _callDeleteDescItem(versionId, parentId, parentVersionId, descItem) {
-        return WebApi.deleteOutputItem(versionId, parentId, parentVersionId, descItem);
+        return WebApi.deleteOutputItem(versionId, parentId, parentVersionId, descItem.descItemObjectId);
     }
 
     // @Override

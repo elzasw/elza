@@ -131,7 +131,7 @@ public class UserControllerTest extends AbstractControllerTest {
         permissionVOs.add(permissionVO);
 
         permissionVO = new UsrPermissionVO();
-        permissionVO.setFund(ArrFundBaseVO.newInstance(fund.getId(), fund.getName()));
+        permissionVO.setFund(ArrFundBaseVO.newInstance(fund.getId(), fund.getName(), fund.getInternalCode()));
         permissionVO.setPermission(UsrPermission.Permission.FUND_ARR);
         permissionVOs.add(permissionVO);
 
@@ -175,7 +175,7 @@ public class UserControllerTest extends AbstractControllerTest {
         permissionVOs.clear();
 
         permissionVO = new UsrPermissionVO();
-        permissionVO.setFund(ArrFundBaseVO.newInstance(fund.getId(), fund.getName()));
+        permissionVO.setFund(ArrFundBaseVO.newInstance(fund.getId(), fund.getName(), fund.getInternalCode()));
         permissionVO.setPermission(UsrPermission.Permission.FUND_RD);
         permissionVOs.add(permissionVO);
 

@@ -1,8 +1,12 @@
 package cz.tacr.elza.domain;
 
+import javax.persistence.EntityManager;
+
+import org.hibernate.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.service.AccessPointService;
 
 public class ApFulltextProviderImpl implements ApFulltextProvider {
@@ -18,7 +22,7 @@ public class ApFulltextProviderImpl implements ApFulltextProvider {
     @Override
     public String getFulltext(ApAccessPoint accessPoint) {
         // Fulltext can be generated only for non deleted accessPoints
-    	ApState apState = apService.getStateInternal(accessPoint);
+        ApState apState = apService.getStateInternal(accessPoint.getAccessPointId());
         if (apState.getDeleteChangeId() != null) {
             return null;
         }

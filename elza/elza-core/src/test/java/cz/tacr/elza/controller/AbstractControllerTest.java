@@ -1167,11 +1167,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
         return response.getBody().as(ArrangementController.OutputItemResult.class);
     }
 
-    public ArrangementController.OutputItemResult deleteOutputItem(final ArrItemVO outputItemVO,
+    public ArrangementController.OutputItemResult deleteOutputItem(final Integer outputItemId,
                                                                    final Integer fundVersionId,
                                                                    final Integer outputVersion) {
         Response response = post(spec -> spec
-                .body(outputItemVO)
+                .body(outputItemId)
                 .pathParam("fundVersionId", fundVersionId)
                 .pathParam("outputVersion", outputVersion), DELETE_OUTPUT_ITEM);
         return response.getBody().as(ArrangementController.OutputItemResult.class);

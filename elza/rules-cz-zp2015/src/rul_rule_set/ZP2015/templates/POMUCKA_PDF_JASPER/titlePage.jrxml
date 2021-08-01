@@ -116,7 +116,7 @@
 				<textElement>
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Značka fondu: "+$V{znackaFondu}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Značka archivního souboru: "+$V{znackaFondu}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

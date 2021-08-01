@@ -11,7 +11,7 @@ import cz.tacr.elza.drools.model.PartType;
 rule "R_EXT_003 Použití typu zániku"
 when $i: Item(spec == "EXC_EXTINCTION", type == "EXT_CLASS")
      $it: ItemType(code in ("EXT_TYPE"))
-     $is : ItemSpec(code in ("EXT_CANCEL","EXT_DISPLACEMENT","EXT_WATERWORK","EXT_MILITARYAREA","EXT_INDUSTRIALACTIVITY","EXT_BATTLE","EXT_DISASTER","EXT_MININGACTIVITY")) from $it.specs
+     $is : ItemSpec(code in ("EXT_CANCEL","EXT_DISPLACEMENT","EXT_WATERWORK","EXT_MILITARYAREA","EXT_INDUSTRIALACTIVITY","EXT_BATTLE","EXT_DISASTER","EXT_MININGACTIVITY","EXT_CHANGE")) from $it.specs
 then
     $it.setPossible();
     $is.setPossible();

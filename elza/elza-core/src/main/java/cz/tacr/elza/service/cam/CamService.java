@@ -8,6 +8,7 @@ import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
 import cz.tacr.cam.schema.cam.BatchUpdateSavedXml;
 import cz.tacr.cam.schema.cam.BatchUpdateXml;
 import cz.tacr.cam.schema.cam.CreateEntityXml;
+import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityRecordRevInfoXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
@@ -29,6 +30,7 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -37,15 +39,13 @@ import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AbstractException;
-import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApBindingSyncRepository;
-import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
@@ -61,6 +61,7 @@ import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,11 +71,14 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -199,7 +203,7 @@ public class CamService {
         stateNew = stateRepository.save(stateNew);
 
         EntityDBDispatcher ec = createEntityDBDispatcher();
-        ec.connectEntity(procCtx, stateNew, entity, replace);
+        ec.connectEntity(procCtx, stateNew, entity, replace, false);
     }
 
 
@@ -224,17 +228,14 @@ public class CamService {
      * @param procCtx
      */
     private void createBindingForRel(ArrDataRecordRef dataRecordRef, String value, ProcessingContext procCtx) {
-        ApBinding refBinding = externalSystemService.findByScopeAndValueAndApExternalSystem(procCtx.getScope(),
-                                                                                            value,
-                                                                                            procCtx.getApExternalSystem());
+        ApBinding refBinding = externalSystemService.findByValueAndExternalSystem(value,
+                                                                                  procCtx.getApExternalSystem());
         if (refBinding == null) {
             // check if not in the processing context
             refBinding = procCtx.getBindingByValue(value);
             if (refBinding == null) {
                 // we can create new - last resort
-                refBinding = externalSystemService.createApBinding(procCtx.getScope(),
-                                                                   value,
-                        procCtx.getApExternalSystem());
+                refBinding = externalSystemService.createApBinding(value, procCtx.getApExternalSystem());
                 procCtx.addBinding(refBinding);
             }
         } else {
@@ -285,14 +286,30 @@ public class CamService {
         }
     }
 
-    private void setQueueItemState(ExtSyncsQueueItem extSyncsQueueItem, ExtAsyncQueueState state,
+    private void setQueueItemState(ExtSyncsQueueItem item, ExtAsyncQueueState state,
                                    OffsetDateTime dateTime,
                                    String message) {
-        extSyncsQueueItem.setState(state);
-        extSyncsQueueItem.setDate(dateTime);
-        extSyncsQueueItem.setStateMessage(message);
-        extSyncsQueueItemRepository.save(extSyncsQueueItem);
+        setQueueItemState(Collections.singletonList(item), state, dateTime, message);
+    }
 
+    public void setQueueItemState(List<ExtSyncsQueueItem> items, ExtAsyncQueueState state,
+                                   OffsetDateTime dateTime,
+                                   String message) {
+        for (ExtSyncsQueueItem item : items) {
+            if (state != null) {
+                item.setState(state);
+            }
+            item.setDate(dateTime);
+            item.setStateMessage(message);
+        }
+        extSyncsQueueItemRepository.saveAll(items);
+    }
+
+    @Transactional
+    public void setQueueItemStateTA(List<ExtSyncsQueueItem> items, ExtAsyncQueueState state,
+                                    OffsetDateTime dateTime,
+                                    String message) {
+        setQueueItemState(items, state, dateTime, message);
     }
 
     public BatchUpdateXml createCreateEntityBatchUpdate(final ApAccessPoint accessPoint,
@@ -360,7 +377,9 @@ public class CamService {
     }
 
     @Transactional
-    public void synchronizeAccessPointsForExternalSystem(final ApExternalSystem externalSystem) {
+    public void synchronizeAccessPointsForExternalSystem(final String code) {
+        ApExternalSystem externalSystem = externalSystemService.findApExternalSystemByCode(code);
+
         ApBindingSync apBindingSync = bindingSyncRepository.findByApExternalSystem(externalSystem);
         if (apBindingSync == null) {
             apBindingSync = createApBindingSync(externalSystem);
@@ -409,26 +428,54 @@ public class CamService {
             return;
         }
         List<String> recordCodes = getRecordCodes(entityRecordRevInfoXmls);
-        List<ApBindingState> bindingStateList = externalSystemService.findByRecordCodesAndExternalSystem(recordCodes,
-                                                                                                         externalSystem);
-
-        if (CollectionUtils.isEmpty(bindingStateList)) {
-            // TODO: ? is it error
-            return;
+        List<ApBinding> bindings = externalSystemService.findBindings(recordCodes, externalSystem);
+        final Map<String, ApBinding> bindingMap = bindings.stream()
+                .collect(Collectors.toMap(p -> p.getValue(), p -> p));
+        
+        Map<Integer, ApBindingState> bindingStateMap;
+        if(bindings.size()>0) {
+            List<ApBindingState> bindingStateList = externalSystemService.findBindingStates(bindings);
+            bindingStateMap = bindingStateList.stream()
+                    .collect(Collectors.toMap(p -> p.getBindingId(), p -> p));
+        } else {
+            bindingStateMap = Collections.emptyMap();
         }
 
         UsrUser user = userService.getLoggedUser();
-        List<ExtSyncsQueueItem> extSyncsQueueItems = new ArrayList<>(bindingStateList.size());
-        for (ApBindingState bindingState : bindingStateList) {
-            ExtSyncsQueueItem extSyncsQueue = new ExtSyncsQueueItem();
-            extSyncsQueue.setAccessPoint(bindingState.getAccessPoint());
-            extSyncsQueue.setExternalSystem(externalSystem);
-            extSyncsQueue.setDate(OffsetDateTime.now());
-            extSyncsQueue.setState(ExtAsyncQueueState.UPDATE);
-            extSyncsQueue.setUsername(user == null? "admin" : user.getUsername());
-            extSyncsQueueItems.add(extSyncsQueue);
+        List<ExtSyncsQueueItem> extSyncsQueueItems = new ArrayList<>();
+        for (String recordCode : recordCodes) {
+            ApBinding binding = bindingMap.get(recordCode);
+            ApAccessPoint ap = null;
+            if(binding==null) {
+                // prepare binding for CAM Complete
+                if (externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
+                    binding = externalSystemService.createApBinding(recordCode, externalSystem);
+                }
+            } else {
+                ApBindingState bindingState = bindingStateMap.get(binding.getBindingId());
+                if (bindingState != null) {
+                    ap = bindingState.getAccessPoint();
+                }
+            }
+            // update or add new items from CAM_COMPLETE
+            if (ap != null || externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
+                ExtSyncsQueueItem extSyncsQueue = new ExtSyncsQueueItem();
+                if (ap != null) {
+                    extSyncsQueue.setAccessPoint(ap);
+                    extSyncsQueue.setState(ExtAsyncQueueState.UPDATE);
+                } else {
+                    extSyncsQueue.setBinding(binding);
+                    extSyncsQueue.setState(ExtAsyncQueueState.IMPORT_NEW);
+                }
+                extSyncsQueue.setExternalSystem(externalSystem);
+                extSyncsQueue.setDate(OffsetDateTime.now());
+                extSyncsQueue.setUsername(user == null? "admin" : user.getUsername());
+                extSyncsQueueItems.add(extSyncsQueue);
+            }
         }
-        extSyncsQueueItemRepository.saveAll(extSyncsQueueItems);
+        if (!extSyncsQueueItems.isEmpty()) {
+            extSyncsQueueItemRepository.saveAll(extSyncsQueueItems);
+        }
     }
 
     private List<String> getRecordCodes(List<EntityRecordRevInfoXml> entityRecordRevInfoXmls) {
@@ -458,42 +505,122 @@ public class CamService {
     }
 
     /**
-     * Synchronizace přístupového bodu z externího systému
-     *
-     * @param procCtx context
-     * @param state stav přístupového bodu
-     * @param entity entita z externího systému
-     * @param bindingState stav propojení s externím systémem
-     * @param syncQueue zda-li se jedná o volání z časovače
+     * Synchronizace (vytvoření nového nebo aktualizace) přístupového bodu z
+     * externího systému
+     * 
+     * binding nebo bindingState musí být předán vždy
+     * 
+     * @param procCtx
+     *            context
+     * @param state
+     *            stav přístupového bodu
+     * @param bindingState
+     *            stav propojení s externím systémem
+     * @param binding
+     *            vazba na externí entit
+     * @param entity
+     *            entita z externího systému
+     * @param syncQueue
+     *            zda-li se jedná o volání z fronty
      */
-    public void synchronizeAccessPoint(ProcessingContext procCtx, ApState state, EntityXml entity,
-                                       ApBindingState bindingState, boolean syncQueue) {
-        log.debug("Entity synchronization request, accesPointId: {}, revId: {}", state.getAccessPointId(),
-                  entity.getRevi().getRid().getValue());
-        if(state.getDeleteChangeId()!=null) {
-            // TODO: save sync request
-            /*bindingState.setSyncOk(SyncState.NOT_SYNCED);
-            bindingStateRepository.save(bindingState);*/
-            log.info("Received synchronization request for deleted entity, accessPointId: {}",
-                     state.getAccessPointId());
-            return;
-            //throw new BusinessException("Synchronized entity is deleted, accessPointId: " + state.getAccessPoint(),
-            //        ExternalCode.RECORD_NOT_FOUND);
+    public void synchronizeAccessPoint(ProcessingContext procCtx, ApState state,
+                                       ApBindingState bindingState,
+                                       ApBinding binding,
+                                       EntityXml entity, boolean syncQueue) {
+        if (binding == null) {
+            Validate.notNull(bindingState);
+
+            binding = bindingState.getBinding();
+        }
+        if (bindingState == null) {
+            Validate.isTrue(state == null);
+        }
+        log.debug("Entity synchronization request, bindingId: {}, value: {}, revId: {}, apState: {}, bindingState: {}",
+                  binding.getBindingId(),
+                  binding.getValue(), entity.getRevi().getRid().getValue(),
+                  state, bindingState);
+
+        // Mozne stavy synchronizace
+        // ApState | ApBindingState  | syncQueue 
+        // ---------------------------------------
+        // null    | null            | false
+        // null    | null            | true
+        // ex      | null            | false -> vytvoreni bindingState
+        // ex      | null            | true  -> vytvoreni bindingState
+        // ex      | ex              | false
+        // ex      | ex              | true
+
+        ApChange apChange = null;
+        ApBindingState origBindingState = bindingState;
+        // Kontrola na zalozeni nove entity
+        // overeni existence UUID
+        if (bindingState == null && state == null) {
+            ApAccessPoint accessPoint = apAccessPointRepository.findApAccessPointByUuid(entity.getEuid().getValue());
+            if (accessPoint != null) {
+                // entity exists
+                apChange = apDataService.createChange(ApChange.Type.AP_SYNCH);
+                // we can assign ap to the binding
+                bindingState = externalSystemService.createApBindingState(binding,
+                                                                          accessPoint,
+                                                                          apChange,
+                                                                          entity.getEns().name(),
+                                                                          entity.getRevi().getRid().getValue(),
+                                                                          entity.getRevi().getUsr().getValue(),
+                                                                          null);
+                log.warn("Entity with uuid:{} already exists (id={}), automatically connected with external entity",
+                         entity.getEuid().getValue(), accessPoint.getAccessPointId());
+                // if async -> has local changes -> mark as not synced
+                if (syncQueue) {
+                    bindingState.setSyncOk(SyncState.NOT_SYNCED);
+                    bindingStateRepository.save(bindingState);
+
+                    accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
+                    return;
+                }
+                // TODO: consider what to do and how to resolve this situation
+                bindingStateRepository.save(bindingState);
+            }
         }
 
-        if (syncQueue && checkLocalChanges(state, bindingState)) {
-            //jedná se o noční synchronizaci a entita má lokální změny
-            bindingState.setSyncOk(SyncState.NOT_SYNCED);
-            bindingStateRepository.save(bindingState);
+        if (state != null && bindingState != null) {
+            boolean localChanges = checkLocalChanges(state, bindingState);
+
+            if (state.getDeleteChangeId() != null || // do not sync deleted aps, mark as not synced
+            // check if synced or not
+                    (syncQueue && (localChanges || SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())))) {
+                if (!SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())) {
+                    bindingState.setSyncOk(SyncState.NOT_SYNCED);
+                    bindingStateRepository.save(bindingState);
+                }
+                return;
+            }
+            if (!localChanges) {
+                // check if any update is needed
+                if (SyncState.SYNC_OK.equals(bindingState.getSyncOk()) &&
+                        origBindingState != null &&
+                        Objects.equals(origBindingState.getExtRevision(), entity.getRevi().getRid().toString())) {
+                    // binding already exists and no local changes are detected
+                    // -> nothing to synchronize -> return
+                    return;
+                }
+
+            }
+        }
+
+        if (apChange == null) {
+            apChange = apDataService.createChange(ApChange.Type.AP_SYNCH);
+            //apChange = apDataService.createChange(bindingState != null? ApChange.Type.AP_UPDATE : ApChange.Type.AP_CREATE);
+        }
+        procCtx.setApChange(apChange);
+
+        EntityDBDispatcher ec = createEntityDBDispatcher();
+        if (state == null) {
+            ec.createAccessPoint(procCtx, entity, binding, syncQueue);
         } else {
-            ApChange apChange = apDataService.createChange(ApChange.Type.AP_UPDATE);
-            procCtx.setApChange(apChange);
-
-            EntityDBDispatcher ec = createEntityDBDispatcher();
-            ec.synchronizeAccessPoint(procCtx, state, bindingState, entity);
-
-            procCtx.setApChange(null);
+            ec.synchronizeAccessPoint(procCtx, state, bindingState, entity, syncQueue);
         }
+
+        procCtx.setApChange(null);
     }
 
     private void changePartInItems(ApPart apPart, List<ApBindingItem> notChangeItems, ApChange apChange) {
@@ -504,7 +631,7 @@ public class CamService {
                 item.setDeleteChange(apChange);
                 itemList.add(item);
     
-                ApItem newItem = apItemService.createItem(item, apChange, apPart);
+                ApItem newItem = apItemService.copyItem(item, apChange, apPart);
                 itemList.add(newItem);
     
                 bindingItem.setItem(newItem);
@@ -522,7 +649,7 @@ public class CamService {
                 item.setDeleteChange(apChange);
                 itemList.add(item);
 
-                ApItem newItem = apItemService.createItem(item, apChange, apPart);
+                ApItem newItem = apItemService.copyItem(item, apChange, apPart);
                 itemList.add(newItem);
             }
             itemRepository.saveAll(itemList);
@@ -544,15 +671,22 @@ public class CamService {
         return false;
     }
 
+    /**
+     * Update accesspoint from WSDL/API
+     * 
+     * @param procCtx
+     * @param syncRequests
+     */
     public void updateAccessPoints(final ProcessingContext procCtx,
                                    final List<SyncEntityRequest> syncRequests) {
-        if (syncRequests == null || syncRequests.isEmpty()) {
+        if (CollectionUtils.isEmpty(syncRequests)) {
             return;
         }
 
         for (SyncEntityRequest syncReq : syncRequests) {
             synchronizeAccessPoint(procCtx, syncReq.getState(),
-                    syncReq.getEntityXml(), syncReq.getBindingState(), false);
+                                   syncReq.getBindingState(),
+                                   null, syncReq.getEntityXml(), false);
         }
 
         // kontrola datové struktury
@@ -570,7 +704,7 @@ public class CamService {
      *         retried later
      */
     @Transactional
-    public boolean synchronizeExtItem(ExtSyncsQueueItem extSyncsQueueItem) {
+    public boolean exportNew(ExtSyncsQueueItem extSyncsQueueItem) {
         Integer externalSystemId = extSyncsQueueItem.getExternalSystemId();
         ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
 
@@ -588,7 +722,7 @@ public class CamService {
         } catch (Exception e) {
             // other exception -> retry later
             setQueueItemState(extSyncsQueueItem,
-                              ExtSyncsQueueItem.ExtAsyncQueueState.NEW,
+                              ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW,
                               OffsetDateTime.now(),
                               e.getMessage());
             return false;
@@ -596,30 +730,47 @@ public class CamService {
     }
 
     /**
-     * Synchronizace záznamů CAM -> ELZA
+     * Synchronizace jednoho záznamu CAM -> ELZA
      * 
-     * @param extSyncsQueueItem
+     * @param queueItem
      * @return return true if item was processed. return false if failed and will be
      *         retried later
      */
     @Transactional
-    public boolean synchronizeIntItem(ExtSyncsQueueItem extSyncsQueueItem) {
-        Integer accessPointId = extSyncsQueueItem.getAccessPointId();
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-
-        Integer externalSystemId = extSyncsQueueItem.getExternalSystemId();
+    public boolean synchronizeIntItem(ExtSyncsQueueItem queueItem) {
+        Integer externalSystemId = queueItem.getExternalSystemId();
         ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
 
-        ApState state = accessPointService.getStateInternal(accessPoint);
-        ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
+        ApState state;
+        ApBindingState bindingState;
+        ApBinding binding;
+        String bindingValue;
+        ApScope scope;
+        if (queueItem.getAccessPointId() != null) {
+            Integer accessPointId = queueItem.getAccessPointId();
+            ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
+
+            state = accessPointService.getStateInternal(accessPoint);
+            bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
+            bindingValue = bindingState.getBinding().getValue();
+            scope = state.getScope();
+            binding = null;
+        } else {
+            state = null;
+            bindingState = null;
+            binding = bindingRepository.findById(queueItem.getBindingId()).get();
+            bindingValue = binding.getValue();
+            scope = externalSystem.getScope();
+        }
 
         EntityXml entity;
         try {
             // download entity from CAM
-            entity = camConnector.getEntityById(bindingState.getBinding().getValue(), externalSystem.getCode());
+            log.debug("Download entity from CAM, bindingValue: {} externalSystem: {}", bindingValue, externalSystem.getCode());
+            entity = camConnector.getEntityById(bindingValue, externalSystem.getCode());
         } catch (ApiException e) {
             // if ApiException -> it means we connected server and it is logical failure 
-            setQueueItemState(extSyncsQueueItem,
+            setQueueItemState(queueItem,
                               ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
                               OffsetDateTime.now(),
                               e.getMessage());
@@ -627,21 +778,67 @@ public class CamService {
             return true;
         } catch (Exception e) {
             // other exception -> retry later
-            setQueueItemState(extSyncsQueueItem,
-                              ExtSyncsQueueItem.ExtAsyncQueueState.UPDATE,
+            setQueueItemState(queueItem,
+                              queueItem.getState(),
                               OffsetDateTime.now(),
                               e.getMessage());
             return false;
         }
-        ProcessingContext procCtx = new ProcessingContext(state.getScope(), externalSystem, staticDataService);
-        synchronizeAccessPoint(procCtx, state, entity, bindingState, true);
-        setQueueItemState(extSyncsQueueItem,
+        ProcessingContext procCtx = new ProcessingContext(scope, externalSystem, staticDataService);
+        try {
+            synchronizeAccessPoint(procCtx, state, bindingState, binding, entity, true);
+        } catch (Exception e) {
+            setQueueItemState(queueItem,
+                              ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
+                              OffsetDateTime.now(),
+                              e.getMessage());
+            return true;
+        }
+        setQueueItemState(queueItem,
                           ExtSyncsQueueItem.ExtAsyncQueueState.OK,
                           OffsetDateTime.now(),
                           "Synchronized: ES -> ELZA");
         return true;
     }
-    
+
+    /**
+     * Synchronizace seznamu záznamů CAM -> ELZA
+     * 
+     * @param queueItems
+     *            seznam, objekty nejsou připojeny k transakci a je nutné je znovu
+     *            načíst
+     * @throws ApiException
+     */
+    @Transactional
+    public void importNew(List<ExtSyncsQueueItem> queueItems) throws ApiException {
+        if (queueItems.isEmpty()) {
+            return;
+        }
+        Integer externalSystemId = queueItems.get(0).getExternalSystemId();
+        ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
+        ApScope scope = externalSystem.getScope();
+
+        List<Integer> bindingIds = queueItems.stream().map(p -> p.getBindingId()).collect(Collectors.toList());
+        List<ApBinding> bindings = bindingRepository.findAllById(bindingIds);
+        Map<String, ApBinding> bindingMap = bindings.stream().collect(Collectors.toMap(x -> x.getValue(), x -> x));
+
+        List<String> bindingValues = bindings.stream().map(p -> p.getValue()).collect(Collectors.toList());
+        log.debug("Download entity from CAM, bindingValues: {} externalSystem: {}", bindingValues, externalSystem.getCode());
+
+        EntitiesXml entities = camConnector.getEntitiesByIds(bindingValues, externalSystem.getCode());
+
+        ProcessingContext procCtx = new ProcessingContext(scope, externalSystem, staticDataService);
+        for (EntityXml entity : entities.getList()) {
+            String value = String.valueOf(entity.getEid().getValue());
+            ApBinding binding = bindingMap.get(value);
+            synchronizeAccessPoint(procCtx, null, null, binding, entity, true);
+        }
+        setQueueItemState(queueItems,
+                         ExtSyncsQueueItem.ExtAsyncQueueState.OK,
+                         OffsetDateTime.now(),
+                         "Synchronized: ES -> ELZA");
+    }
+
     /**
      * Založí nebo upraví entitu v externím systému
      *
@@ -663,8 +860,7 @@ public class CamService {
         // TODO: get current bindings
         if (bindingState == null) {
             // create binding with uuid?
-            ApBinding binding = externalSystemService.createApBinding(state.getScope(),
-                                                                      accessPoint.getUuid(),
+            ApBinding binding = externalSystemService.createApBinding(accessPoint.getUuid(),
                                                                       apExternalSystem);
             ApChange change = apDataService.createChange(ApChange.Type.AP_CREATE);
             bindingState = externalSystemService.createApBindingState(binding, accessPoint, change,
@@ -685,5 +881,27 @@ public class CamService {
 
         BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdate, externalSystemCode);
         updateBindingAfterSave(batchUpdateResult, accessPoint, externalSystemCode, extSyncsQueueItem);
+    }
+
+    @Transactional
+    public void resetSynchronization(String code) {
+        ApExternalSystem externalSystem = externalSystemService.findApExternalSystemByCode(code);
+
+        ApBindingSync bindingSync = bindingSyncRepository.findByApExternalSystem(externalSystem);
+        if (bindingSync == null) {
+            // nothing to reset
+            return;
+        }
+        if (TRANSACTION_UUID.equals(bindingSync.getLastTransaction())) {
+            log.debug("Accesspoint synchronization is already set to initial transaction, externalSystemId: {}.",
+                      externalSystem.getExternalSystemId());
+            return;
+        }
+        log.info("Resettting accesspoint synchronization (externalSystemId: {}) transaction from: {} to: {}",
+                 externalSystem.getExternalSystemId(),
+                 bindingSync.getLastTransaction(),
+                 TRANSACTION_UUID);
+        bindingSync.setLastTransaction(TRANSACTION_UUID);
+        bindingSyncRepository.save(bindingSync);
     }
 }

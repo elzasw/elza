@@ -26,8 +26,6 @@ public class ArrFundVO extends ArrFundBaseVO {
 
     private List<ArrOutputVO> validNamedOutputs;
 
-    private List<ArrOutputVO> historicalNamedOutputs;
-
     private Integer fundNumber;
 
     private String unitdate;
@@ -84,14 +82,6 @@ public class ArrFundVO extends ArrFundBaseVO {
 
     public void setValidNamedOutputs(final List<ArrOutputVO> validNamedOutputs) {
         this.validNamedOutputs = validNamedOutputs;
-    }
-
-    public List<ArrOutputVO> getHistoricalNamedOutputs() {
-        return historicalNamedOutputs;
-    }
-
-    public void setHistoricalNamedOutputs(final List<ArrOutputVO> historicalNamedOutputs) {
-        this.historicalNamedOutputs = historicalNamedOutputs;
     }
 
     public Integer getFundNumber() {

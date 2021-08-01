@@ -21,7 +21,7 @@ public class RuleSetExtension {
                      final List<RulExtensionRule> extRules) {
         this.entity = ruleExt;
         this.extRules = extRules != null ? extRules : Collections.emptyList();
-        this.extRulesByType = extRules.stream().collect(Collectors.groupingBy(RulExtensionRule::getRuleType));
+        this.extRulesByType = this.extRules.stream().collect(Collectors.groupingBy(RulExtensionRule::getRuleType));
     }
 
     public RulArrangementExtension getEntity() {

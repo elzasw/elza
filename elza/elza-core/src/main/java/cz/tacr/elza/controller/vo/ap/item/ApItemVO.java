@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 
+import java.util.Objects;
+
 import javax.persistence.EntityManager;
+import javax.validation.constraints.NotNull;
 
 /**
  * @since 18.07.2018
@@ -91,8 +94,7 @@ public abstract class ApItemVO {
     /**
      * Fill correspoding Aptem with values from this object
      *
-     * @param item
-     *            target item to be filled
+     * @param item target item to be filled
      */
     public void fill(ApItem item) {
         item.setItemId(id);
@@ -105,8 +107,28 @@ public abstract class ApItemVO {
     /**
      * Create data entity from value object
      *
+     * @param em
      * @return data
      */
     public abstract ArrData createDataEntity(EntityManager em);
 
+    /**
+     * Comparison of values ApItemVO and ApItem
+     * 
+     * @param apItem
+     * @return true if equals
+     */
+    public abstract boolean equalsValue(ApItem apItem);
+
+    /**
+     * Comparison of base fields: position, typeId, specId
+     * 
+     * @param apItem
+     * @return true if equals in three fields
+     */
+    public boolean equalsBase(@NotNull ApItem apItem) {
+        return Objects.equals(position, apItem.getPosition()) 
+                && Objects.equals(typeId, apItem.getItemTypeId())
+                && Objects.equals(specId, apItem.getItemSpecId());
+    }
 }
