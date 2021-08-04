@@ -30,6 +30,7 @@ const getDefaultOperationType = props => {
         case 'STRING':
         case 'FORMATTED_TEXT':
         case 'UNITID':
+        case 'STRUCTURED':
             result = 'findAndReplace';
             break;
         default:
@@ -158,6 +159,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             case 'STRING':
             case 'FORMATTED_TEXT':
             case 'UNITID':
+            case 'STRUCTURED':
                 result = true;
                 break;
             default:
@@ -182,6 +184,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             case 'DATE':
             case 'UNITDATE':
             case 'RECORD_REF':
+            case 'STRUCTURED':
                 result = true;
                 break;
             default:
