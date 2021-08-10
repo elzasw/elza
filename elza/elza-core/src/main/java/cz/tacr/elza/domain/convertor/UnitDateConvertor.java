@@ -6,8 +6,6 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,6 +16,7 @@ import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.*;
 
 /**
  * Konvertor pro sprváné zobrazování UnitDate podle formátu.
@@ -33,9 +32,9 @@ public class UnitDateConvertor {
     public static final String EXP_CENTURY = "(\\d+)((st)|(\\.[ ]?st\\.))";
 
     /**
-     * Zkratka století
+     * Šablona pro století
      */
-    public static final String CENTURY = "C";
+    public static final String CENTURY_TEMPLATE = "%d. st.";
 
     /**
      * Výraz pro rok
@@ -43,19 +42,9 @@ public class UnitDateConvertor {
     public static final String EXP_YEAR = "(-?\\d{1,4})";
 
     /**
-     * Zkratka roku
-     */
-    public static final String YEAR = "Y";
-
-    /**
      * Formát datumu
      */
     public static final String FORMAT_DATE = "d.M.u";
-
-    /**
-     * Zkratka datumu
-     */
-    public static final String DATE = "D";
 
     /**
      * Formát datumu s časem
@@ -65,12 +54,7 @@ public class UnitDateConvertor {
     /**
      * Formát datumu s časem
      */
-    public static final String FORMAT_DATE_TIME2 = "d.M.u H:mm";
-
-    /**
-     * Zkratka datumu s časem
-     */
-    public static final String DATE_TIME = "DT";
+    public static final String FORMAT_DATE_TIME_WITHOUT_SEC = "d.M.u H:mm";
 
     /**
      * Formát roku s měsícem
@@ -78,19 +62,19 @@ public class UnitDateConvertor {
     public static final String FORMAT_YEAR_MONTH = "M.u";
 
     /**
-     * Zkratka roku s měsícem
+     * Šablona pro interval
      */
-    public static final String YEAR_MONTH = "YM";
-
-    /**
-     * Oddělovač pro interval
-     */
-    public static final String DEFAULT_INTERVAL_DELIMITER = "-";
+    public static final String DEFAULT_INTERVAL_DELIMITER_TEMPLATE = "%s-%s";
 
     /**
      * Oddělovač pro interval, který vyjadřuje odhad
      */
     public static final String ESTIMATE_INTERVAL_DELIMITER = "/";
+
+    /**
+     * Šablona pro interval, který vyjadřuje odhad
+     */
+    public static final String ESTIMATE_INTERVAL_DELIMITER_TEMPLATE = "%s/%s";
 
     /**
      * Když druhý rok v intervalu je negativní
@@ -109,7 +93,7 @@ public class UnitDateConvertor {
 
     private static final DateTimeFormatter FORMATTER_DATE = DateTimeFormatter.ofPattern(FORMAT_DATE);
     private static final DateTimeFormatter FORMATTER_DATE_TIME = DateTimeFormatter.ofPattern(FORMAT_DATE_TIME);
-    private static final DateTimeFormatter FORMATTER_DATE_TIME2 = DateTimeFormatter.ofPattern(FORMAT_DATE_TIME2);
+    private static final DateTimeFormatter FORMATTER_DATE_TIME2 = DateTimeFormatter.ofPattern(FORMAT_DATE_TIME_WITHOUT_SEC);
     private static final DateTimeFormatter FORMATTER_YEAR_MONTH = DateTimeFormatter.ofPattern(FORMAT_YEAR_MONTH);
     private static final DateTimeFormatter FORMATTER_ISO = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
@@ -277,67 +261,65 @@ public class UnitDateConvertor {
 
     /**
      * Provede konverzi formátu do textové podoby.
+     * 
+     * @param unitdate
+     * @return String
      */
     public static String convertToString(final IUnitdate unitdate) {
 
         String format = unitdate.getFormat();
 
-		String formatted;
         if (isInterval(format)) {
-			formatted = convertInterval(format, unitdate);
-        } else {
-			formatted = convertToken(format, unitdate, true, true);
+            return convertInterval(format, unitdate);
         }
+        return convertToken(format, unitdate.getValueFrom(), unitdate.getValueFromEstimated());
+    }
 
-		return formatted;
-	}
-
-	/**
+    /**
 	 * Begin of interval to string
 	 *
 	 * @param unitdate
-	 * @return
+	 * @param allowEstimate
+     * @return String
 	 */
 	public static String beginToString(final IUnitdate unitdate, final boolean allowEstimate) {
-		String format = unitdate.getFormat();
-		if (isInterval(format)) {
+
+	    String format = unitdate.getFormat();
+
+	    if (isInterval(format)) {
 			String[] data = format.split(DEFAULT_INTERVAL_DELIMITER);
 			format = data[0];
 		}
-        String formatted = convertToken(format, unitdate, true, allowEstimate);
-		return formatted;
+	    return convertToken(format, unitdate.getValueFrom(), allowEstimate && unitdate.getValueFromEstimated());
     }
 
 	/**
 	 * End of interval to string
 	 *
 	 * @param unitdate
-	 * @return
+	 * @return String
 	 */
 	public static String endToString(final IUnitdate unitdate, final boolean allowEstimate) {
-		String format = unitdate.getFormat();
+
+	    String format = unitdate.getFormat();
+
 		if (isInterval(format)) {
 			String[] data = format.split(DEFAULT_INTERVAL_DELIMITER);
 			format = data[1];
 		}
-        String formatted = convertToken(format, unitdate, false, allowEstimate);
-		return formatted;
+		return convertToken(format, unitdate.getValueTo(), allowEstimate && unitdate.getValueToEstimated());
 	}
 
 	/**
 	 * Konverze intervalu.
 	 *
-	 * @param format
-	 *            vstupní formát
-	 * @param unitdate
-	 *            doplňovaný objekt
+	 * @param format   vstupní formát
+	 * @param unitdate doplňovaný objekt
 	 * @return výsledný řetězec
 	 */
     private static String convertInterval(final String format, final IUnitdate unitdate) {
 
         String[] data = format.split(DEFAULT_INTERVAL_DELIMITER);
-
-        String ret;
 
         if (data.length != 2) {
             throw new IllegalStateException("Neplatný interval: " + format);
@@ -345,179 +327,58 @@ public class UnitDateConvertor {
 
         boolean bothEstimate = BooleanUtils.isTrue(unitdate.getValueFromEstimated()) && BooleanUtils.isTrue(unitdate.getValueToEstimated());
 
-        ret = convertToken(data[0], unitdate, true, !bothEstimate);
-        if (bothEstimate) {
-            ret += ESTIMATE_INTERVAL_DELIMITER;
-        } else {
-            ret += DEFAULT_INTERVAL_DELIMITER;
-        }
-        ret += convertToken(data[1], unitdate, false, !bothEstimate);
+        String template = bothEstimate? ESTIMATE_INTERVAL_DELIMITER_TEMPLATE : DEFAULT_INTERVAL_DELIMITER_TEMPLATE;  
+        String dateFrom = convertToken(data[0], unitdate.getValueFrom(), !bothEstimate && unitdate.getValueFromEstimated());
+        String dateTo = convertToken(data[1], unitdate.getValueTo(), !bothEstimate && unitdate.getValueToEstimated());
 
-        return ret;
-    }
-
-    /**
-     * Přidání odhadu.
-     *
-     * @param format   vstupní formát
-     * @param unitdate doplňovaný objekt
-     * @param first    zda-li se jedná o první datum
-     * @param allow    povolit odhad?
-     * @return výsledný řetězec
-     */
-    private static String addEstimate(String format, final IUnitdate unitdate, final boolean first, final boolean allow) {
-        if (first) {
-            if (BooleanUtils.isTrue(unitdate.getValueFromEstimated()) && allow) {
-                format = "[" + format + "]";
-            }
-        } else {
-            if (BooleanUtils.isTrue(unitdate.getValueToEstimated()) && allow) {
-                format = "[" + format + "]";
-            }
-        }
-        return format;
+        return String.format(template, dateFrom, dateTo);
     }
 
     /**
      * Konverze tokenu - výrazu.
      *
-     * @param format
-     *            vstupní formát
-     * @param unitdate
-     *            doplňovaný objekt
-     * @param first
-     *            zda-li se jedná o první datum
-     * @param allowEstimate
-     *            povolit odhad?
+     * @param format        vstupní formát
+     * @param unitdate      doplňovaný objekt
+     * @param first         zda-li se jedná o první datum
      * @return výsledný řetězec
      */
-    private static String convertToken(final String format, final IUnitdate unitdate, final boolean first,
-                                       final boolean allowEstimate) {
+    private static String convertToken(final String format, final String value, final boolean estimated) {
 
-        if (format.equals("")) {
-            return format;
+        String result;
+        boolean addEstimate = estimated;
+
+        LocalDateTime date;
+        try {
+            date = LocalDateTime.parse(value);
+        } catch (DateTimeParseException e) {
+            throw new IllegalStateException("Chyba při analýze datum: " + value, e);
         }
-
-        String ret;
-        boolean canAddEstimate = true;
         switch (format) {
             case CENTURY:
-                ret = convertCentury(format, unitdate, first);
-                canAddEstimate = false;
+                result = String.format(CENTURY_TEMPLATE, date.getYear() / 100 + 1);
+                addEstimate = false;
                 break;
             case YEAR:
-                ret = convertYear(format, unitdate, first);
+                result = String.valueOf(date.getYear());
                 break;
             case YEAR_MONTH:
-                ret = convertYearMonth(format, unitdate, first);
+                result = moveMinusToDayDate(FORMATTER_YEAR_MONTH.format(date));
                 break;
             case DATE:
-                ret = convertDate(format, unitdate, first);
+                result = moveMinusToDayDate(FORMATTER_DATE.format(date));
                 break;
             case DATE_TIME:
-                ret = convertDateTime(format, unitdate, first);
+                result = moveMinusToDayDate(FORMATTER_DATE_TIME.format(date));
                 break;
             default:
                 throw new IllegalStateException("Neexistující formát: " + format);
         }
 
-        if (canAddEstimate) {
-            ret = addEstimate(ret, unitdate, first, allowEstimate);
+        if (addEstimate) {
+            result = String.format(ESTIMATED_TEMPLATE, result);
         }
 
-        return ret;
-    }
-
-    /**
-     * Konverze datumu s časem.
-     *
-     * @param format   vstupní formát
-     * @param unitdate doplňovaný objekt
-     * @param first    zda-li se jedná o první datum
-     * @return výsledný řetězec
-     */
-    private static String convertDateTime(final String format, final IUnitdate unitdate, final boolean first) {
-        if (first) {
-            if (unitdate.getValueFrom() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
-                return format.replaceFirst("(" + DATE_TIME + ")", "" + moveMinusToDayDate(FORMATTER_DATE_TIME.format(date)));
-            }
-        } else {
-            if (unitdate.getValueTo() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo());
-                return format.replaceFirst("(" + DATE_TIME + ")", "" + moveMinusToDayDate(FORMATTER_DATE_TIME.format(date)));
-            }
-        }
-        return format;
-    }
-
-    /**
-     * Konverze datumu.
-     *
-     * @param format   vstupní formát
-     * @param unitdate doplňovaný objekt
-     * @param first    zda-li se jedná o první datum
-     * @return výsledný řetězec
-     */
-    private static String convertDate(final String format, final IUnitdate unitdate, final boolean first) {
-        if (first) {
-            if (unitdate.getValueFrom() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
-                return format.replaceFirst("(" + DATE + ")", moveMinusToDayDate(FORMATTER_DATE.format(date)));
-            }
-        } else {
-            if (unitdate.getValueTo() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo());
-                return format.replaceFirst("(" + DATE + ")", moveMinusToDayDate(FORMATTER_DATE.format(date)));
-            }
-        }
-        return format;
-    }
-
-    /**
-     * Konverze roku s měsícem.
-     *
-     * @param format   vstupní formát
-     * @param unitdate doplňovaný objekt
-     * @param first    zda-li se jedná o první datum
-     * @return výsledný řetězec
-     */
-    private static String convertYearMonth(final String format, final IUnitdate unitdate, final boolean first) {
-        if (first) {
-            if (unitdate.getValueFrom() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
-                return format.replaceFirst("(" + YEAR_MONTH + ")", "" + moveMinusToDayDate(FORMATTER_YEAR_MONTH.format(date)));
-            }
-        } else {
-            if (unitdate.getValueTo() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo());
-                return format.replaceFirst("(" + YEAR_MONTH + ")", "" + moveMinusToDayDate(FORMATTER_YEAR_MONTH.format(date)));
-            }
-        }
-        return format;
-    }
-
-    /**
-     * Konverze roku.
-     *
-     * @param format   vstupní formát
-     * @param unitdate doplňovaný objekt
-     * @param first    zda-li se jedná o první datum
-     * @return výsledný řetězec
-     */
-    private static String convertYear(final String format, final IUnitdate unitdate, final boolean first) {
-        if (first) {
-            if (unitdate.getValueFrom() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
-                return format.replaceFirst("(" + YEAR + ")", "" + date.getYear());
-            }
-        } else {
-            if (unitdate.getValueTo() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo());
-                return format.replaceFirst("(" + YEAR + ")", "" + date.getYear());
-            }
-        }
-        return format;
+        return result;
     }
 
     /**
@@ -528,41 +389,31 @@ public class UnitDateConvertor {
      * @return výsledný řetězec
      */
     public static String convertYear(final IUnitdate unitdate, final boolean first) {
-        if (first) {
-            if (unitdate.getValueFrom() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
-                return date.getYear() + (unitdate.getValueFrom().startsWith(BC_ISO) ? PR_N_L : "");
-            }
-        } else {
-            if (unitdate.getValueTo() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo());
-                return date.getYear() + (unitdate.getValueTo().startsWith(BC_ISO) ? PR_N_L : "");
-            }
+        LocalDateTime date = getLocalDateTimeFromUnitDate(unitdate, first);
+        if (date != null) {
+            return date.getYear() + (unitdate.getValueFrom().startsWith(BC_ISO) ? PR_N_L : "");
         }
         return unitdate.getFormat();
     }
 
     /**
-     * Konverze stolení.
-     *
-     * @param format   vstupní formát
-     * @param unitdate doplňovaný objekt
-     * @param first    zda-li se jedná o první datum
-     * @return výsledný řetězec
+     * Získání LocalDateTime z objektu IUnitdate.
+     * 
+     * @param unitdate
+     * @param first
+     * @return LocalDateTime
      */
-    private static String convertCentury(final String format, final IUnitdate unitdate, final boolean first) {
+    private static LocalDateTime getLocalDateTimeFromUnitDate(final IUnitdate unitdate, final boolean first) {
         if (first) {
             if (unitdate.getValueFrom() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueFrom());
-                return format.replaceFirst("(" + CENTURY + ")", (date.getYear() / 100 + 1) + ". st.");
+                return LocalDateTime.parse(unitdate.getValueFrom());
             }
         } else {
             if (unitdate.getValueTo() != null) {
-                LocalDateTime date = LocalDateTime.parse(unitdate.getValueTo());
-                return format.replaceFirst("(" + CENTURY + ")", (date.getYear() / 100) + ". st.");
+                return LocalDateTime.parse(unitdate.getValueTo());
             }
         }
-        return format;
+        return null;
     }
 
     /**

@@ -5,7 +5,6 @@ import DatationField from '../party/DatationField';
 import {Col, Form, Modal, Row} from 'react-bootstrap';
 import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 
 import './ArrSearchForm.scss';
 import FormInputField from "../shared/form/FormInputField";
@@ -55,17 +54,8 @@ class ArrSearchForm extends AbstractReactComponent {
         return errors;
     }
 
-    componentDidMount() {
-        this.props.dispatch(calendarTypesFetchIfNeeded());
-    }
-
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        this.props.dispatch(calendarTypesFetchIfNeeded());
-    }
-
     renderFormItem = (item, index, fields) => {
         const {
-            refTables: {calendarTypes},
             submitting
         } = this.props;
 
@@ -100,25 +90,6 @@ class ArrSearchForm extends AbstractReactComponent {
                                 <option value={CONTAINS} key={CONTAINS}>
                                     {i18n('search.extended.form.unitdate.type.contains')}
                                 </option>
-                            </Field>
-                        </div>
-                        <div className="field">
-                            <Field
-                                disabled={submitting}
-                                name={`${item}.calendarTypeId`}
-                                type="select"
-                                component={FormInputField}
-                                label={false}
-                            >
-                                {calendarTypes &&
-                                calendarTypes.fetched &&
-                                calendarTypes.items.map((calendar, index) => {
-                                    return (
-                                        <option value={calendar.id} key={calendar.id}>
-                                            {i18n('search.extended.form.unitdate.calendar.' + calendar.code)}
-                                        </option>
-                                    );
-                                })}
                             </Field>
                         </div>
                         <Field
@@ -160,7 +131,7 @@ class ArrSearchForm extends AbstractReactComponent {
                                 <Button
                                     variant="outline-secondary"
                                     className="action-button"
-                                    onClick={() => fields.push({type: TYPE_UNITDATE, calendarTypeId: 1, condition: GE})}
+                                    onClick={() => fields.push({type: TYPE_UNITDATE, condition: GE})}
                                 >
                                     <Icon glyph="fa-plus" /> {i18n('search.extended.form.unitdate')}
                                 </Button>

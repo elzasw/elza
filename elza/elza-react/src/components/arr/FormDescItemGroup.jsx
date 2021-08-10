@@ -22,7 +22,6 @@ class FormDescItemGroup extends AbstractReactComponent {
         conformityInfo: PropTypes.object.isRequired,
         versionId: PropTypes.number.isRequired,
         readMode: PropTypes.bool.isRequired,
-        calendarTypes: PropTypes.object.isRequired,
         structureTypes: PropTypes.object.isRequired,
         descItemFactory: PropTypes.func.isRequired,
         customActions: PropTypes.func,
@@ -68,7 +67,6 @@ class FormDescItemGroup extends AbstractReactComponent {
             conformityInfo,
             versionId,
             readMode,
-            calendarTypes,
             structureTypes,
             descItemFactory,
             customActions,
@@ -146,7 +144,6 @@ class FormDescItemGroup extends AbstractReactComponent {
                         conformityInfo={conformityInfo}
                         versionId={versionId}
                         readMode={readMode}
-                        calendarTypes={calendarTypes}
                         structureTypes={structureTypes}
                         refType={refType}
                         infoType={infoType}

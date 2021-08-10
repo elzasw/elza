@@ -3,12 +3,6 @@ import { ApTypeVO } from '../../api/ApTypeVO';
 import { BaseRefTableStore } from '../BaseRefTableStore';
 import {RulPartTypeVO} from '../../api/RulPartTypeVO';
 
-export interface CalendarType {
-    code: string;
-    id: number;
-    name: string;
-}
-
 export interface Scope {
     versionId: number;
     id?: number | null;
@@ -44,7 +38,6 @@ export interface VisiblePolicyRefItem {
 
 export interface RefTablesState {
     apTypes: BaseRefTableStore<ApTypeVO>;
-    calendarTypes: BaseRefTableStore<CalendarType>;
     descItemTypes: BaseRefTableStore<RulDescItemTypeExtVO>;
     eidTypes: unknown;
     externalSystems: unknown;

@@ -19,7 +19,6 @@ export interface DescItemPlain<T = any> extends ApItemVO {
     position: number;
 
     //
-    calendarTypeId?: number;
     itemType?: number;
 }
 

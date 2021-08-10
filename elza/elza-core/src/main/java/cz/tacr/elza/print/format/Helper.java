@@ -3,14 +3,16 @@ package cz.tacr.elza.print.format;
 import java.util.Iterator;
 
 import cz.tacr.elza.print.item.Item;
+import cz.tacr.elza.print.item.ItemUnitdate;
+import cz.tacr.elza.print.item.convertors.UnitDatePrintConvertor;
 
 /**
  * Static class with helper methods for print
  *
  */
 abstract public class Helper {
-    private Helper() {
 
+    private Helper() {
     }
 
     /**
@@ -22,7 +24,7 @@ abstract public class Helper {
      * @return
      */
     @SuppressWarnings("rawtypes")
-    static public Object getFirstObject(Object object) {
+    public static Object getFirstObject(Object object) {
         if (object == null) {
             return null;
         }
@@ -45,7 +47,7 @@ abstract public class Helper {
         return object;
     }
 
-    static public String getFirstStringOrDefault(Object object, String defaultValue) {
+    public static String getFirstStringOrDefault(Object object, String defaultValue) {
         Object realObj = getFirstObject(object);
         if (realObj == null) {
             return defaultValue;
@@ -58,8 +60,7 @@ abstract public class Helper {
         return realObj.toString();
     }
 
-
-    static public String getParagraph(String text, Integer from, Integer to) {
+    public static String getParagraph(String text, Integer from, Integer to) {
         StringBuilder result = new StringBuilder();
         int l = text.length();
         int parCounter = 0;
@@ -113,5 +114,15 @@ abstract public class Helper {
             }
         }
         return result.toString();
+    }
+
+    /**
+     * Převést datum ItemUnitdate na text
+     * 
+     * @param unitDate
+     * @return String
+     */
+    public static String convertDate(ItemUnitdate unitDate) {
+        return UnitDatePrintConvertor.convertToPrint(unitDate.getUnitDate());
     }
 }

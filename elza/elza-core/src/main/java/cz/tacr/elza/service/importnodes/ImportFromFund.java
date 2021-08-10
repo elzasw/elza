@@ -475,22 +475,14 @@ public class ImportFromFund implements ImportSource {
 
         private final String value;
 
-        private final String calendarTypeCode;
-
         public ItemUnitdateImpl(final ArrDescItem item, final ArrDataUnitdate itemData) {
             super(item);
-            calendarTypeCode = itemData.getCalendarType().getCode();
             value = UnitDateConvertor.convertToString(itemData);
         }
 
         @Override
         public String getValue() {
             return value;
-        }
-
-        @Override
-        public String getCalendarTypeCode() {
-            return calendarTypeCode;
         }
     }
 
