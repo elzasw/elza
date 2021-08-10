@@ -6,13 +6,9 @@ import java.time.format.DateTimeFormatter;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.apache.commons.lang.Validate;
-import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -20,7 +16,6 @@ import com.google.common.base.Objects;
 
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.common.db.CharConverter;
-import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
@@ -36,14 +31,6 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
 
     public static final String NORMALIZED_FROM = "normalizedFrom";
     public static final String NORMALIZED_TO = "normalizedTo";
-
-    @RestResource(exported = false)
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrCalendarType.class)
-    @JoinColumn(name = "calendarTypeId", nullable = false)
-    private ArrCalendarType calendarType;
-
-    @Column(name = "calendarTypeId", updatable = false, insertable = false)
-    private Integer calendarTypeId;
 
     /* Příklad:
      * -0015-01-01T00:00:00 - datum může mít znaménko minus
@@ -85,8 +72,6 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     }
 
     private void copyValue(ArrDataUnitdate src) {
-        this.calendarType = src.calendarType;
-        this.calendarTypeId = src.calendarTypeId;
         this.format = src.format;
         this.normalizedFrom = src.normalizedFrom;
         this.normalizedTo = src.normalizedTo;
@@ -135,22 +120,6 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     public void setValueToEstimated(final Boolean valueToEstimated) {
         this.valueToEstimated = valueToEstimated;
     }
-
-    @Override
-    public ArrCalendarType getCalendarType() {
-        return calendarType;
-    }
-
-    public Integer getCalendarTypeId() {
-        return calendarTypeId;
-    }
-
-    @Override
-    public void setCalendarType(final ArrCalendarType calendarType) {
-        this.calendarType = calendarType;
-        this.calendarTypeId = calendarType == null ? null : calendarType.getCalendarTypeId();
-    }
-
 
     @Override
     public String getFormat() {
@@ -214,14 +183,11 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     protected boolean isEqualValueInternal(ArrData srcData) {
 	    ArrDataUnitdate src = (ArrDataUnitdate)srcData;
 	    
-	    if(!calendarTypeId.equals(src.calendarTypeId)||
-	       !Objects.equal(valueFrom, src.valueFrom)||
+	    if(!Objects.equal(valueFrom, src.valueFrom)||
 	       !Objects.equal(valueFromEstimated, src.valueFromEstimated)||
 	       !Objects.equal(valueTo, src.valueTo)||
 	       !Objects.equal(valueToEstimated, src.valueToEstimated)||
-	       !Objects.equal(format, src.format)
-	            )
-	    {
+	       !Objects.equal(format, src.format)) {
 	        return false;
 	    }
         return true;
@@ -235,8 +201,6 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
 
     @Override
     protected void validateInternal() {
-        Validate.notNull(calendarType);
-        Validate.notNull(calendarTypeId);
         Validate.notNull(format);
         Validate.notNull(normalizedFrom);
         Validate.notNull(normalizedTo);
@@ -244,9 +208,8 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
         Validate.notNull(valueToEstimated);
     }
 
-    static public ArrDataUnitdate valueOf(CalendarType calendarType, String v) {
+    static public ArrDataUnitdate valueOf(String v) {
         ArrDataUnitdate du = new ArrDataUnitdate();
-        du.setCalendarType(calendarType.getEntity());
 
         UnitDateConvertor.convertToUnitDate(v, du);
 
@@ -256,7 +219,7 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
             du.setNormalizedFrom(Long.MIN_VALUE);
         } else {
             LocalDateTime fromDate = LocalDateTime.parse(valueFrom, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            du.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, fromDate));
+            du.setNormalizedFrom(CalendarConverter.toSeconds(fromDate));
         }
 
         String valueTo = du.getValueTo();
@@ -264,7 +227,7 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
             du.setNormalizedTo(Long.MAX_VALUE);
         } else {
             LocalDateTime toDate = LocalDateTime.parse(valueTo, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            du.setNormalizedTo(CalendarConverter.toSeconds(calendarType, toDate));
+            du.setNormalizedTo(CalendarConverter.toSeconds(toDate));
         }
 
         du.setDataType(DataType.UNITDATE.getEntity());

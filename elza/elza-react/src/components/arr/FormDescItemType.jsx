@@ -7,13 +7,13 @@ import {objectEquals, objectEqualsDiff, propsEquals} from '../Utils';
 class FormDescItemType extends AbstractReactComponent {
     shouldComponentUpdate(nextProps, nextState) {
         return true;
-        if (this.state !== nextState) {
-            console.log('[FormDescItemType]#[state]##############', nextProps.refType.name);
-            return true;
-        }
-        console.log('[FormDescItemType]###############', nextProps.refType.name, nextProps.descItemType.id);
+        //if (this.state !== nextState) {
+        //    console.log('[FormDescItemType]#[state]##############', nextProps.refType.name);
+        //    return true;
+        //}
+        //console.log('[FormDescItemType]###############', nextProps.refType.name, nextProps.descItemType.id);
         // return !propsEquals(this.props, nextProps, undefined, true);
-        return !objectEqualsDiff(this.props, nextProps, undefined, '', true);
+        //return !objectEqualsDiff(this.props, nextProps, undefined, '', true);
     }
 
     static propTypes = {
@@ -34,7 +34,6 @@ class FormDescItemType extends AbstractReactComponent {
         conformityInfo: PropTypes.object.isRequired,
         versionId: PropTypes.number.isRequired,
         readMode: PropTypes.bool.isRequired,
-        calendarTypes: PropTypes.object.isRequired,
         structureTypes: PropTypes.object.isRequired,
         descItemFactory: PropTypes.func.isRequired,
         customActions: PropTypes.object,
@@ -90,7 +89,6 @@ class FormDescItemType extends AbstractReactComponent {
             conformityInfo,
             versionId,
             readMode,
-            calendarTypes,
             structureTypes,
             descItemFactory,
             customActions,
@@ -165,7 +163,6 @@ class FormDescItemType extends AbstractReactComponent {
                 refType={refType}
                 infoType={infoType}
                 rulDataType={rulDataType}
-                calendarTypes={calendarTypes}
                 structureTypes={structureTypes}
                 onDetailRecord={(descItemIndex, recordId) =>
                     onDetailRecord(descItemGroupIndex, descItemTypeIndex, descItemIndex, recordId)

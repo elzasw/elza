@@ -19,7 +19,6 @@ import cz.tacr.elza.repository.ApExternalIdTypeRepository;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
-import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -75,8 +74,6 @@ public class StaticDataService {
 
     final DataTypeRepository dataTypeRepository;
 
-    final CalendarTypeRepository calendarTypeRepository;
-
     final PackageRepository packageRepository;
 
     final ApTypeRepository apTypeRepository;
@@ -106,7 +103,6 @@ public class StaticDataService {
                              final ItemSpecRepository itemSpecRepository,
                              final ItemTypeSpecAssignRepository itemTypeSpecAssignRepository,
                              final DataTypeRepository dataTypeRepository,
-                             final CalendarTypeRepository calendarTypeRepository,
                              final PackageRepository packageRepository,
                              final StructuredTypeRepository structuredTypeRepository,
                              final StructureDefinitionRepository structureDefinitionRepository,
@@ -125,7 +121,6 @@ public class StaticDataService {
         this.itemSpecRepository = itemSpecRepository;
         this.itemTypeSpecAssignRepository = itemTypeSpecAssignRepository;
         this.dataTypeRepository = dataTypeRepository;
-        this.calendarTypeRepository = calendarTypeRepository;
         this.packageRepository = packageRepository;
         this.structuredTypeRepository = structuredTypeRepository;
         this.structureDefinitionRepository = structureDefinitionRepository;
@@ -148,7 +143,6 @@ public class StaticDataService {
             // init type enums
             // enums from DB are initialized only once
             DataType.init(dataTypeRepository);
-            CalendarType.init(calendarTypeRepository);
         }
         // prepare active provider
         activeProvider = createProvider();

@@ -297,7 +297,6 @@ function mapStateToProps(state) {
         focus,
         userDetail,
         rulDataTypes: refTables.rulDataTypes,
-        calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
         ruleSet: refTables.ruleSet,
         templates: refTables.templates,

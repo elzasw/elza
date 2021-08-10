@@ -21,7 +21,6 @@ public class DescriptionItemUnitDateImpl extends DescriptionItemUnitDate {
         
         // time interval conversion
         TimeInterval it = TimeInterval.create(getD());
-        data.setCalendarType(it.getCalendarType().getEntity());
         data.setFormat(it.getFormat());
         data.setValueFrom(it.getFormattedFrom());
         data.setValueTo(it.getFormattedTo());
@@ -29,8 +28,8 @@ public class DescriptionItemUnitDateImpl extends DescriptionItemUnitDate {
         data.setValueToEstimated(it.isToEst());
 
         // normalization of time interval
-        long normFromSec = CalendarConverter.toSeconds(it.getCalendarType(), it.getFrom());
-        long normToSec = CalendarConverter.toSeconds(it.getCalendarType(), it.getTo());
+        long normFromSec = CalendarConverter.toSeconds(it.getFrom());
+        long normToSec = CalendarConverter.toSeconds(it.getTo());
         data.setNormalizedFrom(normFromSec);
         data.setNormalizedTo(normToSec);
 

@@ -3,9 +3,7 @@ package cz.tacr.elza.domain.convertor;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-
-import cz.tacr.elza.core.data.CalendarType;
-
+  
 /**
  * Převody datumu na sekundy a naopak.
  *
@@ -17,56 +15,6 @@ public class CalendarConverter {
     public static final long UNIX_EPOCH_START_POS = 62135596800l;
 
     public static final long UNIX_EPOCH_START_NEG = 62167219200l;
-
-    private static final ICalendarConverter gcc = new GregorianCalendarConverter();
-    private static final ICalendarConverter jcc = new JulianCalendarConverter();
-
-    /**
-     * Převede datum na počet sekund (normalizovaně).
-     *
-     * @param type    typ kalendáře
-     * @param seconds počet sekund
-     * @return datum v daném kalendáři
-     */
-    public static LocalDateTime toDateTime(final CalendarType type, final long seconds) {
-        ICalendarConverter converter = getCalendarConverter(type);
-        LocalDateTime dateTimeNormalized = toDateTime(seconds);
-        return converter.toCalendar(dateTimeNormalized);
-    }
-
-    /**
-     * Převede sekundy na datum (normalizovaně).
-     *
-     * @param type     typ kalendáře
-     * @param dateTime datum v daném kalendáři
-     * @return počet sekund
-     */
-    public static long toSeconds(final CalendarType type, final LocalDateTime dateTime) {
-        ICalendarConverter converter = getCalendarConverter(type);
-        LocalDateTime dateTimeNormalized = converter.fromCalendar(dateTime);
-        return toSeconds(dateTimeNormalized);
-    }
-
-    /**
-     * Vybere konvertro podle kalendáře.
-     *
-     * @param type typ kalendáře
-     * @return konvertor
-     */
-    private static ICalendarConverter getCalendarConverter(final CalendarType type) {
-        ICalendarConverter converter;
-        switch (type) {
-        case GREGORIAN:
-            converter = gcc;
-            break;
-        case JULIAN:
-            converter = jcc;
-            break;
-        default:
-            throw new IllegalStateException("Neimplementovaný typ kalendáře: " + type);
-        }
-        return converter;
-    }
 
     /**
      * Převede datum na počet sekund od roku 1.

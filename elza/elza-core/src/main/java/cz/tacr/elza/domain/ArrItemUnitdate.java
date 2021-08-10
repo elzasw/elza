@@ -22,8 +22,6 @@ public class ArrItemUnitdate extends ArrItemData implements IUnitdate {
 
     private Boolean valueToEstimated;
 
-    private ArrCalendarType calendarType;
-
     private Integer calendarTypeId;
 
     private String format;
@@ -73,17 +71,6 @@ public class ArrItemUnitdate extends ArrItemData implements IUnitdate {
     }
 
     @Override
-    public ArrCalendarType getCalendarType() {
-        return this.calendarType;
-    }
-
-    @Override
-    public void setCalendarType(final ArrCalendarType calendarType) {
-        this.calendarType = calendarType;
-        this.calendarTypeId = calendarType == null ? null : calendarType.getCalendarTypeId();
-    }
-
-    @Override
     public String getFormat() {
         return format;
     }
@@ -101,7 +88,7 @@ public class ArrItemUnitdate extends ArrItemData implements IUnitdate {
     @Override
     public String toString() {
 
-        String ret = calendarType == null ? "?" : calendarType.getName() + " ";
+        String ret = "?";
 
         String from = valueFromEstimated == true ? valueFrom + "*" : valueFrom;
         String to = valueToEstimated == true ? valueTo + "*" : valueTo;
@@ -154,7 +141,6 @@ public class ArrItemUnitdate extends ArrItemData implements IUnitdate {
                 Objects.equals(valueFromEstimated, that.valueFromEstimated) &&
                 Objects.equals(valueTo, that.valueTo) &&
                 Objects.equals(valueToEstimated, that.valueToEstimated) &&
-                Objects.equals(calendarType, that.calendarType) &&
                 Objects.equals(format, that.format) &&
                 Objects.equals(normalizedTo, that.normalizedTo) &&
                 Objects.equals(normalizedFrom, that.normalizedFrom);
@@ -162,6 +148,6 @@ public class ArrItemUnitdate extends ArrItemData implements IUnitdate {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), valueFrom, valueFromEstimated, valueTo, valueToEstimated, calendarType, format, normalizedTo, normalizedFrom);
+        return Objects.hash(super.hashCode(), valueFrom, valueFromEstimated, valueTo, valueToEstimated, format, normalizedTo, normalizedFrom);
     }
 }
