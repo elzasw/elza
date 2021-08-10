@@ -138,6 +138,8 @@ class RegistryPage extends AbstractReactComponent {
         }
     };
 
+    isFormItemValid = (item) => item['@class'] === '.ApItemEnumVO' ?  item.specId !== undefined : item.value !== undefined;
+
     handleAddRegistry = () => {
         const {dispatch} = this.props;
 
@@ -155,7 +157,7 @@ class RegistryPage extends AbstractReactComponent {
                             ...formData,
                             partForm: {
                                 ...formData.partForm,
-                                items: formData.partForm.items.filter(i => i.value != null),
+                                items: formData.partForm.items.filter(this.isFormItemValid),
                             },
                         };
                         const submitData = {
