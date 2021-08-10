@@ -22,7 +22,7 @@ export const FundList:FC<{
     const fundRows = getFundRows(funds);
 
     useEffect(()=>{
-        dispatch(fundsFilter('',1));
+        dispatch(fundsFilter('',0));
     },[dispatch]);
 
     useEffect(()=>{
