@@ -25,6 +25,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.*;
+
 @Service
 public class SearchFilterFactory {
 
@@ -201,13 +203,13 @@ public class SearchFilterFactory {
             }
             if (StringUtils.isNotEmpty(filter.getCreation())) {
                 ArrDataUnitdate aeDataUnitdate = UnitDateConvertor.convertToUnitDate(filter.getCreation(), new ArrDataUnitdate());
-                String intervalCreation = aeDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + aeDataUnitdate.getValueTo();
+                String intervalCreation = aeDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + aeDataUnitdate.getValueTo();
                 QueryValueCondDef valueCondDef = createQueryValueCondDef(CRE_DATE, null, QueryComparator.CONTAIN, intervalCreation);
                 andCondDefList.add(createQueryPartCondDef(valueCondDef, QueryPartCondDef.PartTypeEnum.CRE));
             }
             if (StringUtils.isNotEmpty(filter.getExtinction())) {
                 ArrDataUnitdate aeDataUnitdate = UnitDateConvertor.convertToUnitDate(filter.getExtinction(), new ArrDataUnitdate());
-                String intervalExtinction = aeDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + aeDataUnitdate.getValueTo();
+                String intervalExtinction = aeDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + aeDataUnitdate.getValueTo();
                 QueryValueCondDef valueCondDef = createQueryValueCondDef(EXT_DATE, null, QueryComparator.CONTAIN, intervalExtinction);
                 andCondDefList.add(createQueryPartCondDef(valueCondDef, QueryPartCondDef.PartTypeEnum.EXT));
             }

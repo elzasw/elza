@@ -77,7 +77,6 @@ class SubNodeForm extends AbstractReactComponent {
         routingKey: PropTypes.oneOfType(PropTypes.string, PropTypes.number),
         nodeSetting: PropTypes.object,
         rulDataTypes: PropTypes.object.isRequired,
-        calendarTypes: PropTypes.object.isRequired,
         descItemTypes: PropTypes.object.isRequired,
         structureTypes: PropTypes.object.isRequired,
         subNodeForm: PropTypes.object.isRequired,
@@ -210,7 +209,6 @@ class SubNodeForm extends AbstractReactComponent {
             singleDescItemTypeId,
             showNodeAddons,
             conformityInfo,
-            calendarTypes,
             structureTypes,
             descItemFactory,
             customActions,
@@ -244,7 +242,6 @@ class SubNodeForm extends AbstractReactComponent {
                 conformityInfo={conformityInfo}
                 versionId={versionId}
                 readMode={readMode}
-                calendarTypes={calendarTypes}
                 structureTypes={structureTypes}
                 descItemFactory={descItemFactory}
                 customActions={customActions}

@@ -47,7 +47,6 @@ import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
 import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
@@ -86,7 +85,6 @@ import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -120,7 +118,6 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
@@ -205,9 +202,6 @@ public class ArrangementController {
 
     @Autowired
     private OutputItemRepository outputItemRepository;
-
-    @Autowired
-    private CalendarTypeRepository calendarTypeRepository;
 
     @Autowired
     private RuleService ruleService;
@@ -1423,17 +1417,6 @@ public class ArrangementController {
         }
 
         return new NodeFormsDataVO(forms);
-    }
-
-    /**
-     * Načte číselník typů kalendářů.
-     *
-     * @return typy kalendářů
-     */
-    @RequestMapping(value = "/calendarTypes", method = RequestMethod.GET)
-    public List<ArrCalendarTypeVO> getCalendarTypes() {
-        List<ArrCalendarType> calendarTypes = calendarTypeRepository.findAll();
-        return factoryVo.createCalendarTypes(calendarTypes);
     }
 
     /**

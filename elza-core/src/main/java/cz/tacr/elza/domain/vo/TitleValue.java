@@ -3,14 +3,12 @@ package cz.tacr.elza.domain.vo;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-
 /**
  * Popisek hodnoty atributu uzlu.
  *
  * @since 18.03.2016
  */
 public class TitleValue extends DescItemValue {
-
 
     private String iconValue;
 

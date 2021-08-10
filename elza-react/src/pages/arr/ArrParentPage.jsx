@@ -7,7 +7,6 @@ import {i18n} from 'components/shared';
 import {AbstractReactComponent, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes';
 import {fundChangeReadMode, fundsFetchIfNeeded} from 'actions/arr/fund.jsx';
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
@@ -32,7 +31,6 @@ export default class ArrParentPage extends AbstractReactComponent {
         arrRegion: PropTypes.object.isRequired,
         developer: PropTypes.object.isRequired,
         rulDataTypes: PropTypes.object.isRequired,
-        calendarTypes: PropTypes.object.isRequired,
         descItemTypes: PropTypes.object.isRequired,
         focus: PropTypes.object.isRequired,
         userDetail: PropTypes.object.isRequired,
@@ -86,7 +84,6 @@ export default class ArrParentPage extends AbstractReactComponent {
 
     componentDidMount() {
         this.props.dispatch(descItemTypesFetchIfNeeded());
-        this.props.dispatch(calendarTypesFetchIfNeeded());
         this.props.dispatch(fundsFetchIfNeeded());
         var activeFund = this.getActiveFund(this.props);
         if (activeFund !== null) {
@@ -97,7 +94,6 @@ export default class ArrParentPage extends AbstractReactComponent {
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         this.props.dispatch(descItemTypesFetchIfNeeded());
-        this.props.dispatch(calendarTypesFetchIfNeeded());
         this.props.dispatch(fundsFetchIfNeeded());
         var activeFund = this.getActiveFund(nextProps);
         if (activeFund !== null) {
@@ -151,7 +147,7 @@ export default class ArrParentPage extends AbstractReactComponent {
     }
 
     render() {
-        const {splitter, arrRegion, userDetail, ruleSet, rulDataTypes, calendarTypes, descItemTypes} = this.props;
+        const {splitter, arrRegion, userDetail, ruleSet, rulDataTypes, descItemTypes} = this.props;
 
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
 

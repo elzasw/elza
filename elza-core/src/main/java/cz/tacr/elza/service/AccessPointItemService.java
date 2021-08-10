@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
-import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -643,14 +642,12 @@ public class AccessPointItemService {
 
     public static void normalize(ArrDataUnitdate aeDataUnitdate) {
 
-        CalendarType calendarType = CalendarType.GREGORIAN;
-
         String valueFrom = aeDataUnitdate.getValueFrom();
         if (valueFrom == null) {
             aeDataUnitdate.setNormalizedFrom(Long.MIN_VALUE);
         } else {
             LocalDateTime fromDate = LocalDateTime.parse(valueFrom.trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            aeDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, fromDate));
+            aeDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(fromDate));
         }
 
         String valueTo = aeDataUnitdate.getValueTo();
@@ -658,7 +655,7 @@ public class AccessPointItemService {
             aeDataUnitdate.setNormalizedTo(Long.MAX_VALUE);
         } else {
             LocalDateTime toDate = LocalDateTime.parse(valueTo.trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            aeDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(calendarType, toDate));
+            aeDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(toDate));
         }
     }
 

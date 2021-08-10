@@ -52,7 +52,6 @@ import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
 import cz.tacr.elza.controller.vo.ArrDaoFileVO;
 import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
@@ -119,7 +118,6 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoFile;
@@ -196,7 +194,6 @@ import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
-
 
 /**
  * Tovární třída pro vytváření VO objektů a jejich seznamů.
@@ -821,16 +818,6 @@ public class ClientFactoryVO {
      */
     public List<RulDataTypeVO> createDataTypeList(final List<RulDataType> dataTypes) {
         return createList(dataTypes, RulDataTypeVO.class, null);
-    }
-
-    /**
-     * Vytvoření seznamu typů kalendářů, které jsou k dispozici.
-     *
-     * @param calendarTypes typy kalendářů
-     * @return seznam VO typů kalendářů
-     */
-    public List<ArrCalendarTypeVO> createCalendarTypes(final List<ArrCalendarType> calendarTypes) {
-        return createList(calendarTypes, ArrCalendarTypeVO.class, null);
     }
 
     /**

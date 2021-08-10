@@ -144,7 +144,7 @@ const renderCoordinatesFields = fields => {
     }
 };
 
-const renderUnitdateFields = (calendarTypes, fields) => {
+const renderUnitdateFields = (fields) => {
     switch (fields.length) {
         case 0:
             return null;
@@ -158,23 +158,6 @@ const renderUnitdateFields = (calendarTypes, fields) => {
             }
 
             var vals = [];
-            vals.push(
-                <div key={0} className="value-container">
-                    <FormInput
-                        as="select"
-                        value={typeof fields[0].value !== 'undefined' ? fields[0].value : 1}
-                        onChange={e => {
-                            fields[0].onChange(e.target.value);
-                        }}
-                    >
-                        {calendarTypes.items.map(calendarType => (
-                            <option key={calendarType.id} value={calendarType.id}>
-                                {calendarType.name}
-                            </option>
-                        ))}
-                    </FormInput>
-                </div>,
-            );
             vals.push(
                 <div key={1} className="value-container">
                     <FormInput
@@ -486,7 +469,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 
     getConditionInfo() {
-        const {dataType, calendarTypes} = this.props;
+        const {dataType} = this.props;
 
         let renderFields;
         let validateField;
@@ -580,7 +563,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     ];
                     break;
                 case 'UNITDATE':
-                    renderFields = renderUnitdateFields.bind(this, calendarTypes);
+                    renderFields = renderUnitdateFields.bind(this);
                     validateField = (code, valuesCount, value, index) => {
                         const validateResult = validateUnitDate(value);
                         return validateResult.valid ? null : validateResult.message;

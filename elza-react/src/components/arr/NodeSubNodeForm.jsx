@@ -61,7 +61,6 @@ class NodeSubNodeForm extends AbstractReactComponent {
         nodeId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
         nodeSettings: PropTypes.object.isRequired,
         rulDataTypes: PropTypes.object.isRequired,
-        calendarTypes: PropTypes.object.isRequired,
         descItemTypes: PropTypes.object.isRequired,
         structureTypes: PropTypes.object.isRequired,
         subNodeForm: PropTypes.object.isRequired,
@@ -100,24 +99,24 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
     shouldComponentUpdate(nextProps, nextState) {
         return true;
-        if (this.state !== nextState) {
-            return true;
-        } else {
-            const log = false;
-            return (
-                !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, NODE_SUB_NODE_FORM_CMP, '', log) ||
-                !objectEqualsDiff(
-                    this.props.descItemCopyFromPrevEnabled,
-                    nextProps.descItemCopyFromPrevEnabled,
-                    {},
-                    '',
-                    log,
-                ) ||
-                !objectEqualsDiff(this.props.focus, nextProps.focus, {}, '', log) ||
-                !objectEqualsDiff(this.props.nodeSettings, nextProps.nodeSettings, {}, '', log) ||
-                !objectEqualsDiff(this.props.readMode, nextProps.readMode, {}, '', log)
-            );
-        }
+        //if (this.state !== nextState) {
+        //    return true;
+        //} else {
+        //    const log = false;
+        //    return (
+        //        !objectEqualsDiff(this.props.subNodeForm, nextProps.subNodeForm, NODE_SUB_NODE_FORM_CMP, '', log) ||
+        //        !objectEqualsDiff(
+        //            this.props.descItemCopyFromPrevEnabled,
+        //            nextProps.descItemCopyFromPrevEnabled,
+        //            {},
+        //            '',
+        //            log,
+        //        ) ||
+        //        !objectEqualsDiff(this.props.focus, nextProps.focus, {}, '', log) ||
+        //        !objectEqualsDiff(this.props.nodeSettings, nextProps.nodeSettings, {}, '', log) ||
+        //       !objectEqualsDiff(this.props.readMode, nextProps.readMode, {}, '', log)
+        //    );
+        //}
     }
 
     componentDidMount(){
@@ -881,7 +880,6 @@ class NodeSubNodeForm extends AbstractReactComponent {
             fundId,
             routingKey,
             rulDataTypes,
-            calendarTypes,
             descItemTypes,
             structureTypes,
             subNodeForm,
@@ -913,7 +911,6 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     routingKey={routingKey}
                     nodeSetting={nodeSetting}
                     rulDataTypes={rulDataTypes}
-                    calendarTypes={calendarTypes}
                     descItemTypes={descItemTypes}
                     subNodeForm={subNodeForm}
                     closed={closed}

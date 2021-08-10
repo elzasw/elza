@@ -3,8 +3,6 @@ package cz.tacr.elza.print;
 import java.util.Objects;
 
 import cz.tacr.elza.api.IUnitdate;
-import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
 /**
@@ -13,19 +11,20 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
  */
 public class UnitDate implements IUnitdate {
 
-    private final String valueFrom;
+    private String valueFrom;
 
-    private final String valueTo;
+    private String valueTo;
 
-    private final Boolean valueFromEstimated;
+    private Boolean valueFromEstimated;
 
-    private final Boolean valueToEstimated;
-
-    private final CalendarType calendarType;
+    private Boolean valueToEstimated;
 
     private String format;
 
     private String valueText;
+
+    public UnitDate() {
+    }
 
     public UnitDate(IUnitdate srcItemData) {
         this.valueFrom = srcItemData.getValueFrom();
@@ -33,23 +32,6 @@ public class UnitDate implements IUnitdate {
         this.valueFromEstimated = srcItemData.getValueFromEstimated();
         this.valueToEstimated = srcItemData.getValueToEstimated();
         this.format = srcItemData.getFormat();
-        // id without fetch -> access type property
-        this.calendarType = CalendarType.fromId(srcItemData.getCalendarType().getCalendarTypeId());
-    }
-
-    public String getValueText() {
-        if (valueText == null) {
-            valueText = UnitDateConvertor.convertToString(this);
-        }
-        return valueText;
-    }
-
-    public String getCalendar() {
-        return calendarType.getName();
-    }
-
-    public String getCalendarCode() {
-        return calendarType.getCode();
     }
 
     @Override
@@ -60,14 +42,14 @@ public class UnitDate implements IUnitdate {
     @Override
     public void setFormat(final String format) {
         if (!Objects.equals(this.format, format)) {
-            resetValueText();
+            valueText = null;
         }
         this.format = format;
     }
 
     @Override
     public void formatAppend(final String format) {
-        throw new UnsupportedOperationException();
+        this.format += format;
     }
 
     @Override
@@ -77,7 +59,7 @@ public class UnitDate implements IUnitdate {
 
     @Override
     public void setValueFrom(final String valueFrom) {
-        throw new UnsupportedOperationException();
+        this.valueFrom = valueFrom;
     }
 
     @Override
@@ -87,7 +69,7 @@ public class UnitDate implements IUnitdate {
 
     @Override
     public void setValueFromEstimated(final Boolean valueFromEstimated) {
-        throw new UnsupportedOperationException();
+        this.valueFromEstimated = valueFromEstimated;
     }
 
     @Override
@@ -97,7 +79,7 @@ public class UnitDate implements IUnitdate {
 
     @Override
     public void setValueTo(final String valueTo) {
-        throw new UnsupportedOperationException();
+        this.valueTo = valueTo;
     }
 
     @Override
@@ -107,20 +89,13 @@ public class UnitDate implements IUnitdate {
 
     @Override
     public void setValueToEstimated(final Boolean valueToEstimated) {
-        throw new UnsupportedOperationException();
+        this.valueToEstimated = valueToEstimated;
     }
 
-    @Override
-    public ArrCalendarType getCalendarType() {
-        return calendarType.getEntity();
-    }
-
-    @Override
-    public void setCalendarType(ArrCalendarType calendarType) {
-        throw new UnsupportedOperationException();
-    }
-
-    private void resetValueText() {
-        this.valueText = null;
+    public String getValueText() {
+        if (valueText == null) {
+            valueText = UnitDateConvertor.convertToString(this);
+        }
+        return valueText;
     }
 }
