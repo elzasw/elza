@@ -35,12 +35,10 @@ import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -84,7 +82,6 @@ import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
 import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
@@ -116,13 +113,7 @@ public class ClientFactoryDO {
     private ItemSpecRepository itemSpecRepository;
 
     @Autowired
-    private ApAccessPointRepository apAccessPointRepository;
-
-    @Autowired
     private InstitutionRepository institutionRepository;
-
-    @Autowired
-    private CalendarTypeRepository calendarTypeRepository;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -574,7 +565,7 @@ public class ClientFactoryDO {
         } else if (Long.class.equals(cls)) {
             result = (T) Long.valueOf(value);
         } else if (ArrDataUnitdate.class.equals(cls)) {
-            result = (T) createUnitdate(value);
+            result = (T) ArrDataUnitdate.valueOf(value);
         } else if (Date.class.equals(cls)) {
             result = (T) Date.from(LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay(ZoneId.systemDefault()).toInstant());
         } else { // String
@@ -582,24 +573,6 @@ public class ClientFactoryDO {
         }
 
         return result;
-    }
-
-    /**
-     * Převede textovou hodnotu na {@link ArrDataUnitdate} a doplní mezní hodnoty.
-     *
-     * @param value textová datace
-     * @return {@link ArrDataUnitdate}
-     */
-    private ArrDataUnitdate createUnitdate(final String value) {
-        String[] split = StringUtils.split(value, '|');
-        Integer calendarId = Integer.valueOf(split[0]);
-        ArrCalendarType arrCalendarType = calendarTypeRepository.findById(calendarId)
-                .orElseThrow(calendarType(calendarId));
-        CalendarType calendarType = CalendarType.valueOf(arrCalendarType.getCode());
-
-        ArrDataUnitdate unitdate = ArrDataUnitdate.valueOf(calendarType, split[1]);
-
-        return unitdate;
     }
 
     private String getConditionValueString(final List<String> conditions) {

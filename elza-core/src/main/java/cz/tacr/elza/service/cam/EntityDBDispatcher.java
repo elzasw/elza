@@ -35,7 +35,6 @@ import cz.tacr.cam.schema.cam.PartsXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -928,7 +927,6 @@ public class EntityDBDispatcher {
             itemSpec = itemUnitDate.getS() == null ? null : sdp.getItemSpec(itemUnitDate.getS().getValue());
             uuid = CamHelper.getUuid(itemUnitDate.getUuid());
 
-            CalendarType calType = CalendarType.GREGORIAN;
             ArrDataUnitdate dataUnitDate = new ArrDataUnitdate();
             dataUnitDate.setValueFrom(itemUnitDate.getF().trim());
             dataUnitDate.setValueFromEstimated(itemUnitDate.isFe());
@@ -942,20 +940,19 @@ public class EntityDBDispatcher {
                 dataUnitDate.setValueToEstimated(false);
             }
             if (itemUnitDate.getF() != null) {
-                dataUnitDate.setNormalizedFrom(CalendarConverter.toSeconds(calType, LocalDateTime.parse(itemUnitDate
+                dataUnitDate.setNormalizedFrom(CalendarConverter.toSeconds(LocalDateTime.parse(itemUnitDate
                         .getF().trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
             } else {
                 dataUnitDate.setNormalizedFrom(Long.MIN_VALUE);
             }
 
             if (itemUnitDate.getTo() != null) {
-                dataUnitDate.setNormalizedTo(CalendarConverter.toSeconds(calType, LocalDateTime.parse(itemUnitDate
+                dataUnitDate.setNormalizedTo(CalendarConverter.toSeconds(LocalDateTime.parse(itemUnitDate
                         .getTo().trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
             } else {
                 dataUnitDate.setNormalizedTo(Long.MAX_VALUE);
             }
 
-            dataUnitDate.setCalendarType(calType.getEntity());
             dataUnitDate.setDataType(DataType.UNITDATE.getEntity());
             data = dataUnitDate;
         } else {

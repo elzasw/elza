@@ -39,7 +39,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.ArrangementController.CopySiblingResult;
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -972,12 +971,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(fund);
 
         return fund;
-    }
-
-    @Test
-    public void calendarsTest() {
-        List<ArrCalendarTypeVO> calendarTypes = getCalendarTypes();
-        assertTrue(calendarTypes.size() > 0);
     }
 
     private void fulltextTest(final ArrFundVersionVO fundVersion) {

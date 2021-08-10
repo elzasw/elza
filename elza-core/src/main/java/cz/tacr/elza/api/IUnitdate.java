@@ -1,7 +1,5 @@
 package cz.tacr.elza.api;
 
-import cz.tacr.elza.domain.ArrCalendarType;
-
 /**
  * Rozhraní pro datace.
  *
@@ -9,65 +7,46 @@ import cz.tacr.elza.domain.ArrCalendarType;
  * @since 26.01.2016
  */
 public interface IUnitdate {
+
     /**
      * @return vrací datum "od" v iso formátu
      */
     String getValueFrom();
-
 
     /**
      * @param valueFrom datum "od" v iso formátu
      */
     void setValueFrom(String valueFrom);
 
-
     /**
      * @return je datum "od" přibližný?
      */
     Boolean getValueFromEstimated();
-
 
     /**
      * @param valueFromEstimated je datum "od" přibližný?
      */
     void setValueFromEstimated(Boolean valueFromEstimated);
 
-
     /**
      * @return vrací datum "do" v iso formátu
      */
     String getValueTo();
-
 
     /**
      * @param valueTo datum "do" v iso formátu
      */
     void setValueTo(String valueTo);
 
-
     /**
      * @return je datum "do přibližný?
      */
     Boolean getValueToEstimated();
 
-
     /**
      * @param valueToEstimated je datum "do přibližný?
      */
     void setValueToEstimated(Boolean valueToEstimated);
-
-
-    /**
-     * @return typ kalendáře
-     */
-    ArrCalendarType getCalendarType();
-
-
-    /**
-     * @param calendarType typ kalendáře
-     */
-    void setCalendarType(ArrCalendarType calendarType);
-
 
     /**
      * Možnosti hodnot formátu:
@@ -86,12 +65,10 @@ public interface IUnitdate {
      */
     String getFormat();
 
-
     /**
      * @param format formát, jakým způsobem se má zobrazovat výstup
      */
     void setFormat(String format);
-
 
     /**
      * @param format přidání řetězce k formátu

@@ -228,7 +228,6 @@ class FundTreeMain extends React.Component {
                         }
                         case 'UNITDATE': {
                             param[JAVA_ATTR_CLASS] = '.UnitdateSearchParam';
-                            param.calendarId = parseInt(conditionItem.calendarTypeId);
                             param.condition = conditionItem.condition;
                             break;
                         }

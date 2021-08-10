@@ -25,7 +25,6 @@ class NodeTabs extends AbstractReactComponent {
         activeIndex: PropTypes.number,
         fundId: PropTypes.number,
         rulDataTypes: PropTypes.object.isRequired,
-        calendarTypes: PropTypes.object.isRequired,
         descItemTypes: PropTypes.object.isRequired,
         showRegisterJp: PropTypes.bool.isRequired,
         displayAccordion: PropTypes.bool,
@@ -67,7 +66,7 @@ class NodeTabs extends AbstractReactComponent {
         //     return true;
         // }
         // var eqProps = ['versionId', 'fund', 'nodes', 'activeIndex', 'fundId', 'descItemTypes',
-        //     'rulDataTypes', 'calendarTypes', 'showRegisterJp', 'closed'];
+        //     'rulDataTypes', 'showRegisterJp', 'closed'];
         // return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -87,7 +86,6 @@ class NodeTabs extends AbstractReactComponent {
             versionId,
             rulDataTypes,
             showRegisterJp,
-            calendarTypes,
             descItemTypes,
             fundId,
             closed,
@@ -138,7 +136,6 @@ class NodeTabs extends AbstractReactComponent {
                             fundId={fundId}
                             node={activeNode}
                             rulDataTypes={rulDataTypes}
-                            calendarTypes={calendarTypes}
                             descItemTypes={descItemTypes}
                             showRegisterJp={showRegisterJp}
                             displayAccordion={displayAccordion}

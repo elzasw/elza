@@ -106,7 +106,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const {descItemTypes, calendarTypes, rulDataTypes, ruleSet} = this.props;
+        const {descItemTypes, rulDataTypes, ruleSet} = this.props;
         const fund = this.getActiveFund(this.props);
 
         return (
@@ -121,7 +121,6 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
                         readMode={readMode}
                         fundDataGrid={fund.fundDataGrid}
                         descItemTypes={descItemTypes}
-                        calendarTypes={calendarTypes}
                         rulDataTypes={rulDataTypes}
                         ruleSet={ruleSet}
                     />
@@ -140,7 +139,6 @@ function mapStateToProps(state) {
         developer,
         userDetail,
         rulDataTypes: refTables.rulDataTypes,
-        calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
         ruleSet: refTables.ruleSet,
         tab,
@@ -152,7 +150,6 @@ ArrDataGridPage.propTypes = {
     arrRegion: PropTypes.object.isRequired,
     developer: PropTypes.object.isRequired,
     rulDataTypes: PropTypes.object.isRequired,
-    calendarTypes: PropTypes.object.isRequired,
     descItemTypes: PropTypes.object.isRequired,
     focus: PropTypes.object.isRequired,
     userDetail: PropTypes.object.isRequired,

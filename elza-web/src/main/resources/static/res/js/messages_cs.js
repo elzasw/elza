@@ -236,8 +236,6 @@ var messages = {
     "search.extended.form.unitdate.type.ge": "Od (vč.)",
     "search.extended.form.unitdate.type.le": "Do (vč.)",
     "search.extended.form.unitdate.type.contains": "Během",
-    "search.extended.form.unitdate.calendar.GREGORIAN": "G",
-    "search.extended.form.unitdate.calendar.JULIAN": "J",
 
     "global.validation.required": "Pole je povinné",
     "global.validation.exists": "Již existuje",
@@ -918,7 +916,6 @@ var messages = {
     "subNodeForm.deleteDescItem": "Odstranit hodnotu",
     "subNodeForm.deleteDescItemType": "Odstranit prvek popisu včetně všech hodnot",
     "subNodeForm.validate.spec.required": "Specifikace musí být uvedena",
-    "subNodeForm.validate.calendarType.required": "Typ kalendáře musí být uveden",
     "subNodeForm.validate.value.notEmpty": "Hodnota musí být uvedena",
     "subNodeForm.descItemType.all": "Všechny prvky",
     "subNodeForm.descItemType.title.add": "Přidání prvku",
