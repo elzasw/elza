@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.16.0.final using JasperReports Library version 6.16.0-48579d909b7943b64690c65c71e07e0b80981928  -->
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="contentPage" language="groovy" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="71cc9236-0f65-4a0a-bb66-bbfe841a66c1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -148,9 +148,9 @@
 	.addValueWithTitle("ZP2015_UNIT_DATE_PRE")
 	.addValueWithTitle("ZP2015_UNIT_DATE_POST")]]></defaultValueExpression>
 	</parameter>
-	<parameter name="otherIdFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+	<parameter name="otherIdFormatter" class="cz.tacr.elza.print.format.HtmlFormatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
 	.setSpecSeparator(": ")
 	.setItemSeparator("<br>")
@@ -171,9 +171,9 @@
 	.beginBlock().addValue("ZP2015_WRITING").endBlock()	
 	.beginBlock().addValue("ZP2015_ITEM_MAT").endBlock()]]></defaultValueExpression>
 	</parameter>
-	<parameter name="detailFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+	<parameter name="detailFormatter" class="cz.tacr.elza.print.format.HtmlFormatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
 	.setItemSeparator("<br>")
 	.setSpecSeparator(": ")
@@ -268,9 +268,9 @@
   	.addValue("ZP2015_STORAGE_ID")
 	.beginBlock().addValue("ZP2015_ITEM_ORDER").endBlock()]]></defaultValueExpression>
 	</parameter>
-	<parameter name="rootDetailFotmatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+	<parameter name="rootDetailFotmatter" class="cz.tacr.elza.print.format.HtmlFormatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
 	.setItemSeparator("<br>")
 	.setSpecSeparator(": ")
@@ -307,9 +307,9 @@
 	.setBlockSeparators("","; ")
 	.beginBlock().addValue("ZP2015_LANGUAGE").endBlock()]]></defaultValueExpression>
 	</parameter>
-	<parameter name="outputDetailFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+	<parameter name="outputDetailFormatter" class="cz.tacr.elza.print.format.HtmlFormatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
 	.setItemSeparator("<br>")
 	.setSpecSeparator(": ")
@@ -321,9 +321,9 @@
 	<parameter name="templateVariant" class="java.lang.String">
 		<defaultValueExpression><![CDATA["B"]]></defaultValueExpression>
 	</parameter>
-	<parameter name="rootNodeDetailFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+	<parameter name="rootNodeDetailFormatter" class="cz.tacr.elza.print.format.HtmlFormatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
 	.setItemSeparator("<br>")
 	.setSpecSeparator(": ")

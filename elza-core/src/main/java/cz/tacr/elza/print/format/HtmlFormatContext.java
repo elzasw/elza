@@ -1,25 +1,50 @@
 package cz.tacr.elza.print.format;
 
-/*
- * import org.commonmark.node.Node;
- * import org.commonmark.parser.Parser;
- * import org.commonmark.renderer.html.HtmlRenderer;
- */
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-// Not yet finished
-// Bude vhodnejsi implementovat vlastni zpusob parsovani
 public class HtmlFormatContext extends FormatContext {
-    /*
-    @Override
-    public String getResult() {
-        String textResult = super.getResult();
-    
-        // convert to HTML
-        Parser parser = Parser.builder().build();
-        Node document = parser.parse(textResult);
-        HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).softbreak("<br>").build();
-        return renderer.render(document);  // "<p>This is <em>Sparta</em></p>\n"
-    
+
+    private static final Logger log = LoggerFactory.getLogger(HtmlFormatContext.class);
+
+    /**
+     * Append value to result
+     *
+     * @param value
+     */
+    public void appendValue(String value) {
+        log.debug("Append value, value: {}", value);
+
+        if (StringUtils.isBlank(value)) {
+            return;
+        }
+
+        appendResult(value);
+        
+        this.pendingSeparator = itemSeparator;
     }
-    */
+
+    /**
+     * Append text to the result
+     * 
+     * Other functions should not directly manipulate with resultBuffer
+     * @param value
+     */
+    private void appendResult(String value) {
+        if (StringUtils.isNotEmpty(value)) {
+            // append pending separator
+            if (pendingSeparator != null) {
+                resultBuffer.append(pendingSeparator);
+                pendingSeparator = null;
+            }
+
+            // replace angle brackets
+            value = value.replace("<", "&lt;");
+            value = value.replace(">", "&gt;");
+
+            // append result
+            resultBuffer.append(value);
+        }
+    }
 }
