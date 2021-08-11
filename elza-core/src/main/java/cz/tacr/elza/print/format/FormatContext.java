@@ -323,7 +323,7 @@ public class FormatContext {
      * Other functions should not directly manipulate with resultBuffer
      * @param value
      */
-    private void appendResult(String value) {
+    protected void appendResult(String value) {
         if (StringUtils.isNotEmpty(value)) {
             // append pending separator
             if (pendingSeparator != null) {
