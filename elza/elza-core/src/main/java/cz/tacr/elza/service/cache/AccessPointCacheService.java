@@ -20,6 +20,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.drools.model.PartType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -54,8 +55,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
@@ -471,6 +475,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     }
 
     private String serialize(CachedAccessPoint cachedAccessPoint) {
+        validate(cachedAccessPoint);
         try {
             return mapper.writeValueAsString(cachedAccessPoint);
         } catch (JsonProcessingException e) {
@@ -479,6 +484,58 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             throw new SystemException("Nastal problém při serializaci objektu, accessPointId: " +
                     cachedAccessPoint.getAccessPointId(), e)
                             .set("accessPointId", cachedAccessPoint.getAccessPointId());
+        }
+    }
+
+    private void validate(CachedAccessPoint cachedAccessPoint) {
+        // validate before writing
+        if (cachedAccessPoint.getPreferredPartId() == null) {
+            Validate.notNull(cachedAccessPoint.getPreferredPartId(),
+                             "Missing preferrdPartId, accessPointId={}",
+                             cachedAccessPoint.getAccessPointId());
+        }
+        if (cachedAccessPoint.getParts() == null) {
+            Validate.notNull(cachedAccessPoint.getParts(),
+                             "List of parts is empty, accessPointId={}",
+                             cachedAccessPoint.getAccessPointId());
+        }
+        // validate parts
+        CachedPart prefPart = null;
+        Set<Integer> partIds = new HashSet<>();
+        for (CachedPart cachedPart : cachedAccessPoint.getParts()) {
+            if (cachedPart.getDeleteChangeId() != null) {
+                Validate.isTrue(cachedPart.getDeleteChangeId() == null,
+                                "Deleted part cannot be cached, accessPointId={}",
+                                cachedAccessPoint.getAccessPointId());
+            }
+            if (Objects.equals(cachedAccessPoint.getPreferredPartId(), cachedPart.getPartId())) {
+                prefPart = cachedPart;
+            }
+            if (!partIds.add(cachedPart.getPartId())) {
+                Validate.isTrue(false,
+                                "Duplicated part in cache, accessPointId={}, partId={}",
+                                cachedAccessPoint.getAccessPointId(),
+                                cachedPart.getPartId());
+            }
+            // check empty part
+            if (CollectionUtils.isEmpty(cachedPart.getItems())) {
+                Validate.isTrue(false,
+                                "Empty part in cache, accessPointId={}, partId={}",
+                                cachedAccessPoint.getAccessPointId(),
+                                cachedPart.getPartId());
+            }
+        }
+        // validate preferred name
+        if (prefPart == null) {
+            Validate.notNull(prefPart, "Missing preferred parts, accessPointId={}",
+                             cachedAccessPoint.getAccessPointId());
+        }
+        // check type of pref part
+        if (!Objects.equals(prefPart.getPartTypeCode(), PartType.PT_NAME.value())) {
+            Validate.isTrue(false,
+                            "Invalid prefName type, accessPointId={}, partId={}",
+                            cachedAccessPoint.getAccessPointId(),
+                            prefPart.getPartId());
         }
     }
 

@@ -363,7 +363,7 @@ public class EntityDBDispatcher {
 
         SynchronizationResult syncRes = synchronizeParts(procCtx, entity, bindingState, accessPoint);
 
-        accessPointService.generateSync(accessPoint.getAccessPointId(), state,
+        accessPointService.generateSync(accessPoint, state,
                                         syncRes.getParts(), syncRes.getItemMap(),
                                         syncQueue);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
@@ -432,7 +432,7 @@ public class EntityDBDispatcher {
 
         accessPoint.setPreferredPart(accessPointService.findPreferredPart(partList));
 
-        accessPointService.generateSync(accessPoint.getAccessPointId(), apState, partList, itemMap, async);
+        accessPointService.generateSync(accessPoint, apState, partList, itemMap, async);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
@@ -512,6 +512,7 @@ public class EntityDBDispatcher {
     static class SynchronizationResult {
         List<ApPart> partList = new ArrayList<>();
         Map<Integer, List<ApItem>> itemMap = new HashMap<>();
+        private ApAccessPoint accessPoint;
 
         SynchronizationResult() {
 
@@ -533,11 +534,21 @@ public class EntityDBDispatcher {
         public void addPartItems(ApPart part, List<ApItem> itemList) {
             itemMap.put(part.getPartId(), itemList);
         }
+
+        public void setAccessPoint(ApAccessPoint saveAp) {
+            this.accessPoint = saveAp;
+        }
+
+        public ApAccessPoint getAccessPoint() {
+            return accessPoint;
+        }
     }
 
 
     /**
      * Synchronizace částí přístupového bodu z externího systému
+     * 
+     * Metoda mění odkaz na aktuální podobu preferovaného označení.
      *
      * @param procCtx
      *            context
@@ -594,31 +605,33 @@ public class EntityDBDispatcher {
                       partXml.getPrnt() != null ? partXml.getPrnt().getValue() : null,
                       partXml.getT());
             
-            ApBindingItem bindingItem = bindingPartLookup.remove(partXml.getPid().getValue());
+            ApBindingItem partBinding = bindingPartLookup.remove(partXml.getPid().getValue());
+            ApPart part;
             List<ApItem> itemList;
-            if (bindingItem != null) {
+            if (partBinding != null) {
                 log.debug("Part with required binding was found, updating existing binding, accessPointId: {}, bindingItemId: {}",
                           accessPointId,
-                          bindingItem.getBindingItemId());
+                          partBinding.getBindingItemId());
+                part = partBinding.getPart();
                 // Binding found -> update
-                itemList = updatePart(partXml, bindingItem.getPart(), binding, dataRefList);
+                itemList = updatePart(partXml, part, binding, dataRefList);
             } else {
                 log.debug("Part with binding does not exists, creating new binding, accessPointId: {}", accessPointId);
 
                 // TODO: check if exists same other part without binding 
 
-                bindingItem = createPart(partXml, accessPoint, binding);
+                partBinding = createPart(partXml, accessPoint, binding);
+                part = partBinding.getPart();
                 itemList = createItems(partXml.getItms().getItems(),
-                                                    bindingItem.getPart(), apChange, binding,
+                                       part, apChange, binding,
                                        dataRefList);
             }
-            syncResult.addPartItems(bindingItem.getPart(), itemList);
-            syncResult.addPart(bindingItem.getPart());
+            syncResult.addPartItems(part, itemList);
+            syncResult.addPart(part);
 
             if (preferredName == null) {
-                ApPart lastPart = bindingItem.getPart();
-                if (StaticDataProvider.DEFAULT_PART_TYPE.equals(lastPart.getPartType().getCode())) {
-                    preferredName = lastPart;
+                if (StaticDataProvider.DEFAULT_PART_TYPE.equals(part.getPartType().getCode())) {
+                    preferredName = part;
                 }
             }
         }
@@ -658,7 +671,8 @@ public class EntityDBDispatcher {
 
         //změna preferováného jména
         Validate.notNull(preferredName, "Missing preferredName");
-        accessPoint.setPreferredPart(preferredName); //.findPreferredPart(entity.getPrts().getList(), newBindingParts));
+        accessPoint.setPreferredPart(preferredName);
+        syncResult.setAccessPoint(accessPointRepository.save(accessPoint));
 
         bindingPartLookup = null;
         bindingItemLookup = null;

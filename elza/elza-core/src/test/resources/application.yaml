@@ -58,6 +58,8 @@ elza:
       maxPerFund: 1
   scope:
     deleteWithEntities: false
+  startupService:
+    autoStart: false
 
 logging:
   level:
