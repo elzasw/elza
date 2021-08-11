@@ -189,8 +189,19 @@ public class HelperTestService {
     }
 
     @Transactional
-    public void deleteTables() {
-        packageService.stopAsyncTasks();
+    public void deleteTables(boolean stopTasks) {
+        if (stopTasks) {
+            packageService.stopAsyncTasks();
+        }
+
+        deleteTablesInternal();
+
+        if (stopTasks) {
+            packageService.startAsyncTasks();
+        }
+    }
+
+    private void deleteTablesInternal() {
 
         logger.debug("Cleaning table contents...");
 
@@ -254,8 +265,6 @@ public class HelperTestService {
         em.flush();
 
         logger.info("All tables cleaned.");
-
-        packageService.startAsyncTasks();
     }
 
     public FundRepository getFundRepository() {

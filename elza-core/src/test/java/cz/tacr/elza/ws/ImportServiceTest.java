@@ -22,7 +22,6 @@ import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
-import cz.tacr.elza.ws.core.v1.FundService;
 import cz.tacr.elza.ws.core.v1.ImportService;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
 import io.restassured.RestAssured;
