@@ -43,46 +43,47 @@ public class FormatContext {
     /**
      * Active separator
      */
-    private String itemSeparator = "; ";
+    protected String itemSeparator = "; ";
 
-    private SpecTitleSource specTitleSource = SpecTitleSource.SHORTCUT;
+    protected SpecTitleSource specTitleSource = SpecTitleSource.SHORTCUT;
+
     /**
      * Active separator for specifications
      */
-    private String specificationPostfix = " ";
-    
-    
-    private String specificationPrefix = "";
-    
+    protected String specificationPostfix = " ";
+
+
+    protected String specificationPrefix = "";
+
     /**
      * Separator between same specifications
      */
-    private String sameSpecItemSeparator = "; ";
+    protected String sameSpecItemSeparator = "; ";
 
     /**
      * Defines whether the specification is placed before or after the value
      */
-    private boolean specificationAfterValue = false;
-    
+    protected boolean specificationAfterValue = false;
+
     /**
      * Flag if begin block separator should be use always
      */
-    private boolean useBeginBlockSeparatorAlways = true;
+    protected boolean useBeginBlockSeparatorAlways = true;
 
     /**
      * Begin block separator
      */
-    private String beginBlockSeparator = "\n";
+    protected String beginBlockSeparator = "\n";
 
     /**
      * Flag if end block separator should be use always
      */
-    private boolean useEndBlockSeparatorAlways = true;
+    protected boolean useEndBlockSeparatorAlways = true;
 
     /**
      * End block separator
      */
-    private String endBlockSeparator = "";
+    protected String endBlockSeparator = "";
 
     /**
      * Buffer with result
@@ -90,29 +91,29 @@ public class FormatContext {
      * Use appendResult to append data to the buffer.
      * Do not append data directly!
      */
-    private StringBuilder resultBuffer = new StringBuilder();
-    
+    protected StringBuilder resultBuffer = new StringBuilder();
+
     /**
      * Conditional separator
      * 
      * This pending separator will be added to the resultBuffer if some 
      * other text will be added also.
      */
-    private String pendingSeparator;
+    protected String pendingSeparator;
 
     /**
      * Stack of opened blocks
      */
-    private List<Block> blockStack = new LinkedList<>();
+    protected List<Block> blockStack = new LinkedList<>();
 
-    private String titleSeparator;
+    protected String titleSeparator;
 
     /**
      * Flag if item with specification should be grouped
      */
-    private boolean groupBySpec = true;
+    protected boolean groupBySpec = true;
 
-    private Map<String, String> specNames = new HashMap<>();
+    protected Map<String, String> specNames = new HashMap<>();
 
     public String getItemSeparator() {
         return itemSeparator;
@@ -332,10 +333,6 @@ public class FormatContext {
 
             // replace unexpected characters
             value = value.replace('\t', ' ');
-
-            // replace angle brackets
-            value = value.replace("<", "&lt;");
-            value = value.replace(">", "&gt;");
 
             // append result
             resultBuffer.append(value);
