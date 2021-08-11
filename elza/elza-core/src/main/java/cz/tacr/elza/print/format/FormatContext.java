@@ -320,21 +320,25 @@ public class FormatContext {
      * Append text to the result
      * 
      * Other functions should not directly manipulate with resultBuffer
-     * @param result
+     * @param value
      */
-    private void appendResult(String result) {
-        if(StringUtils.isNotEmpty(result)) {
+    private void appendResult(String value) {
+        if (StringUtils.isNotEmpty(value)) {
             // append pending separator
-            if(pendingSeparator!=null) {
+            if (pendingSeparator != null) {
                 resultBuffer.append(pendingSeparator);
                 pendingSeparator = null;
             }
-            
+
             // replace unexpected characters
-            result = result.replace('\t', ' ');
+            value = value.replace('\t', ' ');
+
+            // replace angle brackets
+            value = value.replace("<", "&lt;");
+            value = value.replace(">", "&gt;");
 
             // append result
-            resultBuffer.append(result);
+            resultBuffer.append(value);
         }
     }
 
