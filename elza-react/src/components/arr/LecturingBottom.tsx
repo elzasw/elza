@@ -124,12 +124,12 @@ class LecturingBottom extends React.Component {
     };
 
     render() {
-        const {issueStates, issueDetail, issueComments, userDetail} = this.props;
+        const {fund, issueStates, issueDetail, issueComments, userDetail} = this.props;
         const {id, data, fetched, isFetching} = issueDetail;
         const {text, comment, submitting} = this.state;
 
         const canWrite = fetched && (
-                userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) ||
+                userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL, {type: perms.FUND_ISSUE_ADMIN, fundId: fund.id}) ||
                 userDetail.permissionsMap?.[perms.FUND_ISSUE_LIST_WR]?.issueListIds.length > 0
             );
         const canUpdateIssue =

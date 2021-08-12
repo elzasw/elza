@@ -357,7 +357,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
         const nodeSetting = nodeSettings.nodes[nodeSettingsIndex];
         const isCopyAll = nodeSetting && nodeSetting.copyAll;
 
-        const haveProtocolPermissionToWrite = userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) ||
+        const haveProtocolPermissionToWrite = userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL, {type: perms.FUND_ISSUE_ADMIN, fundId: fundId}) ||
             userDetail.permissionsMap?.[perms.FUND_ISSUE_LIST_WR]?.issueListIds.length > 0;
 
         return (

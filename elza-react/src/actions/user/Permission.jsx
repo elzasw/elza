@@ -20,6 +20,7 @@ export const FUND_EXPORT = 'FUND_EXPORT';
 export const FUND_EXPORT_ALL = 'FUND_EXPORT_ALL';
 export const FUND_ISSUE_LIST_RD = 'FUND_ISSUE_LIST_RD';
 export const FUND_ISSUE_LIST_WR = 'FUND_ISSUE_LIST_WR';
+export const FUND_ISSUE_ADMIN = 'FUND_ISSUE_ADMIN';
 export const FUND_ISSUE_ADMIN_ALL = 'FUND_ISSUE_ADMIN_ALL';
 export const AP_EXTERNAL_WR = 'AP_EXTERNAL_WR';
 export const USR_PERM = 'USR_PERM';
@@ -52,6 +53,7 @@ export const all = {
     FUND_CREATE: {},
     FUND_EXPORT: {fund: true},
     FUND_EXPORT_ALL: {},
+    FUND_ISSUE_ADMIN: {fund: true},
     FUND_ISSUE_ADMIN_ALL: {},
     FUND_ISSUE_LIST_RD: {},
     FUND_ISSUE_LIST_WR: {},
