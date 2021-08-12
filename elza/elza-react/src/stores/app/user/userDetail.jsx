@@ -18,6 +18,7 @@ function hasRight(right) {
                         case perms.FUND_ARR:
                         case perms.FUND_OUTPUT_WR:
                         case perms.FUND_VER_WR:
+                        case perms.FUND_ISSUE_ADMIN:
                         case perms.FUND_EXPORT:
                         case perms.FUND_BA:
                         case perms.FUND_CL_VER_WR:
