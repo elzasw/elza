@@ -23,6 +23,9 @@ public class HtmlFormatContext extends FormatContext {
             value = value.replace("<", "&lt;");
             value = value.replace(">", "&gt;");
 
+            // replace line break
+            value = value.replace("\n", "<br>");
+
             // append result
             resultBuffer.append(value);
         }
