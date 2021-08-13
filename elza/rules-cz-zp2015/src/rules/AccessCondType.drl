@@ -253,12 +253,32 @@ then
 end
 */
 
-rule "Možné druhy omezení přístupu (smlouva, utaj.skut, prav.skut)"
+rule "Možné druhy omezení přístupu (smlouva)"
 no-loop
 when
     StructObjItem(type == "ZP2015_RESTRICTED_ACCESS_REASON" && 
-        specCode in ("ZP2015_ACCESS_AGREEMENT", 
-        			 "ZP2015_ACCESS_SECRET",
+        specCode in ("ZP2015_ACCESS_AGREEMENT")
+    )
+    $itemType : RulItemTypeExt(code == "ZP2015_RESTRICTED_ACCESS_TYPE")
+    $itemSpec : RulItemSpecExt( code in 
+    				("ZP2015_RESTRICTION_DAO_INPERS_ONLY",    				
+    				"ZP2015_RESTRICTION_DAO", 
+    				"ZP2015_RESTRICTION_ARCHMAT",
+    				"ZP2015_RESTRICTION_ARCHMAT2",    				
+    				"ZP2015_RESTRICTION_ARCHDESC",
+    				"ZP2015_RESTRICTION_ABSTRACT",
+    				"ZP2015_RESTRICTION_LIMITED"
+    				 ) 
+    			) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Možné druhy omezení přístupu (utaj.skut, prav.skut)"
+no-loop
+when
+    StructObjItem(type == "ZP2015_RESTRICTED_ACCESS_REASON" && 
+        specCode in ("ZP2015_ACCESS_SECRET",
         			 "ZP2015_ACCESS_LAW",
         			 "ZP2015_ACCESS_PERSONAL_DATA",
         			 "ZP2015_ACCESS_COPYRIGHT2")
