@@ -258,7 +258,8 @@ when
     )
     $itemType : RulItemTypeExt(code == "ZP2015_RESTRICTED_ACCESS_TYPE")
     $itemSpec : RulItemSpecExt( code in 
-    				( 
+    				(
+    				"ZP2015_RESTRICTION_DAO", 
     				"ZP2015_RESTRICTION_ARCHMAT2",
     				"ZP2015_RESTRICTION_ARCHDESC2"
     				 ) 
