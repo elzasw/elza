@@ -123,7 +123,7 @@ then
 end
 
 
-rule "Možné druhy jiných spouštěcích událostí - osobní údaje"
+rule "Možné druhy spouštěcích událostí - osobní údaje"
 no-loop
 when
     StructObjItem(type == "ZP2015_RESTRICTED_ACCESS_REASON" && 
@@ -132,6 +132,7 @@ when
     )
     $itemType : RulItemTypeExt(code == "ZP2015_PUBLISH_EVENT_TYPE")
     $itemSpec : RulItemSpecExt( code in (
+    				"ZP2015_PUBLISH_EVENT_TYPE_CREATION",
     				"ZP2015_PUBLISH_EVENT_TYPE_BIRTH",
     				"ZP2015_PUBLISH_EVENT_TYPE_BIRTH_ESTM",
     				"ZP2015_PUBLISH_EVENT_TYPE_DEATH") ) from $itemType.rulItemSpecList
@@ -139,7 +140,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "Možné druhy jiných spouštěcích událostí - autor.prava - majetkova"
+rule "Možné druhy spouštěcích událostí - autor.prava - majetkova"
 no-loop
 when
     StructObjItem(type == "ZP2015_RESTRICTED_ACCESS_REASON" && 
@@ -148,6 +149,7 @@ when
     )
     $itemType : RulItemTypeExt(code == "ZP2015_PUBLISH_EVENT_TYPE")
     $itemSpec : RulItemSpecExt( code in (
+    				"ZP2015_PUBLISH_EVENT_TYPE_CREATION",
     				"ZP2015_PUBLISH_EVENT_TYPE_BIRTH",
     				"ZP2015_PUBLISH_EVENT_TYPE_BIRTH_ESTM",
     				"ZP2015_PUBLISH_EVENT_TYPE_DEATH",
@@ -163,7 +165,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "Možné druhy jiných spouštěcích událostí - autor.prava - osobnostni"
+rule "Možné druhy spouštěcích událostí - autor.prava - osobnostni"
 no-loop
 when
     StructObjItem(type == "ZP2015_RESTRICTED_ACCESS_REASON" && 
@@ -172,6 +174,7 @@ when
     )
     $itemType : RulItemTypeExt(code == "ZP2015_PUBLISH_EVENT_TYPE")
     $itemSpec : RulItemSpecExt( code in (
+    				"ZP2015_PUBLISH_EVENT_TYPE_CREATION",
     				"ZP2015_PUBLISH_EVENT_TYPE_BIRTH",
     				"ZP2015_PUBLISH_EVENT_TYPE_BIRTH_ESTM") ) from $itemType.rulItemSpecList
 then
