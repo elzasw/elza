@@ -1000,25 +1000,25 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_PUBLISH_EVENT_TYPE" data-type="ENUM">
-        <name>spouštěcí událost</name>
-        <shortcut>spouštěcí událost</shortcut>
-        <description>spouštěcí událost zveřejnění</description>
+        <name>Spouštěcí událost</name>
+        <shortcut>Spouštěcí událost</shortcut>
+        <description>Spouštěcí událost zpřístupnění</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
     <item-type code="ZP2015_PUBLISH_EVENT_DATE" data-type="DATE">
-        <name>datum spouštěcí události</name>
-        <shortcut>datum spouštěcí události</shortcut>
-        <description>datum spouštěcí události</description>
+        <name>Datum spouštěcí události</name>
+        <shortcut>Datum spouštěcí události</shortcut>
+        <description>Datum spouštěcí události</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_PUBLISH_EVENT_PERIOD" data-type="INT">
-        <name>jiná lhůta zpřístupnění</name>
-        <shortcut>lhůta</shortcut>
-        <description>jiná lhůta zpřístupnění</description>
+        <name>Jiná lhůta zpřístupnění</name>
+        <shortcut>Lhůta</shortcut>
+        <description>Jiná lhůta zpřístupnění</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
