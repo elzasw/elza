@@ -224,7 +224,8 @@ when
     				("ZP2015_RESTRICTION_DAO", 
     				"ZP2015_RESTRICTION_ARCHMAT2",    				
     				"ZP2015_RESTRICTION_ARCHDESC",
-    				"ZP2015_RESTRICTION_ABSTRACT"
+    				"ZP2015_RESTRICTION_ABSTRACT",
+    				"ZP2015_RESTRICTION_LIMITED"
     				 ) 
     			) from $itemType.rulItemSpecList
 then
