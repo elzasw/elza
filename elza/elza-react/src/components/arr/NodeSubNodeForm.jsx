@@ -722,9 +722,9 @@ class NodeSubNodeForm extends AbstractReactComponent {
     };
 
     handleCopyUuid = () => {
-        const {selectedSubNodeId} = this.props;
+        const {selectedSubNode} = this.props;
         const el = document.createElement('textarea');
-        el.value = selectedSubNodeId;
+        el.value = selectedSubNode.uuid;
         document.body.appendChild(el);
         el.select();
         document.execCommand('copy');
