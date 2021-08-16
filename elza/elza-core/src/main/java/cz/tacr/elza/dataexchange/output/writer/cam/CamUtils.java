@@ -16,8 +16,9 @@ import cz.tacr.cam.schema.cam.ObjectFactory;
 import cz.tacr.cam.schema.cam.PartXml;
 import cz.tacr.cam.schema.cam.StringXml;
 import cz.tacr.elza.domain.ApBindingItem;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.SystemException;
+
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.*;
 
 public class CamUtils {
 
@@ -125,16 +126,16 @@ public class CamUtils {
 
     private static String convertUnitDateFormatPart(String partValue) {
         switch (partValue) {
-        case UnitDateConvertor.CENTURY:
+        case CENTURY:
             return "C";
-        case UnitDateConvertor.YEAR:
+        case YEAR:
             return "Y";
-        case UnitDateConvertor.YEAR_MONTH:
+        case YEAR_MONTH:
             // CAM nepodporuje tento format primo
             return "D";
-        case UnitDateConvertor.DATE:
+        case DATE:
             return "D";
-        case UnitDateConvertor.DATE_TIME:
+        case DATE_TIME:
             return "DT";
         }
         throw new IllegalStateException("Incorrect date format: " + partValue);

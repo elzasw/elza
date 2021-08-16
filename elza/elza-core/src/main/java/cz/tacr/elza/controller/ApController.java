@@ -820,7 +820,7 @@ public class ApController {
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
-        accessPointService.generateSync(accessPointId, apPart);
+        accessPointService.generateSync(apAccessPoint, apPart);
         accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 

@@ -2,6 +2,7 @@ package cz.tacr.elza.service.cam;
 
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApState;
 

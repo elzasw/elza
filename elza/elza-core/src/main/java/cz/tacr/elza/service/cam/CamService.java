@@ -81,6 +81,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -427,7 +428,7 @@ public class CamService {
         if (CollectionUtils.isEmpty(entityRecordRevInfoXmls)) {
             return;
         }
-        List<String> recordCodes = getRecordCodes(entityRecordRevInfoXmls);
+        List<String> recordCodes = getRecordCodes(externalSystem, entityRecordRevInfoXmls);
         List<ApBinding> bindings = externalSystemService.findBindings(recordCodes, externalSystem);
         final Map<String, ApBinding> bindingMap = bindings.stream()
                 .collect(Collectors.toMap(p -> p.getValue(), p -> p));
@@ -478,14 +479,31 @@ public class CamService {
         }
     }
 
-    private List<String> getRecordCodes(List<EntityRecordRevInfoXml> entityRecordRevInfoXmls) {
-        List<String> recordCodes = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(entityRecordRevInfoXmls)) {
-            for (EntityRecordRevInfoXml entityRecordRevInfoXml : entityRecordRevInfoXmls) {
-                recordCodes.add(Long.toString(entityRecordRevInfoXml.getEid().getValue()));
-            }
+    private List<String> getRecordCodes(final ApExternalSystem externalSystem,
+                                        List<EntityRecordRevInfoXml> entityRecordRevInfoXmls) {
+        if (CollectionUtils.isEmpty(entityRecordRevInfoXmls)) {
+            return Collections.emptyList();
+        }
+        Function<EntityRecordRevInfoXml, String> idGetter;
+        if (externalSystem.getType().equals(ApExternalSystemType.CAM_UUID)) {
+            idGetter = (x) -> x.getEuid().getValue();
+        } else {
+            idGetter = (x) -> Long.toString(x.getEid().getValue());
+        }
+
+        List<String> recordCodes = new ArrayList<>(entityRecordRevInfoXmls.size());
+        for (EntityRecordRevInfoXml entityRecordRevInfoXml : entityRecordRevInfoXmls) {
+            recordCodes.add(idGetter.apply(entityRecordRevInfoXml));
         }
         return recordCodes;
+    }
+
+    static public Function<EntityXml, String> getEntityIdGetter(final ApExternalSystem externalSystem) {
+        if (externalSystem.getType().equals(ApExternalSystemType.CAM_UUID)) {
+            return (x) -> x.getEuid().getValue();
+        } else {
+            return (x) -> Long.toString(x.getEid().getValue());
+        }
     }
 
     private ApBindingSync createApBindingSync(final ApExternalSystem externalSystem) {
@@ -684,9 +702,12 @@ public class CamService {
         }
 
         for (SyncEntityRequest syncReq : syncRequests) {
+            Validate.notNull(syncReq.getBindingState());
+
             synchronizeAccessPoint(procCtx, syncReq.getState(),
                                    syncReq.getBindingState(),
-                                   null, syncReq.getEntityXml(), false);
+                                   null,
+                                   syncReq.getEntityXml(), false);
         }
 
         // kontrola datové struktury

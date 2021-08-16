@@ -318,7 +318,7 @@ class FundPage extends AbstractReactComponent {
                     </Button>,
                 );
             }
-            if (userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL)) {
+            if (userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL, {type: perms.FUND_ISSUE_ADMIN, fundId: fundRegion.fundDetail.id})) {
                 itemActions.push(
                     <Button key="fa-lecturing" onClick={this.handleIssuesSettings}>
                         <Icon glyph="fa-commenting" />

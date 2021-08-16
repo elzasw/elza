@@ -13,6 +13,7 @@ import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Service;
@@ -89,6 +91,14 @@ public class StartupService implements SmartLifecycle {
 
     public static boolean fullTextReindex = false;
 
+    /**
+     * Service should start automatically by default
+     * 
+     * It is possible to disable autoStart, used by tests
+     */
+    @Value("${elza.startupService.autoStart:true}")
+    private boolean autoStart = true;
+
     @Autowired
     AdminService adminService;
 
@@ -142,8 +152,24 @@ public class StartupService implements SmartLifecycle {
     @Autowired
     private StructObjValueService structureDataService;
 
+    /**
+     * Default service start method
+     */
     @Override
     public void start() {
+        if (!autoStart) {
+            logger.info("Elza startup service - autoStart is disabled");
+            return;
+        }
+        startNow();
+    }
+
+    /**
+     * Method for explicit starting of the service
+     */
+    public void startNow() {
+        Validate.isTrue(!running, "Already started");
+
         long startTime = System.currentTimeMillis();
         logger.info("Elza startup service ...");
 

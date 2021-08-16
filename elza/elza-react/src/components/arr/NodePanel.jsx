@@ -19,7 +19,6 @@ import {fundSelectSubNode, fundSubNodesNext, fundSubNodesPrev} from 'actions/arr
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes';
 import {indexById} from 'stores/app/utils';
 import {createDigitizationName, createFundRoot, getDescItemsAddTree} from './ArrUtils';
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes';
 import {createReferenceMarkString, getGlyph, getOneSettings} from 'components/arr/ArrUtils';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
@@ -52,7 +51,6 @@ class NodePanel extends AbstractReactComponent {
         versionId: PropTypes.number.isRequired,
         fund: PropTypes.object.isRequired,
         node: PropTypes.object.isRequired,
-        calendarTypes: PropTypes.object.isRequired,
         descItemTypes: PropTypes.object.isRequired,
         rulDataTypes: PropTypes.object.isRequired,
         fundId: PropTypes.number,
@@ -522,7 +520,7 @@ class NodePanel extends AbstractReactComponent {
         // if (this.state !== nextState) {
         //     return true;
         // }
-        // var eqProps = ['versionId', 'fund', 'node', 'calendarTypes', 'descItemTypes', 'rulDataTypes', 'fundId', 'closed'];
+        // var eqProps = ['versionId', 'fund', 'node', 'descItemTypes', 'rulDataTypes', 'fundId', 'closed'];
         // return !propsEquals(this.props, nextProps, eqProps);
     }
 
@@ -548,7 +546,6 @@ class NodePanel extends AbstractReactComponent {
             this.props.dispatch(fundSubNodeDaosFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
         }
         this.props.dispatch(visiblePolicyTypesFetchIfNeeded());
-        this.props.dispatch(calendarTypesFetchIfNeeded());
     }
 
     /**
@@ -1050,7 +1047,6 @@ class NodePanel extends AbstractReactComponent {
 
     render() {
         const {
-            calendarTypes,
             versionId,
             rulDataTypes,
             node,
@@ -1067,7 +1063,7 @@ class NodePanel extends AbstractReactComponent {
         var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
 
         var form;
-        if (node.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched) {
+        if (node.subNodeForm.fetched && descItemTypes.fetched) {
             // Zjisštění, zda pro daný node existuje v accordion předchozí záznam (který ale není vyfiltrovaný), ze kterého je možné přebírat hodnoty atirbutu pro akci okamžité kopírování
             var descItemCopyFromPrevEnabled = false;
             var i1 = indexById(node.childNodes, node.selectedSubNodeId);
@@ -1094,7 +1090,6 @@ class NodePanel extends AbstractReactComponent {
                     routingKey={node.routingKey}
                     subNodeForm={node.subNodeForm}
                     rulDataTypes={rulDataTypes}
-                    calendarTypes={calendarTypes}
                     descItemTypes={descItemTypes}
                     conformityInfo={conformityInfo}
                     parentNode={node}

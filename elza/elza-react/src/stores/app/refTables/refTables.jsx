@@ -2,7 +2,6 @@ import ruleSet from './ruleSet.jsx';
 import institutions from './institutions.jsx';
 import recordTypes from './recordTypes.jsx';
 import rulDataTypes from './rulDataTypes.jsx';
-import calendarTypes from './calendarTypes.jsx';
 import scopesData from './scopesData.jsx';
 import descItemTypes from './descItemTypes.jsx';
 import visiblePolicyTypes from './visiblePolicyTypes.jsx';
@@ -23,7 +22,6 @@ const initialState = {
     apTypes: apTypes(),
     recordTypes: recordTypes(),
     rulDataTypes: rulDataTypes(),
-    calendarTypes: calendarTypes(),
     scopesData: scopesData(),
     structureTypes: structureTypes(),
     descItemTypes: descItemTypes(),
@@ -100,7 +98,6 @@ export default function refTables(state = initialState, action = {}) {
         case types.REF_CALENDAR_TYPES_RECEIVE: {
             return {
                 ...state,
-                calendarTypes: calendarTypes(state.calendarTypes, action),
             };
         }
         case types.REF_SCOPES_TYPES_DIRTY:

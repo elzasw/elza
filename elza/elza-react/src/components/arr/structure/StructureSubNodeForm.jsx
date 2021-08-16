@@ -27,7 +27,6 @@ class StructureSubNodeForm extends React.Component {
         // Store
         rulDataTypes: PropTypes.object,
         structureTypes: PropTypes.object.isRequired,
-        calendarTypes: PropTypes.object,
         descItemTypes: PropTypes.object,
         subNodeForm: PropTypes.object,
         focus: PropTypes.object,
@@ -104,7 +103,6 @@ class StructureSubNodeForm extends React.Component {
             focus,
             fundId,
             rulDataTypes,
-            calendarTypes,
             structureTypes,
             descItemTypes,
             subNodeForm,
@@ -158,7 +156,6 @@ class StructureSubNodeForm extends React.Component {
                     routingKey={id}
                     nodeSetting={null}
                     rulDataTypes={rulDataTypes}
-                    calendarTypes={calendarTypes}
                     descItemTypes={descItemTypes}
                     structureTypes={structureTypes}
                     subNodeForm={subNodeForm}
@@ -199,7 +196,6 @@ function mapStateToProps(state, props) {
         focus,
         structureTypes,
         rulDataTypes: refTables.rulDataTypes,
-        calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
     };
 }

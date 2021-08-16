@@ -29,7 +29,9 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
@@ -37,6 +39,7 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.cam.CamHelper;
 import cz.tacr.elza.service.cam.ProcessingContext;
@@ -61,6 +64,9 @@ public class ImportServiceImpl implements ImportService {
 
     @Autowired
     private ApAccessPointRepository accessPointRepository;
+
+    @Autowired
+    private AccessPointDataService apDataService;
 
     @Autowired
     private ApStateRepository stateRepository;
@@ -145,6 +151,8 @@ public class ImportServiceImpl implements ImportService {
 
         Map<String, EntityXml> uuids = CamHelper.getEntitiesByUuid(entities);
 
+        ProcessingContext procCtx = new ProcessingContext(scope, externalSystem, staticDataService);
+
         // check if some entities exists
         List<ApAccessPoint> existingAps = accessPointRepository.findApAccessPointsByUuids(uuids.keySet());
         List<EntityXml> newEntities;
@@ -185,17 +193,46 @@ public class ImportServiceImpl implements ImportService {
 
             // prepare binding
             List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoints(updateAps);
-            if (apStates.size() != updateAps.size()) {
-                throw new IllegalStateException("Missing state for some synchronized access point");
-            }
             for (ApBindingState bindingState : bindingStates) {
-                SyncEntityRequest syncRequest = updateEntitiesLookup.get(bindingState.getAccessPointId());
+                SyncEntityRequest syncRequest = updateEntitiesLookup.remove(bindingState.getAccessPointId());
                 syncRequest.setBindingState(bindingState);
             }
+            if (updateEntitiesLookup.size() > 0) {
+                Function<EntityXml, String> idGetter = CamService.getEntityIdGetter(externalSystem);
+                // try to find other existing bindings
+                List<String> recordCodes = updateEntitiesLookup.values().stream()
+                        .map(e -> idGetter.apply(e.getEntityXml())).collect(Collectors.toList());
+                List<ApBinding> bindings = externalSystemService.findBindings(recordCodes, externalSystem);
+                Map<String, ApBinding> bindingLookup = bindings.stream().collect(Collectors.toMap(b -> b.getValue(),
+                                                                                                  Function.identity()));
 
+                ApChange apChange = procCtx.getApChange();
+                if (apChange == null) {
+                    apChange = apDataService.createChange(ApChange.Type.AP_SYNCH);
+                    procCtx.setApChange(apChange);
+                }
+
+                for (SyncEntityRequest sr : updateEntitiesLookup.values()) {
+                    EntityXml entity = sr.getEntityXml();
+                    String v = idGetter.apply(entity);
+                    ApBinding binding = bindingLookup.get(v);
+                    if (binding == null) {
+                        binding = externalSystemService.createApBinding(v, externalSystem);
+                    }
+                    ApBindingState bindingState = externalSystemService
+                            .createApBindingState(binding,
+                                                  sr.getAccessPoint(),
+                                                  apChange,
+                                                  entity.getEns().name(),
+                                                  entity.getRevi().getRid().getValue(),
+                                                  entity.getRevi().getUsr().getValue(),
+                                                  null);
+                    // create BindingState
+                    sr.setBindingState(bindingState);
+                }
+            }
         }
-        
-        ProcessingContext procCtx = new ProcessingContext(scope, externalSystem, staticDataService);
+
         camService.createAccessPoints(procCtx, newEntities);
         camService.updateAccessPoints(procCtx, updateEntities);
 
