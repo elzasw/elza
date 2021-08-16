@@ -20,18 +20,25 @@ public class ArrNodeVO {
      */
     private Integer version;
 
+    /**
+     * UUID uzlu
+     */
+    private String uuid;
+
     public ArrNodeVO() {
     }
 
 	protected ArrNodeVO(ArrNode node) {
 		this.id = node.getNodeId();
 		this.version = node.getVersion();
+		this.uuid = node.getUuid();
 	}
 
     public static ArrNodeVO newInstance(final ArrNode node) {
         ArrNodeVO result = new ArrNodeVO();
         result.setId(node.getNodeId());
         result.setVersion(node.getVersion());
+        result.setUuid(node.getUuid());
         return result;
     }
 
@@ -49,6 +56,14 @@ public class ArrNodeVO {
 
     public void setVersion(final Integer version) {
         this.version = version;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     /**
