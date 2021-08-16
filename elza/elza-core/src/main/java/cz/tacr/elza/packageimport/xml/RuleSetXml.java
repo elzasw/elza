@@ -25,6 +25,9 @@ public class RuleSetXml {
     @XmlElement(name = "rule-type", required = true)
     private String ruleType;
 
+    @XmlElement(name = "rule-item-type-filter")
+    private String ruleItemTypeFilter;
+
     public String getCode() {
         return code;
     }
@@ -47,5 +50,13 @@ public class RuleSetXml {
 
     public void setRuleType(String ruleType) {
         this.ruleType = ruleType;
+    }
+
+    public String getRuleItemTypeFilter() {
+        return ruleItemTypeFilter;
+    }
+
+    public void setRuleItemTypeFilter(String ruleItemTypeFilter) {
+        this.ruleItemTypeFilter = ruleItemTypeFilter;
     }
 }

@@ -57,6 +57,7 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.search.SearchIndexSupport;
 import cz.tacr.elza.service.ItemService.FundContext;
@@ -165,6 +166,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     @Autowired
     private StructObjInternalService structObjInternalService;
+
+    @Autowired
+    private StructuredObjectRepository structuredObjectRepository;
 
     private TransactionSynchronizationAdapter indexWorkNotify;
 
@@ -1735,6 +1739,14 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     ArrDataUriRef itemUriRef = new ArrDataUriRef();
                     itemUriRef.setUriRefValue(text);
                     data = itemUriRef;
+                    break;
+                case "STRUCTURED":
+                    ArrDataStructureRef itemStructureRef = new ArrDataStructureRef();
+                    Integer id = Integer.valueOf(text);
+                    ArrStructuredObject structuredObject = structuredObjectRepository.findById(id)
+                            .orElseThrow(() -> new IllegalStateException("Nebyla nalezena entita v úložišti ArrStructuredObject s id " + id));
+                    itemStructureRef.setStructuredObject(structuredObject);
+                    data = itemStructureRef;
                     break;
                 default:
                     throw new SystemException("Neplatný typ atributu " + descItemType.getDataType().getCode(), BaseCode.INVALID_STATE);
