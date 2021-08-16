@@ -38,7 +38,8 @@ public class KmlControllerTest extends AbstractControllerTest {
 
     @After
     public void cleanUp() {
-    	helperTestService.deleteTables();
+        // Extra scopes has to be deleted
+        helperTestService.deleteTables(true);
         List<String> toDelete = Arrays.asList(IMPORT_SCOPE_FA, IMPORT_SCOPE_RECORD);
         for (ApScopeVO scope : getAllScopes()) {
             if (toDelete.contains(scope.getName())) {

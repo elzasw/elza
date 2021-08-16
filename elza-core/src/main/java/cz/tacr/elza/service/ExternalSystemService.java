@@ -8,6 +8,7 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.ObjectListIterator;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;

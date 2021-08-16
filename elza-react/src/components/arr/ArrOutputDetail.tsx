@@ -11,7 +11,6 @@ import {
 } from '../../actions/arr/fundOutput.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx';
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 import {outputFormActions} from 'actions/arr/subNodeForm.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import OutputInlineForm from 'components/arr/OutputInlineForm';
@@ -45,7 +44,6 @@ const OutputState = {
 type ComponentProps = {
     versionId: number;
     fund: any;
-    calendarTypes: any;
     descItemTypes: any;
     templates: any;
     outputFilters: any;
@@ -84,7 +82,6 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
     // static propTypes = {
     //     versionId: PropTypes.number.isRequired,
     //     fund: PropTypes.object.isRequired,
-    //     calendarTypes: PropTypes.object.isRequired,
     //     descItemTypes: PropTypes.object.isRequired,
     //     templates: PropTypes.object.isRequired,
     //     rulDataTypes: PropTypes.object.isRequired,
@@ -130,7 +127,6 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
             );
         }
         this.props.dispatch(refRulDataTypesFetchIfNeeded());
-        this.props.dispatch(calendarTypesFetchIfNeeded());
     }
 
     trySetFocus = props => {
@@ -226,7 +222,6 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
             fund,
             versionId,
             descItemTypes,
-            calendarTypes,
             rulDataTypes,
             closed,
             readMode,
@@ -248,7 +243,6 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
         const fetched =
             fundOutputDetail.fetched &&
             fundOutputDetail.subNodeForm.fetched &&
-            calendarTypes.fetched &&
             outputFilters.fetched &&
             descItemTypes.fetched;
         if (!fetched) {
@@ -261,7 +255,6 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
                 fundId={fund.id}
                 selectedSubNodeId={fundOutputDetail.id}
                 rulDataTypes={rulDataTypes}
-                calendarTypes={calendarTypes}
                 descItemTypes={descItemTypes}
                 subNodeForm={fundOutputDetail.subNodeForm}
                 closed={!this.isEditable()}

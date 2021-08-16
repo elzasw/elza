@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -37,6 +36,7 @@ import cz.tacr.elza.ws.types.v1.ItemString;
 
 @Component
 public class WSHelper {
+
     final private static Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Autowired
@@ -155,7 +155,7 @@ public class WSHelper {
             data = di;
             break;
         case UNITDATE:
-            ArrDataUnitdate du = ArrDataUnitdate.valueOf(CalendarType.GREGORIAN, srcItem.getValue());
+            ArrDataUnitdate du = ArrDataUnitdate.valueOf(srcItem.getValue());
             data = du;
             break;
         case STRUCTURED:

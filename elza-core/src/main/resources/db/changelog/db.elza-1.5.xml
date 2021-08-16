@@ -1408,7 +1408,14 @@ where no.level_id = l.level_id
     </changeSet>
 
     <changeSet id="20210526144300" author="sergey.iryupin">
-      <delete tableName="ap_cached_access_point" />
+		<delete tableName="ap_cached_access_point" />
+    </changeSet>
+
+    <changeSet id="20210810153500" author="sergey.iryupin">
+		<dropColumn columnName="calendar_type_id" tableName="arr_data_unitdate" />
+		<dropTable tableName="arr_calendar_type" />
+		<delete tableName="arr_cached_node" />
+		<delete tableName="ap_cached_access_point" />
     </changeSet>
 
     <changeSet id="20210723163400" author="ppyt">

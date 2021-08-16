@@ -2,9 +2,6 @@ package cz.tacr.elza.controller.vo.nodes.descitems;
 
 import javax.persistence.EntityManager;
 
-import org.apache.commons.lang.Validate;
-
-import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 
@@ -21,11 +18,6 @@ public class ArrItemUnitdateVO extends ArrItemVO {
      */
     private String value;
 
-    /**
-     * identifikátor kalendáře
-     */
-    private Integer calendarTypeId;
-
     public String getValue() {
         return value;
     }
@@ -34,21 +26,9 @@ public class ArrItemUnitdateVO extends ArrItemVO {
         this.value = value;
     }
 
-    public Integer getCalendarTypeId() {
-        return calendarTypeId;
-    }
-
-    public void setCalendarTypeId(final Integer calendarTypeId) {
-        this.calendarTypeId = calendarTypeId;
-    }
-
     @Override
     public ArrData createDataEntity(EntityManager em) {
-        // prepare calendar type
-        CalendarType calType = CalendarType.fromId(calendarTypeId);
-        Validate.notNull(calType);
-
-        ArrDataUnitdate data = ArrDataUnitdate.valueOf(calType, value);
+        ArrDataUnitdate data = ArrDataUnitdate.valueOf(value);
         return data;
     }
 }

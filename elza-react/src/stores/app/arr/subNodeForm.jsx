@@ -143,9 +143,6 @@ export function validate(descItem, refType, valueServerError) {
         case 'ENUM':
             break;
         case 'UNITDATE':
-            if (typeof descItem.calendarTypeId == 'undefined' || descItem.calendarTypeId === '') {
-                error.calendarType = i18n('subNodeForm.validate.calendarType.required');
-            }
             if (!descItem.value || descItem.value.length === 0) {
                 error.value = i18n('subNodeForm.validate.value.notEmpty');
             } else {
@@ -208,7 +205,7 @@ export function validate(descItem, refType, valueServerError) {
         }
     }
 
-    error.hasError = error.spec || error.value || error.calendarType ? true : false;
+    error.hasError = error.spec || error.value ? true : false;
 
     return error;
 }
@@ -267,12 +264,9 @@ export function convertValue(value, descItem, type) {
             };
         },
         UNITDATE: (value, descItem) => {
-            // change touched attribute when calendarTypeId changed
-            const touched = descItem.calendarTypeId !== value.calendarTypeId;
             return {
                 value: value.value,
-                touched,
-                calendarTypeId: value.calendarTypeId,
+                touched: false,
             };
         },
         DEFAULT: value => {
@@ -596,9 +590,6 @@ export default function subNodeForm(state = initialState, action = {}) {
                     if (action.descItemResult.item && loc.descItemType.useSpecification) {
                         loc.descItem.prevDescItemSpecId = action.descItemResult.item.descItemSpecId;
                     }
-                    if (action.descItemResult.item && action.descItemResult.item.calendarTypeId) {
-                        loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
-                    }
                     if (action.descItemResult.item && action.descItemResult.item.description) {
                         loc.descItem.prevDescription = action.descItemResult.item.description;
                     }
@@ -616,9 +607,6 @@ export default function subNodeForm(state = initialState, action = {}) {
                     loc.descItem.saving = false;
                     if (loc.descItemType.useSpecification) {
                         loc.descItem.prevDescItemSpecId = action.descItemResult.item.descItemSpecId;
-                    }
-                    if (action.descItemResult.item.calendarTypeId) {
-                        loc.descItem.prevCalendarTypeId = action.descItemResult.item.calendarTypeId;
                     }
                     if (action.descItemResult.item.description) {
                         loc.descItem.prevDescription = action.descItemResult.item.description;

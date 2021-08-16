@@ -884,7 +884,7 @@ public class AccessPointService {
         accessPoint.setPreferredPart(apPart);
 
         apItemService.createItems(apPart, apPartFormVO.getItems(), apChange, null, null);
-        generateSync(accessPoint.getAccessPointId(), apPart);
+        generateSync(accessPoint, apPart);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         publishAccessPointCreateEvent(accessPoint);
@@ -986,7 +986,7 @@ public class AccessPointService {
 
         apItemService.deleteItems(deleteItems, change);
 
-        generateSync(apAccessPoint.getAccessPointId(), apPart);
+        generateSync(apAccessPoint, apPart);
 
         return true;
     }
@@ -1953,10 +1953,10 @@ public class AccessPointService {
     }
 
     @Transactional(TxType.MANDATORY)
-    public void generateSync(final Integer accessPointId, final ApPart apPart) {
+    public void generateSync(final ApAccessPoint accessPoint, final ApPart apPart) {
         boolean successfulGeneration = updatePartValue(apPart);
-        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPointId);
-        updateValidationErrors(accessPointId, apValidationErrorsVO, successfulGeneration);
+        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
+        updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
     }
 
     public void generateSync(final Integer accessPointId) {
@@ -1966,19 +1966,19 @@ public class AccessPointService {
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
-        generateSync(accessPointId, apState, partList, itemMap, false);
+        generateSync(accessPoint, apState, partList, itemMap, false);
     }
 
     @Transactional(TxType.MANDATORY)
-    public void generateSync(final Integer accessPointId,
+    public void generateSync(final ApAccessPoint accessPoint,
                              final ApState apState,
                              final List<ApPart> partList,
                              final Map<Integer, List<ApItem>> itemMap,
                              boolean async) {
 
         boolean successfulGeneration = updatePartValues(apState, partList, itemMap, async);
-        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPointId);
-        updateValidationErrors(accessPointId, apValidationErrorsVO, successfulGeneration);
+        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
+        updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
     }
 
 
@@ -1988,10 +1988,9 @@ public class AccessPointService {
      * @param apValidationErrorsVO chyby přístupového bodu
      * @param successfulGeneration úspěšné generování keyValue
      */
-    public void updateValidationErrors(final Integer accessPointId,
+    public void updateValidationErrors(final ApAccessPoint accessPoint,
                                        final ApValidationErrorsVO apValidationErrorsVO,
                                        final boolean successfulGeneration) {
-        ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
 
         StringBuilder accessPointErrors = new StringBuilder();
         if (CollectionUtils.isNotEmpty(apValidationErrorsVO.getErrors())) {

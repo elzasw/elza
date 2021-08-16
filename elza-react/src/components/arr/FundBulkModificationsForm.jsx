@@ -108,7 +108,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                             errors.replaceText = err && err.message ? err.message : ' ';
                         }
 
-                        if (!errors.replaceText && values.replaceText && !values.replaceText.calendarTypeId) {
+                        if (!errors.replaceText && values.replaceText) {
                             errors.replaceText = i18n('global.validation.required');
                         }
                         break;
@@ -219,7 +219,6 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             handleSubmit,
             onClose,
             dataType,
-            calendarTypes,
             meta,
             replaceSpec,
             replaceText,
@@ -321,11 +320,9 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                 ...descItemProps,
                                 descItem: {
                                     error: {
-                                        calendarType: meta.replaceText ? meta.replaceText : null,
                                         value: meta.replaceText ? meta.replaceText : null,
                                     },
                                     value: replaceText.value,
-                                    calendarTypeId: replaceText.calendarTypeId,
                                 },
                             };
                             operationInputs.push(
@@ -333,7 +330,6 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                     name={'replaceText'}
                                     field={DescItemUnitdate}
                                     label={i18n('arr.fund.bulkModifications.replace.replaceText')}
-                                    calendarTypes={calendarTypes}
                                     {...data}
                                 />,
                             );
@@ -523,7 +519,6 @@ export default connect((state, props) => {
     if (props.dataType.code === 'UNITDATE') {
         val = {
             value: '',
-            calendarTypeId: 1,
         };
     }
 

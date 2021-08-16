@@ -46,7 +46,6 @@ import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
@@ -1342,7 +1341,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
             case "UNITDATE": {
                 descItem = new ArrItemUnitdateVO();
                 ((ArrItemUnitdateVO) descItem).setValue((String) value);
-                ((ArrItemUnitdateVO) descItem).setCalendarTypeId(getCalendarTypes().get(0).getId());
                 break;
             }
 
@@ -1500,7 +1498,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
             case UNITDATE: {
                 item = new ApItemUnitdateVO();
                 ((ApItemUnitdateVO) item).setValue((String) value);
-                ((ApItemUnitdateVO) item).setCalendarTypeId(getCalendarTypes().get(0).getId());
                 break;
             }
 
@@ -1714,15 +1711,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
         ArrNodeVO rootNode = new ArrNodeVO();
         BeanUtils.copyProperties(treeNodeClient, rootNode);
         return rootNode;
-    }
-
-    /**
-     * Načte číselník typů kalendářů.
-     *
-     * @return typy kalendářů
-     */
-    protected List<ArrCalendarTypeVO> getCalendarTypes() {
-        return Arrays.asList(get(CALENDAR_TYPES).getBody().as(ArrCalendarTypeVO[].class));
     }
 
     /**

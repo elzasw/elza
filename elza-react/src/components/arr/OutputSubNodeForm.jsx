@@ -18,7 +18,6 @@ class OutputSubNodeForm extends AbstractReactComponent {
         fundId: PropTypes.number.isRequired,
         selectedSubNodeId: PropTypes.number.isRequired,
         rulDataTypes: PropTypes.object.isRequired,
-        calendarTypes: PropTypes.object.isRequired,
         descItemTypes: PropTypes.object.isRequired,
         structureTypes: PropTypes.object.isRequired,
         subNodeForm: PropTypes.object.isRequired,
@@ -38,7 +37,6 @@ class OutputSubNodeForm extends AbstractReactComponent {
             closed,
             fundId,
             rulDataTypes,
-            calendarTypes,
             structureTypes,
             descItemTypes,
             subNodeForm,
@@ -55,7 +53,6 @@ class OutputSubNodeForm extends AbstractReactComponent {
                     routingKey={null}
                     nodeSetting={null}
                     rulDataTypes={rulDataTypes}
-                    calendarTypes={calendarTypes}
                     structureTypes={structureTypes}
                     descItemTypes={descItemTypes}
                     subNodeForm={subNodeForm}

@@ -8,7 +8,6 @@ import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
 import cz.tacr.elza.domain.vo.JsonTableTitleValue;
 import cz.tacr.elza.domain.vo.TitleValue;
-import cz.tacr.elza.domain.vo.UnitdateTitleValue;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
@@ -109,8 +108,7 @@ public class DescriptionItemServiceInternal {
         }
         case UNITDATE:
             ArrDataUnitdate unitdateData = (ArrDataUnitdate) data;
-            return new UnitdateTitleValue(UnitDateConvertor.convertToString(unitdateData),
-                    unitdateData.getCalendarTypeId());
+            return new TitleValue(UnitDateConvertor.convertToString(unitdateData));
         case STRING:
             ArrDataString strData = (ArrDataString) data;
             return new TitleValue(strData.getStringValue());

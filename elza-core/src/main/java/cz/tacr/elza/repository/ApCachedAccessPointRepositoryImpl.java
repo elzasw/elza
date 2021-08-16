@@ -73,6 +73,8 @@ import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.TRANS;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge.USERNAME;
 
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
+
 public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRepositoryCustom {
 
     @PersistenceContext
@@ -428,14 +430,14 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         }
         if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
             ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
-            String intervalCreation = arrDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+            String intervalCreation = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
             searchQuery.must(processValueCondDef(sdp, queryBuilder, intervalCreation.toLowerCase(),
                                                  "CRE_DATE", null,
                                                  "PT_CRE", fcf));
         }
         if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
             ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
-            String intervalExtinction = arrDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+            String intervalExtinction = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
             searchQuery.must(processValueCondDef(sdp, queryBuilder, intervalExtinction.toLowerCase(),
                                                  "EXT_DATE", null,
                                                  "PT_EXT", fcf));

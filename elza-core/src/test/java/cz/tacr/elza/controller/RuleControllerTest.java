@@ -88,19 +88,14 @@ public class RuleControllerTest extends AbstractControllerTest {
         List<RulPolicyTypeVO> policyTypes = getPolicyTypes(fundVersion.getId());
         Assert.assertNotNull(policyTypes);
 
-        // check that all are visible by default
+        // check that none is set to node
         RuleController.VisiblePolicyTypes visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
         Assert.assertNotNull(visiblePolicy);
         Map<Integer, Boolean> policyTypeIdsMap = visiblePolicy.getNodePolicyTypeIdsMap();
         Assert.assertNotNull(policyTypeIdsMap);
-        Assert.assertTrue(policyTypeIdsMap.size() == 4);
+        Assert.assertTrue(policyTypeIdsMap.size() == 0);
 
-        for (RulPolicyTypeVO policyType : policyTypes) {
-            Boolean state = policyTypeIdsMap.get(policyType.getId());
-            Assert.assertNotNull(state);
-            Assert.assertTrue(state);
-        }
-
+        // set new policies
         RuleController.VisiblePolicyParams params = new RuleController.VisiblePolicyParams();
         Map<Integer, Boolean> policyTypeIdsMapSet = new HashMap<>();
         policyTypes.stream().forEach(item -> policyTypeIdsMapSet.put(item.getId(), false));
@@ -109,6 +104,7 @@ public class RuleControllerTest extends AbstractControllerTest {
         params.setNodeExtensions(new HashSet<>());
         setVisiblePolicy(rootNode.getId(), fundVersion.getId(), params);
 
+        // check map again
         visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
         Assert.assertNotNull(visiblePolicy);
         policyTypeIdsMap = visiblePolicy.getNodePolicyTypeIdsMap();
@@ -134,14 +130,7 @@ public class RuleControllerTest extends AbstractControllerTest {
         Assert.assertNotNull(visiblePolicy);
         policyTypeIdsMap = visiblePolicy.getNodePolicyTypeIdsMap();
         Assert.assertNotNull(policyTypeIdsMap);
-        Assert.assertTrue(policyTypeIdsMap.size() == 4);
-
-        // check that all are true
-        for (RulPolicyTypeVO policyType : policyTypes) {
-            Boolean state = policyTypeIdsMap.get(policyType.getId());
-            Assert.assertNotNull(state);
-            Assert.assertTrue(state);
-        }
+        Assert.assertTrue(policyTypeIdsMap.size() == 0);
 
         final RulArrangementExtension ext1 = getExtension("01", fundVersion);
         final RulArrangementExtension ext2 = getExtension("02", fundVersion);

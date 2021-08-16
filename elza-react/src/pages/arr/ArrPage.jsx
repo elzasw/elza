@@ -65,7 +65,6 @@ class ArrPage extends ArrParentPage {
         arrRegion: PropTypes.object.isRequired,
         developer: PropTypes.object.isRequired,
         rulDataTypes: PropTypes.object.isRequired,
-        calendarTypes: PropTypes.object.isRequired,
         descItemTypes: PropTypes.object.isRequired,
         focus: PropTypes.object.isRequired,
         userDetail: PropTypes.object.isRequired,
@@ -1038,7 +1037,7 @@ class ArrPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const {focus, arrRegion, rulDataTypes, calendarTypes, descItemTypes, userDetail} = this.props;
+        const {focus, arrRegion, rulDataTypes, descItemTypes, userDetail} = this.props;
         const showRegisterJp = arrRegion.showRegisterJp;
         const activeFund = this.getActiveFund(this.props);
 
@@ -1091,7 +1090,6 @@ class ArrPage extends ArrParentPage {
                     nodes={activeFund.nodes.nodes}
                     activeIndex={activeFund.nodes.activeIndex}
                     rulDataTypes={rulDataTypes}
-                    calendarTypes={calendarTypes}
                     descItemTypes={descItemTypes}
                     fundId={activeFund.id}
                     showRegisterJp={showRegisterJp}
@@ -1164,7 +1162,6 @@ function mapStateToProps(state) {
         developer,
         userDetail,
         rulDataTypes: refTables.rulDataTypes,
-        calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
         ruleSet: refTables.ruleSet,
         selectedTabKey: tab.values[ArrPage.TAB_KEY],

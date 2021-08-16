@@ -65,16 +65,16 @@ public abstract class AbstractTest {
     @Before
     public void setUp() throws Exception {
         // startup service have to be initialized
-        //Assert.assertTrue(startupService.isRunning());
+        Assert.assertTrue(!startupService.isRunning());
+        helperTestService.deleteTables(false);
+
         if (!startupService.isRunning()) {
-            startupService.start();
+            startupService.startNow();
         }
 
     	helperTestService.loadPackage("CZ_BASE", "package-cz-base");
     	// helperTestService.loadPackage("ZP2015", "rules-cz-zp2015");
-    	helperTestService.loadPackage("SIMPLE-DEV", "rules-simple-dev");
-
-        helperTestService.deleteTables();
+        helperTestService.loadPackage("SIMPLE-DEV", "rules-simple-dev");
     }
 
     @After

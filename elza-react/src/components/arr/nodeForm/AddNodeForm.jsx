@@ -192,10 +192,20 @@ class AddNodeForm extends AbstractReactComponent {
     };
 
     handleCountChange = (e) => {
-        if(Number.isInteger(parseInt(e.target.value))){
+        if(
+            (Number.isInteger(parseInt(e.target.value)) 
+                && e.target.value > 0)
+                || !e.target.value
+        ){
             this.setState({count: e.target.value})
         }
     };
+
+    handleCountBlur = (e) => {
+        if(!e.target.value){
+            this.setState({count: 1})
+        }
+    }
 
     /**
      * Vrátí prvky popisu ke zkopírování na základě proměnné props.nodeSettings
@@ -668,6 +678,7 @@ class AddNodeForm extends AbstractReactComponent {
                         type="number"
                         value={this.state.count}
                         onChange={this.handleCountChange}
+                        onBlur={this.handleCountBlur}
                     />
                 </FormGroup>
             </div>
