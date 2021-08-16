@@ -971,6 +971,7 @@ var messages = {
     "subNodeForm.section.createTemplate": "Vytvořit šablonu",
     "subNodeForm.section.copyAll": "Nastavení opakovaného kopírování hodnot všech PP",
     "subNodeForm.section.useTemplate": "Použít šablonu",
+    "subNodeForm.section.copyUuid": "Kopírovat UUID jednotky popisu",
 
     "subNodeDao.title": "Digitální entity",
     "subNodeDao.dao.action.showDetailAll": "Zobrazit detail digitálních entit",

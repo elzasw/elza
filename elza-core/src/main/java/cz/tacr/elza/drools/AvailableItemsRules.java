@@ -2,6 +2,7 @@ package cz.tacr.elza.drools;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.RulExtensionRule;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.model.ItemType;
 import cz.tacr.elza.drools.model.ModelAvailable;
 import cz.tacr.elza.drools.model.item.AbstractItem;
@@ -40,6 +41,18 @@ public class AvailableItemsRules extends Rules {
             kSession.dispose();
         }
         return modelAvailable;
+    }
+
+    public synchronized List<ItemType> execute(final RulRuleSet rulRuleSet,
+                                               List<ItemType> itemTypeList) throws Exception {
+        Path path = resourcePathResolver.getDroolFile(rulRuleSet);
+        KieSession kSession = createKieSession(path);
+        for (ItemType itemType : itemTypeList) {
+            kSession.insert(itemType);
+        }
+        kSession.fireAllRules();
+        kSession.dispose();
+        return itemTypeList;
     }
 
 }

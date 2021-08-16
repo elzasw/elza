@@ -1869,4 +1869,26 @@ public class RuleService {
     public List<RulRuleSet> findAllApRules() {
         return ruleSetRepository.findByRuleType(ENTITY);
     }
+
+    public List<String> getItemTypeCodesByRuleSet(RulRuleSet rulRuleSet) {
+        List<String> itemTypeCodes = new ArrayList<>();
+        List<ItemType> itemTypeList = null;
+        try {
+            if (rulRuleSet.getItemTypeComponent() != null) {
+                itemTypeList = availableItemsRules.execute(rulRuleSet, createModelItemTypes());
+            }
+        } catch (Exception e) {
+            throw new SystemException(e);
+        }
+
+        if (CollectionUtils.isNotEmpty(itemTypeList)) {
+            for (ItemType itemType : itemTypeList) {
+                if (itemType.getRequiredType() == RequiredType.POSSIBLE || itemType.getRequiredType() == RequiredType.REQUIRED) {
+                    itemTypeCodes.add(itemType.getCode());
+                }
+            }
+        }
+
+        return itemTypeCodes;
+    }
 }
