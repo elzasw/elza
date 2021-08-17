@@ -1036,6 +1036,7 @@ private void processEvent(AbstractEventSimple event) {
                 }
                 case ADD_LEVEL_UNDER: {
                     newNode = createEmptyTreeNode(newNodeId, staticNode);
+
                     LinkedList<TreeNode> parentChilds = staticNode.getChilds();
                     parentChilds.addLast(newNode);
                     repositionList(parentChilds);
