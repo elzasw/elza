@@ -24,6 +24,7 @@ static Map<String, Map<String, String>> createItemTypeMap() {
 
     Map<String, Map<String, String>> itemTypeMap = new HashMap<>()
     itemTypeMap.put(ApExternalSystemType.CAM.toString(), camItemTypeMap)
+    itemTypeMap.put(ApExternalSystemType.CAM_COMPLETE.toString(), camItemTypeMap)
     itemTypeMap.put(ApExternalSystemType.CAM_UUID.toString(), camItemTypeMap)
     return itemTypeMap
 }
