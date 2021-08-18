@@ -18,13 +18,22 @@ class DataGridColumnsSettings extends AbstractReactComponent {
         this.bindMethods('handleChangeOrder', 'handleAddVisible', 'handleRemoveVisible', 'handleChangeSelection');
 
         var colsMap = getMapFromList(props.columns);
+        var itemTypeCodes = props.itemTypeCodes;
         const visible = [];
         const available = [];
         props.columns.forEach(col => {
             if (props.visibleColumns[col.id]) {
                 visible.push(col);
             } else {
-                available.push(col);
+                if (itemTypeCodes !== null && itemTypeCodes.length !== 0) {
+                    itemTypeCodes.forEach(itemTypeCode => {
+                        if (itemTypeCode === col.code) {
+                            available.push(col);
+                        }
+                    });
+                } else {
+                    available.push(col);
+                }
             }
         });
 
@@ -90,7 +99,7 @@ class DataGridColumnsSettings extends AbstractReactComponent {
 
     handleRemoveVisible() {
         const {rightSelected, available, visible} = this.state;
-        const {columns} = this.props;
+        const {columns, itemTypeCodes} = this.props;
 
         const selectedMap = {};
         rightSelected.forEach(index => {
@@ -117,7 +126,15 @@ class DataGridColumnsSettings extends AbstractReactComponent {
         const newAvailable = [];
         columns.forEach(col => {
             if (!visibleMap[col.id]) {
-                newAvailable.push(col);
+                if (itemTypeCodes !== null && itemTypeCodes.length !== 0) {
+                    itemTypeCodes.forEach(itemTypeCode => {
+                        if (itemTypeCode === col.code) {
+                            newAvailable.push(col);
+                        }
+                    });
+                } else {
+                    newAvailable.push(col);
+                }
             }
         });
         // Seřazení dostupných sloupečků podle abecedy

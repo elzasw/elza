@@ -68,6 +68,7 @@ import {DisplayType} from '../../constants';
 import Moment from 'moment';
 import * as groups from '../../actions/refTables/groups';
 import {JAVA_ATTR_CLASS} from '../../constants';
+import {WebApi} from "../../actions/WebApi";
 
 class FundDataGrid extends AbstractReactComponent {
     dataGridRef = null;
@@ -116,7 +117,7 @@ class FundDataGrid extends AbstractReactComponent {
 
         var colState = this.getColsStateFromProps(props, {fundDataGrid: {}});
         if (!colState) {
-            colState = {cols: []};
+            colState = {cols: [], itemTypeCodes: []};
         }
 
         this.state = colState;
@@ -145,13 +146,14 @@ class FundDataGrid extends AbstractReactComponent {
         if (ruleSet.fetched && descItemTypes.fetched && fund.activeVersion) {
             // Prvotní inicializace zobrazení, pokud ještě grid nebyl zobrazem
             // Určí se seznam viditelných sloupečků a případně i šířka
+            const ruleMap = getMapFromList(ruleSet.items);
+            const rule = ruleMap[fund.activeVersion.ruleSetId];
+
             if (
                 Object.keys(fundDataGrid.visibleColumns).length === 0 &&
                 Object.keys(fundDataGrid.columnInfos).length === 0
             ) {
                 const initData = {visibleColumns: [], columnInfos: []};
-                const ruleMap = getMapFromList(ruleSet.items);
-                const rule = ruleMap[fund.activeVersion.ruleSetId];
                 if (rule.gridViews) {
                     const gwMap = {}; // mapa kódu item type na GridView
                     rule.gridViews.forEach(gw => {
@@ -174,6 +176,10 @@ class FundDataGrid extends AbstractReactComponent {
                 }
                 this.props.dispatch(fundDataInitIfNeeded(versionId, initData));
             }
+
+            WebApi.getItemTypeCodesByRuleSet(rule.code).then(items => {
+                this.setState({itemTypeCodes: items});
+            });
         }
     }
 
@@ -508,6 +514,7 @@ class FundDataGrid extends AbstractReactComponent {
 
     handleColumnSettings() {
         const {fundDataGrid, descItemTypes, fund, ruleSet} = this.props;
+        const {itemTypeCodes} = this.state;
 
         var ruleMap = getMapFromList(ruleSet.items);
         var rule = ruleMap[fund.activeVersion.ruleSetId];
@@ -527,6 +534,7 @@ class FundDataGrid extends AbstractReactComponent {
                 id: refType.id,
                 name: refType.name,
                 desc: refType.description,
+                code: refType.code,
             };
         });
 
@@ -538,6 +546,7 @@ class FundDataGrid extends AbstractReactComponent {
                     onSubmitForm={this.handleChangeColumnsSettings}
                     columns={columns}
                     visibleColumns={visibleColumns}
+                    itemTypeCodes={itemTypeCodes}
                 />,
             ),
         );

@@ -392,8 +392,8 @@ public class RuleController {
     }
 
     @Transactional
-    @RequestMapping(value = "/itemTypeCodes", method = RequestMethod.GET)
-    public List<String> getItemTypeCodesByRuleSet(@RequestParam(value = "code") final String ruleSetCode) {
+    @RequestMapping(value = "/itemTypeCodes/{ruleSetCode}", method = RequestMethod.GET)
+    public List<String> getItemTypeCodesByRuleSet(@PathVariable(value = "ruleSetCode") final String ruleSetCode) {
         RulRuleSet rulRuleSet = ruleSetRepository.findByCode(ruleSetCode);
         return ruleService.getItemTypeCodesByRuleSet(rulRuleSet);
     }
