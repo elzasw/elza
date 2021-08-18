@@ -2006,6 +2006,11 @@ export class WebApiCls {
         );
     }
 
+    getItemTypeCodesByRuleSet(ruleSetCode) {
+        return AjaxUtils.ajaxGet(
+            WebApiCls.ruleUrl + '/itemTypeCodes/' + ruleSetCode);
+    }
+
     /**
      * Získání druhů připomnek.
      *
