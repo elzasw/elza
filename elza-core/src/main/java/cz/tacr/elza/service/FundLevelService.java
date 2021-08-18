@@ -563,7 +563,8 @@ public class FundLevelService {
         }
 
         Assert.notEmpty(levels, "Level musí být vyplněn");
-        
+
+        ArrLevel predLevel = null;
         for (ArrLevel newLevel : levels) {
             ArrChange change = newLevel.getCreateChange();
 
@@ -606,9 +607,18 @@ public class FundLevelService {
                                        Arrays.asList(newLevel.getNode().getNodeId()),
                                        NodeTypeOperation.CREATE_NODE, null, null, null);
 
+            ArrLevel baseLevel = staticLevel;
+
+            // při přidání AFTER by se měla změnit aktuální ArrLevel na předchozí
+            if (direction == AddLevelDirection.AFTER) {
+                if (predLevel != null) {
+                    baseLevel = predLevel;
+                }
+                predLevel = newLevel;
+            }
+
             entityManager.flush(); //aktualizace verzí v nodech
-            eventNotificationService
-                    .publishEvent(EventFactory.createAddNodeEvent(direction.getEventType(), version, staticLevel, newLevel));
+            eventNotificationService.publishEvent(EventFactory.createAddNodeEvent(direction.getEventType(), version, baseLevel, newLevel));
         }
 
         return levels;
