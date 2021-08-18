@@ -61,6 +61,7 @@ import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -366,6 +367,11 @@ public class CamService {
         List<Object> changes = ueb.build(entityXml,
                   partList, itemMap, apExternalSystem.getType().toString());
         
+        if (CollectionUtils.isEmpty(changes)) {
+            log.error("Empty list of changes");
+            throw new IllegalStateException("Empty list of changes");
+        }
+
         batchUpdate.getChanges().addAll(changes);
         return batchUpdate;
     }
@@ -733,14 +739,22 @@ public class CamService {
             synchronizeExtItem(extSyncsQueueItem, externalSystem);
             return true;
         } catch (ApiException e) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(e.getMessage());
+            sb.append(", code: ").append(e.getCode());
+            String body = e.getResponseBody();
+            if (StringUtils.isNotEmpty(body)) {
+                sb.append(", response: ").append(body);
+            }
             // if ApiException -> it means we connected server and it is logical failure 
             setQueueItemState(extSyncsQueueItem,
                               ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
                               OffsetDateTime.now(),
-                              e.getMessage());
-            log.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
+                              sb.toString());
+            log.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), body, e);
             return true;
         } catch (Exception e) {
+            log.error("Failed to synchronize, body: {}", e.getMessage());
             // other exception -> retry later
             setQueueItemState(extSyncsQueueItem,
                               ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW,
