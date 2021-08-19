@@ -36,6 +36,11 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
                                                               @Param("sortValue") String sortValue,
                                                               @Param("ignoreSobj") ArrStructuredObject ignoreSobj);
 
+    @Query("SELECT sd FROM arr_structured_object sd WHERE sd.fund = :fund AND sd.deleteChange IS NULL "
+            + "AND sd.value = :value")
+    List<ArrStructuredObject> findByValueAndFund(@Param("fund") ArrFund fund,
+                                                 @Param("value") String value);
+
     @Query("SELECT sd.structuredObjectId FROM arr_structured_object sd WHERE sd.structuredType = :structuredType "
             + "AND sd.fund = :fund AND sd.deleteChange IS NULL AND sd.state in ('OK','ERROR')")
     List<Integer> findStructuredObjectIdByStructureTypeFund(@Param("structuredType") RulStructuredType structuredType,

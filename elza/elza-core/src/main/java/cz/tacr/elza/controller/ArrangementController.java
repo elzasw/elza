@@ -1991,14 +1991,14 @@ public class ArrangementController {
      *
      * @param fundVersionId   id verze stromu
      * @param itemTypeId      typ atributu
-     * @param replaceValueId   id hodnoty, která bude nastavena
+     * @param replaceValue    hodnota, která bude nastavena
      * @param replaceDataBody seznam uzlů, ve kterých hledáme a seznam specifikací
      */
     @Transactional
     @RequestMapping(value = "/setDataValues/{fundVersionId}", method = RequestMethod.PUT)
     public void setDataValues(@PathVariable("fundVersionId") final Integer fundVersionId,
                                  @RequestParam("itemTypeId") final Integer itemTypeId,
-                                 @RequestParam("replaceValueId") final Integer replaceValueId,
+                                 @RequestParam("replaceValue") final String replaceValue,
                                  @RequestBody final ReplaceDataBody replaceDataBody) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
@@ -2010,7 +2010,7 @@ public class ArrangementController {
         Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
         descriptionItemService.setDataValues(fundVersion, descItemType, nodesDO,
-                replaceValueId, replaceDataBody.getValueIds(), replaceDataBody.getSelectionType() == SelectionType.FUND);
+                replaceValue, replaceDataBody.getValues(), replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
     /**
@@ -3516,7 +3516,7 @@ public class ArrangementController {
 
         private Set<Integer> specIds;
 
-        private Set<Integer> valueIds;
+        private Set<String> values;
 
         public SelectionType getSelectionType() {
             return selectionType;
@@ -3542,12 +3542,12 @@ public class ArrangementController {
             this.specIds = specIds;
         }
 
-        public Set<Integer> getValueIds() {
-            return valueIds;
+        public Set<String> getValues() {
+            return values;
         }
 
-        public void setValueIds(Set<Integer> valueIds) {
-            this.valueIds = valueIds;
+        public void setValues(Set<String> values) {
+            this.values = values;
         }
     }
 

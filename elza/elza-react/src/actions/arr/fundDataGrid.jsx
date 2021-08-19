@@ -49,8 +49,8 @@ export function fundBulkModifications(
     replaceSpecId,
     nodes,
     selectionType,
-    replaceValueId,
-    valueIds,
+    replaceValue,
+    values,
 ) {
     console.log(
         '#####fundBulkModifications',
@@ -103,10 +103,10 @@ export function fundBulkModifications(
                     versionId,
                     descItemTypeId,
                     specsIds,
-                    replaceValueId,
+                    replaceValue,
                     nodes,
                     selectionType,
-                    valueIds
+                    values
                 );
             default:
                 console.warn('#####fundBulkModifications - operation not implemented', operationType);

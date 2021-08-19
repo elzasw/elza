@@ -213,4 +213,39 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
         return query.getResultList();
     }
+
+    @Override
+    public List<ArrDescItem> findByNodesContainingTexts(final Collection<ArrNode> nodes,
+                                                        final RulItemType itemType,
+                                                        final Set<RulItemSpec> specifications,
+                                                        final Collection<String> texts) {
+
+        if(CollectionUtils.isEmpty(texts)){
+            throw new IllegalArgumentException("Kolekce textů nesmí být prázdná.");
+        }
+
+        if(itemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)){
+            throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
+        }
+
+        String hql = "SELECT di FROM arr_item di JOIN FETCH di.data d WHERE di.data IN " +
+                "(SELECT ds FROM arr_data_structure_ref ds WHERE ds.structuredObject IN (SELECT so FROM arr_structured_object so WHERE so.value IN :text))"
+                + " AND di.itemType = :itemType";
+
+        if(itemType.getUseSpecification()){
+            hql+= " AND di.itemSpec IN (:specs)";
+        }
+
+        hql += " AND di.node IN (:nodes) AND di.deleteChange IS NULL";
+
+        Query query = entityManager.createQuery(hql);
+        query.setParameter("itemType", itemType);
+        query.setParameter("nodes", nodes);
+        query.setParameter("text", texts);
+        if (itemType.getUseSpecification()) {
+            query.setParameter("specs", specifications);
+        }
+
+        return query.getResultList();
+    }
 }
