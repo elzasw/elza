@@ -1987,6 +1987,33 @@ public class ArrangementController {
     }
 
     /**
+     * Nastavit hodnotu dle vybraných hodnot atributu.
+     *
+     * @param fundVersionId   id verze stromu
+     * @param itemTypeId      typ atributu
+     * @param replaceValueId   id hodnoty, která bude nastavena
+     * @param replaceDataBody seznam uzlů, ve kterých hledáme a seznam specifikací
+     */
+    @Transactional
+    @RequestMapping(value = "/setDataValues/{fundVersionId}", method = RequestMethod.PUT)
+    public void setDataValues(@PathVariable("fundVersionId") final Integer fundVersionId,
+                                 @RequestParam("itemTypeId") final Integer itemTypeId,
+                                 @RequestParam("replaceValueId") final Integer replaceValueId,
+                                 @RequestBody final ReplaceDataBody replaceDataBody) {
+
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        RulItemType descItemType = ruleService.getItemTypeById(itemTypeId);
+
+        replaceDataBody.getNodes()
+                .forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getId(), node.getVersion()));
+
+        Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
+
+        descriptionItemService.setDataValues(fundVersion, descItemType, nodesDO,
+                replaceValueId, replaceDataBody.getValueIds(), replaceDataBody.getSelectionType() == SelectionType.FUND);
+    }
+
+    /**
      * Smazání hodnot atributů daného typu pro vybrané uzly.
      *
      * @param versionId       id verze stromu
@@ -3489,6 +3516,8 @@ public class ArrangementController {
 
         private Set<Integer> specIds;
 
+        private Set<Integer> valueIds;
+
         public SelectionType getSelectionType() {
             return selectionType;
         }
@@ -3511,6 +3540,14 @@ public class ArrangementController {
 
         public void setSpecIds(final Set<Integer> specIds) {
             this.specIds = specIds;
+        }
+
+        public Set<Integer> getValueIds() {
+            return valueIds;
+        }
+
+        public void setValueIds(Set<Integer> valueIds) {
+            this.valueIds = valueIds;
         }
     }
 

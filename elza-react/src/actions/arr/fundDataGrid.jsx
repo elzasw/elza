@@ -49,6 +49,8 @@ export function fundBulkModifications(
     replaceSpecId,
     nodes,
     selectionType,
+    replaceValueId,
+    valueIds,
 ) {
     console.log(
         '#####fundBulkModifications',
@@ -95,6 +97,16 @@ export function fundBulkModifications(
                     replaceSpecId,
                     nodes,
                     selectionType,
+                );
+            case 'setValue':
+                return WebApi.setDataValues(
+                    versionId,
+                    descItemTypeId,
+                    specsIds,
+                    replaceValueId,
+                    nodes,
+                    selectionType,
+                    valueIds
                 );
             default:
                 console.warn('#####fundBulkModifications - operation not implemented', operationType);
