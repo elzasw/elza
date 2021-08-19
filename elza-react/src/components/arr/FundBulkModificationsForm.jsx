@@ -1,7 +1,7 @@
 //
 import React from 'react';
 import {formValueSelector, Field, getFormMeta, reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n, FilterableListBox, HorizontalLoader} from 'components/shared';
+import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
 import {connect} from 'react-redux';
 import {Col, Form, FormCheck, FormGroup, FormLabel, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
@@ -62,9 +62,6 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         allValueItems: [],
         valueItems: [],
         valueSearchText: '',
-        selectedValueItems: [],
-        selectedValueItemsType: 'unselected',
-        isFetchingItemTypeValues: false,
     };
 
     /**
@@ -143,8 +140,8 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 }
                 break;
             case 'setValue':
-                if (!values.replaceValueId) {
-                    errors.replaceValueId = i18n('global.validation.required');
+                if (!values.replaceValue) {
+                    errors.replaceValue = i18n('global.validation.required');
                 }
             default:
                 break;
@@ -243,60 +240,6 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         return dataType.code === 'ENUM';
     };
 
-    handleValueItemsChange(type, ids) {
-        const {selectedValueItems, selectedValueItemsType, valueSearchText, valueItems} = this.state;
-        const filtered = valueSearchText !== '';
-        const prevType = selectedValueItemsType;
-
-        const valueItemsMap = valueItems.map(item => item.id);
-
-        let resultValueItems = [];
-        if (filtered) {
-            resultValueItems = selectedValueItems.filter(item => valueItemsMap.indexOf(item) === -1);
-            if (prevType === 'selected') {
-                if (type === 'selected') {
-                    resultValueItems.push(...ids);
-                } else {
-                    valueItemsMap.forEach(item => resultValueItems.push(item));
-                    ids.forEach(item => {
-                        if (resultValueItems.indexOf(item) === -1) {
-                            resultValueItems.push(item);
-                        }
-                    });
-                    type = 'selected';
-                }
-            } else {
-                if (type === 'selected') {
-                    valueItemsMap.forEach(item => resultValueItems.push(item));
-                    ids.forEach(item => {
-                        if (resultValueItems.indexOf(item) === -1) {
-                            resultValueItems.push(item);
-                        }
-                    });
-                    type = 'unselected';
-                } else {
-                    resultValueItems.push(...ids);
-                }
-            }
-        } else {
-            resultValueItems = ids;
-        }
-
-        this.setState({
-            selectedValueItems: resultValueItems,
-            selectedValueItemsType: type,
-        });
-    }
-
-    handleValueSearch(text) {
-        this.setState(
-            {
-                valueSearchText: text,
-            },
-            this.callValueSearch,
-        );
-    }
-
     callValueSearch() {
         const {versionId, refType, dataType} = this.props;
         const {valueSearchText} = this.state;
@@ -308,7 +251,6 @@ class FundBulkModificationsForm extends AbstractReactComponent {
 
         if (dataType.code === "STRUCTURED") {
 
-            this.setState({isFetchingItemTypeValues: true});
             WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, null, 200).then(json => {
                 var valueItems = json.map(i => ({id: i, name: i}));
 
@@ -332,7 +274,6 @@ class FundBulkModificationsForm extends AbstractReactComponent {
 
                 this.setState({
                     valueItems: valueItems,
-                    isFetchingItemTypeValues: false,
                 });
             });
         }
@@ -352,7 +293,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             operationType,
             submitting,
         } = this.props;
-        const {isFetchingItemTypeValues, valueItems, selectedValueItems, selectedValueItemsType, allValueItems} = this.state;
+        const {valueItems, allValueItems} = this.state;
         const uncheckedItemsCount = allItemsCount - checkedItemsCount;
 
         let operationInputs = [];
@@ -512,8 +453,8 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 submitButtonTitle = 'arr.fund.bulkModifications.action.setSpecification';
                 operationInputs.push(
                     <Field
-                        key={'replaceValueId'}
-                        name="replaceValueId"
+                        key={'replaceValue'}
+                        name="replaceValue"
                         as={'select'}
                         component={FormInputField}
                         label={i18n('arr.fund.bulkModifications.replace.replaceEnum')}
@@ -568,17 +509,19 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     )}
 
                     {dataType.code === "STRUCTURED" && (
-                        <FilterableListBox
-                            className="filter-content-container"
-                            searchable
-                            items={valueItems}
-                            selectionType={selectedValueItemsType}
-                            selectedIds={selectedValueItems}
-                            onChange={this.handleValueItemsChange}
-                            onSearch={this.handleValueSearch}
-                        >
-                            {isFetchingItemTypeValues && <HorizontalLoader hover showText={false} />}
-                        </FilterableListBox>
+                        <FormGroup>
+                            <FormLabel>
+                                {i18n('arr.fund.bulkModifications.values')}
+                            </FormLabel>
+                            <FF
+                                field={SimpleCheckListBox}
+                                ref="valuesListBox"
+                                items={[
+                                    ...valueItems,
+                                ]}
+                                name={'values'}
+                            />
+                        </FormGroup>
                     )}
 
                     <FormGroup>
@@ -696,10 +639,11 @@ export default connect((state, props) => {
             itemsArea: getDefaultItemsArea(props),
             operationType: getDefaultOperationType(props),
             specs: {type: 'unselected'},
+            values: {type: 'unselected'},
         },
         replaceText: formSelector(state, 'replaceText'),
         replaceSpec: formSelector(state, 'replaceSpec'),
-        replaceValueId: formSelector(state, 'replaceValueId'),
+        replaceValue: formSelector(state, 'replaceValue'),
         operationType: formSelector(state, 'operationType'),
         meta: getFormMeta(formName)(state),
         descItemTypes: state.refTables.descItemTypes,

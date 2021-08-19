@@ -49,6 +49,11 @@ public interface DescItemRepositoryCustom {
                                                 Set<RulItemSpec> specifications,
                                                 String text);
 
+    List<ArrDescItem> findByNodesContainingTexts(Collection<ArrNode> nodes,
+                                                 RulItemType itemType,
+                                                 Set<RulItemSpec> specifications,
+                                                 Collection<String> texts);
+
 
     /**
      * Objekt popisku uzlu.

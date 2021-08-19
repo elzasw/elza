@@ -1264,11 +1264,11 @@ export class WebApiCls {
         );
     }
 
-    setDataValues(fundVersionId, itemTypeId, specIds, replaceValueId, nodes, selectionType, valueIds) {
+    setDataValues(fundVersionId, itemTypeId, specIds, replaceValue, nodes, selectionType, values) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/setDataValues/' + fundVersionId,
-            {itemTypeId, replaceValueId},
-            {nodes, specIds, selectionType, valueIds},
+            {itemTypeId, replaceValue},
+            {nodes, specIds, selectionType, values},
         );
     }
 

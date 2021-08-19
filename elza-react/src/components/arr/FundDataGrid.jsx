@@ -665,8 +665,8 @@ class FundDataGrid extends AbstractReactComponent {
                         data.replaceSpec,
                         nodes,
                         selectionType,
-                        data.replaceValueId,
-                        data.selectedValueItems,
+                        data.replaceValue,
+                        data.values.ids,
                     ),
                 );
             }

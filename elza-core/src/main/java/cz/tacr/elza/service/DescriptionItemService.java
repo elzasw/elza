@@ -1844,20 +1844,20 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *
      * @param fundVersion      verze stromu
      * @param itemType         typ atributu
-     * @param replaceValueId   hodnota, která bude nastavena
-     * @param valueIds        seznam hodnot, které se mají nahradit
+     * @param replaceValue     hodnota, která bude nastavena
+     * @param values           seznam hodnot, které se mají nahradit
      * @param allNodes         vložit u všech JP
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void setDataValues(final ArrFundVersion fundVersion,
                               final RulItemType itemType,
                               final Collection<ArrNode> nodes,
-                              final Integer replaceValueId,
-                              final Set<Integer> valueIds,
+                              final String replaceValue,
+                              final Set<String> values,
                               final boolean allNodes) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(itemType, "Typ atributu musí být vyplněn");
-        Assert.notNull(replaceValueId, "Musí být vyplněn identifikátor hodnoty");
+        Assert.notNull(replaceValue, "Musí být vyplněna hodnota");
 
         Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, ArrNode::getNodeId);
 
@@ -1868,10 +1868,10 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             nodeIds.add(rootNodeId);
             for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAllById(nodeIds),
                     HibernateConfiguration.MAX_IN_SIZE)) {
-//                descItemsToReplaceText.addAll(descItemRepository.findByNodesContainingText(partNodes, itemType, null, valueIds));
+                descItemsToReplaceText.addAll(descItemRepository.findByNodesContainingTexts(partNodes, itemType, null, values));
             }
         } else {
-//            descItemsToReplaceText = descItemRepository.findByNodesContainingText(nodes, itemType, null, valueIds);
+            descItemsToReplaceText = descItemRepository.findByNodesContainingTexts(nodes, itemType, null, values);
         }
 
         if (!descItemsToReplaceText.isEmpty()) {
@@ -1879,8 +1879,17 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
             MultiplItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
-            ArrStructuredObject structuredObject = structuredObjectRepository.findById(replaceValueId)
-                    .orElseThrow(() -> new IllegalStateException("Nebyla nalezena entita v úložišti ArrStructuredObject s id " + replaceValueId));
+            List<ArrStructuredObject> structuredObjects = structuredObjectRepository.findByValueAndFund(fundVersion.getFund(), replaceValue);
+            ArrStructuredObject structuredObject;
+
+            if (CollectionUtils.isEmpty(structuredObjects)) {
+                throw new IllegalStateException("Nebyla nalezena entita v úložišti ArrStructuredObject s hodnotou " + replaceValue);
+            } else if (structuredObjects.size() != 1) {
+                throw new IllegalStateException("Nebyla nalezena unikátní entita v úložišti ArrStructuredObject s hodnotou " + replaceValue);
+            } else {
+                structuredObject = structuredObjects.get(0);
+            }
+
 
             for (ArrDescItem descItem: descItemsToReplaceText) {
                 // kontrola zákazu změn
