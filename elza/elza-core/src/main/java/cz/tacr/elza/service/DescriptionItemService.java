@@ -1874,7 +1874,23 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             descItemsToReplaceText = descItemRepository.findByNodesContainingTexts(nodes, itemType, null, values);
         }
 
-        if (!descItemsToReplaceText.isEmpty()) {
+        List<ArrNode> dbNodes;
+        if (allNodes) {
+            Integer rootNodeId = fundVersion.getRootNode().getNodeId();
+            Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(fundVersion, rootNodeId, ArrangementController.Depth.SUBTREE);
+            nodeIds.add(rootNodeId);
+            dbNodes = nodeRepository.findAllById(nodeIds);
+        } else {
+            dbNodes = nodeRepository.findAllById(nodesMap.keySet());
+        }
+
+        Set<ArrNode> ignoreNodes = new HashSet<>();
+        if (BooleanUtils.isNotTrue(itemType.getRepeatable()) && nodes.size() > 0) {
+            List<ArrDescItem> remainItems = descItemRepository.findOpenByNodesAndType(nodes, itemType);
+            ignoreNodes = remainItems.stream().map(ArrDescItem::getNode).collect(Collectors.toSet());
+        }
+
+        if (!descItemsToReplaceText.isEmpty() || (CollectionUtils.isNotEmpty(dbNodes) && values.contains("NULL"))) {
 
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
@@ -1890,35 +1906,76 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 structuredObject = structuredObjects.get(0);
             }
 
+            if (!descItemsToReplaceText.isEmpty()) {
 
-            for (ArrDescItem descItem: descItemsToReplaceText) {
-                // kontrola zákazu změn
-                if (descItem.getReadOnly()) {
-                    throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+                for (ArrDescItem descItem: descItemsToReplaceText) {
+                    // kontrola zákazu změn
+                    if (descItem.getReadOnly()) {
+                        throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+                    }
+                    ArrNode clientNode = nodesMap.get(descItem.getNodeId());
+                    dbNodes.remove(clientNode);
+                    arrangementService.lockNode(descItem.getNode(), clientNode == null ? descItem.getNode() : clientNode, change);
+
+                    ArrData data = descItem.getData();
+                    Validate.notNull(data, "item without data");
+
+                    ArrData dataNew = ArrData.makeCopyWithoutId(data);
+
+                    // modify data
+                    if (dataNew instanceof ArrDataStructureRef) {
+                        ArrDataStructureRef ds = (ArrDataStructureRef) dataNew;
+                        ds.setStructuredObject(structuredObject);
+                    } else {
+                        throw new IllegalStateException(
+                                "Zatím není implementováno pro kod " + descItem.getItemType().getCode());
+                    }
+                    dataNew = dataRepository.save(dataNew);
+
+                    ArrDescItem descItemNew = prepareNewDescItem(descItem, dataNew, change);
+                    descItemNew = descItemRepository.save(descItemNew);
+                    arrangementCacheService.changeDescItem(descItem.getNodeId(), descItemNew, false, changeContext);
+
+                    changeContext.addUpdatedItem(descItemNew);
                 }
-                ArrNode clientNode = nodesMap.get(descItem.getNodeId());
-                arrangementService.lockNode(descItem.getNode(), clientNode == null ? descItem.getNode() : clientNode, change);
 
-                ArrData data = descItem.getData();
-                Validate.notNull(data, "item without data");
+                changeContext.flushIfNeeded();
+            }
 
-                ArrData dataNew = ArrData.makeCopyWithoutId(data);
+            if (CollectionUtils.isNotEmpty(dbNodes) && values.contains("NULL")) {
+                for (ArrNode dbNode : dbNodes) {
 
-                // modify data
-                if (dataNew instanceof ArrDataStructureRef) {
-                    ArrDataStructureRef ds = (ArrDataStructureRef) dataNew;
-                    ds.setStructuredObject(structuredObject);
-                } else {
-                    throw new IllegalStateException(
-                            "Zatím není implementováno pro kod " + descItem.getItemType().getCode());
+                    if (ignoreNodes.contains(dbNode)) {
+                        continue;
+                    }
+
+                    ArrNode arrNode = nodesMap.get(dbNode.getNodeId());
+                    arrangementService.lockNode(dbNode, arrNode == null ? dbNode : arrNode, change);
+
+                    ArrData data;
+                    switch (itemType.getDataType().getCode()) {
+                        case "STRUCTURED":
+                            ArrDataStructureRef ds = new ArrDataStructureRef();
+                            ds.setStructuredObject(structuredObject);
+                            data = ds;
+                            break;
+                        default:
+                            throw new SystemException("Neplatný typ atributu " + itemType.getDataType().getCode(), BaseCode.INVALID_STATE);
+                    }
+
+                    ArrDescItem newDescItem = new ArrDescItem();
+                    newDescItem.setData(data);
+                    newDescItem.setNode(dbNode);
+                    newDescItem.setItemType(itemType);
+                    newDescItem.setCreateChange(change);
+                    newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+                    newDescItem.setPosition(1);
+
+                    ArrDescItem savedItem = descItemFactory.saveItemVersionWithData(newDescItem, true);
+                    arrangementCacheService.createDescItem(savedItem, changeContext);
+
+                    changeContext.flushIfNeeded();
                 }
-                dataNew = dataRepository.save(dataNew);
-
-                ArrDescItem descItemNew = prepareNewDescItem(descItem, dataNew, change);
-                descItemNew = descItemRepository.save(descItemNew);
-                arrangementCacheService.changeDescItem(descItem.getNodeId(), descItemNew, false, changeContext);
-
-                changeContext.addUpdatedItem(descItemNew);
             }
 
             changeContext.flush();
