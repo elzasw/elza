@@ -700,7 +700,6 @@ export default connect((state, props) => {
         replaceText: formSelector(state, 'replaceText'),
         replaceSpec: formSelector(state, 'replaceSpec'),
         replaceValueId: formSelector(state, 'replaceValueId'),
-        selectedValueItems: state.selectedValueItems.length === 0 ? state.valueItems : state.selectedValueItems,
         operationType: formSelector(state, 'operationType'),
         meta: getFormMeta(formName)(state),
         descItemTypes: state.refTables.descItemTypes,
