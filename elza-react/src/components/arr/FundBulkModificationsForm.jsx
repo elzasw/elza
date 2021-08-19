@@ -265,7 +265,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     // u prázdného hledání a případně u hledání prázdné hodnoty doplňujeme null položku
                     valueItems = [
                         {
-                            id: FILTER_NULL_VALUE,
+                            id: 'NULL',
                             name: i18n('arr.fund.filterSettings.value.empty'),
                         },
                         ...valueItems,
