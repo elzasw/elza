@@ -1264,6 +1264,14 @@ export class WebApiCls {
         );
     }
 
+    setDataValues(fundVersionId, itemTypeId, specIds, replaceValueId, nodes, selectionType, valueIds) {
+        return AjaxUtils.ajaxPut(
+            WebApiCls.arrangementUrl + '/setDataValues/' + fundVersionId,
+            {itemTypeId, replaceValueId},
+            {nodes, specIds, selectionType, valueIds},
+        );
+    }
+
     deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/deleteDataValues/' + versionId,

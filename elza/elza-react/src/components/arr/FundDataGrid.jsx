@@ -665,6 +665,8 @@ class FundDataGrid extends AbstractReactComponent {
                         data.replaceSpec,
                         nodes,
                         selectionType,
+                        data.replaceValueId,
+                        data.selectedValueItems,
                     ),
                 );
             }
@@ -680,6 +682,7 @@ class FundDataGrid extends AbstractReactComponent {
                     onSubmitForm={submit}
                     allItemsCount={fundDataGrid.items.length}
                     checkedItemsCount={fundDataGrid.selectedIds.length}
+                    versionId={versionId}
                 />,
             ),
         );

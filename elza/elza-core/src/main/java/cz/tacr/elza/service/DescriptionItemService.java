@@ -1740,14 +1740,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     itemUriRef.setUriRefValue(text);
                     data = itemUriRef;
                     break;
-                case "STRUCTURED":
-                    ArrDataStructureRef itemStructureRef = new ArrDataStructureRef();
-                    Integer id = Integer.valueOf(text);
-                    ArrStructuredObject structuredObject = structuredObjectRepository.findById(id)
-                            .orElseThrow(() -> new IllegalStateException("Nebyla nalezena entita v úložišti ArrStructuredObject s id " + id));
-                    itemStructureRef.setStructuredObject(structuredObject);
-                    data = itemStructureRef;
-                    break;
                 default:
                     throw new SystemException("Neplatný typ atributu " + descItemType.getDataType().getCode(), BaseCode.INVALID_STATE);
             }
@@ -1845,6 +1837,84 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         }
 
         changeContext.flush();
+    }
+
+    /**
+     * Nastavit hodnotu dle vybraných hodnot atributu.
+     *
+     * @param fundVersion      verze stromu
+     * @param itemType         typ atributu
+     * @param replaceValueId   hodnota, která bude nastavena
+     * @param valueIds        seznam hodnot, které se mají nahradit
+     * @param allNodes         vložit u všech JP
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public void setDataValues(final ArrFundVersion fundVersion,
+                              final RulItemType itemType,
+                              final Collection<ArrNode> nodes,
+                              final Integer replaceValueId,
+                              final Set<Integer> valueIds,
+                              final boolean allNodes) {
+        Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Assert.notNull(itemType, "Typ atributu musí být vyplněn");
+        Assert.notNull(replaceValueId, "Musí být vyplněn identifikátor hodnoty");
+
+        Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, ArrNode::getNodeId);
+
+        List<ArrDescItem> descItemsToReplaceText = new LinkedList<>();
+        if (allNodes) {
+            Integer rootNodeId = fundVersion.getRootNode().getNodeId();
+            Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(fundVersion, rootNodeId, ArrangementController.Depth.SUBTREE);
+            nodeIds.add(rootNodeId);
+            for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAllById(nodeIds),
+                    HibernateConfiguration.MAX_IN_SIZE)) {
+//                descItemsToReplaceText.addAll(descItemRepository.findByNodesContainingText(partNodes, itemType, null, valueIds));
+            }
+        } else {
+//            descItemsToReplaceText = descItemRepository.findByNodesContainingText(nodes, itemType, null, valueIds);
+        }
+
+        if (!descItemsToReplaceText.isEmpty()) {
+
+            ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
+
+            MultiplItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
+            ArrStructuredObject structuredObject = structuredObjectRepository.findById(replaceValueId)
+                    .orElseThrow(() -> new IllegalStateException("Nebyla nalezena entita v úložišti ArrStructuredObject s id " + replaceValueId));
+
+            for (ArrDescItem descItem: descItemsToReplaceText) {
+                // kontrola zákazu změn
+                if (descItem.getReadOnly()) {
+                    throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+                }
+                ArrNode clientNode = nodesMap.get(descItem.getNodeId());
+                arrangementService.lockNode(descItem.getNode(), clientNode == null ? descItem.getNode() : clientNode, change);
+
+                ArrData data = descItem.getData();
+                Validate.notNull(data, "item without data");
+
+                ArrData dataNew = ArrData.makeCopyWithoutId(data);
+
+                // modify data
+                if (dataNew instanceof ArrDataStructureRef) {
+                    ArrDataStructureRef ds = (ArrDataStructureRef) dataNew;
+                    ds.setStructuredObject(structuredObject);
+                } else {
+                    throw new IllegalStateException(
+                            "Zatím není implementováno pro kod " + descItem.getItemType().getCode());
+                }
+                dataNew = dataRepository.save(dataNew);
+
+                ArrDescItem descItemNew = prepareNewDescItem(descItem, dataNew, change);
+                descItemNew = descItemRepository.save(descItemNew);
+                arrangementCacheService.changeDescItem(descItem.getNodeId(), descItemNew, false, changeContext);
+
+                changeContext.addUpdatedItem(descItemNew);
+            }
+
+            changeContext.flush();
+        }
+
     }
 
     /**
