@@ -2037,7 +2037,7 @@ public class ArrangementController {
         Set<RulItemSpec> specifications = CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
                 new HashSet<>(itemSpecRepository.findAllById(replaceDataBody.getSpecIds()));
 
-        descriptionItemService.deleteDescItemValues(fundVersion, descItemType, nodesDO, specifications, replaceDataBody.getSelectionType() == SelectionType.FUND);
+        descriptionItemService.deleteDescItemValues(fundVersion, descItemType, nodesDO, specifications, replaceDataBody.getSelectionType() == SelectionType.FUND, replaceDataBody.getValues());
     }
 
     @RequestMapping(value = "/validation/{fundVersionId}/{fromIndex}/{toIndex}", method = RequestMethod.GET)

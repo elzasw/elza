@@ -88,7 +88,7 @@ export function fundBulkModifications(
                     selectionType,
                 );
             case 'delete':
-                return WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType);
+                return WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType, values);
             case 'setSpecification':
                 return WebApi.setSpecification(
                     versionId,
