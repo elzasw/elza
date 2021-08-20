@@ -2036,31 +2036,51 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param nodes          seznam uzlů, jejichž hodnoty mažeme
      * @param specifications seznam specifikací pro typ se specifikací, kterým budou smazány hodnoty
      * @param allNodes       odstranit u všech JP
+     * @param values         hodnoty, které se mají odstranit
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deleteDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                      final RulItemType descItemType,
                                      final Set<ArrNode> nodes,
                                      final Set<RulItemSpec> specifications,
-                                     final boolean allNodes) {
+                                     final boolean allNodes,
+                                     final Set<String> values) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         if (descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
             throw new BusinessException("Musí být zadána alespoň jedna filtrovaná specifikace.", BaseCode.PROPERTY_NOT_EXIST).set("property", specifications);
         }
 
-        List<ArrDescItem> descItems;
-        if (allNodes) {
-            descItems = descItemType.getUseSpecification() ?
-                    descItemRepository
-                            .findOpenByFundAndTypeAndSpec(version.getFund(), descItemType, specifications) :
-                    descItemRepository.findOpenByFundAndType(version.getFund(), descItemType);
+        List<ArrDescItem> descItems = new ArrayList<>();
+
+        if (descItemType.getDataType().getCode().equals(DataType.STRUCTURED.getCode())) {
+            if (CollectionUtils.isNotEmpty(values)) {
+                if (allNodes) {
+                    Integer rootNodeId = version.getRootNode().getNodeId();
+                    Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, rootNodeId, ArrangementController.Depth.SUBTREE);
+                    nodeIds.add(rootNodeId);
+                    for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAllById(nodeIds),
+                            HibernateConfiguration.MAX_IN_SIZE)) {
+                        descItems.addAll(descItemRepository.findByNodesContainingTexts(partNodes, descItemType, null, values));
+                    }
+                } else {
+                    descItems = descItemRepository.findByNodesContainingTexts(nodes, descItemType, null, values);
+                }
+            }
         } else {
-            descItems = descItemType.getUseSpecification() ?
-                descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, descItemType,
-                        specifications) :
-                descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+            if (allNodes) {
+                descItems = descItemType.getUseSpecification() ?
+                        descItemRepository
+                                .findOpenByFundAndTypeAndSpec(version.getFund(), descItemType, specifications) :
+                        descItemRepository.findOpenByFundAndType(version.getFund(), descItemType);
+            } else {
+                descItems = descItemType.getUseSpecification() ?
+                        descItemRepository.findOpenByNodesAndTypeAndSpec(nodes, descItemType,
+                                specifications) :
+                        descItemRepository.findOpenByNodesAndType(nodes, descItemType);
+            }
         }
+
 
         if (!descItems.isEmpty()) {
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_DELETE_DESC_ITEM);

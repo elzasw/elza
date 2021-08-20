@@ -1272,11 +1272,11 @@ export class WebApiCls {
         );
     }
 
-    deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType) {
+    deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType, values) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/deleteDataValues/' + versionId,
             {descItemTypeId},
-            {nodes, specIds: specsIds, selectionType},
+            {nodes, specIds: specsIds, selectionType, values},
         );
     }
 
