@@ -10,6 +10,7 @@ import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes';
 import {getSpecsIds, hasDescItemTypeValue} from 'components/arr/ArrUtils';
 import './FundBulkModificationsForm.scss';
 import SimpleCheckListBox from './SimpleCheckListBox';
+import ValueCheckListBox from './ValueCheckListBox';
 import {validateInt} from '../validate';
 import DescItemUnitdate from './nodeForm/DescItemUnitdate';
 import DescItemRecordRef from './nodeForm/DescItemRecordRef';
@@ -292,8 +293,9 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             replaceText,
             operationType,
             submitting,
+            versionId,
         } = this.props;
-        const {valueItems, allValueItems} = this.state;
+        const {allValueItems} = this.state;
         const uncheckedItemsCount = allItemsCount - checkedItemsCount;
 
         let operationInputs = [];
@@ -514,11 +516,10 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                 {i18n('arr.fund.bulkModifications.values')}
                             </FormLabel>
                             <FF
-                                field={SimpleCheckListBox}
+                                field={ValueCheckListBox}
                                 ref="valuesListBox"
-                                items={[
-                                    ...valueItems,
-                                ]}
+                                refType={refType}
+                                versionId={versionId}
                                 name={'values'}
                             />
                         </FormGroup>
