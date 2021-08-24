@@ -1428,4 +1428,16 @@ where no.level_id = l.level_id
             <column name="external_system_id" type="int"/>
         </createIndex>
     </changeSet>
+
+    <changeSet id="20210823100900" author="ppyt">
+      <!-- Odstranění duplicitních záznamů v ap_binding_state a zavedení indexu -->
+      <sql dbms="postgresql">DELETE FROM ap_binding_state WHERE binding_state_id in (
+       SELECT bis.binding_state_id FROM ap_binding_state bis
+       JOIN ap_binding_state bis2 ON bis.binding_id = bis2.binding_id
+       WHERE bis.delete_Change_Id IS NULL and bis2.delete_change_id is null
+             and bis.binding_state_id > bis2.binding_state_id)</sql>
+      <sql dbms="postgresql">CREATE UNIQUE INDEX ap_binding_state_binding_pidx 
+                               ON ap_binding_state(binding_id) 
+                               WHERE delete_change_id IS NULL</sql>
+    </changeSet>
 </databaseChangeLog>
