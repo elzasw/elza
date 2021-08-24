@@ -304,7 +304,7 @@ public class AccessPointService {
                                                         @Nullable SearchType searchTypeName,
                                                         @Nullable SearchType searchTypeUsername) {
 
-        Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
+        Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId, false);
 
         return apAccessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult, maxResults, scopeIdsForSearch, approvalStates, searchTypeName, searchTypeUsername);
     }
@@ -327,7 +327,7 @@ public class AccessPointService {
                                                     @Nullable SearchType searchTypeName,
                                                     @Nullable SearchType searchTypeUsername) {
 
-        Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
+        Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId, false);
 
         return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds, scopeIdsForSearch, approvalStates, searchTypeName, searchTypeUsername);
     }
@@ -577,13 +577,21 @@ public class AccessPointService {
     }
 
     /**
-     * Načte seznam id tříd ve kterých se má vyhledávat. Výsledek je průnikem tříd požadovaných a těch na které ma uživatel právo.
+     * Načte seznam id tříd ve kterých se má vyhledávat. Výsledek je průnikem tříd
+     * požadovaných a těch na které ma uživatel právo.
      *
-     * @param fund AP, podle jejíž tříd se má hledat
-     * @param scopeId id scope, pokud je vyplněno hledá se jen v tomto scope
+     * @param fund
+     *            AP, podle jejíž tříd se má hledat
+     * @param scopeId
+     *            id scope, pokud je vyplněno hledá se jen v tomto scope
+     * @param includeConnetedScopes
+     *            Flag to included connected scopes to scopeId. If scopeId is not
+     *            defined flag is not used.
      * @return množina id tříd, podle kterých se bude hledat
      */
-    public Set<Integer> getScopeIdsForSearch(@Nullable final ArrFund fund, @Nullable final Integer scopeId) {
+    public Set<Integer> getScopeIdsForSearch(@Nullable final ArrFund fund,
+                                             @Nullable final Integer scopeId,
+                                             boolean includeConnetedScopes) {
         boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.AP_SCOPE_RD_ALL);
         UsrUser user = userService.getLoggedUser();
 
@@ -594,15 +602,30 @@ public class AccessPointService {
             scopeIdsToSearch = userService.getUserScopeIds();
         }
 
-        if (!scopeIdsToSearch.isEmpty()) {
-            if (fund != null) {
-                Set<Integer> fundScopeIds = scopeRepository.findAllConnectedByFundId(fund.getFundId());
-                scopeIdsToSearch.retainAll(fundScopeIds);
+        if (scopeIdsToSearch.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        if (fund != null) {
+            Set<Integer> fundScopeIds = scopeRepository.findAllConnectedByFundId(fund.getFundId());
+            scopeIdsToSearch.retainAll(fundScopeIds);
+        }
+
+        if (scopeId != null) {
+            Set<Integer> scopeIdSet = Collections.singleton(scopeId);
+            if (!includeConnetedScopes) {
+                if (scopeIdsToSearch.contains(scopeId)) {
+                    return scopeIdSet;
+                } else {
+                    return Collections.emptySet();
+                }
             }
 
-            if (scopeId != null) {
-                scopeIdsToSearch.removeIf(id -> !id.equals(scopeId));
-            }
+            // get connected scopes
+            Set<Integer> connectedScopes = scopeRelationRepository.findConnectedScopeIdsByScopeIds(scopeIdSet);
+            connectedScopes.add(scopeId);
+
+            scopeIdsToSearch.retainAll(connectedScopes);
         }
 
         return scopeIdsToSearch;
