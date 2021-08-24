@@ -281,7 +281,7 @@ public class ApController {
 
         } else {
 
-            Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId);
+            Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
 
             Page<ApState> page = accessPointService.findApAccessPointBySearchFilter(searchFilter, apTypeIds, scopeIds,
                                                                                     state, from, count, sdp);
@@ -336,7 +336,7 @@ public class ApController {
                                                                       SearchFilterVO searchFilter,
                                                                       StaticDataProvider sdp) {
 
-        Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId);
+        Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
 
         final Map<Integer, Integer> typeRuleSetMap = apFactory.getTypeRuleSetMap();
 
@@ -566,7 +566,7 @@ public class ApController {
             fund = version.getFund();
         }
 
-        Set<Integer> scopeIdsByFund = accessPointService.getScopeIdsForSearch(fund, null);
+        Set<Integer> scopeIdsByFund = accessPointService.getScopeIdsForSearch(fund, null, false);
         if (CollectionUtils.isEmpty(scopeIdsByFund)) {
             return Collections.emptyList();
         }
@@ -779,7 +779,7 @@ public class ApController {
         StaticDataProvider sdp = staticDataService.getData();
         List<Integer> apTypes = accessPointService.findApTypeIdsByItemTypeAndItemSpec(itemTypeId, itemSpecId);
         Set<Integer> apTypeIds = apTypeRepository.findSubtreeIds(apTypes);
-        Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(null, scopeId);
+        Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(null, scopeId, true);
         QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
                 .findApCachedAccessPointisByQuery(null, filter, apTypeIds, scopeIds,
                                                   null, from, max, sdp);
