@@ -1440,4 +1440,20 @@ where no.level_id = l.level_id
                                ON ap_binding_state(binding_id) 
                                WHERE delete_change_id IS NULL</sql>
     </changeSet>
+    <changeSet id="20210824171100" author="ppyt">
+    <sql dbms="postgresql">update ap_binding_item abi 
+    set delete_change_id = create_change_id
+    where abi.part_id in (
+    select p.part_id from ap_part p
+    left join ap_item i on p.part_id = i.part_id and i.delete_change_id is null
+    where i.item_id is null and p.delete_change_id is null
+    ) and abi.delete_change_id is null</sql>
+    <sql dbms="postgresql">update ap_part p set delete_change_id = create_change_id 
+    where p.part_id in (
+    select p.part_id from ap_part p
+    left join ap_item i on p.part_id = i.part_id and i.delete_change_id is null
+    where i.item_id is null and p.delete_change_id is null
+    ) and p.delete_change_id is null</sql>
+    </changeSet>
+    
 </databaseChangeLog>
