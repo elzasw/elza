@@ -7,6 +7,7 @@ import org.apache.commons.lang3.Validate;
 import org.drools.core.util.StringUtils;
 
 import cz.tacr.cam.schema.cam.CodeXml;
+import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.IntegerXml;
 import cz.tacr.cam.schema.cam.ItemEnumXml;
 import cz.tacr.cam.schema.cam.ItemIntegerXml;
@@ -14,10 +15,13 @@ import cz.tacr.cam.schema.cam.ItemStringXml;
 import cz.tacr.cam.schema.cam.ItemsXml;
 import cz.tacr.cam.schema.cam.ObjectFactory;
 import cz.tacr.cam.schema.cam.PartXml;
+import cz.tacr.cam.schema.cam.PartsXml;
 import cz.tacr.cam.schema.cam.StringXml;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApBindingItem;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.SystemException;
+
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.*;
 
 public class CamUtils {
 
@@ -125,16 +129,16 @@ public class CamUtils {
 
     private static String convertUnitDateFormatPart(String partValue) {
         switch (partValue) {
-        case UnitDateConvertor.CENTURY:
+        case CENTURY:
             return "C";
-        case UnitDateConvertor.YEAR:
+        case YEAR:
             return "Y";
-        case UnitDateConvertor.YEAR_MONTH:
+        case YEAR_MONTH:
             // CAM nepodporuje tento format primo
             return "D";
-        case UnitDateConvertor.DATE:
+        case DATE:
             return "D";
-        case UnitDateConvertor.DATE_TIME:
+        case DATE_TIME:
             return "DT";
         }
         throw new IllegalStateException("Incorrect date format: " + partValue);
@@ -173,6 +177,17 @@ public class CamUtils {
                 if (bindingItem.getPart() != null && bindingItem.getPart().getPartId().equals(partId)) {
                     return bindingItem;
                 }
+            }
+        }
+        return null;
+    }
+
+    public static PartXml getPrefName(EntityXml entityXml) {
+        PartsXml parts = entityXml.getPrts();
+        List<PartXml> partList = parts.getList();
+        for (PartXml partXml : partList) {
+            if (StaticDataProvider.DEFAULT_PART_TYPE.equals(partXml.getT().value())) {
+                return partXml;
             }
         }
         return null;

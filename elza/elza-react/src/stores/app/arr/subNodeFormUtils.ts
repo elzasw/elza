@@ -1384,9 +1384,6 @@ export function createDescItem(descItemType, refType, addedByUser): DescItem {
 
     // Inicializační hodnoty pro nově vytvořenou položku
     switch (refType.dataType.code) {
-        case 'UNITDATE':
-            result.calendarTypeId = 1;
-            break;
         case 'JSON_TABLE':
             result.value = {rows: [{values: {}}]};
             break;

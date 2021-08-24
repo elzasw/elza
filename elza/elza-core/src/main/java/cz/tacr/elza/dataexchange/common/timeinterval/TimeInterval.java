@@ -7,9 +7,6 @@ import java.util.Calendar;
 
 import org.apache.commons.lang3.StringUtils;
 
-import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.dataexchange.common.CalendarTypeConvertor;
-
 /**
  * Time interval representation with Elza format. Bridge class between API and internal services.
  */
@@ -18,8 +15,6 @@ public class TimeInterval {
     private final Boundary lBoundary;
 
     private final Boundary uBoundary;
-
-    private final CalendarType calendarType;
 
     private final boolean lbEst;
 
@@ -39,10 +34,9 @@ public class TimeInterval {
 
     private BoundaryFormat ubFormat;
 
-    private TimeInterval(Boundary lBoundary, Boundary uBoundary, CalendarType calendarType, boolean lbEst, boolean ubEst) {
+    private TimeInterval(Boundary lBoundary, Boundary uBoundary, boolean lbEst, boolean ubEst) {
         this.lBoundary = lBoundary;
         this.uBoundary = uBoundary;
-        this.calendarType = calendarType;
         this.lbEst = lbEst;
         this.ubEst = ubEst;
 
@@ -95,10 +89,6 @@ public class TimeInterval {
             return lbFormat.getValue();
         }
         return lbFormat.getValue() + '-' + ubFormat.getValue();
-    }
-
-    public CalendarType getCalendarType() {
-        return calendarType;
     }
 
     /**
@@ -199,12 +189,10 @@ public class TimeInterval {
         Boundary lBoundary = Boundary.create(source.getF(), true);
         Boundary uBoundary = Boundary.create(source.getTo(), false);
 
-        CalendarType ct = CalendarTypeConvertor.convert(source.getCt());
-
         boolean lbEst = source.isFe() == null ? false : source.isFe();
         boolean ubEst = source.isToe() == null ? false : source.isToe();
 
-        TimeInterval ti = new TimeInterval(lBoundary, uBoundary, ct, lbEst, ubEst);
+        TimeInterval ti = new TimeInterval(lBoundary, uBoundary, lbEst, ubEst);
         ti.applyFormat(source.getFmt());
         return ti;
     }

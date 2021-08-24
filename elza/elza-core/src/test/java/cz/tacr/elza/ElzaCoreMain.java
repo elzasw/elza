@@ -23,6 +23,7 @@ import com.google.common.eventbus.EventBus;
 
 import cz.tacr.elza.other.SimpleClientEventDispatcher;
 import cz.tacr.elza.service.ClientEventDispatcher;
+import cz.tacr.elza.service.StartupService;
 
 @Configuration
 @EntityScan(basePackageClasses = { ElzaCore.class })

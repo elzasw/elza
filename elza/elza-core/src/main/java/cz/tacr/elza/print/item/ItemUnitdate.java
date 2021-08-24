@@ -2,6 +2,7 @@ package cz.tacr.elza.print.item;
 
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.print.UnitDate;
+import cz.tacr.elza.print.item.convertors.UnitDatePrintConvertor;
 
 /**
  * Unit date
@@ -17,7 +18,7 @@ public class ItemUnitdate extends AbstractItem {
 
     @Override
     public String getSerializedValue() {
-        return value.getValueText();
+        return UnitDatePrintConvertor.convertToPrint(value);
     }
 
     @Override

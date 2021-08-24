@@ -521,13 +521,12 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     renderRightPanel(readMode, closed) {
-        const {calendarTypes, descItemTypes} = this.props;
+        const {descItemTypes} = this.props;
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
         const fetched =
             fundOutputDetail.fetched &&
             fundOutputDetail.subNodeForm.fetched &&
-            calendarTypes.fetched &&
             descItemTypes.fetched;
         if (!fetched) {
             return null;
@@ -601,7 +600,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const {calendarTypes, templates, rulDataTypes, descItemTypes, userDetail, outputFilters} = this.props;
+        const {templates, rulDataTypes, descItemTypes, userDetail, outputFilters} = this.props;
 
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
@@ -611,7 +610,6 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 readOnly={!this.isEditable(fundOutputDetail)}
                 versionId={fund.versionId}
                 fund={fund}
-                calendarTypes={calendarTypes}
                 descItemTypes={descItemTypes}
                 templates={templates}
                 outputFilters={outputFilters}
@@ -724,7 +722,6 @@ function mapStateToProps(state) {
         focus,
         userDetail,
         rulDataTypes: refTables.rulDataTypes,
-        calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
         ruleSet: refTables.ruleSet,
         templates: refTables.templates,

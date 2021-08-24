@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.16.0.final using JasperReports Library version 6.16.0-48579d909b7943b64690c65c71e07e0b80981928  -->
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="contentPage" language="groovy" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="71cc9236-0f65-4a0a-bb66-bbfe841a66c1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -148,12 +148,12 @@
 	.addValueWithTitle("ZP2015_UNIT_DATE_PRE")
 	.addValueWithTitle("ZP2015_UNIT_DATE_POST")]]></defaultValueExpression>
 	</parameter>
-	<parameter name="otherIdFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+	<parameter name="otherIdFormatter" class="cz.tacr.elza.print.format.HtmlFormatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
 	.setSpecSeparator(": ")
-	.setItemSeparator("<br>")
+	.setItemSeparator("\n")
 	.setBlockSeparators("","")
 	.setSpecTitleSource(cz.tacr.elza.print.format.SpecTitleSource.NAME)
 	.beginBlock().addValue("ZP2015_OTHER_ID").endBlock()]]></defaultValueExpression>
@@ -171,84 +171,84 @@
 	.beginBlock().addValue("ZP2015_WRITING").endBlock()	
 	.beginBlock().addValue("ZP2015_ITEM_MAT").endBlock()]]></defaultValueExpression>
 	</parameter>
-	<parameter name="detailFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+	<parameter name="detailFormatter" class="cz.tacr.elza.print.format.HtmlFormatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
 	.setItemSeparator("<br>")
 	.setSpecSeparator(": ")
 	.setBlockSeparators("", "<br>")
 	.beginBlock()
-			.setItemSeparator(", ")
-			.addValueWithTitle("ZP2015_ORIGINATOR")
-		.endBlock()
-		.setItemSeparator("<br>")
-		.addValueWithTitle("ZP2015_UNIT_COUNT")
 		.setItemSeparator(", ")
-		.setSpecFormat(" (", ")",true)
-		.addValueWithTitle("ZP2015_EXTRA_UNITS")
-		.setSpecFormat("", ": ", false)
-		.setItemSeparator("<br>")
-		.setTitleSeparator(" - ")
-	    .setSpecName("ZP2015_DATE_OF_CONTENT", "datace obsahu")
-  	    .setSpecName("ZP2015_DATE_DECLARED", "datace deklarovaná")
-  	    .setSpecName("ZP2015_DATE_ORIG", "datace vzniku předlohy")
-  	    .setSpecName("ZP2015_DATE_OF_COPY", "datace vzniku kopie")
-   	    .setSpecName("ZP2015_DATE_SEALING", "datace zpečetění")
-   	    .setSpecName("ZP2015_DATE_ACT_PUBLISHING", "datace vydání listiny")
-   	    .setSpecName("ZP2015_DATE_INSERT", "datace insertu/transeptu")
-   	    .setSpecName("ZP2015_DATE_MOLD_CREATION", "datace vzniku matrice")
-   	    .setSpecName("ZP2015_DATE_USAGE", "datace užívání typáře")
-   	    .setSpecName("ZP2015_DATE_PUBLISHING", "datace vydání dokumentu")
-   	    .setSpecName("ZP2015_DATE_MAP_UPDATE", "datace reambulace mapy")
-   	    .setSpecName("ZP2015_DATE_CAPTURING", "datace pořízení obrazového záznamu")
-   	    .setSpecName("ZP2015_DATE_RECORDING", "datace pořízení filmového / zvukového záznamu")
-   	    .setSpecName("ZP2015_DATE_AWARDING", "datace udělení / propůjčení faleristického předmětu")
-  	    .setSpecName("ZP2015_DATE_AWARD_CER", "datace předání faleristického předmětu")
-  	    .setSpecName("ZP2015_DATE_WITHDRAWAL", "datace odnětí / vrácení faleristického předmětu")
-		.addValue("ZP2015_DATE_OTHER")
-      	.setTitleSeparator(": ")
-		.addValueWithTitle("ZP2015_ITEM_TITLE_REF")
-		.addValueWithTitle("ZP2015_PART")
-		.setGroupFormat("; ")
-		.addValue("ZP2015_ENTITY_ROLE")
-		.addValueWithTitle("ZP2015_UNIT_HIST")
-		.addValueWithTitle("ZP2015_UNIT_SOURCE")
-		.addValueWithTitle("ZP2015_UNIT_ARR")
-		.addValueWithTitle("ZP2015_FUTURE_UNITS")
-		.addValueWithTitle("ZP2015_UNIT_CONTENT")
-		.addValueWithTitle("ZP2015_UNIT_ACCESS")
-		.addValueWithTitle("ZP2015_UNIT_INFO_RIGHTS")
-		.addValueWithTitle("ZP2015_UNIT_COPY_RIGHTS")
-		.addValueWithTitle("ZP2015_SIZE_WIDTH")
-		.addValueWithTitle("ZP2015_SIZE_HEIGHT")
-		.addValueWithTitle("ZP2015_SIZE_DEPTH")
-		.addValueWithTitle("ZP2015_SIZE_UNITS")
-		.addValueWithTitle("ZP2015_WEIGHT")
-		.setItemSeparator(", ")
-		.setSpecFormat("", "", true)		
-		.addValueWithTitle("ZP2015_AMOUNT" )
-		.setSpecFormat("", ": ", false)
-		.setItemSeparator("<br>")		
-		.addValueWithTitle("ZP2015_IMPRINT_COUNT")
-		.addValueWithTitle("ZP2015_EXERQUE")
-		.addValueWithTitle("ZP2015_PAINTING_CHAR")
-		.addValueWithTitle("ZP2015_CORROBORATION")
-		.addValueWithTitle("ZP2015_IMPRINT_ORDER")
-		.addValueWithTitle("ZP2015_POSITION")
-		.addValueWithTitle("ZP2015_ORIENTATION")
-		.addValueWithTitle("ZP2015_LEGEND")
-		.addValueWithTitle("ZP2015_MOVIE_LENGTH")
-		.addValueWithTitle("ZP2015_RECORD_LENGTH")
-		.addValueWithTitle("ZP2015_UNIT_CURRENT_STATUS")
-		.addValueWithTitle("ZP2015_RELATED_UNITS")
-		.addValueWithTitle("ZP2015_EXISTING_COPY")
-		.addValueWithTitle("ZP2015_COPY_SOURCE")
-		.addValueWithTitle("ZP2015_ARRANGE_RULES")
-		.addValueWithTitle("ZP2015_EDITION")
-		.addValueWithTitle("ZP2015_NOTE")
-		.addValueWithTitle("ZP2015_ARRANGER")
-		.addValueWithTitle("ZP2015_DESCRIPTION_DATE")]]></defaultValueExpression>
+		.addValueWithTitle("ZP2015_ORIGINATOR")
+	.endBlock()
+	.setItemSeparator("<br>")
+	.addValueWithTitle("ZP2015_UNIT_COUNT")
+	.setItemSeparator(", ")
+	.setSpecFormat(" (", ")",true)
+	.addValueWithTitle("ZP2015_EXTRA_UNITS")
+	.setSpecFormat("", ": ", false)
+	.setItemSeparator("<br>")
+	.setTitleSeparator(" - ")
+    .setSpecName("ZP2015_DATE_OF_CONTENT", "datace obsahu")
+	.setSpecName("ZP2015_DATE_DECLARED", "datace deklarovaná")
+	.setSpecName("ZP2015_DATE_ORIG", "datace vzniku předlohy")
+	.setSpecName("ZP2015_DATE_OF_COPY", "datace vzniku kopie")
+	.setSpecName("ZP2015_DATE_SEALING", "datace zpečetění")
+	.setSpecName("ZP2015_DATE_ACT_PUBLISHING", "datace vydání listiny")
+	.setSpecName("ZP2015_DATE_INSERT", "datace insertu/transeptu")
+	.setSpecName("ZP2015_DATE_MOLD_CREATION", "datace vzniku matrice")
+	.setSpecName("ZP2015_DATE_USAGE", "datace užívání typáře")
+	.setSpecName("ZP2015_DATE_PUBLISHING", "datace vydání dokumentu")
+	.setSpecName("ZP2015_DATE_MAP_UPDATE", "datace reambulace mapy")
+	.setSpecName("ZP2015_DATE_CAPTURING", "datace pořízení obrazového záznamu")
+	.setSpecName("ZP2015_DATE_RECORDING", "datace pořízení filmového / zvukového záznamu")
+	.setSpecName("ZP2015_DATE_AWARDING", "datace udělení / propůjčení faleristického předmětu")
+	.setSpecName("ZP2015_DATE_AWARD_CER", "datace předání faleristického předmětu")
+	.setSpecName("ZP2015_DATE_WITHDRAWAL", "datace odnětí / vrácení faleristického předmětu")
+	.addValue("ZP2015_DATE_OTHER")
+	.setTitleSeparator(": ")
+	.addValueWithTitle("ZP2015_ITEM_TITLE_REF")
+	.addValueWithTitle("ZP2015_PART")
+	.setGroupFormat("; ")
+	.addValue("ZP2015_ENTITY_ROLE")
+	.addValueWithTitle("ZP2015_UNIT_HIST")
+	.addValueWithTitle("ZP2015_UNIT_SOURCE")
+	.addValueWithTitle("ZP2015_UNIT_ARR")
+	.addValueWithTitle("ZP2015_FUTURE_UNITS")
+	.addValueWithTitle("ZP2015_UNIT_CONTENT")
+	.addValueWithTitle("ZP2015_UNIT_ACCESS")
+	.addValueWithTitle("ZP2015_UNIT_INFO_RIGHTS")
+	.addValueWithTitle("ZP2015_UNIT_COPY_RIGHTS")
+	.addValueWithTitle("ZP2015_SIZE_WIDTH")
+	.addValueWithTitle("ZP2015_SIZE_HEIGHT")
+	.addValueWithTitle("ZP2015_SIZE_DEPTH")
+	.addValueWithTitle("ZP2015_SIZE_UNITS")
+	.addValueWithTitle("ZP2015_WEIGHT")
+	.setItemSeparator(", ")
+	.setSpecFormat("", "", true)		
+	.addValueWithTitle("ZP2015_AMOUNT" )
+	.setSpecFormat("", ": ", false)
+	.setItemSeparator("<br>")		
+	.addValueWithTitle("ZP2015_IMPRINT_COUNT")
+	.addValueWithTitle("ZP2015_EXERQUE")
+	.addValueWithTitle("ZP2015_PAINTING_CHAR")
+	.addValueWithTitle("ZP2015_CORROBORATION")
+	.addValueWithTitle("ZP2015_IMPRINT_ORDER")
+	.addValueWithTitle("ZP2015_POSITION")
+	.addValueWithTitle("ZP2015_ORIENTATION")
+	.addValueWithTitle("ZP2015_LEGEND")
+	.addValueWithTitle("ZP2015_MOVIE_LENGTH")
+	.addValueWithTitle("ZP2015_RECORD_LENGTH")
+	.addValueWithTitle("ZP2015_UNIT_CURRENT_STATUS")
+	.addValueWithTitle("ZP2015_RELATED_UNITS")
+	.addValueWithTitle("ZP2015_EXISTING_COPY")
+	.addValueWithTitle("ZP2015_COPY_SOURCE")
+	.addValueWithTitle("ZP2015_ARRANGE_RULES")
+	.addValueWithTitle("ZP2015_EDITION")
+	.addValueWithTitle("ZP2015_NOTE")
+	.addValueWithTitle("ZP2015_ARRANGER")
+	.addValueWithTitle("ZP2015_DESCRIPTION_DATE")]]></defaultValueExpression>
 	</parameter>
 	<parameter name="outputInfoFotmatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
@@ -268,9 +268,9 @@
   	.addValue("ZP2015_STORAGE_ID")
 	.beginBlock().addValue("ZP2015_ITEM_ORDER").endBlock()]]></defaultValueExpression>
 	</parameter>
-	<parameter name="rootDetailFotmatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+	<parameter name="rootDetailFotmatter" class="cz.tacr.elza.print.format.HtmlFormatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
 	.setItemSeparator("<br>")
 	.setSpecSeparator(": ")
@@ -307,9 +307,9 @@
 	.setBlockSeparators("","; ")
 	.beginBlock().addValue("ZP2015_LANGUAGE").endBlock()]]></defaultValueExpression>
 	</parameter>
-	<parameter name="outputDetailFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+	<parameter name="outputDetailFormatter" class="cz.tacr.elza.print.format.HtmlFormatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
 	.setItemSeparator("<br>")
 	.setSpecSeparator(": ")
@@ -321,9 +321,9 @@
 	<parameter name="templateVariant" class="java.lang.String">
 		<defaultValueExpression><![CDATA["B"]]></defaultValueExpression>
 	</parameter>
-	<parameter name="rootNodeDetailFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+	<parameter name="rootNodeDetailFormatter" class="cz.tacr.elza.print.format.HtmlFormatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
 	.setItemSeparator("<br>")
 	.setSpecSeparator(": ")

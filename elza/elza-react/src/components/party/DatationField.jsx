@@ -3,7 +3,6 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {Button} from '../ui';
 import {AbstractReactComponent, FormInput, i18n, Icon, TooltipTrigger} from 'components/shared';
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes.jsx';
 
 import './DatationField.scss';
 
@@ -47,46 +46,22 @@ class DatationField extends AbstractReactComponent {
                 };
             }
 
-            if (!val.calendarTypeId) {
-                if (errors) {
-                    errors.calendarTypeId = i18n('global.validation.required');
-                } else {
-                    errors = {
-                        calendarTypeId: i18n('global.validation.required'),
-                    };
-                }
-            }
         }
         return errors;
     };
 
     componentDidMount() {
-        this.props.dispatch(calendarTypesFetchIfNeeded());
         this.loadCalendarsAndPokeData();
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        this.props.dispatch(calendarTypesFetchIfNeeded());
         this.loadCalendarsAndPokeData(nextProps);
     }
 
     loadCalendarsAndPokeData = (props = this.props) => {
-        if (
-            props.calendarTypes &&
-            props.calendarTypes.fetched &&
-            !this.state.initialized &&
-            props.calendarTypes.items
-        ) {
-            if (props.fields.calendarTypeId.value == null || props.fields.calendarTypeId.value === '') {
-                props.fields.calendarTypeId.onChange(props.calendarTypes.items[0].id);
-            }
+        if (!this.state.initialized) {
             this.setState({
                 initialized: true,
-                calendars: props.calendarTypes.items.map(i => (
-                    <option value={i.id} key={i.id}>
-                        {i.name.charAt(0)}
-                    </option>
-                )),
             });
         }
     };
@@ -118,9 +93,6 @@ class DatationField extends AbstractReactComponent {
                     </Button>
                 </div>
                 <div className="datation">
-                    <FormInput as="select" {...fields.calendarTypeId}>
-                        {calendars}
-                    </FormInput>
                     <TooltipTrigger content={tooltip} holdOnHover placement="vertical">
                         <FormInput type="text" {...fields.value} />
                     </TooltipTrigger>
@@ -408,7 +380,6 @@ class DT {
 }
 
 class UnitDate {
-    calendarType;
     format;
     textDate;
     valueFrom;
@@ -1035,6 +1006,4 @@ class Token {
 
 // console.log('1', new DT('27.2.2015', DT.FORMATS.DATE))
 
-export default connect(state => ({
-    calendarTypes: state.refTables.calendarTypes,
-}))(DatationField);
+export default connect()(DatationField);

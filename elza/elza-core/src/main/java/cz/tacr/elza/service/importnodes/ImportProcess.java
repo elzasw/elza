@@ -1,10 +1,8 @@
 package cz.tacr.elza.service.importnodes;
 
-import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
@@ -35,7 +33,6 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundFileRepository;
@@ -110,9 +107,6 @@ import static cz.tacr.elza.repository.ExceptionThrow.structureData;
 @Scope("prototype")
 public class ImportProcess {
 
-    /**
-     * Logger.
-     */
     private static final Logger logger = LoggerFactory.getLogger(ImportProcess.class);
 
     @Autowired
@@ -147,9 +141,6 @@ public class ImportProcess {
 
     @Autowired
     private DescItemRepository descItemRepository;
-
-    @Autowired
-    private CalendarTypeRepository calendarTypeRepository;
 
     @Autowired
     private FundFileRepository fundFileRepository;
@@ -227,7 +218,6 @@ public class ImportProcess {
 
     private Map<String, RulItemType> itemTypeMap;
     private Map<String, RulItemSpec> itemSpecMap;
-    private Map<String, ArrCalendarType> calendarTypeMap;
     private ArrChange change;
 
     public ImportProcess() {
@@ -260,7 +250,6 @@ public class ImportProcess {
 
         itemTypeMap = itemTypeRepository.findAll().stream().collect(Collectors.toMap(RulItemType::getCode, Function.identity()));
         itemSpecMap = itemSpecRepository.findAll().stream().collect(Collectors.toMap(RulItemSpec::getCode, Function.identity()));
-        calendarTypeMap = calendarTypeRepository.findAll().stream().collect(Collectors.toMap(ArrCalendarType::getCode, Function.identity()));
         change = arrangementInternalService.createChange(ArrChange.Type.IMPORT);
     }
 
@@ -383,10 +372,8 @@ public class ImportProcess {
             data = new ArrDataUnitid();
             ((ArrDataUnitid) data).setUnitId(((ItemUnitid) item).getValue());
         } else if (item instanceof ItemUnitdate) {
-            ArrCalendarType calendarType = calendarTypeMap.get(((ItemUnitdate) item).getCalendarTypeCode());
-            CalendarType calType = CalendarType.valueOf(calendarType.getCode());
             String value = ((ItemUnitdate) item).getValue();
-            data = ArrDataUnitdate.valueOf(calType, value);
+            data = ArrDataUnitdate.valueOf(value);
         } else if (item instanceof ItemJsonTable) {
             data = new ArrDataJsonTable();
             ((ArrDataJsonTable) data).setValue(((ItemJsonTable) item).getValue());

@@ -102,8 +102,7 @@ public class EventFactory {
                                                 final ArrLevel staticLevel,
                                                 final List<ArrLevel> transportLevels,
                                                 final ArrFundVersion version) {
-        return new EventNodeMove(eventType, version.getFundVersionId(), createNodeInfo(staticLevel),
-                createNodesInfo(transportLevels));
+        return new EventNodeMove(eventType, version.getFundVersionId(), createNodeInfo(staticLevel), createNodesInfo(transportLevels));
     }
 
     public static EventAddNode createAddNodeEvent(final EventType eventType,
@@ -115,11 +114,9 @@ public class EventFactory {
         Assert.notNull(staticLevel, "Referenční level musí být vyplněn");
         Assert.notNull(addLevel, "Level musí být vyplněn");
 
-        NodeInfo staticParentNode = staticLevel.getNodeParent() == null ? null
-                                                                        : createNodeInfo(staticLevel.getNodeParent());
+        NodeInfo staticParentNode = staticLevel.getNodeParent() == null? null : createNodeInfo(staticLevel.getNodeParent());
 
-        return new EventAddNode(eventType, version.getFundVersionId(), createNodeInfo(staticLevel.getNode()),
-                staticParentNode, createNodeInfo(addLevel));
+        return new EventAddNode(eventType, version.getFundVersionId(), createNodeInfo(staticLevel), staticParentNode, createNodeInfo(addLevel));
     }
 
     /**

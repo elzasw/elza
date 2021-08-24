@@ -1,25 +1,33 @@
 package cz.tacr.elza.print.format;
 
-/*
- * import org.commonmark.node.Node;
- * import org.commonmark.parser.Parser;
- * import org.commonmark.renderer.html.HtmlRenderer;
- */
+import org.apache.commons.lang3.StringUtils;
 
-// Not yet finished
-// Bude vhodnejsi implementovat vlastni zpusob parsovani
 public class HtmlFormatContext extends FormatContext {
-    /*
+
+    /**
+     * Append text to the result
+     * 
+     * Other functions should not directly manipulate with resultBuffer
+     * @param value
+     */
     @Override
-    public String getResult() {
-        String textResult = super.getResult();
-    
-        // convert to HTML
-        Parser parser = Parser.builder().build();
-        Node document = parser.parse(textResult);
-        HtmlRenderer renderer = HtmlRenderer.builder().escapeHtml(true).softbreak("<br>").build();
-        return renderer.render(document);  // "<p>This is <em>Sparta</em></p>\n"
-    
+    protected void appendResult(String value) {
+        if (StringUtils.isNotEmpty(value)) {
+            // append pending separator
+            if (pendingSeparator != null) {
+                resultBuffer.append(pendingSeparator);
+                pendingSeparator = null;
+            }
+
+            // replace angle brackets
+            value = value.replace("<", "&lt;");
+            value = value.replace(">", "&gt;");
+
+            // replace line break
+            value = value.replace("\n", "<br>");
+
+            // append result
+            resultBuffer.append(value);
+        }
     }
-    */
 }

@@ -1,6 +1,5 @@
 package cz.tacr.elza.repository;
 
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -16,7 +15,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -54,8 +52,6 @@ import cz.tacr.elza.controller.vo.filter.SearchParamType;
 import cz.tacr.elza.controller.vo.filter.TextSearchParam;
 import cz.tacr.elza.controller.vo.filter.UnitdateCondition;
 import cz.tacr.elza.controller.vo.filter.UnitdateSearchParam;
-import cz.tacr.elza.core.data.CalendarType;
-import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -80,9 +76,6 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
     @Autowired
     private LevelRepository levelRepository;
-
-    @Autowired
-    private CalendarTypeRepository calendarTypeRepository;
 
     private FullTextEntityManager fullTextEntityManager = null;
 
@@ -390,14 +383,11 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         IUnitdate unitdate = new ArrDataUnitdate();
         UnitDateConvertor.convertToUnitDate(value, unitdate);
 
-        ArrCalendarType arrCalendarType = calendarTypeRepository.getOneCheckExist(calendarId);
-        CalendarType calendarType = CalendarType.valueOf(arrCalendarType.getCode());
-
         LocalDateTime fromDate = LocalDateTime.parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        long secondsFrom = CalendarConverter.toSeconds(calendarType, fromDate);
+        long secondsFrom = CalendarConverter.toSeconds(fromDate);
 
         LocalDateTime toDate = LocalDateTime.parse(unitdate.getValueTo(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        long secondsTo = CalendarConverter.toSeconds(calendarType, toDate);
+        long secondsTo = CalendarConverter.toSeconds(toDate);
 
         Query query;
         switch (condition) {

@@ -18,7 +18,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.controller.ArrangementController;
-import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -81,7 +80,6 @@ import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MappingContext;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
-
 
 /**
  * Factory pro vytváření a manipulaci s atributama a jejich hodnotama.
@@ -654,11 +652,6 @@ public class DescItemFactory implements InitializingBean {
                         }
                         arrDataUnitdate.setFormat(arrItemUnitdate.getFormat());
 
-                        if (arrItemUnitdate.getCalendarType() == null) {
-                            throw new SystemException("Nebyl zvolen kalendar", BaseCode.PROPERTY_NOT_EXIST).set("property", "calendarType");
-                        }
-                        arrDataUnitdate.setCalendarType(arrItemUnitdate.getCalendarType());
-
                         try {
                             String value = arrItemUnitdate.getValueFrom();
                             if (value != null) {
@@ -696,14 +689,11 @@ public class DescItemFactory implements InitializingBean {
                             throw new IllegalArgumentException("Nebyl zadán interval ISO datumů");
                         }
 
-                        String codeCalendar = arrItemUnitdate.getCalendarType().getCode();
-                        CalendarType calendarType = CalendarType.valueOf(codeCalendar);
-
                         String value;
 
                         value = arrItemUnitdate.getValueFrom();
                         if (value != null) {
-                            arrDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                            arrDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
                         } else {
                             arrDataUnitdate.setNormalizedFrom(Long.MIN_VALUE);
                         }
@@ -712,7 +702,7 @@ public class DescItemFactory implements InitializingBean {
 
                         value = arrItemUnitdate.getValueTo();
                         if (value != null) {
-                            arrDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                            arrDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
                         } else {
                             arrDataUnitdate.setNormalizedTo(Long.MAX_VALUE);
                         }
@@ -726,7 +716,6 @@ public class DescItemFactory implements InitializingBean {
                     public void mapBtoA(final ArrDataUnitdate arrDataUnitdate,
                                         final ArrItemUnitdate arrItemUnitdate,
                                         final MappingContext context) {
-                        arrItemUnitdate.setCalendarType(arrDataUnitdate.getCalendarType());
                         arrItemUnitdate.setValueFrom(arrDataUnitdate.getValueFrom());
                         arrItemUnitdate.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
                         arrItemUnitdate.setValueTo(arrDataUnitdate.getValueTo());
@@ -744,7 +733,6 @@ public class DescItemFactory implements InitializingBean {
                                         final ArrDataUnitdate arrDataUnitdateNew,
                                         final MappingContext context) {
                         arrDataUnitdateNew.setDataType(arrDataUnitdate.getDataType());
-                        arrDataUnitdateNew.setCalendarType(arrDataUnitdate.getCalendarType());
                         arrDataUnitdateNew.setValueFrom(arrDataUnitdate.getValueFrom());
                         arrDataUnitdateNew.setValueFromEstimated(arrDataUnitdate.getValueFromEstimated());
                         arrDataUnitdateNew.setValueTo(arrDataUnitdate.getValueTo());
@@ -754,12 +742,9 @@ public class DescItemFactory implements InitializingBean {
                                 // Proc to tady je?
                         String value;
 
-                        String codeCalendar = arrDataUnitdate.getCalendarType().getCode();
-                        CalendarType calendarType = CalendarType.valueOf(codeCalendar);
-
                         value = arrDataUnitdate.getValueFrom();
                         if (value != null) {
-                            arrDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                            arrDataUnitdate.setNormalizedFrom(CalendarConverter.toSeconds(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
                         } else {
                             arrDataUnitdate.setNormalizedFrom(Long.MIN_VALUE);
                                 }
@@ -767,7 +752,7 @@ public class DescItemFactory implements InitializingBean {
 
                         value = arrDataUnitdate.getValueTo();
                         if (value != null) {
-                            arrDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                            arrDataUnitdate.setNormalizedTo(CalendarConverter.toSeconds(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
                         } else {
                             arrDataUnitdate.setNormalizedTo(Long.MAX_VALUE);
                         }

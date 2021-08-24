@@ -14,7 +14,6 @@ import {indexById} from 'stores/app/utils';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes';
 import {nodeFormActions} from 'actions/arr/subNodeForm';
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes';
-import {calendarTypesFetchIfNeeded} from 'actions/refTables/calendarTypes';
 import $ from 'jquery';
 import ConfirmForm from '../shared/form/ConfirmForm';
 import {WebApiCls as WebApi} from '../../actions/WebApi';
@@ -137,7 +136,6 @@ class FundDataGridCellForm extends AbstractReactComponent {
         this.props.dispatch(descItemTypesFetchIfNeeded());
         this.props.dispatch(nodeFormActions.fundSubNodeFormFetchIfNeeded(versionId, routingKey));
         this.props.dispatch(refRulDataTypesFetchIfNeeded());
-        this.props.dispatch(calendarTypesFetchIfNeeded());
 
         // Pokud se jedná o editaci jedné položky, musíme zajistit, že tato položka tam je - alespoň prázdná
         if (validFundDataGrid.subNodeForm.fetched) {
@@ -171,9 +169,9 @@ class FundDataGridCellForm extends AbstractReactComponent {
 
     isLoading(props, fundDataGrid) {
         const {refTables} = props;
-        const {rulDataTypes, calendarTypes, descItemTypes} = refTables;
+        const {rulDataTypes, descItemTypes} = refTables;
 
-        if (fundDataGrid.subNodeForm.fetched && calendarTypes.fetched && descItemTypes.fetched) {
+        if (fundDataGrid.subNodeForm.fetched && descItemTypes.fetched) {
             return false;
         } else {
             return true;
@@ -206,7 +204,7 @@ class FundDataGridCellForm extends AbstractReactComponent {
     render() {
         const {fundDataGrid} = this.state;
         const {versionId, fundId, closed, className, style, refTables, onClose} = this.props;
-        const {rulDataTypes, calendarTypes, descItemTypes} = refTables;
+        const {rulDataTypes, descItemTypes} = refTables;
 
         var form;
         if (!this.isLoading(this.props, fundDataGrid)) {
@@ -227,7 +225,6 @@ class FundDataGridCellForm extends AbstractReactComponent {
                     subNodeForm={fundDataGrid.subNodeForm}
                     descItemTypeInfos={fundDataGrid.subNodeForm.descItemTypeInfos}
                     rulDataTypes={rulDataTypes}
-                    calendarTypes={calendarTypes}
                     descItemTypes={descItemTypes}
                     conformityInfo={conformityInfo}
                     parentNode={{}}

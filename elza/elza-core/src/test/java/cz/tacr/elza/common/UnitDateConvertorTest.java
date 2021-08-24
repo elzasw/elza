@@ -8,15 +8,17 @@ import org.junit.Test;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.*;
+
 public class UnitDateConvertorTest {
 
-    private static final String YEAR_INTERVAL = UnitDateConvertor.YEAR + "-" + UnitDateConvertor.YEAR;
+    private static final String YEAR_INTERVAL = YEAR + "-" + YEAR;
 
-    private static final String YEAR_MONTH_INTERVAL = UnitDateConvertor.YEAR_MONTH + "-" + UnitDateConvertor.YEAR_MONTH;
+    private static final String YEAR_MONTH_INTERVAL = YEAR_MONTH + "-" + YEAR_MONTH;
 
-    private static final String DATE_INTERVAL = UnitDateConvertor.DATE + "-" + UnitDateConvertor.DATE;
+    private static final String DATE_INTERVAL = DATE + "-" + DATE;
 
-    private static final String DATE_TIME_INTERVAL = UnitDateConvertor.DATE_TIME + "-" + UnitDateConvertor.DATE_TIME;
+    private static final String DATE_TIME_INTERVAL = DATE_TIME + "-" + DATE_TIME;
 
     @Test
     public void convertToUnitDateTest() {
@@ -25,7 +27,7 @@ public class UnitDateConvertorTest {
 
         sourceDate = "1st";
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
-        assertEquals(unitDate.getFormat(), UnitDateConvertor.CENTURY);
+        assertEquals(unitDate.getFormat(), CENTURY);
         assertEquals(unitDate.getValueFrom(), "0001-01-01T00:00:00");
         assertEquals(unitDate.getValueTo(), "0100-12-31T23:59:59");
 
@@ -55,13 +57,13 @@ public class UnitDateConvertorTest {
 
         sourceDate = "-2";
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
-        assertEquals(unitDate.getFormat(), UnitDateConvertor.YEAR);
+        assertEquals(unitDate.getFormat(), YEAR);
         assertEquals(unitDate.getValueFrom(), "-0002-01-01T00:00:00");
         assertEquals(unitDate.getValueTo(), "-0002-12-31T23:59:59");
 
         sourceDate = "[-2]";
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
-        assertEquals(unitDate.getFormat(), UnitDateConvertor.YEAR);
+        assertEquals(unitDate.getFormat(), YEAR);
         assertTrue(unitDate.getValueFromEstimated());
         assertTrue(unitDate.getValueToEstimated());
         assertEquals(unitDate.getValueFrom(), "-0002-01-01T00:00:00");
@@ -75,7 +77,7 @@ public class UnitDateConvertorTest {
 
         sourceDate = "-1.10";
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
-        assertEquals(unitDate.getFormat(), UnitDateConvertor.YEAR_MONTH);
+        assertEquals(unitDate.getFormat(), YEAR_MONTH);
         assertEquals(unitDate.getValueFrom(), "-0010-01-01T00:00:00");
         assertEquals(unitDate.getValueTo(), "-0010-01-31T23:59:59");
 
@@ -87,7 +89,7 @@ public class UnitDateConvertorTest {
 
         sourceDate = "-1.2.20";
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
-        assertEquals(unitDate.getFormat(), UnitDateConvertor.DATE);
+        assertEquals(unitDate.getFormat(), DATE);
         assertEquals(unitDate.getValueFrom(), "-0020-02-01T00:00:00");
         assertEquals(unitDate.getValueTo(), "-0020-02-01T23:59:59");
 

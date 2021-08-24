@@ -1087,10 +1087,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/groups/' + fundVersionId);
     }
 
-    getCalendarTypes(versionId, nodeId) {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/calendarTypes');
-    }
-
     getTemplates(code = null) {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/templates', code ? {code} : null);
     }
