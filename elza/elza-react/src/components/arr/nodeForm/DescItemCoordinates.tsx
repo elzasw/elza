@@ -50,7 +50,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
     };
 
     handleChangeData = e => {
-        const val = wktFromTypeAndData(this.state.type, e.target.value);
+        const val = e.target.value;
         if (val !== this.props.descItem.value) {
             this.props.onChange(val);
         }

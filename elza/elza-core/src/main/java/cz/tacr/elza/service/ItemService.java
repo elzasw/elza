@@ -13,6 +13,7 @@ import javax.transaction.Transactional.TxType;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.utils.MapyCzUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -342,6 +343,23 @@ public class ItemService {
         for (ApAccessPoint recordEntity : recordEntities) {
             recordMap.get(recordEntity.getAccessPointId()).setRecord(recordEntity);
         }
+    }
+
+    /**
+     * Normalizuje vstupní hodnotu souřadnic z klienta.
+     *
+     * @param value původní vstupní řetězec souřadnic
+     * @return normalizovaná hodnota souřadnic
+     */
+    public String normalizeCoordinates(final String value) {
+        if (value == null) {
+            return null;
+        }
+        String result = value;
+        if (MapyCzUtils.isFromMapyCz(value)) {
+            result = MapyCzUtils.transformToWKT(value);
+        }
+        return result;
     }
 
     /**
