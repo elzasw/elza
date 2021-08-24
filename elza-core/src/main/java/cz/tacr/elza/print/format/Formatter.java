@@ -25,8 +25,7 @@ public class Formatter {
 	 * @param action
 	 * @return Return this formatter
 	 */
-	Formatter addAction(FormatAction action)
-	{
+	Formatter addAction(FormatAction action) {
 		actions.add(action);
 		return this;
 	}
@@ -40,8 +39,7 @@ public class Formatter {
 	 * @param itemType Item type
 	 * @return
 	 */
-	public Formatter addValue(String itemType)
-	{
+	public Formatter addValue(String itemType) {
 		return addAction(new ValueFormatter(itemType));
 	}
 
@@ -50,10 +48,8 @@ public class Formatter {
 	 * @param itemTypes Item types
 	 * @return
 	 */
-	public Formatter addValue(String itemTypes[])
-	{
-		for(String itemType: itemTypes)
-		{
+	public Formatter addValue(String itemTypes[]) {
+		for(String itemType: itemTypes) {
 			addAction(new ValueFormatter(itemType));
 		}
 		return this;
@@ -67,7 +63,7 @@ public class Formatter {
 	public Formatter addValueWithTitle(String itemType) {
 		return addAction(new ValueWithTitleFormatter(itemType));
 	}
-	
+
 	/**
 	 * Add specification and value for given type with additional format
 	 * @param itemType
@@ -76,15 +72,14 @@ public class Formatter {
 	public Formatter addValueWithTitle(String itemType, Formatter formatter) {
 		return addAction(new ValueWithTitleFormatter(itemType, formatter));
 	}
-	
+
 	/**
 	 * Add specification and value for given types
 	 * @param itemTypes
 	 * @return
 	 */
 	public Formatter addValueWithTitle(String itemTypes[]) {
-		for(String itemType: itemTypes)
-		{
+		for(String itemType: itemTypes)	{
 			addAction(new ValueWithTitleFormatter(itemType));
 		}
 		return this;
@@ -101,6 +96,7 @@ public class Formatter {
 	public Formatter setSpecTitleSource(SpecTitleSource source) {
 		return addAction(new SetSpecificationTitleSource(source));
 	}
+
 	/**
 	 * Set separator for specification
 	 * @param specSeparator Separator for specification
@@ -113,7 +109,7 @@ public class Formatter {
 	public Formatter setSpecFormat(String prefix, String postfix, boolean afterValue) {
 		return addAction(new SetSpecificationFormat(prefix, postfix, afterValue));
 	}
-	
+
 	/**
 	 * Set separator between title and following value
 	 * @param titleSeparator
@@ -208,8 +204,7 @@ public class Formatter {
 	 * @param node Node to be formatted
 	 * @return Return string
 	 */
-	public String format(Node node)
-	{
+	public String format(Node node) {
 		List<Item> items = node.getItems();
 
 		return format(items);

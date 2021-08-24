@@ -108,7 +108,8 @@ public class CamExportBuilder implements ExportBuilder {
                 apInfo.getApState(),
                 groovyService,
                 apDataService,
-                apInfo.getApState().getScope());
+                apInfo.getApState().getScope(),
+                ApExternalSystemType.CAM);
 
         final Map<Integer, List<ApItem>> itemsConv = new HashMap<>();
         Map<Integer, Collection<ApItem>> items = apInfo.getItems();
@@ -116,7 +117,7 @@ public class CamExportBuilder implements ExportBuilder {
             items.forEach((a, b) -> itemsConv.put(a, new ArrayList<>(b)));
         }
 
-        EntityXml ent = exb.build(apInfo.getParts(), itemsConv, ApExternalSystemType.CAM.toString());
+        EntityXml ent = exb.build(apInfo.getParts(), itemsConv);
         this.entities.getList().add(ent);
     }
 

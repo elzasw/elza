@@ -11,7 +11,6 @@ import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
-import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -160,19 +159,6 @@ public class RestoreAction {
         data.setDataType(dataType.getEntity());
     }
 
-    /**
-     * Load unit date fields
-     *
-     * Method sets proper calendar type.
-     *
-     * @param data
-     */
-    private void loadUnitdate(ArrDataUnitdate data) {
-        CalendarType calendarType = CalendarType.fromId(data.getCalendarTypeId());
-        Validate.notNull(calendarType);
-        data.setCalendarType(calendarType.getEntity());
-    }
-
     private void restore(RestoredNode restoredNode) {
         ArrNode node = restoredNode.getNode();
         if (CollectionUtils.isNotEmpty(restoredNode.getDescItems())) {
@@ -193,8 +179,6 @@ public class RestoreAction {
                         addDataFileRef((ArrDataFileRef) data);
                     } else if (data instanceof ArrDataUriRef) {
                         addDataUriRef((ArrDataUriRef) data);
-                    } else if (data instanceof ArrDataUnitdate) {
-                        loadUnitdate((ArrDataUnitdate) data);
                     }
                 }
             }

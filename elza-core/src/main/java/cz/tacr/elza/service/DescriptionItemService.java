@@ -6,7 +6,6 @@ import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -15,7 +14,6 @@ import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
@@ -55,7 +53,6 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -96,8 +93,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static cz.tacr.elza.repository.ExceptionThrow.calendarType;
 
 /**
  * Description Item management
@@ -149,9 +144,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
-
-    @Autowired
-    private CalendarTypeRepository calendarTypeRepository;
 
     @Autowired
     private EventNotificationService eventNotificationService;
@@ -1725,7 +1717,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     data = itemUnitid;
                     break;
                 case "UNITDATE":
-                    ArrDataUnitdate itemUnitdate = createArrDataUnitdate(text);
+                    ArrDataUnitdate itemUnitdate = ArrDataUnitdate.valueOf(text);
                     data = itemUnitdate;
                     break;
                 case "RECORD_REF":
@@ -1841,30 +1833,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         }
 
         changeContext.flush();
-    }
-
-    /**
-     * Vytvoření unitdate struktury.
-     *
-     * @param text vstupní text ve formátu '[calendarTypeId]|[unitDateText]'
-     * @return vytvořená struktura
-     */
-    private ArrDataUnitdate createArrDataUnitdate(final String text) {
-        String[] splitText = text.split("\\|", 2);
-
-        if (splitText.length != 2 || !StringUtils.isNumeric(splitText[0])) {
-            throw new SystemException("Neplatný vstupní řetězec: " + text, BaseCode.PROPERTY_IS_INVALID);
-        }
-
-        Integer calendarTypeId = Integer.valueOf(splitText[0]);
-        ArrCalendarType calendarType = calendarTypeRepository.findById(calendarTypeId)
-                .orElseThrow(calendarType(calendarTypeId));
-
-        CalendarType calendar = CalendarType.valueOf(calendarType.getCode());
-
-        ArrDataUnitdate itemUnitdate = ArrDataUnitdate.valueOf(calendar, splitText[1]);
-
-        return itemUnitdate;
     }
 
     /**

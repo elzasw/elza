@@ -9,6 +9,4 @@ public interface ItemUnitdate extends Item {
 
     String getValue();
 
-    String getCalendarTypeCode();
-
 }

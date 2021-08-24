@@ -262,9 +262,9 @@ class ArrPageRibbon extends AbstractReactComponent {
     }
 
     canCreateIssue = () => {
-        const { userDetail } = this.props;
+        const {activeFund, userDetail} = this.props;
 
-        return userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL) ||
+        return userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL, {type: perms.FUND_ISSUE_ADMIN, fundId: activeFund.id}) ||
             userDetail.permissionsMap?.[perms.FUND_ISSUE_LIST_WR]?.issueListIds.length > 0;
     }
 

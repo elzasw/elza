@@ -210,7 +210,6 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
 function mapState(state) {
     const {refTables} = state;
     return {
-        calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
     };
 }

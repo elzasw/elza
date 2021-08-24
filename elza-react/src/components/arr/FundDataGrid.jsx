@@ -78,7 +78,6 @@ class FundDataGrid extends AbstractReactComponent {
         fund: PropTypes.object.isRequired,
         rulDataTypes: PropTypes.object.isRequired,
         descItemTypes: PropTypes.object.isRequired,
-        calendarTypes: PropTypes.object.isRequired,
         ruleSet: PropTypes.object.isRequired,
         readMode: PropTypes.bool.isRequired,
         closed: PropTypes.bool.isRequired,
@@ -119,8 +118,6 @@ class FundDataGrid extends AbstractReactComponent {
         if (!colState) {
             colState = {cols: []};
         }
-
-        colState.calendarTypesMap = getMapFromList(props.calendarTypes.items);
 
         this.state = colState;
     }
@@ -188,8 +185,6 @@ class FundDataGrid extends AbstractReactComponent {
             colState = {};
         }
 
-        colState.calendarTypesMap = getMapFromList(nextProps.calendarTypes.items);
-
         this.setState(colState, this.resizeGrid);
     }
 
@@ -246,8 +241,7 @@ class FundDataGrid extends AbstractReactComponent {
                             }
                             break;
                         case 'UNITDATE':
-                            itemValue =
-                                this.state.calendarTypesMap[value.calendarTypeId].name.charAt(0) + ': ' + value.value;
+                            itemValue = value.value;
                             break;
                         case 'JSON_TABLE':
                             itemValue = i18n(
@@ -550,7 +544,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleFilterSettings(refType, dataType) {
-        const {versionId, calendarTypes, fundDataGrid} = this.props;
+        const {versionId, fundDataGrid} = this.props;
 
         const otherFilters = {...fundDataGrid.filter};
         delete otherFilters[refType.id];
@@ -563,7 +557,6 @@ class FundDataGrid extends AbstractReactComponent {
                     versionId={versionId}
                     refType={refType}
                     dataType={dataType}
-                    calendarTypes={calendarTypes}
                     filter={fundDataGrid.filter[refType.id]}
                     filters={otherFilters}
                     onSubmitForm={this.handleChangeFilter.bind(this, versionId, refType)}
@@ -579,7 +572,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleBulkModifications(refType, dataType) {
-        const {versionId, fundDataGrid, calendarTypes} = this.props;
+        const {versionId, fundDataGrid} = this.props;
 
         const submit = data => {
             // Sestavení seznamu node s id a verzí, pro které se má daná operace provést
@@ -626,7 +619,7 @@ class FundDataGrid extends AbstractReactComponent {
                 switch (dataType.code) {
                     case 'UNITDATE':
                         if (typeof replaceText === 'object') {
-                            replaceText = replaceText.calendarTypeId + '|' + replaceText.value;
+                            replaceText = replaceText.value;
                         }
                         break;
                     case 'RECORD_REF':
@@ -675,7 +668,6 @@ class FundDataGrid extends AbstractReactComponent {
                 <FundBulkModificationsForm
                     refType={refType}
                     dataType={dataType}
-                    calendarTypes={calendarTypes}
                     onSubmitForm={submit}
                     allItemsCount={fundDataGrid.items.length}
                     checkedItemsCount={fundDataGrid.selectedIds.length}
@@ -880,7 +872,6 @@ class FundDataGrid extends AbstractReactComponent {
                         }
                         case 'UNITDATE': {
                             param[JAVA_ATTR_CLASS] = '.UnitdateSearchParam';
-                            param.calendarId = parseInt(conditionItem.calendarTypeId);
                             param.condition = conditionItem.condition;
                             break;
                         }

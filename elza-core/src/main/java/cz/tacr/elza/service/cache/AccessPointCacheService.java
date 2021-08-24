@@ -20,6 +20,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.drools.model.PartType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -54,8 +55,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
@@ -98,7 +102,8 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     private ApBindingItemRepository bindingItemRepository;
 
     /**
-     * Maximální počet AP, které se mají dávkově zpracovávat pro synchronizaci.
+     * MaximĂˇlnĂ­ poÄŤet AP, kterĂ© se majĂ­ dĂˇvkovÄ› zpracovĂˇvat pro
+     * synchronizaci.
      */
     @Value("${elza.ap.cache.batchsize:800}")
     private int syncApBatchSize = 800;
@@ -120,14 +125,14 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     }
 
     /**
-     * Synchronizace záznamů v databázi.
+     * Synchronizace zĂˇznamĹŻ v databĂˇzi.
      *
-     * Synchronní metoda volaná z transakce.
+     * SynchronnĂ­ metoda volanĂˇ z transakce.
      */
     public void syncCache() {
         writeLock.lock();
         try {
-            logger.info("Spuštění synchronizace cache pro AP");
+            logger.info("SpuĹˇtÄ›nĂ­ synchronizace cache pro AP");
             int off = 0;
             Integer numProcessed;
             do {
@@ -137,15 +142,15 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                 off += numProcessed;
             } while (numProcessed > 0);
 
-            logger.info("Všechny AP jsou synchronizovány");
-            logger.info("Ukončení synchronizace cache pro AP");
+            logger.info("VĹˇechny AP jsou synchronizovĂˇny");
+            logger.info("UkonÄŤenĂ­ synchronizace cache pro AP");
         } finally {
             writeLock.unlock();
         }
     }
 
     /**
-     * Synchronizace záznamů v databázi.
+     * Synchronizace zĂˇznamĹŻ v databĂˇzi.
      * 
      * @param offset
      * @return Number of processed items
@@ -394,7 +399,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         } catch (IOException e) {
             logger.error("Failed to deserialize object, data: " +
                     data);
-            throw new SystemException("Nastal problém při deserializaci objektu", e);
+            throw new SystemException("Nastal problĂ©m pĹ™i deserializaci objektu", e);
         }
     }
 
@@ -471,14 +476,72 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     }
 
     private String serialize(CachedAccessPoint cachedAccessPoint) {
+        validate(cachedAccessPoint);
         try {
             return mapper.writeValueAsString(cachedAccessPoint);
         } catch (JsonProcessingException e) {
             logger.error("Failed to serialize object, accessPointId: " +
                     cachedAccessPoint.getAccessPointId(), e);
-            throw new SystemException("Nastal problém při serializaci objektu, accessPointId: " +
+            throw new SystemException("Nastal problĂ©m pĹ™i serializaci objektu, accessPointId: " +
                     cachedAccessPoint.getAccessPointId(), e)
                             .set("accessPointId", cachedAccessPoint.getAccessPointId());
+        }
+    }
+
+    private void validate(CachedAccessPoint cachedAccessPoint) {
+        // validate only active APs
+        if (cachedAccessPoint.getApState() == null ||
+                cachedAccessPoint.getApState().getDeleteChangeId() != null) {
+            return;
+        }
+        // validate before writing
+        if (cachedAccessPoint.getPreferredPartId() == null) {
+            Validate.notNull(cachedAccessPoint.getPreferredPartId(),
+                             "Missing preferrdPartId, accessPointId=%s",
+                             cachedAccessPoint.getAccessPointId());
+        }
+        if (cachedAccessPoint.getParts() == null) {
+            Validate.notNull(cachedAccessPoint.getParts(),
+                             "List of parts is empty, accessPointId=%s",
+                             cachedAccessPoint.getAccessPointId());
+        }
+        // validate parts
+        CachedPart prefPart = null;
+        Set<Integer> partIds = new HashSet<>();
+        for (CachedPart cachedPart : cachedAccessPoint.getParts()) {
+            if (cachedPart.getDeleteChangeId() != null) {
+                Validate.isTrue(cachedPart.getDeleteChangeId() == null,
+                                "Deleted part cannot be cached, accessPointId=%s",
+                                cachedAccessPoint.getAccessPointId());
+            }
+            if (Objects.equals(cachedAccessPoint.getPreferredPartId(), cachedPart.getPartId())) {
+                prefPart = cachedPart;
+            }
+            if (!partIds.add(cachedPart.getPartId())) {
+                Validate.isTrue(false,
+                                "Duplicated part in cache, accessPointId=%s, partId=%s",
+                                cachedAccessPoint.getAccessPointId(),
+                                cachedPart.getPartId());
+            }
+            // check empty part
+            if (CollectionUtils.isEmpty(cachedPart.getItems())) {
+                Validate.isTrue(false,
+                                "Empty part in cache, accessPointId=%s, partId=%s",
+                                cachedAccessPoint.getAccessPointId(),
+                                cachedPart.getPartId());
+            }
+        }
+        // validate preferred name
+        if (prefPart == null) {
+            Validate.notNull(prefPart, "Missing preferred parts, accessPointId=%s",
+                             cachedAccessPoint.getAccessPointId());
+        }
+        // check type of pref part
+        if (!Objects.equals(prefPart.getPartTypeCode(), PartType.PT_NAME.value())) {
+            Validate.isTrue(false,
+                            "Invalid prefName type, accessPointId=%s, partId=%s",
+                            cachedAccessPoint.getAccessPointId(),
+                            prefPart.getPartId());
         }
     }
 

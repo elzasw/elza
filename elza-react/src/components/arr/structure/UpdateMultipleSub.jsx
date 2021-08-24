@@ -28,7 +28,6 @@ class UpdateMultipleSub extends React.Component {
         id: PropTypes.number.isRequired,
         // Store
         rulDataTypes: PropTypes.object,
-        calendarTypes: PropTypes.object,
         descItemTypes: PropTypes.object,
         subNodeForm: PropTypes.object,
         focus: PropTypes.object,
@@ -306,7 +305,6 @@ class UpdateMultipleSub extends React.Component {
             subNodeForm,
             descItemCopyFromPrevEnabled,
             singleDescItemTypeEdit,
-            calendarTypes,
             closed,
             showNodeAddons,
             fundVersionId,
@@ -379,7 +377,6 @@ class UpdateMultipleSub extends React.Component {
                 refType={refType}
                 infoType={overrideInfo || infoType}
                 rulDataType={rulDataType}
-                calendarTypes={calendarTypes}
                 onDescItemAdd={this.handleOnDescItemAdd.bind(this, infoType.id)}
                 onDescItemRemove={this.handleOnDescItemDelete.bind(this, infoType.id)}
                 onChange={itemModified ? this.handleChange.bind(this, infoType.id) : this.handleBlank}
@@ -530,7 +527,6 @@ export default connect(function (state, props) {
         fund,
         focus,
         rulDataTypes: refTables.rulDataTypes,
-        calendarTypes: refTables.calendarTypes,
         descItemTypes: refTables.descItemTypes,
     };
 })(rf);

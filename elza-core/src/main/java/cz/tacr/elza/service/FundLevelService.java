@@ -536,7 +536,7 @@ public class FundLevelService {
     @Transactional(value = TxType.MANDATORY)
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
     public List<ArrLevel> addNewLevel(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
-                                final ArrNode staticNode,
+                                      final ArrNode baseNode,
                                 @AuthParam(type = AuthParam.Type.NODE) final ArrNode staticNodeParent,
                                 final AddLevelDirection direction,
                                 @Nullable final String scenarionName,
@@ -544,26 +544,27 @@ public class FundLevelService {
                                 @Nullable final DesctItemProvider desctItemProvider,
                                 @Nullable final Integer countNewLevel) {
 
-        Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
+        Assert.notNull(baseNode, "Refereční JP musí být vyplněna");
         Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
-        final ArrLevel staticLevel = levelRepository.findByNode(staticNode, version.getLockChange());
+
+        ArrLevel baseLevel = levelRepository.findByNode(baseNode, version.getLockChange());
         int count = countNewLevel == null? 1 : countNewLevel;
 
         List<ArrLevel> levels = new ArrayList<>(count);
         switch (direction){
             case CHILD:
-                levels = addLevelUnder(version, staticNode, count);
+                levels = addLevelUnder(version, baseNode, count);
                 break;
             case BEFORE:
             case AFTER:
-                levels = addLevelBeforeAfter(version, staticNode, staticNodeParent, direction, count);
+                levels = addLevelBeforeAfter(version, baseNode, staticNodeParent, direction, count);
                 break;
             default:
                 throw new IllegalStateException("Neznámý typ směru přidání uzlu " + direction.name());
         }
 
         Assert.notEmpty(levels, "Level musí být vyplněn");
-        
+
         for (ArrLevel newLevel : levels) {
             ArrChange change = newLevel.getCreateChange();
 
@@ -573,8 +574,8 @@ public class FundLevelService {
 
             if (StringUtils.isNotBlank(scenarionName)) {
                 ScenarioOfNewLevel scenario = descriptionItemService
-                        .getDescriptionItamsOfScenario(scenarionName, staticLevel, direction.getDirectionLevel(), version);
-
+                        .getDescriptionItamsOfScenario(scenarionName, baseLevel, direction.getDirectionLevel(),
+                                                       version);
                 for (ArrDescItem descItem : scenario.getDescItems()) {
                     //pokud se má typ kopírovat z předchozího uzlu, nebudeme ho vkládat ze scénáře
                     if (descItem.getItemType() == null || descItemTypeCopyMap
@@ -607,8 +608,14 @@ public class FundLevelService {
                                        NodeTypeOperation.CREATE_NODE, null, null, null);
 
             entityManager.flush(); //aktualizace verzí v nodech
-            eventNotificationService
-                    .publishEvent(EventFactory.createAddNodeEvent(direction.getEventType(), version, staticLevel, newLevel));
+            eventNotificationService.publishEvent(EventFactory.createAddNodeEvent(direction.getEventType(), version,
+                                                                                  baseLevel, newLevel));
+
+            // při přidání AFTER by se měla změnit aktuální ArrLevel na předchozí
+            if (direction == AddLevelDirection.AFTER) {
+                baseLevel = newLevel;
+            }
+
         }
 
         return levels;

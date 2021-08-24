@@ -142,6 +142,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
                     case perms.FUND_OUTPUT_WR:
                     case perms.FUND_CL_VER_WR:
                     case perms.FUND_VER_WR:
+                    case perms.FUND_ISSUE_ADMIN:
                         id = p.fund.id;
                         permissionCode = p.permission;
                         break;
@@ -491,6 +492,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
             permCodes = [...Object.values(FundsPermissionPanel.permCodesMap)];
             if (permission.id !== FundsPermissionPanel.ALL_ID) {
                 permCodes.push(perms.FUND_VER_WR);
+                permCodes.push(perms.FUND_ISSUE_ADMIN);
             }
         }
         let permissionAll = permissions[this.getIndexById(FundsPermissionPanel.ALL_ID, permissions)];

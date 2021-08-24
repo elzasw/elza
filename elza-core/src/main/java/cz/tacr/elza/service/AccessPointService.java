@@ -304,7 +304,7 @@ public class AccessPointService {
                                                         @Nullable SearchType searchTypeName,
                                                         @Nullable SearchType searchTypeUsername) {
 
-        Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
+        Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId, false);
 
         return apAccessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult, maxResults, scopeIdsForSearch, approvalStates, searchTypeName, searchTypeUsername);
     }
@@ -327,7 +327,7 @@ public class AccessPointService {
                                                     @Nullable SearchType searchTypeName,
                                                     @Nullable SearchType searchTypeUsername) {
 
-        Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId);
+        Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId, false);
 
         return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds, scopeIdsForSearch, approvalStates, searchTypeName, searchTypeUsername);
     }
@@ -577,13 +577,21 @@ public class AccessPointService {
     }
 
     /**
-     * Načte seznam id tříd ve kterých se má vyhledávat. Výsledek je průnikem tříd požadovaných a těch na které ma uživatel právo.
+     * Načte seznam id tříd ve kterých se má vyhledávat. Výsledek je průnikem tříd
+     * požadovaných a těch na které ma uživatel právo.
      *
-     * @param fund AP, podle jejíž tříd se má hledat
-     * @param scopeId id scope, pokud je vyplněno hledá se jen v tomto scope
+     * @param fund
+     *            AP, podle jejíž tříd se má hledat
+     * @param scopeId
+     *            id scope, pokud je vyplněno hledá se jen v tomto scope
+     * @param includeConnetedScopes
+     *            Flag to included connected scopes to scopeId. If scopeId is not
+     *            defined flag is not used.
      * @return množina id tříd, podle kterých se bude hledat
      */
-    public Set<Integer> getScopeIdsForSearch(@Nullable final ArrFund fund, @Nullable final Integer scopeId) {
+    public Set<Integer> getScopeIdsForSearch(@Nullable final ArrFund fund,
+                                             @Nullable final Integer scopeId,
+                                             boolean includeConnetedScopes) {
         boolean readAllScopes = userService.hasPermission(UsrPermission.Permission.AP_SCOPE_RD_ALL);
         UsrUser user = userService.getLoggedUser();
 
@@ -594,15 +602,30 @@ public class AccessPointService {
             scopeIdsToSearch = userService.getUserScopeIds();
         }
 
-        if (!scopeIdsToSearch.isEmpty()) {
-            if (fund != null) {
-                Set<Integer> fundScopeIds = scopeRepository.findAllConnectedByFundId(fund.getFundId());
-                scopeIdsToSearch.retainAll(fundScopeIds);
+        if (scopeIdsToSearch.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        if (fund != null) {
+            Set<Integer> fundScopeIds = scopeRepository.findAllConnectedByFundId(fund.getFundId());
+            scopeIdsToSearch.retainAll(fundScopeIds);
+        }
+
+        if (scopeId != null) {
+            Set<Integer> scopeIdSet = Collections.singleton(scopeId);
+            if (!includeConnetedScopes) {
+                if (scopeIdsToSearch.contains(scopeId)) {
+                    return scopeIdSet;
+                } else {
+                    return Collections.emptySet();
+                }
             }
 
-            if (scopeId != null) {
-                scopeIdsToSearch.removeIf(id -> !id.equals(scopeId));
-            }
+            // get connected scopes
+            Set<Integer> connectedScopes = scopeRelationRepository.findConnectedScopeIdsByScopeIds(scopeIdSet);
+            connectedScopes.add(scopeId);
+
+            scopeIdsToSearch.retainAll(connectedScopes);
         }
 
         return scopeIdsToSearch;
@@ -884,7 +907,7 @@ public class AccessPointService {
         accessPoint.setPreferredPart(apPart);
 
         apItemService.createItems(apPart, apPartFormVO.getItems(), apChange, null, null);
-        generateSync(accessPoint.getAccessPointId(), apPart);
+        generateSync(accessPoint, apPart);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         publishAccessPointCreateEvent(accessPoint);
@@ -986,7 +1009,7 @@ public class AccessPointService {
 
         apItemService.deleteItems(deleteItems, change);
 
-        generateSync(apAccessPoint.getAccessPointId(), apPart);
+        generateSync(apAccessPoint, apPart);
 
         return true;
     }
@@ -1690,10 +1713,14 @@ public class AccessPointService {
 
         // schvalování
         if (userService.hasPermission(Permission.AP_CONFIRM_ALL) 
-                || userService.hasPermission(Permission.AP_CONFIRM_ALL, apScope.getScopeId())) {
+                || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
             if (apState.getStateApproval().equals(StateApproval.TO_APPROVE) ||
                     apState.getStateApproval().equals(StateApproval.REV_PREPARED)) {
-                result.add(StateApproval.APPROVED);
+                // kontrola, kdo přepnul do stavu ke schválení (nesmí být shodný uživatel)
+                UsrUser prevUser = apState.getCreateChange().getUser();
+                if (prevUser == null || !Objects.equals(prevUser.getUserId(), user.getId())) {
+                    result.add(StateApproval.APPROVED);
+                }
             }
         }
 
@@ -1738,7 +1765,16 @@ public class AccessPointService {
             return true;
         }
 
-        if (oldStateApproval != null && oldStateApproval.equals(StateApproval.APPROVED) && newStateApproval.equals(StateApproval.APPROVED)) {
+        if (oldStateApproval != null &&
+                (oldStateApproval.equals(StateApproval.APPROVED) && newStateApproval.equals(StateApproval.REV_NEW)) ||
+                (oldStateApproval.equals(StateApproval.REV_NEW)
+                        && newStateApproval.equals(StateApproval.REV_PREPARED)) ||
+                (oldStateApproval.equals(StateApproval.REV_NEW)
+                        && newStateApproval.equals(StateApproval.REV_AMEND)) ||
+                (oldStateApproval.equals(StateApproval.REV_PREPARED)
+                        && newStateApproval.equals(StateApproval.REV_AMEND)) ||
+                (oldStateApproval.equals(StateApproval.REV_AMEND)
+                        && newStateApproval.equals(StateApproval.REV_PREPARED))) {
 
             // k editaci již schválených přístupových bodů je potřeba "Změna schválených přístupových bodů"
             return userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
@@ -1953,10 +1989,10 @@ public class AccessPointService {
     }
 
     @Transactional(TxType.MANDATORY)
-    public void generateSync(final Integer accessPointId, final ApPart apPart) {
+    public void generateSync(final ApAccessPoint accessPoint, final ApPart apPart) {
         boolean successfulGeneration = updatePartValue(apPart);
-        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPointId);
-        updateValidationErrors(accessPointId, apValidationErrorsVO, successfulGeneration);
+        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
+        updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
     }
 
     public void generateSync(final Integer accessPointId) {
@@ -1966,19 +2002,19 @@ public class AccessPointService {
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
-        generateSync(accessPointId, apState, partList, itemMap, false);
+        generateSync(accessPoint, apState, partList, itemMap, false);
     }
 
     @Transactional(TxType.MANDATORY)
-    public void generateSync(final Integer accessPointId,
+    public void generateSync(final ApAccessPoint accessPoint,
                              final ApState apState,
                              final List<ApPart> partList,
                              final Map<Integer, List<ApItem>> itemMap,
                              boolean async) {
 
         boolean successfulGeneration = updatePartValues(apState, partList, itemMap, async);
-        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPointId);
-        updateValidationErrors(accessPointId, apValidationErrorsVO, successfulGeneration);
+        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
+        updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
     }
 
 
@@ -1988,10 +2024,9 @@ public class AccessPointService {
      * @param apValidationErrorsVO chyby přístupového bodu
      * @param successfulGeneration úspěšné generování keyValue
      */
-    public void updateValidationErrors(final Integer accessPointId,
+    public void updateValidationErrors(final ApAccessPoint accessPoint,
                                        final ApValidationErrorsVO apValidationErrorsVO,
                                        final boolean successfulGeneration) {
-        ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
 
         StringBuilder accessPointErrors = new StringBuilder();
         if (CollectionUtils.isNotEmpty(apValidationErrorsVO.getErrors())) {

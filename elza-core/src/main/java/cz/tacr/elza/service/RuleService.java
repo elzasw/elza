@@ -1143,12 +1143,11 @@ public class RuleService {
     }
 
     @Transactional(TxType.MANDATORY)
-    public ApValidationErrorsVO executeValidation(final Integer accessPointId) {
-        ApAccessPoint apAccessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState apState = accessPointService.getStateInternal(apAccessPoint);
+    public ApValidationErrorsVO executeValidation(final ApAccessPoint accessPoint) {
+        ApState apState = accessPointService.getStateInternal(accessPoint);
         RulRuleSet rulRuleSet = apState.getScope().getRulRuleSet();
-        List<ApPart> parts = partService.findPartsByAccessPoint(apAccessPoint);
-        Integer preferredPartId = apAccessPoint.getPreferredPartId();
+        List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
+        Integer preferredPartId = accessPoint.getPreferredPartId();
         List<ApItem> itemList = accessPointItemService.findItemsByParts(parts);
 
         List<Part> partList = new ArrayList<>();
@@ -1157,12 +1156,12 @@ public class RuleService {
         }
         fillParentParts(partList);
 
-        Map<PartType, List<Index>> indexMap = indexRepository.findIndicesByAccessPoint(apAccessPoint.getAccessPointId())
+        Map<PartType, List<Index>> indexMap = indexRepository.findIndicesByAccessPoint(accessPoint.getAccessPointId())
                         .stream()
                         .map(index -> createIndex(index, findPartById(partList, index.getPart().getPartId())))
                         .collect(Collectors.groupingBy(index -> index.getPart().getType()));
 
-        Ap ap = new Ap(accessPointId, apState.getApType().getCode(), partList);
+        Ap ap = new Ap(accessPoint.getAccessPointId(), apState.getApType().getCode(), partList);
         GeoModel geoModel = createGeoModel(ap);
 
         ApValidationErrorsVO apValidationErrorsVO = createAeValidationErrorsVO();

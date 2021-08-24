@@ -29,7 +29,6 @@ import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.factory.RuleFactory;
-import cz.tacr.elza.controller.vo.ArrCalendarTypeVO;
 import cz.tacr.elza.controller.vo.ArrChangeVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
@@ -83,9 +82,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitdateVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
-import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrCalendarType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataBit;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -149,7 +146,6 @@ import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ArrRefTemplateRepository;
-import cz.tacr.elza.repository.CalendarTypeRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -161,7 +157,6 @@ import ma.glasnost.orika.converter.BidirectionalConverter;
 import ma.glasnost.orika.converter.builtin.PassThroughConverter;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
 import ma.glasnost.orika.metadata.Type;
-
 
 /**
  * Konfigurace továrny na VO objekty.
@@ -175,16 +170,19 @@ public class ConfigMapperConfiguration {
 
     @Autowired
     private FundFileRepository fundFileRepository;
+
     @Autowired
     private StructuredObjectRepository structureDataRepository;
-    @Autowired
-    private CalendarTypeRepository calendarTypeRepository;
+
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
+
     @Autowired
     private RuleService ruleService;
+
     @Autowired
     private PartTypeRepository partTypeRepository;
+
     @Autowired
     private ArrRefTemplateRepository refTemplateRepository;
 
@@ -211,9 +209,6 @@ public class ConfigMapperConfiguration {
      * @param mapperFactory tovární třída
      */
     private void initSimpleVO(final MapperFactory mapperFactory) {
-        mapperFactory.classMap(ArrCalendarType.class, ArrCalendarTypeVO.class).byDefault().field(
-                "calendarTypeId", "id").register();
-
         mapperFactory.classMap(ArrNodeConformityExt.class, NodeConformityVO.class).customize(
                 new CustomMapper<ArrNodeConformityExt, NodeConformityVO>() {
                     @Override
@@ -293,19 +288,13 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final ArrItemUnitdate unitdate,
                                         final ArrItemUnitdateVO unitdateVO,
                                         final MappingContext context) {
-                        if (unitdate.getCalendarType() != null) {
-                            unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
-                            unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
-                        }
+                        unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
                     }
 
                     @Override
                     public void mapBtoA(final ArrItemUnitdateVO arrItemUnitdateVO,
                                         final ArrItemUnitdate unitdate,
                                         final MappingContext context) {
-                        unitdate.setCalendarType(
-                                calendarTypeRepository.findById(arrItemUnitdateVO.getCalendarTypeId())
-                        .orElseThrow(calendarType(arrItemUnitdateVO.getCalendarTypeId())));
                         UnitDateConvertor.convertToUnitDate(arrItemUnitdateVO.getValue(), unitdate);
                     }
                 }).byDefault().register();
@@ -649,30 +638,18 @@ public class ConfigMapperConfiguration {
                     public void mapAtoB(final ArrDataUnitdate unitdate,
                                         final ArrItemUnitdateVO unitdateVO,
                                         final MappingContext context) {
-                        if (unitdate.getCalendarType() != null) {
-                            unitdateVO.setCalendarTypeId(unitdate.getCalendarType().getCalendarTypeId());
-                            unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
-                        }
+                        unitdateVO.setValue(UnitDateConvertor.convertToString(unitdate));
                     }
 
                     @Override
                     public void mapBtoA(final ArrItemUnitdateVO arrItemUnitdateVO,
                                         final ArrDataUnitdate unitdate,
                                         final MappingContext context) {
-                        unitdate.setCalendarType(
-                                calendarTypeRepository.findById(arrItemUnitdateVO.getCalendarTypeId())
-                                    .orElseThrow(calendarType(arrItemUnitdateVO.getCalendarTypeId())));
                         UnitDateConvertor.convertToUnitDate(arrItemUnitdateVO.getValue(), unitdate);
 
-
-                        String codeCalendar = unitdate.getCalendarType().getCode();
-                        CalendarType calendarType = CalendarType.valueOf(codeCalendar);
-
-                        String value;
-
-                        value = unitdate.getValueFrom();
+                        String value = unitdate.getValueFrom();
                         if (value != null) {
-                            unitdate.setNormalizedFrom(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                            unitdate.setNormalizedFrom(CalendarConverter.toSeconds(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
                         } else {
                             unitdate.setNormalizedFrom(Long.MIN_VALUE);
                         }
@@ -682,7 +659,7 @@ public class ConfigMapperConfiguration {
 
                         value = unitdate.getValueTo();
                         if (value != null) {
-                            unitdate.setNormalizedTo(CalendarConverter.toSeconds(calendarType, LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+                            unitdate.setNormalizedTo(CalendarConverter.toSeconds(LocalDateTime.parse(value, DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
                         } else {
                             unitdate.setNormalizedTo(Long.MAX_VALUE);
                         }

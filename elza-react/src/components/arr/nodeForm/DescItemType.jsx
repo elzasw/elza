@@ -70,7 +70,6 @@ class DescItemType extends AbstractReactComponent {
         infoType: PropTypes.object.isRequired,
         descItemType: PropTypes.object.isRequired,
         rulDataType: PropTypes.object.isRequired,
-        calendarTypes: PropTypes.object.isRequired,
         structureTypes: PropTypes.object,
         locked: PropTypes.bool.isRequired,
         hideDelete: PropTypes.bool,
@@ -165,19 +164,14 @@ class DescItemType extends AbstractReactComponent {
 
     shouldComponentUpdate(nextProps, nextState) {
         return true;
-        if (this.state !== nextState) {
-            console.log('[DescItemType]#[state]##############', nextProps.refType.name);
-            return true;
-        }
-        console.log('[DescItemType]###############', nextProps.refType.name);
+        //if (this.state !== nextState) {
+        //    console.log('[DescItemType]#[state]##############', nextProps.refType.name);
+        //    return true;
+        //}
+        //console.log('[DescItemType]###############', nextProps.refType.name);
         // return !propsEquals(this.props, nextProps, undefined, true);
-        return !objectEqualsDiff(this.props, nextProps, undefined, '', true);
+        //return !objectEqualsDiff(this.props, nextProps, undefined, '', true);
     }
-    // shouldComponentUpdate(nextProps, nextState) {
-    //     return true;
-    //     // const eqProps = ['descItemType', 'rulDataType', 'calendarTypes', 'locked', 'copy', 'readMode'];
-    //     // return !propsEquals(this.props, nextProps, eqProps);
-    // }
 
     handleDescItemTypeShortcuts(action) {
         console.log('#handleDescItemTypeShortcuts', '[' + action + ']', this);
@@ -660,7 +654,6 @@ class DescItemType extends AbstractReactComponent {
             refType,
             singleDescItemTypeEdit,
             structureTypes,
-            calendarTypes,
             rulDataType,
             descItemFactory,
             readMode,
@@ -705,7 +698,6 @@ class DescItemType extends AbstractReactComponent {
                 },
             },
             UNITDATE: {
-                calendarTypes: calendarTypes,
             },
             JSON_TABLE: {
                 refType,

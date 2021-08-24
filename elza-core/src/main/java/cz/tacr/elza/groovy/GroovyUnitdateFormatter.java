@@ -7,6 +7,8 @@ import org.apache.commons.lang3.Validate;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
+
 public class GroovyUnitdateFormatter {
 
     private final GroovyItem from;
@@ -63,7 +65,7 @@ public class GroovyUnitdateFormatter {
     }
 
     private String buildBeginUnitdate(IUnitdate unitdate) {
-        if (formatYear && !unitdate.getFormat().equals(UnitDateConvertor.CENTURY)) {
+        if (formatYear && !unitdate.getFormat().equals(CENTURY)) {
             return UnitDateConvertor.convertYear(unitdate, true);
         } else {
             return UnitDateConvertor.beginToString(unitdate, false);
@@ -71,7 +73,7 @@ public class GroovyUnitdateFormatter {
     }
 
     private String buildEndUnitdate(IUnitdate unitdate) {
-        if (formatYear && !unitdate.getFormat().equals(UnitDateConvertor.CENTURY)) {
+        if (formatYear && !unitdate.getFormat().equals(CENTURY)) {
             return UnitDateConvertor.convertYear(unitdate, false);
         } else {
             return UnitDateConvertor.endToString(unitdate, false);
@@ -79,14 +81,14 @@ public class GroovyUnitdateFormatter {
     }
 
     private String completeBeginUnitdate(IUnitdate unitdate, String str) {
-        if (unitdate.getValueFromEstimated() && !unitdate.getFormat().equals(UnitDateConvertor.CENTURY)) {
+        if (unitdate.getValueFromEstimated() && !unitdate.getFormat().equals(CENTURY)) {
             str = estimate + str;
         }
         return joinStr(str, prefixFrom);
     }
 
     private String completeEndUnitdate(IUnitdate unitdate, String str) {
-        if (unitdate.getValueToEstimated() && !unitdate.getFormat().equals(UnitDateConvertor.CENTURY)) {
+        if (unitdate.getValueToEstimated() && !unitdate.getFormat().equals(CENTURY)) {
             str = estimate + str;
         }
         return joinStr(str, prefixTo);
@@ -95,8 +97,8 @@ public class GroovyUnitdateFormatter {
     private String completeEqualUnitdate(IUnitdate from, IUnitdate to, String str) {
         if (from.getValueFromEstimated()
                 && to.getValueToEstimated()
-                && !from.getFormat().equals(UnitDateConvertor.CENTURY)
-                && !to.getFormat().equals(UnitDateConvertor.CENTURY)) {
+                && !from.getFormat().equals(CENTURY)
+                && !to.getFormat().equals(CENTURY)) {
             str = estimate + str;
         }
         return joinStr(str, prefixYearEqual);

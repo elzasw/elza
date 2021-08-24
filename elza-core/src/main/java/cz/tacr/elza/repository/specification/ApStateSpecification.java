@@ -13,7 +13,6 @@ import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -50,6 +49,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
@@ -178,12 +179,12 @@ public class ApStateSpecification implements Specification<ApState> {
             }
             if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
                 ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
-                String intervalCreation = arrDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+                String intervalCreation = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
                 and = processValueCondDef(ctx, and, intervalCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CONTAIN, false);
             }
             if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
                 ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
-                String intervalExtinction = arrDataUnitdate.getValueFrom() + UnitDateConvertor.DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+                String intervalExtinction = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
                 and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
             }
             condition = cb.and(condition, and);

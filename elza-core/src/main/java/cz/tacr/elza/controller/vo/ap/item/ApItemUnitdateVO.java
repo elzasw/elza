@@ -4,9 +4,6 @@ import java.util.Objects;
 
 import javax.persistence.EntityManager;
 
-import org.apache.commons.lang.Validate;
-
-import cz.tacr.elza.core.data.CalendarType;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -19,11 +16,6 @@ public class ApItemUnitdateVO extends ApItemVO {
      */
     private String value;
 
-    /**
-     * Identifikátor kalendáře
-     */
-    private Integer calendarTypeId;
-
     public ApItemUnitdateVO() {
     }
 
@@ -32,7 +24,6 @@ public class ApItemUnitdateVO extends ApItemVO {
         ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
         if (data != null) {
             value = UnitDateConvertor.convertToString(data);
-            calendarTypeId = data.getCalendarTypeId();
         }
     }
 
@@ -44,33 +35,19 @@ public class ApItemUnitdateVO extends ApItemVO {
         this.value = value;
     }
 
-    public Integer getCalendarTypeId() {
-        return calendarTypeId;
-    }
-
-    public void setCalendarTypeId(final Integer calendarTypeId) {
-        this.calendarTypeId = calendarTypeId;
-    }
-
     @Override
     public ArrData createDataEntity(EntityManager em) {
-        // prepare calendar type
-        CalendarType calType = calendarTypeId == null ? CalendarType.GREGORIAN : CalendarType.fromId(calendarTypeId);
-        Validate.notNull(calType);
-
-        ArrDataUnitdate data = ArrDataUnitdate.valueOf(calType, value);
+        ArrDataUnitdate data = ArrDataUnitdate.valueOf(value);
         return data;
     }
 
     @Override
     public boolean equalsValue(ApItem item) {
         String value = null;
-        Integer calendarTypeId = null;
         ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
         if (data != null) {
             value = UnitDateConvertor.convertToString(data);
-            calendarTypeId = data.getCalendarTypeId();
         }
-        return equalsBase(item) && Objects.equals(this.value, value) && Objects.equals(this.calendarTypeId, calendarTypeId);
+        return equalsBase(item) && Objects.equals(this.value, value);
     }
 }
