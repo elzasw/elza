@@ -1713,10 +1713,14 @@ public class AccessPointService {
 
         // schvalování
         if (userService.hasPermission(Permission.AP_CONFIRM_ALL) 
-                || userService.hasPermission(Permission.AP_CONFIRM_ALL, apScope.getScopeId())) {
+                || userService.hasPermission(Permission.AP_CONFIRM, apScope.getScopeId())) {
             if (apState.getStateApproval().equals(StateApproval.TO_APPROVE) ||
                     apState.getStateApproval().equals(StateApproval.REV_PREPARED)) {
-                result.add(StateApproval.APPROVED);
+                // kontrola, kdo přepnul do stavu ke schválení (nesmí být shodný uživatel)
+                UsrUser prevUser = apState.getCreateChange().getUser();
+                if (prevUser == null || !Objects.equals(prevUser.getUserId(), user.getId())) {
+                    result.add(StateApproval.APPROVED);
+                }
             }
         }
 
@@ -1761,7 +1765,16 @@ public class AccessPointService {
             return true;
         }
 
-        if (oldStateApproval != null && oldStateApproval.equals(StateApproval.APPROVED) && newStateApproval.equals(StateApproval.APPROVED)) {
+        if (oldStateApproval != null &&
+                (oldStateApproval.equals(StateApproval.APPROVED) && newStateApproval.equals(StateApproval.REV_NEW)) ||
+                (oldStateApproval.equals(StateApproval.REV_NEW)
+                        && newStateApproval.equals(StateApproval.REV_PREPARED)) ||
+                (oldStateApproval.equals(StateApproval.REV_NEW)
+                        && newStateApproval.equals(StateApproval.REV_AMEND)) ||
+                (oldStateApproval.equals(StateApproval.REV_PREPARED)
+                        && newStateApproval.equals(StateApproval.REV_AMEND)) ||
+                (oldStateApproval.equals(StateApproval.REV_AMEND)
+                        && newStateApproval.equals(StateApproval.REV_PREPARED))) {
 
             // k editaci již schválených přístupových bodů je potřeba "Změna schválených přístupových bodů"
             return userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL)
