@@ -178,7 +178,6 @@ export function validate(descItem, refType, valueServerError) {
             }
             break;
         case 'COORDINATES':
-            error.value = validateCoordinatePoint(descItem.value);
             break;
         case 'DECIMAL':
             if (!descItem.value || descItem.value.length === 0) {
