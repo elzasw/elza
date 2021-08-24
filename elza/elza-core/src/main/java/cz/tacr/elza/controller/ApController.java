@@ -480,6 +480,7 @@ public class ApController {
      * @return seznam stavů
      */
     @RequestMapping(value = "/{accessPointId}/nextStates", method = RequestMethod.GET)
+    @Transactional
     public List<String> getStateApproval(@PathVariable final Integer accessPointId) {
         Validate.notNull(accessPointId, "Identifikátor přístupového bodu musí být vyplněn");
 
