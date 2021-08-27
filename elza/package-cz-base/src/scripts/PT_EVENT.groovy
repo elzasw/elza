@@ -11,13 +11,14 @@ static GroovyResult generate(final GroovyPart part) {
 
     def children = part.getChildren()
     GroovyAppender rels = GroovyUtils.createAppender(part)
-    if (children != null) {
+    // Nepropagovani casti z podrizenych partu
+    /*if (children != null) {
         for (GroovyPart childPart : children) {
             GroovyAppender childBase = GroovyUtils.createAppender(childPart)
             childBase.add("REL_ENTITY").withSpec()
             rels.addStr(childBase.build()).withSeparator(", ")
         }
-    }
+    }*/
 
     GroovyAppender base = GroovyUtils.createAppender(part)
     base.add("EV_TYPE")
