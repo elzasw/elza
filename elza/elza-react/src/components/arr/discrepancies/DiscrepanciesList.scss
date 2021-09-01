@@ -1,0 +1,15 @@
+.errors-listbox-container, .visiblePolicies-container {
+    height: 100%;
+    .lazy-listbox-container {
+        .listbox-item {
+            height: 25px;
+            padding: 5px;
+
+            > div {
+                white-space: nowrap;
+                overflow:hidden;
+                text-overflow: ellipsis;
+            }
+        }
+    }
+}
