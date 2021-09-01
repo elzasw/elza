@@ -45,7 +45,7 @@ class VirtualList extends React.Component<Props, State> {
     constructor(props) {
         super(props);
         this.state = {
-            ...this.getVirtualState(this.props, false, {prevFirstItemIndex: -1, isMounted: false}),
+            ...this.getVirtualState(this.props, {prevFirstItemIndex: -1, isMounted: false}),
             isMounted: false,
             itemHeight: this.props.itemHeight || DEFAULT_ITEM_HEIGHT,
         };
@@ -141,7 +141,7 @@ class VirtualList extends React.Component<Props, State> {
         };
     };
 
-    getVirtualState = (props: Props, isMounted: boolean, currState: State): State => {
+    getVirtualState = (props: Props, currState: State): State => {
         // default values
         const state: State = {
             ...currState,
@@ -155,7 +155,7 @@ class VirtualList extends React.Component<Props, State> {
         let itemHeight = currState.itemHeight || -1;
 
         // early return if nothing to render
-        if (typeof props.container === 'undefined' || itemsCount === 0 || itemHeight <= 0 || !isMounted) {
+        if (typeof props.container === 'undefined' || itemsCount === 0 || itemHeight <= 0) {
             return state;
         }
 
@@ -224,7 +224,7 @@ class VirtualList extends React.Component<Props, State> {
     };
 
     UNSAFE_componentWillReceiveProps(nextProps) {
-        const state = this.getVirtualState(nextProps, this.state.isMounted, this.state);
+        const state = this.getVirtualState(nextProps, this.state);
         let itemHeight = this.state.itemHeight!;
         if (this.onScrollDebounced) {
             this.props.container.removeEventListener('scroll', this.onScrollDebounced);
@@ -284,7 +284,7 @@ class VirtualList extends React.Component<Props, State> {
                     itemHeight: itemHeight,
                     itemsRendered: true,
                 };
-                let virtState = this.getVirtualState(this.props, this.state.isMounted, state);
+                let virtState = this.getVirtualState(this.props, state);
                 state = {
                     ...state,
                     ...virtState,
@@ -297,7 +297,7 @@ class VirtualList extends React.Component<Props, State> {
         this.onScrollDebounced = utils.debounce(this.onScroll, this.props.scrollDelay, false);
     }
     componentDidMount() {
-        var state = this.getVirtualState(this.props, true, this.state);
+        var state = this.getVirtualState(this.props, this.state);
         this.setState({
             ...state,
             isMounted: true,
@@ -312,7 +312,7 @@ class VirtualList extends React.Component<Props, State> {
         this.props.container.removeEventListener('scroll', this.onScrollDebounced);
     }
     onScroll = () => {
-        var state = this.getVirtualState(this.props, this.state.isMounted, this.state);
+        var state = this.getVirtualState(this.props, this.state);
 
         this.setState(state);
     };
