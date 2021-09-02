@@ -50,7 +50,7 @@
                     border-right: none;
                 }
 
-                > .btn {
+                .btn, .dropdown-toggle {
                     padding: 2px;
                     border: none;
                     margin: 0;
@@ -58,13 +58,22 @@
                     height: 2em;
                     font-size: 0.9em;
 
+                    &:disabled {
+                        color: #666;
+                    }
+
                     &:hover {
                         background-color: $node-form-actions-hover;
+                        color: inherit;
+                    }
+
+                    &:focus {
+                        color: inherit;
                     }
 
                     &.active {
                         background-color: $node-form-actions-hover;
-                        color: black;
+                        color: inherit;
                     }
 
                     .icon {
