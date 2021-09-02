@@ -27,7 +27,7 @@ class LazyListBox extends AbstractReactComponent {
         return {shortcuts: this.shortcutManager};
     }
 
-    mainContainerRef = undefined;
+    mainContainerRef = React.createRef();
 
     constructor(props) {
         super(props);
@@ -49,7 +49,6 @@ class LazyListBox extends AbstractReactComponent {
             view: {from: 0, to: 0},
             scrollToIndex: {index: 0},
             selectedItem: props.selectedItem,
-            mainContainerRef: null,
         };
 
         Utils.addShortcutManager(this, defaultKeymap);
@@ -372,7 +371,6 @@ class LazyListBox extends AbstractReactComponent {
         return (
             <div
                 className={cls}
-                ref={'item-' + index}
                 key={index}
                 onMouseDown={this.handleClick.bind(this, index)}
                 onDoubleClick={this.handleDoubleClick.bind(this, index)}
@@ -395,7 +393,11 @@ class LazyListBox extends AbstractReactComponent {
     };
     getPageHeight = () => {
         const {itemHeight} = this.props;
-        const elHeight = this.mainContainerRef.getBoundingClientRect().height;
+        const mainContainer = this.mainContainerRef.current;
+
+        if(!mainContainer) {return itemHeight*2;}
+
+        const elHeight = mainContainer.getBoundingClientRect().height;
         const pageSize = Math.floor(elHeight / itemHeight);
         return pageSize;
     };
@@ -481,12 +483,10 @@ class LazyListBox extends AbstractReactComponent {
 
         return (
             <Shortcuts name="LazyListBox" className="lazy-listbox-wrapper" handler={this.handleShortcuts} tabIndex={0}>
-                <div className={cls} ref={ref => (this.mainContainerRef = ref)}>
-                    {this.mainContainerRef && (
+                <div className={cls} ref={this.mainContainerRef}>
                         <VirtualList
-                            ref="virtualList"
                             tagName="div"
-                            container={this.mainContainerRef}
+                            container={this.mainContainerRef.current || undefined}
                             lazyItemsCount={this.state.itemsCount}
                             renderItem={this.handleRenderItem}
                             itemHeight={this.props.itemHeight}
@@ -494,7 +494,6 @@ class LazyListBox extends AbstractReactComponent {
                             scrollToIndex={scrollToIndex}
                             fetching={fetching && fetching === true}
                         />
-                    )}
                 </div>
             </Shortcuts>
         );
