@@ -362,6 +362,8 @@ public class EntityDBDispatcher {
                                                                              .getValue() : null);
 
         SynchronizationResult syncRes = synchronizeParts(procCtx, entity, bindingState, accessPoint);
+        // při synchronizaci dochází ke změně objektu accessPoint, je nutné používat vrácený
+        accessPoint = syncRes.getAccessPoint();
 
         accessPointService.generateSync(accessPoint, state,
                                         syncRes.getParts(), syncRes.getItemMap(),
@@ -549,6 +551,8 @@ public class EntityDBDispatcher {
      * Synchronizace částí přístupového bodu z externího systému
      * 
      * Metoda mění odkaz na aktuální podobu preferovaného označení.
+     * Dochází k uložení entity, další metody by měly používat aktualizovanou
+     * entitu.
      *
      * @param procCtx
      *            context
@@ -569,6 +573,9 @@ public class EntityDBDispatcher {
                                                    final EntityXml entity,
                                                    final ApBindingState bindingState,
                                                    final ApAccessPoint accessPoint) {
+        log.debug("Synchronizing parts, accessPointId: {}, version: {}", accessPoint.getAccessPointId(), accessPoint
+                .getVersion());
+
         Integer accessPointId = accessPoint.getAccessPointId();
         PartsXml partsXml = entity.getPrts();
         if(partsXml==null) {
@@ -673,6 +680,10 @@ public class EntityDBDispatcher {
         Validate.notNull(preferredName, "Missing preferredName");
         accessPoint.setPreferredPart(preferredName);
         syncResult.setAccessPoint(accessPointRepository.save(accessPoint));
+
+        log.debug("Parts were updated, accessPointId: {}, version: {}",
+                  syncResult.getAccessPoint().getAccessPointId(),
+                  syncResult.getAccessPoint().getVersion());
 
         bindingPartLookup = null;
         bindingItemLookup = null;

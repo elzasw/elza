@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -18,8 +19,11 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityXml;
@@ -83,18 +87,31 @@ public class ImportServiceImpl implements ImportService {
     @Autowired
     private SchemaManager schemaManager;
 
+    @Autowired
+    @Qualifier("transactionManager")
+    protected PlatformTransactionManager txManager;
+
     private final JAXBContext jaxbContext = XmlUtils.createJAXBContext(EntitiesXml.class);
 
     final protected static ObjectFactory objectcFactory = CamUtils.getObjectFactory();
 
-    @Override
-    @Transactional
-    public void importData(ImportRequest request) throws CoreServiceException {
-        try {
-            logger.info("Received import request, code: {}, requestId: {}",
-                        request.getExternalSystem(),
-                        request.getRequestId());
+    /**
+     * Flag if import is active
+     */
+    private final AtomicBoolean importActive = new AtomicBoolean(false);
 
+    @Override
+    public void importData(ImportRequest request) throws CoreServiceException {
+        logger.info("Received import request, code: {}, requestId: {}",
+                    request.getExternalSystem(),
+                    request.getRequestId());
+
+        if (!importActive.compareAndSet(false, true)) {
+            logger.error("Another import is active");
+            throw WSHelper.prepareException("Another import is active, try later.", null);
+        }
+
+        try {
             switch (request.getDataFormat()) {
             case SchemaManager.CAM_SCHEMA_URL:
                 importCamSchema(request);
@@ -108,6 +125,8 @@ public class ImportServiceImpl implements ImportService {
                 throw (CoreServiceException) e;
             }
             throw WSHelper.prepareException("Failed to import data", e);
+        } finally {
+            importActive.set(false);
         }
     }
 
@@ -133,15 +152,18 @@ public class ImportServiceImpl implements ImportService {
         if (request.getDisposition().getPrimaryScope() == null) {
             throw WSHelper.prepareException("Primary scope in request disposition is null", null);
         }
+        final String scopeCode = request.getDisposition().getPrimaryScope();
 
-        String scopeCode = request.getDisposition().getPrimaryScope();
-        ApScope scope = scopeRepository.findByCode(scopeCode);
-        if (scope == null) {
-            throw WSHelper.prepareException("Scope not found: " + scopeCode, null);
-        }
-        ApExternalSystem externalSystem = externalSystemService.findApExternalSystemByCode(request.getExternalSystem());
+        new TransactionTemplate(txManager).executeWithoutResult(r -> {
+            ApScope scope = scopeRepository.findByCode(scopeCode);
+            if (scope == null) {
+                throw WSHelper.prepareException("Scope not found: " + scopeCode, null);
+            }
+            ApExternalSystem externalSystem = externalSystemService.findApExternalSystemByCode(request
+                    .getExternalSystem());
+            importCam(request, scope, externalSystem, ents);
+        });
 
-        importCam(request, scope, externalSystem, ents);
     }
 
     private void importCam(ImportRequest request, ApScope scope,
