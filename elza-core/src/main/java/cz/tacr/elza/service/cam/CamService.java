@@ -377,6 +377,11 @@ public class CamService {
         return batchInfo;
     }
 
+    /**
+     * Regular entity synchronization
+     * 
+     * @param code
+     */
     @Transactional
     public void synchronizeAccessPointsForExternalSystem(final String code) {
         ApExternalSystem externalSystem = externalSystemService.findApExternalSystemByCode(code);
