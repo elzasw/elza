@@ -196,23 +196,30 @@ class FundTreeLazy extends AbstractReactComponent {
      * @return {Object} view
      */
     renderNode = node => {
-        const {onNodeDoubleClick, onOpenCloseNode, onContextMenu} = this.props;
+        const {onNodeDoubleClick, onOpenCloseNode, onContextMenu, showEditPermissions} = this.props;
 
         const expanded = node.hasChildren && this.props.expandedIds[node.id];
-        const arrPerm = node.arrPerm;
+        const hasPermission = node.arrPerm;
+        const hasPartialPermission = !hasPermission && showEditPermissions;
 
         const clickProps = {
             onClick: e => this.handleNodeClick(node, false, e),
             onDoubleClick: e => this.handleNodeDoubleClick(node, false, e),
         };
 
+        const handleExpandToggle = (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onOpenCloseNode(node, !expanded);
+        }
+
         let expCol;
         if (node.hasChildren) {
             const expColCls = 'exp-col ' + (expanded ? 'fa fa-minus-square-o' : 'fa fa-plus-square-o');
-            expCol = <span className={expColCls} onClick={onOpenCloseNode.bind(this, node, !expanded)}></span>;
+            expCol = <span className={expColCls} onClick={handleExpandToggle}></span>;
         } else {
             expCol = (
-                <span {...clickProps} className="exp-col">
+                <span className="exp-col">
                     &nbsp;
                 </span>
             );
@@ -223,20 +230,21 @@ class FundTreeLazy extends AbstractReactComponent {
         if (this.props.selectedIds && this.props.selectedIds[node.id]) {
             active = true;
         }
+
         const cls = classNames({
             node: true,
             opened: expanded,
             closed: !expanded,
             active: active,
             focus: this.props.focusId === node.id,
-            'without-arr-perm': !arrPerm,
+            'without-arr-perm': hasPartialPermission,
             'node-color': this.props.colorCoded,
         });
         const iconClass = classNames({
             'node-icon': true,
             'node-icon-color': this.props.colorCoded,
         });
-        const levels = createReferenceMark(node, clickProps);
+        const levels = createReferenceMark(node);
 
         let name = node.name ? node.name : i18n('fundTree.node.name.undefined', node.id);
         const title = name;
@@ -249,14 +257,13 @@ class FundTreeLazy extends AbstractReactComponent {
         const iconProps = getNodeIcon(this.props.colorCoded, node.icon);
 
         return (
-            <div key={node.id} className={cls}>
+            <div key={node.id} className={cls} {...clickProps}>
                 {levels}
                 {expCol}
-                <Icon {...clickProps} className={iconClass} {...iconProps} />
+                <Icon className={iconClass} {...iconProps} />
                 <div
                     title={title}
                     className="node-label"
-                    {...clickProps}
                     onContextMenu={onContextMenu ? onContextMenu.bind(this, node) : null}
                 >
                     {name}
