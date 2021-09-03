@@ -251,7 +251,7 @@ class FundTreeMain extends React.Component {
     };
 
     render() {
-        const {actionAddons, className, fund, cutLongLabels} = this.props;
+        const {actionAddons, className, fund, cutLongLabels, showEditPermissions} = this.props;
         const searchText =
             typeof fund.fundTree.searchText !== 'undefined' ? fund.fundTree.searchText : fund.fundTree.filterText;
 
@@ -280,6 +280,7 @@ class FundTreeMain extends React.Component {
                 filterText={fund.fundTree.luceneQuery ? i18n('search.extended.label') : searchText}
                 extendedReadOnly={fund.fundTree.luceneQuery}
                 onClickExtendedSearch={this.handleExtendedSearch}
+                showEditPermissions={showEditPermissions}
             />
         );
     }
