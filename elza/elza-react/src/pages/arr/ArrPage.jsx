@@ -1001,6 +1001,12 @@ class ArrPage extends ArrParentPage {
         this.props.dispatch(fundExtendedView(showExtendedView));
     }
 
+    getHasEditPermissions = () => {
+        const {userDetail} = this.props;
+        const activeFund = this.getActiveFund(this.props);
+        return userDetail.hasOne({type: perms.FUND_ARR_NODE, fundId: activeFund.id})
+    }
+
     renderCenterPanel(readMode, closed) {
         const {focus, arrRegion, rulDataTypes, descItemTypes, userDetail} = this.props;
         const showRegisterJp = arrRegion.showRegisterJp;
@@ -1020,6 +1026,7 @@ class ArrPage extends ArrParentPage {
                     fund={activeFund}
                     cutLongLabels={false}
                     versionId={activeFund.versionId}
+                    showEditPermissions={this.getHasEditPermissions()}
                     {...activeFund.fundTree}
                     actionAddons={
                         <Button
@@ -1083,6 +1090,7 @@ class ArrPage extends ArrParentPage {
                     cutLongLabels={true}
                     versionId={activeFund.versionId}
                     {...activeFund.fundTree}
+                    showEditPermissions={this.getHasEditPermissions()}
                     ref={ref => (this.refTree = ref)}
                     focus={focus}
                     actionAddons={
