@@ -1455,5 +1455,25 @@ where no.level_id = l.level_id
     where i.item_id is null and p.delete_change_id is null
     ) and p.delete_change_id is null</sql>
     </changeSet>
-    
+    <!-- Oprava nekonzistence zjistene v SOA Plzen, odstranene pref. oznaceni avsak platna entita-->
+    <changeSet id="20210903120100" author="ppyt">
+    <sql dbms="postgresql">update ap_state s set delete_change_id = src.delete_change_id
+    from (select s.state_id, p.delete_change_id from ap_state s 
+          join ap_access_point ap on ap.access_point_id = s.access_point_id 
+          join ap_part p on ap.preferred_part_id = p.part_id 
+          where s.delete_change_id is null and p.delete_change_id is not null) src
+    where s.state_id = src.state_id</sql>    
+    <sql dbms="postgresql">
+    update ap_state s set delete_change_id = create_change_id where
+    s.state_id in (
+    select s.state_id from ap_access_point ap
+    join ap_state s on s.access_point_id = ap.access_point_id
+    where preferred_part_id is null and s.delete_change_id is null
+    )</sql>     
+    </changeSet>
+    <changeSet id="20210903154200" author="ppyt">
+        <sql dbms="postgresql">CREATE UNIQUE INDEX ap_item_data_pidx 
+                               ON ap_item(data_id) 
+                               WHERE delete_change_id IS NULL</sql>
+    </changeSet>
 </databaseChangeLog>
