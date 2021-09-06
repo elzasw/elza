@@ -199,7 +199,8 @@ public class UnitCounter {
      */
     private void countStructObjs(@Nonnull Integer itemTypeId, LevelWithItems level,
                                 UnitCountAction unitCountAction) {
-        for (ArrDescItem item : level.getDescItems()) {
+        List<ArrDescItem> descItems = level.getDescItems();
+        for (ArrDescItem item : descItems) {
             // check if type match
             if (!itemTypeId.equals(item.getItemTypeId())) {
                 continue;
