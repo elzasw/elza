@@ -601,17 +601,10 @@ public class ClientFactoryDO {
 
     private ArrDataUnitdate getConditionValueUnitdate(final List<String> conditions) {
         if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())
-                || conditions.size() < 2) {
+        /*|| conditions.size() < 2*/) {
             throw new BusinessException("Není předána hodnota podmínky.", BaseCode.PROPERTY_IS_INVALID).set("property", "conditions");
         }
-
-        Iterator<String> iterator = conditions.iterator();
-
-        String calendar = iterator.next();
-        String date = iterator.next();
-        List<String> dateConditions = new ArrayList<>(1);
-        dateConditions.add(calendar + "|" + date);
-        return getConditionValue(dateConditions, ArrDataUnitdate.class);
+        return getConditionValue(conditions, ArrDataUnitdate.class);
     }
 
     private Interval<Long> getConditionValueIntervalLong(final List<String> conditions) {
