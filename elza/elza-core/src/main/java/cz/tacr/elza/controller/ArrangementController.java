@@ -85,6 +85,7 @@ import cz.tacr.elza.controller.vo.nodes.NodeData;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -300,9 +301,10 @@ public class ArrangementController {
     }
 
     /**
-     * Získání potřebných dat pro vybrání JP podle UUID v klientovi.
+     * Získání potřebných dat pro vybrání JP podle UUID nebo ID v klientovi.
      *
-     * @param nodeUuid unikátní identifikátor JP
+     * @param nodeUuid
+     *            unikátní identifikátor JP
      * @return data pro vybranou JP
      */
     @RequestMapping(value = "/selectNode/{nodeUuid}",
@@ -311,12 +313,25 @@ public class ArrangementController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public SelectNodeResult selectNode(@PathVariable(value = "nodeUuid") final String nodeUuid) {
-        ArrNode node = arrangementService.findNodeByUuid(nodeUuid);
-
-        if (node == null) {
-            throw new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST)
-                    .setId(nodeUuid);
+        ArrNode node;
+        if (nodeUuid.length() == 36) {
+            node = arrangementService.findNodeByUuid(nodeUuid);
+            if (node == null) {
+                throw new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST)
+                        .setId(nodeUuid);
+            }
+        } else {
+            try {
+                final Integer nodeId = Integer.parseInt(nodeUuid);
+                node = nodeRepository.findById(nodeId)
+                        .orElseThrow(() -> new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST)
+                                .setId(nodeId));
+            } catch (NumberFormatException nfe) {
+                throw new SystemException("Unrecognized ID format")
+                        .set("ID", nodeUuid);
+            }
         }
+
 
         ArrFundVO fund = getFund(node.getFundId());
 
