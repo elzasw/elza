@@ -122,6 +122,7 @@ var messages = {
     "exception.arr.ADMIN_GROUP_MISSING_FUND_CREATE_PERM":
         "K AS nelze přiřadit spráce (skupinu), protože nemá oprávnění zakládat AS",
     "exception.arr.STRUCTURE_DATA_DELETE_ERROR": "Nelze smazat položku, protože existují navázané entity",
+    "exception.arr.ATTACHMENT_DELETE_ERROR": "Nelze smazat přílohu, protože je použita v archivním popisu",
 
     "exception.base.INSUFFICIENT_PERMISSIONS": "Nedostatečná oprávnění",
     "exception.base.INSUFFICIENT_PERMISSIONS.detail": "Požadované oprávnění",

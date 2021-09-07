@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables;
 import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.ChangeRepository;
+import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -39,6 +40,8 @@ public class ArrangementInternalService {
     private FundVersionRepository fundVersionRepository;
     @Autowired
     private NodeRepository nodeRepository;
+    @Autowired
+    private DescItemRepository descItemRepository;
 
     /**
      * Vytvoření objektu pro změny s primárním uzlem.
@@ -152,5 +155,15 @@ public class ArrangementInternalService {
         }
         change.setType(newType);
         return changeRepository.save(change);
+    }
+
+    /**
+     * Count active items linked to the file
+     * 
+     * @param file
+     * @return
+     */
+    public Integer countActiveItems(ArrFile file) {
+        return descItemRepository.countItemsUsingFile(file);
     }
 }
