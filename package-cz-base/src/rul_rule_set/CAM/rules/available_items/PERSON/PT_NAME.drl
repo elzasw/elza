@@ -8,7 +8,7 @@ import cz.tacr.elza.drools.model.Part;
 import cz.tacr.elza.drools.model.PartType;
 
 rule "R_NAM_002 Použití prvků popisu pro označení"
-when $it: ItemType(code in ("NM_MINOR","NM_SUP_GEN","NM_SUP_CHRO","NM_DEGREE_PRE","NM_DEGREE_POST"))
+when $it: ItemType(code in ("NM_MINOR","NM_SUP_GEN","NM_SUP_CHRO","NM_DEGREE_PRE","NM_DEGREE_POST","NM_SUP_DIFF"))
 then
     $it.setPossible();
 end
