@@ -68,17 +68,6 @@ then
     results.addError("Nezaniklá entita v ČR/SR typu okres musí být zařazena pod kraj.");
 end
 
-rule "R_BDG_004 soudní okres"
-when $ae: Ap($aeParts : parts)
-     not (Part(type == PartType.PT_EXT) from $aeParts)
-     $part: Part(type == PartType.PT_BODY) from $aeParts
-     $i: Item(type == "GEO_TYPE", spec == "GT_COURTDISTRICT") from $part.items
-     $geo: GeoModel(country in ("SK", "SVK", "CZ", "CZE"), parentGeoType not in ("GT_ADMREGION"))
-then
-    results.addError("Nezaniklá entita v ČR/SR typu soudní okres musí být zařazena pod kraj.");
-end
-
-
 rule "R_BDG_004 obec s charakterem okresu"
 when $ae: Ap($aeParts : parts)
      not (Part(type == PartType.PT_EXT) from $aeParts)
@@ -99,15 +88,26 @@ then
     results.addError("Nezaniklá entita v ČR/SR typu obec nebo vojenský újezd musí být zařazena pod okres.");
 end
 
-rule "R_BDG_004 část obce, ulice, náměstí, nábřeží, městská část/obvod, katastrální území"
+rule "R_BDG_004 část obce, ulice, náměstí, nábřeží, městská část/obvod"
 when $ae: Ap($aeParts : parts)
      not (Part(type == PartType.PT_EXT) from $aeParts)
      $part: Part(type == PartType.PT_BODY) from $aeParts
      $i: Item(type == "GEO_TYPE", spec in ("GT_MUNIPPART","GT_STREET","GT_SQUARE","GT_WATERFRONT","GT_CITYDISTRICT", "GT_CADASTRALTERRITORY")) from $part.items
      $geo: GeoModel(country in ("SK", "SVK", "CZ", "CZE"), parentGeoType not in ("GT_MUNIP","GT_MUNIPDISTR"))
 then
-    results.addError("Nezaniklá entita v ČR/SR typu část obce, ulice, náměstí, nábřeží, městská část/obvod, katastrální území musí být zařazena pod obec nebo obec s charakterem okresu.");
+    results.addError("Nezaniklá entita v ČR/SR typu část obce, ulice, náměstí, nábřeží, městská část/obvod musí být zařazena pod obec nebo obec s charakterem okresu.");
 end
+
+rule "R_BDG_004 katastrální území"
+when $ae: Ap($aeParts : parts)
+     not (Part(type == PartType.PT_EXT) from $aeParts)
+     $part: Part(type == PartType.PT_BODY) from $aeParts
+     $i: Item(type == "GEO_TYPE", spec in ("GT_CADASTRALTERRITORY")) from $part.items
+     $geo: GeoModel(country in ("SK", "SVK", "CZ", "CZE"), parentGeoType not in ("GT_MUNIP","GT_MUNIPDISTR","GT_MILITARYAREA"))
+then
+    results.addError("Nezaniklá entita v ČR/SR typu katastrální území musí být zařazena pod vojenský újezd, obec nebo obec s charakterem okresu.");
+end
+
 
 rule "R_BDG_004 nižší sídelní jednotka"
 when $ae: Ap($aeParts : parts)

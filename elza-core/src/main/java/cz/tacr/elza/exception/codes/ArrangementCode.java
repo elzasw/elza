@@ -187,4 +187,9 @@ public enum ArrangementCode implements ErrorCode {
      * Šablona neexistuje.
      */
     TEMPLATE_NOT_FOUND,
+
+    /**
+     * Nelze smazat přílohu, protože existují navázané entity.
+     */
+    ATTACHMENT_DELETE_ERROR,
 }

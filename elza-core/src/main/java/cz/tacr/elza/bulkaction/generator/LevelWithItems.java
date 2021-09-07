@@ -40,7 +40,6 @@ public class LevelWithItems {
                         return r;
                     })
                     .collect(Collectors.toList());
-            descItems.addAll(items);
         }
 	}
 

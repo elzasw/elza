@@ -185,10 +185,3 @@ then
     $is.setPossible();
     $is.setRepeatable(true);
 end
-
-
-
-
-
-
-
