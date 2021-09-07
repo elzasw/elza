@@ -163,9 +163,11 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         return <div className={'detail-page-wrapper'} />;
     }
 
-    const handleSetPreferred = (part: ApPartVO) => {
+    const handleSetPreferred = async (part: ApPartVO) => {
         if (part.id) {
-            setPreferred(id, part.id);
+            saveScrollPosition();
+            await setPreferred(id, part.id);
+            restoreScrollPosition();
             refreshValidation(id);
         }
     };
@@ -511,7 +513,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
     },
     setPreferred: async (apId: number, partId: number) => {
         await WebApi.setPreferPartName(apId, partId);
-        dispatch(registryDetailFetchIfNeeded(apId, true));
+        return dispatch(registryDetailFetchIfNeeded(apId, true));
     },
     deletePart: async (apId: number, partId: number) => {
         await WebApi.deletePart(apId, partId);
