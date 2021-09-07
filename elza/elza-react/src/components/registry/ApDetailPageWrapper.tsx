@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useState, useRef } from 'react';
 import { connect } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
@@ -33,6 +33,7 @@ import { DetailHeader } from './Detail/header';
 import PartEditModal from './modal/PartEditModal';
 import i18n from 'components/i18n';
 import { showConfirmDialog } from "components/shared/dialog";
+import './ApDetailPageWrapper.scss';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     const bindingsMaps: Bindings = {
@@ -98,6 +99,8 @@ type OwnProps = {
 
 type Props = OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps>;
 
+let scrollTop: number | undefined = undefined;
+
 /**
  * Detail globální archivní entity.
  */
@@ -124,6 +127,8 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     const apTypeId = detail.fetched && detail.data ? detail.data.typeId : 0;
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
+
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (id) {
@@ -165,30 +170,35 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         }
     };
 
-    const handleDelete = (part: ApPartVO) => {
-        /*
-        if(!confirm(i18n("ap.detail.delete.confirm",part.value))){return;}
-        if (part.id) {
-            deletePart(id, part.id);
-        }
+    const handleDelete = async (part: ApPartVO) => {
+        const confirmResult = await showConfirmDialog(i18n("ap.detail.delete.confirm", part.value))
 
-        refreshValidation(id);
-            */
-
-        showConfirmDialog(i18n("ap.detail.delete.confirm", part.value)).then((result)=>{
-            if(result){
-                if (part.id) {
-                    deletePart(id, part.id);
-                }
-
-                refreshValidation(id);
+        if(confirmResult){
+            if (part.id) {
+                saveScrollPosition();
+                await deletePart(id, part.id);
+                restoreScrollPosition();
             }
-        })
+
+            refreshValidation(id);
+        }
     };
+
+    const saveScrollPosition = () => {
+        scrollTop = containerRef.current?.scrollTop || undefined;
+    }
+
+    const restoreScrollPosition = () => {
+        if(containerRef.current && scrollTop){
+            containerRef.current.scrollTop = scrollTop;
+            scrollTop = undefined;
+        }
+    }
 
     const handleEdit = (part: ApPartVO) => {
         const partType = refTables.partTypes.itemsMap ? refTables.partTypes.itemsMap[part.typeId].code : null;
 
+        saveScrollPosition();
         part.id && detail.data &&
             showPartEditModal(
                 part,
@@ -201,16 +211,26 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 descItemTypesMap as any,
                 apViewSettings,
                 part.partParentId,
+                () => restoreScrollPosition()
             );
         refreshValidation(id);
     };
 
     const handleAdd = (partType: RulPartTypeVO, parentPartId?: number) => {
         if(detail.data){
-            showPartCreateModal(partType, id, apTypeId, detail.data.scopeId, parentPartId);
+            saveScrollPosition();
+            showPartCreateModal(
+                partType, 
+                id, 
+                apTypeId, 
+                detail.data.scopeId, 
+                parentPartId,
+                () => restoreScrollPosition()
+            );
         }
         refreshValidation(id);
     };
+
 
     /*
     const handleDeletePart = (parts: Array<ApPartVO>) => {
@@ -264,7 +284,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         : [];
 
     return (
-        <div className={'detail-page-wrapper'}>
+        <div className={'detail-page-wrapper'} ref={containerRef}>
             <div key="1" className="layout-scroll">
                 <DetailHeader
                     item={detail.data!}
@@ -360,6 +380,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
         descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
         apViewSettings: DetailStoreState<ApViewSettings>,
         parentPartId?: number,
+        onUpdateFinish: () => void = () => {},
     ) => {
         dispatch(
             modalDialogShow(
@@ -386,7 +407,9 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
 
                         return WebApi.updatePart(apId, part.id, submitData).then(() => {
                             dispatch(modalDialogHide());
-                            dispatch(registryDetailFetchIfNeeded(apId, true));
+                            dispatch(registryDetailFetchIfNeeded(apId, true)).then(()=>{
+                                onUpdateFinish();
+                            });
                         });
                     }}
                     apTypeId={apTypeId}
@@ -433,6 +456,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
         apTypeId: number,
         scopeId: number,
         parentPartId?: number,
+        onUpdateFinish: () => void = () => {},
     ) => {
         dispatch(
             modalDialogShow(
@@ -460,7 +484,9 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
 
                         return WebApi.createPart(apId, submitData).then(() => {
                             dispatch(modalDialogHide());
-                            dispatch(registryDetailFetchIfNeeded(apId, true));
+                            dispatch(registryDetailFetchIfNeeded(apId, true)).then(()=>{
+                                onUpdateFinish();
+                            })
                         });
                     }}
                     apTypeId={apTypeId}
@@ -489,7 +515,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
     },
     deletePart: async (apId: number, partId: number) => {
         await WebApi.deletePart(apId, partId);
-        dispatch(registryDetailFetchIfNeeded(apId, true));
+        return dispatch(registryDetailFetchIfNeeded(apId, true));
     },
     deleteParts: async (apId: number, parts: ApPartVO[]) => {
         for (let part of parts) {
