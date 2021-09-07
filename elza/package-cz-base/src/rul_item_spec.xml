@@ -889,14 +889,14 @@
     </item-spec>
     <item-spec code="NUTSLAU">
         <name>NUTS/LAU</name>
+		<shortcut>NUTS/LAU</shortcut>
         <description>Kód lokality, https://ec.europa.eu/eurostat/web/nuts/local-administrative-units</description>
-        <shortcut>NUTS/LAU</shortcut>
         <item-type-assign code="IDN_TYPE"/>
     </item-spec>
     <item-spec code="ORCID_ID">
         <name>ORCID</name>
+		<shortcut>ORCID</shortcut>
         <description>Mezinárodní, jednoznačný a trvalý identifikátor autora v akademickém a vědeckém prostředí (viz https://orcid.org)</description>
-        <shortcut>ORCID</shortcut>
         <item-type-assign code="IDN_TYPE"/>
     </item-spec>
     <item-spec code="PEVA">
@@ -911,6 +911,24 @@
         <description>Kód z databáze ČÚZK - RÚIAN.</description>
         <item-type-assign code="IDN_TYPE"/>
     </item-spec>
+	<item-spec code="AUT">
+		<name>Národní autority ČR</name>
+		<shortcut>Národní autority ČR</shortcut>
+		<description>Národní autority ČR.</description>
+		<item-type-assign code="IDN_TYPE"/>
+	</item-spec>
+	<item-spec code="VIAF">
+		<name>Virtual International Authority File</name>
+		<shortcut>Virtual International Authority File</shortcut>
+		<description>Virtual International Authority File.</description>
+		<item-type-assign code="IDN_TYPE"/>
+	</item-spec>
+	<item-spec code="LCNAF">
+		<name>Library of Congress Name Authority File</name>
+		<shortcut>Library of Congress Name Authority File</shortcut>
+		<description>Library of Congress Name Authority File.</description>
+		<item-type-assign code="IDN_TYPE"/>
+	</item-spec>
     <item-spec code="LNG_heb">
         <name>(novo)hebrejština</name>
         <shortcut>(novo)hebrejština</shortcut>

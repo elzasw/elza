@@ -41,7 +41,7 @@ public class CamInstance {
         exportApi = new ExportApi(apiClientCam);
         batchUpdatesApi = new BatchUpdatesApi(apiClientCam);
         updatesApi = new UpdatesApi(apiClientCam);
-        logger.info("Inicializován konektor na CAM: {} (apiKey: {})", apiUrl, apiKey);
+        logger.debug("Inicializován konektor na CAM: {} (apiKey: {})", apiUrl, apiKey);
     }
 
     public String getApiUrl() {

@@ -25,9 +25,9 @@ rule "R_IDN_005 Použití kódu RÚIAN"
 when $ae: Ap($aeParts : parts)
      $part: Part(type == PartType.PT_IDENT) from $aeParts
      $i: Item(type == "IDN_TYPE", spec == "RUIAN") from $part.items
-     GeoModel(country not in ("SK", "SVK", "CZ", "CZE")) or (Part(type == PartType.PT_EXT) from $aeParts)
+     GeoModel(country not in ("CZ", "CZE"))
 then
-    results.addError("Kód RÚIAN v jiném označení lze použít jen u nezaniklých entit v ČR.");
+    results.addError("Kód RÚIAN v jiném označení lze použít jen u entit v ČR.");
 end
 
 /*

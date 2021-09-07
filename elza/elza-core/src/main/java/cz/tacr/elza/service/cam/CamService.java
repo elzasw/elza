@@ -848,11 +848,14 @@ public class CamService {
             synchronizeAccessPoint(procCtx, state, bindingState, binding, entity, true);
         } catch (Exception e) {
             log.error("Failed to synchronize access point, accessPointId: {}", state.getAccessPointId(), e);
-            setQueueItemState(queueItem,
+            /*setQueueItemState(queueItem,
                               ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
                               OffsetDateTime.now(),
                               e.getMessage());
-            return true;
+              return true;
+                              */
+            throw e;
+
         }
         setQueueItemState(queueItem,
                           ExtSyncsQueueItem.ExtAsyncQueueState.OK,

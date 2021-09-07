@@ -16,21 +16,21 @@
     <structure-extension-definition structure-type="PT_NAME"
                                     structure-extension="FAMILY/PT_NAME"
                                     filename="FAMILY/PT_NAME.groovy"
-                                    compatibility_rul_package="31">
+                                    compatibility_rul_package="44">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-extension-definition>
     <structure-extension-definition structure-type="PT_NAME"
                                     structure-extension="FAMILY_BRANCH/PT_NAME"
                                     filename="FAMILY_BRANCH/PT_NAME.groovy"
-                                    compatibility-rul-package="35">
+                                    compatibility-rul-package="44">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-extension-definition>
     <structure-extension-definition structure-type="PT_NAME"
                                     structure-extension="FICTIVE_DYNASTY/PT_NAME"
                                     filename="FICTIVE_DYNASTY/PT_NAME.groovy"
-                                    compatibility-rul-package="35">
+                                    compatibility-rul-package="44">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-extension-definition>
