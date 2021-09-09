@@ -46,8 +46,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.INNER);
             Predicate nameFkCond = builder.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART),
                     nameJoin.get(ApPart.PART_ID));
-            Predicate activeNameCond = nameJoin.get(ApPart.DELETE_CHANGE_ID).isNull();
-            nameJoin.on(builder.and(nameFkCond, activeNameCond));
+            nameJoin.on(nameFkCond);
             Join<ApIndex, ApPart> indexJoin = nameJoin.join(ApPart.INDICES, JoinType.INNER);
             indexJoin.on(builder.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
             accessPointName = indexJoin.get(ApIndex.VALUE);
@@ -210,8 +209,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.INNER);
             Predicate nameFkCond = builder.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART),
                     nameJoin.get(ApPart.PART_ID));
-            Predicate activeNameCond = nameJoin.get(ApPart.DELETE_CHANGE_ID).isNull();
-            nameJoin.on(builder.and(nameFkCond, activeNameCond));
+            nameJoin.on(nameFkCond);
             Join<ApIndex, ApPart> indexJoin = nameJoin.join(ApPart.INDICES, JoinType.INNER);
             indexJoin.on(builder.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
             accessPointName = indexJoin.get(ApIndex.VALUE);
