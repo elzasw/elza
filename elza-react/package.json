@@ -23,7 +23,7 @@
   "dependencies": {
     "@babel/polyfill": "7.8.3",
     "array.from": "^1.1.0",
-    "axios": "^0.21.3",
+    "axios": "^0.21.4",
     "classnames": "^2.2.6",
     "core-js": "2.4.1",
     "dom-scroll-into-view": "1.2.1",
