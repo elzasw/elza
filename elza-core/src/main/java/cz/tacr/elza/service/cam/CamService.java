@@ -277,7 +277,7 @@ public class CamService {
             bindingState = externalSystemService.createApBindingState(binding, accessPoint, change,
                                                                       state.getApType().getCode(),
                                                                       batchEntityRecordRev.getRev().getValue(),
-                                                                      extSyncsQueueItem.getUsername(), null);
+                                                                      extSyncsQueueItem.getUsername(), null, SyncState.SYNC_OK);
         }
         
         // Create bindings        
@@ -589,7 +589,7 @@ public class CamService {
                                                                           entity.getEns().name(),
                                                                           entity.getRevi().getRid().getValue(),
                                                                           entity.getRevi().getUsr().getValue(),
-                                                                          null);
+                                                                          null, SyncState.SYNC_OK);
                 log.warn("Entity with uuid:{} already exists (id={}), automatically connected with external entity",
                          entity.getEuid().getValue(), accessPoint.getAccessPointId());
                 // if async -> has local changes -> mark as not synced

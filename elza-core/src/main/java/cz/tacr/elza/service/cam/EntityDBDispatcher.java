@@ -62,6 +62,7 @@ import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
@@ -415,7 +416,7 @@ public class EntityDBDispatcher {
                                                            .getValue() : null,
                                                    entity.getRevi().getUsr() != null ? entity.getRevi().getUsr()
                                                            .getValue() : null,
-                                                   entity.getReid() != null ? entity.getReid().getValue() : null);
+                                                   entity.getReid() != null ? entity.getReid().getValue() : null, SyncState.SYNC_OK);
         List<ApPart> partList = new ArrayList<>();
         Map<Integer, List<ApItem>> itemMap = new HashMap<>();
 
