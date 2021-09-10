@@ -45,6 +45,7 @@ import {JAVA_ATTR_CLASS, JAVA_CLASS_ARR_DIGITIZATION_FRONTDESK_SIMPLE_VO, ItemCl
 import {refExternalSystemsFetchIfNeeded} from 'actions/refTables/externalSystems';
 
 import {TextFragmentsWindow} from "../../components/arr/text-fragments";
+import { ScenarioDropdown } from "./sub-node-dao";
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
@@ -337,6 +338,15 @@ class NodeSubNodeForm extends AbstractReactComponent {
         })
     }
 
+    getDaoWithScenario = () => {
+        const daos = this.props.parentNode.subNodeDaos.data
+
+        if(daos.length <= 0){return null}
+
+        const dao = daos[0] // je predpoklad, ze napojeny soubor je vzdy jen 1
+        return dao.daoLink?.scenario ? dao : null;
+    }
+
     /**
      * Renderování globálních akcí pro formulář.
      * @return {Object} view
@@ -344,7 +354,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
     renderFormActions() {
         const notRoot = !isFundRootId(this.props.nodeId);
 
-        const {fundId, userDetail, nodeId, nodeSettings} = this.props;
+        const {fundId, fund, userDetail, nodeId, nodeSettings, readMode} = this.props;
 
         const editPermAllowed = userDetail.hasOne(
             perms.FUND_ADMIN,
@@ -360,6 +370,10 @@ class NodeSubNodeForm extends AbstractReactComponent {
         const haveProtocolPermissionToWrite = userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL, {type: perms.FUND_ISSUE_ADMIN, fundId: fundId}) ||
             userDetail.permissionsMap?.[perms.FUND_ISSUE_LIST_WR]?.issueListIds.length > 0;
 
+        const dao = this.getDaoWithScenario();
+
+        console.log(dao);
+
         return (
             <div ref="nodeToolbar" className="node-form-actions-container">
                 <div className="node-form-actions">
@@ -369,6 +383,13 @@ class NodeSubNodeForm extends AbstractReactComponent {
                             {i18n('subNodeForm.section.item')}
                         </NoFocusButton>
                     </div>
+                    {dao &&
+                        <div className="section">
+                            <ScenarioDropdown dao={dao} nodeId={nodeId} versionId={fund.versionId} readMode={readMode}>
+                                <Icon glyph="fa-link" /> {i18n('subNodeDao.dao.action.changeScenario')}
+                            </ScenarioDropdown>
+                        </div>
+                    }
                     <div className="section">
                         <NoFocusButton
                             onClick={this.handleDescItemTypeUnlockAll}

@@ -116,6 +116,9 @@ public class FundServiceWsImpl {
             Integer fundNumber = Integer.valueOf(fundUpdate.getFundNumber());
             fund.setFundNumber(fundNumber);
         }
+        if (fundUpdate.getInternalCode() != null) {
+            fund.setInternalCode(fundUpdate.getInternalCode());
+        }
         if (fundUpdate.getMark() != null) {
             fund.setMark(fundUpdate.getMark());
         }

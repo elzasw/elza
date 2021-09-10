@@ -13,6 +13,7 @@ import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.LongStringXml;
 import cz.tacr.cam.schema.cam.RevInfoXml;
 import cz.tacr.cam.schema.cam.UuidXml;
+import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
@@ -34,12 +35,13 @@ public class EntityXmlBuilder extends CamXmlBuilder {
                             ApState apState,
                             GroovyService groovyService,
                             AccessPointDataService apDataService,
-                            ApScope scope) {
-        super(sdp, accessPoint, new ApUuidRecordRefHandler(), groovyService, apDataService, scope);
+                            ApScope scope,
+                            final ApExternalSystemType extSystemType) {
+        super(sdp, accessPoint, new ApUuidRecordRefHandler(), groovyService, apDataService, scope, extSystemType);
         this.apState = apState;
     }
 
-    public EntityXml build(Collection<ApPart> partList, Map<Integer, List<ApItem>> itemMap, String externalSystemTypeCode) {
+    public EntityXml build(Collection<ApPart> partList, Map<Integer, List<ApItem>> itemMap) {
 
         EntityXml ent = new EntityXml();
         ent.setEid(new EntityIdXml(apState.getAccessPointId()));
@@ -77,7 +79,7 @@ public class EntityXmlBuilder extends CamXmlBuilder {
         ent.setRevi(revInfo);
 
         // Prepare empty parts
-        ent.setPrts(this.createParts(partList, itemMap, externalSystemTypeCode));
+        ent.setPrts(this.createParts(partList, itemMap));
 
         return ent;
     }

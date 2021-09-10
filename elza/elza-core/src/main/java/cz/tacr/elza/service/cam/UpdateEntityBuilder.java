@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.service.AccessPointDataService;
@@ -36,6 +36,7 @@ import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
@@ -44,7 +45,6 @@ import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
-import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
 
 public class UpdateEntityBuilder extends CamXmlBuilder {
@@ -54,8 +54,6 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
     final private ApBindingState bindingState;
     final ApBindingItemRepository bindingItemRepository;
     final ApState apState;
-    final private ExternalSystemService externalSystemService;
-    final private ApBinding binding;
 
     private List<ApBindingItem> bindingItems;
 
@@ -102,31 +100,30 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
      * Map between partId and binded items
      */
     private Map<Integer, BindingPartInfo> bindingMap = new HashMap<>();
-    private Map<Integer, ApPart> partMap = new HashMap<>();
 
-    public UpdateEntityBuilder(ExternalSystemService externalSystemService,
-                               ApBindingItemRepository bindingItemRepository,
+    public UpdateEntityBuilder(ApBindingItemRepository bindingItemRepository,
                                StaticDataProvider sdp,
                                final ApState state,
                                ApBindingState bindingState,
                                GroovyService groovyService,
                                AccessPointDataService apDataService,
-                               ApScope scope) {
-        super(sdp, bindingState.getAccessPoint(), new BindingRecordRefHandler(bindingState.getBinding()), groovyService, apDataService, scope);
+                               ApScope scope,
+                               ApExternalSystem externalSystem) {
+        super(sdp, bindingState.getAccessPoint(), new BindingRecordRefHandler(bindingState.getBinding()), groovyService,
+                apDataService, scope, externalSystem.getType());
         this.bindingItemRepository = bindingItemRepository;
         this.bindingState = bindingState;
         this.apState = state;
-        this.externalSystemService = externalSystemService;
-        this.binding = bindingState.getBinding();
     }
 
-    protected UpdateItemsXml createUpdateItems(ApBindingItem changedPart, List<ApBindingItem> changedItems, String externalSystemTypeCode) {
+    protected UpdateItemsXml createUpdateItems(ApBindingItem changedPart, List<ApBindingItem> changedItems) {
         UpdateItemsXml updateItemsXml = new UpdateItemsXml();
         updateItemsXml.setPid(new UuidXml(changedPart.getValue()));
         updateItemsXml.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
 
         for (ApBindingItem bindingItem : changedItems) {
-            Object i = CamXmlFactory.createItem(sdp, bindingItem.getItem(), bindingItem.getValue(), entityRefHandler, groovyService, apDataService, externalSystemTypeCode, scope);
+            Object i = CamXmlFactory.createItem(sdp, bindingItem.getItem(), bindingItem.getValue(), entityRefHandler,
+                                                groovyService, apDataService, externalSystemType.toString(), scope);
             if (i != null) {
                 updateItemsXml.getItems().add(i);
             }
@@ -145,8 +142,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
      * @return
      */
     private void createUpdateEntityChanges(Collection<ApPart> partList,
-                                                   Map<Integer, List<ApItem>> itemMap,
-                                                   String externalSystemTypeCode) {
+                                           Map<Integer, List<ApItem>> itemMap) {
         List<ApBindingItem> deletedParts = new ArrayList<>();
         List<ApBindingItem> partsWithPossibleChange = new ArrayList<>();
         List<ApPart> newParts = new ArrayList<>();
@@ -167,14 +163,14 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
             }
         }
 
-        List<PartXml> parts = createNewParts(newParts, itemMap, externalSystemTypeCode);
+        List<PartXml> parts = createNewParts(newParts, itemMap);
         for (PartXml part : parts) {
             addUpdate(part);
         }
 
         createDeletePartList(deletedParts);
 
-        createChangedPartList(partsWithPossibleChange, itemMap, externalSystemTypeCode);
+        createChangedPartList(partsWithPossibleChange, itemMap);
     }
 
     /**
@@ -186,8 +182,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
      * @return
      */
     private void createChangedPartList(List<ApBindingItem> changedParts,
-                                       Map<Integer, List<ApItem>> itemMap,
-                                       String externalSystemTypeCode) {
+                                       Map<Integer, List<ApItem>> itemMap) {
         if (CollectionUtils.isEmpty(changedParts)) {
             return;
         }
@@ -203,14 +198,13 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
             }
             List<ApItem> itemList = itemMap.getOrDefault(partId, Collections.emptyList());
 
-            createChangedPartList(changedPart, itemList, bi, externalSystemTypeCode);
+            createChangedPartList(changedPart, itemList, bi);
         }
     }
 
     private void createChangedPartList(ApBindingItem changedPart,
                                                List<ApItem> itemList,
-                                               BindingPartInfo bi,
-                                               String externalSystemTypeCode) {
+                                       BindingPartInfo bi) {
         /*
         List<Object> changes = new ArrayList<>();
         List<ApBindingItem> changedItems = new ArrayList<>();
@@ -224,13 +218,13 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         }
         */
 
-        itemList = filterOutItemsWithoutExtSysMapping(itemList, externalSystemTypeCode);
+        itemList = filterOutItemsWithoutExtSysMapping(itemList);
         if (CollectionUtils.isNotEmpty(itemList)) {
             // filter bindined items
             List<ApItem> filteredList = itemList.stream().filter(i -> !bi.isBinded(i))
                     .collect(Collectors.toList());
             if (filteredList.size() > 0) {
-                NewItemsXml newItems = createNewItems(changedPart, filteredList, externalSystemTypeCode);
+                NewItemsXml newItems = createNewItems(changedPart, filteredList);
                 // some new items does not have to be created
                 if (newItems != null) {
                     addUpdate(newItems);
@@ -253,7 +247,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
                     .getCreateChangeId() > bindingState.getSyncChangeId())
                     .collect(Collectors.toList());
             if (filteredList.size() > 0) {
-                UpdateItemsXml updateItems = createUpdateItems(changedPart, activeItems, externalSystemTypeCode);
+                UpdateItemsXml updateItems = createUpdateItems(changedPart, activeItems);
                 if (updateItems != null) {
                     addUpdate(updateItems);
                 }
@@ -273,6 +267,8 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
 
         for (ApBindingItem di : deletedItems) {
             ItemRefXml itemRf = new ItemRefXml();
+            // TODO: improve with sdp
+            itemRf.setT(new CodeXml(di.getItem().getItemType().getCode()));
             itemRf.setUuid(new UuidXml(di.getValue()));
             // TODO: set type and spec
             itemRefs.add(itemRf);
@@ -305,12 +301,9 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
 
     public List<Object> build(final EntityXml entityXml,
                       List<ApPart> partList,
-                      Map<Integer, List<ApItem>> itemMap,
-                      String externalSystemTypeCode) {
+                              Map<Integer, List<ApItem>> itemMap) {
         // check that list is empty
         Validate.isTrue(trgList.size() == 0);
-        
-        partMap = partList.stream().collect(Collectors.toMap(ApPart::getPartId, Function.identity()));
 
         // read current bindings
         bindingParts = bindingItemRepository.findPartsForSync(bindingState.getBinding(),
@@ -330,7 +323,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
             bi.addItem(bindingItem);
         }
 
-        createUpdateEntityChanges(partList, itemMap, externalSystemTypeCode);
+        createUpdateEntityChanges(partList, itemMap);
 
         // TODO: this is broken, probably meant for aptype change
         /*if (!entityXml.getEnt().getValue().equals(apState.getApType().getCode())) {
@@ -342,12 +335,27 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
             addUpdate(new SetRecordStateXml(EntityRecordStateXml.ERS_APPROVED, null));
         }
 
-        //TODO dodělat změnu preferovaného partu
+        // změna preferovaného partu
+        PartXml prefNameXml = CamUtils.getPrefName(entityXml);
         ApBindingItem preferPart = CamUtils.findBindingItemById(bindingParts,
                                                                 accessPoint.getPreferredPartId());
+        String prefPartUuid;
+        if (preferPart != null) {
+            prefPartUuid = preferPart.getValue();
+        } else {
+            // preferred part is new
+            prefPartUuid = partUuids.get(accessPoint.getPreferredPartId());
+            Validate.notNull(prefPartUuid);
+        }
+        if (!Objects.equals(prefPartUuid, prefNameXml.getPid().getValue())) {
+            setPrefName(new UuidXml(prefPartUuid));
+        }
         
         return trgList;
+    }
 
+    public List<Object> getResult() {
+        return trgList;
     }
 
     private void addChangeInternal(Object change) {
@@ -380,13 +388,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         addChangeInternal(change);
     }
 
-    @Override
-    protected void onItemCreated(ApItem item, String uuid) {
-        externalSystemService.createApBindingItem(binding, null, uuid, null, item);
-    }
-
-    @Override
-    protected void onPartCreated(ApPart apPart, String uuid) {
-        externalSystemService.createApBindingItem(binding, null, uuid, apPart, null);
+    private void setPrefName(UuidXml prefName) {
+        addChangeInternal(prefName);
     }
 }

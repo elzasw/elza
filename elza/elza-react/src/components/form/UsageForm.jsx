@@ -203,51 +203,12 @@ class RegistryUsageForm extends React.Component {
     }
 
     handleLinkClick = node => {
-        this.props.dispatch(modalDialogHide());
+        const { dispatch, history } = this.props;
+        dispatch(modalDialogHide());
         if (node.type === 'fund') {
-            this.props.history.push('/arr');
-            this.handleShowInArr(node);
+            history.push(`/node/${node.id}`)
         }
     };
-
-    handleShowInArr(node) {
-        const {data} = this.state;
-        const fundId = data.funds.find(n => n.id === node.origParent).id;
-
-        WebApi.getFundDetail(fundId).then(fund => {
-            this.props.dispatch(fundsSelectFund(fund.id));
-            this.props.dispatch(selectFundTab(fund));
-            this.props.dispatch(this.callFundSelectSubNode(node, false, true, fund));
-        });
-    }
-
-    getActiveIndex(arrRegion) {
-        return arrRegion.activeIndex !== null ? arrRegion.funds[arrRegion.activeIndex] : null;
-    }
-
-    callFundSelectSubNode(node, openNewTab, ensureItemVisible, fund) {
-        return (dispatch, getState) => {
-            const {arrRegion} = getState();
-            const activeFund = this.getActiveIndex(arrRegion);
-            dispatch(fundTreeFetch(FUND_TREE_AREA_MAIN, fund.versionId, node.propertyId, activeFund.expandedIds)).then(
-                () => {
-                    const {arrRegion} = getState();
-                    const activeFund = this.getActiveIndex(arrRegion);
-
-                    const nodeFromTree = activeFund.fundTree.nodes.find(n => n.id === node.propertyId);
-
-                    let parentNode = getParentNode(nodeFromTree, activeFund.fundTree.nodes);
-
-                    if (parentNode === null) {
-                        parentNode = createFundRoot(fund);
-                    }
-                    dispatch(
-                        fundSelectSubNode(fund.versionId, node.id, parentNode, openNewTab, null, ensureItemVisible),
-                    );
-                },
-            );
-        };
-    }
 
     renderReplaceField = () => {
         const { type, replaceButtonText, mergeButtonText, onMerge, onReplace} = this.props;

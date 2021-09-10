@@ -11,6 +11,7 @@ static GroovyResult generate(final GroovyPart part) {
     GroovyAppender compl = GroovyUtils.createAppender(part)
     compl.add("NM_SUP_GEN")
     compl.add("NM_SUP_CHRO").withSeparator(" : ")
+    compl.add("NM_SUP_DIFF").withSeparator(" : ")
     compl.add("NM_SUP_PRIV").withSeparator(" : ")
 
     GroovyAppender base = GroovyUtils.createAppender(part)

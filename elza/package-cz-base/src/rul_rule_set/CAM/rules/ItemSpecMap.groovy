@@ -24,6 +24,7 @@ static Map<String, Map<String, String>> createItemSpecMap() {
 
     Map<String, Map<String, String>> itemSpecMap = new HashMap<>()
     itemSpecMap.put(ApExternalSystemType.CAM.toString(), camItemSpecMap)
+    itemSpecMap.put(ApExternalSystemType.CAM_COMPLETE.toString(), camItemSpecMap)
     itemSpecMap.put(ApExternalSystemType.CAM_UUID.toString(), camItemSpecMap)
     return itemSpecMap
 }
@@ -181,6 +182,9 @@ static Map<String, String> createCamItemSpecMap() {
     camItemSpecMap.put("ORCID_ID", "ORCID_ID")
     camItemSpecMap.put("PEVA", "PEVA")
     camItemSpecMap.put("RUIAN", "RUIAN")
+    camItemSpecMap.put("AUT", "AUT")
+    camItemSpecMap.put("VIAF", "VIAF")
+    camItemSpecMap.put("LCNAF", "LCNAF")
     camItemSpecMap.put("LNG_heb", "LNG_heb")
     camItemSpecMap.put("LNG_per", "LNG_per")
     camItemSpecMap.put("LNG_abk", "LNG_abk")

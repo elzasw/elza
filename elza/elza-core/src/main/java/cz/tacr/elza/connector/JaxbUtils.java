@@ -1,17 +1,16 @@
 package cz.tacr.elza.connector;
 
 
-import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.PackageCode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamSource;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.validation.Schema;
 
 import java.io.*;
@@ -21,6 +20,8 @@ import java.nio.charset.StandardCharsets;
  *
  */
 public abstract class JaxbUtils {
+
+    private static Logger log = LoggerFactory.getLogger(JaxbUtils.class);
 
     public static <T> T unmarshal(final Class<T> classObject, final InputStreamSource resource) {
         try (InputStream in = resource.getInputStream()) {
@@ -67,6 +68,7 @@ public abstract class JaxbUtils {
             }
             return temp;
         } catch (Exception e) {
+            log.error("Failed to write XML", e);
             throw new SystemException("Nepodařilo se načíst objekt " + aClass.getSimpleName() + " ze streamu", e, PackageCode.PARSE_ERROR).set("class", aClass.toString());
         }
     }

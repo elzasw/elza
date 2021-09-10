@@ -262,5 +262,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
                                                         @Param("positionFrom") int positionFrom,
                                                         @Param("positionTo") int positionTo);
 
+    @Query("SELECT COUNT(i) FROM arr_desc_item i JOIN i.data d WHERE i.deleteChange IS NULL AND d.file = :file")
+    Integer countItemsUsingFile(@Param("file") ArrFile file);
 
 }

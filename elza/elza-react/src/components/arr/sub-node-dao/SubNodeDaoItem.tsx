@@ -1,10 +1,8 @@
-import {fundSubNodeDaoChangeScenario} from "actions/arr/subNodeDaos";
-import {i18n, Icon} from 'components/shared';
-import React, {FC} from 'react';
-import {Dropdown} from 'react-bootstrap';
-import {useDispatch} from "react-redux";
-import {ArrDaoVO} from "typings/dao";
-import {Button} from '../../ui';
+import { i18n, Icon } from 'components/shared';
+import React, { FC } from 'react';
+import { ArrDaoVO } from "typings/dao";
+import { Button } from '../../ui';
+import { ScenarioDropdown } from './ScenarioDropdown';
 import './SubNodeDao.scss';
 
 const getPlurality = (count: number) => {
@@ -26,7 +24,6 @@ export const SubNodeDaoItem:FC<{
     nodeId,
     readMode = true,
 }) => {
-    const dispatch = useDispatch();
     const handleShowDetail = () => onShowDetail(dao.id);
 
     return (
@@ -55,26 +52,6 @@ export const SubNodeDaoItem:FC<{
                 >
                     <Icon glyph="fa-eye" />
                 </Button>
-                {dao.daoLink?.scenario && !readMode &&
-                    <Dropdown>
-                        <Dropdown.Toggle 
-                            disabled={readMode} 
-                            title={i18n('subNodeDao.dao.action.changeScenario')}
-                            as={Button} 
-                            id="scenario"
-                        >
-                            <Icon glyph="fa-cogs" />
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu alignRight={true}>
-                            {dao.scenarios?.map((scenario)=>{
-                                const handleSelectScenario = () => dispatch(fundSubNodeDaoChangeScenario(dao.id, scenario, versionId, nodeId));
-                                return <Dropdown.Item onClick={handleSelectScenario}>
-                                    {scenario}
-                                </Dropdown.Item>
-                            })}
-                        </Dropdown.Menu>
-                    </Dropdown>
-                }
             </div>
         </div>
     );

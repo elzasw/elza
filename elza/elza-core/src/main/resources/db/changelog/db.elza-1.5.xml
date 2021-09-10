@@ -1428,6 +1428,54 @@ where no.level_id = l.level_id
             <column name="external_system_id" type="int"/>
         </createIndex>
     </changeSet>
+
+    <changeSet id="20210823100900" author="ppyt">
+      <!-- Odstranění duplicitních záznamů v ap_binding_state a zavedení indexu -->
+      <sql dbms="postgresql">DELETE FROM ap_binding_state WHERE binding_state_id in (
+       SELECT bis.binding_state_id FROM ap_binding_state bis
+       JOIN ap_binding_state bis2 ON bis.binding_id = bis2.binding_id
+       WHERE bis.delete_Change_Id IS NULL and bis2.delete_change_id is null
+             and bis.binding_state_id > bis2.binding_state_id)</sql>
+      <sql dbms="postgresql">CREATE UNIQUE INDEX ap_binding_state_binding_pidx 
+                               ON ap_binding_state(binding_id) 
+                               WHERE delete_change_id IS NULL</sql>
+    </changeSet>
+    <changeSet id="20210824171100" author="ppyt">
+    <sql dbms="postgresql">update ap_binding_item abi 
+    set delete_change_id = create_change_id
+    where abi.part_id in (
+    select p.part_id from ap_part p
+    left join ap_item i on p.part_id = i.part_id and i.delete_change_id is null
+    where i.item_id is null and p.delete_change_id is null
+    ) and abi.delete_change_id is null</sql>
+    <sql dbms="postgresql">update ap_part p set delete_change_id = create_change_id 
+    where p.part_id in (
+    select p.part_id from ap_part p
+    left join ap_item i on p.part_id = i.part_id and i.delete_change_id is null
+    where i.item_id is null and p.delete_change_id is null
+    ) and p.delete_change_id is null</sql>
+    </changeSet>
+    <!-- Oprava nekonzistence zjistene v SOA Plzen, odstranene pref. oznaceni avsak platna entita-->
+    <changeSet id="20210903120100" author="ppyt">
+    <sql dbms="postgresql">update ap_state s set delete_change_id = src.delete_change_id
+    from (select s.state_id, p.delete_change_id from ap_state s 
+          join ap_access_point ap on ap.access_point_id = s.access_point_id 
+          join ap_part p on ap.preferred_part_id = p.part_id 
+          where s.delete_change_id is null and p.delete_change_id is not null) src
+    where s.state_id = src.state_id</sql>    
+    <sql dbms="postgresql">
+    update ap_state s set delete_change_id = create_change_id where
+    s.state_id in (
+    select s.state_id from ap_access_point ap
+    join ap_state s on s.access_point_id = ap.access_point_id
+    where preferred_part_id is null and s.delete_change_id is null
+    )</sql>     
+    </changeSet>
+    <changeSet id="20210903154200" author="ppyt">
+        <sql dbms="postgresql">CREATE UNIQUE INDEX ap_item_data_pidx 
+                               ON ap_item(data_id) 
+                               WHERE delete_change_id IS NULL</sql>
+    </changeSet>
     <changeSet id="20210729104300" author="fantis">
         <addColumn tableName="rul_rule_set">
             <column name="item_type_component_id" type="int"/>

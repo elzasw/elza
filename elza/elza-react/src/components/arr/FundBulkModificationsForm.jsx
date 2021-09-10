@@ -113,11 +113,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                         try {
                             DatationField.validate(values.replaceText);
                         } catch (err) {
-                            errors.replaceText = err && err.message ? err.message : ' ';
-                        }
-
-                        if (!errors.replaceText && values.replaceText) {
-                            errors.replaceText = i18n('global.validation.required');
+                            errors.replaceText = err && err.message ? err.message : i18n('global.validation.required');
                         }
                         break;
 

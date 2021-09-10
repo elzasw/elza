@@ -62,9 +62,6 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
             line-height: 16px;
             vertical-align: middle;
             cursor: pointer;
-            &:hover {
-                background: #EEEEEE;
-            }
         }
 
         .node-icon {
@@ -108,20 +105,19 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
         }
 
         .without-arr-perm {
-            color: #a0a0a0;
+            color: #444;
             font-style: italic;
+            background: #eee;
+
+            &:hover {
+                background: #ddd;
+            }
         }
 
         .active {
             background: $tree-node-active-bg;
             &:hover {
                 background: $tree-node-active-hover-bg;
-            }
-            .node-label {
-                background: $tree-node-active-bg;
-                &:hover {
-                    background: $tree-node-active-hover-bg;
-                }
             }
         }
 

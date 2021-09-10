@@ -1,9 +1,17 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.cam.client.ApiException;
+import cz.tacr.cam.schema.cam.BatchUpdateErrorXml;
+import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
+import cz.tacr.cam.schema.cam.BatchUpdateSavedXml;
+import cz.tacr.cam.schema.cam.ErrorMessageXml;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.service.cam.CamService;
+import cz.tacr.elza.service.cam.UploadWorker;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,9 +20,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -113,10 +121,69 @@ public class ExtSyncsProcessor implements Runnable {
         }
         List<ExtSyncsQueueItem> items = newFromElza.getContent();
         for (ExtSyncsQueueItem item : items) {
-            if (!camService.exportNew(item)) {
+            if (!upload(item)) {
                 return false;
             }
         }
+        return true;
+    }
+
+    private boolean upload(ExtSyncsQueueItem item) {
+        try {
+            UploadWorker uploadWorker = camService.prepareUpload(item);
+            if (uploadWorker == null) {
+                camService.setQueueItemStateTA(Collections.singletonList(item),
+                                               ExtSyncsQueueItem.ExtAsyncQueueState.OK,
+                                               OffsetDateTime.now(),
+                                               null);
+                return true;
+            }
+            BatchUpdateResultXml uploadResult = camService.upload(item, uploadWorker.getBatchUpdate());
+            if (uploadResult instanceof BatchUpdateSavedXml) {
+                BatchUpdateSavedXml savedXml = (BatchUpdateSavedXml) uploadResult;
+                uploadWorker.process(camService, savedXml);
+            } else {
+                // mark as failed
+                BatchUpdateErrorXml batchUpdateErrorXml = (BatchUpdateErrorXml) uploadResult;
+
+                StringBuilder message = new StringBuilder();
+                if (CollectionUtils.isNotEmpty(batchUpdateErrorXml.getMessages())) {
+                    for (ErrorMessageXml errorMessage : batchUpdateErrorXml.getMessages()) {
+                        message.append(errorMessage.getMsg().getValue()).append("\n");
+                    }
+                }
+
+                camService.setQueueItemStateTA(Collections.singletonList(item),
+                                  ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
+                                  OffsetDateTime.now(),
+                                  message.toString());
+
+            }
+        } catch (ApiException e) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(e.getMessage());
+            sb.append(", code: ").append(e.getCode());
+            String body = e.getResponseBody();
+            if (StringUtils.isNotEmpty(body)) {
+                sb.append(", response: ").append(body);
+            }
+            // if ApiException -> it means we connected server and it is logical failure 
+            camService.setQueueItemStateTA(Collections.singletonList(item),
+                                           ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
+                                           OffsetDateTime.now(),
+                                           sb.toString());
+            logger.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), body, e);
+            return true;
+        } catch (Exception e) {
+            logger.error("Failed to synchronize, body: {}", e.getMessage(), e);
+            // other exception -> retry later
+            camService.setQueueItemStateTA(Collections.singletonList(item),
+                                           ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW,
+                                           OffsetDateTime.now(),
+                                           e.getMessage());
+            return false;
+        }
+
         return true;
     }
 

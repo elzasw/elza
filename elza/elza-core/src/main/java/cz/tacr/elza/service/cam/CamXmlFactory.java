@@ -77,7 +77,8 @@ public class CamXmlFactory {
                                     ApScope scope) {
         ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
 
-        String camItemTypeCode = groovyService.findItemTypeCode(externalSystemTypeCode, itemType.getCode(), scope.getRuleSetId());
+        String camItemTypeCode = groovyService.findItemTypeCode(externalSystemTypeCode, itemType
+                .getCode(), scope.getRuleSetId());
         if (camItemTypeCode == null) {
             return null;
         }

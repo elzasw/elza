@@ -80,12 +80,55 @@ export interface AdminFund {
     reducer: unknown;
 }
 
-export interface Node {
+export interface SubNode {
+    accordionLeft?: string;
+    accordionRight?: string;
+    digitizationRequests?: unknown | null;
+    id?: number;
+    issues?: unknown[];
+    nodeConformity?: unknown;
+    referenceMark?: string[];
+    version?: number;
+}
+
+export interface NodeBase {
+    arrPerm?: boolean;
+    depth?: number;
+    hasChildren?: boolean;
+    icon?: string;
+    id?: number;
+    name?: string;
+    referenceMark?: string[];
+    version?: number;
+}
+
+export interface Node extends NodeBase {
+    changeParent?: boolean;
+    childNodes?: unknown[];
+    developerScenarios: unknown;
+    dirty?: boolean;
+    filterText?: string;
+    isFetching?: boolean;
+    isNodeInfoFetching?: boolean;
+    lastUpdated?: number;
+    nodeCount?: number;
+    nodeIndex?: number;
+    nodeInfoDirty?: boolean;
+    nodeInfoFetched?: boolean;
+    pageSize?: number;
+    parentNodes?: unknown[];
     routingKey?: string;
+    searchedIds?: unknown;
+    selectedSubNodeId?: number;
+    subNodeDaos?: unknown;
+    subNodeForm?: unknown;
+    subNodeFormCache?: unknown;
+    subNodeInfo?: unknown;
+    viewStartIndex?: number;
 }
 
 export interface NodesState {
-    activeIndex: number | unknown;
+    activeIndex?: number | null;
     nodes: Node[];
 }
 
