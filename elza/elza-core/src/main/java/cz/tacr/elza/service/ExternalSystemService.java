@@ -345,7 +345,8 @@ public class ExternalSystemService {
                                                final String state,
                                                final String revisionUuid,
                                                final String user,
-                                               final Long replacedById) {
+                                               final Long replacedById,
+                                               final SyncState syncState) {
         ApBindingState apBindingState = new ApBindingState();
         apBindingState.setBinding(binding);
         apBindingState.setAccessPoint(accessPoint);
@@ -355,7 +356,7 @@ public class ExternalSystemService {
         apBindingState.setExtReplacedBy(replacedById == null ? null : String.valueOf(replacedById));
         apBindingState.setSyncChange(apChange);
         apBindingState.setCreateChange(apChange);
-        apBindingState.setSyncOk(SyncState.SYNC_OK);
+        apBindingState.setSyncOk(syncState);
         return bindingStateRepository.save(apBindingState);
     }
 
