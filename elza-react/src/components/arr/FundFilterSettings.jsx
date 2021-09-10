@@ -144,38 +144,6 @@ const renderCoordinatesFields = fields => {
     }
 };
 
-const renderUnitdateFields = (fields) => {
-    switch (fields.length) {
-        case 0:
-            return null;
-        case 2:
-            let decorate;
-            if (fields[1].error) {
-                decorate = {
-                    touched: true,
-                    error: fields[1].error,
-                };
-            }
-
-            var vals = [];
-            vals.push(
-                <div key={1} className="value-container">
-                    <FormInput
-                        {...decorate}
-                        type="text"
-                        value={fields[1].value}
-                        onChange={e => {
-                            fields[1].onChange(e.target.value);
-                        }}
-                    />
-                </div>,
-            );
-            return vals;
-        default:
-            break;
-    }
-};
-
 const FundFilterSettings = class FundFilterSettings extends AbstractReactComponent {
     constructor(props) {
         super(props);
@@ -415,6 +383,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             case 'RECORD_REF':
                 break;
             case 'UNITDATE':
+                /*
                 if (useValues.length > 0) {
                     if (!useValues[0]) {
                         useValues[0] = 1;
@@ -422,7 +391,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     if (!useValues[1]) {
                         useValues[1] = '';
                     }
-                }
+                }*/
                 break;
             case 'COORDINATES':
                 if (selectedCode === 'NEAR' && !useValues[1]) {
@@ -563,7 +532,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     ];
                     break;
                 case 'UNITDATE':
-                    renderFields = renderUnitdateFields.bind(this);
+                    renderFields = renderTextFields ;
                     validateField = (code, valuesCount, value, index) => {
                         const validateResult = validateUnitDate(value);
                         return validateResult.valid ? null : validateResult.message;
@@ -573,9 +542,9 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                         {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
                         {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
                         {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
-                        {values: 2, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
-                        {values: 2, code: 'LT', name: i18n('arr.fund.filterSettings.condition.unitdate.lt')},
-                        {values: 2, code: 'GT', name: i18n('arr.fund.filterSettings.condition.unitdate.gt')},
+                        {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
+                        {values: 1, code: 'LT', name: i18n('arr.fund.filterSettings.condition.unitdate.lt')},
+                        {values: 1, code: 'GT', name: i18n('arr.fund.filterSettings.condition.unitdate.gt')},
                         {values: 2, code: 'SUBSET', name: i18n('arr.fund.filterSettings.condition.unitdate.subset')},
                         {
                             values: 2,

@@ -7,7 +7,7 @@
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
-    <structure-definition structure-type="PT_EVENT" filename="PT_EVENT.groovy" compatibility-rul-package="35">
+    <structure-definition structure-type="PT_EVENT" filename="PT_EVENT.groovy" compatibility-rul-package="44">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>

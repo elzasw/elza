@@ -467,14 +467,21 @@ class RegistryPage extends AbstractReactComponent {
                 </Button>,
             );
 
-            itemActions.push(
-                <Button key="deleteReplaceAccessPoint" onClick={() => this.handleDeleteAccessPoint(registryDetail)}>
-                    <Icon glyph="fa-trash" />
-                    <div>
-                        <span className="btnText">{i18n('accesspoint.removeDuplicity')}</span>
-                    </div>
-                </Button>,
-            );
+            if (
+                userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+                    type: perms.AP_SCOPE_WR,
+                    scopeId: data ? data.scopeId : null,
+                })
+            ) {
+                itemActions.push(
+                    <Button key="deleteReplaceAccessPoint" onClick={() => this.handleDeleteAccessPoint(registryDetail)}>
+                        <Icon glyph="fa-trash" />
+                        <div>
+                            <span className="btnText">{i18n('accesspoint.removeDuplicity')}</span>
+                        </div>
+                    </Button>,
+                );
+            }
         }
 
         if (id && data) {
@@ -487,23 +494,30 @@ class RegistryPage extends AbstractReactComponent {
                 </Button>,
             );
 
-            itemActions.push(
-                <Button key="change-state" onClick={this.handleChangeApState}>
-                    <Icon glyph="fa-pencil" />
-                    <div>
-                        <span className="btnText">{i18n('ap.changeState')}</span>
-                    </div>
-                </Button>,
-            );
+            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR, 
+                perms.AP_CONFIRM_ALL, perms.AP_CONFIRM, 
+                perms.AP_EDIT_CONFIRMED_ALL, perms.AP_EDIT_CONFIRMED
+                )) {
+                itemActions.push(
+                    <Button key="change-state" onClick={this.handleChangeApState}>
+                        <Icon glyph="fa-pencil" />
+                        <div>
+                            <span className="btnText">{i18n('ap.changeState')}</span>
+                        </div>
+                    </Button>,
+                );
+            }
 
-            itemActions.push(
+            if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
+              itemActions.push(
                 <Button key="connect-ap" onClick={this.handleConnectAp}>
                     <Icon glyph="fa-link" />
                     <div>
                         <span className="btnText">{i18n('ap.connect')}</span>
                     </div>
                 </Button>,
-            );
+              );
+            }
 
             if (userDetail.hasOne(perms.AP_EXTERNAL_WR)) {
                 itemActions.push(
@@ -543,16 +557,16 @@ class RegistryPage extends AbstractReactComponent {
         let editMode = false;
         if (registryDetail.id && registryDetail.data) {
             const apState = registryDetail.data.stateApproval;
-            if (apState !== StateApproval.TO_APPROVE) {
-                if (apState === StateApproval.APPROVED) {
+            if (apState !== StateApproval.TO_APPROVE && apState !== StateApproval.REV_PREPARED && apState !== StateApproval.APPROVED ) {
+                if (apState === StateApproval.REV_NEW||apState === StateApproval.REV_AMEND) {
                     editMode = userDetail.hasOne(perms.ADMIN, perms.AP_EDIT_CONFIRMED_ALL, {
                         type: perms.AP_EDIT_CONFIRMED,
-                        id: registryDetail.data.scopeId,
+                        scopeId: registryDetail.data.scopeId,
                     });
                 } else {
                     editMode = userDetail.hasOne(perms.ADMIN, perms.AP_SCOPE_WR_ALL, {
-                        type: perms.AP_SCOPE_WR_ALL,
-                        id: registryDetail.data.scopeId,
+                        type: perms.AP_SCOPE_WR,
+                        scopeId: registryDetail.data.scopeId,
                     });
                 }
             }

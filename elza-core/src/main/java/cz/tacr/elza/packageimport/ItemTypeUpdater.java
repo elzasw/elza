@@ -617,9 +617,9 @@ public class ItemTypeUpdater {
         }
 
         dbItemType.setShortcut(itemType.getShortcut());
-        dbItemType.setDescription(itemType.getDescription());
-        dbItemType.setIsValueUnique(itemType.getIsValueUnique());
-        dbItemType.setCanBeOrdered(itemType.getCanBeOrdered());
+        dbItemType.setDescription(itemType.getDescription() == null ? itemType.getName() : itemType.getDescription());
+        dbItemType.setIsValueUnique(itemType.getIsValueUnique() == null ? false : itemType.getIsValueUnique());
+        dbItemType.setCanBeOrdered(itemType.getCanBeOrdered() == null ? false : itemType.getCanBeOrdered());
         dbItemType.setUseSpecification(itemType.getUseSpecification());
         dbItemType.setStructuredType(rulStructureType);
         dbItemType.setStringLengthLimit(itemType.getStringLengthLimit());

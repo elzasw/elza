@@ -167,7 +167,7 @@ const form = reduxForm<ApStateChangeVO, OwnProps, FormErrors<ApStateChangeVO>>({
             values.state === StateApproval.APPROVED &&
             !props.userDetail.hasOne(perms.AP_CONFIRM_ALL, {
                 type: perms.AP_CONFIRM,
-                id: parseInt(values.scopeId as any),
+                scopeId: parseInt(values.scopeId as any),
             })
         ) {
             errors.state = i18n('ap.state.state.insufficient.right');

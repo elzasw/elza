@@ -1,0 +1,11 @@
+﻿label: "Veduty 15"
+# didIdentifier: "1e84d826-8afe-477b-b27c-a93904034de8"
+daoType: LEVEL
+items:
+  - !!cz.tacr.elza.dao.bo.resource.ItemEnumConfig
+    itemType: ZP2015_LEVEL_TYPE
+    itemSpec: ZP2015_LEVEL_ITEM
+    readOnly: true
+  - !!cz.tacr.elza.dao.bo.resource.ItemStringConfig
+    itemType: ZP2015_TITLE
+    value: "Vybrané veduty"

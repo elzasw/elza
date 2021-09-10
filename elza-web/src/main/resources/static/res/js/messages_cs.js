@@ -122,6 +122,7 @@ var messages = {
     "exception.arr.ADMIN_GROUP_MISSING_FUND_CREATE_PERM":
         "K AS nelze přiřadit spráce (skupinu), protože nemá oprávnění zakládat AS",
     "exception.arr.STRUCTURE_DATA_DELETE_ERROR": "Nelze smazat položku, protože existují navázané entity",
+    "exception.arr.ATTACHMENT_DELETE_ERROR": "Nelze smazat přílohu, protože je použita v archivním popisu",
 
     "exception.base.INSUFFICIENT_PERMISSIONS": "Nedostatečná oprávnění",
     "exception.base.INSUFFICIENT_PERMISSIONS.detail": "Požadované oprávnění",
@@ -473,8 +474,8 @@ var messages = {
     "arr.issues.add.arr.title": "Přidat připomínku - Archivní soubor",
     "arr.issues.type.change": "Změnit druh: {0}",
     "arr.issuesList.form.permission": "Oprávnění",
-    "arr.issuesList.form.permission.read": "Zobrazení",
-    "arr.issuesList.form.permission.write": "Tvorba připomínek",
+    "arr.issuesList.form.permission.read": "Čtení",
+    "arr.issuesList.form.permission.write": "Zápis a změny",
     "issue.type": "Typ připomínky",
     "issue.text": "Text připomínky",
     "issueList.name": "Název",
@@ -976,6 +977,7 @@ var messages = {
     "subNodeDao.title": "Digitální entity",
     "subNodeDao.dao.action.showDetailAll": "Zobrazit detail digitálních entit",
     "subNodeDao.dao.action.showDetailOne": "Zobrazit detail digitální entity",
+    "subNodeDao.dao.action.changeScenario": "Způsob napojení",
     "subNodeDao.dao.title.node": "Digitální entity pro jednotku popisu",
     "subNodeDao.dao.label": "Digitalizát",
     "subNodeDao.dao.code": "Code",

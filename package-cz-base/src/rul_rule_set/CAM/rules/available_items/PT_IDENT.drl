@@ -21,7 +21,7 @@ end
 
 rule "R_IDN_003 Použití typu identifikátoru dle třídy/podtřídy"
 when $it: ItemType(code == "IDN_TYPE")
-     $is : ItemSpec(code in ("INTERPI")) from $it.specs
+     $is : ItemSpec(code in ("INTERPI","AUT","VIAF","LCNAF")) from $it.specs
 then
     $is.setPossible();
     $is.setRepeatable(true);

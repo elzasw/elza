@@ -2,53 +2,54 @@
  * Stránka archivních pomůcek.
  */
 
-import {setVisiblePolicyReceive} from '../../actions/arr/visiblePolicy';
-
-import './ArrPage.scss';
-
+import { fundActionFormChange, fundActionFormShow } from 'actions/arr/fundAction';
+import { fundExtendedView } from 'actions/arr/fundExtended';
+import { fundNodesPolicyFetchIfNeeded } from 'actions/arr/fundNodesPolicy';
+import { fundSelectSubNode, fundSelectSubNodeByNodeId } from 'actions/arr/node';
+import { fundNodeInfoInvalidate } from 'actions/arr/nodeInfo';
+import { versionValidationErrorNext, versionValidationErrorPrevious } from 'actions/arr/versionValidation';
+import { developerNodeScenariosRequest } from 'actions/global/developer';
+import { canSetFocus, focusWasSet, isFocusFor, setFocus } from 'actions/global/focus';
+import { selectTab } from 'actions/global/tab';
+import { WebApi } from 'actions/index';
+import { routerNavigate } from 'actions/router';
+import { userDetailsSaveSettings } from 'actions/user/userDetail';
+import ArrHistoryForm from 'components/arr/ArrHistoryForm';
+import { createFundRoot, getOneSettings, isFundRootId, setSettings } from 'components/arr/ArrUtils';
+import { i18n, Icon, ListBox2, Loading, Tabs, Utils } from 'components/shared';
+import { PropTypes } from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {indexById} from 'stores/app/utils';
-import {connect} from 'react-redux';
-import {i18n, Icon, LazyListBox, ListBox2, Loading, Tabs, Utils} from 'components/shared';
-
+import { connect } from 'react-redux';
+import { indexById } from 'stores/app/utils';
+import * as issuesActions from '../../actions/arr/issues';
+import { setVisiblePolicyReceive } from '../../actions/arr/visiblePolicy';
+import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
+import { structureTypesFetchIfNeeded } from '../../actions/refTables/structureTypes';
+import * as perms from '../../actions/user/Permission';
+import ArrRefTemplates from '../../components/arr/ArrRefTemplates';
+import ArrStructurePanel from '../../components/arr/ArrStructurePanel';
+import { DiscrepanciesList } from '../../components/arr/discrepancies';
+import FundTemplateSettingsForm from '../../components/arr/FundTemplateSettingsForm';
+import LecturingBottom from '../../components/arr/LecturingBottom';
+import LecturingTop from '../../components/arr/LecturingTop';
+import { NodeSettingsForm } from '../../components/arr/node-settings-form';
+import SearchFundsForm from '../../components/arr/SearchFundsForm';
+import { FundFiles, FundSettingsForm, FundTreeMain, NodeTabs } from '../../components/index';
+import HorizontalSplitter from '../../components/shared/splitter/HorizontalSplitter';
+import { Button } from '../../components/ui';
+import { MODAL_DIALOG_SIZE } from '../../constants';
+import { FOCUS_KEYS } from '../../constants.tsx';
+import objectById from '../../shared/utils/objectById';
+import storeFromArea from '../../shared/utils/storeFromArea';
+import './ArrPage.scss';
+import defaultKeymap from './ArrPageKeymap';
+import ArrPageRibbon from './ArrPageRibbon';
 import ArrParentPage from './ArrParentPage';
 
-import {FundFiles, FundSettingsForm, FundTreeMain, NodeTabs} from '../../components/index';
-import {Button} from '../../components/ui';
-import {WebApi} from 'actions/index';
-import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
-import {fundExtendedView} from 'actions/arr/fundExtended';
-import {versionValidationErrorNext, versionValidationErrorPrevious} from 'actions/arr/versionValidation';
-import {developerNodeScenariosRequest} from 'actions/global/developer';
-import {createFundRoot, getOneSettings, isFundRootId, setSettings} from 'components/arr/ArrUtils';
-import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus';
-import {fundNodesPolicyFetchIfNeeded} from 'actions/arr/fundNodesPolicy';
-import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction';
-import {fundSelectSubNode, fundSelectSubNodeByNodeId} from 'actions/arr/node';
-import {fundNodeInfoInvalidate} from 'actions/arr/nodeInfo';
-import ArrHistoryForm from 'components/arr/ArrHistoryForm';
-import {routerNavigate} from 'actions/router';
-import * as perms from '../../actions/user/Permission';
-import {selectTab} from 'actions/global/tab';
-import {userDetailsSaveSettings} from 'actions/user/userDetail';
-import {PropTypes} from 'prop-types';
-import defaultKeymap from './ArrPageKeymap';
-import {NodeSettingsForm} from '../../components/arr/node-settings-form';
-import {FOCUS_KEYS} from '../../constants.tsx';
-import ArrStructurePanel from '../../components/arr/ArrStructurePanel';
-import {structureTypesFetchIfNeeded} from '../../actions/refTables/structureTypes';
-import objectById from '../../shared/utils/objectById';
-import FundTemplateSettingsForm from '../../components/arr/FundTemplateSettingsForm';
-import SearchFundsForm from '../../components/arr/SearchFundsForm';
-import HorizontalSplitter from '../../components/shared/splitter/HorizontalSplitter';
-import LecturingTop from '../../components/arr/LecturingTop';
-import LecturingBottom from '../../components/arr/LecturingBottom';
-import storeFromArea from '../../shared/utils/storeFromArea';
-import * as issuesActions from '../../actions/arr/issues';
-import ArrPageRibbon from './ArrPageRibbon';
-import ArrRefTemplates from '../../components/arr/ArrRefTemplates';
-import {MODAL_DIALOG_SIZE} from '../../constants';
+
+
+
 
 class ArrPage extends ArrParentPage {
     static TAB_KEY = 'arr-as';
@@ -532,42 +533,6 @@ class ArrPage extends ArrParentPage {
         }
     }
 
-    renderFundErrorItem(item) {
-        if (item) {
-            return <div>{item.name}</div>;
-        } else {
-            return '...';
-        }
-    }
-
-    renderFundErrors(activeFund) {
-        let activeNode = null;
-        if (activeFund.nodes.activeIndex !== null) {
-            activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
-        }
-
-        return (
-            <div className="errors-listbox-container">
-                <LazyListBox
-                    ref={ref => (this.refFundErrors = ref)}
-                    getItems={(fromIndex, toIndex) => {
-                        return WebApi.getValidationItems(activeFund.versionId, fromIndex, toIndex);
-                    }}
-                    renderItemContent={this.renderFundErrorItem}
-                    selectedItem={activeNode ? activeNode.selectedSubNodeId : null}
-                    itemHeight={25} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
-                    onSelect={this.handleSelectErrorNode.bind(this, activeFund)}
-                />
-            </div>
-        );
-    }
-
-    handleSelectErrorNode(activeFund, node) {
-        if (node.parentNode === null) {
-            node.parentNode = createFundRoot(activeFund);
-        }
-        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode));
-    }
 
     handleSelectVisiblePoliciesNode(activeFund, node) {
         if (node.parentNode == null) {
@@ -944,7 +909,7 @@ class ArrPage extends ArrParentPage {
                 key: 'discrepancies',
                 ref: 'fundErrors',
                 name: i18n('arr.panel.title.discrepancies'),
-                render: () => this.renderFundErrors(activeFund),
+                render: () => <DiscrepanciesList activeFund={activeFund}/>,
             },
             visiblePolicies: {
                 id: 'visiblePolicies',
@@ -1036,6 +1001,12 @@ class ArrPage extends ArrParentPage {
         this.props.dispatch(fundExtendedView(showExtendedView));
     }
 
+    getHasEditPermissions = () => {
+        const {userDetail} = this.props;
+        const activeFund = this.getActiveFund(this.props);
+        return userDetail.hasOne({type: perms.FUND_ARR_NODE, fundId: activeFund.id})
+    }
+
     renderCenterPanel(readMode, closed) {
         const {focus, arrRegion, rulDataTypes, descItemTypes, userDetail} = this.props;
         const showRegisterJp = arrRegion.showRegisterJp;
@@ -1055,6 +1026,7 @@ class ArrPage extends ArrParentPage {
                     fund={activeFund}
                     cutLongLabels={false}
                     versionId={activeFund.versionId}
+                    showEditPermissions={this.getHasEditPermissions()}
                     {...activeFund.fundTree}
                     actionAddons={
                         <Button
@@ -1118,6 +1090,7 @@ class ArrPage extends ArrParentPage {
                     cutLongLabels={true}
                     versionId={activeFund.versionId}
                     {...activeFund.fundTree}
+                    showEditPermissions={this.getHasEditPermissions()}
                     ref={ref => (this.refTree = ref)}
                     focus={focus}
                     actionAddons={

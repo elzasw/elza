@@ -26,3 +26,12 @@ when $ae: Ap( $aeParts : parts)
 then 
     results.addError("U zániku neexistuje ani jeden z následujícího popisu: poznámka, datace, návazná entita.");
 end
+
+
+rule "R_BOD_002 Použití prvků popisu pro záznam (tělo entity)"
+when $ae: Ap( $aeParts : parts)
+     not (Part(type == PartType.PT_BODY) from $aeParts)
+then
+    results.addError("Musí být vyplněno tělo entity třídy DYNASTY z důvodu povinného vyplnění stručné charakteristiky.");
+end
+  

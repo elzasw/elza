@@ -44,6 +44,8 @@ import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.ArrChange.Type;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.FileRepository;
@@ -270,6 +272,15 @@ public class DmsService {
             UsrPermission.Permission.FUND_ADMIN })
     public void deleteArrFile(final ArrFile file,
                               @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) throws IOException {
+        Integer count = arrangementInternalService.countActiveItems(file);
+        if (count > 0) {
+            throw new BusinessException("Existují návazné jednotky popisu, přílohu nelze smazat",
+                    ArrangementCode.ATTACHMENT_DELETE_ERROR)
+                            .level(Level.WARNING)
+                            .set("count", count)
+                            .set("id", file.getFileId());
+        }
+
         ArrChange deleteChange = arrangementInternalService.createChange(Type.DELETE_ATTACHMENT);
         file.setDeleteChange(deleteChange);
         fileRepository.save(file);

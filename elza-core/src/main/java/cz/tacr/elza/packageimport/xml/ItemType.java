@@ -47,13 +47,13 @@ public class ItemType {
     @XmlElement(name = "shortcut", required = true)
     private String shortcut;
 
-    @XmlElement(name = "description", required = true)
+    @XmlElement(name = "description")
     private String description;
 
-    @XmlElement(name = "is-value-unique", required = true)
+    @XmlElement(name = "is-value-unique")
     private Boolean isValueUnique;
 
-    @XmlElement(name = "can-be-ordered", required = true)
+    @XmlElement(name = "can-be-ordered")
     private Boolean canBeOrdered;
 
     @XmlElement(name = "use-specification", required = true)

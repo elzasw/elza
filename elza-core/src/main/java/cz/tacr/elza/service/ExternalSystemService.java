@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -344,7 +345,8 @@ public class ExternalSystemService {
                                                final String state,
                                                final String revisionUuid,
                                                final String user,
-                                               final Long replacedById) {
+                                               final Long replacedById,
+                                               final SyncState syncState) {
         ApBindingState apBindingState = new ApBindingState();
         apBindingState.setBinding(binding);
         apBindingState.setAccessPoint(accessPoint);
@@ -354,7 +356,7 @@ public class ExternalSystemService {
         apBindingState.setExtReplacedBy(replacedById == null ? null : String.valueOf(replacedById));
         apBindingState.setSyncChange(apChange);
         apBindingState.setCreateChange(apChange);
-        apBindingState.setSyncOk(SyncState.SYNC_OK);
+        apBindingState.setSyncOk(syncState);
         return bindingStateRepository.save(apBindingState);
     }
 
@@ -364,6 +366,15 @@ public class ExternalSystemService {
                                                   String revisionUuid,
                                                   String user,
                                                   Long replacedById) {
+        // check if new state is needed
+        if (Objects.equals(state, oldbindingState.getExtState()) &&
+                Objects.equals(revisionUuid, oldbindingState.getExtRevision()) &&
+                Objects.equals(user, oldbindingState.getExtUser()) &&
+                Objects.equals(replacedById, oldbindingState.getExtReplacedBy()) &&
+                Objects.equals(SyncState.SYNC_OK, oldbindingState.getSyncOk())) {
+            return oldbindingState;
+        }
+
         ApBindingState apBindingState = new ApBindingState();
         apBindingState.setBinding(oldbindingState.getBinding());
         apBindingState.setAccessPoint(oldbindingState.getAccessPoint());
@@ -377,6 +388,7 @@ public class ExternalSystemService {
 
         oldbindingState.setDeleteChange(apChange);
         bindingStateRepository.save(oldbindingState);
+        bindingStateRepository.flush();
 
         return bindingStateRepository.save(apBindingState);
     }
@@ -404,6 +416,11 @@ public class ExternalSystemService {
                                              ApChange apChange, final String value,
                                              final ApPart part,
                                              final ApItem item) {
+        Validate.notNull(binding);
+        Validate.notNull(apChange);
+        Validate.notNull(value);
+        Validate.isTrue(part == null ^ item == null);
+
         ApBindingItem apBindingItem = new ApBindingItem();
         apBindingItem.setBinding(binding);
         apBindingItem.setValue(value);
