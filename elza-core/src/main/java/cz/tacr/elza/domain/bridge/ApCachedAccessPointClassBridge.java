@@ -120,8 +120,6 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
         }
     }
 
-
-
     private void addItemFields(String name, CachedPart part, CachedAccessPoint cachedAccessPoint, Document document, LuceneOptions luceneOptions) {
         if (CollectionUtils.isNotEmpty(part.getItems())) {
             StaticDataProvider sdp = StaticDataProvider.getInstance();
@@ -163,7 +161,13 @@ public class ApCachedAccessPointClassBridge implements StringBridge, MetadataPro
                     }
                 }
 
-                addField(name + SEPARATOR + itemType.getCode().toLowerCase(), value.toLowerCase(), document, luceneOptions, name);
+                // indexování polí s více než 32766 znaky
+                if (dataType == DataType.TEXT) {
+                    TextField field = new TextField(name + SEPARATOR + itemType.getCode().toLowerCase(), value, Store.YES);
+                    document.add(field);
+                } else {
+                    addField(name + SEPARATOR + itemType.getCode().toLowerCase(), value.toLowerCase(), document, luceneOptions, name);
+                }
 
                 if (itemSpec != null) {
                     addField(name + SEPARATOR + itemType.getCode().toLowerCase() + SEPARATOR + itemSpec.getCode().toLowerCase(), value.toLowerCase(), document, luceneOptions, name);
