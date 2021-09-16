@@ -19,7 +19,7 @@ import { Autocomplete, Loading } from '../../shared';
 import ReduxFormFieldErrorDecorator from '../../shared/form/ReduxFormFieldErrorDecorator';
 import Scope from '../../shared/scope/Scope';
 import { Button } from '../../ui';
-import PartEditForm from './../form/PartEditForm';
+import PartEditForm from './../form/part-edit-form/PartEditForm';
 import {AP_VIEW_SETTINGS} from '../../../constants';
 import storeFromArea from '../../../shared/utils/storeFromArea';
 import {ApViewSettings} from '../../../api/ApViewSettings';
