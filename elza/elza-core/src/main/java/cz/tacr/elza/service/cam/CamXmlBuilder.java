@@ -122,9 +122,17 @@ abstract public class CamXmlBuilder {
             // prepare list with first pref.part
             adjustedPartList = new ArrayList<>(partList.size());
             adjustedPartList.add(preferedPart);
+            ArrayList subparts = new ArrayList<>();
             for (ApPart part : partList) {
                 if (!part.getPartId().equals(preferedPart.getPartId())) {
-                    adjustedPartList.add(part);
+                    // check if subpart
+                    if (part.getParentPartId() != null) {
+                        subparts.add(part);
+                    } else {
+                        adjustedPartList.add(part);
+                    }
+                    // sub parts will be added at the end
+                    adjustedPartList.addAll(subparts);
                 }
             }
         }
