@@ -325,6 +325,7 @@ public class CamService {
                                                         final ApState state,
                                                       final ApExternalSystem apExternalSystem) {
 
+        // TODO: rework to use ap_cached_access_point
         List<ApPart> partList = partService.findPartsByAccessPoint(state.getAccessPoint());
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(i -> i.getPartId()));

@@ -306,20 +306,26 @@ public class PartService {
      *            should be with fetched key value
      * @param result
      * @param state
+     * @param scope
+     *            Scope of accesspoint
      * @param async
+     * @param preferredPart
+     *            Flag if part is preferred name
      * @return
      */
-    public boolean updatePartValue(ApPart apPart, GroovyResult result, ApState state, boolean async) {
-        ApScope scope = state.getScope();
+    public boolean updatePartValue(ApPart apPart,
+                                   GroovyResult result,
+                                   ApState state,
+                                   ApScope scope,
+                                   boolean async,
+                                   boolean preferredPart) {
+        Integer accessPointId = state.getAccessPointId();
         ApAccessPoint accessPoint = state.getAccessPoint();
-        Integer accessPointId = accessPoint.getAccessPointId();
+        Validate.notNull(accessPoint);
+
         boolean oldPreferredPart = false;
         if(apPart.getKeyValue() != null && apPart.getKeyValue().getKeyType().equals(PT_PREFER_NAME)) {
             oldPreferredPart = true;
-        }
-        boolean preferredPart = false;
-        if (accessPoint.getPreferredPart() != null) {
-            preferredPart = apPart.getPartId().equals(accessPoint.getPreferredPart().getPartId());
         }
 
         boolean success = true;
