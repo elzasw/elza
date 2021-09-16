@@ -1073,18 +1073,19 @@ public class AccessPointService {
      * @return
      */
     public boolean updatePartValues(final ApState state,
+                                    final Integer prefPartId,
                                     final List<ApPart> partList,
                                     final Map<Integer, List<ApItem>> itemMap,
                                     final boolean async) {
         boolean success = true;
-        Integer prefPartId = state.getAccessPoint().getPreferredPartId();
         for (ApPart part : partList) {
             List<ApPart> childrenParts = findChildrenParts(part, partList);
             List<ApItem> items = getItemsForParts(part, childrenParts, itemMap);
 
             boolean preferred = prefPartId == null || Objects.equals(prefPartId, part.getPartId());
             GroovyResult result = groovyService.processGroovy(state, part, childrenParts, items, preferred);
-            if (!partService.updatePartValue(part, result, state, async)) {
+            if (!partService.updatePartValue(part, result, state, state.getScope(),
+                                             async, part.getPartId().equals(prefPartId))) {
                 success = false;
             }
         }
@@ -1127,6 +1128,7 @@ public class AccessPointService {
         return result;
     }
 
+    // TODO: move method to DataExchange package and rework to use other methods in this service
     public boolean updatePartValues(final Collection<PartWrapper> partWrappers) {
         StaticDataProvider sdp = staticDataService.getData();
 
@@ -1158,7 +1160,7 @@ public class AccessPointService {
 
             GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items, preferred);
 
-            if (!partService.updatePartValue(apPart, result, state, false)) {
+            if (!partService.updatePartValue(apPart, result, state, state.getScope(), false, preferred)) {
                 success = false;
             }
         }
@@ -1214,7 +1216,7 @@ public class AccessPointService {
         boolean preferred = preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), apPart.getPartId());
         GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items, preferred);
 
-        return partService.updatePartValue(apPart, result, state, false);
+        return partService.updatePartValue(apPart, result, state, state.getScope(), false, preferred);
     }
 
 
@@ -2012,7 +2014,8 @@ public class AccessPointService {
                              final Map<Integer, List<ApItem>> itemMap,
                              boolean async) {
 
-        boolean successfulGeneration = updatePartValues(apState, partList, itemMap, async);
+        Integer prefPartId = accessPoint.getPreferredPartId();
+        boolean successfulGeneration = updatePartValues(apState, prefPartId, partList, itemMap, async);
         ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
         updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
     }
