@@ -18,6 +18,7 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.drools.model.PartType;
@@ -404,12 +405,35 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     }
 
     private void restoreLinks(CachedAccessPoint cap) {
+        ApAccessPoint ap = entityManager.getReference(ApAccessPoint.class, cap.getAccessPointId());
+        ApState state = cap.getApState();
+        if (state != null) {
+            state.setAccessPoint(ap);
+
+            ApScope scope = entityManager.getReference(ApScope.class, state.getScopeId());
+            state.setScope(scope);
+        }
+        if (cap.getParts() != null) {
+            for (CachedPart part : cap.getParts()) {
+                ApPart apPart = entityManager.getReference(ApPart.class, part.getPartId());
+
+                if (part.getItems() != null) {
+                    for (ApItem item : part.getItems()) {
+                        item.setPart(apPart);
+                        item.setCreateChange(entityManager.getReference(ApChange.class, item.getCreateChangeId()));
+                        if (item.getDeleteChangeId() != null) {
+                            item.setDeleteChange(entityManager.getReference(ApChange.class, item.getDeleteChangeId()));
+                        }
+                    }
+                }
+            }
+        }
+
         List<CachedBinding> cachedBindings = cap.getBindings();
         if(CollectionUtils.isEmpty(cachedBindings)) {
             // nothing to link
             return;
         }
-        ApAccessPoint ap = entityManager.getReference(ApAccessPoint.class, cap.getAccessPointId());
         for (CachedBinding cachedBinding : cachedBindings) {
             ApBinding b = entityManager.getReference(ApBinding.class, cachedBinding.getId());
             ApBindingState bs = cachedBinding.getBindingState();
