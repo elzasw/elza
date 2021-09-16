@@ -3,34 +3,27 @@ import { connect } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { objectByProperty } from "stores/app/utils";
-import { globalFundTreeInvalidate } from '../../actions/arr/globalFundTree';
-import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
 import * as registry from '../../actions/registry/registry';
 import { registryDetailFetchIfNeeded } from '../../actions/registry/registry';
 import { WebApi } from '../../actions/WebApi';
 import { ApAccessPointVO } from '../../api/ApAccessPointVO';
-import { ApItemBitVO } from '../../api/ApItemBitVO';
-import { ApPartFormVO } from '../../api/ApPartFormVO';
 import { ApPartVO } from '../../api/ApPartVO';
 import { ApValidationErrorsVO } from '../../api/ApValidationErrorsVO';
 import { ApViewSettingRule, ApViewSettings } from '../../api/ApViewSettings';
-import { PartType } from '../../api/generated/model';
-import * as PartTypeInfo from '../../api/old/PartTypeInfo';
 import { PartValidationErrorsVO } from '../../api/PartValidationErrorsVO';
 import { RulDescItemTypeExtVO } from '../../api/RulDescItemTypeExtVO';
 import { RulPartTypeVO } from '../../api/RulPartTypeVO';
 import { AP_VALIDATION, AP_VIEW_SETTINGS } from '../../constants';
 import { DetailActions } from '../../shared/detail';
-import { indexById, objectById } from '../../shared/utils';
+import { indexById } from '../../shared/utils';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import { Bindings, DetailStoreState } from '../../types';
 import { BaseRefTableStore } from '../../typings/BaseRefTableStore';
 import { AppState } from '../../typings/store';
-import { sortItems } from '../../utils/ItemInfo';
 import Loading from '../shared/loading/Loading';
 import { DetailBodySection, DetailMultiSection } from './Detail/section';
 import { DetailHeader } from './Detail/header';
-import PartEditModal from './modal/PartEditModal';
+import { showPartCreateModal, showPartEditModal } from './modal/part-edit-modal';
 import i18n from 'components/i18n';
 import { showConfirmDialog } from "components/shared/dialog";
 import './ApDetailPageWrapper.scss';
@@ -367,93 +360,21 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     );
 };
 
-interface ApPartData {
-    partForm: ApPartFormVO;
-}
-
 const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<string>>) => ({
     showConfirmDialog: (message: string) => dispatch(showConfirmDialog(message)),
     showPartEditModal: (
         part: ApPartVO,
-        partType,
+        partType: unknown,
         apId: number,
         apTypeId: number,
         ruleSetId: number,
         scopeId: number,
-        refTables,
+        refTables: unknown,
         descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
         apViewSettings: DetailStoreState<ApViewSettings>,
         parentPartId?: number,
         onUpdateFinish: () => void = () => {},
-    ) => {
-        dispatch(
-            modalDialogShow(
-                this,
-                PartTypeInfo.getPartEditDialogLabel(partType, false),
-                <PartEditModal
-                    partTypeId={objectById(refTables.partTypes.items, partType, 'code').id}
-                    onSubmit={({ partForm }: ApPartData) => {
-                        if (!part.id) { return; }
-                        const submitData = {
-                            items: partForm.items.filter(i => {
-                                if (i['@class'] === '.ApItemEnumVO') {
-                                    return i.specId !== undefined;
-                                } else {
-                                    return (i as ApItemBitVO).value !== undefined;
-                                }
-                            }),
-                            parentPartId: parentPartId,
-                            partId: part.id,
-                            partTypeCode: partType,
-                        } as ApPartFormVO;
-
-                        console.log('SUBMIT EDIT', apId, part.id, submitData);
-
-                        return WebApi.updatePart(apId, part.id, submitData).then(() => {
-                            dispatch(modalDialogHide());
-                            dispatch(registryDetailFetchIfNeeded(apId, true)).then(()=>{
-                                onUpdateFinish();
-                            });
-                        });
-                    }}
-                    apTypeId={apTypeId}
-                    scopeId={scopeId}
-                    initialValues={{
-                        partForm: {
-                            items: part.items?sortItems(
-                                partType,
-                                part.items,
-                                refTables,
-                                descItemTypesMap,
-                                apViewSettings.data!.rules[ruleSetId],
-                            ):[],
-                        },
-                    }}
-                    formData={
-                        {
-                            partId: part.id,
-                            parentPartId: part.partParentId,
-                            partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
-                            items: part.items?sortItems(
-                                partType,
-                                part.items,
-                                refTables,
-                                descItemTypesMap,
-                                apViewSettings.data!.rules[ruleSetId],
-                            ):[],
-                        } as ApPartFormVO
-                    }
-                    parentPartId={part.partParentId}
-                    apId={apId}
-                    partId={part.id}
-                    onClose={() => {
-                        dispatch(modalDialogHide());
-                    }}
-                />,
-                'dialog-lg',
-            ),
-        );
-    },
+    ) => dispatch(showPartEditModal(part, partType, apId, apTypeId, ruleSetId, scopeId, refTables, descItemTypesMap, apViewSettings, parentPartId, onUpdateFinish)),
     showPartCreateModal: (
         partType: RulPartTypeVO,
         apId: number,
@@ -461,58 +382,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
         scopeId: number,
         parentPartId?: number,
         onUpdateFinish: () => void = () => {},
-    ) => {
-        dispatch(
-            modalDialogShow(
-                this,
-                // TODO: není rozmyšleno, kde brát skloňované popisky!
-                PartTypeInfo.getPartEditDialogLabel(partType.code as PartType, true),
-                <PartEditModal
-                    partTypeId={partType.id}
-                    onSubmit={data => {
-                        const formData: ApPartFormVO = data.partForm;
-
-                        const submitData = {
-                            items: formData.items.filter(i => {
-                                if (i['@class'] === '.ApItemEnumVO') {
-                                    return i.specId !== undefined;
-                                } else {
-                                    return (i as ApItemBitVO).value !== undefined;
-                                }
-                            }),
-                            parentPartId: parentPartId,
-                            partTypeCode: partType.code,
-                        } as ApPartFormVO;
-
-                        console.log('SUBMIT ADD', apId, submitData);
-
-                        return WebApi.createPart(apId, submitData).then(() => {
-                            dispatch(modalDialogHide());
-                            dispatch(registryDetailFetchIfNeeded(apId, true)).then(()=>{
-                                onUpdateFinish();
-                            })
-                        });
-                    }}
-                    apTypeId={apTypeId}
-                    scopeId={scopeId}
-                    formData={
-                        {
-                            partTypeCode: partType.code,
-                            items: [],
-                        } as ApPartFormVO
-                    }
-                    parentPartId={parentPartId}
-                    initialValues={{}}
-                    apId={apId}
-                    onClose={() => {
-                        dispatch(modalDialogHide());
-                    }}
-                />,
-                'dialog-lg',
-                dispatch(globalFundTreeInvalidate()),
-            ),
-        );
-    },
+    ) => dispatch(showPartCreateModal(partType, apId, apTypeId, scopeId, parentPartId, onUpdateFinish)),
     setPreferred: async (apId: number, partId: number) => {
         await WebApi.setPreferPartName(apId, partId);
         return dispatch(registryDetailFetchIfNeeded(apId, true));
