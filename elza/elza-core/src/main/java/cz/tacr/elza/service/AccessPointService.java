@@ -1993,9 +1993,14 @@ public class AccessPointService {
     @Transactional(TxType.MANDATORY)
     public void generateSync(final ApAccessPoint accessPoint, final ApPart apPart) {
         boolean successfulGeneration = updatePartValue(apPart);
+        validate(accessPoint, successfulGeneration);
+    }
+
+    private void validate(ApAccessPoint accessPoint, boolean successfulGeneration) {
         ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
         updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
     }
+
 
     public void generateSync(final Integer accessPointId) {
         ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
@@ -2016,8 +2021,7 @@ public class AccessPointService {
 
         Integer prefPartId = accessPoint.getPreferredPartId();
         boolean successfulGeneration = updatePartValues(apState, prefPartId, partList, itemMap, async);
-        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
-        updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
+        validate(accessPoint, successfulGeneration);
     }
 
 

@@ -1822,15 +1822,6 @@ public class RuleService {
 
         RuleSet ruleSet = sdp.getRuleSetByCode(rulRuleSet.getCode());
         List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSet);
-        new ArrayList<>(executeDrls.size());
-        for (String extCode : executeDrls) {
-            RuleSetExtension ruleSetExt = ruleSet.getExtByCode(extCode);
-            if (ruleSetExt != null) {
-                List<RulExtensionRule> extRules = ruleSetExt
-                        .getRulesByType(RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
-                rules.addAll(extRules);
-            }
-        }
 
         try {
             modelValidationRules.execute(rules, modelValidation);
