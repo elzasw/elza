@@ -32,3 +32,10 @@ when $it: ItemType(code == "NM_LANG")
 then
     $is.setPossible();
 end
+
+// Interní doplněk lze použít kdykoliv v Elza
+rule "R_NAM_002.ELZA_1 Použití prvků popisu pro označení"
+when $it: ItemType(code in ("NM_SUP_PRIV"))
+then
+    $it.setPossible();
+end
