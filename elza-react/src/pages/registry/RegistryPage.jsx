@@ -92,7 +92,7 @@ class RegistryPage extends AbstractReactComponent {
         dispatch(refRulDataTypesFetchIfNeeded());
         dispatch(DetailActions.fetchIfNeeded(AP_VIEW_SETTINGS, '', WebApi.getApTypeViewSettings));
 
-        if (props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
+        if (props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL) || props.userDetail.hasOne(perms.AP_SCOPE_WR) || props.userDetail.hasOne(perms.AP_EXTERNAL_WR)) {
             dispatch(apExtSystemListFetchIfNeeded());
         }
 
