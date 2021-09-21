@@ -400,7 +400,7 @@ class RegistryPage extends AbstractReactComponent {
                 </Button>,
             );
         }
-        if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
+        if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL) || userDetail.hasOne(perms.AP_SCOPE_WR)) {
             altActions.push(
                 <Button key="registryImport" onClick={this.handleRegistryImport}>
                     <Icon glyph="fa-download" />
