@@ -647,39 +647,6 @@ public class CamService {
         procCtx.setApChange(null);
     }
 
-    private void changePartInItems(ApPart apPart, List<ApBindingItem> notChangeItems, ApChange apChange) {
-        if (CollectionUtils.isNotEmpty(notChangeItems)) {
-            List<ApItem> itemList = new ArrayList<>();
-            for (ApBindingItem bindingItem : notChangeItems) {
-                ApItem item = bindingItem.getItem();
-                item.setDeleteChange(apChange);
-                itemList.add(item);
-    
-                ApItem newItem = apItemService.copyItem(item, apChange, apPart);
-                itemList.add(newItem);
-    
-                bindingItem.setItem(newItem);
-            }
-            bindingItemRepository.saveAll(notChangeItems);
-            itemRepository.saveAll(itemList);
-        }
-    }
-
-    private void changePartInItems(ApPart apPart, ApChange apChange, ApPart oldPart) {
-        List<ApItem> notConnectedItems = itemRepository.findValidItemsByPart(oldPart);
-        if (CollectionUtils.isNotEmpty(notConnectedItems)) {
-            List<ApItem> itemList = new ArrayList<>();
-            for (ApItem item : notConnectedItems) {
-                item.setDeleteChange(apChange);
-                itemList.add(item);
-
-                ApItem newItem = apItemService.copyItem(item, apChange, apPart);
-                itemList.add(newItem);
-            }
-            itemRepository.saveAll(itemList);
-        }
-    }
-
     // PPy: Toto vyzaduje revizi
     private boolean checkLocalChanges(final ApState state, final ApBindingState bindingState) {
         //TODO fantiš možná není nutné koukat na party
