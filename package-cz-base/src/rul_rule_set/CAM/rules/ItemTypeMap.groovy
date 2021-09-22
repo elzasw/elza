@@ -11,12 +11,12 @@ Set<Integer> itemSpecs = createItemSpecs(DATA_PROVIDER);
 List<ApItem> result = new ArrayList<>();
 ITEMS.each {
     item ->
-    if(itemTypes.contains(item.getItemType().getCode())) {
+    if(itemTypes.contains(item.getItemTypeId())) {
         // check spec
         if(item.getItemSpec()==null) {
             result.add(item);
         } else 
-        if(itemSpecs.contains(item.getItemSpec().getCode())) {
+        if(itemSpecs.contains(item.getItemSpecId())) {
             result.add(item);
         }
     }
