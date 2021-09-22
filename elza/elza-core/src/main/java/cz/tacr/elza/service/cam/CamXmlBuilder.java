@@ -122,7 +122,8 @@ abstract public class CamXmlBuilder {
             // prepare list with first pref.part
             adjustedPartList = new ArrayList<>(partList.size());
             adjustedPartList.add(preferedPart);
-            ArrayList subparts = new ArrayList<>();
+
+            ArrayList<ApPart> subparts = new ArrayList<>();
             for (ApPart part : partList) {
                 if (!part.getPartId().equals(preferedPart.getPartId())) {
                     // check if subpart
@@ -131,10 +132,10 @@ abstract public class CamXmlBuilder {
                     } else {
                         adjustedPartList.add(part);
                     }
-                    // sub parts will be added at the end
-                    adjustedPartList.addAll(subparts);
                 }
             }
+            // sub parts will be added at the end
+            adjustedPartList.addAll(subparts);
         }
         
         // if no parts available -> create item without parts
