@@ -318,7 +318,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                             }
                             : undefined;
                             const apViewSettingRule = apViewSettings.data!.rules[detail.data!.ruleSetId];
-                            if(partType.code === "PT_BODY"){
+                            if(partType.code === "PT_BODY" && parts.length === 1){
                                 return (
                                     <DetailBodySection
                                         key={partType.code}
@@ -339,7 +339,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                 <DetailMultiSection
                                     key={partType.code}
                                     label={partType.name}
-                                    singlePart={!partType.repeatable}
+                                    singlePart={!partType.repeatable && parts.length === 1}
                                     editMode={editMode}
                                     parts={parts}
                                     relatedParts={getRelatedPartSections(parts)}
