@@ -4,17 +4,27 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import cz.tacr.elza.service.IndexWorkService;
 import cz.tacr.elza.test.ApiException;
-import cz.tacr.elza.test.controller.vo.AbstractFilter;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.test.controller.vo.ResultEntityRef;
 import cz.tacr.elza.test.controller.vo.SearchParams;
 
 public class SearchControllerTest extends AbstractControllerTest {
 
+    @Autowired
+    IndexWorkService indexWorkService;
+
     @Test
-    public void searchEntityTest() throws ApiException {
+    public void searchEntityTest() throws ApiException, InterruptedException {
+        // wait for ending lucene indexing
+        while (indexWorkService.isActive()) {
+            Thread.sleep(100);
+        }
+
+        // filter is null
         ResultEntityRef result = searchApi.searchEntity(createSearchParamEmpty());
         assertNotNull(result);
 
@@ -29,7 +39,7 @@ public class SearchControllerTest extends AbstractControllerTest {
 
     @Test
     public void searchArchDescTest() throws ApiException {
-        // empty filter
+        // filter is null
         ResultEntityRef result = searchApi.searchArchDesc(createSearchParamEmpty());
         assertNotNull(result);
 
