@@ -107,4 +107,8 @@ public class IndexWorkService {
         }
         indexWorkRepository.delete(workIdList);
     }
+
+    public boolean isActive() {
+        return indexWorkRepository.count() != 0;
+    }
 }
