@@ -275,7 +275,7 @@ public class CamService {
             ApState state = accessPointService.getStateInternal(accessPoint);
             binding = externalSystemService.createApBinding(Long.toString(batchEntityRecordRev.getEid().getValue()), apExternalSystem);
             bindingState = externalSystemService.createApBindingState(binding, accessPoint, change,
-                                                                      state.getApType().getCode(),
+                                                                      state.getStateApproval().toString(),
                                                                       batchEntityRecordRev.getRev().getValue(),
                                                                       extSyncsQueueItem.getUsername(), null, SyncState.SYNC_OK);
         }
