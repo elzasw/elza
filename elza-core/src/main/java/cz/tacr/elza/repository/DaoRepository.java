@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoPackage;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrRequest;
@@ -72,6 +73,10 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
 
     @Query("SELECT d FROM arr_dao d WHERE d.code in :codes")
     List<ArrDao> findByCodes(@Param(value = "codes") Collection<String> codes);
+
+    @Query("SELECT d FROM arr_dao d join fetch d.daoPackage p WHERE d.code in :codes and p.digitalRepository = :repo")
+    List<ArrDao> findByCodes(@Param(value = "repo") ArrDigitalRepository repository,
+                             @Param(value = "codes") List<String> daoCodes);
 
     @Query("SELECT d FROM arr_dao d" +
             " JOIN arr_dao_link dl ON dl.daoId = d.daoId" +
