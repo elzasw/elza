@@ -315,7 +315,7 @@ public class ArrangementController {
     public SelectNodeResult selectNode(@PathVariable(value = "nodeUuid") final String nodeUuid) {
         ArrNode node;
         if (nodeUuid.length() == 36) {
-            node = arrangementService.findNodeByUuid(nodeUuid);
+            node = arrangementInternalService.findNodeByUuid(nodeUuid);
             if (node == null) {
                 throw new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST)
                         .setId(nodeUuid);

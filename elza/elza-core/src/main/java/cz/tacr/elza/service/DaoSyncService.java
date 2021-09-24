@@ -188,7 +188,7 @@ public class DaoSyncService {
         }
     }
 
-    protected class DaoDesctItemProvider implements DesctItemProvider {
+    public class DaoDesctItemProvider implements DesctItemProvider {
 
         private Items items;
         private String scenario;
