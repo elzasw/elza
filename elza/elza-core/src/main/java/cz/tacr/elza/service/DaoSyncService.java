@@ -198,6 +198,10 @@ public class DaoSyncService {
             this.scenario = scenario;
         }
 
+        public Items getItems() {
+            return items;
+        }
+
         @Override
         public void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
                             MultiplItemChangeContext changeContext) {
@@ -252,12 +256,6 @@ public class DaoSyncService {
             return false;
         }
 
-        private ArrDescItem prepare(Object item) {
-            ArrDescItem di = new ArrDescItem();
-            wsHelper.convertItem(di, item);
-            return di;
-        }
-
         private List<Object> getFiltredItems(Items items, String scenario) {
             // items neobsahují název scénáře
             if (scenario == null) {
@@ -300,6 +298,12 @@ public class DaoSyncService {
     }
 
     // --- methods ---
+
+    private ArrDescItem prepare(Object item) {
+        ArrDescItem di = new ArrDescItem();
+        wsHelper.convertItem(di, item);
+        return di;
+    }
 
     /**
      * Změnit scénář
@@ -777,6 +781,77 @@ public class DaoSyncService {
     private String getItemStringValue(Object item) {
         if (item instanceof ItemString) {
             return ((ItemString) item).getValue();
+        }
+        return null;
+    }
+
+    static public class MatchedScenario {
+
+        String scenario;
+
+        List<ArrDescItem> readOnlyItems = new ArrayList<>();
+
+        public MatchedScenario(final String scenario, final List<ArrDescItem> roItems) {
+            this.scenario = scenario;
+            this.readOnlyItems.addAll(roItems);
+        }
+
+        public String getScenario() {
+            return scenario;
+        }
+
+        public List<ArrDescItem> getReadOnlyItems() {
+            return readOnlyItems;
+        }
+
+    };
+
+    public MatchedScenario matchScenario(Items items, List<ArrDescItem> descItems) {
+        List<Object> itms = items.getStrOrLongOrEnm();
+        String scenario = null;
+
+        List<ArrDescItem> readOnlyItems = new ArrayList<>();
+
+        for (Object itm : itms) {
+            if (isScenario(itm)) {
+                if (scenario != null) {
+                    // Scenario was found
+                    break;
+                }
+                scenario = getItemStringValue(itm);
+            } else if (scenario != null) {
+                ArrDescItem expectedItem = prepare(itm);
+                ArrDescItem descItem = findItem(expectedItem, descItems);
+                if (descItem == null) {
+                    // item not found -> reset check
+                    readOnlyItems.clear();
+                    scenario = null;
+                }
+                // check readonly status
+                if (expectedItem.getReadOnly() != null && expectedItem.getReadOnly()) {
+                    if (descItem.getReadOnly() == null || !descItem.getReadOnly()) {
+                        readOnlyItems.add(descItem);
+                    }
+                }
+            }
+
+        }
+
+        if (scenario == null) {
+            return null;
+        }
+        MatchedScenario ms = new MatchedScenario(scenario, readOnlyItems);
+        return ms;
+    }
+
+    private ArrDescItem findItem(ArrDescItem expectedItem, List<ArrDescItem> descItems) {
+        for (ArrDescItem descItem : descItems) {
+            if (!Objects.equals(expectedItem.getItemTypeId(), descItem.getItemTypeId())) {
+                continue;
+            }
+            if (!Objects.equals(expectedItem.getItemSpecId(), descItem.getItemSpecId())) {
+                continue;
+            }
         }
         return null;
     }
