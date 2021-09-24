@@ -826,11 +826,13 @@ public class DaoSyncService {
                     // item not found -> reset check
                     readOnlyItems.clear();
                     scenario = null;
-                }
-                // check readonly status
-                if (expectedItem.getReadOnly() != null && expectedItem.getReadOnly()) {
-                    if (descItem.getReadOnly() == null || !descItem.getReadOnly()) {
-                        readOnlyItems.add(descItem);
+                } else {
+                    // item found
+                    // check readonly status
+                    if (expectedItem.getReadOnly() != null && expectedItem.getReadOnly()) {
+                        if (descItem.getReadOnly() == null || !descItem.getReadOnly()) {
+                            readOnlyItems.add(descItem);
+                        }
                     }
                 }
             }
