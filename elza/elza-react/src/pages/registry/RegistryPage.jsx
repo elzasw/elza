@@ -508,6 +508,9 @@ class RegistryPage extends AbstractReactComponent {
                 );
             }
 
+            // Vypnuti moznosti propojeni AP s AP v CAMu
+            // TODO: remove related code
+            /*
             if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
               itemActions.push(
                 <Button key="connect-ap" onClick={this.handleConnectAp}>
@@ -518,6 +521,7 @@ class RegistryPage extends AbstractReactComponent {
                 </Button>,
               );
             }
+            */
 
             if (userDetail.hasOne(perms.AP_EXTERNAL_WR)) {
                 itemActions.push(
