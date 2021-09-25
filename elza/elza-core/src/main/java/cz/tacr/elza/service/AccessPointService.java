@@ -1853,8 +1853,9 @@ public class AccessPointService {
         ApBinding binding = bindingState.getBinding();
         dataRecordRefRepository.disconnectBinding(binding);
         bindingItemRepository.deleteByBinding(binding);
-        bindingStateRepository.delete(bindingState);
+        bindingStateRepository.deleteByBinding(binding);
         bindingRepository.delete(binding);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
     public List<String> findRelArchiveEntities(ApAccessPoint accessPoint) {
