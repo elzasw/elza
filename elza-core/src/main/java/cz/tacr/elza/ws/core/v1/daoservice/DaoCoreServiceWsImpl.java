@@ -361,7 +361,7 @@ public class DaoCoreServiceWsImpl {
 
         List<UISettings> impSettings = settingsService.getGlobalSettings(UISettings.SettingsType.DAO_LEVEL_IMPORT);
         if (CollectionUtils.isEmpty(impSettings)) {
-            Log.error("Missing settings: " + UISettings.SettingsType.DAO_LEVEL_IMPORT);
+            logger.error("Missing settings: {}", UISettings.SettingsType.DAO_LEVEL_IMPORT);
             return;
         }
         Validate.isTrue(impSettings.size() == 1);
