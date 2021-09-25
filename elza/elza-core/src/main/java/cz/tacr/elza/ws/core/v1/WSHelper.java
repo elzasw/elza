@@ -163,6 +163,7 @@ public class WSHelper {
             data = du;
             break;
         case STRUCTURED:
+            logger.debug("Finding structured object, uuid: {}", srcItem.getValue());
             ArrStructuredObject structuredObject = structObjService.getExistingStructObj(srcItem.getValue());
             // Validate type of structured object
             Validate.isTrue(structuredObject.getStructuredTypeId() == itemType.getEntity().getStructuredTypeId(),
