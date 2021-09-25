@@ -488,6 +488,7 @@ public class DaoCoreServiceWsImpl {
                                 DigitizationCode.DAO_NOT_FOUND).set("code", dao.getCode());
                     }
                     scenario = ms.getScenario();
+                    logger.debug("Found matching scenario: {}", scenario);
                     List<ArrDescItem> readOnlyItems = ms.getReadOnlyItems();
                     if(CollectionUtils.isNotEmpty(readOnlyItems)) {
                         logger.debug("Changing selected items to readonly, nodeId: {}, items: {}",
