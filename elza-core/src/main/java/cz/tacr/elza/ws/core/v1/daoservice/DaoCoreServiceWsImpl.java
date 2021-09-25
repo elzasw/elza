@@ -501,6 +501,12 @@ public class DaoCoreServiceWsImpl {
                         }
                         this.descriptionItemService.updateDescriptionItems(updatedItems, fundVersion, change);
                     }
+                    List<ArrDescItem> missingItems = ms.getMissingItems();
+                    if (!CollectionUtils.isEmpty(missingItems)) {
+                        logger.debug("Adding items to , nodeId: {}, items: {}",
+                                     linkNode.getNodeId(), missingItems);
+                        this.descriptionItemService.createDescriptionItems(missingItems, linkNode, fundVersion, change);
+                    }
                 }
             }
 

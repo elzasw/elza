@@ -787,17 +787,29 @@ public class DaoSyncService {
 
     static public class MatchedScenario {
 
-        String scenario;
+        final String scenario;
 
-        List<ArrDescItem> readOnlyItems = new ArrayList<>();
+        final List<ArrDescItem> readOnlyItems = new ArrayList<>();
+        final List<ArrDescItem> missingItems = new ArrayList<>();
 
-        public MatchedScenario(final String scenario, final List<ArrDescItem> roItems) {
+        public MatchedScenario(final String scenario) {
             this.scenario = scenario;
-            this.readOnlyItems.addAll(roItems);
         }
 
         public String getScenario() {
             return scenario;
+        }
+
+        public void addMissingItem(ArrDescItem item) {
+            missingItems.add(item);
+        }
+
+        public List<ArrDescItem> getMissingItems() {
+            return missingItems;
+        }
+
+        public void addReadOnlyItem(ArrDescItem item) {
+            readOnlyItems.add(item);
         }
 
         public List<ArrDescItem> getReadOnlyItems() {
@@ -806,43 +818,43 @@ public class DaoSyncService {
 
     };
 
+
     public MatchedScenario matchScenario(Items items, List<ArrDescItem> descItems) {
         List<Object> itms = items.getStrOrLongOrEnm();
-        String scenario = null;
 
-        List<ArrDescItem> readOnlyItems = new ArrayList<>();
+        MatchedScenario ms = null;
 
         for (Object itm : itms) {
             if (isScenario(itm)) {
-                if (scenario != null) {
+                if (ms != null) {
                     // Scenario was found
                     break;
                 }
-                scenario = getItemStringValue(itm);
-            } else if (scenario != null) {
+                String scenario = getItemStringValue(itm);
+                ms = new MatchedScenario(scenario);
+            } else if (ms != null) {
                 ArrDescItem expectedItem = prepare(itm);
                 ArrDescItem descItem = findItem(expectedItem, descItems);
                 if (descItem == null) {
                     // item not found -> reset check
-                    readOnlyItems.clear();
-                    scenario = null;
+                    ms.addMissingItem(expectedItem);
+                } else
+                // check specifications
+                if (!Objects.equals(expectedItem.getItemSpecId(), descItem.getItemSpecId())) {
+                    // specs do not match -> schema cannot be used
+                    ms = null;
                 } else {
                     // item found
                     // check readonly status
                     if (expectedItem.getReadOnly() != null && expectedItem.getReadOnly()) {
                         if (descItem.getReadOnly() == null || !descItem.getReadOnly()) {
-                            readOnlyItems.add(descItem);
+                            ms.addReadOnlyItem(descItem);
                         }
                     }
                 }
             }
-
         }
 
-        if (scenario == null) {
-            return null;
-        }
-        MatchedScenario ms = new MatchedScenario(scenario, readOnlyItems);
         return ms;
     }
 
@@ -851,9 +863,7 @@ public class DaoSyncService {
             if (!Objects.equals(expectedItem.getItemTypeId(), descItem.getItemTypeId())) {
                 continue;
             }
-            if (!Objects.equals(expectedItem.getItemSpecId(), descItem.getItemSpecId())) {
-                continue;
-            }
+            return descItem;
         }
         return null;
     }
