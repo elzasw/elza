@@ -361,6 +361,7 @@ public class DaoCoreServiceWsImpl {
 
         List<UISettings> impSettings = settingsService.getGlobalSettings(UISettings.SettingsType.DAO_LEVEL_IMPORT);
         if (CollectionUtils.isEmpty(impSettings)) {
+            Log.error("Missing settings: " + UISettings.SettingsType.DAO_LEVEL_IMPORT);
             return;
         }
         Validate.isTrue(impSettings.size() == 1);
@@ -382,6 +383,7 @@ public class DaoCoreServiceWsImpl {
                                               final LevelImportSettings lis,
                                               final List<ArrDao> levelDaos,
                                               Map<Integer, String> daoNodeUuidMap) {
+        logger.debug("Prepare DAO levels, fundId: " + fund.getFundId());
         // prepare parent level
         final ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fund.getFundId());
         final ArrNode rootNode = fundVersion.getRootNode();
@@ -436,6 +438,8 @@ public class DaoCoreServiceWsImpl {
         List<ArrDaoLink> daoLinks = new ArrayList<>(levelDaos.size());
         // attach to the parent
         for (ArrDao dao : levelDaos) {
+            logger.debug("Preparing DAO level, fundId: {}, daoId: {}", fund.getFundId().toString(), dao.getDaoId());
+
             Validate.isTrue(dao.getDaoType() == DaoType.LEVEL);
 
             ArrNode linkNode = null;
@@ -453,6 +457,7 @@ public class DaoCoreServiceWsImpl {
                     } else {
                         // Node exists but level is missing
                         // New level has to be created for the existing node
+                        logger.error("Unsupported scenario, node with given UUID already exists, uuid: {}", uuid);
                         Validate.isTrue(false, "Unsupported scenario, node with given UUID already exists, uuid: "
                                 + uuid);
                     }
