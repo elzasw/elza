@@ -3,13 +3,15 @@ package cz.tacr.elza.controller.vo;
 
 public enum ExtAsyncQueueState {
 
-    NEW("Nový"),
+    EXPORT_NEW("Nový v ELZA"),
 
-    // RUNNING("Zpracovávaný"),
+    IMPORT_NEW("Nový v CAM"),
 
-    OK("Zpracovaný OK"),
+    UPDATE("Aktualizace"),
 
-    ERROR("Zpracovaný chyba");
+    ERROR("Chyba"),
+
+    OK("Odesláno");
 
     private String value;
 
