@@ -174,8 +174,6 @@ public class RuleService {
     @Autowired
     private RulesExecutor rulesExecutor;
     @Autowired
-    private SettingsService settingsService;
-    @Autowired
     private LevelRepository levelRepository;
     @Autowired
     private NodeRepository nodeRepository;
@@ -681,27 +679,6 @@ public class RuleService {
 
 		return builder.getResult();
 	}
-
-    /**
-     * Načtení seznamu kódů atributů - implicitní atributy pro zobrazení tabulky hromadných akcí, seznam je seřazený podle
-     * pořadí, které jedefinováno u atributů.
-     * @return seznam kódů
-     */
-    public List<SettingGridView.ItemType> getGridView() {
-
-        // načtený globální oblíbených
-        List<UISettings> gridViews = settingsService.getGlobalSettings(UISettings.SettingsType.GRID_VIEW.toString(),
-                                                                       null);
-
-        for (UISettings gridView : gridViews) {
-            SettingGridView view = SettingGridView.newInstance(gridView);
-            if (CollectionUtils.isNotEmpty(view.getItemTypes())) {
-                return view.getItemTypes();
-            }
-        }
-
-        return null;
-    }
 
     /**
      * Vrací typy atributu.
