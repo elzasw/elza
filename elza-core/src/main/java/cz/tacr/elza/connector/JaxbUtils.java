@@ -43,17 +43,6 @@ public abstract class JaxbUtils {
         }
     }
 
-    public static <T> T unmarshal(final Class<T> classObject, final File file) {
-        try (InputStream in = new FileInputStream(file)) {
-            JAXBContext jaxbContext = JAXBContext.newInstance(classObject);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            return (T) unmarshaller.unmarshal(in);
-        } catch (Exception e) {
-            throw new SystemException("Nepodařilo se načíst objekt " + classObject.getSimpleName() + " ze streamu", e, PackageCode.PARSE_ERROR).set("class", classObject.toString());
-        }
-    }
-
-
     public static <T> File asFile(final T body, Schema schema) {
         Class<?> aClass = body.getClass();
         try {
