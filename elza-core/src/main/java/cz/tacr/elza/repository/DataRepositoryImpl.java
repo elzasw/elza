@@ -391,7 +391,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
 
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
-                    return targetJoin.get(ArrDataRecordRef.FIELD_RECORD);
+                    return targetJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID);
                 }
             };
         } else if (dataClassType.equals(ArrDataStructureRef.class)) {
