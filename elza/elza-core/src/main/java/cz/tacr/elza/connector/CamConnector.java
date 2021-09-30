@@ -1,10 +1,14 @@
 package cz.tacr.elza.connector;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 
 import cz.tacr.cam.schema.cam.UpdatesFromXml;
@@ -29,14 +33,16 @@ import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.QueryResultXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.core.schema.SchemaManager;
-import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.service.ExternalSystemService;
 
 @Service
 public class CamConnector {
+
+    private static final Logger logger = LoggerFactory.getLogger(CamConnector.class);
 
     @Autowired
     private ExternalSystemService externalSystemService;
@@ -47,42 +53,35 @@ public class CamConnector {
     @Autowired
     private SchemaManager schemaManager;
 
-    private static final Logger logger = LoggerFactory.getLogger(CamConnector.class);
-
     /**
      * External system ID to CamInstance map
      */
     private final Map<Integer, CamInstance> instanceMap = new HashMap<>();
 
-
     public QueryResultXml search(final int page,
                                  final int pageSize,
                                  final QueryParamsDef query,
                                  final String externalSystemCode) throws ApiException {
-
         ApiResponse<File> fileApiResponse = getSearchApiByCode(externalSystemCode).searchApsWithHttpInfo(page, pageSize, query);
-        return JaxbUtils.unmarshal(QueryResultXml.class, fileApiResponse.getData());
+        return unmarshal(QueryResultXml.class, fileApiResponse);
     }
 
     public EntityXml getEntityById(final String archiveEntityId,
                                    final ApExternalSystem externalSystem) throws ApiException {
-        EntityApi entityApi = get(externalSystem).getEntityApi();
-        ApiResponse<File> fileApiResponse = entityApi.getEntityByIdWithHttpInfo(archiveEntityId);
-        return JaxbUtils.unmarshal(EntityXml.class, fileApiResponse.getData());
+        ApiResponse<File> fileApiResponse = get(externalSystem).getEntityApi().getEntityByIdWithHttpInfo(archiveEntityId);
+        return unmarshal(EntityXml.class, fileApiResponse);
     }
 
     public EntityXml getEntityById(final String archiveEntityId,
                                    final String externalSystemCode) throws ApiException {
-        ApiResponse<File> fileApiResponse = getEntityApiByCode(externalSystemCode)
-                .getEntityByIdWithHttpInfo(archiveEntityId);
-        return JaxbUtils.unmarshal(EntityXml.class, fileApiResponse.getData());
+        ApiResponse<File> fileApiResponse = getEntityApiByCode(externalSystemCode).getEntityByIdWithHttpInfo(archiveEntityId);
+        return unmarshal(EntityXml.class, fileApiResponse);
     }
 
     public EntitiesXml getEntitiesByIds(final List<String> archiveEntityIds,
                                    final String externalSystemCode) throws ApiException {
-        ApiResponse<File> fileApiResponse = getExportApiByCode(externalSystemCode)
-                .exportSnapshotsWithHttpInfo(archiveEntityIds);
-        return JaxbUtils.unmarshal(EntitiesXml.class, fileApiResponse.getData());
+        ApiResponse<File> fileApiResponse = getExportApiByCode(externalSystemCode).exportSnapshotsWithHttpInfo(archiveEntityIds);
+        return unmarshal(EntitiesXml.class, fileApiResponse);
     }
 
     public BatchUpdateResultXml postNewBatch(final BatchUpdateXml batchUpdate,
@@ -90,21 +89,26 @@ public class CamConnector {
         Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL);
         File xmlFile = JaxbUtils.asFile(batchUpdate, schema);
 
-        ApiResponse<File> fileApiResponse = get(externalSystem).getBatchUpdatesApi()
+        try {
+            ApiResponse<File> fileApiResponse = get(externalSystem)
+                .getBatchUpdatesApi()
                 .postNewBatchWithHttpInfo(xmlFile);
-        return JaxbUtils.unmarshal(BatchUpdateResultXml.class, fileApiResponse.getData());
+            return unmarshal(BatchUpdateResultXml.class, fileApiResponse);
+        } finally {
+            xmlFile.delete();
+        }
     }
 
     public BatchUpdateResultXml getBatchStatus(final String bid,
                                             final String externalSystemCode) throws ApiException {
         ApiResponse<File> fileApiResponse = getBatchUpdatesApiByCode(externalSystemCode).getBatchStatusWithHttpInfo(bid);
-        return JaxbUtils.unmarshal(BatchUpdateResultXml.class, fileApiResponse.getData());
+        return unmarshal(BatchUpdateResultXml.class, fileApiResponse);
     }
 
     public UpdatesFromXml getUpdatesFrom(final String fromTransId,
                                          final String externalSystemCode) throws ApiException {
         ApiResponse<File> fileApiResponse = getUpdatesApiByCode(externalSystemCode).getUpdatesFromWithHttpInfo(fromTransId);
-        return JaxbUtils.unmarshal(UpdatesFromXml.class, fileApiResponse.getData());
+        return unmarshal(UpdatesFromXml.class, fileApiResponse);
     }
 
     public UpdatesXml getUpdatesFromTo(final String fromTransId,
@@ -113,7 +117,7 @@ public class CamConnector {
                                        final Integer pageSize,
                                        final String externalSystemCode) throws ApiException {
         ApiResponse<File> fileApiResponse = getUpdatesApiByCode(externalSystemCode).getUpdatesFromToWithHttpInfo(fromTransId, toTransId, page, pageSize);
-        return JaxbUtils.unmarshal(UpdatesXml.class, fileApiResponse.getData());
+        return unmarshal(UpdatesXml.class, fileApiResponse);
     }
 
     /**
@@ -174,6 +178,18 @@ public class CamConnector {
         return null;
     }
 
+    private <T> T unmarshal(final Class<T> classObject, final ApiResponse<File> apiResponse) {
+        try (InputStream in = new FileInputStream(apiResponse.getData())) {
+            JAXBContext jaxbContext = JAXBContext.newInstance(classObject);
+            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            return (T) unmarshaller.unmarshal(in);
+        } catch (Exception e) {
+            throw new SystemException("Nepodařilo se načíst objekt " + classObject.getSimpleName() + " ze streamu", e, PackageCode.PARSE_ERROR).set("class", classObject.toString());
+        } finally {
+            apiResponse.getData().delete();
+        }
+    }
+
     private SearchApi getSearchApiByCode(String code) {
         return getByCode(code).getSearchApi();
     }
@@ -193,4 +209,5 @@ public class CamConnector {
     private UpdatesApi getUpdatesApiByCode(String code) {
         return getByCode(code).getUpdatesApi();
     }
+
 }
