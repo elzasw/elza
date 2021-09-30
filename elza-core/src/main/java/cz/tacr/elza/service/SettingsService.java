@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.drools.core.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -273,6 +275,26 @@ public class SettingsService {
     public List<UISettings> getGlobalSettings(String settingsType, EntityType entityType, Integer entityId) {
         return settingsRepository.findByUserAndSettingsTypeAndEntityTypeAndEntityId(null, settingsType, entityType, entityId);
     }
+    
+    /**
+     * Načtení seznamu kódů atributů - implicitní atributy pro zobrazení tabulky hromadných akcí, seznam je seřazený podle
+     * pořadí, které jedefinováno u atributů.
+     * @return seznam kódů
+     */
+    public List<SettingGridView.ItemType> getGridView() {
+
+        // načtený globální oblíbených
+        List<UISettings> gridViews = getGlobalSettings(UISettings.SettingsType.GRID_VIEW.toString(), null);
+
+        for (UISettings gridView : gridViews) {
+            SettingGridView view = SettingGridView.newInstance(gridView);
+            if (CollectionUtils.isNotEmpty(view.getItemTypes())) {
+                return view.getItemTypes();
+            }
+        }
+
+        return null;
+    }    
     
     /**
      * Read settings of given type
