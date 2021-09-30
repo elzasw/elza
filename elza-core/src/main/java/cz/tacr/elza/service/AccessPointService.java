@@ -2428,17 +2428,14 @@ public class AccessPointService {
         }
 
         for (ApItem item : itemsFrom) {
-            ApItem newItem = new ApItem();
-            newItem.setCreateChange(change);
-
             ArrData newData = ArrData.makeCopyWithoutId(item.getData());
-            newItem.setData(newData);
-
-            newItem.setItemSpec(item.getItemSpec());
-            newItem.setItemType(item.getItemType());
-            newItem.setObjectId(item.getObjectId());
-            newItem.setPosition(++position);
-            newItem.setPart(partTo);
+            
+            ApItem newItem = apItemService.createItem(partTo, newData, 
+            		item.getItemType(), 
+            		item.getItemSpec(), 
+            		change, 
+            		apItemService.nextItemObjectId(), 
+            		++position);            
 
             dataRepository.save(newData);
             itemRepository.save(newItem);
