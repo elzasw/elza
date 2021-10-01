@@ -1620,8 +1620,8 @@ public class AccessPointService {
             newApScope = getApScope(newScopeId);
             if (!hasApPermission(newApScope, oldStateApproval, newStateApproval)) {
                 throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
-                        .set("accessPointId", accessPoint.getAccessPointId())
-                        .set("scopeId", newApScope.getScopeId());
+                    .set("accessPointId", accessPoint.getAccessPointId())
+                    .set("scopeId", newApScope.getScopeId());
             }
             update = true;
         } else {
@@ -1630,8 +1630,10 @@ public class AccessPointService {
 
         if (!getNextStates(oldApState).contains(newStateApproval)) {
             throw new SystemException("Požadovaný stav entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
-            .set("accessPointId", accessPoint.getAccessPointId())
-            .set("scopeId", newApScope.getScopeId());
+                .set("accessPointId", accessPoint.getAccessPointId())
+                .set("scopeId", newApScope.getScopeId())
+                .set("oldState", oldStateApproval)
+                .set("newState", newStateApproval);
         }
 
         ApType newApType;
@@ -1741,6 +1743,11 @@ public class AccessPointService {
             if (apState.getStateApproval().equals(StateApproval.REV_AMEND)) {
                 result.add(StateApproval.REV_PREPARED);
             }
+        }
+
+        // odstranění neplatných stavů, pokud existuje chybný stav
+        if (apState.getAccessPoint().getState() == ApStateEnum.ERROR) {
+            result.removeAll(Arrays.asList(StateApproval.TO_APPROVE, StateApproval.REV_PREPARED, StateApproval.APPROVED));
         }
 
         return new ArrayList<>(result);
