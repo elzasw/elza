@@ -146,14 +146,14 @@ class FundDataGrid extends AbstractReactComponent {
         if (ruleSet.fetched && descItemTypes.fetched && fund.activeVersion) {
             // Prvotní inicializace zobrazení, pokud ještě grid nebyl zobrazem
             // Určí se seznam viditelných sloupečků a případně i šířka
-            const ruleMap = getMapFromList(ruleSet.items);
-            const rule = ruleMap[fund.activeVersion.ruleSetId];
 
             if (
                 Object.keys(fundDataGrid.visibleColumns).length === 0 &&
                 Object.keys(fundDataGrid.columnInfos).length === 0
             ) {
                 const initData = {visibleColumns: [], columnInfos: []};
+                const ruleMap = getMapFromList(ruleSet.items);
+                const rule = ruleMap[fund.activeVersion.ruleSetId];
                 if (rule.gridViews) {
                     const gwMap = {}; // mapa kódu item type na GridView
                     rule.gridViews.forEach(gw => {
@@ -176,10 +176,6 @@ class FundDataGrid extends AbstractReactComponent {
                 }
                 this.props.dispatch(fundDataInitIfNeeded(versionId, initData));
             }
-
-            WebApi.getItemTypeCodesByRuleSet(rule.code).then(items => {
-                this.setState({itemTypeCodes: items});
-            });
         }
     }
 
@@ -514,7 +510,6 @@ class FundDataGrid extends AbstractReactComponent {
 
     handleColumnSettings() {
         const {fundDataGrid, descItemTypes, fund, ruleSet} = this.props;
-        const {itemTypeCodes} = this.state;
 
         var ruleMap = getMapFromList(ruleSet.items);
         var rule = ruleMap[fund.activeVersion.ruleSetId];
@@ -538,18 +533,23 @@ class FundDataGrid extends AbstractReactComponent {
             };
         });
 
-        this.props.dispatch(
-            modalDialogShow(
-                this,
-                i18n('arr.fund.columnSettings.title'),
-                <DataGridColumnsSettings
-                    onSubmitForm={this.handleChangeColumnsSettings}
-                    columns={columns}
-                    visibleColumns={visibleColumns}
-                    itemTypeCodes={itemTypeCodes}
-                />,
-            ),
-        );
+
+        WebApi.getItemTypeCodesByRuleSet(rule.code).then(items => {
+            // this.setState({itemTypeCodes: items});
+            // const {itemTypeCodes} = items;
+            this.props.dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('arr.fund.columnSettings.title'),
+                    <DataGridColumnsSettings
+                        onSubmitForm={this.handleChangeColumnsSettings}
+                        columns={columns}
+                        visibleColumns={visibleColumns}
+                        itemTypeCodes={items}
+                    />,
+                ),
+            );
+        });
     }
 
     handleFilterSettings(refType, dataType) {
