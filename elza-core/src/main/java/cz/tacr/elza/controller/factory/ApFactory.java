@@ -545,16 +545,13 @@ public class ApFactory {
             sortValues.put(partVO, getSortName(part));
         }
 
-        partVOList.sort(new Comparator<ApPartVO>() {
-            @Override
-            public int compare(ApPartVO p1, ApPartVO p2) {
-                String s1 = sortValues.get(p1);
-                String s2 = sortValues.get(p2);
-                if (s1 == null || s2 == null) {
-                    return 0;
-                }
-                return s1.compareTo(s2);
+        partVOList.sort((p1, p2) -> {
+            String s1 = sortValues.get(p1);
+            String s2 = sortValues.get(p2);
+            if (s1 == null || s2 == null) {
+                return 0;
             }
+            return s1.compareTo(s2);
         });
 
         return partVOList;
