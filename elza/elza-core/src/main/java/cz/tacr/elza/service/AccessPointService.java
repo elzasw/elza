@@ -1073,18 +1073,19 @@ public class AccessPointService {
      * @return
      */
     public boolean updatePartValues(final ApState state,
+                                    final Integer prefPartId,
                                     final List<ApPart> partList,
                                     final Map<Integer, List<ApItem>> itemMap,
                                     final boolean async) {
         boolean success = true;
-        Integer prefPartId = state.getAccessPoint().getPreferredPartId();
         for (ApPart part : partList) {
             List<ApPart> childrenParts = findChildrenParts(part, partList);
             List<ApItem> items = getItemsForParts(part, childrenParts, itemMap);
 
             boolean preferred = prefPartId == null || Objects.equals(prefPartId, part.getPartId());
             GroovyResult result = groovyService.processGroovy(state, part, childrenParts, items, preferred);
-            if (!partService.updatePartValue(part, result, state, async)) {
+            if (!partService.updatePartValue(part, result, state, state.getScope(),
+                                             async, part.getPartId().equals(prefPartId))) {
                 success = false;
             }
         }
@@ -1127,6 +1128,7 @@ public class AccessPointService {
         return result;
     }
 
+    // TODO: move method to DataExchange package and rework to use other methods in this service
     public boolean updatePartValues(final Collection<PartWrapper> partWrappers) {
         StaticDataProvider sdp = staticDataService.getData();
 
@@ -1158,7 +1160,7 @@ public class AccessPointService {
 
             GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items, preferred);
 
-            if (!partService.updatePartValue(apPart, result, state, false)) {
+            if (!partService.updatePartValue(apPart, result, state, state.getScope(), false, preferred)) {
                 success = false;
             }
         }
@@ -1214,7 +1216,7 @@ public class AccessPointService {
         boolean preferred = preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), apPart.getPartId());
         GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items, preferred);
 
-        return partService.updatePartValue(apPart, result, state, false);
+        return partService.updatePartValue(apPart, result, state, state.getScope(), false, preferred);
     }
 
 
@@ -1618,8 +1620,8 @@ public class AccessPointService {
             newApScope = getApScope(newScopeId);
             if (!hasApPermission(newApScope, oldStateApproval, newStateApproval)) {
                 throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
-                        .set("accessPointId", accessPoint.getAccessPointId())
-                        .set("scopeId", newApScope.getScopeId());
+                    .set("accessPointId", accessPoint.getAccessPointId())
+                    .set("scopeId", newApScope.getScopeId());
             }
             update = true;
         } else {
@@ -1628,8 +1630,10 @@ public class AccessPointService {
 
         if (!getNextStates(oldApState).contains(newStateApproval)) {
             throw new SystemException("Požadovaný stav entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
-            .set("accessPointId", accessPoint.getAccessPointId())
-            .set("scopeId", newApScope.getScopeId());
+                .set("accessPointId", accessPoint.getAccessPointId())
+                .set("scopeId", newApScope.getScopeId())
+                .set("oldState", oldStateApproval)
+                .set("newState", newStateApproval);
         }
 
         ApType newApType;
@@ -1739,6 +1743,11 @@ public class AccessPointService {
             if (apState.getStateApproval().equals(StateApproval.REV_AMEND)) {
                 result.add(StateApproval.REV_PREPARED);
             }
+        }
+
+        // odstranění neplatných stavů, pokud existuje chybný stav
+        if (apState.getAccessPoint().getState() == ApStateEnum.ERROR) {
+            result.removeAll(Arrays.asList(StateApproval.TO_APPROVE, StateApproval.REV_PREPARED, StateApproval.APPROVED));
         }
 
         return new ArrayList<>(result);
@@ -1851,8 +1860,9 @@ public class AccessPointService {
         ApBinding binding = bindingState.getBinding();
         dataRecordRefRepository.disconnectBinding(binding);
         bindingItemRepository.deleteByBinding(binding);
-        bindingStateRepository.delete(bindingState);
+        bindingStateRepository.deleteByBinding(binding);
         bindingRepository.delete(binding);
+        accessPointCacheService.createApCachedAccessPoint(accessPointId);
     }
 
     public List<String> findRelArchiveEntities(ApAccessPoint accessPoint) {
@@ -1991,9 +2001,14 @@ public class AccessPointService {
     @Transactional(TxType.MANDATORY)
     public void generateSync(final ApAccessPoint accessPoint, final ApPart apPart) {
         boolean successfulGeneration = updatePartValue(apPart);
+        validate(accessPoint, successfulGeneration);
+    }
+
+    private void validate(ApAccessPoint accessPoint, boolean successfulGeneration) {
         ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
         updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
     }
+
 
     public void generateSync(final Integer accessPointId) {
         ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
@@ -2012,9 +2027,9 @@ public class AccessPointService {
                              final Map<Integer, List<ApItem>> itemMap,
                              boolean async) {
 
-        boolean successfulGeneration = updatePartValues(apState, partList, itemMap, async);
-        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(accessPoint);
-        updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
+        Integer prefPartId = accessPoint.getPreferredPartId();
+        boolean successfulGeneration = updatePartValues(apState, prefPartId, partList, itemMap, async);
+        validate(accessPoint, successfulGeneration);
     }
 
 
@@ -2420,17 +2435,14 @@ public class AccessPointService {
         }
 
         for (ApItem item : itemsFrom) {
-            ApItem newItem = new ApItem();
-            newItem.setCreateChange(change);
-
             ArrData newData = ArrData.makeCopyWithoutId(item.getData());
-            newItem.setData(newData);
-
-            newItem.setItemSpec(item.getItemSpec());
-            newItem.setItemType(item.getItemType());
-            newItem.setObjectId(item.getObjectId());
-            newItem.setPosition(++position);
-            newItem.setPart(partTo);
+            
+            ApItem newItem = apItemService.createItem(partTo, newData, 
+            		item.getItemType(), 
+            		item.getItemSpec(), 
+            		change, 
+            		apItemService.nextItemObjectId(), 
+            		++position);            
 
             dataRepository.save(newData);
             itemRepository.save(newItem);

@@ -515,7 +515,7 @@ var messages = {
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
     "arr.panel.reset": "Zrušit omezení",
     "arr.panel.title.discrepancies": "Nesrovnalosti",
-    "arr.panel.title.visiblePolicies": "Kontroly",
+    "arr.panel.title.visiblePolicies": "Nastavení",
     "arr.panel.title.files": "Přílohy",
     "arr.panel.title.lecturing": "Lektorování",
 
@@ -972,6 +972,7 @@ var messages = {
     "subNodeForm.section.createTemplate": "Vytvořit šablonu",
     "subNodeForm.section.copyAll": "Nastavení opakovaného kopírování hodnot všech PP",
     "subNodeForm.section.useTemplate": "Použít šablonu",
+    "subNodeForm.section.copyUuid": "Kopírovat UUID jednotky popisu",
 
     "subNodeDao.title": "Digitální entity",
     "subNodeDao.dao.action.showDetailAll": "Zobrazit detail digitálních entit",

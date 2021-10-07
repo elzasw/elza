@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -524,97 +525,112 @@ public class ClientFactoryDO {
 
         return null;
     }
-
-    private <T> T getConditionValue(final List<String> conditions, final Class<T> cls) {
-        if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())) {
-            throw new BusinessException("Není předána hodnota podmínky.", BaseCode.PROPERTY_IS_INVALID).set("property", "conditions");
+    
+    private <T> T getFirstValue(final List<String> conditions, Function<String, T> convertor) {
+        if (CollectionUtils.isEmpty(conditions)) {
+            throw new BusinessException("Není předána hodnota podmínky.", BaseCode.PROPERTY_IS_INVALID)
+            	.set("property", "conditions");
         }
-
         String value = conditions.iterator().next();
-
-        return getConditionValue(value, cls);
+        if(StringUtils.isBlank(value)) {
+            throw new BusinessException("Hodnota podmínky je prázdná.", BaseCode.PROPERTY_IS_INVALID)
+        		.set("property", "conditions");        	
+        }
+        return convertor.apply(value);
+    	
     }
 
-    private <T> Interval<T> getConditionValueInterval(final List<String> conditions, final Class<T> cls) {
-        if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())) {
+    private <T> Interval<T> getConditionValueInterval(final List<String> conditions, 
+    		final Function<String, T> convertor) {
+        if (CollectionUtils.isEmpty(conditions)) {
             throw new BusinessException("Není předána hodnota podmínky.", BaseCode.PROPERTY_IS_INVALID).set("property", "conditions");
         }
 
         Iterator<String> iterator = conditions.iterator();
 
         String fromString = iterator.next();
-        T from = getConditionValue(fromString, cls);
+        if (StringUtils.isBlank(fromString)) {
+            throw new BusinessException("Není předána první hodnota intervalu.", BaseCode.PROPERTY_IS_INVALID).set("property", "toString");
+        }
+        T from = convertor.apply(fromString);
 
         String toString = iterator.next();
         if (StringUtils.isBlank(toString)) {
             throw new BusinessException("Není předána druhá hodnota intervalu.", BaseCode.PROPERTY_IS_INVALID).set("property", "toString");
         }
 
-        T to = getConditionValue(toString, cls);
+        T to = convertor.apply(toString);
 
         return new Interval<>(from, to);
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> T getConditionValue(final String value, final Class<T> cls) {
-        T result;
-        if (Double.class.equals(cls)) {
-            result = (T) Double.valueOf(value.replace(',', '.'));
-        } else if (Integer.class.equals(cls)) {
-            result = (T) Integer.valueOf(value);
-        } else if (Long.class.equals(cls)) {
-            result = (T) Long.valueOf(value);
-        } else if (ArrDataUnitdate.class.equals(cls)) {
-            result = (T) ArrDataUnitdate.valueOf(value);
-        } else if (Date.class.equals(cls)) {
-            result = (T) Date.from(LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay(ZoneId.systemDefault()).toInstant());
-        } else { // String
-            result = (T) value.toLowerCase();
-        }
-
-        return result;
-    }
-
     private String getConditionValueString(final List<String> conditions) {
-        return getConditionValue(conditions, String.class);
+        return getFirstValue(conditions, Function.identity());
     }
 
     private Double getConditionValueDouble(final List<String> conditions) {
-        return getConditionValue(conditions, Double.class);
+        return getFirstValue(conditions, value -> Double.valueOf(value.replace(',', '.')));
+    }
+    
+    private static Date valueOfDate(String value) {
+    	return Date.from(LocalDate.parse(value, DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     private Date getConditionValueDate(final List<String> conditions) {
-        return getConditionValue(conditions, Date.class);
+        return getFirstValue(conditions, ClientFactoryDO::valueOfDate);
+    }
+
+    private Interval<Date> getConditionValueIntervalDate(final List<String> conditions) {
+        return getConditionValueInterval(conditions, ClientFactoryDO::valueOfDate);
     }
 
     private Interval<Double> getConditionValueIntervalDouble(final List<String> conditions) {
-        return getConditionValueInterval(conditions, Double.class);
+        return getConditionValueInterval(conditions, value -> Double.valueOf(value.replace(',', '.')));
     }
 
     private Integer getConditionValueInteger(final List<String> conditions) {
-        return getConditionValue(conditions, Integer.class);
+        return getFirstValue(conditions, Integer::valueOf);
     }
 
     private Interval<Integer> getConditionValueIntervalInteger(final List<String> conditions) {
-        return getConditionValueInterval(conditions, Integer.class);
+        return getConditionValueInterval(conditions, Integer::valueOf);
     }
 
     private ArrDataUnitdate getConditionValueUnitdate(final List<String> conditions) {
-        if (CollectionUtils.isEmpty(conditions) || StringUtils.isBlank(conditions.iterator().next())
-        /*|| conditions.size() < 2*/) {
-            throw new BusinessException("Není předána hodnota podmínky.", BaseCode.PROPERTY_IS_INVALID).set("property", "conditions");
+        if (CollectionUtils.isEmpty(conditions)) {
+            throw new BusinessException("Není předána hodnota podmínky.", BaseCode.PROPERTY_IS_INVALID)
+            	.set("property", "conditions");
         }
-        return getConditionValue(conditions, ArrDataUnitdate.class);
+        String firstValue = conditions.iterator().next();
+        if(StringUtils.isBlank(firstValue)) {
+            throw new BusinessException("Hodnota podmínky je prázdná.", BaseCode.PROPERTY_IS_INVALID)
+        	.set("property", "conditions");        	
+        }
+        ArrDataUnitdate result = ArrDataUnitdate.valueOf(firstValue);
+        switch(conditions.size()) {
+        case 1:        	
+        	break;
+        case 2:
+        	String secondValue = conditions.get(1);
+        	if(!StringUtils.isBlank(secondValue)) {
+        		ArrDataUnitdate to = ArrDataUnitdate.valueOf(secondValue);
+        		result.setNormalizedTo(to.getNormalizedTo());
+        		result.setValueTo(to.getValueTo());
+        		result.setValueToEstimated(to.getValueToEstimated());
+        	}
+        	break;
+        default:
+            throw new BusinessException("Není předána hodnota podmínky.", BaseCode.PROPERTY_IS_INVALID)
+        			.set("property", "conditions")
+        			.set("coount", conditions.size());
+        }
+        return result;
     }
 
     private Interval<Long> getConditionValueIntervalLong(final List<String> conditions) {
         ArrDataUnitdate unitdate = getConditionValueUnitdate(conditions);
 
         return new Interval<>(unitdate.getNormalizedFrom(), unitdate.getNormalizedTo());
-    }
-
-    private Interval<Date> getConditionValueIntervalDate(final List<String> conditions) {
-        return new Interval<>(getConditionValue(conditions.get(0), Date.class), getConditionValue(conditions.get(1), Date.class));
     }
 
     /**

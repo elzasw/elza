@@ -15,11 +15,14 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
     @Query("SELECT bis FROM ap_binding_state bis JOIN bis.binding WHERE bis.accessPoint = ?1 and bis.deleteChangeId is null")
     List<ApBindingState> findByAccessPoint(ApAccessPoint accessPoint);
 
-    @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding b JOIN FETCH b.apExternalSystem WHERE bis.accessPoint IN :accessPoints and bis.deleteChangeId IS NULL")
+    @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding b JOIN FETCH b.apExternalSystem WHERE bis.accessPoint IN :accessPoints AND bis.deleteChangeId IS NULL")
     List<ApBindingState> findByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
 
     @Query("SELECT bis FROM ap_binding_state bis WHERE bis.binding = :binding AND bis.deleteChangeId IS NULL")
     Optional<ApBindingState> findActiveByBinding(@Param("binding") ApBinding binding);
+
+    @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding bin WHERE bis.accessPoint IN :accessPoints AND bin.apExternalSystem = :externalSystem AND bis.deleteChangeId IS NULL")
+    List<ApBindingState> findByAccessPointsAndExternalSystem(@Param("accessPoints") Collection<ApAccessPoint> accessPoints, @Param("externalSystem") ApExternalSystem externalSystem);
 
     @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding bin WHERE bis.accessPoint = :accessPoint AND bis.deleteChangeId IS NULL AND bin.apExternalSystem = :externalSystem")
     ApBindingState findByAccessPointAndExternalSystem(@Param("accessPoint") ApAccessPoint accessPoint, @Param("externalSystem") ApExternalSystem externalSystem);
@@ -47,4 +50,6 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
 
     @Query("SELECT bis FROM ap_binding_state bis JOIN bis.accessPoint WHERE bis.deleteChangeId IS NULL AND bis.binding IN :bidings")
     List<ApBindingState> findByBindings(@Param("bidings") Collection<ApBinding> bs);
+
+    void deleteByBinding(ApBinding binding);
 }

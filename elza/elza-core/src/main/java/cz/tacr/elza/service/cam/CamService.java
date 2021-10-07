@@ -275,9 +275,9 @@ public class CamService {
             ApState state = accessPointService.getStateInternal(accessPoint);
             binding = externalSystemService.createApBinding(Long.toString(batchEntityRecordRev.getEid().getValue()), apExternalSystem);
             bindingState = externalSystemService.createApBindingState(binding, accessPoint, change,
-                                                                      state.getApType().getCode(),
+                                                                      state.getStateApproval().toString(),
                                                                       batchEntityRecordRev.getRev().getValue(),
-                                                                      extSyncsQueueItem.getUsername(), null);
+                                                                      extSyncsQueueItem.getUsername(), null, SyncState.SYNC_OK);
         }
         
         // Create bindings        
@@ -325,6 +325,7 @@ public class CamService {
                                                         final ApState state,
                                                       final ApExternalSystem apExternalSystem) {
 
+        // TODO: rework to use ap_cached_access_point
         List<ApPart> partList = partService.findPartsByAccessPoint(state.getAccessPoint());
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(i -> i.getPartId()));
@@ -589,7 +590,7 @@ public class CamService {
                                                                           entity.getEns().name(),
                                                                           entity.getRevi().getRid().getValue(),
                                                                           entity.getRevi().getUsr().getValue(),
-                                                                          null);
+                                                                          null, SyncState.SYNC_OK);
                 log.warn("Entity with uuid:{} already exists (id={}), automatically connected with external entity",
                          entity.getEuid().getValue(), accessPoint.getAccessPointId());
                 // if async -> has local changes -> mark as not synced
@@ -644,39 +645,6 @@ public class CamService {
         }
 
         procCtx.setApChange(null);
-    }
-
-    private void changePartInItems(ApPart apPart, List<ApBindingItem> notChangeItems, ApChange apChange) {
-        if (CollectionUtils.isNotEmpty(notChangeItems)) {
-            List<ApItem> itemList = new ArrayList<>();
-            for (ApBindingItem bindingItem : notChangeItems) {
-                ApItem item = bindingItem.getItem();
-                item.setDeleteChange(apChange);
-                itemList.add(item);
-    
-                ApItem newItem = apItemService.copyItem(item, apChange, apPart);
-                itemList.add(newItem);
-    
-                bindingItem.setItem(newItem);
-            }
-            bindingItemRepository.saveAll(notChangeItems);
-            itemRepository.saveAll(itemList);
-        }
-    }
-
-    private void changePartInItems(ApPart apPart, ApChange apChange, ApPart oldPart) {
-        List<ApItem> notConnectedItems = itemRepository.findValidItemsByPart(oldPart);
-        if (CollectionUtils.isNotEmpty(notConnectedItems)) {
-            List<ApItem> itemList = new ArrayList<>();
-            for (ApItem item : notConnectedItems) {
-                item.setDeleteChange(apChange);
-                itemList.add(item);
-
-                ApItem newItem = apItemService.copyItem(item, apChange, apPart);
-                itemList.add(newItem);
-            }
-            itemRepository.saveAll(itemList);
-        }
     }
 
     // PPy: Toto vyzaduje revizi

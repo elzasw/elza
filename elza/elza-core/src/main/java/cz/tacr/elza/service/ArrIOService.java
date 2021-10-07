@@ -64,6 +64,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -100,9 +101,6 @@ public class ArrIOService {
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
-
-    @Autowired
-    private ItemService itemService;
 
     @Autowired
     private ItemRepository itemRepository;
@@ -237,7 +235,7 @@ public class ArrIOService {
         jsonTable.setValue(table);
 
         // kontrola datových typů tabulky
-        itemService.checkJsonTableData(table, (List<ElzaColumn>) descItemType.getViewDefinition());
+        DescItemFactory.checkJsonTableData(table, (List<ElzaColumn>) descItemType.getViewDefinition());
 
         return item;
     }

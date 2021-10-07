@@ -157,6 +157,8 @@ public class Record {
             return;
         }
 
+        // TODO get from cache + using sort
+        
         List<ApPart> apParts = partRepository.findValidPartByAccessPoint(ap);
         List<ApItem> apItems = itemRepository.findValidItemsByAccessPoint(ap);
         Map<Integer, ApIndex> indexMap = ObjectListIterator.findIterable(apParts, p -> indexRepository.findByPartsAndIndexType(p, DISPLAY_NAME)).stream()

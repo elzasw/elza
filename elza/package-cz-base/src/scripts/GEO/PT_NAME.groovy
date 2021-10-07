@@ -5,7 +5,6 @@ import cz.tacr.elza.groovy.GroovyPart
 import cz.tacr.elza.groovy.GroovyResult
 import cz.tacr.elza.groovy.GroovyUtils
 
-
 return generate(PART)
 
 static GroovyResult generate(final GroovyPart part) {
@@ -22,6 +21,7 @@ static GroovyResult generate(final GroovyPart part) {
     GroovyResult result = new GroovyResult()
     def r = base.build();
     result.setDisplayName(r)
+    result.setSortName(r)
     if (part.isPreferred()) {
         result.setPtPreferName(r)
     }

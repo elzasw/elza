@@ -188,7 +188,7 @@ public class DaoSyncService {
         }
     }
 
-    protected class DaoDesctItemProvider implements DesctItemProvider {
+    public class DaoDesctItemProvider implements DesctItemProvider {
 
         private Items items;
         private String scenario;
@@ -196,6 +196,10 @@ public class DaoSyncService {
         public DaoDesctItemProvider(Items items, String scenario) {
             this.items = items;
             this.scenario = scenario;
+        }
+
+        public Items getItems() {
+            return items;
         }
 
         @Override
@@ -252,12 +256,6 @@ public class DaoSyncService {
             return false;
         }
 
-        private ArrDescItem prepare(Object item) {
-            ArrDescItem di = new ArrDescItem();
-            wsHelper.convertItem(di, item);
-            return di;
-        }
-
         private List<Object> getFiltredItems(Items items, String scenario) {
             // items neobsahují název scénáře
             if (scenario == null) {
@@ -300,6 +298,12 @@ public class DaoSyncService {
     }
 
     // --- methods ---
+
+    private ArrDescItem prepare(Object item) {
+        ArrDescItem di = new ArrDescItem();
+        wsHelper.convertItem(di, item);
+        return di;
+    }
 
     /**
      * Změnit scénář
@@ -777,6 +781,89 @@ public class DaoSyncService {
     private String getItemStringValue(Object item) {
         if (item instanceof ItemString) {
             return ((ItemString) item).getValue();
+        }
+        return null;
+    }
+
+    static public class MatchedScenario {
+
+        final String scenario;
+
+        final List<ArrDescItem> readOnlyItems = new ArrayList<>();
+        final List<ArrDescItem> missingItems = new ArrayList<>();
+
+        public MatchedScenario(final String scenario) {
+            this.scenario = scenario;
+        }
+
+        public String getScenario() {
+            return scenario;
+        }
+
+        public void addMissingItem(ArrDescItem item) {
+            missingItems.add(item);
+        }
+
+        public List<ArrDescItem> getMissingItems() {
+            return missingItems;
+        }
+
+        public void addReadOnlyItem(ArrDescItem item) {
+            readOnlyItems.add(item);
+        }
+
+        public List<ArrDescItem> getReadOnlyItems() {
+            return readOnlyItems;
+        }
+
+    };
+
+
+    public MatchedScenario matchScenario(Items items, List<ArrDescItem> descItems) {
+        List<Object> itms = items.getStrOrLongOrEnm();
+
+        MatchedScenario ms = null;
+
+        for (Object itm : itms) {
+            if (isScenario(itm)) {
+                if (ms != null) {
+                    // Scenario was found
+                    break;
+                }
+                String scenario = getItemStringValue(itm);
+                ms = new MatchedScenario(scenario);
+            } else if (ms != null) {
+                ArrDescItem expectedItem = prepare(itm);
+                ArrDescItem descItem = findItem(expectedItem, descItems);
+                if (descItem == null) {
+                    // item not found -> reset check
+                    ms.addMissingItem(expectedItem);
+                } else
+                // check specifications
+                if (!Objects.equals(expectedItem.getItemSpecId(), descItem.getItemSpecId())) {
+                    // specs do not match -> schema cannot be used
+                    ms = null;
+                } else {
+                    // item found
+                    // check readonly status
+                    if (expectedItem.getReadOnly() != null && expectedItem.getReadOnly()) {
+                        if (descItem.getReadOnly() == null || !descItem.getReadOnly()) {
+                            ms.addReadOnlyItem(descItem);
+                        }
+                    }
+                }
+            }
+        }
+
+        return ms;
+    }
+
+    private ArrDescItem findItem(ArrDescItem expectedItem, List<ArrDescItem> descItems) {
+        for (ArrDescItem descItem : descItems) {
+            if (!Objects.equals(expectedItem.getItemTypeId(), descItem.getItemTypeId())) {
+                continue;
+            }
+            return descItem;
         }
         return null;
     }

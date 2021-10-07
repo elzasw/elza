@@ -122,11 +122,20 @@ abstract public class CamXmlBuilder {
             // prepare list with first pref.part
             adjustedPartList = new ArrayList<>(partList.size());
             adjustedPartList.add(preferedPart);
+
+            ArrayList<ApPart> subparts = new ArrayList<>();
             for (ApPart part : partList) {
                 if (!part.getPartId().equals(preferedPart.getPartId())) {
-                    adjustedPartList.add(part);
+                    // check if subpart
+                    if (part.getParentPartId() != null) {
+                        subparts.add(part);
+                    } else {
+                        adjustedPartList.add(part);
+                    }
                 }
             }
+            // sub parts will be added at the end
+            adjustedPartList.addAll(subparts);
         }
         
         // if no parts available -> create item without parts
@@ -170,11 +179,12 @@ abstract public class CamXmlBuilder {
             List<ApItem> srcPartItems = itemMap.get(part.getPartId());
 
             // filter parts without mapping
-            List<ApItem> partItems = filterOutItemsWithoutExtSysMapping(srcPartItems);
+            List<ApItem> partItems = filterOutItemsWithoutExtSysMapping(part, srcPartItems);
             if (CollectionUtils.isNotEmpty(srcPartItems) && CollectionUtils.isEmpty(partItems)) {
                 log.debug("Ignoring part, missing mapping to external system, partId={}", part.getPartId());
                 continue;
             }
+
             PartXml partXml = createPart(part, partItems);
             partXmlList.add(partXml);
             availableParts.add(partXml.getPid().getValue());
@@ -310,50 +320,22 @@ abstract public class CamXmlBuilder {
 
     /**
      * Metoda odfiltruje itemy, které nemají mapování v externím systému
+     * 
+     * @param part
      *
-     * @param itemList itemy k filtrování
-     * @param externalSystemTypeCode kód typu externího systému
+     * @param itemList
+     *            itemy k filtrování
+     * @param externalSystemTypeCode
+     *            kód typu externího systému
      * @return kolekce itemů k poslání do externího systému
      */
-    protected List<ApItem> filterOutItemsWithoutExtSysMapping(List<ApItem> itemList) {
-        List<ApItem> filteredItems = new ArrayList<>();
-
-        if (CollectionUtils.isNotEmpty(itemList)) {
-            for (ApItem item : itemList) {
-                if (doesItemHaveExtSysMapping(item)) {
-                    filteredItems.add(item);
-                }
-            }
-        }
+    protected List<ApItem> filterOutItemsWithoutExtSysMapping(ApPart part, List<ApItem> itemList) {
+        List<ApItem> filteredItems = groovyService.filterOutgoingItems(externalSystemType.toString(),
+                                                                       part,
+                                                                       itemList,
+                                                                       scope.getRuleSetId());
 
         return filteredItems;
     }
 
-    /**
-     * Metoda ověří zda-li má typ a specifikace itemu mapování do externího systému
-     *
-     * @param item item k filtrování
-     * @param externalSystemTypeCode kód typu externího systému
-     * @return
-     */
-    protected boolean doesItemHaveExtSysMapping(ApItem item) {
-        ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
-
-        String camItemTypeCode = groovyService.findItemTypeCode(externalSystemType.toString(), itemType.getCode(),
-                                                                scope.getRuleSetId());
-        if (camItemTypeCode == null) {
-            return false;
-        }
-
-        if (item.getItemSpecId() != null) {
-            RulItemSpec itemSpec = itemType.getItemSpecById(item.getItemSpecId());
-            String camItemSpecCode = groovyService.findItemSpecCode(externalSystemType.toString(),
-                                                                    itemSpec.getCode(), scope.getRuleSetId());
-            if (camItemSpecCode == null) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 }

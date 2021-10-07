@@ -68,6 +68,7 @@ import {DisplayType} from '../../constants';
 import Moment from 'moment';
 import * as groups from '../../actions/refTables/groups';
 import {JAVA_ATTR_CLASS} from '../../constants';
+import {WebApi} from "../../actions/WebApi";
 
 class FundDataGrid extends AbstractReactComponent {
     dataGridRef = null;
@@ -116,7 +117,7 @@ class FundDataGrid extends AbstractReactComponent {
 
         var colState = this.getColsStateFromProps(props, {fundDataGrid: {}});
         if (!colState) {
-            colState = {cols: []};
+            colState = {cols: [], itemTypeCodes: []};
         }
 
         this.state = colState;
@@ -145,6 +146,7 @@ class FundDataGrid extends AbstractReactComponent {
         if (ruleSet.fetched && descItemTypes.fetched && fund.activeVersion) {
             // Prvotní inicializace zobrazení, pokud ještě grid nebyl zobrazem
             // Určí se seznam viditelných sloupečků a případně i šířka
+
             if (
                 Object.keys(fundDataGrid.visibleColumns).length === 0 &&
                 Object.keys(fundDataGrid.columnInfos).length === 0
@@ -527,20 +529,27 @@ class FundDataGrid extends AbstractReactComponent {
                 id: refType.id,
                 name: refType.name,
                 desc: refType.description,
+                code: refType.code,
             };
         });
 
-        this.props.dispatch(
-            modalDialogShow(
-                this,
-                i18n('arr.fund.columnSettings.title'),
-                <DataGridColumnsSettings
-                    onSubmitForm={this.handleChangeColumnsSettings}
-                    columns={columns}
-                    visibleColumns={visibleColumns}
-                />,
-            ),
-        );
+
+        WebApi.getItemTypeCodesByRuleSet(rule.code).then(items => {
+            // this.setState({itemTypeCodes: items});
+            // const {itemTypeCodes} = items;
+            this.props.dispatch(
+                modalDialogShow(
+                    this,
+                    i18n('arr.fund.columnSettings.title'),
+                    <DataGridColumnsSettings
+                        onSubmitForm={this.handleChangeColumnsSettings}
+                        columns={columns}
+                        visibleColumns={visibleColumns}
+                        itemTypeCodes={items}
+                    />,
+                ),
+            );
+        });
     }
 
     handleFilterSettings(refType, dataType) {
@@ -656,6 +665,8 @@ class FundDataGrid extends AbstractReactComponent {
                         data.replaceSpec,
                         nodes,
                         selectionType,
+                        data.replaceValue,
+                        data.values.ids,
                     ),
                 );
             }
@@ -671,6 +682,7 @@ class FundDataGrid extends AbstractReactComponent {
                     onSubmitForm={submit}
                     allItemsCount={fundDataGrid.items.length}
                     checkedItemsCount={fundDataGrid.selectedIds.length}
+                    versionId={versionId}
                 />,
             ),
         );

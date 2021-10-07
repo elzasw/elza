@@ -150,6 +150,7 @@ import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.SettingsService;
 import ma.glasnost.orika.CustomMapper;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.MappingContext;
@@ -178,13 +179,13 @@ public class ConfigMapperConfiguration {
     private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
-    private RuleService ruleService;
-
-    @Autowired
     private PartTypeRepository partTypeRepository;
 
     @Autowired
     private ArrRefTemplateRepository refTemplateRepository;
+    
+    @Autowired
+    private SettingsService settingsService;    
 
     /**
      * @return Tovární třída.
@@ -469,7 +470,7 @@ public class ConfigMapperConfiguration {
                     @Override
                     public void mapAtoB(final RulRuleSet rulRuleSet, final RulRuleSetVO rulRuleSetVO, final MappingContext context) {
                         super.mapAtoB(rulRuleSet, rulRuleSetVO, context);
-                        List<SettingGridView.ItemType> itemTypes = ruleService.getGridView();
+                        List<SettingGridView.ItemType> itemTypes = settingsService.getGridView();
                         if (itemTypes != null) {
                             List<RulRuleSetVO.GridView> gridViews = new ArrayList<>(itemTypes.size());
                             for (SettingGridView.ItemType itemType : itemTypes) {
@@ -858,12 +859,12 @@ public class ConfigMapperConfiguration {
     public class LocalDateTimeConverter extends BidirectionalConverter<LocalDateTime, Date> {
 
         @Override
-        public Date convertTo(final LocalDateTime localDateTime, final Type<Date> type) {
+        public Date convertTo(final LocalDateTime localDateTime, final Type<Date> type, MappingContext mappingContext) {
             return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
         }
 
         @Override
-        public LocalDateTime convertFrom(final Date date, final Type<LocalDateTime> type) {
+        public LocalDateTime convertFrom(final Date date, final Type<LocalDateTime> type, MappingContext mappingContext) {
             return LocalDateTime.from(LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()));
         }
     }
@@ -874,12 +875,12 @@ public class ConfigMapperConfiguration {
     public class OffsetDateTimeConverter extends BidirectionalConverter<OffsetDateTime, Date> {
 
         @Override
-        public Date convertTo(final OffsetDateTime localDateTime, final Type<Date> type) {
+        public Date convertTo(final OffsetDateTime localDateTime, final Type<Date> type, MappingContext mappingContext) {
             return Date.from(localDateTime.toInstant());
         }
 
         @Override
-        public OffsetDateTime convertFrom(final Date date, final Type<OffsetDateTime> type) {
+        public OffsetDateTime convertFrom(final Date date, final Type<OffsetDateTime> type, MappingContext mappingContext) {
             return OffsetDateTime.from(date.toInstant());
         }
     }
@@ -887,12 +888,12 @@ public class ConfigMapperConfiguration {
     public class LocalDateConverter extends BidirectionalConverter<LocalDate, LocalDate> {
 
         @Override
-        public LocalDate convertTo(LocalDate source, Type<LocalDate> destinationType) {
+        public LocalDate convertTo(LocalDate source, Type<LocalDate> destinationType, MappingContext mappingContext) {
             return (LocalDate.from(source));
         }
 
         @Override
-        public LocalDate convertFrom(LocalDate source, Type<LocalDate> destinationType) {
+        public LocalDate convertFrom(LocalDate source, Type<LocalDate> destinationType, MappingContext mappingContext) {
             return (LocalDate.from(source));
         }
 
@@ -903,13 +904,13 @@ public class ConfigMapperConfiguration {
 
         @Override
         public Integer convertTo(final RulItemType.Type type,
-                                 final Type<Integer> type2) {
+                                 final Type<Integer> type2, MappingContext mappingContext) {
             return RuleFactory.convertType(type);
         }
 
         @Override
         public RulItemType.Type convertFrom(final Integer type,
-                                            final Type<RulItemType.Type> type2) {
+                                            final Type<RulItemType.Type> type2, MappingContext mappingContext) {
             switch (type) {
                 case 3:
                     return RulItemType.Type.REQUIRED;
@@ -931,13 +932,13 @@ public class ConfigMapperConfiguration {
 
         @Override
         public Integer convertTo(final RulItemSpec.Type type,
-                                 final Type<Integer> type2) {
+                                 final Type<Integer> type2, MappingContext mappingContext) {
             return RuleFactory.convertType(type);
         }
 
         @Override
         public RulItemSpec.Type convertFrom(final Integer type,
-                                            final Type<RulItemSpec.Type> type2) {
+                                            final Type<RulItemSpec.Type> type2, MappingContext mappingContext) {
             switch (type) {
                 case 3:
                     return RulItemSpec.Type.REQUIRED;

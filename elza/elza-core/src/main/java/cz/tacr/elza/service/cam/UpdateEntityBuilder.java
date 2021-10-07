@@ -33,7 +33,6 @@ import cz.tacr.cam.schema.cam.UpdateItemsXml;
 import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
-import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalSystem;
@@ -218,7 +217,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         }
         */
 
-        itemList = filterOutItemsWithoutExtSysMapping(itemList);
+        itemList = filterOutItemsWithoutExtSysMapping(changedPart.getPart(), itemList);
         if (CollectionUtils.isNotEmpty(itemList)) {
             // filter bindined items
             List<ApItem> filteredList = itemList.stream().filter(i -> !bi.isBinded(i))
