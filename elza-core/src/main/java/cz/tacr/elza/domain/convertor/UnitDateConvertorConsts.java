@@ -37,4 +37,8 @@ public class UnitDateConvertorConsts {
      */
     public static final String ESTIMATED_TEMPLATE = "[%s]";
 
+    /**
+     * Maximální negativní datum 5 x 1024 let
+     */
+    public static final long MAX_NEGATIVE_DATE = 60L*60L*24L*365L*1024L*5L;
 }
