@@ -150,9 +150,9 @@ public class ExtSyncsQueueItem {
 
         UPDATE("Aktualizace"),
 
-        OK("Odesláno"),
+        ERROR("Chyba"),
 
-        ERROR("Chyba");
+        OK("Odesláno");
 
         private String value;
 

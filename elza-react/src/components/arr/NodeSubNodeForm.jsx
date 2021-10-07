@@ -471,6 +471,9 @@ class NodeSubNodeForm extends AbstractReactComponent {
                             <Dropdown.Item eventKey="2" onClick={this.handleUseTemplate}>
                                 {i18n('subNodeForm.section.useTemplate')}
                             </Dropdown.Item>
+                            <Dropdown.Item eventKey="3" onClick={this.handleCopyUuid}>
+                                {i18n('subNodeForm.section.copyUuid')}
+                            </Dropdown.Item>
                             { !this.subNodeHasDescItemClass(ItemClass.URI_REF) &&
                                 <>
                                     <Dropdown.Divider/>
@@ -737,6 +740,16 @@ class NodeSubNodeForm extends AbstractReactComponent {
                 />,
             ),
         );
+    };
+
+    handleCopyUuid = () => {
+        const {selectedSubNode} = this.props;
+        const el = document.createElement('textarea');
+        el.value = selectedSubNode.uuid;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
     };
 
     processItemType = (

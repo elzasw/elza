@@ -6,6 +6,7 @@ import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.RulExportFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
+import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -207,5 +208,21 @@ public class RuleControllerTest extends AbstractControllerTest {
 
         Assert.assertEquals("SRD_TEST_EXPORT_FILTER", rulExportFilterVOS.get(0).getCode());
         Assert.assertEquals("SRD_TEST_EXPORT_FILTER.yaml", rulExportFilterVOS.get(0).getFilename());
+    }
+
+    @Test
+    public void getItemTypesByRuleSetTest() {
+        List<RulRuleSetVO> ruleSetVOList = getRuleSets();
+        RulRuleSetVO ruleSetVO = null;
+
+        for (RulRuleSetVO rulRuleSetVO : ruleSetVOList) {
+            if (rulRuleSetVO.getCode().equals("SIMPLE-DEV")) {
+                ruleSetVO = rulRuleSetVO;
+                break;
+            }
+        }
+
+        List<String> itemTypeCodes = getItemTypeCodesByRuleSet(ruleSetVO);
+        Assert.assertEquals(3, itemTypeCodes.size());
     }
 }

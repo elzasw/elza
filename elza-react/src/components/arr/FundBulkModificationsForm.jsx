@@ -7,9 +7,10 @@ import {Col, Form, FormCheck, FormGroup, FormLabel, Modal} from 'react-bootstrap
 import {Button} from '../ui';
 import {decorateFormField, submitForm} from 'components/form/FormUtils';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes';
-import {getSpecsIds} from 'components/arr/ArrUtils';
+import {getSpecsIds, hasDescItemTypeValue} from 'components/arr/ArrUtils';
 import './FundBulkModificationsForm.scss';
 import SimpleCheckListBox from './SimpleCheckListBox';
+import ValueCheckListBox from './ValueCheckListBox';
 import {validateInt} from '../validate';
 import DescItemUnitdate from './nodeForm/DescItemUnitdate';
 import DescItemRecordRef from './nodeForm/DescItemRecordRef';
@@ -19,6 +20,7 @@ import {getMapFromList} from './../../stores/app/utils';
 import FormInputField from '../shared/form/FormInputField';
 import FF from '../shared/form/FF';
 import ReduxFormFieldErrorDecorator from '../shared/form/ReduxFormFieldErrorDecorator';
+import {WebApi} from 'actions/index';
 
 const getDefaultOperationType = props => {
     const {dataType} = props;
@@ -56,6 +58,13 @@ const getDefaultItemsArea = props => {
  * Formulář hledání a nahrazení.
  */
 class FundBulkModificationsForm extends AbstractReactComponent {
+
+    state = {
+        allValueItems: [],
+        valueItems: [],
+        valueSearchText: '',
+    };
+
     /**
      * Validace formuláře.
      */
@@ -127,6 +136,10 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     errors.replaceSpec = i18n('global.validation.required');
                 }
                 break;
+            case 'setValue':
+                if (!values.replaceValue) {
+                    errors.replaceValue = i18n('global.validation.required');
+                }
             default:
                 break;
         }
@@ -142,6 +155,10 @@ class FundBulkModificationsForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.props.dispatch(descItemTypesFetchIfNeeded());
+
+        if (this.supportSetValue) {
+            this.callValueSearch('');
+        }
     }
 
     supportFindAndReplace = () => {
@@ -193,6 +210,22 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         return refType.useSpecification;
     };
 
+    supportSetValue = () => {
+        const {dataType} = this.props;
+        let result;
+
+        switch (dataType.code) {
+            case 'STRUCTURED':
+                result = true;
+                break;
+            default:
+                result = false;
+                break;
+        }
+
+        return result;
+    };
+
     submitReduxForm = (values, dispatch) =>
         submitForm(FundBulkModificationsForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
@@ -203,6 +236,45 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         const {dataType} = this.props;
         return dataType.code === 'ENUM';
     };
+
+    callValueSearch() {
+        const {versionId, refType, dataType} = this.props;
+        const {valueSearchText} = this.state;
+
+        if (!hasDescItemTypeValue(dataType)) {
+            // pokud nemá hodnotu, nemůžeme volat
+            return;
+        }
+
+        if (dataType.code === "STRUCTURED") {
+
+            WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, null, 200).then(json => {
+                var valueItems = json.map(i => ({id: i, name: i}));
+
+                if (
+                    valueSearchText === '' ||
+                    i18n('arr.fund.filterSettings.value.empty').toLowerCase().indexOf(valueSearchText) !== -1
+                ) {
+
+                    this.setState({
+                        allValueItems: valueItems,
+                    });
+                    // u prázdného hledání a případně u hledání prázdné hodnoty doplňujeme null položku
+                    valueItems = [
+                        {
+                            id: 'NULL',
+                            name: i18n('arr.fund.filterSettings.value.empty'),
+                        },
+                        ...valueItems,
+                    ];
+                }
+
+                this.setState({
+                    valueItems: valueItems,
+                });
+            });
+        }
+    }
 
     render() {
         const {
@@ -217,7 +289,9 @@ class FundBulkModificationsForm extends AbstractReactComponent {
             replaceText,
             operationType,
             submitting,
+            versionId,
         } = this.props;
+        const {allValueItems} = this.state;
         const uncheckedItemsCount = allItemsCount - checkedItemsCount;
 
         let operationInputs = [];
@@ -373,6 +447,26 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 }
 
                 break;
+            case 'setValue':
+                submitButtonTitle = 'arr.fund.bulkModifications.action.setSpecification';
+                operationInputs.push(
+                    <Field
+                        key={'replaceValue'}
+                        name="replaceValue"
+                        as={'select'}
+                        component={FormInputField}
+                        label={i18n('arr.fund.bulkModifications.replace.replaceEnum')}
+                        disabled={submitting}
+                    >
+                        <option />
+                        {allValueItems.map(i => (
+                            <option key={i.id} value={i.id}>
+                                {i.name}
+                            </option>
+                        ))}
+                    </Field>,
+                );
+                break;
             case 'delete':
                 submitButtonTitle = 'arr.fund.bulkModifications.action.delete';
                 break;
@@ -408,6 +502,21 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                     ...refType.descItemSpecs,
                                 ]}
                                 name={'specs'}
+                            />
+                        </FormGroup>
+                    )}
+
+                    {dataType.code === "STRUCTURED" && (
+                        <FormGroup>
+                            <FormLabel>
+                                {i18n('arr.fund.bulkModifications.values')}
+                            </FormLabel>
+                            <FF
+                                field={ValueCheckListBox}
+                                ref="valuesListBox"
+                                refType={refType}
+                                versionId={versionId}
+                                name={'values'}
                             />
                         </FormGroup>
                     )}
@@ -479,6 +588,11 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                 )}
                             </option>
                         )}
+                        {this.supportSetValue() && (
+                            <option key="setValue" value="setValue">
+                                {i18n('arr.fund.bulkModifications.operationType.setEnum')}
+                            </option>
+                        )}
                         <option key="delete" value="delete">
                             {i18n('arr.fund.bulkModifications.operationType.delete')}
                         </option>
@@ -522,9 +636,11 @@ export default connect((state, props) => {
             itemsArea: getDefaultItemsArea(props),
             operationType: getDefaultOperationType(props),
             specs: {type: 'unselected'},
+            values: {type: 'unselected'},
         },
         replaceText: formSelector(state, 'replaceText'),
         replaceSpec: formSelector(state, 'replaceSpec'),
+        replaceValue: formSelector(state, 'replaceValue'),
         operationType: formSelector(state, 'operationType'),
         meta: getFormMeta(formName)(state),
         descItemTypes: state.refTables.descItemTypes,

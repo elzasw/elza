@@ -22,6 +22,7 @@ static GroovyResult generate(final GroovyPart part) {
     GroovyResult result = new GroovyResult()
     def r = base.build();
     result.setDisplayName(r)
+    result.setSortName(r)
     if (part.isPreferred()) {
         result.setPtPreferName(r)
     }

@@ -621,8 +621,8 @@ public class StructObjService {
     public ArrStructuredObject getExistingStructObjByUUID(String uuid) {
         ArrStructuredObject structureData = structObjRepository.findActiveByUuidOneFetch(uuid);
         if (structureData == null) {
-            throw new ObjectNotFoundException("Strukturovaná data neexistují: " + uuid, BaseCode.ID_NOT_EXIST).setId(
-                                                                                                                     uuid);
+            throw new ObjectNotFoundException("Structured object not found, uuid: " + uuid, BaseCode.ID_NOT_EXIST)
+                    .setId(uuid);
         }
         return structureData;
     }

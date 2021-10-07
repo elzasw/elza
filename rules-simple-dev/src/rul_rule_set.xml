@@ -2,5 +2,6 @@
     <rule-set code="SIMPLE-DEV">
         <name>Simple Rules for Developers</name>
         <rule-type>ARRANGEMENT</rule-type>
+        <rule-item-type-filter>simpledev-filter.drl</rule-item-type-filter>
     </rule-set>
 </rule-sets>

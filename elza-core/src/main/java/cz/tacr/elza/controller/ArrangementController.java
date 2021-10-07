@@ -315,7 +315,7 @@ public class ArrangementController {
     public SelectNodeResult selectNode(@PathVariable(value = "nodeUuid") final String nodeUuid) {
         ArrNode node;
         if (nodeUuid.length() == 36) {
-            node = arrangementService.findNodeByUuid(nodeUuid);
+            node = arrangementInternalService.findNodeByUuid(nodeUuid);
             if (node == null) {
                 throw new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST)
                         .setId(nodeUuid);
@@ -2002,6 +2002,33 @@ public class ArrangementController {
     }
 
     /**
+     * Nastavit hodnotu dle vybraných hodnot atributu.
+     *
+     * @param fundVersionId   id verze stromu
+     * @param itemTypeId      typ atributu
+     * @param replaceValue    hodnota, která bude nastavena
+     * @param replaceDataBody seznam uzlů, ve kterých hledáme a seznam specifikací
+     */
+    @Transactional
+    @RequestMapping(value = "/setDataValues/{fundVersionId}", method = RequestMethod.PUT)
+    public void setDataValues(@PathVariable("fundVersionId") final Integer fundVersionId,
+                                 @RequestParam("itemTypeId") final Integer itemTypeId,
+                                 @RequestParam("replaceValue") final String replaceValue,
+                                 @RequestBody final ReplaceDataBody replaceDataBody) {
+
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        RulItemType descItemType = ruleService.getItemTypeById(itemTypeId);
+
+        replaceDataBody.getNodes()
+                .forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getId(), node.getVersion()));
+
+        Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
+
+        descriptionItemService.setDataValues(fundVersion, descItemType, nodesDO,
+                replaceValue, replaceDataBody.getValues(), replaceDataBody.getSelectionType() == SelectionType.FUND);
+    }
+
+    /**
      * Smazání hodnot atributů daného typu pro vybrané uzly.
      *
      * @param versionId       id verze stromu
@@ -2025,7 +2052,7 @@ public class ArrangementController {
         Set<RulItemSpec> specifications = CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
                 new HashSet<>(itemSpecRepository.findAllById(replaceDataBody.getSpecIds()));
 
-        descriptionItemService.deleteDescItemValues(fundVersion, descItemType, nodesDO, specifications, replaceDataBody.getSelectionType() == SelectionType.FUND);
+        descriptionItemService.deleteDescItemValues(fundVersion, descItemType, nodesDO, specifications, replaceDataBody.getSelectionType() == SelectionType.FUND, replaceDataBody.getValues());
     }
 
     @RequestMapping(value = "/validation/{fundVersionId}/{fromIndex}/{toIndex}", method = RequestMethod.GET)
@@ -3504,6 +3531,8 @@ public class ArrangementController {
 
         private Set<Integer> specIds;
 
+        private Set<String> values;
+
         public SelectionType getSelectionType() {
             return selectionType;
         }
@@ -3526,6 +3555,14 @@ public class ArrangementController {
 
         public void setSpecIds(final Set<Integer> specIds) {
             this.specIds = specIds;
+        }
+
+        public Set<String> getValues() {
+            return values;
+        }
+
+        public void setValues(Set<String> values) {
+            this.values = values;
         }
     }
 

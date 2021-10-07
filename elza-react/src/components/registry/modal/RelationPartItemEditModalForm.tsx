@@ -83,7 +83,9 @@ const RelationPartItemEditModalForm = ({
             const itemTypeSettings = findViewItemType(apViewSettingRule.itemTypes, part, itemType.code);
             if (itemTypeSettings && itemTypeSettings.geoSearchItemType) {
                 const getItemType = objectById(refTables.descItemTypes.items, itemTypeSettings.geoSearchItemType, 'code') as RulDescItemTypeExtVO;
-                const geoUseItemSpecIds = computeAllowedItemSpecIds(itemTypeAttributeMap, getItemType);
+                // const geoUseItemSpecIds = computeAllowedItemSpecIds(itemTypeAttributeMap, getItemType);
+                // Allow all available specIds, instead of just the ones allowed by itemType.
+                const geoUseItemSpecIds = getItemType.descItemSpecs.map((spec)=>spec.id);
                 if (getItemType) {
                     geoType = getItemType;
                     return <Field

@@ -45,6 +45,10 @@ public class RulRuleSet {
     @Column(name = "rule_type", length = StringLength.LENGTH_ENUM, nullable = false)
     private RuleType ruleType;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulComponent.class)
+    @JoinColumn(name = "itemTypeComponentId")
+    private RulComponent itemTypeComponent;
+
     public Integer getRuleSetId() {
         return ruleSetId;
     }
@@ -83,6 +87,14 @@ public class RulRuleSet {
 
     public void setRuleType(RuleType ruleType) {
         this.ruleType = ruleType;
+    }
+
+    public RulComponent getItemTypeComponent() {
+        return itemTypeComponent;
+    }
+
+    public void setItemTypeComponent(RulComponent itemTypeComponent) {
+        this.itemTypeComponent = itemTypeComponent;
     }
 
     @Override

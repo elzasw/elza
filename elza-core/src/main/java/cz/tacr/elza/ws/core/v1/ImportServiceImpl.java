@@ -39,12 +39,16 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
 import cz.tacr.elza.service.cam.CamHelper;
 import cz.tacr.elza.service.cam.ProcessingContext;
 import cz.tacr.elza.service.cam.SyncEntityRequest;
@@ -77,6 +81,9 @@ public class ImportServiceImpl implements ImportService {
 
     @Autowired
     private ApBindingStateRepository bindingStateRepository;
+
+    @Autowired
+    private AccessPointCacheService accessPointCacheService;
 
     @Autowired
     private ExternalSystemService externalSystemService;
@@ -185,7 +192,6 @@ public class ImportServiceImpl implements ImportService {
         } else {
             Map<Integer, SyncEntityRequest> updateEntitiesLookup = new HashMap<>();
             List<ApAccessPoint> updateAps = new ArrayList<>();
-            updateEntities = new ArrayList<>();
 
             Map<String, ApAccessPoint> existingApMap = existingAps.stream().collect(Collectors.toMap(ApAccessPoint::getUuid, Function.identity()));
             
@@ -196,8 +202,7 @@ public class ImportServiceImpl implements ImportService {
                 if (existingAp == null) {
                     newEntities.add(entityXml);
                 } else {
-                    SyncEntityRequest syncReq = new SyncEntityRequest(existingAp, entityXml);
-                    updateEntities.add(syncReq);
+                    SyncEntityRequest syncReq = new SyncEntityRequest(existingAp, entityXml);                    
                     updateAps.add(existingAp);
                     updateEntitiesLookup.put(existingAp.getAccessPointId(), syncReq);
                 }
@@ -214,13 +219,20 @@ public class ImportServiceImpl implements ImportService {
             }
 
             // prepare binding
-            List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoints(updateAps);
+            List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPointsAndExternalSystem(updateAps, externalSystem);
+            List<SyncEntityRequest> updateEntitiesCandidates = new ArrayList<>();
             for (ApBindingState bindingState : bindingStates) {
                 SyncEntityRequest syncRequest = updateEntitiesLookup.remove(bindingState.getAccessPointId());
                 syncRequest.setBindingState(bindingState);
+                updateEntitiesCandidates.add(syncRequest);
             }
+            updateEntities = prepareUpdatableEntities(updateEntitiesCandidates, procCtx);
+
             if (updateEntitiesLookup.size() > 0) {
+                // Entities exists by uuid but have no active bindings
+                // New bindings will be created with state NOT_SYNCED.
                 Function<EntityXml, String> idGetter = CamService.getEntityIdGetter(externalSystem);
+
                 // try to find other existing bindings
                 List<String> recordCodes = updateEntitiesLookup.values().stream()
                         .map(e -> idGetter.apply(e.getEntityXml())).collect(Collectors.toList());
@@ -248,7 +260,8 @@ public class ImportServiceImpl implements ImportService {
                                                   entity.getEns().name(),
                                                   entity.getRevi().getRid().getValue(),
                                                   entity.getRevi().getUsr().getValue(),
-                                                  null);
+                                                  null, 
+                                                  SyncState.NOT_SYNCED);
                     // create BindingState
                     sr.setBindingState(bindingState);
                 }
@@ -256,9 +269,57 @@ public class ImportServiceImpl implements ImportService {
         }
 
         camService.createAccessPoints(procCtx, newEntities);
-        camService.updateAccessPoints(procCtx, updateEntities);
+        if (updateEntities != null && updateEntities.size() > 0) {
+            camService.updateAccessPoints(procCtx, updateEntities);
+        }
 
-        logger.info("Imported entities in CAM format, count: {}", entities.size());
+        logger.info("Imported entities in CAM format, count: {}, create: {}, update: {}", 
+                    entities.size(), newEntities.size(), updateEntities == null? 0 : updateEntities.size());
+    }
+
+    private List<SyncEntityRequest> prepareUpdatableEntities(List<SyncEntityRequest> updateEntitiesCandidates, ProcessingContext procCtx) {
+        List<SyncEntityRequest> updateEntities = new ArrayList<>();
+        for (SyncEntityRequest syncEntity : updateEntitiesCandidates) {
+
+            ApBindingState bindingState = syncEntity.getBindingState();
+            if (bindingState.getSyncOk() == SyncState.NOT_SYNCED) {
+                continue;
+            }
+
+            CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(syncEntity.getAccessPoint().getAccessPointId());
+            int lastChangeId = 0;
+            for (CachedPart part : cachedAccessPoint.getParts()) {
+                if (part.getLastChangeId() > lastChangeId) {
+                    lastChangeId = part.getLastChangeId();
+                }
+            }
+
+            if (lastChangeId > bindingState.getCreateChangeId()) {
+                ApChange apChange = procCtx.getApChange();
+                if (apChange == null) {
+                    apChange = apDataService.createChange(ApChange.Type.AP_SYNCH);
+                    procCtx.setApChange(apChange);
+                }
+
+                bindingState.setDeleteChange(apChange);
+                bindingStateRepository.save(bindingState);
+                bindingStateRepository.flush();
+
+                EntityXml entity = syncEntity.getEntityXml();
+                externalSystemService.createApBindingState(bindingState.getBinding(),
+                                      syncEntity.getAccessPoint(),
+                                      apChange,
+                                      entity.getEns().name(),
+                                      entity.getRevi().getRid().getValue(),
+                                      entity.getRevi().getUsr().getValue(),
+                                      null,
+                                      SyncState.NOT_SYNCED);
+                continue;
+            }
+
+            updateEntities.add(syncEntity);
+        }
+        return updateEntities;
     }
 
     @Override

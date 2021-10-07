@@ -1264,11 +1264,19 @@ export class WebApiCls {
         );
     }
 
-    deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType) {
+    setDataValues(fundVersionId, itemTypeId, specIds, replaceValue, nodes, selectionType, values) {
+        return AjaxUtils.ajaxPut(
+            WebApiCls.arrangementUrl + '/setDataValues/' + fundVersionId,
+            {itemTypeId, replaceValue},
+            {nodes, specIds, selectionType, values},
+        );
+    }
+
+    deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType, values) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/deleteDataValues/' + versionId,
             {descItemTypeId},
-            {nodes, specIds: specsIds, selectionType},
+            {nodes, specIds: specsIds, selectionType, values},
         );
     }
 
@@ -2004,6 +2012,11 @@ export class WebApiCls {
             null,
             structureDataIds,
         );
+    }
+
+    getItemTypeCodesByRuleSet(ruleSetCode) {
+        return AjaxUtils.ajaxGet(
+            WebApiCls.ruleUrl + '/itemTypeCodes/' + ruleSetCode);
     }
 
     /**

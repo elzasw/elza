@@ -174,8 +174,6 @@ public class RuleService {
     @Autowired
     private RulesExecutor rulesExecutor;
     @Autowired
-    private SettingsService settingsService;
-    @Autowired
     private LevelRepository levelRepository;
     @Autowired
     private NodeRepository nodeRepository;
@@ -681,27 +679,6 @@ public class RuleService {
 
 		return builder.getResult();
 	}
-
-    /**
-     * Načtení seznamu kódů atributů - implicitní atributy pro zobrazení tabulky hromadných akcí, seznam je seřazený podle
-     * pořadí, které jedefinováno u atributů.
-     * @return seznam kódů
-     */
-    public List<SettingGridView.ItemType> getGridView() {
-
-        // načtený globální oblíbených
-        List<UISettings> gridViews = settingsService.getGlobalSettings(UISettings.SettingsType.GRID_VIEW.toString(),
-                                                                       null);
-
-        for (UISettings gridView : gridViews) {
-            SettingGridView view = SettingGridView.newInstance(gridView);
-            if (CollectionUtils.isNotEmpty(view.getItemTypes())) {
-                return view.getItemTypes();
-            }
-        }
-
-        return null;
-    }
 
     /**
      * Vrací typy atributu.
@@ -1822,15 +1799,6 @@ public class RuleService {
 
         RuleSet ruleSet = sdp.getRuleSetByCode(rulRuleSet.getCode());
         List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSet);
-        new ArrayList<>(executeDrls.size());
-        for (String extCode : executeDrls) {
-            RuleSetExtension ruleSetExt = ruleSet.getExtByCode(extCode);
-            if (ruleSetExt != null) {
-                List<RulExtensionRule> extRules = ruleSetExt
-                        .getRulesByType(RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
-                rules.addAll(extRules);
-            }
-        }
 
         try {
             modelValidationRules.execute(rules, modelValidation);
@@ -1868,5 +1836,27 @@ public class RuleService {
 
     public List<RulRuleSet> findAllApRules() {
         return ruleSetRepository.findByRuleType(ENTITY);
+    }
+
+    public List<String> getItemTypeCodesByRuleSet(RulRuleSet rulRuleSet) {
+        List<String> itemTypeCodes = new ArrayList<>();
+        List<ItemType> itemTypeList = null;
+        try {
+            if (rulRuleSet.getItemTypeComponent() != null) {
+                itemTypeList = availableItemsRules.execute(rulRuleSet, createModelItemTypes());
+            }
+        } catch (Exception e) {
+            throw new SystemException(e);
+        }
+
+        if (CollectionUtils.isNotEmpty(itemTypeList)) {
+            for (ItemType itemType : itemTypeList) {
+                if (itemType.getRequiredType() == RequiredType.POSSIBLE || itemType.getRequiredType() == RequiredType.REQUIRED) {
+                    itemTypeCodes.add(itemType.getCode());
+                }
+            }
+        }
+
+        return itemTypeCodes;
     }
 }

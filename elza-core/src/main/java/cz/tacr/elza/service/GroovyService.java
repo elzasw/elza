@@ -248,12 +248,10 @@ public class GroovyService {
         return _self.findAllParents(recordId, itemType);
     }
 
-    public String findItemTypeCode(String extSystemType, String itemTypeCode, Integer ruleSetId) {
-        return groovyScriptService.findItemTypeCode(extSystemType, itemTypeCode, getGroovyFilePath(RulArrangementRule.RuleType.AP_MAPPING_TYPE, ruleSetId));
-    }
-
-    public String findItemSpecCode(String extSystemType, String itemSpecCode, Integer ruleSetId) {
-        return groovyScriptService.findItemSpecCode(extSystemType, itemSpecCode, getGroovyFilePath(RulArrangementRule.RuleType.AP_MAPPING_SPEC, ruleSetId));
+    public List<ApItem> filterOutgoingItems(String extSystemType, ApPart part, List<ApItem> itemList,
+                                            Integer ruleSetId) {
+        String filePath = getGroovyFilePath(RulArrangementRule.RuleType.AP_MAPPING_TYPE, ruleSetId);
+        return groovyScriptService.filterOutgoingItems(part, itemList, filePath);
     }
 
     public String getGroovyFilePath(GroovyPart part) {
@@ -320,4 +318,5 @@ public class GroovyService {
         return resourcePathResolver.getDroolFile(arrangementRule)
                 .toString();
     }
+
 }
