@@ -536,13 +536,27 @@ public class ApFactory {
         if (CollectionUtils.isEmpty(parts)) {
             return Collections.emptyList();
         }
-        List<ApPartVO> partVOList = new ArrayList<>();
-        Map<String, CachedPart> partsMap = parts.stream().collect(Collectors.toMap(p -> getSortName(p), p -> p));
-        List<String> keyList = new ArrayList<>(partsMap.keySet());
-        Collections.sort(keyList);
-        for (String key : keyList) {
-            partVOList.add(createPartVO(partsMap.get(key)));
+
+        Map<ApPartVO, String> sortValues = new HashMap<>(); 
+        List<ApPartVO> partVOList = new ArrayList<>(parts.size());
+        for (CachedPart part : parts) {
+            ApPartVO partVO = createPartVO(part);
+            partVOList.add(partVO);
+            sortValues.put(partVO, getSortName(part));
         }
+
+        partVOList.sort(new Comparator<ApPartVO>() {
+            @Override
+            public int compare(ApPartVO p1, ApPartVO p2) {
+                String s1 = sortValues.get(p1);
+                String s2 = sortValues.get(p2);
+                if (s1 == null || s2 == null) {
+                    return 0;
+                }
+                return s1.compareTo(s2);
+            }
+        });
+
         return partVOList;
     }
 
