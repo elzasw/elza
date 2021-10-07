@@ -3,6 +3,9 @@ package cz.tacr.elza.controller.factory;
 import static cz.tacr.elza.repository.ExceptionThrow.ap;
 import static cz.tacr.elza.repository.ExceptionThrow.scope;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+import static cz.tacr.elza.groovy.GroovyResult.SORT_NAME;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -106,7 +109,6 @@ import javax.annotation.Nullable;
 @Service
 public class ApFactory {
 
-    private static final String DISPLAY_NAME = "DISPLAY_NAME";
     private static final String BRIEF_DESC = "BRIEF_DESC";
 
     private final ApAccessPointRepository apRepository;
@@ -355,7 +357,7 @@ public class ApFactory {
         apVO.setBindings(bindingsVO);
         fillBindingUrls(bindingsVO);
 
-        apVO.setParts(createVO(cachedAccessPoint.getParts()));
+        apVO.setParts(createPartsVO(cachedAccessPoint.getParts()));
         if (description != null) {
             apVO.setDescription(description);
         }
@@ -530,18 +532,21 @@ public class ApFactory {
         return briefDesc;
     }
 
-    private List<ApPartVO> createVO(List<CachedPart> parts) {
+    private List<ApPartVO> createPartsVO(List<CachedPart> parts) {
         if (CollectionUtils.isEmpty(parts)) {
             return Collections.emptyList();
         }
         List<ApPartVO> partVOList = new ArrayList<>();
-        for (CachedPart part : parts) {
-            partVOList.add(createVO(part));
+        Map<String, CachedPart> partsMap = parts.stream().collect(Collectors.toMap(p -> getSortName(p), p -> p));
+        List<String> keyList = new ArrayList<>(partsMap.keySet());
+        Collections.sort(keyList);
+        for (String key : keyList) {
+            partVOList.add(createPartVO(partsMap.get(key)));
         }
         return partVOList;
     }
 
-    private ApPartVO createVO(CachedPart part) {
+    private ApPartVO createPartVO(CachedPart part) {
         StaticDataProvider sdp = staticDataService.getData();
         RulPartType rulPartType = sdp.getPartTypeByCode(part.getPartTypeCode());
         ApPartVO apPartVO = new ApPartVO();
@@ -557,17 +562,30 @@ public class ApFactory {
         return apPartVO;
     }
 
+    private String getSortName(CachedPart part) {
+        String index = findIndexValue(part.getIndices(), SORT_NAME);
+        if (StringUtils.isEmpty(index)) {
+            index = "";
+        }
+        return index + String.format("%012d", part.getPartId());
+    }
+
     @Nullable
-    static public String findDisplayIndexValue(List<ApIndex> indices) {
+    static public String findIndexValue(List<ApIndex> indices, String indexName) {
         if (indices == null) {
             return null;
         }
         for (ApIndex index : indices) {
-            if (index.getIndexType().equals(DISPLAY_NAME)) {
+            if (index.getIndexType().equals(indexName)) {
                 return index.getValue();
             }
         }
         return null;
+    }
+
+    @Nullable
+    static public String findDisplayIndexValue(List<ApIndex> indices) {
+        return findIndexValue(indices, DISPLAY_NAME);
     }
 
     public List<ApPartVO> createVO(final List<ApPart> parts,

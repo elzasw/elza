@@ -2,63 +2,63 @@
     <structure-extension-definition structure-type="PT_NAME"
                                     structure-extension="ARTWORK/PT_NAME"
                                     filename="ARTWORK/PT_NAME.groovy"
-                                    compatibility_rul_package="31">
+                                    compatibility_rul_package="45">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-extension-definition>
     <structure-extension-definition structure-type="PT_NAME"
                                     structure-extension="EVENT/PT_NAME"
                                     filename="EVENT/PT_NAME.groovy"
-                                    compatibility_rul_package="31">
+                                    compatibility_rul_package="45">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-extension-definition>
     <structure-extension-definition structure-type="PT_NAME"
                                     structure-extension="FAMILY/PT_NAME"
                                     filename="FAMILY/PT_NAME.groovy"
-                                    compatibility_rul_package="44">
+                                    compatibility_rul_package="45">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-extension-definition>
     <structure-extension-definition structure-type="PT_NAME"
                                     structure-extension="FAMILY_BRANCH/PT_NAME"
                                     filename="FAMILY_BRANCH/PT_NAME.groovy"
-                                    compatibility-rul-package="44">
+                                    compatibility-rul-package="45">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-extension-definition>
     <structure-extension-definition structure-type="PT_NAME"
                                     structure-extension="FICTIVE_DYNASTY/PT_NAME"
                                     filename="FICTIVE_DYNASTY/PT_NAME.groovy"
-                                    compatibility-rul-package="44">
+                                    compatibility-rul-package="45">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-extension-definition>
     <structure-extension-definition structure-type="PT_NAME"
                                     structure-extension="GEO/PT_NAME"
                                     filename="GEO/PT_NAME.groovy"
-                                    compatibility-rul-package="35">
+                                    compatibility-rul-package="45">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-extension-definition>
     <structure-extension-definition structure-type="PT_NAME"
                                     structure-extension="PARTY_GROUP/PT_NAME"
                                     filename="PARTY_GROUP/PT_NAME.groovy"
-                                    compatibility-rul-package="35">
+                                    compatibility-rul-package="45">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-extension-definition>
     <structure-extension-definition structure-type="PT_NAME"
                                     structure-extension="PERSON/PT_NAME"
                                     filename="PERSON/PT_NAME.groovy"
-                                    compatibility-rul-package="35">
+                                    compatibility-rul-package="45">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-extension-definition>
     <structure-extension-definition structure-type="PT_NAME"
                                     structure-extension="TERM/PT_NAME"
                                     filename="TERM/PT_NAME.groovy"
-                                    compatibility-rul-package="35">
+                                    compatibility-rul-package="45">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-extension-definition>
