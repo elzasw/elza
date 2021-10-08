@@ -8,13 +8,19 @@ import cz.tacr.elza.groovy.GroovyUtils
 return generate(PART)
 
 static GroovyResult generate(final GroovyPart part) {
-
     GroovyAppender base = GroovyUtils.createAppender(part)
     base.add("EV_TYPE")
     base.add("EV_BEGIN").withSeparator(", ").withPrefix("od: ")
     base.add("EV_END").withSeparator(", ").withPrefix("do: ")
+
+    GroovyAppender sort = GroovyUtils.createAppender(part)
+    sort.addViewOrder("EV_TYPE")
+    sort.addUnitdateFrom("EV_BEGIN")
+    sort.addUnitdateTo("EV_END")
+
     GroovyResult result = new GroovyResult()
     result.setDisplayName(base.build())
+    result.setSortName(sort.build())
 
     def children = part.getChildren()
     GroovyAppender rels = GroovyUtils.createAppender(part)

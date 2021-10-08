@@ -24,16 +24,17 @@ static GroovyResult generate(final GroovyPart part) {
     GroovyResult result = new GroovyResult()
     def r = base.build();
     result.setDisplayName(r)
+    result.setSortName(r)
     if (part.isPreferred()) {
         result.setPtPreferName(r)
     }
-    
+
     GroovyAppender shortName = GroovyUtils.createAppender(part)
     shortName.add("NM_MAIN")
     shortName.add("NM_MINOR").withSeparator(", ")
     shortName.add("NM_DEGREE_PRE").withSeparator(", ")
     shortName.add("NM_DEGREE_POST").withSeparator(" ")
-    
+
     result.addIndex("SHORT_NAME", shortName.build().toLowerCase());
     return result
 }

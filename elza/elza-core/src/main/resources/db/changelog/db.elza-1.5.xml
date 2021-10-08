@@ -1486,5 +1486,25 @@ where no.level_id = l.level_id
                                  referencedTableName="rul_component"
                                  referencedColumnNames="component_id"/>
     </changeSet>
-
+    <!-- Oprava migrace dat, https://bugzilla.lightcomp.cz/show_bug.cgi?id=7412 -->
+    <changeSet id="20211007135900" author="ppyt">
+      <sql dbms="postgresql">delete from ap_cached_access_point where access_point_id in (
+      select distinct s.access_point_id from ap_item i
+      join rul_item_spec ris on ris.item_spec_id = i.item_spec_id
+      join ap_part p on p.part_id = i.part_id
+      join ap_state s on s.access_point_id = p.access_point_id and s.delete_change_id is null
+      join ap_type t on t.ap_type_id = s.ap_type_id
+      join ap_type tm on tm.ap_type_id = t.parent_ap_type_id
+      where ris.code = 'EXT_CHANGE' and tm.code in ('PARTY_GROUP', 'EVENT')
+      )</sql>
+      <sql dbms="postgresql">update ap_item set item_spec_id = (select item_spec_id from rul_item_spec where code = 'EXT_CANCELCHANGE')
+      where item_id in (select i.item_id from ap_item i
+       join rul_item_spec ris on ris.item_spec_id = i.item_spec_id
+       join ap_part p on p.part_id = i.part_id
+       join ap_state s on s.access_point_id = p.access_point_id and s.delete_change_id is null
+       join ap_type t on t.ap_type_id = s.ap_type_id
+       join ap_type tm on tm.ap_type_id = t.parent_ap_type_id
+       where ris.code = 'EXT_CHANGE' and tm.code in ('PARTY_GROUP', 'EVENT')
+       )</sql>
+     </changeSet>
 </databaseChangeLog>
