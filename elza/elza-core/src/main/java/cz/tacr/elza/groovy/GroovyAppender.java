@@ -154,6 +154,21 @@ public class GroovyAppender {
                 } else {
                     sb.append(String.format("%019d", unitdatePart.isFrom() ? 0 : Long.MAX_VALUE));
                 }
+            } else if (item instanceof ViewOrderPart) {
+                ViewOrderPart viewOrderPart = ((ViewOrderPart) item);
+                if (CollectionUtils.isNotEmpty(viewOrderPart.items)) {
+                    StringBuilder sbi = new StringBuilder();
+                    for (GroovyItem groovyItem : viewOrderPart.items) {
+                        Integer viewOrder = groovyItem.getSpecOrder();
+                        if (viewOrder == null) {
+                            viewOrder = 0;
+                        }
+                        sbi.append(String.format("%010d", viewOrder));
+                    }
+                    sb.append(sbi.toString());
+                } else {
+                    sb.append(String.format("%010d", 0));
+                }
             }
         }
         return sb.toString();
@@ -230,6 +245,13 @@ public class GroovyAppender {
         return item;
     }
 
+    public ViewOrderPart addViewOrder(@NotNull final String itemTypeCode) {
+        List<GroovyItem> groovyItems = part.getItems(itemTypeCode);
+        ViewOrderPart item = new ViewOrderPart(groovyItems);
+        items.add(item);
+        return item;
+    }
+    
     public String getUniqueCode(final String typeCode) {
         return typeCode + UUID.randomUUID().toString();
     }
@@ -293,6 +315,16 @@ public class GroovyAppender {
 
         public boolean isFrom() {
             return from;
+        }
+
+    }
+
+    public static class ViewOrderPart implements Item {
+
+        private List<GroovyItem> items;
+
+        private ViewOrderPart(final List<GroovyItem> items) {
+            this.items = items;
         }
 
     }

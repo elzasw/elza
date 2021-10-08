@@ -127,40 +127,38 @@ public class GroovyService {
                 ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
                 String itemTypeCode = itemType.getCode();
                 RulItemSpec itemSpec = item.getItemSpec() == null ? null : sdp.getItemSpecById(item.getItemSpecId());
-                String spec = itemSpec == null ? null : itemSpec.getName();
-                String specCode = itemSpec == null ? null : itemSpec.getCode();
 
                 DataType dataType = DataType.fromCode(data.getDataType().getCode());
                 GroovyItem groovyItem;
                 switch (dataType) {
                     case BIT: {
                         ArrDataBit dataTmp = (ArrDataBit) data;
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.isBitValue());
+                        groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp.isBitValue());
                         break;
                     }
                     case STRING: {
                         ArrDataString dataTmp = (ArrDataString) data;
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.getStringValue());
+                        groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp.getStringValue());
                         break;
                     }
                     case COORDINATES: {
                         ArrDataCoordinates dataTmp = (ArrDataCoordinates) data;
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.getFulltextValue());
+                        groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp.getFulltextValue());
                         break;
                     }
                     case TEXT: {
                         ArrDataText dataTmp = (ArrDataText) data;
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.getTextValue());
+                        groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp.getTextValue());
                         break;
                     }
                     case INT: {
                         ArrDataInteger dataTmp = (ArrDataInteger) data;
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.getIntegerValue());
+                        groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp.getIntegerValue());
                         break;
                     }
                     case UNITDATE: {
                         ArrDataUnitdate dataTmp = (ArrDataUnitdate) data;
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp);
+                        groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp);
                         break;
                     }
                     case RECORD_REF: {
@@ -182,16 +180,16 @@ public class GroovyService {
                                             .set("dataId", dataTmp.getDataId());
                         }
 
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, value, intValue);
+                        groovyItem = new GroovyItem(itemTypeCode, itemSpec, value, intValue);
                         break;
                     }
                     case ENUM: {
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, spec);
+                        groovyItem = new GroovyItem(itemTypeCode, itemSpec, itemSpec!=null?itemSpec.getName():null);
                         break;
                     }
                     case URI_REF: {
                         ArrDataUriRef dataTmp = (ArrDataUriRef) data;
-                        groovyItem = new GroovyItem(itemTypeCode, spec, specCode, dataTmp.getFulltextValue());
+                        groovyItem = new GroovyItem(itemTypeCode, itemSpec, dataTmp.getFulltextValue());
                         break;
                     }
                     default:
