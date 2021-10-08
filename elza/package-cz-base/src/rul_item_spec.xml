@@ -1,4 +1,10 @@
 <item-specs>
+    <item-spec code="CRC_RISE">
+        <name>vznik</name>
+        <description>vznik</description>
+        <shortcut>vznik</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
     <item-spec code="CRC_BIRTH">
         <name>narození</name>
         <description>narození</description>
@@ -11,25 +17,19 @@
         <shortcut>narození prvního známého člena rodu/rodiny</shortcut>
         <item-type-assign code="CRE_CLASS"/>
     </item-spec>
-    <item-spec code="CRC_FIRSTWMENTION">
-        <name>první písemná zmínka</name>
-        <description>první písemná zmínka</description>
-        <shortcut>první písemná zmínka</shortcut>
-        <item-type-assign code="CRE_CLASS"/>
-    </item-spec>
     <item-spec code="CRC_BEGINSCOPE">
         <name>působnost od</name>
         <description>působnost od</description>
         <shortcut>působnost od</shortcut>
         <item-type-assign code="CRE_CLASS"/>
     </item-spec>
-    <item-spec code="CRC_RISE">
-        <name>vznik</name>
-        <description>vznik</description>
-        <shortcut>vznik</shortcut>
+    <item-spec code="CRC_FIRSTWMENTION">
+        <name>první písemná zmínka</name>
+        <description>první písemná zmínka</description>
+        <shortcut>první písemná zmínka</shortcut>
         <item-type-assign code="CRE_CLASS"/>
     </item-spec>
-    <item-spec code="CRC_ORIGIN">
+        <item-spec code="CRC_ORIGIN">
         <name>začátek</name>
         <description>začátek</description>
         <shortcut>začátek</shortcut>
@@ -41,46 +41,16 @@
         <shortcut>začátek platnosti</shortcut>
         <item-type-assign code="CRE_CLASS"/>
     </item-spec>
-    <item-spec code="CRT_UNSPECIFIED">
-        <name>nespecifikovaný vznik</name>
-        <description>nespecifikovaný vznik</description>
-        <shortcut>nespecifikovaný vznik</shortcut>
+    <item-spec code="CRT_ESTAB">
+        <name>vznik zřízením/založením</name>
+        <description>vznik zřízením/založením</description>
+        <shortcut>vznik zřízením/založením</shortcut>
         <item-type-assign code="CRE_TYPE"/>
-    </item-spec>
-    <item-spec code="CRT_VALIDITYBEGIN">
-        <name>počátek platnosti</name>
-        <description>počátek platnosti</description>
-        <shortcut>počátek platnosti</shortcut>
-        <item-type-assign code="CRE_TYPE"/>
-    </item-spec>
-    <item-spec code="CRT_FIRSTREALIZATION">
-        <name>první realizace</name>
-        <description>první realizace</description>
-        <shortcut>první realizace</shortcut>
-        <item-type-assign code="CRE_TYPE"/>
-    </item-spec>
-    <item-spec code="CRT_EDITION">
-        <name>vydání</name>
-        <description>vydání</description>
-        <shortcut>vydání</shortcut>
-        <item-type-assign code="CRE_TYPE"/>
-    </item-spec>
-    <item-spec code="CRT_CREATION">
-        <name>vytvoření</name>
-        <description>vytvoření</description>
-        <shortcut>vytvoření</shortcut>
-        <item-type-assign code="CRE_TYPE"/>
-    </item-spec>
+    </item-spec>   
     <item-spec code="CRT_COMMENCEMENT">
         <name>vznik zahájením činnosti</name>
         <description>vznik zahájením činnosti</description>
         <shortcut>vznik zahájením činnosti</shortcut>
-        <item-type-assign code="CRE_TYPE"/>
-    </item-spec>
-    <item-spec code="CRT_RECORDSENTRY">
-        <name>vznik zápisem do evidence</name>
-        <description>vznik zápisem do evidence</description>
-        <shortcut>vznik zápisem do evidence</shortcut>
         <item-type-assign code="CRE_TYPE"/>
     </item-spec>
     <item-spec code="CRT_PREDECESSOR">
@@ -89,34 +59,46 @@
         <shortcut>vznik změnou předchůdce</shortcut>
         <item-type-assign code="CRE_TYPE"/>
     </item-spec>
-    <item-spec code="CRT_ESTAB">
-        <name>vznik zřízením/založením</name>
-        <description>vznik zřízením/založením</description>
-        <shortcut>vznik zřízením/založením</shortcut>
+    <item-spec code="CRT_RECORDSENTRY">
+        <name>vznik zápisem do evidence</name>
+        <description>vznik zápisem do evidence</description>
+        <shortcut>vznik zápisem do evidence</shortcut>
         <item-type-assign code="CRE_TYPE"/>
     </item-spec>
-    <item-spec code="ET_MEMBERSHIP">
-        <name>členství</name>
-        <description>členství</description>
-        <shortcut>členství</shortcut>
-        <item-type-assign code="EV_TYPE"/>
+    <item-spec code="CRT_CREATION">
+        <name>vytvoření</name>
+        <description>vytvoření</description>
+        <shortcut>vytvoření</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
     </item-spec>
-    <item-spec code="ET_MILESTONES">
-        <name>historické milníky</name>
-        <description>historické milníky</description>
-        <shortcut>historické milníky</shortcut>
-        <item-type-assign code="EV_TYPE"/>
+    <item-spec code="CRT_EDITION">
+        <name>vydání</name>
+        <description>vydání</description>
+        <shortcut>vydání</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
+    </item-spec>
+    <item-spec code="CRT_FIRSTREALIZATION">
+        <name>první realizace</name>
+        <description>první realizace</description>
+        <shortcut>první realizace</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
+    </item-spec>
+    <item-spec code="CRT_VALIDITYBEGIN">
+        <name>počátek platnosti</name>
+        <description>počátek platnosti</description>
+        <shortcut>počátek platnosti</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
+    </item-spec>
+    <item-spec code="CRT_UNSPECIFIED">
+        <name>nespecifikovaný vznik</name>
+        <description>nespecifikovaný vznik</description>
+        <shortcut>nespecifikovaný vznik</shortcut>
+        <item-type-assign code="CRE_TYPE"/>
     </item-spec>
     <item-spec code="ET_MARRIAGE">
         <name>manželství</name>
         <description>manželství</description>
         <shortcut>manželství</shortcut>
-        <item-type-assign code="EV_TYPE"/>
-    </item-spec>
-    <item-spec code="ET_REASSIGN">
-        <name>přeřazení</name>
-        <description>přeřazení</description>
-        <shortcut>přeřazení</shortcut>
         <item-type-assign code="EV_TYPE"/>
     </item-spec>
     <item-spec code="ET_STUDY">
@@ -125,10 +107,16 @@
         <shortcut>studium</shortcut>
         <item-type-assign code="EV_TYPE"/>
     </item-spec>
-    <item-spec code="ET_AWARD">
-        <name>udělení ocenění</name>
-        <description>udělení ocenění</description>
-        <shortcut>udělení ocenění</shortcut>
+    <item-spec code="ET_JOB">
+        <name>zaměstnání / veřejná funkce</name>
+        <description>zaměstnání / veřejná funkce</description>
+        <shortcut>zaměstnání / veřejná funkce</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_MEMBERSHIP">
+        <name>členství</name>
+        <description>členství</description>
+        <shortcut>členství</shortcut>
         <item-type-assign code="EV_TYPE"/>
     </item-spec>
     <item-spec code="ET_HOBBY">
@@ -137,34 +125,28 @@
         <shortcut>záliba / soukromá činnost</shortcut>
         <item-type-assign code="EV_TYPE"/>
     </item-spec>
-    <item-spec code="ET_JOB">
-        <name>zaměstnání / veřejná funkce</name>
-        <description>zaměstnání / veřejná funkce</description>
-        <shortcut>zaměstnání / veřejná funkce</shortcut>
+    <item-spec code="ET_MILESTONES">
+        <name>historické milníky</name>
+        <description>historické milníky</description>
+        <shortcut>historické milníky</shortcut>
         <item-type-assign code="EV_TYPE"/>
     </item-spec>
-    <item-spec code="EXC_END">
-        <name>konec</name>
-        <description>konec</description>
-        <shortcut>konec</shortcut>
-        <item-type-assign code="EXT_CLASS"/>
+    <item-spec code="ET_AWARD">
+        <name>udělení ocenění</name>
+        <description>udělení ocenění</description>
+        <shortcut>udělení ocenění</shortcut>
+        <item-type-assign code="EV_TYPE"/>
     </item-spec>
-    <item-spec code="EXC_ENDVALIDNESS">
-        <name>konec platnosti</name>
-        <description>konec platnosti</description>
-        <shortcut>konec platnosti</shortcut>
-        <item-type-assign code="EXT_CLASS"/>
+    <item-spec code="ET_REASSIGN">
+        <name>přeřazení</name>
+        <description>přeřazení</description>
+        <shortcut>přeřazení</shortcut>
+        <item-type-assign code="EV_TYPE"/>
     </item-spec>
-    <item-spec code="EXC_LASTWMENTION">
-        <name>poslední písemná zmínka</name>
-        <description>poslední písemná zmínka</description>
-        <shortcut>poslední písemná zmínka</shortcut>
-        <item-type-assign code="EXT_CLASS"/>
-    </item-spec>
-    <item-spec code="EXC_ENDSCOPE">
-        <name>působnost do</name>
-        <description>působnost do</description>
-        <shortcut>působnost do</shortcut>
+    <item-spec code="EXC_EXTINCTION">
+        <name>zánik</name>
+        <description>zánik</description>
+        <shortcut>zánik</shortcut>
         <item-type-assign code="EXT_CLASS"/>
     </item-spec>
     <item-spec code="EXC_DEATH">
@@ -179,36 +161,36 @@
         <shortcut>úmrtí posledního známého člena rodu/rodiny</shortcut>
         <item-type-assign code="EXT_CLASS"/>
     </item-spec>
-    <item-spec code="EXC_EXTINCTION">
-        <name>zánik</name>
-        <description>zánik</description>
-        <shortcut>zánik</shortcut>
+    <item-spec code="EXC_ENDSCOPE">
+        <name>působnost do</name>
+        <description>působnost do</description>
+        <shortcut>působnost do</shortcut>
         <item-type-assign code="EXT_CLASS"/>
     </item-spec>
-    <item-spec code="EXT_OTHER">
-        <name>jiný typ zániku</name>
-        <description>jiný typ zániku</description>
-        <shortcut>jiný typ zániku</shortcut>
-        <item-type-assign code="EXT_TYPE"/>
+    <item-spec code="EXC_LASTWMENTION">
+        <name>poslední písemná zmínka</name>
+        <description>poslední písemná zmínka</description>
+        <shortcut>poslední písemná zmínka</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
     </item-spec>
-    <item-spec code="EXT_UNSPECIFIED">
-        <name>nespecifikovaný zánik</name>
-        <description>nespecifikovaný zánik</description>
-        <shortcut>nespecifikovaný zánik</shortcut>
-        <item-type-assign code="EXT_TYPE"/>
+    <item-spec code="EXC_END">
+        <name>konec</name>
+        <description>konec</description>
+        <shortcut>konec</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
     </item-spec>
-    <item-spec code="EXT_LASTREALIZATION">
-        <name>poslední realizace</name>
-        <description>poslední realizace</description>
-        <shortcut>poslední realizace</shortcut>
-        <item-type-assign code="EXT_TYPE"/>
+    <item-spec code="EXC_ENDVALIDNESS">
+        <name>konec platnosti</name>
+        <description>konec platnosti</description>
+        <shortcut>konec platnosti</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
     </item-spec>
-    <item-spec code="EXT_STOPPUBLISHING">
-        <name>ukončení vydávání</name>
-        <description>ukončení vydávání</description>
-        <shortcut>ukončení vydávání</shortcut>
-        <item-type-assign code="EXT_TYPE"/>
-    </item-spec>
+	<item-spec code="EXT_CANCELCHANGE">
+		<name>zánik zrušením/změnou</name>
+        <description>zánik zrušením/změnou</description>
+		<shortcut>zánik zrušením/změnou</shortcut>
+		<item-type-assign code="EXT_TYPE"/>
+	</item-spec>
     <item-spec code="EXT_ACTIVITYEND">
         <name>zánik ukončením činnosti</name>
         <description>zánik ukončením činnosti</description>
@@ -221,22 +203,40 @@
         <shortcut>zánik výmazem z evidence</shortcut>
         <item-type-assign code="EXT_TYPE"/>
     </item-spec>
-    <item-spec code="EXT_MININGACTIVITY">
-        <name>zánik z důvodu důlní činnosti</name>
-        <description>zánik z důvodu důlní činnosti</description>
-        <shortcut>zánik z důvodu důlní činnosti</shortcut>
+    <item-spec code="EXT_DESTRUCTION">
+        <name>zničení</name>
+        <description>zničení</description>
+        <shortcut>zničení</shortcut>
         <item-type-assign code="EXT_TYPE"/>
     </item-spec>
-    <item-spec code="EXT_INDUSTRIALACTIVITY">
-        <name>zánik z důvodu průmyslové činnosti</name>
-        <description>zánik z důvodu průmyslové činnosti</description>
-        <shortcut>zánik z důvodu průmyslové činnosti</shortcut>
+    <item-spec code="EXT_STOPPUBLISHING">
+        <name>ukončení vydávání</name>
+        <description>ukončení vydávání</description>
+        <shortcut>ukončení vydávání</shortcut>
         <item-type-assign code="EXT_TYPE"/>
     </item-spec>
-    <item-spec code="EXT_BATTLE">
-        <name>zánik z důvodu vojenského konfliktu</name>
-        <description>zánik z důvodu vojenského konfliktu</description>
-        <shortcut>zánik z důvodu vojenského konfliktu</shortcut>
+    <item-spec code="EXT_LASTREALIZATION">
+        <name>poslední realizace</name>
+        <description>poslední realizace</description>
+        <shortcut>poslední realizace</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_UNSPECIFIED">
+        <name>nespecifikovaný zánik</name>
+        <description>nespecifikovaný zánik</description>
+        <shortcut>nespecifikovaný zánik</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_CHANGE">
+        <name>zánik změnou</name>
+        <description>zánik změnou</description>
+        <shortcut>zánik změnou</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_CANCEL">
+        <name>zánik zrušením</name>
+        <description>zánik zrušením</description>
+        <shortcut>zánik zrušením</shortcut>
         <item-type-assign code="EXT_TYPE"/>
     </item-spec>
     <item-spec code="EXT_DISPLACEMENT">
@@ -257,34 +257,34 @@
         <shortcut>zánik z důvodu zřízení vojenského prostoru</shortcut>
         <item-type-assign code="EXT_TYPE"/>
     </item-spec>
+    <item-spec code="EXT_INDUSTRIALACTIVITY">
+        <name>zánik z důvodu průmyslové činnosti</name>
+        <description>zánik z důvodu průmyslové činnosti</description>
+        <shortcut>zánik z důvodu průmyslové činnosti</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_MININGACTIVITY">
+        <name>zánik z důvodu důlní činnosti</name>
+        <description>zánik z důvodu důlní činnosti</description>
+        <shortcut>zánik z důvodu důlní činnosti</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
+    <item-spec code="EXT_BATTLE">
+        <name>zánik z důvodu vojenského konfliktu</name>
+        <description>zánik z důvodu vojenského konfliktu</description>
+        <shortcut>zánik z důvodu vojenského konfliktu</shortcut>
+        <item-type-assign code="EXT_TYPE"/>
+    </item-spec>
     <item-spec code="EXT_DISASTER">
         <name>zánik z důvodu živelní pohromy</name>
         <description>zánik z důvodu živelní pohromy</description>
         <shortcut>zánik z důvodu živelní pohromy</shortcut>
         <item-type-assign code="EXT_TYPE"/>
     </item-spec>
-	<item-spec code="EXT_CANCELCHANGE">
-		<name>zánik zrušením/změnou</name>
-        <description>zánik zrušením/změnou</description>
-		<shortcut>zánik zrušením/změnou</shortcut>
-		<item-type-assign code="EXT_TYPE"/>
-	</item-spec>
-    <item-spec code="EXT_CHANGE">
-        <name>zánik změnou</name>
-        <description>zánik změnou</description>
-        <shortcut>zánik změnou</shortcut>
-        <item-type-assign code="EXT_TYPE"/>
-    </item-spec>
-    <item-spec code="EXT_CANCEL">
-        <name>zánik zrušením</name>
-        <description>zánik zrušením</description>
-        <shortcut>zánik zrušením</shortcut>
-        <item-type-assign code="EXT_TYPE"/>
-    </item-spec>
-    <item-spec code="EXT_DESTRUCTION">
-        <name>zničení</name>
-        <description>zničení</description>
-        <shortcut>zničení</shortcut>
+    <item-spec code="EXT_OTHER">
+        <name>jiný typ zániku</name>
+        <description>jiný typ zániku</description>
+        <shortcut>jiný typ zániku</shortcut>
         <item-type-assign code="EXT_TYPE"/>
     </item-spec>
     <item-spec code="GT_ARCHSITE">
@@ -2371,22 +2371,64 @@
         <item-type-assign code="NM_LANG"/>
         <item-type-assign code="LANG"/>
     </item-spec>
-    <item-spec code="NT_AUTHORCIPHER">
-        <name>autorská šifra</name>
-        <description>autorská šifra</description>
-        <shortcut>autorská šifra</shortcut>
+    <item-spec code="NT_OFFICIAL">
+        <name>úřední</name>
+        <description>úřední</description>
+        <shortcut>úřední</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="NT_RELIGIOUS">
-        <name>církevní</name>
-        <description>církevní</description>
-        <shortcut>církevní</shortcut>
+    <item-spec code="NT_ARTIFICIAL">
+        <name>uměle vytvořené</name>
+        <description>uměle vytvořené</description>
+        <shortcut>uměle vytvořené</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
     <item-spec code="NT_EQUIV">
         <name>ekvivalent</name>
         <description>ekvivalent</description>
         <shortcut>ekvivalent</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_ONLYKNOWN">
+        <name>jediný známý tvar</name>
+        <description>jediný známý tvar</description>
+        <shortcut>jediný známý tvar</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_ACRONYM">
+        <name>zkratka/akronym</name>
+        <description>zkratka/akronym</description>
+        <shortcut>zkratka/akronym</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_AUTHORCIPHER">
+        <name>autorská šifra</name>
+        <description>autorská šifra</description>
+        <shortcut>autorská šifra</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_SINGULAR">
+        <name>singulár</name>
+        <description>singulár</description>
+        <shortcut>singulár</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_PLURAL">
+        <name>plurál</name>
+        <description>plurál</description>
+        <shortcut>plurál</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_TAKEN">
+        <name>přejatý termín</name>
+        <description>přejatý termín</description>
+        <shortcut>přejatý termín</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_RELIGIOUS">
+        <name>církevní</name>
+        <description>církevní</description>
+        <shortcut>církevní</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
     <item-spec code="NT_HISTORICAL">
@@ -2401,76 +2443,16 @@
         <shortcut>historická/dřívější podoba</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="NT_HOMONYMUM">
-        <name>homonymum</name>
-        <description>homonymum</description>
-        <shortcut>homonymum</shortcut>
+    <item-spec code="NT_NATIV">
+        <name>rodné</name>
+        <description>rodné</description>
+        <shortcut>rodné</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="NT_INCIPIT">
-        <name>incipit</name>
-        <description>incipit</description>
-        <shortcut>incipit</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_INVERTED">
-        <name>invertovaná podoba</name>
-        <description>invertovaná podoba</description>
-        <shortcut>invertovaná podoba</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_ONLYKNOWN">
-        <name>jediný známý tvar</name>
-        <description>jediný známý tvar</description>
-        <shortcut>jediný známý tvar</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_ORIGINAL">
-        <name>název originálu</name>
-        <description>název originálu</description>
-        <shortcut>název originálu</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_INAPPROPRIATE">
-        <name>nevhodný termín</name>
-        <description>nevhodný termín</description>
-        <shortcut>nevhodný termín</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_TERM">
-        <name>odborný termín</name>
-        <description>odborný termín</description>
-        <shortcut>odborný termín</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_PLURAL">
-        <name>plurál</name>
-        <description>plurál</description>
-        <shortcut>plurál</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_OTHERRULES">
-        <name>podle jiných pravidel</name>
-        <description>podle jiných pravidel</description>
-        <shortcut>podle jiných pravidel</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_HONOR">
-        <name>podoba s čestným názvem</name>
-        <description>podoba s čestným názvem</description>
-        <shortcut>podoba s čestným názvem</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_TAKEN">
-        <name>přejatý termín</name>
-        <description>přejatý termín</description>
-        <shortcut>přejatý termín</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_TRANSLATED">
-        <name>překlad</name>
-        <description>překlad</description>
-        <shortcut>překlad</shortcut>
+    <item-spec code="NT_ACCEPTED">
+        <name>přijaté</name>
+        <description>přijaté</description>
+        <shortcut>přijaté</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
     <item-spec code="NT_ALIAS">
@@ -2479,10 +2461,10 @@
         <shortcut>přezdívka/zlidovělá podoba</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="NT_ACCEPTED">
-        <name>přijaté</name>
-        <description>přijaté</description>
-        <shortcut>přijaté</shortcut>
+    <item-spec code="NT_FOLK">
+        <name>zlidovělá podoba</name>
+        <description>zlidovělá podoba</description>
+        <shortcut>zlidovělá podoba</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
     <item-spec code="NT_DIRECT">
@@ -2497,46 +2479,16 @@
         <shortcut>pseudonym</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="NT_NATIV">
-        <name>rodné</name>
-        <description>rodné</description>
-        <shortcut>rodné</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_SINGULAR">
-        <name>singulár</name>
-        <description>singulár</description>
-        <shortcut>singulár</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_ACTUAL">
-        <name>současná podoba</name>
-        <description>současná podoba</description>
-        <shortcut>současná podoba</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
     <item-spec code="NT_SECULAR">
         <name>světské</name>
         <description>světské</description>
         <shortcut>světské</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="NT_ARTIFICIAL">
-        <name>uměle vytvořené</name>
-        <description>uměle vytvořené</description>
-        <shortcut>uměle vytvořené</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_OFFICIAL">
-        <name>úřední</name>
-        <description>úřední</description>
-        <shortcut>úřední</shortcut>
-        <item-type-assign code="NM_TYPE"/>
-    </item-spec>
-    <item-spec code="NT_NARROWER">
-        <name>užší termín</name>
-        <description>užší termín</description>
-        <shortcut>užší termín</shortcut>
+    <item-spec code="NT_ACTUAL">
+        <name>současná podoba</name>
+        <description>současná podoba</description>
+        <shortcut>současná podoba</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
     <item-spec code="NT_SIMPLIFIED">
@@ -2551,269 +2503,82 @@
         <shortcut>zkomolená podoba</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="NT_ACRONYM">
-        <name>zkratka/akronym</name>
-        <description>zkratka/akronym</description>
-        <shortcut>zkratka/akronym</shortcut>
+    <item-spec code="NT_HONOR">
+        <name>podoba s čestným názvem</name>
+        <description>podoba s čestným názvem</description>
+        <shortcut>podoba s čestným názvem</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="NT_FOLK">
-        <name>zlidovělá podoba</name>
-        <description>zlidovělá podoba</description>
-        <shortcut>zlidovělá podoba</shortcut>
+    <item-spec code="NT_OTHERRULES">
+        <name>podle jiných pravidel</name>
+        <description>podle jiných pravidel</description>
+        <shortcut>podle jiných pravidel</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="RT_AUTHOR">
-        <name>autor/tvůrce</name>
-        <description>autor/tvůrce</description>
-        <shortcut>autor/tvůrce</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="DYNASTY"/>
-            <item-aptype register-type="EVENT"/>
-        </item-aptypes>
+    <item-spec code="NT_INAPPROPRIATE">
+        <name>nevhodný termín</name>
+        <description>nevhodný termín</description>
+        <shortcut>nevhodný termín</shortcut>
+        <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="RT_AUTHOROFCHANGE">
-        <name>autor změny / tvůrce změny</name>
-        <description>autor změny / tvůrce změny</description>
-        <shortcut>autor změny / tvůrce změny</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="DYNASTY"/>
-        </item-aptypes>
+    <item-spec code="NT_NARROWER">
+        <name>užší termín</name>
+        <description>užší termín</description>
+        <shortcut>užší termín</shortcut>
+        <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="RT_GRANDMOTHER">
-        <name>babička</name>
-        <description>babička</description>
-        <shortcut>babička</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
+    <item-spec code="NT_TERM">
+        <name>odborný termín</name>
+        <description>odborný termín</description>
+        <shortcut>odborný termín</shortcut>
+        <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="RT_BROTHER">
-        <name>bratr</name>
-        <description>bratr</description>
-        <shortcut>bratr</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
+    <item-spec code="NT_INVERTED">
+        <name>invertovaná podoba</name>
+        <description>invertovaná podoba</description>
+        <shortcut>invertovaná podoba</shortcut>
+        <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="RT_HECOUSIN">
-        <name>bratranec</name>
-        <description>bratranec</description>
-        <shortcut>bratranec</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
+    <item-spec code="NT_HOMONYMUM">
+        <name>homonymum</name>
+        <description>homonymum</description>
+        <shortcut>homonymum</shortcut>
+        <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="RT_WHOLE">
-        <name>celek</name>
-        <description>celek</description>
-        <shortcut>celek</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="ARTWORK"/>
-        </item-aptypes>
+    <item-spec code="NT_TRANSLATED">
+        <name>překlad</name>
+        <description>překlad</description>
+        <shortcut>překlad</shortcut>
+        <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="RT_CEREMONY">
-        <name>ceremoniál ocenění</name>
-        <description>ceremoniál ocenění</description>
-        <shortcut>ceremoniál ocenění</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="EVENT"/>
-        </item-aptypes>
+    <item-spec code="NT_ORIGINAL">
+        <name>název originálu</name>
+        <description>název originálu</description>
+        <shortcut>název originálu</shortcut>
+        <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="RT_MEMBERORG">
-        <name>členská organizace</name>
-        <description>členská organizace</description>
-        <shortcut>členská organizace</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-        </item-aptypes>
+    <item-spec code="NT_INCIPIT">
+        <name>incipit</name>
+        <description>incipit</description>
+        <shortcut>incipit</shortcut>
+        <item-type-assign code="NM_TYPE"/>
     </item-spec>
-    <item-spec code="RT_RELATIONS">
-        <name>další rodinné vztahy</name>
-        <description>další rodinné vztahy</description>
-        <shortcut>další rodinné vztahy</shortcut>
+    <item-spec code="RT_FATHER">
+        <name>otec</name>
+        <description>otec</description>
+        <shortcut>otec</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
-    <item-spec code="RT_GRANDFATHER">
-        <name>dědeček</name>
-        <description>dědeček</description>
-        <shortcut>dědeček</shortcut>
+    <item-spec code="RT_MOTHER">
+        <name>matka</name>
+        <description>matka</description>
+        <shortcut>matka</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_DOCUMENT">
-        <name>dokument</name>
-        <description>dokument</description>
-        <shortcut>dokument</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="ARTWORK"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_ENTITYEND">
-        <name>entita související s koncem</name>
-        <description>entita související s koncem</description>
-        <shortcut>entita související s koncem</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-    </item-spec>
-    <item-spec code="RT_ENTITYBIRTH">
-        <name>entita související s narozením</name>
-        <description>entita související s narozením</description>
-        <shortcut>entita související s narozením</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-    </item-spec>
-    <item-spec code="RT_ENTITYDEATH">
-        <name>entita související s úmrtím</name>
-        <description>entita související s úmrtím</description>
-        <shortcut>entita související s úmrtím</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-    </item-spec>
-    <item-spec code="RT_ENTITYRISE">
-        <name>entita související se vznikem</name>
-        <description>entita související se vznikem</description>
-        <shortcut>entita související se vznikem</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-    </item-spec>
-    <item-spec code="RT_ENTITYORIGIN">
-        <name>entita související se začátkem</name>
-        <description>entita související se začátkem</description>
-        <shortcut>entita související se začátkem</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-    </item-spec>
-    <item-spec code="RT_ENTITYEXTINCTION">
-        <name>entita související se zánikem</name>
-        <description>entita související se zánikem</description>
-        <shortcut>entita související se zánikem</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-    </item-spec>
-    <item-spec code="RT_FUNCTION">
-        <name>funkce/činnost</name>
-        <description>funkce/činnost</description>
-        <shortcut>funkce/činnost</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="TERM"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_GEOSCOPE">
-        <name>geografická působnost</name>
-        <description>geografická působnost</description>
-        <shortcut>geografická působnost</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="GEO"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_MILESTONE">
-        <name>historický milník</name>
-        <description>historický milník</description>
-        <shortcut>historický milník</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-    </item-spec>
-    <item-spec code="RT_ISPART">
-        <name>je část</name>
-        <description>je část</description>
-        <shortcut>je část</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_ISMEMBER">
-        <name>je členem</name>
-        <description>je členem</description>
-        <shortcut>je členem</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="DYNASTY"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_GENUSMEMBER">
-        <name>je členem rodiny/rodu</name>
-        <description>je členem rodiny/rodu</description>
-        <shortcut>je členem rodiny/rodu</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="DYNASTY"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_OTHERNAME">
-        <name>jiná entita reprezentující tutéž osobu</name>
-        <description>jiná entita reprezentující tutéž osobu</description>
-        <shortcut>jiná entita reprezentující tutéž osobu</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="PARTY_GROUP"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_ANCESTOR">
-        <name>jiný předek</name>
-        <description>jiný předek</description>
-        <shortcut>jiný předek</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_ACTIVITYCORP">
-        <name>korporace veřejného působení</name>
-        <description>korporace veřejného působení</description>
-        <shortcut>korporace veřejného působení</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_LIQUIDATOR">
-        <name>likvidátor</name>
-        <description>likvidátor</description>
-        <shortcut>likvidátor</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="DYNASTY"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_OWNER">
-        <name>majitel</name>
-        <description>majitel</description>
-        <shortcut>majitel</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="DYNASTY"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_HOLDER">
-        <name>majitel, držitel</name>
-        <description>majitel, držitel</description>
-        <shortcut>majitel, držitel</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="RT_HUSBAND">
@@ -2834,131 +2599,19 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
-    <item-spec code="RT_MOTHER">
-        <name>matka</name>
-        <description>matka</description>
-        <shortcut>matka</shortcut>
+    <item-spec code="RT_BROTHER">
+        <name>bratr</name>
+        <description>bratr</description>
+        <shortcut>bratr</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
-    <item-spec code="RT_PLACE">
-        <name>místo</name>
-        <description>místo</description>
-        <shortcut>místo</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="GEO"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_VENUE">
-        <name>místo konání</name>
-        <description>místo konání</description>
-        <shortcut>místo konání</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="GEO"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_PLACEEND">
-        <name>místo ukončení</name>
-        <description>místo ukončení</description>
-        <shortcut>místo ukončení</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="GEO"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_PLACESTART">
-        <name>místo uzavření</name>
-        <description>místo uzavření</description>
-        <shortcut>místo uzavření</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="GEO"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_SUPCORP">
-        <name>nadřazená korporace</name>
-        <description>nadřazená korporace</description>
-        <shortcut>nadřazená korporace</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_SUPTERM">
-        <name>nadřazený pojem</name>
-        <description>nadřazený pojem</description>
-        <shortcut>nadřazený pojem</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="TERM"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_SENIOR">
-        <name>nadřízený</name>
-        <description>nadřízený</description>
-        <shortcut>nadřízený</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_SUCCESSOR">
-        <name>nástupce</name>
-        <description>nástupce</description>
-        <shortcut>nástupce</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="DYNASTY"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_ACTIVITYFIELD">
-        <name>obor činnosti</name>
-        <description>obor činnosti</description>
-        <shortcut>obor činnosti</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="TERM"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_STUDYFIELD">
-        <name>obor studia</name>
-        <description>obor studia</description>
-        <shortcut>obor studia</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="TERM"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_AWARD">
-        <name>ocenění</name>
-        <description>ocenění</description>
-        <shortcut>ocenění</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="ARTWORK"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_ORGANIZER">
-        <name>organizátor, svolavatel</name>
-        <description>organizátor, svolavatel</description>
-        <shortcut>organizátor, svolavatel</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="DYNASTY"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_FATHER">
-        <name>otec</name>
-        <description>otec</description>
-        <shortcut>otec</shortcut>
+    <item-spec code="RT_SISTER">
+        <name>sestra</name>
+        <description>sestra</description>
+        <shortcut>sestra</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
@@ -2982,72 +2635,10 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
-    <item-spec code="RT_SUBTERM">
-        <name>podřazený pojem</name>
-        <description>podřazený pojem</description>
-        <shortcut>podřazený pojem</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="TERM"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_NAMEDAFTER">
-        <name>pojmenováno po</name>
-        <description>pojmenováno po</description>
-        <shortcut>pojmenováno po</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="GEO"/>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="DYNASTY"/>
-            <item-aptype register-type="ARTWORK"/>
-            <item-aptype register-type="EVENT"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_LASTKMEMBER">
-        <name>poslední známý člen rodu/rodiny</name>
-        <description>poslední známý člen rodu/rodiny</description>
-        <shortcut>poslední známý člen rodu/rodiny</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_FIRSTKMEMBER">
-        <name>první známý člen rodu/rodiny</name>
-        <description>první známý člen rodu/rodiny</description>
-        <shortcut>první známý člen rodu/rodiny</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_PREDECESSOR">
-        <name>předchůdce</name>
-        <description>předchůdce</description>
-        <shortcut>předchůdce</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="DYNASTY"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_AFFILIATION">
-        <name>příslušnost k</name>
-        <description>příslušnost k</description>
-        <shortcut>příslušnost k</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="GEO"/>
-            <item-aptype register-type="REGION"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_SISTER">
-        <name>sestra</name>
-        <description>sestra</description>
-        <shortcut>sestra</shortcut>
+    <item-spec code="RT_HECOUSIN">
+        <name>bratranec</name>
+        <description>bratranec</description>
+        <shortcut>bratranec</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
@@ -3062,60 +2653,19 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
-    <item-spec code="RT_RESIDENCE">
-        <name>sídlo</name>
-        <description>sídlo</description>
-        <shortcut>sídlo</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="GEO"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_COMPEVENT">
-        <name>souborná událost, celek</name>
-        <description>souborná událost, celek</description>
-        <shortcut>souborná událost, celek</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="EVENT"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_RELATED">
-        <name>související entita</name>
-        <description>související entita</description>
-        <shortcut>související entita</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="GEO"/>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="DYNASTY"/>
-            <item-aptype register-type="ARTWORK"/>
-            <item-aptype register-type="EVENT"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_RELATEDTERM">
-        <name>související pojem</name>
-        <description>související pojem</description>
-        <shortcut>související pojem</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="TERM"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_COLLABORATOR">
-        <name>spolupracovník</name>
-        <description>spolupracovník</description>
-        <shortcut>spolupracovník</shortcut>
+    <item-spec code="RT_GRANDMOTHER">
+        <name>babička</name>
+        <description>babička</description>
+        <shortcut>babička</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
-    <item-spec code="RT_SCHOOLMATE">
-        <name>spolužák</name>
-        <description>spolužák</description>
-        <shortcut>spolužák</shortcut>
+    <item-spec code="RT_GRANDFATHER">
+        <name>dědeček</name>
+        <description>dědeček</description>
+        <shortcut>dědeček</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
@@ -3128,51 +2678,6 @@
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_SCHOOL">
-        <name>škola</name>
-        <description>škola</description>
-        <shortcut>škola</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PARTY_GROUP"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_BROTHERINLAW">
-        <name>švagr</name>
-        <description>švagr</description>
-        <shortcut>švagr</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_SISTERINLAW">
-        <name>švagrová</name>
-        <description>švagrová</description>
-        <shortcut>švagrová</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_CATEGORY">
-        <name>taxonomická kategorie</name>
-        <description>taxonomická kategorie</description>
-        <shortcut>taxonomická kategorie</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="TERM_TAXONOMY"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_THEME">
-        <name>tematický celek</name>
-        <description>tematický celek</description>
-        <shortcut>tematický celek</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="TERM"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="RT_AUNT">
@@ -3202,6 +2707,118 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
+    <item-spec code="RT_BROTHERINLAW">
+        <name>švagr</name>
+        <description>švagr</description>
+        <shortcut>švagr</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SISTERINLAW">
+        <name>švagrová</name>
+        <description>švagrová</description>
+        <shortcut>švagrová</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RELATIONS">
+        <name>další rodinné vztahy</name>
+        <description>další rodinné vztahy</description>
+        <shortcut>další rodinné vztahy</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ANCESTOR">
+        <name>jiný předek</name>
+        <description>jiný předek</description>
+        <shortcut>jiný předek</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GENUSMEMBER">
+        <name>je členem rodiny/rodu</name>
+        <description>je členem rodiny/rodu</description>
+        <shortcut>je členem rodiny/rodu</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_OTHERNAME">
+        <name>jiná entita reprezentující tutéž osobu</name>
+        <description>jiná entita reprezentující tutéž osobu</description>
+        <shortcut>jiná entita reprezentující tutéž osobu</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_FIRSTKMEMBER">
+        <name>první známý člen rodu/rodiny</name>
+        <description>první známý člen rodu/rodiny</description>
+        <shortcut>první známý člen rodu/rodiny</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_LASTKMEMBER">
+        <name>poslední známý člen rodu/rodiny</name>
+        <description>poslední známý člen rodu/rodiny</description>
+        <shortcut>poslední známý člen rodu/rodiny</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ISMEMBER">
+        <name>je členem</name>
+        <description>je členem</description>
+        <shortcut>je členem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_REPRESENT">
+        <name>zástupce</name>
+        <description>zástupce</description>
+        <shortcut>zástupce</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SCHOOL">
+        <name>škola</name>
+        <description>škola</description>
+        <shortcut>škola</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SCHOOLMATE">
+        <name>spolužák</name>
+        <description>spolužák</description>
+        <shortcut>spolužák</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
     <item-spec code="RT_TEACHER">
         <name>učitel</name>
         <description>učitel</description>
@@ -3211,10 +2828,10 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
-    <item-spec code="RT_GRANTAUTH">
-        <name>udělovatel</name>
-        <description>udělovatel</description>
-        <shortcut>udělovatel</shortcut>
+    <item-spec code="RT_EMPLOYER">
+        <name>zaměstnavatel</name>
+        <description>zaměstnavatel</description>
+        <shortcut>zaměstnavatel</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
@@ -3222,19 +2839,189 @@
             <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
     </item-spec>
-    <item-spec code="RT_STORAGE">
-        <name>uložení</name>
-        <description>uložení</description>
-        <shortcut>uložení</shortcut>
+    <item-spec code="RT_ACTIVITYCORP">
+        <name>korporace veřejného působení</name>
+        <description>korporace veřejného působení</description>
+        <shortcut>korporace veřejného působení</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
-            <item-aptype register-type="ARTWORK_CONSTR"/>
+            <item-aptype register-type="PARTY_GROUP"/>
         </item-aptypes>
     </item-spec>
-    <item-spec code="RT_LOCATION">
-        <name>umístění</name>
-        <description>umístění</description>
-        <shortcut>umístění</shortcut>
+    <item-spec code="RT_MEMBERORG">
+        <name>členská organizace</name>
+        <description>členská organizace</description>
+        <shortcut>členská organizace</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_FUNCTION">
+        <name>funkce/činnost</name>
+        <description>funkce/činnost</description>
+        <shortcut>funkce/činnost</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_COLLABORATOR">
+        <name>spolupracovník</name>
+        <description>spolupracovník</description>
+        <shortcut>spolupracovník</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SENIOR">
+        <name>nadřízený</name>
+        <description>nadřízený</description>
+        <shortcut>nadřízený</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_FOUNDER">
+        <name>zakladatel/zřizovatel</name>
+        <description>zakladatel/zřizovatel</description>
+        <shortcut>zakladatel/zřizovatel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PREDECESSOR">
+        <name>předchůdce</name>
+        <description>předchůdce</description>
+        <shortcut>předchůdce</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_LIQUIDATOR">
+        <name>likvidátor</name>
+        <description>likvidátor</description>
+        <shortcut>likvidátor</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SUCCESSOR">
+        <name>nástupce</name>
+        <description>nástupce</description>
+        <shortcut>nástupce</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ORIGINATOR">
+        <name>zřizovatel</name>
+        <description>zřizovatel</description>
+        <shortcut>zřizovatel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ORGANIZER">
+        <name>organizátor, svolavatel</name>
+        <description>organizátor, svolavatel</description>
+        <shortcut>organizátor, svolavatel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ISPART">
+        <name>je část</name>
+        <description>je část</description>
+        <shortcut>je část</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ROOF">
+        <name>zjednodušená podniková entita</name>
+        <description>zjednodušená podniková entita</description>
+        <shortcut>zjednodušená zastřešující entita</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="COMPANY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_AUTHOR">
+        <name>autor/tvůrce</name>
+        <description>autor/tvůrce</description>
+        <shortcut>autor/tvůrce</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="DYNASTY"/>
+            <item-aptype register-type="EVENT"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_DOCUMENT">
+        <name>dokument</name>
+        <description>dokument</description>
+        <shortcut>dokument</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_OWNER">
+        <name>majitel</name>
+        <description>majitel</description>
+        <shortcut>majitel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SUPCORP">
+        <name>nadřazená korporace</name>
+        <description>nadřazená korporace</description>
+        <shortcut>nadřazená korporace</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_VENUE">
+        <name>místo konání</name>
+        <description>místo konání</description>
+        <shortcut>místo konání</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RESIDENCE">
+        <name>sídlo</name>
+        <description>sídlo</description>
+        <shortcut>sídlo</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
             <item-aptype register-type="GEO"/>
@@ -3250,65 +3037,86 @@
             <item-aptype register-type="ARTWORK_ARTWORK"/>
         </item-aptypes>
     </item-spec>
-    <item-spec code="RT_ACTIVITIES">
-        <name>významné aktivity</name>
-        <description>významné aktivity</description>
-        <shortcut>významné aktivity</shortcut>
+    <item-spec code="RT_AFFILIATION">
+        <name>příslušnost k</name>
+        <description>příslušnost k</description>
+        <shortcut>příslušnost k</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+            <item-aptype register-type="REGION"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_LOCATION">
+        <name>umístění</name>
+        <description>umístění</description>
+        <shortcut>umístění</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_STORAGE">
+        <name>uložení</name>
+        <description>uložení</description>
+        <shortcut>uložení</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK_CONSTR"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_WHOLE">
+        <name>celek</name>
+        <description>celek</description>
+        <shortcut>celek</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
             <item-aptype register-type="ARTWORK"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_HOLDER">
+        <name>majitel, držitel</name>
+        <description>majitel, držitel</description>
+        <shortcut>majitel, držitel</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_AUTHOROFCHANGE">
+        <name>autor změny / tvůrce změny</name>
+        <description>autor změny / tvůrce změny</description>
+        <shortcut>autor změny / tvůrce změny</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GEOPARTNER">
+        <name>partner</name>
+        <description>partner</description>
+        <shortcut>partner</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_NAMEDAFTER">
+        <name>pojmenováno po</name>
+        <description>pojmenováno po</description>
+        <shortcut>pojmenováno po</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="GEO"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+            <item-aptype register-type="ARTWORK"/>
             <item-aptype register-type="EVENT"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_FOUNDER">
-        <name>zakladatel/zřizovatel</name>
-        <description>zakladatel/zřizovatel</description>
-        <shortcut>zakladatel/zřizovatel</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="DYNASTY"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_EMPLOYER">
-        <name>zaměstnavatel</name>
-        <description>zaměstnavatel</description>
-        <shortcut>zaměstnavatel</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="DYNASTY"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_ROOF">
-        <name>zjednodušená podniková entita</name>
-        <description>zjednodušená podniková entita</description>
-        <shortcut>zjednodušená zastřešující entita</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="COMPANY"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_REPRESENT">
-        <name>zástupce</name>
-        <description>zástupce</description>
-        <shortcut>zástupce</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
-            <item-aptype register-type="PARTY_GROUP"/>
-            <item-aptype register-type="DYNASTY"/>
-        </item-aptypes>
-    </item-spec>
-    <item-spec code="RT_NAMECHANGE">
-        <name>změna jména/identity</name>
-        <description>změna jména/identity</description>
-        <shortcut>změna jména/identity</shortcut>
-        <item-type-assign code="REL_ENTITY"/>
-        <item-aptypes>
-            <item-aptype register-type="PERSON"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="RT_MENTION">
@@ -3320,10 +3128,73 @@
             <item-aptype register-type="ARTWORK"/>
         </item-aptypes>
     </item-spec>
-    <item-spec code="RT_ORIGINATOR">
-        <name>zřizovatel</name>
-        <description>zřizovatel</description>
-        <shortcut>zřizovatel</shortcut>
+    <item-spec code="RT_PLACE">
+        <name>místo</name>
+        <description>místo</description>
+        <shortcut>místo</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PLACESTART">
+        <name>místo uzavření</name>
+        <description>místo uzavření</description>
+        <shortcut>místo uzavření</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PLACEEND">
+        <name>místo ukončení</name>
+        <description>místo ukončení</description>
+        <shortcut>místo ukončení</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GEOSCOPE">
+        <name>geografická působnost</name>
+        <description>geografická působnost</description>
+        <shortcut>geografická působnost</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_STUDYFIELD">
+        <name>obor studia</name>
+        <description>obor studia</description>
+        <shortcut>obor studia</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ACTIVITYFIELD">
+        <name>obor činnosti</name>
+        <description>obor činnosti</description>
+        <shortcut>obor činnosti</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_CEREMONY">
+        <name>ceremoniál ocenění</name>
+        <description>ceremoniál ocenění</description>
+        <shortcut>ceremoniál ocenění</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="EVENT"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GRANTAUTH">
+        <name>udělovatel</name>
+        <description>udělovatel</description>
+        <shortcut>udělovatel</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
             <item-aptype register-type="PERSON"/>
@@ -3331,13 +3202,142 @@
             <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
     </item-spec>
-    <item-spec code="RT_GEOPARTNER">
-        <name>partner</name>
-        <description>partner</description>
-        <shortcut>partner</shortcut>
+    <item-spec code="RT_AWARD">
+        <name>ocenění</name>
+        <description>ocenění</description>
+        <shortcut>ocenění</shortcut>
         <item-type-assign code="REL_ENTITY"/>
         <item-aptypes>
+            <item-aptype register-type="ARTWORK"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ACTIVITIES">
+        <name>významné aktivity</name>
+        <description>významné aktivity</description>
+        <shortcut>významné aktivity</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="ARTWORK"/>
+            <item-aptype register-type="EVENT"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_NAMECHANGE">
+        <name>změna jména/identity</name>
+        <description>změna jména/identity</description>
+        <shortcut>změna jména/identity</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_COMPEVENT">
+        <name>souborná událost, celek</name>
+        <description>souborná událost, celek</description>
+        <shortcut>souborná událost, celek</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="EVENT"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_MILESTONE">
+        <name>historický milník</name>
+        <description>historický milník</description>
+        <shortcut>historický milník</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_THEME">
+        <name>tematický celek</name>
+        <description>tematický celek</description>
+        <shortcut>tematický celek</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_CATEGORY">
+        <name>taxonomická kategorie</name>
+        <description>taxonomická kategorie</description>
+        <shortcut>taxonomická kategorie</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM_TAXONOMY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SUPTERM">
+        <name>nadřazený pojem</name>
+        <description>nadřazený pojem</description>
+        <shortcut>nadřazený pojem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RELATED">
+        <name>související entita</name>
+        <description>související entita</description>
+        <shortcut>související entita</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
             <item-aptype register-type="GEO"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+            <item-aptype register-type="ARTWORK"/>
+            <item-aptype register-type="EVENT"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RELATEDTERM">
+        <name>související pojem</name>
+        <description>související pojem</description>
+        <shortcut>související pojem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ENTITYBIRTH">
+        <name>entita související s narozením</name>
+        <description>entita související s narozením</description>
+        <shortcut>entita související s narozením</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_ENTITYRISE">
+        <name>entita související se vznikem</name>
+        <description>entita související se vznikem</description>
+        <shortcut>entita související se vznikem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_ENTITYORIGIN">
+        <name>entita související se začátkem</name>
+        <description>entita související se začátkem</description>
+        <shortcut>entita související se začátkem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_ENTITYDEATH">
+        <name>entita související s úmrtím</name>
+        <description>entita související s úmrtím</description>
+        <shortcut>entita související s úmrtím</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_ENTITYEXTINCTION">
+        <name>entita související se zánikem</name>
+        <description>entita související se zánikem</description>
+        <shortcut>entita související se zánikem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_ENTITYEND">
+        <name>entita související s koncem</name>
+        <description>entita související s koncem</description>
+        <shortcut>entita související s koncem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+    </item-spec>
+    <item-spec code="RT_SUBTERM">
+        <name>podřazený pojem</name>
+        <description>podřazený pojem</description>
+        <shortcut>podřazený pojem</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
         </item-aptypes>
     </item-spec>
     <item-spec code="GE_MALE">
