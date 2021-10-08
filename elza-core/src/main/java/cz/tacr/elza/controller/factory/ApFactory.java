@@ -67,6 +67,7 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemUnitidVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemUriRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -139,6 +140,8 @@ public class ApFactory {
 
     private final ApChangeRepository changeRepository;
 
+    private final ElzaLocale elzaLocale;
+    
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
@@ -153,7 +156,8 @@ public class ApFactory {
                      final ApIndexRepository indexRepository,
                      final ApTypeRepository apTypeRepository,
                      final UserRepository userRepository,
-                     final ApChangeRepository changeRepository) {
+                     final ApChangeRepository changeRepository,
+                     final ElzaLocale elzaLocale) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
         this.scopeRepository = scopeRepository;
@@ -168,6 +172,7 @@ public class ApFactory {
         this.apTypeRepository = apTypeRepository;
         this.userRepository = userRepository;
         this.changeRepository = changeRepository;
+        this.elzaLocale = elzaLocale;
     }
 
     /**
@@ -551,7 +556,7 @@ public class ApFactory {
             if (s1 == null || s2 == null) {
                 return 0;
             }
-            return s1.compareTo(s2);
+            return elzaLocale.getCollator().compare(s1, s2);
         });
 
         return partVOList;

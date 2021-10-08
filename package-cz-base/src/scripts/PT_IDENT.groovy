@@ -16,7 +16,7 @@ static GroovyResult generate(final GroovyPart part) {
     base.addBool("IDN_VERIFIED", "ověřena", "neověřena").withSeparator(" ").withPrefix("(hodnota ").withPostfix(")")
 
     GroovyAppender sort = GroovyUtils.createAppender(part)
-    sort.add("IDN_TYPE")
+    sort.addViewOrder("IDN_TYPE")
     sort.addUnitdateFrom("IDN_VALID_FROM")
     sort.addUnitdateTo("IDN_VALID_TO")
     sort.add("IDN_VALUE")

@@ -14,9 +14,10 @@ static GroovyResult generate(final GroovyPart part) {
     base.add("REL_END").withSeparator(", ").withPrefix("do: ")
 
     GroovyAppender sort = GroovyUtils.createAppender(part)
-    sort.add("REL_ENTITY")
+    sort.addViewOrder("REL_TYPE")
     sort.addUnitdateFrom("REL_BEGIN")
     sort.addUnitdateTo("REL_END")
+    sort.add("REL_ENTITY")
 
     GroovyResult result = new GroovyResult()
     result.setDisplayName(base.build())
