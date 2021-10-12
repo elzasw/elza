@@ -48,7 +48,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 /**
  * Servisní třída pro práci s externími systémy.
  *
- * @author Martin Šlapa
  * @since 05.12.2016
  */
 @Service
