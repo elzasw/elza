@@ -578,7 +578,7 @@ public class ApFactory {
         return apPartVO;
     }
 
-    private String getSortName(CachedPart part) {
+    public static String getSortName(CachedPart part) {
         String index = findIndexValue(part.getIndices(), SORT_NAME);
         if (StringUtils.isEmpty(index)) {
             index = "";
@@ -587,7 +587,7 @@ public class ApFactory {
     }
 
     @Nullable
-    static public String findIndexValue(List<ApIndex> indices, String indexName) {
+    public static String findIndexValue(List<ApIndex> indices, String indexName) {
         if (indices == null) {
             return null;
         }
