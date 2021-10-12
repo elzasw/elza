@@ -9,7 +9,6 @@ import java.util.Optional;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.ObjectListIterator;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,6 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.SyncState;
@@ -321,12 +319,14 @@ public class ExternalSystemService {
     }
 
     /**
-     * 
-     * @param scope
-     * @param value
-     *            Might be null
-     * @param apExternalSystem
-     * @return
+     * Create AP Binding in DB (saveAndFlush)
+     *  
+     * Method will flush new binding immediately to the DB 
+     * to prevent duplicated bindings.
+     *  
+     * @param value Binding value
+     * @param apExternalSystem Binded system
+     * @return saved binding
      */
     public ApBinding createApBinding(final String value,
                                      final ApExternalSystem apExternalSystem) {
@@ -336,7 +336,7 @@ public class ExternalSystemService {
         ApBinding apBinding = new ApBinding();
         apBinding.setValue(value);
         apBinding.setApExternalSystem(apExternalSystem);
-        return bindingRepository.save(apBinding);
+        return bindingRepository.saveAndFlush(apBinding);
     }
 
     public ApBindingState createApBindingState(final ApBinding binding,
@@ -365,15 +365,19 @@ public class ExternalSystemService {
                                                   String state,
                                                   String revisionUuid,
                                                   String user,
-                                                  Long replacedById) {
+                                                  String extReplacedBy,
+                                                  final SyncState syncState) {    	
         // check if new state is needed
         if (Objects.equals(state, oldbindingState.getExtState()) &&
                 Objects.equals(revisionUuid, oldbindingState.getExtRevision()) &&
                 Objects.equals(user, oldbindingState.getExtUser()) &&
-                Objects.equals(replacedById, oldbindingState.getExtReplacedBy()) &&
-                Objects.equals(SyncState.SYNC_OK, oldbindingState.getSyncOk())) {
+                Objects.equals(extReplacedBy, oldbindingState.getExtReplacedBy()) &&
+                Objects.equals(syncState, oldbindingState.getSyncOk())) {
             return oldbindingState;
         }
+        
+        oldbindingState.setDeleteChange(apChange);
+        bindingStateRepository.saveAndFlush(oldbindingState);
 
         ApBindingState apBindingState = new ApBindingState();
         apBindingState.setBinding(oldbindingState.getBinding());
@@ -381,35 +385,21 @@ public class ExternalSystemService {
         apBindingState.setExtState(state);
         apBindingState.setExtRevision(revisionUuid);
         apBindingState.setExtUser(user);
-        apBindingState.setExtReplacedBy(replacedById == null ? null : String.valueOf(replacedById));
+        apBindingState.setExtReplacedBy(extReplacedBy);
         apBindingState.setSyncChange(apChange);
         apBindingState.setCreateChange(apChange);
-        apBindingState.setSyncOk(SyncState.SYNC_OK);
+        apBindingState.setSyncOk(syncState);
 
-        oldbindingState.setDeleteChange(apChange);
-        bindingStateRepository.save(oldbindingState);
-        bindingStateRepository.flush();
-
-        return bindingStateRepository.save(apBindingState);
+        return bindingStateRepository.saveAndFlush(apBindingState);
     }
 
     public ApBindingState createNewApBindingState(ApBindingState oldbindingState,
                                                   ApChange apChange, String revisionUuid) {
-        ApBindingState apBindingState = new ApBindingState();
-        apBindingState.setBinding(oldbindingState.getBinding());
-        apBindingState.setAccessPoint(oldbindingState.getAccessPoint());
-        apBindingState.setExtState(oldbindingState.getExtState());
-        apBindingState.setExtRevision(revisionUuid);
-        apBindingState.setExtUser(oldbindingState.getExtUser());
-        apBindingState.setExtReplacedBy(oldbindingState.getExtReplacedBy());
-        apBindingState.setSyncChange(apChange);
-        apBindingState.setCreateChange(apChange);
-        apBindingState.setSyncOk(SyncState.SYNC_OK);
-
-        oldbindingState.setDeleteChange(apChange);
-        bindingStateRepository.save(oldbindingState);
-
-        return bindingStateRepository.save(apBindingState);
+    	return createNewApBindingState(oldbindingState, apChange,
+    			oldbindingState.getExtState(), revisionUuid,
+    			oldbindingState.getExtUser(),
+    			oldbindingState.getExtReplacedBy(),
+    			SyncState.SYNC_OK);
     }
 
     public ApBindingItem createApBindingItem(final ApBinding binding,
