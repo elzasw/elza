@@ -140,7 +140,6 @@ import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
-import cz.tacr.elza.service.AccessPointItemService.DeletedItems;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -1638,6 +1637,14 @@ public class AccessPointService {
 
         ApType newApType;
         if (newTypeId != null && !newTypeId.equals(oldApState.getApTypeId())) {
+            // nelze změnit třídu pokud existuje platná ApBindingState
+            int countBinding = bindingStateRepository.countByAccessPoint(accessPoint);
+            if (countBinding > 0) {
+                throw new SystemException("Třídu entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                .set("accessPointId", accessPoint.getAccessPointId())
+                .set("typeId", oldApState.getApTypeId());
+            }
+
             // get ap type
             StaticDataProvider sdp = staticDataService.createProvider();
             newApType = sdp.getApTypeById(newTypeId);
