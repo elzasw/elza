@@ -99,6 +99,8 @@ public class HelperTestService {
     @Autowired
     private NodeExtensionRepository nodeExtensionRepository;
     @Autowired
+    private SobjVrequestRepository sobjVrequestRepository;
+    @Autowired
     private StructuredObjectRepository structureDataRepository;
     @Autowired
     private FundStructureExtensionRepository fundStructureExtensionRepository;
@@ -234,6 +236,7 @@ public class HelperTestService {
         descItemRepository.deleteAll();
         itemRepository.deleteAll();
         dataRepository.deleteAll();
+        sobjVrequestRepository.deleteAll();
         structureDataRepository.deleteAll();
         fundStructureExtensionRepository.deleteAll();
         bulkActionNodeRepository.deleteAll();
