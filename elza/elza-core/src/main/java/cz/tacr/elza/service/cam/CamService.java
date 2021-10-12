@@ -3,28 +3,22 @@ package cz.tacr.elza.service.cam;
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.schema.cam.BatchEntityRecordRevXml;
 import cz.tacr.cam.schema.cam.BatchInfoXml;
-import cz.tacr.cam.schema.cam.BatchUpdateErrorXml;
 import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
 import cz.tacr.cam.schema.cam.BatchUpdateSavedXml;
 import cz.tacr.cam.schema.cam.BatchUpdateXml;
-import cz.tacr.cam.schema.cam.CreateEntityXml;
 import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityRecordRevInfoXml;
-import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
-import cz.tacr.cam.schema.cam.ErrorMessageXml;
 import cz.tacr.cam.schema.cam.LongStringXml;
 import cz.tacr.cam.schema.cam.UpdatesFromXml;
 import cz.tacr.cam.schema.cam.UpdatesXml;
 import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.api.ApExternalSystemType;
-import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
-import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApBindingSync;
 import cz.tacr.elza.domain.ApChange;
@@ -62,7 +56,6 @@ import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +66,6 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
-import javax.validation.constraints.NotNull;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -854,8 +846,7 @@ public class CamService {
             return;
         }
         Integer externalSystemId = queueItems.get(0).getExternalSystemId();
-        ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
-        ApScope scope = externalSystem.getScope();
+        ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);        
 
         List<Integer> bindingIds = queueItems.stream().map(p -> p.getBindingId()).collect(Collectors.toList());
         List<ApBinding> bindings = bindingRepository.findAllById(bindingIds);
@@ -865,17 +856,24 @@ public class CamService {
         log.debug("Download entity from CAM, bindingValues: {} externalSystem: {}", bindingValues, externalSystem.getCode());
 
         EntitiesXml entities = camConnector.getEntitiesByIds(bindingValues, externalSystem.getCode());
+        
+        importNew(externalSystem, entities, bindingMap);
 
+        setQueueItemState(queueItems,
+                         ExtSyncsQueueItem.ExtAsyncQueueState.OK,
+                         OffsetDateTime.now(),
+                         "Synchronized: ES -> ELZA");
+    }
+    
+    public void importNew(ApExternalSystem externalSystem, EntitiesXml entities, Map<String, ApBinding> bindingMap) {
+    	ApScope scope = externalSystem.getScope();
+    	
         ProcessingContext procCtx = new ProcessingContext(scope, externalSystem, staticDataService);
         for (EntityXml entity : entities.getList()) {
             String value = String.valueOf(entity.getEid().getValue());
             ApBinding binding = bindingMap.get(value);
             synchronizeAccessPoint(procCtx, null, null, binding, entity, true);
-        }
-        setQueueItemState(queueItems,
-                         ExtSyncsQueueItem.ExtAsyncQueueState.OK,
-                         OffsetDateTime.now(),
-                         "Synchronized: ES -> ELZA");
+        }    	
     }
 
 
