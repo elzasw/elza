@@ -215,13 +215,13 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
     }
 
     @Override
-    public List<ArrDescItem> findByNodesContainingTexts(final Collection<ArrNode> nodes,
-                                                        final RulItemType itemType,
-                                                        final Set<RulItemSpec> specifications,
-                                                        final Collection<String> texts) {
+    public List<ArrDescItem> findByNodesContainingStructureObjectIds(final Collection<ArrNode> nodes,
+                                                                     final RulItemType itemType,
+                                                                     final Set<RulItemSpec> specifications,
+                                                                     final Collection<Integer> stuctureObjectIds) {
 
-        if(CollectionUtils.isEmpty(texts)){
-            throw new IllegalArgumentException("Kolekce textů nesmí být prázdná.");
+        if(CollectionUtils.isEmpty(stuctureObjectIds)){
+            throw new IllegalArgumentException("Kolekce id strukturovaných typů nesmí být prázdná.");
         }
 
         if(itemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)){
@@ -229,7 +229,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
         }
 
         String hql = "SELECT di FROM arr_item di JOIN FETCH di.data d WHERE di.data IN " +
-                "(SELECT ds FROM arr_data_structure_ref ds WHERE ds.structuredObject IN (SELECT so FROM arr_structured_object so WHERE so.value IN :text))"
+                "(SELECT ds FROM arr_data_structure_ref ds WHERE ds.structuredObjectId IN :stuctureObjectIds)"
                 + " AND di.itemType = :itemType";
 
         if(itemType.getUseSpecification()){
@@ -241,7 +241,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
         Query query = entityManager.createQuery(hql);
         query.setParameter("itemType", itemType);
         query.setParameter("nodes", nodes);
-        query.setParameter("text", texts);
+        query.setParameter("stuctureObjectIds", stuctureObjectIds);
         if (itemType.getUseSpecification()) {
             query.setParameter("specs", specifications);
         }

@@ -49,10 +49,10 @@ public interface DescItemRepositoryCustom {
                                                 Set<RulItemSpec> specifications,
                                                 String text);
 
-    List<ArrDescItem> findByNodesContainingTexts(Collection<ArrNode> nodes,
-                                                 RulItemType itemType,
-                                                 Set<RulItemSpec> specifications,
-                                                 Collection<String> texts);
+    List<ArrDescItem> findByNodesContainingStructureObjectIds(Collection<ArrNode> nodes,
+                                                              RulItemType itemType,
+                                                              Set<RulItemSpec> specifications,
+                                                              Collection<Integer> stuctureObjectIds);
 
 
     /**

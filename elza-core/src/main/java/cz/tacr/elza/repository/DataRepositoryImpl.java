@@ -21,6 +21,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.criteria.Selection;
 
+import cz.tacr.elza.controller.vo.UniqueValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -65,13 +66,13 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
     private EntityManager entityManager;
 
     @Override
-    public List<String> findUniqueSpecValuesInVersion(final ArrFundVersion version,
-                                                      final RulItemType itemType,
-                                                      final Class<? extends ArrData> dataTypeClass,
-                                                      @Nullable final Set<RulItemSpec> specs,
-                                                      final boolean withoutSpec,
-                                                      @Nullable final String fulltext,
-                                                      final int max) {
+    public List<UniqueValue> findUniqueSpecValuesInVersion(final ArrFundVersion version,
+                                                           final RulItemType itemType,
+                                                           final Class<? extends ArrData> dataTypeClass,
+                                                           @Nullable final Set<RulItemSpec> specs,
+                                                           final boolean withoutSpec,
+                                                           @Nullable final String fulltext,
+                                                           final int max) {
 
         SpecificationDataTypeHelper specHelper = new SpecificationDataTypeHelper() {
 
@@ -176,7 +177,7 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
      * @param withoutSpec
      * @return seznam unikátních hodnot
      */
-    private List<String> findUniqueValuesInVersion(final ArrFundVersion version,
+    private List<UniqueValue> findUniqueValuesInVersion(final ArrFundVersion version,
                                                    final RulItemType itemType,
                                                    final Class<? extends ArrData> dataTypeClass,
                                                    final SpecificationDataTypeHelper specificationDataTypeHelper,
@@ -217,6 +218,13 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         Expression<String> substringValue = builder.substring(valueSelection.as(String.class), 0, 100);
         selections.add(substringValue);
 
+        //id odkazovaného objektu
+        Path<Integer> idPath = typeHelper.getIdSelection(builder);
+        if (idPath != null) {
+            Expression<Integer> idSelection = idPath.as(Integer.class);
+            selections.add(idSelection);
+        }
+
 
         if (StringUtils.isNotBlank(fulltext)) {
             String text = "%" + fulltext + "%";
@@ -234,19 +242,30 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         List<Tuple> resultList = entityManager.createQuery(query).setMaxResults(max).getResultList();
 
         //převedení na text
-        List<String> result = new ArrayList<>(resultList.size());
+        List<UniqueValue> result = new ArrayList<>(resultList.size());
         for (Tuple tuple : resultList) {
+            UniqueValue uniqueValue = new UniqueValue();
+
             Object fullValue = tuple.get(0);
             Object onlyValue = tuple.get(1);
             if (withoutSpec) {
                 if (fullValue == null) {
-                    result.add(onlyValue == null ? "" : onlyValue.toString());
+                    uniqueValue.setValue(onlyValue == null ? "" : onlyValue.toString());
                 } else {
-                    result.add(fullValue.toString());
+                    uniqueValue.setValue(fullValue.toString());
                 }
             } else {
-                result.add(fullValue == null ? "" : fullValue.toString());
+                uniqueValue.setValue(fullValue == null ? "" : fullValue.toString());
             }
+
+            try {
+                Object id = tuple.get(2);
+                uniqueValue.setId(id == null ? null : (int) id);
+            } catch (IllegalArgumentException e) {
+
+            }
+
+            result.add(uniqueValue);
 
         }
 
@@ -303,6 +322,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get("value");
                 }
+
+                @Override
+                public Path<Integer> getIdSelection(CriteriaBuilder criteriaBuilder) {
+                    return null;
+                }
             };
         } else if (dataClassType.equals(ArrDataText.class)) {
             return new AbstractDescItemDataTypeHelper() {
@@ -315,6 +339,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(ArrDataText.TEXT_VALUE);
+                }
+
+                @Override
+                public Path<Integer> getIdSelection(CriteriaBuilder criteriaBuilder) {
+                    return null;
                 }
             };
         } else if (dataClassType.equals(ArrDataString.class)) {
@@ -329,6 +358,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(ArrDataString.STRING_VALUE);
                 }
+
+                @Override
+                public Path<Integer> getIdSelection(CriteriaBuilder criteriaBuilder) {
+                    return null;
+                }
             };
         } else if (dataClassType.equals(ArrDataUriRef.class)) {
             return new AbstractDescItemDataTypeHelper() {
@@ -341,6 +375,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(ArrDataUriRef.URI_REF_VALUE);
+                }
+
+                @Override
+                public Path<Integer> getIdSelection(CriteriaBuilder criteriaBuilder) {
+                    return null;
                 }
             };
         } else if (dataClassType.equals(ArrDataInteger.class)) {
@@ -355,6 +394,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(ArrDataInteger.INTEGER_VALUE);
                 }
+
+                @Override
+                public Path<Integer> getIdSelection(CriteriaBuilder criteriaBuilder) {
+                    return null;
+                }
             };
         } else if (dataClassType.equals(ArrDataBit.class)) {
             return new AbstractDescItemDataTypeHelper() {
@@ -367,6 +411,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(ArrDataBit.BIT_VALUE);
+                }
+
+                @Override
+                public Path<Integer> getIdSelection(CriteriaBuilder criteriaBuilder) {
+                    return null;
                 }
             };
         } else if (dataClassType.equals(ArrDataUnitid.class)) {
@@ -381,6 +430,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(ArrDataUnitid.FIELD_UNITID);
                 }
+
+                @Override
+                public Path<Integer> getIdSelection(CriteriaBuilder criteriaBuilder) {
+                    return null;
+                }
             };
         } else if (dataClassType.equals(ArrDataRecordRef.class)) {
             return new AbstractDescItemDataTypeHelper() {
@@ -393,6 +447,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(ArrDataRecordRef.FIELD_RECORD);
                 }
+
+                @Override
+                public Path<Integer> getIdSelection(CriteriaBuilder criteriaBuilder) {
+                    return null;
+                }
             };
         } else if (dataClassType.equals(ArrDataStructureRef.class)) {
             return new AbstractDescItemDataTypeHelper() {
@@ -404,6 +463,11 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
                 @Override
                 public Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder) {
                     return targetJoin.get(ArrStructuredObject.FIELD_VALUE);
+                }
+
+                @Override
+                public Path<Integer> getIdSelection(CriteriaBuilder criteriaBuilder) {
+                    return targetJoin.get(ArrStructuredObject.FIELD_STRUCTURED_OBJECT_ID);
                 }
             };
         } else {
@@ -430,6 +494,13 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
          * @return výraz
          */
         public abstract Path<String> getValueStringSelection(final CriteriaBuilder criteriaBuilder);
+
+        /**
+         * Vrací výraz pro získání id atributu z tabulky.
+         *
+         * @return výraz
+         */
+        public abstract Path<Integer> getIdSelection(final CriteriaBuilder criteriaBuilder);
     }
 
     private interface SpecificationDataTypeHelper {

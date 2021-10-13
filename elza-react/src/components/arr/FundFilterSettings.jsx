@@ -282,7 +282,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
             this.setState({isFetchingItemTypeValues: true});
             WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, useSpecIds, 200).then(json => {
-                var valueItems = json.map(i => ({id: i, name: i}));
+                var valueItems = json.map(i => ({id: i.value, name: i.value}));
 
                 // TODO [stanekpa] Toto zde nebude, když se na server přidělá podpora na vracení a hledání NULL hodnot - problé je ale v locales (řetězec arr.fund.filterSettings.value.empty), měly by se doplnit i na server
                 if (
