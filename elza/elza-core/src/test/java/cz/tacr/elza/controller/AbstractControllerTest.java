@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 
 import cz.tacr.elza.controller.vo.RulExportFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputFilterVO;
+import cz.tacr.elza.controller.vo.UniqueValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.junit.Assert;
@@ -2603,10 +2604,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
      * @param specIds        id specifikací
      * @return seznam unikátních hodnot
      */
-    protected List<String> filterUniqueValues(final Integer versionId,
-                                              final Integer descItemTypeId,
-                                              final String fulltext,
-                                              final Set<Integer> specIds) {
+    protected List<UniqueValue> filterUniqueValues(final Integer versionId,
+                                                   final Integer descItemTypeId,
+                                                   final String fulltext,
+                                                   final Set<Integer> specIds) {
         Response result;
         if (CollectionUtils.isEmpty(specIds)) {
             result = put(spec -> spec
@@ -2623,7 +2624,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
                     .body(specIds), FILTER_UNIQUE_VALUES);
         }
 
-        return result.as(List.class);
+        return  Arrays.asList(result.as(UniqueValue[].class));
     }
 
     /**
