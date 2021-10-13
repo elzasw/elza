@@ -22,6 +22,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.UniqueValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.Validate;
@@ -1872,11 +1873,11 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/filterUniqueValues/{versionId}", method = RequestMethod.PUT)
     @Transactional
-    public List<String> filterUniqueValues(@PathVariable("versionId") final Integer versionId,
-                                           @RequestParam("descItemTypeId") final Integer descItemTypeId,
-                                           @RequestParam(value = "fulltext", required = false) final String fulltext,
-                                           @RequestParam(value = "max", required = true) final Integer max,
-                                           @RequestBody(required = false) final Set<Integer> specIds) {
+    public List<UniqueValue> filterUniqueValues(@PathVariable("versionId") final Integer versionId,
+                                                @RequestParam("descItemTypeId") final Integer descItemTypeId,
+                                                @RequestParam(value = "fulltext", required = false) final String fulltext,
+                                                @RequestParam(value = "max", required = true) final Integer max,
+                                                @RequestBody(required = false) final Set<Integer> specIds) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
         RulItemType descItemType = ruleService.getItemTypeById(descItemTypeId);
@@ -2006,14 +2007,14 @@ public class ArrangementController {
      *
      * @param fundVersionId   id verze stromu
      * @param itemTypeId      typ atributu
-     * @param replaceValue    hodnota, která bude nastavena
+     * @param replaceValueId  id strukturovaného typu, jehož hodnota bude nastavena
      * @param replaceDataBody seznam uzlů, ve kterých hledáme a seznam specifikací
      */
     @Transactional
     @RequestMapping(value = "/setDataValues/{fundVersionId}", method = RequestMethod.PUT)
     public void setDataValues(@PathVariable("fundVersionId") final Integer fundVersionId,
                                  @RequestParam("itemTypeId") final Integer itemTypeId,
-                                 @RequestParam("replaceValue") final String replaceValue,
+                                 @RequestParam("replaceValueId") final Integer replaceValueId,
                                  @RequestBody final ReplaceDataBody replaceDataBody) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
@@ -2025,7 +2026,7 @@ public class ArrangementController {
         Set<ArrNode> nodesDO = new HashSet<>(factoryDO.createNodes(replaceDataBody.getNodes()));
 
         descriptionItemService.setDataValues(fundVersion, descItemType, nodesDO,
-                replaceValue, replaceDataBody.getValues(), replaceDataBody.getSelectionType() == SelectionType.FUND);
+                replaceValueId, replaceDataBody.getValueIds(), replaceDataBody.getSelectionType() == SelectionType.FUND);
     }
 
     /**
@@ -2052,7 +2053,7 @@ public class ArrangementController {
         Set<RulItemSpec> specifications = CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
                 new HashSet<>(itemSpecRepository.findAllById(replaceDataBody.getSpecIds()));
 
-        descriptionItemService.deleteDescItemValues(fundVersion, descItemType, nodesDO, specifications, replaceDataBody.getSelectionType() == SelectionType.FUND, replaceDataBody.getValues());
+        descriptionItemService.deleteDescItemValues(fundVersion, descItemType, nodesDO, specifications, replaceDataBody.getSelectionType() == SelectionType.FUND, replaceDataBody.getValueIds());
     }
 
     @RequestMapping(value = "/validation/{fundVersionId}/{fromIndex}/{toIndex}", method = RequestMethod.GET)
@@ -3531,7 +3532,7 @@ public class ArrangementController {
 
         private Set<Integer> specIds;
 
-        private Set<String> values;
+        private Set<Integer> valueIds;
 
         public SelectionType getSelectionType() {
             return selectionType;
@@ -3557,12 +3558,12 @@ public class ArrangementController {
             this.specIds = specIds;
         }
 
-        public Set<String> getValues() {
-            return values;
+        public Set<Integer> getValueIds() {
+            return valueIds;
         }
 
-        public void setValues(Set<String> values) {
-            this.values = values;
+        public void setValueIds(Set<Integer> valueIds) {
+            this.valueIds = valueIds;
         }
     }
 

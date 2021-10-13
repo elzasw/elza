@@ -14,6 +14,7 @@ import java.util.TreeSet;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.UniqueValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -244,11 +245,11 @@ public class FilterTreeService {
     }
 
 
-    public List<String> filterUniqueValues(final ArrFundVersion version,
-                                           final RulItemType descItemType,
-                                           @Nullable final Set<Integer> specIds,
-                                           @Nullable final String fulltext,
-                                           final int max) {
+    public List<UniqueValue> filterUniqueValues(final ArrFundVersion version,
+                                                final RulItemType descItemType,
+                                                @Nullable final Set<Integer> specIds,
+                                                @Nullable final String fulltext,
+                                                final int max) {
 
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");

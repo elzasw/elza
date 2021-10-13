@@ -49,8 +49,8 @@ export function fundBulkModifications(
     replaceSpecId,
     nodes,
     selectionType,
-    replaceValue,
-    values,
+    replaceValueId,
+    valueIds,
 ) {
     console.log(
         '#####fundBulkModifications',
@@ -88,7 +88,7 @@ export function fundBulkModifications(
                     selectionType,
                 );
             case 'delete':
-                return WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType, values);
+                return WebApi.deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType, valueIds);
             case 'setSpecification':
                 return WebApi.setSpecification(
                     versionId,
@@ -103,10 +103,10 @@ export function fundBulkModifications(
                     versionId,
                     descItemTypeId,
                     specsIds,
-                    replaceValue,
+                    replaceValueId,
                     nodes,
                     selectionType,
-                    values
+                    valueIds
                 );
             default:
                 console.warn('#####fundBulkModifications - operation not implemented', operationType);
