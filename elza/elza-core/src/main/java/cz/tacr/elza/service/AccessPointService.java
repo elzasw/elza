@@ -37,6 +37,9 @@ import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -2114,6 +2117,22 @@ public class AccessPointService {
 
     public ApIndex findPreferredPartIndex(ApAccessPoint accessPoint) {
         return indexRepository.findPreferredPartIndexByAccessPointAndIndexType(accessPoint, DISPLAY_NAME);
+    }
+
+    public String findPreferredPartDisplayName(ApAccessPoint accessPoint) {
+        CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(accessPoint.getAccessPointId());
+        if (cachedAccessPoint == null || cachedAccessPoint.getParts() == null) {
+            return "";
+        }
+        CachedPart preferredPart = cachedAccessPoint.getParts().stream()
+                .filter(p -> p.getPartId().equals(cachedAccessPoint.getPreferredPartId()))
+                .findAny()
+                .orElse(null);
+        ApIndex index = preferredPart.getIndices().stream()
+                .filter(p -> p.getIndexType().equals(DISPLAY_NAME))
+                .findAny()
+                .orElse(null);
+        return index == null ? "": index.getValue();
     }
 
     public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max, 
