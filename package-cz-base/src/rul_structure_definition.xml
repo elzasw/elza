@@ -13,7 +13,7 @@
     </structure-definition>
     <structure-definition structure-type="PT_EVENT"
                           filename="PT_EVENT.groovy"
-                          compatibility-rul-package="45">
+                          compatibility-rul-package="46">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
@@ -25,13 +25,13 @@
     </structure-definition>
     <structure-definition structure-type="PT_IDENT"
                           filename="PT_IDENT.groovy"
-                          compatibility-rul-package="45">
+                          compatibility-rul-package="46">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
     <structure-definition structure-type="PT_REL"
                           filename="PT_REL.groovy"
-                          compatibility-rul-package="45">
+                          compatibility-rul-package="46">
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
