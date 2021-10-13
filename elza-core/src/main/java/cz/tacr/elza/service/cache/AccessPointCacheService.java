@@ -1,5 +1,7 @@
 package cz.tacr.elza.service.cache;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
