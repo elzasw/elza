@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.UniqueValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -1095,17 +1096,19 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         }
 
 
-        List<String> resultList = filterUniqueValues(fundVersion.getId(), typeVo.getId(), "ue1", null);
+        List<UniqueValue> resultList = filterUniqueValues(fundVersion.getId(), typeVo.getId(), "ue1", null);
         assertTrue(resultList.size() < nodes.size());
-        assertTrue(resultList.contains("value1"));
-        assertTrue(!resultList.contains("value-1"));
+        List<String> resultValues = resultList.stream().map(UniqueValue::getValue).collect(Collectors.toList());
+        assertTrue(resultValues.contains("value1"));
+        assertTrue(!resultValues.contains("value-1"));
 
         helperTestService.waitForWorkers();
         approvedVersion(fundVersion);
         resultList = filterUniqueValues(fundVersion.getId(), typeVo.getId(), "ue1", null);
         assertTrue(resultList.size() < nodes.size());
-        assertTrue(resultList.contains("value1"));
-        assertTrue(!resultList.contains("value-1"));
+        resultValues = resultList.stream().map(UniqueValue::getValue).collect(Collectors.toList());
+        assertTrue(resultValues.contains("value1"));
+        assertTrue(!resultValues.contains("value-1"));
 
 
     }
