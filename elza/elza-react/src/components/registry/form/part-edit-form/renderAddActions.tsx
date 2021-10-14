@@ -1,7 +1,7 @@
 import React from 'react';
-import { WrappedFieldArrayProps} from 'redux-form';
+// import { WrappedFieldArrayProps} from 'redux-form';
+import { FieldArrayRenderProps } from 'react-final-form-arrays';
 import './PartEditForm.scss';
-import {ApPartFormVO} from '../../../../api/ApPartFormVO';
 import {Icon} from '../../../index';
 import {Button} from 'react-bootstrap';
 import {ApItemVO} from '../../../../api/ApItemVO';
@@ -9,18 +9,8 @@ import {ApCreateTypeVO} from '../../../../api/ApCreateTypeVO';
 import {RulDescItemTypeExtVO} from '../../../../api/RulDescItemTypeExtVO';
 import {ApViewSettingRule} from '../../../../api/ApViewSettings';
 
-export const renderAddActions = ({
-    attributes,
-    formData,
-    refTables,
-    partTypeId,
-    fields,
-    handleAddItems,
-    descItemTypesMap,
-    apViewSettings,
-}: WrappedFieldArrayProps & {
+interface RenderActionsProps extends FieldArrayRenderProps<ApItemVO, any> {
     attributes: Array<ApCreateTypeVO>;
-    formData?: ApPartFormVO;
     refTables: any;
     partTypeId: number;
     descItemTypesMap: Record<number, RulDescItemTypeExtVO>;
@@ -35,12 +25,22 @@ export const renderAddActions = ({
         descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
         apViewSettings: ApViewSettingRule,
     ) => void;
-}): any => {
+}
+
+export const renderAddActions = ({
+    attributes,
+    refTables,
+    partTypeId,
+    fields,
+    handleAddItems,
+    descItemTypesMap,
+    apViewSettings,
+}:RenderActionsProps) => {
     const existingItemTypeIds: Record<number, boolean> = {};
-    formData &&
-        formData.items.forEach(i => {
-            existingItemTypeIds[i.typeId] = true;
-        });
+    fields.value.forEach(i => {
+        existingItemTypeIds[i.typeId] = true;
+    });
+
 
     return attributes
         .filter(attr => attr.repeatable || !existingItemTypeIds[attr.itemTypeId])
@@ -56,7 +56,7 @@ export const renderAddActions = ({
                         handleAddItems(
                             [attr],
                             refTables,
-                            formData ? formData.items : [],
+                            fields.value,
                             partTypeId,
                             fields.insert,
                             true,

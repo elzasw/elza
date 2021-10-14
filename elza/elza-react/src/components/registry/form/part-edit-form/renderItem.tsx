@@ -1,262 +1,76 @@
-import React, {FC} from 'react';
-import { Field, FieldArrayFieldsProps} from 'redux-form';
-import './PartEditForm.scss';
+import React, { FC, ReactNode } from 'react';
+// import { Field, FieldArrayFieldsProps} from 'redux-form';
+import { Field } from 'react-final-form';
+import { useSelector } from 'react-redux';
 import classNames from 'classnames';
-import {ApPartFormVO} from '../../../../api/ApPartFormVO';
 import {Icon} from '../../../index';
-import {Button, Col, Form, Row} from 'react-bootstrap';
+import {Button, Col, Row} from 'react-bootstrap';
 import {ApItemVO} from '../../../../api/ApItemVO';
 import {ApCreateTypeVO} from '../../../../api/ApCreateTypeVO';
 import {RulDataTypeCodeEnum} from '../../../../api/RulDataTypeCodeEnum';
 import {RulDescItemTypeExtVO} from '../../../../api/RulDescItemTypeExtVO';
 import {RulDataTypeVO} from '../../../../api/RulDataTypeVO';
-import {
-    computeAllowedItemSpecIds,
-} from '../../../../utils/ItemInfo';
+import { AppState } from '../../../../typings/store';
+import { computeAllowedItemSpecIds } from '../../../../utils/ItemInfo';
 import {ApItemAccessPointRefVO} from '../../../../api/ApItemAccessPointRefVO';
 import ReduxFormFieldErrorDecorator from '../../../shared/form/ReduxFormFieldErrorDecorator';
-import UnitdateField from '../../field/UnitdateField';
 import SpecificationField from '../../field/SpecificationField';
-import FormInput from '../../../shared/form/FormInput';
-import {objectById} from '../../../../shared/utils';
-import { RulDescItemSpecExtVO } from 'api/RulDescItemSpecExtVO';
+import { 
+    FormUnitdate, 
+    FormTextarea,
+    FormText,
+    FormRecordRef,
+    FormUriRef,
+    FormNumber,
+    FormCoordinates,
+    FormCheckbox,
+    FormSpecification,
+} from './fields';
+import './PartEditForm.scss';
 
-const FormUnitdate:FC<{
-    name: string;
-    label: string;
-    disabled?: boolean;
+export const ApDescItem:FC<{
+    disabled: boolean,
+    deleteMode: boolean,
+    name: string,
+    index: number,
+    item: ApItemVO,
+    itemTypeAttributeMap: Record<number, ApCreateTypeVO>,
+    onDeleteItem: (index: number) => void,
+    onEdit: (name: string, systemCode: RulDataTypeCodeEnum, item: ApItemVO) => void,
+    onImport: (field: string) => void,
 }> = ({
     name,
-    label,
-    disabled = false,
-}) => {
-    return <Field
-        name={`${name}.value`}
-        label={label}
-        disabled={disabled}
-        component={ReduxFormFieldErrorDecorator}
-        renderComponent={UnitdateField}
-        />
-}
-
-const FormTextarea:FC<{
-    name: string;
-    label: string;
-    disabled?: boolean;
-    limitLength?: boolean;
-}> = ({
-    name,
-    label,
-    disabled = false,
-    limitLength,
-}) => {
-    return <Field
-        name={`${name}.value`}
-        label={label}
-        disabled={disabled}
-        maxLength={limitLength}
-        component={ReduxFormFieldErrorDecorator}
-        renderComponent={FormInput}
-        type={'textarea'}
-        />
-}
-
-const FormText:FC<{
-    name: string;
-    label: string;
-    disabled?: boolean;
-    limitLength?: boolean;
-}> = ({
-    name,
-    label,
-    disabled = false,
-    limitLength,
-}) => {
-    return <Field
-        name={`${name}.value`}
-        label={label}
-        disabled={disabled}
-        maxLength={limitLength}
-        component={ReduxFormFieldErrorDecorator}
-        renderComponent={FormInput}
-        />
-}
-
-const getDisplayValue = (apItem: ApItemAccessPointRefVO, itemType: RulDescItemTypeExtVO) => {
-    const apItemName = apItem.accessPoint?.name;
-
-    if (itemType.useSpecification && apItem.specId) {
-        const spec:RulDescItemSpecExtVO | null = objectById(itemType.descItemSpecs, apItem.specId) || null;
-        return `${spec?.shortcut}: ${ apItemName }`
-    } 
-
-    return apItemName;
-}
-
-const FormRecordRef:FC<{
-    name: string;
-    label: string;
-    disabled: boolean;
-    item: ApItemAccessPointRefVO;
-    itemType: RulDescItemTypeExtVO;
-    dataType: RulDataTypeVO;
-    onEdit: (name: string, dataTypeCode: string, item: ApItemAccessPointRefVO) => void;
-}> = ({
-    name,
-    label,
-    disabled,
+    index,
     item,
-    itemType,
-    dataType,
+    disabled,
+    deleteMode,
+    itemTypeAttributeMap,
+    onDeleteItem,
     onEdit,
+    onImport,
 }) => {
-    return (
-        <Row className={'d-flex'}>
-            <Col>
-                <Form.Label>{label}</Form.Label>
-                <Form.Control value={getDisplayValue(item, itemType)} disabled={true} />
-            </Col>
-            <Col xs="auto" className="action-buttons">
-                <Button
-                    disabled={disabled}
-                    variant={'action' as any}
-                    onClick={() => onEdit(name, dataType.code, item)}
-                >
-                    <Icon glyph="fa-edit" />
-                </Button>
-            </Col>
-        </Row>
-    );
-}
-
-const FormUriRef:FC<{
-    name: string;
-    label: string;
-    disabled?: boolean;
-}> = ({
-    name,
-    label,
-    disabled = false,
-}) => {
-    return <Row>
-        <Col xs={6}>
-            <Field
-                name={`${name}.value`}
-                label={label}
-                disabled={disabled}
-                maxLength={1000}
-                component={ReduxFormFieldErrorDecorator}
-                renderComponent={FormInput}
-                />
-        </Col>
-        <Col xs={6}>
-            <Field
-                name={`${name}.description`}
-                label="Název odkazu"
-                disabled={disabled}
-                maxLength={250}
-                component={ReduxFormFieldErrorDecorator}
-                renderComponent={FormInput}
-                />
-        </Col>
-    </Row>
-}
-
-const FormNumber:FC<{
-    name: string;
-    label: string;
-    disabled?: boolean;
-}> = ({
-    name,
-    label,
-    disabled = false,
-}) => {
-    return <Field
-        name={`${name}.value`}
-        label={label}
-        disabled={disabled}
-        component={ReduxFormFieldErrorDecorator}
-        renderComponent={FormInput}
-    />
-}
-
-const FormCoordinates:FC<{
-    name: string;
-    label: string;
-    disabled?: boolean;
-    onImport?: (name: string) => void;
-}> = ({
-    name,
-    label,
-    disabled = false,
-    onImport = () => console.warn("'onImport' undefined.")
-}) => {
-    return <Row>
-        <Col>
-            <Field
-                name={`${name}.value`}
-                label={label}
-                disabled={disabled}
-                component={ReduxFormFieldErrorDecorator}
-                renderComponent={FormInput}
-                as={'textarea'}
-                />
-        </Col>
-        <Col xs="auto" className="action-buttons">
-            {/*TODO: az bude na serveru */}
-            <Button
-                variant={'action' as any}
-                className={classNames('side-container-button', 'm-1')}
-                title={'Importovat'}
-                onClick={() => {
-                    onImport(`${name}.value`);
-                }}
-            >
-                <Icon glyph={'fa-download'} />
-            </Button>
-        </Col>
-    </Row>
-}
-
-const FormCheckbox:FC<{
-    name: string;
-    label: string;
-    disabled?: boolean;
-}> = ({
-    name,
-    label,
-    disabled = false,
-}) => {
-    return <Field
-        name={`${name}.value`}
-        label={label}
-        disabled={disabled}
-        component={ReduxFormFieldErrorDecorator}
-        renderComponent={FormInput}
-        type={'checkbox'}
-    />
+    const refTables = useSelector<AppState>(({refTables})=> refTables)
+    return renderItem(name, index, item, refTables, disabled, deleteMode, onDeleteItem, onEdit, itemTypeAttributeMap, onImport)
 }
 
 export const renderItem = (
     name: string,
     index: number,
-    fields: FieldArrayFieldsProps<any>,
+    item: ApItemVO,
     refTables: any,
     disabled: boolean,
     deleteMode: boolean,
     onDeleteItem: (index: number) => void,
-    onCustomEditItem: (name: string, systemCode: RulDataTypeCodeEnum, item: ApItemVO) => void,
+    onEdit: (name: string, systemCode: RulDataTypeCodeEnum, item: ApItemVO) => void,
     itemTypeAttributeMap: Record<number, ApCreateTypeVO>,
-    showImportDialog: (field: string) => void,
-    apId?: number,
-    formData?: ApPartFormVO,
+    onImport: (field: string) => void,
 ) => {
-    const item = fields.get(index) as ApItemVO;
-    let itemType = refTables.descItemTypes.itemsMap[item.typeId] as RulDescItemTypeExtVO;
-    let dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
-    let systemCode = dataType.code;
-
+    // const item = fields.fields.value[index];
+    const itemType = refTables.descItemTypes.itemsMap[item.typeId] as RulDescItemTypeExtVO;
+    const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
+    const dataTypeCode = dataType.code;
     const fieldDisabled = disabled || deleteMode;
+
     // pro ty, co chtějí jinak renderovat skupinu...,  pokud je true, task se nerenderuje specifikace, ale pouze valueField a v tom musí být již vše...
     let customFieldRender = false;
 
@@ -264,10 +78,11 @@ export const renderItem = (
         name,
         disabled: fieldDisabled,
         label: itemType.shortcut,
+        onChange: (a: any) => { console.log("field on change", a);}
     }
 
-    let valueField: React.ReactNode;
-    switch (systemCode) {
+    let valueField: ReactNode;
+    switch (dataTypeCode) {
         case RulDataTypeCodeEnum.UNITDATE:
             valueField = <FormUnitdate {...commonFieldProps} />
             break;
@@ -284,14 +99,14 @@ export const renderItem = (
             />
             break;
         case RulDataTypeCodeEnum.RECORD_REF:
-            customFieldRender = false;
+            customFieldRender = true;
 
             valueField = <FormRecordRef
                 {...commonFieldProps}
                 item={item as ApItemAccessPointRefVO}
                 itemType={itemType}
                 dataType={dataType}
-                onEdit={onCustomEditItem}
+                onEdit={onEdit}
             />
             break;
         case RulDataTypeCodeEnum.URI_REF:
@@ -302,7 +117,7 @@ export const renderItem = (
             valueField = <FormNumber {...commonFieldProps} />
             break;
         case RulDataTypeCodeEnum.COORDINATES:
-            valueField = <FormCoordinates {...commonFieldProps} onImport={showImportDialog} />
+            valueField = <FormCoordinates {...commonFieldProps} onImport={onImport} />
             break;
         case RulDataTypeCodeEnum.BIT:
             valueField = <FormCheckbox {...commonFieldProps} />;
@@ -315,24 +130,22 @@ export const renderItem = (
             break;
     }
 
-    let valueSpecification;
+    let valueSpecification: ReactNode;
     if (!customFieldRender && itemType.useSpecification) {
         const useItemSpecIds = computeAllowedItemSpecIds(itemTypeAttributeMap, itemType, item.specId);
 
         valueSpecification = (
-            <Field
-                name={`${name}.specId`}
+            <FormSpecification
+                name={name}
                 label={valueField ? 'Specifikace' : itemType.shortcut}
-                itemTypeId={itemType.id}
+                itemType={itemType}
                 itemSpecIds={useItemSpecIds}
                 disabled={fieldDisabled}
-                component={ReduxFormFieldErrorDecorator}
-                renderComponent={SpecificationField}
-            />
+                />
         );
     }
 
-    const deleteAction = true ?
+    const deleteAction = deleteMode ?
         <Button 
             className={'item-delete-action'} 
             onClick={() => onDeleteItem(index)} 
