@@ -355,13 +355,14 @@ public class EntityDBDispatcher {
             state = stateRepository.save(stateNew);
         }
 
+        String extReplacedBy = (entity.getReid() != null) ? Long.toString(entity.getReid().getValue()): null;
         //vytvoření nového stavu propojení
         bindingState = externalSystemService.createNewApBindingState(bindingState, procCtx.getApChange(),
                                                                      entity.getEns().value(),
                                                                      entity.getRevi().getRid().getValue(),
                                                                      entity.getRevi().getUsr().getValue(),
-                                                                     entity.getReid() != null ? entity.getReid()
-                                                                             .getValue() : null);
+                                                                     extReplacedBy,
+                                                                     SyncState.SYNC_OK);
 
         SynchronizationResult syncRes = synchronizeParts(procCtx, entity, bindingState, accessPoint);
         // při synchronizaci dochází ke změně objektu accessPoint, je nutné používat vrácený
@@ -862,13 +863,12 @@ public class EntityDBDispatcher {
             uuid = CamHelper.getUuid(itemEntityRef.getUuid());
 
             ArrDataRecordRef dataRecordRef = new ArrDataRecordRef();
+            dataRecordRef.setDataType(DataType.RECORD_REF.getEntity());
 
             String extIdent = CamHelper.getEntityIdorUuid(itemEntityRef);
-
             ReferencedEntities dataRef = new ReferencedEntities(dataRecordRef, extIdent);
             dataRefList.add(dataRef);
-
-            dataRecordRef.setDataType(DataType.RECORD_REF.getEntity());
+            
             data = dataRecordRef;
         } else if (createItem instanceof ItemEnumXml) {
             ItemEnumXml itemEnum = (ItemEnumXml) createItem;

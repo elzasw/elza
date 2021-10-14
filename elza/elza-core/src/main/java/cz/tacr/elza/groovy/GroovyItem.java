@@ -1,6 +1,7 @@
 package cz.tacr.elza.groovy;
 
 import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 
 import javax.annotation.Nullable;
@@ -9,14 +10,9 @@ import javax.validation.constraints.NotNull;
 public class GroovyItem {
 
     /**
-     * Název specifikace.
+     * Specifikace.
      */
-    private final String spec;
-
-    /**
-     * Kód specifikace.
-     */
-    private final String specCode;
+    private final RulItemSpec rulItemSpec;
 
     /**
      * Kód typu.
@@ -44,54 +40,44 @@ public class GroovyItem {
     private IUnitdate unitdateValue = null;
 
     public GroovyItem(@NotNull final String typeCode,
-                      @Nullable final String spec,
-                      @Nullable final String specCode,
+                      @Nullable final RulItemSpec rulItemSpec,
                       @NotNull final String value) {
         this.value = value;
-        this.spec = spec;
-        this.specCode = specCode;
+        this.rulItemSpec = rulItemSpec;
         this.typeCode = typeCode;
     }
 
     public GroovyItem(@NotNull final String typeCode,
-                      @Nullable final String spec,
-                      @Nullable final String specCode,
+                      @Nullable final RulItemSpec rulItemSpec,
                       @NotNull final String value,
                       @NotNull final Integer intValue) {
         this.value = value;
-        this.spec = spec;
+        this.rulItemSpec = rulItemSpec;
         this.intValue = intValue;
-        this.specCode = specCode;
         this.typeCode = typeCode;
     }
 
     public GroovyItem(@NotNull final String typeCode,
-                      @Nullable final String spec,
-                      @Nullable final String  specCode,
+                      @Nullable final RulItemSpec rulItemSpec,
                       @NotNull final Boolean boolValue) {
         this.boolValue = boolValue;
-        this.spec = spec;
-        this.specCode = specCode;
+        this.rulItemSpec = rulItemSpec;
         this.typeCode = typeCode;
     }
 
     public GroovyItem(@NotNull final String typeCode,
-                      @Nullable final String spec,
-                      @Nullable final String specCode,
+                      @Nullable final RulItemSpec rulItemSpec,
                       @NotNull final Integer intValue) {
         this.intValue = intValue;
-        this.spec = spec;
-        this.specCode = specCode;
+        this.rulItemSpec = rulItemSpec;
         this.typeCode = typeCode;
     }
 
     public GroovyItem(@NotNull final String typeCode,
-                      @Nullable final String spec,
-                      @Nullable final String specCode,
+                      @Nullable final RulItemSpec rulItemSpec,
                       @NotNull final IUnitdate value) {
         this.value = UnitDateConvertor.convertToString(value);
-        this.spec = spec;
-        this.specCode = specCode;
+        this.rulItemSpec = rulItemSpec;
         this.typeCode = typeCode;
         this.unitdateValue = value;
     }
@@ -130,11 +116,15 @@ public class GroovyItem {
     }
 
     public String getSpec() {
-        return spec;
+        return (rulItemSpec != null) ? rulItemSpec.getName() : null;
     }
 
     public String getSpecCode() {
-        return specCode;
+        return (rulItemSpec != null) ? rulItemSpec.getCode() : null;
+    }
+
+    public Integer getSpecOrder() {
+        return (rulItemSpec != null) ? rulItemSpec.getViewOrder() : null;
     }
 
     public String getTypeCode() {
@@ -144,8 +134,7 @@ public class GroovyItem {
     @Override
     public String toString() {
         return "GroovyItem{" +
-                "spec='" + spec + '\'' +
-                ", specCode='" + specCode + '\'' +
+                "spec='" + rulItemSpec + '\'' +
                 ", typeCode='" + typeCode + '\'' +
                 ", boolValue=" + boolValue +
                 ", value='" + value + '\'' +

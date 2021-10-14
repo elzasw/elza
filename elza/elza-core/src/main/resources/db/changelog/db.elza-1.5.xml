@@ -1507,4 +1507,23 @@ where no.level_id = l.level_id
        where ris.code = 'EXT_CHANGE' and tm.code in ('PARTY_GROUP', 'EVENT')
        )</sql>
      </changeSet>
+     <!-- Oprava vztahu mezi pristupovymi body -->
+     <changeSet id="20211013001500" author="ppyt">
+       <sql dbms="postgresql">delete from ap_cached_access_point where access_point_id in (
+       select distinct p.access_point_id from arr_data_record_ref drr 
+       join ap_item i on i.data_id = drr.data_id 
+       join ap_part p on p.part_id = i.part_id 
+       join ap_binding bi on bi.binding_id = drr.binding_id 
+       join ap_binding_state bs on bs.binding_id = bi.binding_id 
+       where drr.record_id is null and bs.delete_change_id is null
+       )</sql>
+       <sql dbms="postgresql">update arr_data_record_ref rr set record_id = src.access_point_id
+       from (
+       select distinct drr.data_id,bs.access_point_id  from arr_data_record_ref drr 
+       join ap_binding bi on bi.binding_id = drr.binding_id 
+       join ap_binding_state bs on bs.binding_id = bi.binding_id 
+       where drr.record_id is null and bs.delete_change_id is null
+       ) src where src.data_id = rr.data_id       
+       </sql>
+     </changeSet>
 </databaseChangeLog>

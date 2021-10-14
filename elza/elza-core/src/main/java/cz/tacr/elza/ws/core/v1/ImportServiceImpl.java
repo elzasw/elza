@@ -294,6 +294,7 @@ public class ImportServiceImpl implements ImportService {
                 }
             }
 
+            // check changes to not include in sync
             if (lastChangeId > bindingState.getCreateChangeId()) {
                 ApChange apChange = procCtx.getApChange();
                 if (apChange == null) {
@@ -301,19 +302,16 @@ public class ImportServiceImpl implements ImportService {
                     procCtx.setApChange(apChange);
                 }
 
-                bindingState.setDeleteChange(apChange);
-                bindingStateRepository.save(bindingState);
-                bindingStateRepository.flush();
-
                 EntityXml entity = syncEntity.getEntityXml();
-                externalSystemService.createApBindingState(bindingState.getBinding(),
-                                      syncEntity.getAccessPoint(),
-                                      apChange,
-                                      entity.getEns().name(),
-                                      entity.getRevi().getRid().getValue(),
-                                      entity.getRevi().getUsr().getValue(),
-                                      null,
-                                      SyncState.NOT_SYNCED);
+                String replacedBy = entity.getReid()!=null?Long.toString(entity.getReid().getValue()):null; 
+                externalSystemService.createNewApBindingState(bindingState,
+                		apChange,
+                		entity.getEns().name(),
+                		entity.getRevi().getRid().getValue(),
+                        entity.getRevi().getUsr().getValue(),
+                        replacedBy,
+                        SyncState.NOT_SYNCED
+                		);
                 continue;
             }
 
