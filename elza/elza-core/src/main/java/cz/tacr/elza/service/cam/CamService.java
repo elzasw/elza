@@ -31,6 +31,7 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
+import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AbstractException;
@@ -56,6 +57,7 @@ import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -306,7 +308,14 @@ public class CamService {
     public void setQueueItemState(List<ExtSyncsQueueItem> items, ExtAsyncQueueState state,
                                    OffsetDateTime dateTime,
                                    String message) {
-        for (ExtSyncsQueueItem item : items) {
+    	// check message length
+    	if(StringUtils.isNotEmpty(message)) {
+    		if(message.length()>StringLength.LENGTH_4000) {
+    			log.error("Received very long error message, original message: {}", message);
+    			message = message.substring(0, StringLength.LENGTH_4000-1);
+    		}
+    	}
+    	for (ExtSyncsQueueItem item : items) {
             if (state != null) {
                 item.setState(state);
             }
