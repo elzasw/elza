@@ -179,7 +179,7 @@ public class DEImportService {
     }
 
     @Transactional(TxType.REQUIRED)
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,UsrPermission.Permission.FUND_CREATE,UsrPermission.Permission.AP_SCOPE_WR})
     public void importData(InputStream is, DEImportParams params) {
 
         checkScopePermissions(params.getScopeId());
