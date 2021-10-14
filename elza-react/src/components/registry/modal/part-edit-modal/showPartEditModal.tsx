@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ApPartFormVO } from "../../../../api/ApPartFormVO";
 import { WebApi } from '../../../../actions/WebApi';
 import { modalDialogShow } from '../../../../actions/global/modalDialog';
@@ -12,19 +12,17 @@ import { ApViewSettings } from '../../../../api/ApViewSettings';
 import { objectById } from '../../../../shared/utils';
 import { sortItems } from '../../../../utils/ItemInfo';
 import PartEditModal from './PartEditModal';
-
-interface ApPartData {
-    partForm: ApPartFormVO;
-}
+import { RefTablesState } from '../../../../typings/store';
+import { PartType } from '../../../../api/generated/model';
 
 export const showPartEditModal = (
     part: ApPartVO,
-    partType,
+    partType: PartType,
     apId: number,
     apTypeId: number,
     ruleSetId: number,
     scopeId: number,
-    refTables,
+    refTables: RefTablesState,
     descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
     apViewSettings: DetailStoreState<ApViewSettings>,
     parentPartId?: number,
@@ -36,10 +34,10 @@ export const showPartEditModal = (
         ({ onClose }) => {
             const partTypeId = objectById(refTables.partTypes.items, partType, 'code').id;
 
-            const handleSubmit = async ({ partForm }: ApPartData) => {
+            const handleSubmit = async (data: ApPartFormVO) => {
                 if (!part.id) { return; }
                 const submitData = {
-                    items: partForm.items.filter(i => {
+                    items: data.items.filter(i => {
                         if (i['@class'] === '.ApItemEnumVO') {
                             return i.specId !== undefined;
                         } else {
@@ -60,10 +58,12 @@ export const showPartEditModal = (
                 return result
             }
 
+            console.log("partType", partType);
+
             const initialValues = {
                 partForm: {
                     items: part.items ? sortItems(
-                        partType,
+                        parseInt(partType, 10),
                         part.items,
                         refTables,
                         descItemTypesMap,
@@ -77,7 +77,7 @@ export const showPartEditModal = (
                 parentPartId: part.partParentId,
                 partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
                 items: part.items ? sortItems(
-                    partType,
+                    partType as any,
                     part.items,
                     refTables,
                     descItemTypesMap,
@@ -90,8 +90,7 @@ export const showPartEditModal = (
                 onSubmit={handleSubmit}
                 apTypeId={apTypeId}
                 scopeId={scopeId}
-                initialValues={initialValues}
-                formData={formData}
+                initialValues={formData}
                 parentPartId={part.partParentId}
                 apId={apId}
                 partId={part.id}

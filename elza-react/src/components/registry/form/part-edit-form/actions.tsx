@@ -21,17 +21,29 @@ import RelationPartItemEditModalForm from '../../modal/RelationPartItemEditModal
 import ImportCoordinateModal from '../../Detail/coordinate/ImportCoordinateModal';
 import i18n from '../../../i18n';
 
-export const handleAddItems = (
-attributes: Array<ApCreateTypeVO>,
-refTables: any,
-formItems: ApItemVO[],
-partTypeId: number,
-arrayInsert: (index: number, value: any) => void,
-userAction: boolean,
-descItemTypesMap,
-apViewSettings,
+export const addItems = (
+    attributes: Array<ApCreateTypeVO>,
+    refTables,
+    formItems: ApItemVO[],
+    partTypeId: number,
+    arrayInsert: (index: number, value: any) => void,
+    userAction: boolean,
+    descItemTypesMap,
+    apViewSettings,
 ) => {
-    const newItems = attributes.map(attribute => {
+    const newItems = getNewItems(attributes, refTables, userAction);
+
+    // Vložení do formuláře - od konce
+    sortOwnItems(partTypeId, newItems, refTables, descItemTypesMap, apViewSettings);
+
+    newItems.reverse().forEach(item => {
+        let index = findItemPlacePosition(item, formItems, partTypeId, refTables, descItemTypesMap, apViewSettings);
+        arrayInsert(index, item);
+    });
+}
+
+const getNewItems = (attributes: Array<ApCreateTypeVO>, refTables: any, userAction: boolean) => {
+    return attributes.map(attribute => {
         const itemType = refTables.descItemTypes.itemsMap[attribute.itemTypeId] as RulDescItemTypeExtVO;
         const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
 
@@ -59,12 +71,6 @@ apViewSettings,
         return item;
     });
 
-    // Vložení do formuláře - od konce
-    sortOwnItems(partTypeId, newItems, refTables, descItemTypesMap, apViewSettings);
-    newItems.reverse().forEach(item => {
-        let index = findItemPlacePosition(item, formItems, partTypeId, refTables, descItemTypesMap, apViewSettings);
-        arrayInsert(index, item);
-    });
 }
 
 export const onCustomEditItem = (
@@ -78,53 +84,53 @@ export const onCustomEditItem = (
     apTypeId: number,
     scopeId: number,
 ) => {
-return (dispatch) => {
-    const initialValues: any = {
-        onlyMainPart: false,
-        area: Area.ALLNAMES,
-        specId: item.specId,
-    };
-
-    if (((item as unknown) as ApItemAccessPointRefVO).value != null) {
-        initialValues.codeObj = {
-            id: ((item as unknown) as ApItemAccessPointRefVO).value,
-            // @ts-ignore
-            codeObj: item.accessPoint,
-            // @ts-ignore
-            name: item.accessPoint && item.accessPoint.name,
+    return (dispatch) => {
+        const initialValues: any = {
+            onlyMainPart: false,
+            area: Area.ALLNAMES,
             specId: item.specId,
         };
-    }
 
-    return dispatch(
-        modalDialogShow(
-            this,
-            refTables.descItemTypes.itemsMap[item.typeId].shortcut,
-            <RelationPartItemEditModalForm
-                initialValues={initialValues}
-                itemTypeAttributeMap={itemTypeAttributeMap}
-                typeId={item.typeId}
-                apTypeId={apTypeId}
-                scopeId={scopeId}
-                partTypeId={partTypeId}
-                onSubmit={form => {
-                    let field = 'partForm.' + name;
-                    const fieldValue: any = {
-                        ...item,
-                        specId: form.specId ? parseInt(form.specId) : null,
-                        accessPoint: {
-                            '@class': '.ApAccessPointVO',
-                            id: form.codeObj.id,
-                            name: form.codeObj.name,
-                        },
-                        value: form.codeObj ? form.codeObj.id : null,
-                    };
-                    dispatch(change(formName, field, fieldValue));
-                    dispatch(modalDialogHide());
-                }}
-                />,
-        ),
-    );
+        if (((item as unknown) as ApItemAccessPointRefVO).value != null) {
+            initialValues.codeObj = {
+                id: ((item as unknown) as ApItemAccessPointRefVO).value,
+                // @ts-ignore
+                codeObj: item.accessPoint,
+                // @ts-ignore
+                name: item.accessPoint && item.accessPoint.name,
+                specId: item.specId,
+            };
+        }
+
+        return dispatch(
+            modalDialogShow(
+                this,
+                refTables.descItemTypes.itemsMap[item.typeId].shortcut,
+                <RelationPartItemEditModalForm
+                    initialValues={initialValues}
+                    itemTypeAttributeMap={itemTypeAttributeMap}
+                    typeId={item.typeId}
+                    apTypeId={apTypeId}
+                    scopeId={scopeId}
+                    partTypeId={partTypeId}
+                    onSubmit={form => {
+                        let field = 'partForm.' + name;
+                        const fieldValue: any = {
+                            ...item,
+                            specId: form.specId ? parseInt(form.specId) : null,
+                            accessPoint: {
+                                '@class': '.ApAccessPointVO',
+                                id: form.codeObj.id,
+                                name: form.codeObj.name,
+                            },
+                            value: form.codeObj ? form.codeObj.id : null,
+                        };
+                        dispatch(change(formName, field, fieldValue));
+                        dispatch(modalDialogHide());
+                    }}
+                    />,
+            ),
+        );
     }
 }
 

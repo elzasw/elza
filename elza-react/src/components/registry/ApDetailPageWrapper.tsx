@@ -374,7 +374,7 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
         apViewSettings: DetailStoreState<ApViewSettings>,
         parentPartId?: number,
         onUpdateFinish: () => void = () => {},
-    ) => dispatch(showPartEditModal(part, partType, apId, apTypeId, ruleSetId, scopeId, refTables, descItemTypesMap, apViewSettings, parentPartId, onUpdateFinish)),
+    ) => dispatch(showPartEditModal(part, partType as any, apId, apTypeId, ruleSetId, scopeId, refTables as any, descItemTypesMap, apViewSettings, parentPartId, onUpdateFinish)),
     showPartCreateModal: (
         partType: RulPartTypeVO,
         apId: number,

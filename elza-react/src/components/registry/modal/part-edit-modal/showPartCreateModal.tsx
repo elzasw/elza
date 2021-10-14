@@ -26,11 +26,9 @@ export const showPartCreateModal = (
         ({ onClose }) => {
             const handleClose = () => onClose();
 
-            const handleSubmit = async (data: any) => {
-                const formData: ApPartFormVO = data.partForm;
-
+            const handleSubmit = async (data: ApPartFormVO) => {
                 const submitData = {
-                    items: formData.items.filter(i => {
+                    items: data.items.filter(i => {
                         if (i['@class'] === '.ApItemEnumVO') {
                             return i.specId !== undefined;
                         } else {
@@ -60,8 +58,7 @@ export const showPartCreateModal = (
                 scopeId={scopeId}
                 partTypeId={partType.id}
                 parentPartId={parentPartId}
-                formData={formData}
-                initialValues={{} as any}
+                initialValues={formData}
                 onSubmit={handleSubmit}
                 onClose={handleClose}
                 />},
