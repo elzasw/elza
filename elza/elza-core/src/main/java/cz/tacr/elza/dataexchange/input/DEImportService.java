@@ -179,7 +179,7 @@ public class DEImportService {
     }
 
     @Transactional(TxType.REQUIRED)
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,UsrPermission.Permission.FUND_CREATE,UsrPermission.Permission.AP_SCOPE_WR})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,UsrPermission.Permission.FUND_CREATE})
     public void importData(InputStream is, DEImportParams params) {
 
         checkScopePermissions(params.getScopeId());
@@ -282,7 +282,8 @@ public class DEImportService {
         if (userService.hasPermission(Permission.ADMIN)) {
             return;
         }
-        if (userService.hasPermission(Permission.AP_SCOPE_WR, importScopeId)) {
+        if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL) 
+                || userService.hasPermission(Permission.AP_SCOPE_WR, importScopeId)) {
             return;
         }
         throw Authorization.createAccessDeniedException(Permission.AP_SCOPE_WR);
