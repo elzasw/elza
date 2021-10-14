@@ -21,6 +21,7 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 @Service
@@ -57,6 +58,8 @@ public class OutputGeneratorFactory {
     private final ApplicationContext applicationContext;
 
     private final ApIndexRepository indexRepository;
+    
+    private final AccessPointCacheService accessPointCacheService;
 
     private ElzaLocale elzaLocale;
 
@@ -77,7 +80,8 @@ public class OutputGeneratorFactory {
                                   final EntityManager em,
                                   final DmsService dmsService,
                                   final DEExportService exportService,
-                                  final DaoLinkRepository daoLinkRepository) {
+                                  final DaoLinkRepository daoLinkRepository,
+                                  final AccessPointCacheService accessPointCacheService) {
         this.applicationContext = applicationContext;
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
@@ -95,6 +99,7 @@ public class OutputGeneratorFactory {
         this.dmsService = dmsService;
         this.exportService = exportService;
         this.daoLinkRepository = daoLinkRepository;
+        this.accessPointCacheService = accessPointCacheService;
     }
 
     public OutputGenerator createOutputGenerator(Engine engine) {
@@ -116,7 +121,7 @@ public class OutputGeneratorFactory {
                 nodeCacheService,
                 institutionRepository, apStateRepository, bindingRepository, partRepository, itemRepository,
                 bindingStateRepository, indexRepository, em, dmsService,
-                daoLinkRepository);
+                daoLinkRepository, accessPointCacheService);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
@@ -125,7 +130,7 @@ public class OutputGeneratorFactory {
                 nodeCacheService,
                 institutionRepository, apStateRepository,
                 bindingRepository, partRepository, itemRepository, bindingStateRepository,
-                indexRepository, em, dmsService, daoLinkRepository);
+                indexRepository, em, dmsService, daoLinkRepository, accessPointCacheService);
     }
 
     public DEXmlOutputGenerator createDEXmlOutputGenerator() {

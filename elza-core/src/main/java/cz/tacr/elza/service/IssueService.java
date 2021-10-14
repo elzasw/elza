@@ -12,6 +12,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.csv.CSVPrinter;
@@ -59,6 +60,7 @@ public class IssueService {
     // --- services ---
 
     private final ArrangementService arrangementService;
+    private final AccessPointService accessPointService; 
     private final LevelTreeCacheService levelTreeCacheService;
     private final IEventNotificationService eventNotificationService;
 
@@ -67,6 +69,7 @@ public class IssueService {
     @Autowired
     public IssueService(
             ArrangementService arrangementService,
+            AccessPointService accessPointService,
             LevelTreeCacheService levelTreeCacheService,
             IEventNotificationService eventNotificationService,
             WfCommentRepository commentRepository,
@@ -75,8 +78,10 @@ public class IssueService {
             WfIssueStateRepository issueStateRepository,
             WfIssueTypeRepository issueTypeRepository,
             PermissionRepository permissionRepository,
+            ApIndexRepository indexRepository,
             IssueDataService issueDataService) {
         this.arrangementService = arrangementService;
+        this.accessPointService = accessPointService;
         this.levelTreeCacheService = levelTreeCacheService;
         this.eventNotificationService = eventNotificationService;
         this.commentRepository = commentRepository;
@@ -455,6 +460,10 @@ public class IssueService {
 
         Map<Integer, List<WfComment>> issueToCommentMap = issueDataService.groupCommentByIssueId(issues.stream().map(issue -> issue.getIssueId()).collect(Collectors.toList()));
 
+        Set<ApAccessPoint> accessPoints = issues.stream().map(p -> p.getUserCreate().getAccessPoint()).collect(Collectors.toSet());
+
+        Map<ApAccessPoint, String> accessPointMap = accessPoints.stream().collect(Collectors.toMap(a -> a, a -> accessPointService.findPreferredPartDisplayName(a))); 
+
         DateTimeFormatter commentDateFormatter = DateTimeFormatter.ofPattern("d.M.u");
 
         String[] headers = new String[]{
@@ -463,6 +472,7 @@ public class IssueService {
                 "Druh",
                 "Stav",
                 "U\u017Eivatel",
+                "Jm\u00E9no u\u017Eivatele",
                 "Datum",
                 "Popis",
                 "Koment\u00E1\u0159e"
@@ -479,6 +489,7 @@ public class IssueService {
             printer.print(issue.getIssueType().getName());
             printer.print(issue.getIssueState().getName());
             printer.print(issue.getUserCreate().getUsername());
+            printer.print(accessPointMap.get(issue.getUserCreate().getAccessPoint()));
             printer.print(CVS_DATE_TIME_FORMATTER.format(issue.getTimeCreated()));
             printer.print(issue.getDescription());
 

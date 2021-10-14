@@ -14,7 +14,7 @@ static GroovyResult generate(final GroovyPart part) {
     base.add("EV_END").withSeparator(", ").withPrefix("do: ")
 
     GroovyAppender sort = GroovyUtils.createAppender(part)
-    sort.add("EV_TYPE")
+    sort.addViewOrder("EV_TYPE")
     sort.addUnitdateFrom("EV_BEGIN")
     sort.addUnitdateTo("EV_END")
 

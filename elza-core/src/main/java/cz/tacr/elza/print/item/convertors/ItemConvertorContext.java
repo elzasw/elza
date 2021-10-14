@@ -19,7 +19,7 @@ public interface ItemConvertorContext {
 
     ItemSpec getItemSpecById(Integer id);
 
-    Record getRecord(ApAccessPoint record);
+    Record getRecordById(Integer accessPointId);
 
     File getFile(ArrFile file);
 
@@ -28,6 +28,5 @@ public interface ItemConvertorContext {
     Node getNode(ArrNode arrNode);
 
     Locale getLocale();
-
 
 }

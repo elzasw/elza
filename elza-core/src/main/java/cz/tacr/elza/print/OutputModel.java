@@ -1,13 +1,9 @@
 package cz.tacr.elza.print;
 
-import static cz.tacr.elza.repository.ExceptionThrow.fund;
-
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,7 +11,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,7 +34,6 @@ import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.fund.FundTree;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.core.fund.TreeNode;
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -73,6 +67,7 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.output.OutputParams;
@@ -153,6 +148,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final DaoLinkRepository daoLinkRepository;
 
+    private final AccessPointCacheService accessPointCacheService;
+
     /**
      * Provider for attachments
      */
@@ -186,7 +183,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final ApItemRepository itemRepository,
                        final ApBindingStateRepository bindingStateRepository,
                        final ApIndexRepository indexRepository,
-                       final DaoLinkRepository daoLinkRepository) {
+                       final DaoLinkRepository daoLinkRepository,
+                       final AccessPointCacheService accessPointCacheService) {
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
         this.fundRepository = fundRepository;
@@ -203,6 +201,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.bindingStateRepository = bindingStateRepository;
         this.indexRepository = indexRepository;
         this.daoLinkRepository = daoLinkRepository;
+        this.accessPointCacheService = accessPointCacheService;
     }
 
     public boolean isInitialized() {
@@ -482,7 +481,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         ParInstitution parInst = institutionRepository.findByFundFetchTypeAndAccessPoint(arrFund);
         Institution inst = new Institution(parInst.getInternalCode(), parInst.getInstitutionType());
 
-        inst.setRecord(getRecord(parInst.getAccessPoint()));
+        inst.setRecord(getRecordById(parInst.getAccessPoint().getAccessPointId()));
 
         return inst;
     }
@@ -567,25 +566,23 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     /* factory methods */
 
     @Override
-    public Record getRecord(ApAccessPoint ap) {
+    public Record getRecordById(Integer accessPointId) {
         // id without fetch -> access type property
-        Record record = apIdMap.get(ap.getAccessPointId());
+        Record record = apIdMap.get(accessPointId);
         if (record != null) {
             return record;
         }
 
-        ApState apState = apStateRepository.findLastByAccessPoint(ap);
+        ApState apState = apStateRepository.findLastByAccessPointId(accessPointId);
 
         RecordType type = getAPType(apState.getApTypeId());
-        record = new Record(ap, type, staticData, apStateRepository,
+        record = new Record(apState.getAccessPoint(), type, staticData, apStateRepository,
                 bindingRepository, partRepository, itemRepository,
                 bindingStateRepository, indexRepository,
-                itemConvertor
-                );
+                itemConvertor, accessPointCacheService, elzaLocale);
 
         // add to lookup
-        apIdMap.put(ap.getAccessPointId(), record);
-
+        apIdMap.put(accessPointId, record);
 
         return record;
     }

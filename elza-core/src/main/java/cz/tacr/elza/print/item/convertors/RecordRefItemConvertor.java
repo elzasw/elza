@@ -3,7 +3,6 @@ package cz.tacr.elza.print.item.convertors;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.Item;
@@ -21,9 +20,9 @@ public class RecordRefItemConvertor extends AbstractItemConvertor {
             return null;
         }
         ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
-        ApAccessPoint referencedRecord = data.getRecord();
-        if (referencedRecord != null) {
-            Record record = context.getRecord(referencedRecord);
+        Integer referencedRecordId = data.getRecordId();
+        if (referencedRecordId != null) {
+            Record record = context.getRecordById(referencedRecordId);
 
             return new ItemRecordRef(record);
         } else {
@@ -32,7 +31,6 @@ public class RecordRefItemConvertor extends AbstractItemConvertor {
             Validate.notNull(apBinding);
 
             return new ItemRecordExtRef(apBinding);
-
         }
     }
 }

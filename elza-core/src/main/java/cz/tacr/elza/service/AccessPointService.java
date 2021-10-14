@@ -37,6 +37,9 @@ import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -140,7 +143,6 @@ import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
-import cz.tacr.elza.service.AccessPointItemService.DeletedItems;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -148,7 +150,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 /**
  * Servisní třída pro registry.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 21.12.2015
  */
 @Service
@@ -1638,6 +1639,14 @@ public class AccessPointService {
 
         ApType newApType;
         if (newTypeId != null && !newTypeId.equals(oldApState.getApTypeId())) {
+            // nelze změnit třídu pokud existuje platná ApBindingState
+            int countBinding = bindingStateRepository.countByAccessPoint(accessPoint);
+            if (countBinding > 0) {
+                throw new SystemException("Třídu entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                .set("accessPointId", accessPoint.getAccessPointId())
+                .set("typeId", oldApState.getApTypeId());
+            }
+
             // get ap type
             StaticDataProvider sdp = staticDataService.createProvider();
             newApType = sdp.getApTypeById(newTypeId);
@@ -2108,6 +2117,22 @@ public class AccessPointService {
 
     public ApIndex findPreferredPartIndex(ApAccessPoint accessPoint) {
         return indexRepository.findPreferredPartIndexByAccessPointAndIndexType(accessPoint, DISPLAY_NAME);
+    }
+
+    public String findPreferredPartDisplayName(ApAccessPoint accessPoint) {
+        CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(accessPoint.getAccessPointId());
+        if (cachedAccessPoint == null || cachedAccessPoint.getParts() == null) {
+            return "";
+        }
+        CachedPart preferredPart = cachedAccessPoint.getParts().stream()
+                .filter(p -> p.getPartId().equals(cachedAccessPoint.getPreferredPartId()))
+                .findAny()
+                .orElse(null);
+        ApIndex index = preferredPart.getIndices().stream()
+                .filter(p -> p.getIndexType().equals(DISPLAY_NAME))
+                .findAny()
+                .orElse(null);
+        return index == null ? "": index.getValue();
     }
 
     public ExtSyncsQueueResultListVO findExternalSyncs(Integer from, Integer max, 

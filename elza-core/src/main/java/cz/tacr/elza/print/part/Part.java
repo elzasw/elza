@@ -14,6 +14,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemSpec;
+import cz.tacr.elza.service.cache.CachedPart;
 
 public class Part {
 
@@ -31,12 +32,12 @@ public class Part {
 
     private List<Part> parts = Collections.emptyList();
 
-    public Part(ApPart apPart, StaticDataProvider staticData, ApIndex index) {
-        this.partId = apPart.getPartId();
-        this.accessPointId = apPart.getAccessPointId();
-        this.value = index != null ? index.getValue() : null;
-        this.parentPartId = apPart.getParentPart() != null ? apPart.getParentPart().getPartId() : null;
-        this.partType = new PartType(staticData.getPartTypeById(apPart.getPartTypeId()));
+    public Part(CachedPart cachedPart, int accessPointId, StaticDataProvider staticData, String value) {
+        this.partId = cachedPart.getPartId();
+        this.accessPointId = accessPointId;
+        this.value = value;
+        this.parentPartId = cachedPart.getParentPartId();
+        this.partType = new PartType(staticData.getPartTypeByCode(cachedPart.getPartTypeCode()));
     }
 
     public List<Item> getItems() {
