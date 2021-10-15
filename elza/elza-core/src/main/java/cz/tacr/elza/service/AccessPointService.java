@@ -1861,6 +1861,7 @@ public class AccessPointService {
         generateSync(accessPoint.getAccessPointId());
     }
 
+    @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
     public void disconnectAccessPoint(Integer accessPointId, String externalSystemCode) {
         ApAccessPoint accessPoint = getAccessPoint(accessPointId);
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
@@ -2192,8 +2193,22 @@ public class AccessPointService {
         return extSyncsQueueItemVO;
     }
 
-    public void createExtSyncsQueueItem(Integer accessPointId, String externalSystemCode) {
-        ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
+    @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
+    public void createExtSyncsQueueItem(Integer accessPointId, String externalSystemCode) {        
+        // check AP state
+        ApState apState = getApState(accessPointId);
+        switch(apState.getStateApproval()) {
+        case APPROVED:
+        case NEW:
+        case TO_AMEND:
+        	break;
+        default:
+        	throw new BusinessException("Entita v tomto stavu nemůže být předána do externího systému.",
+        			BaseCode.INVALID_STATE)
+        		.set("accessPointId", apState.getAccessPointId())
+        		.set("state", apState.getStateApproval());
+        }
+        ApAccessPoint accessPoint = apState.getAccessPoint();
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         UserDetail userDetail = userService.getLoggedUserDetail();
         ExtSyncsQueueItem extSyncsQueueItem = createExtSyncsQueueItem(accessPoint, apExternalSystem, null,
