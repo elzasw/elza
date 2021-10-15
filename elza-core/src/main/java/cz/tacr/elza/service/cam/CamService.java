@@ -17,6 +17,7 @@ import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
@@ -33,6 +34,7 @@ import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
@@ -184,6 +186,7 @@ public class CamService {
         return ec.getApStates();
     }
 
+    @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
     public void connectAccessPoint(final ApState state, final EntityXml entity,
                                    final ProcessingContext procCtx, final boolean replace) {
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_UPDATE);
