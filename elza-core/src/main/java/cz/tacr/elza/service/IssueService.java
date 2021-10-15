@@ -449,7 +449,9 @@ public class IssueService {
         }
     }
 
-    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
+    @AuthMethod(permission = {Permission.ADMIN,
+    		Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, 
+    		Permission.FUND_ISSUE_LIST_RD, Permission.FUND_ISSUE_LIST_WR})
     public void exportIssueList(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull WfIssueList issueList, OutputStream os) throws IOException {
 
         Validate.notNull(issueList, "Issue list is null");
