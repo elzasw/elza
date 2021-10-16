@@ -9,18 +9,21 @@ import cz.tacr.elza.domain.ExtSyncsQueueItem;
 public class UpdateEntityWorker implements UploadWorker {
 
     final private BatchUpdateXml updateXml;
-    private Map<Integer, String> itemUuidMap;
-    private Map<Integer, String> partUuidMap;
-    private ExtSyncsQueueItem extSyncsQueueItem;
+    final private Map<Integer, String> itemUuidMap;
+    final private Map<Integer, String> partUuidMap;
+    final private Map<Integer, String> stateMap;
+    final private ExtSyncsQueueItem extSyncsQueueItem;
 
     public UpdateEntityWorker(final ExtSyncsQueueItem extSyncsQueueItem,
                               final BatchUpdateXml updateXml,
                               final Map<Integer, String> itemUuidMap,
-                              final Map<Integer, String> partUuidMap) {
+                              final Map<Integer, String> partUuidMap,
+                              final Map<Integer, String> stateMap) {
         this.extSyncsQueueItem = extSyncsQueueItem;
         this.updateXml = updateXml;
         this.itemUuidMap = itemUuidMap;
         this.partUuidMap = partUuidMap;
+        this.stateMap = stateMap;
     }
 
     @Override
@@ -31,7 +34,7 @@ public class UpdateEntityWorker implements UploadWorker {
     @Override
     public void process(final CamService camService,
                         final BatchUpdateSavedXml batchUpdateResult) {
-        camService.updateBinding(extSyncsQueueItem, batchUpdateResult, itemUuidMap, partUuidMap);
+        camService.updateBinding(extSyncsQueueItem, batchUpdateResult, itemUuidMap, partUuidMap, stateMap);
     }
 
 }
