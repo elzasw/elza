@@ -12,14 +12,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.api.ApExternalSystemType;
-import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.tacr.cam.schema.cam.BatchUpdateXml;
 import cz.tacr.cam.schema.cam.ItemsXml;
 import cz.tacr.cam.schema.cam.NewItemsXml;
 import cz.tacr.cam.schema.cam.PartTypeXml;
@@ -29,7 +28,6 @@ import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingItem;
-import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
@@ -78,7 +76,7 @@ abstract public class CamXmlBuilder {
         return partUuids;
     }
 
-    CamXmlBuilder(final StaticDataProvider sdp,
+	CamXmlBuilder(final StaticDataProvider sdp,
                   final ApAccessPoint accessPoint,
                   final EntityRefHandler entityRefHandler,
                   final GroovyService groovyService,
@@ -93,7 +91,7 @@ abstract public class CamXmlBuilder {
         this.scope = scope;
         this.externalSystemType = extSystemType;
     }
-
+	
     protected NewItemsXml createNewItems(ApBindingItem changedPart, Collection<ApItem> itemList) {
         NewItemsXml newItems = new NewItemsXml();
         newItems.setPid(new UuidXml(changedPart.getValue()));
@@ -337,5 +335,4 @@ abstract public class CamXmlBuilder {
 
         return filteredItems;
     }
-
 }

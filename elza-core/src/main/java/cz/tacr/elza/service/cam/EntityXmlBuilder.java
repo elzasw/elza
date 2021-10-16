@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import cz.tacr.cam.schema.cam.BatchUpdateXml;
 import cz.tacr.cam.schema.cam.CodeXml;
 import cz.tacr.cam.schema.cam.DateTimeXml;
 import cz.tacr.cam.schema.cam.EntityIdXml;
