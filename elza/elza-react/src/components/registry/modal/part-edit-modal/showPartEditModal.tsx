@@ -6,7 +6,7 @@ import * as PartTypeInfo from '../../../../api/old/PartTypeInfo';
 import { ApItemBitVO } from '../../../../api/ApItemBitVO';
 import { registryDetailFetchIfNeeded } from '../../../../actions/registry/registry';
 import { ApPartVO } from '../../../../api/ApPartVO';
-import { RulDescItemTypeExtVO } from '../../../../api/RulDescItemTypeExtVO';
+// import { RulDescItemTypeExtVO } from '../../../../api/RulDescItemTypeExtVO';
 import { DetailStoreState } from '../../../../types';
 import { ApViewSettings } from '../../../../api/ApViewSettings';
 import { objectById } from '../../../../shared/utils';
@@ -23,7 +23,7 @@ export const showPartEditModal = (
     ruleSetId: number,
     scopeId: number,
     refTables: RefTablesState,
-    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+    // descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
     apViewSettings: DetailStoreState<ApViewSettings>,
     parentPartId?: number,
     onUpdateFinish: () => void = () => {},
@@ -58,19 +58,20 @@ export const showPartEditModal = (
                 return result
             }
 
-            console.log("partType", partType);
+            // console.log("partType", partType);
 
+            /*
             const initialValues = {
                 partForm: {
                     items: part.items ? sortItems(
                         parseInt(partType, 10),
                         part.items,
                         refTables,
-                        descItemTypesMap,
                         apViewSettings.data!.rules[ruleSetId],
                     ) : [],
                 },
             }
+            */
 
             const formData = {
                 partId: part.id,
@@ -80,7 +81,6 @@ export const showPartEditModal = (
                     partType as any,
                     part.items,
                     refTables,
-                    descItemTypesMap,
                     apViewSettings.data!.rules[ruleSetId],
                 ) : [],
             } as ApPartFormVO

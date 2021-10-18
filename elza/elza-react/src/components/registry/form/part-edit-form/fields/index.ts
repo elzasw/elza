@@ -7,3 +7,5 @@ export { FormNumber } from './FormNumber';
 export { FormCoordinates } from './FormCoordinates';
 export { FormCheckbox } from './FormCheckbox';
 export { FormSpecification } from './FormSpecification';
+export { FormScope } from './FormScope';
+export { FormAutocomplete } from './FormAutocomplete';

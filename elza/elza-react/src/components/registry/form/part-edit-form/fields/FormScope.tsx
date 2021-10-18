@@ -2,27 +2,28 @@ import React, {FC} from 'react';
 // import { Field} from 'redux-form';
 import { Field, useForm } from 'react-final-form';
 import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
-import FormInput from '../../../../shared/form/FormInput';
+import Scope from '../../../../shared/scope/Scope';
+import { ScopeData } from "typings/store";
 
-export const FormText:FC<{
+export const FormScope:FC<{
     name: string;
     label: string;
     disabled?: boolean;
-    limitLength?: boolean;
+    items: ScopeData[];
 }> = ({
     name,
     label,
     disabled = false,
-    limitLength,
+    items,
 }) => {
     const form = useForm();
     return <Field
-        name={`${name}.value`}
+        name={name}
         label={label}
     >
         {(props) => {
             const handleChange = (e: any) => { 
-                props.input.onBlur(e)
+                props.input.onChange(e)
                 form.mutators.attributes?.(name);
             }
 
@@ -30,13 +31,13 @@ export const FormText:FC<{
                 {...props as any}
                 input={{
                     ...props.input,
-                    onBlur: handleChange // inject modified onChange handler
+                    onChange: handleChange // inject modified onChange handler
                 }}
                 disabled={disabled}
-                maxLength={limitLength}
-                renderComponent={FormInput}
-                />
-
+                renderComponent={Scope}
+                passOnly={true}
+                items={items}
+            />
         }}
     </Field>
 }

@@ -1,20 +1,17 @@
 import React, { FC, ReactNode } from 'react';
 // import { Field, FieldArrayFieldsProps} from 'redux-form';
-import { Field } from 'react-final-form';
 import { useSelector } from 'react-redux';
 import classNames from 'classnames';
 import {Icon} from '../../../index';
 import {Button, Col, Row} from 'react-bootstrap';
-import {ApItemVO} from '../../../../api/ApItemVO';
-import {ApCreateTypeVO} from '../../../../api/ApCreateTypeVO';
-import {RulDataTypeCodeEnum} from '../../../../api/RulDataTypeCodeEnum';
-import {RulDescItemTypeExtVO} from '../../../../api/RulDescItemTypeExtVO';
-import {RulDataTypeVO} from '../../../../api/RulDataTypeVO';
-import { AppState } from '../../../../typings/store';
+import {ApItemVO} from 'api/ApItemVO';
+import {ApCreateTypeVO} from 'api/ApCreateTypeVO';
+import {RulDataTypeCodeEnum} from 'api/RulDataTypeCodeEnum';
+import {RulDescItemTypeExtVO} from 'api/RulDescItemTypeExtVO';
+import {RulDataTypeVO} from 'api/RulDataTypeVO';
+import { AppState, RefTablesState } from 'typings/store';
 import { computeAllowedItemSpecIds } from '../../../../utils/ItemInfo';
-import {ApItemAccessPointRefVO} from '../../../../api/ApItemAccessPointRefVO';
-import ReduxFormFieldErrorDecorator from '../../../shared/form/ReduxFormFieldErrorDecorator';
-import SpecificationField from '../../field/SpecificationField';
+import {ApItemAccessPointRefVO} from 'api/ApItemAccessPointRefVO';
 import { 
     FormUnitdate, 
     FormTextarea,
@@ -29,15 +26,16 @@ import {
 import './PartEditForm.scss';
 
 export const ApDescItem:FC<{
-    disabled: boolean,
-    deleteMode: boolean,
-    name: string,
-    index: number,
-    item: ApItemVO,
-    itemTypeAttributeMap: Record<number, ApCreateTypeVO>,
-    onDeleteItem: (index: number) => void,
-    onEdit: (name: string, systemCode: RulDataTypeCodeEnum, item: ApItemVO) => void,
-    onImport: (field: string) => void,
+    disabled: boolean;
+    deleteMode: boolean;
+    name: string;
+    index: number;
+    item: ApItemVO;
+    itemTypeAttributeMap: Record<number, ApCreateTypeVO>;
+    onDeleteItem: (index: number) => void;
+    partTypeId: number;
+    scopeId: number;
+    apTypeId: number;
 }> = ({
     name,
     index,
@@ -46,26 +44,27 @@ export const ApDescItem:FC<{
     deleteMode,
     itemTypeAttributeMap,
     onDeleteItem,
-    onEdit,
-    onImport,
+    partTypeId,
+    scopeId,
+    apTypeId, 
 }) => {
-    const refTables = useSelector<AppState>(({refTables})=> refTables)
-    return renderItem(name, index, item, refTables, disabled, deleteMode, onDeleteItem, onEdit, itemTypeAttributeMap, onImport)
+    const refTables = useSelector(({refTables}:AppState) => refTables);
+    return renderItem(name, index, item, refTables, disabled, deleteMode, onDeleteItem, itemTypeAttributeMap, partTypeId, scopeId, apTypeId);
 }
 
 export const renderItem = (
     name: string,
     index: number,
     item: ApItemVO,
-    refTables: any,
+    refTables: RefTablesState,
     disabled: boolean,
     deleteMode: boolean,
     onDeleteItem: (index: number) => void,
-    onEdit: (name: string, systemCode: RulDataTypeCodeEnum, item: ApItemVO) => void,
     itemTypeAttributeMap: Record<number, ApCreateTypeVO>,
-    onImport: (field: string) => void,
+    partTypeId: number,
+    scopeId: number,
+    apTypeId: number,
 ) => {
-    // const item = fields.fields.value[index];
     const itemType = refTables.descItemTypes.itemsMap[item.typeId] as RulDescItemTypeExtVO;
     const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
     const dataTypeCode = dataType.code;
@@ -105,8 +104,10 @@ export const renderItem = (
                 {...commonFieldProps}
                 item={item as ApItemAccessPointRefVO}
                 itemType={itemType}
-                dataType={dataType}
-                onEdit={onEdit}
+                partTypeId={partTypeId}
+                scopeId={scopeId}
+                itemTypeAttributeMap={itemTypeAttributeMap}
+                apTypeId={apTypeId}
             />
             break;
         case RulDataTypeCodeEnum.URI_REF:
@@ -117,7 +118,7 @@ export const renderItem = (
             valueField = <FormNumber {...commonFieldProps} />
             break;
         case RulDataTypeCodeEnum.COORDINATES:
-            valueField = <FormCoordinates {...commonFieldProps} onImport={onImport} />
+            valueField = <FormCoordinates {...commonFieldProps} />
             break;
         case RulDataTypeCodeEnum.BIT:
             valueField = <FormCheckbox {...commonFieldProps} />;
@@ -149,7 +150,7 @@ export const renderItem = (
         <Button 
             className={'item-delete-action'} 
             onClick={() => onDeleteItem(index)} 
-            variant={'action' as any}
+            variant={'action'}
         >
             <Icon glyph={'fa-trash'} />
         </Button> 

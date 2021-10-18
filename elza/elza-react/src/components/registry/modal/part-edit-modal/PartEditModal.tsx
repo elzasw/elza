@@ -1,28 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { Form } from 'react-final-form';
 import arrayMutators from 'final-form-arrays';
 import { useSelector } from "react-redux";
-import PartEditForm from "../../form/part-edit-form/PartEditForm";
-import { ApPartFormVO } from "../../../../api/ApPartFormVO";
+import { ApPartFormVO } from "api/ApPartFormVO";
+import { getPartEditDialogLabel } from "api/old/PartTypeInfo";
+import { PartType } from "api/generated/model";
 import { Modal } from 'react-bootstrap';
-import { Button } from "../../../ui";
-import i18n from "../../../i18n";
-import { WebApi } from '../../../../actions/WebApi';
-import { RulDescItemTypeExtVO } from '../../../../api/RulDescItemTypeExtVO';
-import { DetailStoreState } from '../../../../types';
-import { ApViewSettings } from '../../../../api/ApViewSettings';
-import ModalDialogWrapper from '../../../shared/dialog/ModalDialogWrapper';
-import { compareCreateTypes, hasItemValue } from '../../../../utils/ItemInfo';
-import storeFromArea from '../../../../shared/utils/storeFromArea';
+import { Button } from "components/ui";
+import i18n from "components/i18n";
+import { DetailStoreState } from 'types';
+import { ApViewSettings } from 'api/ApViewSettings';
+import ModalDialogWrapper from 'components/shared/dialog/ModalDialogWrapper';
+import storeFromArea from 'shared/utils/storeFromArea';
+import debounce from 'shared/utils/debounce';
 import {AP_VIEW_SETTINGS} from '../../../../constants';
-import {ApAccessPointCreateVO} from '../../../../api/ApAccessPointCreateVO';
-import {RequiredType} from '../../../../api/RequiredType';
-import { addItems } from '../../form/part-edit-form/actions';
-import {ApItemVO} from '../../../../api/ApItemVO';
-import {ApCreateTypeVO} from '../../../../api/ApCreateTypeVO';
+import { getUpdatedForm } from '../../form/part-edit-form/actions';
+import { PartEditForm } from "../../form/part-edit-form/PartEditForm";
+import {ApCreateTypeVO} from 'api/ApCreateTypeVO';
 import { AppState } from 'typings/store'
-
-const FORM_NAME = "partEditForm";
+import { Loading } from 'components/shared';
 
 type Props = {
     partTypeId: number;
@@ -36,7 +32,7 @@ type Props = {
     onSubmit: (data:any) => Promise<void>;
 }
 
-const PartEditModal = ({
+const PartEditModal:FC<Props> = ({
     onClose,
     partTypeId,
     apTypeId,
@@ -46,8 +42,7 @@ const PartEditModal = ({
     apId,
     partId,
     onSubmit,
-}: Props) => {
-    const descItemTypesMap = useSelector((state: AppState) => state.refTables.descItemTypes.itemsMap);
+}) => {
     const apViewSettings = useSelector((state: AppState) => storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>);
     const refTables = useSelector((state:AppState) => state.refTables);
     const [values, setValues] = useState(initialValues);
@@ -57,88 +52,41 @@ const PartEditModal = ({
     const handleClose = () => { onClose(); }
 
     useEffect(()=>{
-        if(values){
-            fetchAttributes(values, partId, parentPartId);
-        }
+        if(values){ debouncedFetchAttributes(values); }
     }, [])
 
-    if (!refTables) {
-        return <div />;
-    }
+    if (!refTables) { return <Loading/> }
 
-    const fetchAttributes = (data: ApPartFormVO, partId?: number, parentPartId?: number) => {
-        const apViewSettingRule = apViewSettings.data!.rules[apViewSettings.data!.typeRuleSetMap[apTypeId]];
-        const form: ApAccessPointCreateVO = {
-            typeId: apTypeId,
-            partForm: {
-                ...data,
-                parentPartId,
-                items: [...data.items.filter(hasItemValue)],
-                partId: partId,
-            },
-            accessPointId: apId,
-            scopeId: scopeId,
-        };
+    const fetchAttributes = async (data: ApPartFormVO) => {
+        const {attributes, errors, data: formData} = await getUpdatedForm(
+            data, 
+            apTypeId, 
+            scopeId, 
+            apViewSettings, 
+            refTables, 
+            partTypeId, 
+            partId, 
+            parentPartId, 
+            apId
+        )
 
-        WebApi.getAvailableItems(form).then(({attributes, errors}) => {
-            // Seřazení dat
-            attributes.sort((a, b) => {
-                return compareCreateTypes(a, b, partTypeId, refTables, descItemTypesMap, apViewSettingRule);
-            });
-
-            setAvailableAttributes(attributes);
-            setEditErrors(errors);
-
-            // Přidání povinných atributů, pokud ještě ve formuláři nejsou
-            setValues({
-                ...data,
-                items: getItemsWithRequired(data.items, attributes),
-            })
-        });
+        setAvailableAttributes(attributes);
+        setEditErrors(errors);
+        setValues(formData)
     };
 
-    const getItemsWithRequired = ( items: ApItemVO[], attributes: ApCreateTypeVO[] ) => {
-        const newItems: ApItemVO[] = [];
-        addItems(
-            getRequiredAttributes(items, attributes), 
-            refTables,
-            items,
-            partTypeId,
-            (_index, item) => {newItems.push(item)},
-            false,
-            descItemTypesMap,
-            apViewSettings
-        )
-        return sortApItems([...items, ...newItems], descItemTypesMap);
-    }
-
-    const sortApItems = (items: ApItemVO[], descItemTypesMap: Record<number, RulDescItemTypeExtVO>) => {
-        return [...items].sort((a, b) => {
-            if(!a){return 1;}
-            if(!b){return -1;}
-            return descItemTypesMap[a.typeId].viewOrder - descItemTypesMap[b.typeId].viewOrder;
-        })
-    }
-
-    const getRequiredAttributes = (items: ApItemVO[], attributes: ApCreateTypeVO[]) => {
-        const existingItemTypeIds = items.map(i => i.typeId);
-        const requiredAttributes = attributes.filter(attributes => {
-            if (attributes.requiredType === RequiredType.REQUIRED) {
-                return existingItemTypeIds.indexOf(attributes.itemTypeId) < 0;
-            } else {
-                return false;
-            }
-        });
-        return requiredAttributes;
-    }
+    const debouncedFetchAttributes = debounce(fetchAttributes, 50) as typeof fetchAttributes;
 
     const getAttributes = (_name:string, state: any) => {
-        fetchAttributes(state.formState.values, partId, parentPartId)
+        debouncedFetchAttributes(state.formState.values);
     }
+
+    const createMode = partId != undefined ? false : true;
+    const partType = refTables.partTypes.itemsMap[partTypeId];
     
     return <ModalDialogWrapper
         className='dialog-visible dialog-lg'
-        title={"title"}
+        title={getPartEditDialogLabel(partType.code as PartType, createMode)}
         onHide={handleClose}
     >
         <Form<ApPartFormVO> 
@@ -153,10 +101,6 @@ const PartEditModal = ({
                 return <>
                     <Modal.Body>
                         <PartEditForm
-                            formInfo={{
-                                formName: FORM_NAME,
-                                sectionName: "partForm"
-                            }}
                             partTypeId={partTypeId}
                             apTypeId={apTypeId}
                             scopeId={scopeId}
@@ -179,5 +123,6 @@ const PartEditModal = ({
         </Form>
     </ModalDialogWrapper>
 };
+
 
 export default PartEditModal
