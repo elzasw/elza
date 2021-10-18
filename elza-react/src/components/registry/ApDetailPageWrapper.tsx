@@ -11,7 +11,6 @@ import { ApPartVO } from '../../api/ApPartVO';
 import { ApValidationErrorsVO } from '../../api/ApValidationErrorsVO';
 import { ApViewSettingRule, ApViewSettings } from '../../api/ApViewSettings';
 import { PartValidationErrorsVO } from '../../api/PartValidationErrorsVO';
-import { RulDescItemTypeExtVO } from '../../api/RulDescItemTypeExtVO';
 import { RulPartTypeVO } from '../../api/RulPartTypeVO';
 import { AP_VALIDATION, AP_VIEW_SETTINGS } from '../../constants';
 import { DetailActions } from '../../shared/detail';
@@ -204,7 +203,6 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 detail.data.ruleSetId,
                 detail.data.scopeId,
                 refTables,
-                descItemTypesMap as any,
                 apViewSettings,
                 part.partParentId,
                 () => restoreScrollPosition()
@@ -370,11 +368,10 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
         ruleSetId: number,
         scopeId: number,
         refTables: unknown,
-        descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
         apViewSettings: DetailStoreState<ApViewSettings>,
         parentPartId?: number,
         onUpdateFinish: () => void = () => {},
-    ) => dispatch(showPartEditModal(part, partType as any, apId, apTypeId, ruleSetId, scopeId, refTables as any, descItemTypesMap, apViewSettings, parentPartId, onUpdateFinish)),
+    ) => dispatch(showPartEditModal(part, partType as any, apId, apTypeId, ruleSetId, scopeId, refTables as any, apViewSettings, parentPartId, onUpdateFinish)),
     showPartCreateModal: (
         partType: RulPartTypeVO,
         apId: number,

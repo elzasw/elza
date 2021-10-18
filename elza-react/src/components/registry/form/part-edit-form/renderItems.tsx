@@ -3,12 +3,11 @@ import React, { ReactNode, FC } from 'react';
 import { FieldArrayRenderProps } from 'react-final-form-arrays';
 import './PartEditForm.scss';
 import { Col } from 'react-bootstrap';
-import { ApItemVO } from '../../../../api/ApItemVO';
-import { ApCreateTypeVO } from '../../../../api/ApCreateTypeVO';
-import { RulDataTypeCodeEnum } from '../../../../api/RulDataTypeCodeEnum';
-import { RulDescItemTypeExtVO } from '../../../../api/RulDescItemTypeExtVO';
-import { objectById } from '../../../../shared/utils';
-import { ItemType } from '../../../../api/ApViewSettings';
+import { ApItemVO } from 'api/ApItemVO';
+import { ApCreateTypeVO } from 'api/ApCreateTypeVO';
+import { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
+import { objectById } from 'shared/utils';
+import { ItemType } from 'api/ApViewSettings';
 import { ApDescItem } from './renderItem'
 import { useSelector } from 'react-redux';
 import { AppState } from 'typings/store'
@@ -17,21 +16,25 @@ interface RenderItemsProps extends FieldArrayRenderProps<ApItemVO, any> {
     disabled: boolean;
     deleteMode: boolean;
     itemTypeAttributeMap: Record<number, ApCreateTypeVO>;
-    onCustomEditItem: (name: string, systemCode: RulDataTypeCodeEnum, item: ApItemVO) => void;
-    showImportDialog: (field: string) => void;
     itemTypeSettings: ItemType[];
-    onDeleteItem?: (index: number) => void
+    onDeleteItem?: (index: number) => void;
+    itemPrefix?: string;
+    partTypeId: number;
+    scopeId: number;
+    apTypeId: number;
 }
 
 export const ItemsWrapper:FC<RenderItemsProps> = ({
     disabled,
     deleteMode,
     fields,
-    onCustomEditItem,
     itemTypeAttributeMap,
-    showImportDialog,
     itemTypeSettings,
     onDeleteItem,
+    itemPrefix = "items",
+    partTypeId, 
+    scopeId,
+    apTypeId,
 }) => {
     if (!fields.value) { return <></>; }
 
@@ -41,6 +44,7 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
     };
 
     const itemGroups = groupItemsByType(fields.value);
+    let absoluteIndex = 0;
 
     return <>
         {itemGroups.map((items, groupIndex) => {
@@ -49,19 +53,21 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
                 items={items}
                 itemTypeSettings={itemTypeSettings}
             >
-                {(item, index) => {
-                    const absoluteIndex = index + groupIndex;
+                {(item) => {
+                    const index = absoluteIndex;
+                    absoluteIndex++;
                     return <ApDescItem
                         key={index}
                         deleteMode={deleteMode}
                         disabled={disabled}
-                        name={`items[${absoluteIndex}]`}
-                        index={absoluteIndex}
+                        name={`${itemPrefix}[${index}]`}
+                        index={index}
                         item={item}
                         onDeleteItem={handleDeleteItem}
-                        onEdit={onCustomEditItem}
-                        onImport={showImportDialog}
                         itemTypeAttributeMap={itemTypeAttributeMap}
+                        partTypeId={partTypeId}
+                        scopeId={scopeId}
+                        apTypeId={apTypeId}
                     />
                 }}
             </ApDescItemGroup>

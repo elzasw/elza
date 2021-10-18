@@ -1,5 +1,3 @@
-import React from 'react';
-import {change} from 'redux-form';
 import './PartEditForm.scss';
 import {ApItemVO} from '../../../../api/ApItemVO';
 import {ApCreateTypeVO} from '../../../../api/ApCreateTypeVO';
@@ -13,36 +11,35 @@ import {
     sortOwnItems,
 } from '../../../../utils/ItemInfo';
 import {ApItemBitVO} from '../../../../api/ApItemBitVO';
-import {ApItemAccessPointRefVO} from '../../../../api/ApItemAccessPointRefVO';
-import {modalDialogHide, modalDialogShow} from '../../../../actions/global/modalDialog';
 import {WebApi} from '../../../../actions/WebApi';
-import {Area} from '../../../../api/Area';
-import RelationPartItemEditModalForm from '../../modal/RelationPartItemEditModalForm';
-import ImportCoordinateModal from '../../Detail/coordinate/ImportCoordinateModal';
-import i18n from '../../../i18n';
+import { RefTablesState } from 'typings/store'
+import {ApViewSettingRule, ApViewSettings} from '../../../../api/ApViewSettings';
+import {ApAccessPointCreateVO} from '../../../../api/ApAccessPointCreateVO';
+import { ApPartFormVO } from "../../../../api/ApPartFormVO";
+import { compareCreateTypes, hasItemValue } from '../../../../utils/ItemInfo';
+import { DetailStoreState } from '../../../../types';
 
 export const addItems = (
     attributes: Array<ApCreateTypeVO>,
-    refTables,
+    refTables: RefTablesState,
     formItems: ApItemVO[],
     partTypeId: number,
-    arrayInsert: (index: number, value: any) => void,
+    arrayInsert: (index: number, value: ApItemVO) => void,
     userAction: boolean,
-    descItemTypesMap,
-    apViewSettings,
+    apViewSettings?: ApViewSettingRule,
 ) => {
-    const newItems = getNewItems(attributes, refTables, userAction);
+    let newItems = getNewItems(attributes, refTables, userAction);
 
     // Vložení do formuláře - od konce
-    sortOwnItems(partTypeId, newItems, refTables, descItemTypesMap, apViewSettings);
+    sortOwnItems(partTypeId, newItems, refTables, apViewSettings);
 
     newItems.reverse().forEach(item => {
-        let index = findItemPlacePosition(item, formItems, partTypeId, refTables, descItemTypesMap, apViewSettings);
+        let index = findItemPlacePosition(item, formItems, partTypeId, refTables, apViewSettings);
         arrayInsert(index, item);
     });
 }
 
-const getNewItems = (attributes: Array<ApCreateTypeVO>, refTables: any, userAction: boolean) => {
+const getNewItems = (attributes: Array<ApCreateTypeVO>, refTables: RefTablesState, userAction: boolean) => {
     return attributes.map(attribute => {
         const itemType = refTables.descItemTypes.itemsMap[attribute.itemTypeId] as RulDescItemTypeExtVO;
         const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
@@ -73,91 +70,80 @@ const getNewItems = (attributes: Array<ApCreateTypeVO>, refTables: any, userActi
 
 }
 
-export const onCustomEditItem = (
-    name: string,
-    systemCode: RulDataTypeCodeEnum,
-    item: ApItemVO,
-    refTables: any,
+export const getUpdatedForm = async (
+    data: ApPartFormVO, 
+    typeId: number, 
+    scopeId: number, 
+    apViewSettings: DetailStoreState<ApViewSettings>,
+    refTables: RefTablesState,
     partTypeId: number,
-    itemTypeAttributeMap: Record<number, ApCreateTypeVO>,
-    formName: string,
-    apTypeId: number,
-    scopeId: number,
+    partId?: number, 
+    parentPartId?: number, 
+    accessPointId?: number,
 ) => {
-    return (dispatch) => {
-        const initialValues: any = {
-            onlyMainPart: false,
-            area: Area.ALLNAMES,
-            specId: item.specId,
-        };
+    const apViewSettingRule = apViewSettings.data!.rules[apViewSettings.data!.typeRuleSetMap[typeId]];
+    const form: ApAccessPointCreateVO = {
+        typeId,
+        partForm: {
+            ...data,
+            parentPartId,
+            items: [...data.items.filter(hasItemValue)],
+            partId: partId,
+        },
+        accessPointId,
+        scopeId,
+    };
 
-        if (((item as unknown) as ApItemAccessPointRefVO).value != null) {
-            initialValues.codeObj = {
-                id: ((item as unknown) as ApItemAccessPointRefVO).value,
-                // @ts-ignore
-                codeObj: item.accessPoint,
-                // @ts-ignore
-                name: item.accessPoint && item.accessPoint.name,
-                specId: item.specId,
-            };
-        }
+    const { attributes, errors } = await WebApi.getAvailableItems(form);
 
-        return dispatch(
-            modalDialogShow(
-                this,
-                refTables.descItemTypes.itemsMap[item.typeId].shortcut,
-                <RelationPartItemEditModalForm
-                    initialValues={initialValues}
-                    itemTypeAttributeMap={itemTypeAttributeMap}
-                    typeId={item.typeId}
-                    apTypeId={apTypeId}
-                    scopeId={scopeId}
-                    partTypeId={partTypeId}
-                    onSubmit={form => {
-                        let field = 'partForm.' + name;
-                        const fieldValue: any = {
-                            ...item,
-                            specId: form.specId ? parseInt(form.specId) : null,
-                            accessPoint: {
-                                '@class': '.ApAccessPointVO',
-                                id: form.codeObj.id,
-                                name: form.codeObj.name,
-                            },
-                            value: form.codeObj ? form.codeObj.id : null,
-                        };
-                        dispatch(change(formName, field, fieldValue));
-                        dispatch(modalDialogHide());
-                    }}
-                    />,
-            ),
-        );
+    attributes.sort((a, b) => {
+        return compareCreateTypes(a, b, partTypeId, refTables, apViewSettingRule);
+    });
+
+    return {
+        attributes,
+        errors,
+        data: {
+            ...data,
+            items: getItemsWithRequired(data.items, attributes, partTypeId, refTables),
+        } as ApPartFormVO
     }
+};
+
+export const getItemsWithRequired = ( 
+    items: ApItemVO[], 
+    attributes: ApCreateTypeVO[], 
+    partTypeId: number,
+    refTables: RefTablesState,
+) => {
+    const newItems: ApItemVO[] = [];
+    addItems(
+        getRequiredAttributes(items, attributes), 
+        refTables,
+        items,
+        partTypeId,
+        (_index, item) => {newItems.push(item)},
+        false,
+    )
+    return sortApItems([...items, ...newItems], refTables.descItemTypes.itemsMap);
 }
 
-export const showImportDialog = (field: string, formName: string, sectionName: string) => 
-(dispatch) => 
-dispatch(
-    modalDialogShow(
-        this,
-        i18n('ap.coordinate.import.title'),
-        <ImportCoordinateModal
-            onSubmit={async formData => {
-                const reader = new FileReader();
-                reader.onload = async () => {
-                    const data = reader.result;
-                    try {
-                        const fieldValue = await WebApi.importApCoordinates(data!, formData.format);
-                        let realField = sectionName
-                        ? `${sectionName}.${field}`
-                        : field;
-                        dispatch(change(formName, realField, fieldValue));
-                    } catch (e) {
-                        //notification.error({message: 'Nepodařilo se importovat souřadnice'});
-                    }
-                };
-                reader.readAsBinaryString(formData.file);
-            }}
-            onSubmitSuccess={(result, dispatch) => dispatch(modalDialogHide())}
-            />
-    )
-)
+const sortApItems = (items: ApItemVO[], descItemTypesMap: Record<number, RulDescItemTypeExtVO>) => {
+    return [...items].sort((a, b) => {
+        if(!a){return 1;}
+        if(!b){return -1;}
+        return descItemTypesMap[a.typeId].viewOrder - descItemTypesMap[b.typeId].viewOrder;
+    })
+}
+
+const getRequiredAttributes = (items: ApItemVO[], attributes: ApCreateTypeVO[]) => {
+    const existingItemTypeIds = items.map(i => i.typeId);
+    const requiredAttributes = attributes.filter(attributes => {
+        if (attributes.requiredType === RequiredType.REQUIRED) {
+            return existingItemTypeIds.indexOf(attributes.itemTypeId) < 0;
+        } else {
+            return false;
+        }
+    });
+    return requiredAttributes;
+}
