@@ -307,7 +307,7 @@ public class CamService {
             this.externalSystemService.createApBindingItem(binding, change, value, part, null);
         });
 
-        setQueueItemState(extSyncsQueueItem, ExtSyncsQueueItem.ExtAsyncQueueState.OK, OffsetDateTime.now(), null);
+        setQueueItemState(extSyncsQueueItem, ExtSyncsQueueItem.ExtAsyncQueueState.IMPORT_OK, OffsetDateTime.now(), null);
 
         accessPointCacheService.createApCachedAccessPoint(extSyncsQueueItem.getAccessPointId());
     }
@@ -839,7 +839,7 @@ public class CamService {
 
         }
         setQueueItemState(queueItem,
-                          ExtSyncsQueueItem.ExtAsyncQueueState.OK,
+                          ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_OK,
                           OffsetDateTime.now(),
                           "Synchronized: ES -> ELZA");
         return true;
@@ -873,7 +873,7 @@ public class CamService {
         importNew(externalSystem, entities, bindingMap);
 
         setQueueItemState(queueItems,
-                         ExtSyncsQueueItem.ExtAsyncQueueState.OK,
+                         ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_OK,
                          OffsetDateTime.now(),
                          "Synchronized: ES -> ELZA");
     }

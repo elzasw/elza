@@ -133,7 +133,7 @@ public class ExtSyncsProcessor implements Runnable {
             UploadWorker uploadWorker = camService.prepareUpload(item);
             if (uploadWorker == null) {
                 camService.setQueueItemStateTA(Collections.singletonList(item),
-                                               ExtSyncsQueueItem.ExtAsyncQueueState.OK,
+                                               ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_OK,
                                                OffsetDateTime.now(),
                                                null);
                 return true;
