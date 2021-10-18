@@ -20,6 +20,7 @@ import cz.tacr.elza.controller.vo.RulExportFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulOutputFilter;
+import cz.tacr.elza.service.ItemService;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -185,6 +186,9 @@ public class ConfigMapperConfiguration {
 
     @Autowired
     private ArrRefTemplateRepository refTemplateRepository;
+
+    @Autowired
+    private ItemService itemService;
 
     /**
      * @return Tovární třída.
@@ -566,6 +570,7 @@ public class ConfigMapperConfiguration {
                                         final ArrDataCoordinates coordinates,
                                         final MappingContext context) {
                         String str = coordinatesVO.getValue();
+                        str = itemService.normalizeCoordinates(str);
                         Geometry value = GeometryConvertor.convert(str);
                         coordinates.setValue(value);
                     }
