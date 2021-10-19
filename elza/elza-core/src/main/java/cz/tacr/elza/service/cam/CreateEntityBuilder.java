@@ -8,58 +8,25 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.cam.schema.cam.CodeXml;
 import cz.tacr.cam.schema.cam.CreateEntityXml;
-import cz.tacr.cam.schema.cam.EntityIdXml;
-import cz.tacr.cam.schema.cam.EntityRecordRefXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityRefXml;
 import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
-import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
-import cz.tacr.elza.service.cam.CamXmlFactory.EntityRefHandler;
 
 public class CreateEntityBuilder extends BatchUpdateBuilder {
 
     final private ApState apState;
-	private CreateEntityXml createEntity;
-
-    private static class NewApRefHandler implements EntityRefHandler {
-
-        private final ApExternalSystem apExternalSystem;
-
-        public NewApRefHandler(final ApExternalSystem apExternalSystem) {
-            this.apExternalSystem = apExternalSystem;
-        }
-
-        @Override
-        public EntityRecordRefXml createEntityRef(ArrDataRecordRef recordRef) {
-            // create record ref only for records with same binding
-            ApBinding binding = recordRef.getBinding();
-            if ( binding == null) {
-                return null;
-            }
-            ApExternalSystem bindedExtSystem = binding.getApExternalSystem();
-            if (!bindedExtSystem.getExternalSystemId().equals(apExternalSystem.getExternalSystemId())) {
-                return null;
-            }
-
-            EntityRecordRefXml entityRecordRef = new EntityRecordRefXml();
-            long entityId = Long.parseLong(binding.getValue());
-            entityRecordRef.setEid(new EntityIdXml(entityId));
-            return entityRecordRef;
-        }
-
-    };
+    private CreateEntityXml createEntity;	
 
     public CreateEntityBuilder(final ExternalSystemService externalSystemService,
                                final StaticDataProvider sdp,
@@ -69,8 +36,8 @@ public class CreateEntityBuilder extends BatchUpdateBuilder {
                                final GroovyService groovyService,
                                final AccessPointDataService apDataService,
                                final ApScope scope) {
-        super(sdp, accessPoint, new NewApRefHandler(apExternalSystem), groovyService, apDataService, scope,
-                apExternalSystem.getType());
+        super(sdp, accessPoint, groovyService, apDataService, scope,
+                apExternalSystem, externalSystemService);
         this.apState = state;
     }
     

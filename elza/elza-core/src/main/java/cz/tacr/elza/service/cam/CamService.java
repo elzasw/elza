@@ -38,7 +38,6 @@ import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AbstractException;
-import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -290,7 +289,6 @@ public class CamService {
                                                             			 SyncState.SYNC_OK                                                                         
                                                                          );
         } else {
-            ApState state = accessPointService.getStateInternal(accessPoint);
             binding = externalSystemService.createApBinding(Long.toString(batchEntityRecordRev.getEid().getValue()), apExternalSystem);
             bindingState = externalSystemService.createApBindingState(binding, accessPoint, change, camApState,
                                                                       batchEntityRecordRev.getRev().getValue(),
@@ -377,6 +375,7 @@ public class CamService {
                 .collect(Collectors.groupingBy(i -> i.getPartId()));
 
         UpdateEntityBuilder ueb = new UpdateEntityBuilder(
+        		this.externalSystemService,
                 this.bindingItemRepository,
                 this.staticDataService.getData(),
                 state,

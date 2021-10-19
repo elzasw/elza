@@ -681,6 +681,11 @@ public class EntityDBDispatcher {
 
         //změna preferováného jména
         Validate.notNull(preferredName, "Missing preferredName");
+        ApPart oldPrefPart = accessPoint.getPreferredPart();
+        if(oldPrefPart!=null&&!oldPrefPart.getPartId().equals(preferredName.getPartId())) {
+        	this.partService.unsetPreferredPart(oldPrefPart);
+        }
+        accessPointService.setPreferName(accessPoint, preferredName);
         accessPoint.setPreferredPart(preferredName);
         syncResult.setAccessPoint(accessPointRepository.save(accessPoint));
 
@@ -710,6 +715,7 @@ public class EntityDBDispatcher {
             partBinding.setDeleteChange(apChange);
         }
         bindingItemRepository.saveAll(partsBinding);
+        bindingItemRepository.flush();
 
         // clear lookup
         bindingPartLookup.clear();
