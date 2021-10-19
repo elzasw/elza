@@ -89,7 +89,7 @@ class ValueCheckListBox extends AbstractReactComponent {
 
         this.setState({isFetchingItemTypeValues: true});
         WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, null, 200).then(json => {
-            var valueItems = json.map(i => ({id: i, name: i}));
+            var valueItems = json.map(i => ({id: i.id, name: i.value}));
 
             if (
                 valueSearchText === '' ||
@@ -102,7 +102,7 @@ class ValueCheckListBox extends AbstractReactComponent {
                 // u prázdného hledání a případně u hledání prázdné hodnoty doplňujeme null položku
                 valueItems = [
                     {
-                        id: 'NULL',
+                        id: -1,
                         name: i18n('arr.fund.filterSettings.value.empty'),
                     },
                     ...valueItems,

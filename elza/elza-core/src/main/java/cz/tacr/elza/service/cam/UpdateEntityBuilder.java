@@ -11,6 +11,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.ExternalSystemService;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
@@ -28,7 +30,6 @@ import cz.tacr.cam.schema.cam.NewItemsXml;
 import cz.tacr.cam.schema.cam.PartTypeXml;
 import cz.tacr.cam.schema.cam.PartXml;
 import cz.tacr.cam.schema.cam.SetRecordStateXml;
-import cz.tacr.cam.schema.cam.UpdateEntityXml;
 import cz.tacr.cam.schema.cam.UpdateItemsXml;
 import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -46,7 +47,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.service.GroovyService;
 
-public class UpdateEntityBuilder extends CamXmlBuilder {
+public class UpdateEntityBuilder extends BatchUpdateBuilder {
 
     final private static Logger logger = LoggerFactory.getLogger(UpdateEntityBuilder.class);
 
@@ -56,9 +57,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
 
     private List<ApBindingItem> bindingItems;
 
-    private List<ApBindingItem> bindingParts;
-
-    private List<Object> trgList = new ArrayList<>();
+    private List<ApBindingItem> bindingParts;    
 
     static class BindingPartInfo {
         final ApBindingItem bindingPart;
@@ -100,16 +99,18 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
      */
     private Map<Integer, BindingPartInfo> bindingMap = new HashMap<>();
 
-    public UpdateEntityBuilder(ApBindingItemRepository bindingItemRepository,
-                               StaticDataProvider sdp,
-                               final ApState state,
-                               ApBindingState bindingState,
-                               GroovyService groovyService,
-                               AccessPointDataService apDataService,
-                               ApScope scope,
-                               ApExternalSystem externalSystem) {
-        super(sdp, bindingState.getAccessPoint(), new BindingRecordRefHandler(bindingState.getBinding()), groovyService,
-                apDataService, scope, externalSystem.getType());
+    public UpdateEntityBuilder(final ExternalSystemService externalSystemService,
+    		final ApBindingItemRepository bindingItemRepository,
+    		final StaticDataProvider sdp,
+    		final ApState state,
+    		final ApBindingState bindingState,
+    		final GroovyService groovyService,
+    		final AccessPointDataService apDataService,
+    		final ApScope scope,
+    		final ApExternalSystem externalSystem) {
+        super(sdp, bindingState.getAccessPoint(), groovyService,
+                apDataService, scope, externalSystem,
+                externalSystemService);
         this.bindingItemRepository = bindingItemRepository;
         this.bindingState = bindingState;
         this.apState = state;
@@ -121,8 +122,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         updateItemsXml.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
 
         for (ApBindingItem bindingItem : changedItems) {
-            Object i = CamXmlFactory.createItem(sdp, bindingItem.getItem(), bindingItem.getValue(), entityRefHandler,
-                                                groovyService, apDataService, externalSystemType.toString(), scope);
+            Object i = createItem(bindingItem.getItem(), bindingItem.getValue());
             if (i != null) {
                 updateItemsXml.getItems().add(i);
             }
@@ -280,7 +280,6 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
             return;
         }
 
-        List<DeletePartXml> deletePartXmls = new ArrayList<>(deletedParts.size());
         for (ApBindingItem deletedPart : deletedParts) {
             DeletePartXml dpx = new DeletePartXml(new UuidXml(deletedPart.getValue()),
                     // TODO: improve with sdp
@@ -290,7 +289,8 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         }
     }
 
-    private BatchEntityRecordRevXml createBatchEntityRecordRef() {
+    @Override
+    protected BatchEntityRecordRevXml createBatchEntityRecordRef() {
         BatchEntityRecordRevXml batchEntityRecordRevXml = new BatchEntityRecordRevXml();
         batchEntityRecordRevXml.setEid(new EntityIdXml(Long.parseLong(bindingState.getBinding().getValue())));
         batchEntityRecordRevXml.setRev(new UuidXml(bindingState.getExtRevision()));
@@ -299,8 +299,8 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
     }
 
     public List<Object> build(final EntityXml entityXml,
-                      List<ApPart> partList,
-                              Map<Integer, List<ApItem>> itemMap) {
+    		List<ApPart> partList,
+    		Map<Integer, List<ApItem>> itemMap) {
         // check that list is empty
         Validate.isTrue(trgList.size() == 0);
 
@@ -329,6 +329,7 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
             addChange(trgList, new CodeXml(apState.getApType().getCode()));
         }*/
 
+        // zmena stavu entity
         if (apState.getStateApproval() == StateApproval.APPROVED &&
                 entityXml.getEns() != EntityRecordStateXml.ERS_APPROVED) {
             addUpdate(new SetRecordStateXml(EntityRecordStateXml.ERS_APPROVED, null));
@@ -351,43 +352,5 @@ public class UpdateEntityBuilder extends CamXmlBuilder {
         }
         
         return trgList;
-    }
-
-    public List<Object> getResult() {
-        return trgList;
-    }
-
-    private void addChangeInternal(Object change) {
-        UpdateEntityXml result = new UpdateEntityXml(createBatchEntityRecordRef(), change);
-        trgList.add(result);
-
-    }
-
-    private void addUpdate(NewItemsXml change) {
-        addChangeInternal(change);
-    }
-
-    private void addUpdate(PartXml change) {
-        addChangeInternal(change);
-    }
-
-    private void addUpdate(DeletePartXml change) {
-        addChangeInternal(change);
-    }
-
-    private void addUpdate(SetRecordStateXml change) {
-        addChangeInternal(change);
-    }
-
-    private void addUpdate(DeleteItemsXml change) {
-        addChangeInternal(change);
-    }
-
-    private void addUpdate(UpdateItemsXml change) {
-        addChangeInternal(change);
-    }
-
-    private void setPrefName(UuidXml prefName) {
-        addChangeInternal(prefName);
     }
 }

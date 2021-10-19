@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import cz.tacr.elza.controller.vo.UniqueValue;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -24,12 +25,12 @@ public interface DataRepositoryCustom {
      * @param max           maximální počet hodnot
      * @return seznam unikátních hodnot
      */
-    List<String> findUniqueSpecValuesInVersion(ArrFundVersion version,
-                                               RulItemType descItemType,
-                                               Class<? extends ArrData> dataTypeClass,
-                                               @Nullable Set<RulItemSpec> specs,
-                                               boolean withoutSpec, @Nullable String fulltext,
-                                               int max);
+    List<UniqueValue> findUniqueSpecValuesInVersion(ArrFundVersion version,
+                                                    RulItemType descItemType,
+                                                    Class<? extends ArrData> dataTypeClass,
+                                                    @Nullable Set<RulItemSpec> specs,
+                                                    boolean withoutSpec, @Nullable String fulltext,
+                                                    int max);
 
     /**
      * Provede načtení unikátních specifikací hodnot atributů.

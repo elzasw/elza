@@ -179,9 +179,12 @@ public class DEImportService {
     }
 
     @Transactional(TxType.REQUIRED)
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,UsrPermission.Permission.FUND_CREATE})
     public void importData(InputStream is, DEImportParams params) {
 
+        ImportPositionParams positionParams = params.getPositionParams();
+        Integer fundVersionId = positionParams == null ? null : positionParams.getFundVersionId();
+
+        checkFundPermissions(fundVersionId);
         checkScopePermissions(params.getScopeId());
         checkParameters(params);
 
@@ -278,6 +281,30 @@ public class DEImportService {
         return uuidDataUriRefMap;
     }
 
+    /**
+     * Kontrola oprávnění uživatele podle Fund
+     * 
+     * @param fundVersionId
+     */
+    private void checkFundPermissions(Integer fundVersionId) {
+        if (userService.hasPermission(Permission.FUND_ADMIN)
+                || userService.hasPermission(Permission.FUND_CREATE)) {
+            return;
+        }
+        if (fundVersionId != null) {
+            ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+            if (userService.hasPermission(Permission.FUND_ARR, fundVersion.getFundId())) {
+                return;
+            }
+        }
+        throw Authorization.createAccessDeniedException(Permission.FUND_ADMIN, Permission.FUND_CREATE, Permission.FUND_ARR);
+    }
+
+    /**
+     * Kontrola oprávnění uživatele podle Scope
+     * 
+     * @param importScopeId
+     */
     private void checkScopePermissions(int importScopeId) {
         if (userService.hasPermission(Permission.ADMIN)) {
             return;

@@ -1852,20 +1852,20 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *
      * @param fundVersion      verze stromu
      * @param itemType         typ atributu
-     * @param replaceValue     hodnota, která bude nastavena
-     * @param values           seznam hodnot, které se mají nahradit
+     * @param replaceValueId   id strukturovaného typu, jehož hodnota bude nastavena
+     * @param valueIds         seznam id stukturovaných typů, které se mají nahradit
      * @param allNodes         vložit u všech JP
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void setDataValues(final ArrFundVersion fundVersion,
                               final RulItemType itemType,
                               final Collection<ArrNode> nodes,
-                              final String replaceValue,
-                              final Set<String> values,
+                              final Integer replaceValueId,
+                              final Set<Integer> valueIds,
                               final boolean allNodes) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(itemType, "Typ atributu musí být vyplněn");
-        Assert.notNull(replaceValue, "Musí být vyplněna hodnota");
+        Assert.notNull(replaceValueId, "Identifikátor stukturovaného typu musí být vyplněn");
 
         Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, ArrNode::getNodeId);
 
@@ -1876,10 +1876,10 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             nodeIds.add(rootNodeId);
             for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAllById(nodeIds),
                     HibernateConfiguration.MAX_IN_SIZE)) {
-                descItemsToReplaceText.addAll(descItemRepository.findByNodesContainingTexts(partNodes, itemType, null, values));
+                descItemsToReplaceText.addAll(descItemRepository.findByNodesContainingStructureObjectIds(partNodes, itemType, null, valueIds));
             }
         } else {
-            descItemsToReplaceText = descItemRepository.findByNodesContainingTexts(nodes, itemType, null, values);
+            descItemsToReplaceText = descItemRepository.findByNodesContainingStructureObjectIds(nodes, itemType, null, valueIds);
         }
 
         List<ArrNode> dbNodes;
@@ -1898,18 +1898,18 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             ignoreNodes = remainItems.stream().map(ArrDescItem::getNode).collect(Collectors.toSet());
         }
 
-        if (!descItemsToReplaceText.isEmpty() || (CollectionUtils.isNotEmpty(dbNodes) && values.contains("NULL"))) {
+        if (!descItemsToReplaceText.isEmpty() || (CollectionUtils.isNotEmpty(dbNodes) && valueIds.contains(-1))) {
 
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
             MultiplItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
-            List<ArrStructuredObject> structuredObjects = structuredObjectRepository.findByValueAndFund(fundVersion.getFund(), replaceValue);
+            List<ArrStructuredObject> structuredObjects = structuredObjectRepository.findByIdAndFund(fundVersion.getFund(), replaceValueId);
             ArrStructuredObject structuredObject;
 
             if (CollectionUtils.isEmpty(structuredObjects)) {
-                throw new IllegalStateException("Nebyla nalezena entita v úložišti ArrStructuredObject s hodnotou " + replaceValue);
+                throw new IllegalStateException("Nebyla nalezena entita v úložišti ArrStructuredObject s hodnotou " + replaceValueId);
             } else if (structuredObjects.size() != 1) {
-                throw new IllegalStateException("Nebyla nalezena unikátní entita v úložišti ArrStructuredObject s hodnotou " + replaceValue);
+                throw new IllegalStateException("Nebyla nalezena unikátní entita v úložišti ArrStructuredObject s hodnotou " + replaceValueId);
             } else {
                 structuredObject = structuredObjects.get(0);
             }
@@ -1950,7 +1950,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 changeContext.flushIfNeeded();
             }
 
-            if (CollectionUtils.isNotEmpty(dbNodes) && values.contains("NULL")) {
+            if (CollectionUtils.isNotEmpty(dbNodes) && valueIds.contains(-1)) {
                 for (ArrNode dbNode : dbNodes) {
 
                     if (ignoreNodes.contains(dbNode)) {
@@ -2044,7 +2044,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param nodes          seznam uzlů, jejichž hodnoty mažeme
      * @param specifications seznam specifikací pro typ se specifikací, kterým budou smazány hodnoty
      * @param allNodes       odstranit u všech JP
-     * @param values         hodnoty, které se mají odstranit
+     * @param valueIds       seznam id stukturovaných typů, které se mají odstranit
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deleteDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
@@ -2052,7 +2052,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                      final Set<ArrNode> nodes,
                                      final Set<RulItemSpec> specifications,
                                      final boolean allNodes,
-                                     final Set<String> values) {
+                                     final Set<Integer> valueIds) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         if (descItemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)) {
@@ -2062,17 +2062,17 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         List<ArrDescItem> descItems = new ArrayList<>();
 
         if (descItemType.getDataType().getCode().equals(DataType.STRUCTURED.getCode())) {
-            if (CollectionUtils.isNotEmpty(values)) {
+            if (CollectionUtils.isNotEmpty(valueIds)) {
                 if (allNodes) {
                     Integer rootNodeId = version.getRootNode().getNodeId();
                     Set<Integer> nodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(version, rootNodeId, ArrangementController.Depth.SUBTREE);
                     nodeIds.add(rootNodeId);
                     for (List<ArrNode> partNodes : Lists.partition(nodeRepository.findAllById(nodeIds),
                             HibernateConfiguration.MAX_IN_SIZE)) {
-                        descItems.addAll(descItemRepository.findByNodesContainingTexts(partNodes, descItemType, null, values));
+                        descItems.addAll(descItemRepository.findByNodesContainingStructureObjectIds(partNodes, descItemType, null, valueIds));
                     }
                 } else {
-                    descItems = descItemRepository.findByNodesContainingTexts(nodes, descItemType, null, values);
+                    descItems = descItemRepository.findByNodesContainingStructureObjectIds(nodes, descItemType, null, valueIds);
                 }
             }
         } else {

@@ -91,6 +91,7 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApScopeRelation;
@@ -608,7 +609,9 @@ public class AccessPointService {
         }
 
         if (fund != null) {
-            Set<Integer> fundScopeIds = scopeRepository.findAllConnectedByFundId(fund.getFundId());
+            // connected scopes cannot be used to search in a fund 
+            Validate.isTrue(!includeConnetedScopes);
+            Set<Integer> fundScopeIds = scopeRepository.findIdsByFundId(fund.getFundId());
             scopeIdsToSearch.retainAll(fundScopeIds);
         }
 
@@ -1086,7 +1089,7 @@ public class AccessPointService {
             boolean preferred = prefPartId == null || Objects.equals(prefPartId, part.getPartId());
             GroovyResult result = groovyService.processGroovy(state, part, childrenParts, items, preferred);
             if (!partService.updatePartValue(part, result, state, state.getScope(),
-                                             async, part.getPartId().equals(prefPartId))) {
+                                             async, preferred)) {
                 success = false;
             }
         }
@@ -1838,13 +1841,7 @@ public class AccessPointService {
         }
     }
 
-    /**
-     * Nastaví část přístupového bodu na preferovanou
-     *
-     * @param accessPoint přístupový bod
-     * @param apPart část
-     */
-    public void setPreferName(final ApAccessPoint accessPoint, final ApPart apPart) {
+    public void changePrefName(final ApAccessPoint accessPoint, final ApPart apPart) {
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         RulPartType defaultPartType = sdp.getDefaultPartType();
 
@@ -1855,12 +1852,26 @@ public class AccessPointService {
         if (apPart.getParentPart() != null) {
             throw new IllegalArgumentException("Návazný part nelze změnit na preferovaný.");
         }
-
+        ApPart oldPrefName = accessPoint.getPreferredPart();
+        if(oldPrefName!=null&&oldPrefName.getKeyValue()!=null) {
+        	partService.unsetPreferredPart(oldPrefName);
+        }
         accessPoint.setPreferredPart(apPart);
+    }
+
+    /**
+     * Nastaví část přístupového bodu na preferovanou
+     *
+     * @param accessPoint přístupový bod
+     * @param apPart část
+     */
+    public void setPreferName(final ApAccessPoint accessPoint, final ApPart apPart) {
+    	changePrefName(accessPoint, apPart);
         saveWithLock(accessPoint);
         generateSync(accessPoint.getAccessPointId());
     }
 
+    @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
     public void disconnectAccessPoint(Integer accessPointId, String externalSystemCode) {
         ApAccessPoint accessPoint = getAccessPoint(accessPointId);
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
@@ -2192,8 +2203,22 @@ public class AccessPointService {
         return extSyncsQueueItemVO;
     }
 
-    public void createExtSyncsQueueItem(Integer accessPointId, String externalSystemCode) {
-        ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
+    @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
+    public void createExtSyncsQueueItem(Integer accessPointId, String externalSystemCode) {        
+        // check AP state
+        ApState apState = getApState(accessPointId);
+        switch(apState.getStateApproval()) {
+        case APPROVED:
+        case NEW:
+        case TO_AMEND:
+        	break;
+        default:
+        	throw new BusinessException("Entita v tomto stavu nemůže být předána do externího systému.",
+        			BaseCode.INVALID_STATE)
+        		.set("accessPointId", apState.getAccessPointId())
+        		.set("state", apState.getStateApproval());
+        }
+        ApAccessPoint accessPoint = apState.getAccessPoint();
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         UserDetail userDetail = userService.getLoggedUserDetail();
         ExtSyncsQueueItem extSyncsQueueItem = createExtSyncsQueueItem(accessPoint, apExternalSystem, null,

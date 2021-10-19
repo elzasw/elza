@@ -231,8 +231,10 @@ public class PartService {
             part.setKeyValue(null);
         }
         partRepository.saveAll(partList);
+        partRepository.flush();
         if (CollectionUtils.isNotEmpty(keyValues)) {
             keyValueRepository.deleteAll(keyValues);
+            keyValueRepository.flush();
         }
     }
 
@@ -523,4 +525,22 @@ public class PartService {
             }
         }
     }
+
+    /**
+     * Odstranění předchozí preferované hodnoty
+     * 
+     * @param oldPrefPart
+     */
+	public void unsetPreferredPart(ApPart oldPrefPart) {
+    	// drop keyValue of old pref part
+		ApKeyValue keyValue = oldPrefPart.getKeyValue();
+    	if(keyValue==null) {
+    		return;
+    	}    	
+    	oldPrefPart.setKeyValue(null);
+    	partRepository.saveAndFlush(oldPrefPart);
+    	
+    	keyValueRepository.delete(keyValue);
+    	keyValueRepository.flush();
+	}
 }
