@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.transaction.Transactional;
@@ -14,6 +15,7 @@ import javax.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
+import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -180,7 +182,7 @@ public class DaoService {
      * @return nalezené nebo vytvořené propojení
      */
     @Transactional(value = TxType.MANDATORY)
-    private ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+    public ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                            final ArrDao dao, final ArrNode node, final String scenario) {
         if (!dao.getValid()) {
             throw new BusinessException("Nelze připojit digitální entitu k JP, protože je nevalidní", ArrangementCode.INVALID_DAO).level(Level.WARNING);
@@ -551,5 +553,17 @@ public class DaoService {
             throw new SystemException("Unrecognized dao type");
         }
         return createOrFindDaoLink(fundVersion, dao, linkNode, scenario);
+    }
+
+    public List<ArrDao> findDaosByRepository(ArrDigitalRepository repository, List<String> daoCodes) {
+        List<ArrDao> daos = daoRepository.findByCodes(repository, daoCodes);
+        if (daos.size() != daoCodes.size()) {
+            Set<String> dbDaoCodes = daos.stream().map(dao -> dao.getCode()).collect(Collectors.toSet());
+            List<String> missingCodes = daoCodes.stream()
+                    .filter(c -> !dbDaoCodes.contains(c)).collect(Collectors.toList());
+            throw new SystemException("DAOs not found: " + Strings.join(missingCodes, ','))
+                    .set("missing", missingCodes);
+        }
+        return daos;
     }
 }

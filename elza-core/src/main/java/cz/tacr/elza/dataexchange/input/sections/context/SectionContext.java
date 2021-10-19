@@ -152,16 +152,26 @@ public class SectionContext {
         this.processingStructType = st.getStructuredType();
     }
 
-    public StructObjContext addStructObject(String importId) {
+    /**
+     * Add structured object
+     * 
+     * @param importId
+     * @param uuid
+     *            Optional object UUID
+     * @return
+     */
+    public StructObjContext addStructObject(String importId, String uuid) {
         Validate.notNull(processingStructType);
 
         // create entity
         ArrStructuredObject entity = new ArrStructuredObject.Builder(getCreateChange(),
                 getFund(),
                 processingStructType)
-                        .setState(State.OK).build();
+                        .setState(State.OK)
+                        .setUuid(uuid)
+                        .build();
 
-        ArrStructObjectWrapper wrapper = new ArrStructObjectWrapper(entity, importId);
+        ArrStructObjectWrapper wrapper = new ArrStructObjectWrapper(entity, importId, uuid);
         StructObjContext ctx = new StructObjContext(this, wrapper.getIdHolder(), structObjectStorageDispatcher);
         if (importIdStructObjCtxMap.putIfAbsent(importId, ctx) != null) {
             throw new DEImportException("Structured object has duplicate id, soId:" + importId);

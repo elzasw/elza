@@ -92,7 +92,7 @@ class RegistryPage extends AbstractReactComponent {
         dispatch(refRulDataTypesFetchIfNeeded());
         dispatch(DetailActions.fetchIfNeeded(AP_VIEW_SETTINGS, '', WebApi.getApTypeViewSettings));
 
-        if (props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
+        if (props.userDetail.hasOne(perms.AP_SCOPE_WR_ALL) || props.userDetail.hasOne(perms.AP_SCOPE_WR) || props.userDetail.hasOne(perms.AP_EXTERNAL_WR)) {
             dispatch(apExtSystemListFetchIfNeeded());
         }
 
@@ -400,7 +400,7 @@ class RegistryPage extends AbstractReactComponent {
                 </Button>,
             );
         }
-        if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL)) {
+        if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL) || userDetail.hasOne(perms.AP_SCOPE_WR)) {
             altActions.push(
                 <Button key="registryImport" onClick={this.handleRegistryImport}>
                     <Icon glyph="fa-download" />
@@ -508,6 +508,9 @@ class RegistryPage extends AbstractReactComponent {
                 );
             }
 
+            // Vypnuti moznosti propojeni AP s AP v CAMu
+            // TODO: remove related code
+            /*
             if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
               itemActions.push(
                 <Button key="connect-ap" onClick={this.handleConnectAp}>
@@ -518,6 +521,7 @@ class RegistryPage extends AbstractReactComponent {
                 </Button>,
               );
             }
+            */
 
             if (userDetail.hasOne(perms.AP_EXTERNAL_WR)) {
                 itemActions.push(

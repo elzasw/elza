@@ -12,8 +12,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.Validate;
+import org.springframework.util.CollectionUtils;
 
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
@@ -32,6 +35,9 @@ import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
 
 /**
  * One record from registry
@@ -58,6 +64,10 @@ public class Record {
 
     private final ApIndexRepository indexRepository;
 
+    private final AccessPointCacheService accessPointCacheService;
+    
+    private final ElzaLocale elzaLocale;
+
     private List<ExternalId> eids;
 
     private List<Part> parts;
@@ -75,7 +85,9 @@ public class Record {
                   final ApItemRepository itemRepository,
                   final ApBindingStateRepository bindingStateRepository,
                   final ApIndexRepository indexRepository,
-                  final OutputItemConvertor outputItemConvertor) {
+                  final OutputItemConvertor outputItemConvertor,
+                  final AccessPointCacheService accessPointCacheService,
+                  final ElzaLocale elzaLocale) {
         this.ap = ap;
         this.type = type;
         this.staticData = staticData;
@@ -86,6 +98,8 @@ public class Record {
         this.bindingStateRepository = bindingStateRepository;
         this.indexRepository = indexRepository;
         this.outputItemConvertor = outputItemConvertor;
+        this.accessPointCacheService = accessPointCacheService;
+        this.elzaLocale = elzaLocale;
     }
 
     /**
@@ -105,26 +119,38 @@ public class Record {
         this.bindingStateRepository = src.bindingStateRepository;
         this.indexRepository = src.indexRepository;
         this.outputItemConvertor = src.outputItemConvertor;
+        this.accessPointCacheService = src.accessPointCacheService;
+        this.elzaLocale = src.elzaLocale;
     }
 
-    public void loadData(List<ApPart> apParts, List<ApItem> apItems, Map<Integer, ApIndex> indexMap) {
+    private void loadData(List<CachedPart> cachedParts) {
+
+        // sorting parts
+        Map<CachedPart, String> sortValues = cachedParts.stream().collect(Collectors.toMap(p -> p, p -> ApFactory.getSortName(p)));
+        cachedParts.sort((p1, p2) -> {
+            String s1 = sortValues.get(p1);
+            String s2 = sortValues.get(p2);
+            if (s1 == null || s2 == null) {
+                return 0;
+            }
+            return elzaLocale.getCollator().compare(s1, s2);
+        });
 
         List<Part> subParts = new ArrayList<>();
         Map<Integer, Part> partIdMap = new HashMap<>();
 
         // prepare parts
-        parts = new ArrayList<>(apParts.size());
-        for (ApPart apPart : apParts) {
-            ApIndex index = indexMap.getOrDefault(apPart.getPartId(), null);
-            Part part = new Part(apPart, staticData, index);
+        parts = new ArrayList<>(cachedParts.size());
+        for (CachedPart cachedPart : cachedParts) {
+            Part part = createPart(cachedPart);
 
-            partIdMap.put(apPart.getPartId(), part);
+            partIdMap.put(cachedPart.getPartId(), part);
 
             if (part.getParentPartId() != null) {
                 subParts.add(part);
             } else {
                 // set preferred part
-                if (ap.getPreferredPartId().equals(apPart.getPartId())) {
+                if (ap.getPreferredPartId().equals(cachedPart.getPartId())) {
                     preferredPart = part;
                 }
                 parts.add(part);
@@ -142,14 +168,20 @@ public class Record {
         }
         // store subparts
         subPartMap.forEach((part, list) -> part.setParts(list));
+    }
 
+    private Part createPart(CachedPart cachedPart) { 
+        String index = ApFactory.findIndexValue(cachedPart.getIndices(), DISPLAY_NAME);
+        Part part = new Part(cachedPart, ap.getAccessPointId(), staticData, index);            
         // process items
-        for (ApItem apItem : apItems) {
-            Part part = partIdMap.get(apItem.getPartId());
-            Validate.notNull(part, "Part not found, partId: %i", apItem.getPartId());
-            Item item = outputItemConvertor.convert(apItem);
-            part.addItem(item);
+        List<ApItem> apItems = cachedPart.getItems();
+        if (!CollectionUtils.isEmpty(apItems)) {
+            for (ApItem apItem : apItems) {
+                Item item = outputItemConvertor.convert(apItem);
+                part.addItem(item);
+            }
         }
+        return part;
     }
 
     private void loadParts() {
@@ -157,11 +189,11 @@ public class Record {
             return;
         }
 
-        List<ApPart> apParts = partRepository.findValidPartByAccessPoint(ap);
-        List<ApItem> apItems = itemRepository.findValidItemsByAccessPoint(ap);
-        Map<Integer, ApIndex> indexMap = ObjectListIterator.findIterable(apParts, p -> indexRepository.findByPartsAndIndexType(p, DISPLAY_NAME)).stream()
-                .collect(Collectors.toMap(i -> i.getPart().getPartId(), Function.identity()));
-        loadData(apParts, apItems, indexMap);
+        CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(ap.getAccessPointId());
+        if (cachedAccessPoint == null) {
+            throw new IllegalStateException("ApAccessPoint not found in CachedAccessPoint, apAccessPointId=" + ap.getAccessPointId());
+        }
+        loadData(cachedAccessPoint.getParts());
     }
 
     public Integer getId() {

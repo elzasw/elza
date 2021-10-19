@@ -77,22 +77,11 @@ public class CamXmlFactory {
                                     ApScope scope) {
         ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
 
-        String camItemTypeCode = groovyService.findItemTypeCode(externalSystemTypeCode, itemType
-                .getCode(), scope.getRuleSetId());
-        if (camItemTypeCode == null) {
-            return null;
-        }
-
-        CodeXml itemTypeCode = new CodeXml(camItemTypeCode);
+        CodeXml itemTypeCode = new CodeXml(itemType.getCode());
         CodeXml itemSpecCode;
         if (item.getItemSpecId() != null) {
             RulItemSpec itemSpec = itemType.getItemSpecById(item.getItemSpecId());
-            String camItemSpecCode = groovyService.findItemSpecCode(externalSystemTypeCode, itemSpec.getCode(), scope.getRuleSetId());
-            if (camItemSpecCode == null) {
-                return null;
-            }
-
-            itemSpecCode = new CodeXml(camItemSpecCode);
+            itemSpecCode = new CodeXml(itemSpec.getCode());
         } else {
             itemSpecCode = null;
         }

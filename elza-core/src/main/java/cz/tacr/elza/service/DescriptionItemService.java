@@ -1162,7 +1162,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             saveNode(node, change);
 
 			descItemUpdated = updateItemValueAsNewVersion(fundVersion, change, descItemDB, descItem.getItemSpec(),
-                                                          descItem.getData(), descItem.getPosition(), changeContext);
+                                                          descItem.getData(), descItem.getPosition(),
+                                                          descItem.getReadOnly(),
+                                                          changeContext);
 		} else {
             descItemUpdated = updateValue(fundVersion, descItem, changeContext);
         }
@@ -1425,7 +1427,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		ArrData dataCurr = descItem.getData();
 
         return updateItemValueAsNewVersion(fundVersion, change, descItemCurr, descItem.getItemSpec(), dataCurr,
-                descItem.getPosition(), batchChangeContext);
+                                           descItem.getPosition(), descItem.getReadOnly(), batchChangeContext);
 	}
 
     /**
@@ -1437,6 +1439,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param itemSpec
      * @param srcData
      * @param newPosition
+     * @param readOnly
+     *            Flag if updated item should be readonly
      * @return
      */
 	private ArrDescItem updateItemValueAsNewVersion(final ArrFundVersion fundVersion,
@@ -1445,6 +1449,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     RulItemSpec itemSpec,
                                                     final ArrData srcData,
                                                     final Integer newPosition,
+                                                    final Boolean readOnly,
                                                     final BatchChangeContext batchChangeContext) {
         Integer oldPosition = descItemDB.getPosition();
         boolean move = false;
@@ -1463,6 +1468,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         descItemNew.setPosition(newPosition);
         // set data and specification
         descItemNew.setItemSpec(itemSpec);
+        descItemNew.setReadOnly(readOnly);
         ArrDescItem result = descItemRepository.save(descItemNew);
 
         // kontrola validity typu a specifikace
@@ -1817,7 +1823,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         for (ArrDescItem descItem : descItems) {
 			ArrDescItem updatedDescItem = updateItemValueAsNewVersion(fundVersion, change, descItem, setSpecification,
-                                                                      descItem.getData(), descItem.getPosition(), changeContext);
+                                                                      descItem.getData(), descItem.getPosition(),
+                                                                      descItem.getReadOnly(),
+                                                                      changeContext);
             nodeIdsToAdd.remove(updatedDescItem.getNodeId());
         }
 

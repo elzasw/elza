@@ -662,6 +662,7 @@ public class FundLevelService {
         for (int i = 0; i < count; i++) {
             levels.add(arrangementService.createLevel(change, staticLevelParent.getNode(),
                                                       newLevelPosition + i,
+                                                      null,
                                                       version.getFund()));
         }
 
@@ -696,7 +697,10 @@ public class FundLevelService {
 
         List<ArrLevel> levels = new ArrayList<>(count);
         for (int i = 1; i <= count; i++) {
-            levels.add(arrangementService.createLevel(change, staticLevel.getNode(), maxPosition + i, version.getFund()));
+            ArrLevel level = arrangementService.createLevel(change, staticLevel.getNode(),
+                                                            maxPosition + i, null,
+                                                            version.getFund());
+            levels.add(level);
         }
         
         return levels;

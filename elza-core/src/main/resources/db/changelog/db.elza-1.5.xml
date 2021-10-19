@@ -1440,6 +1440,7 @@ where no.level_id = l.level_id
                                ON ap_binding_state(binding_id) 
                                WHERE delete_change_id IS NULL</sql>
     </changeSet>
+
     <changeSet id="20210824171100" author="ppyt">
     <sql dbms="postgresql">update ap_binding_item abi 
     set delete_change_id = create_change_id
@@ -1455,6 +1456,7 @@ where no.level_id = l.level_id
     where i.item_id is null and p.delete_change_id is null
     ) and p.delete_change_id is null</sql>
     </changeSet>
+
     <!-- Oprava nekonzistence zjistene v SOA Plzen, odstranene pref. oznaceni avsak platna entita-->
     <changeSet id="20210903120100" author="ppyt">
     <sql dbms="postgresql">update ap_state s set delete_change_id = src.delete_change_id
@@ -1471,11 +1473,13 @@ where no.level_id = l.level_id
     where preferred_part_id is null and s.delete_change_id is null
     )</sql>     
     </changeSet>
+
     <changeSet id="20210903154200" author="ppyt">
         <sql dbms="postgresql">CREATE UNIQUE INDEX ap_item_data_pidx 
                                ON ap_item(data_id) 
                                WHERE delete_change_id IS NULL</sql>
     </changeSet>
+
     <changeSet id="20210729104300" author="fantis">
         <addColumn tableName="rul_rule_set">
             <column name="item_type_component_id" type="int"/>
@@ -1486,5 +1490,51 @@ where no.level_id = l.level_id
                                  referencedTableName="rul_component"
                                  referencedColumnNames="component_id"/>
     </changeSet>
+
+    <!-- Oprava migrace dat, https://bugzilla.lightcomp.cz/show_bug.cgi?id=7412 -->
+    <changeSet id="20211007135900" author="ppyt">
+      <sql dbms="postgresql">delete from ap_cached_access_point where access_point_id in (
+      select distinct s.access_point_id from ap_item i
+      join rul_item_spec ris on ris.item_spec_id = i.item_spec_id
+      join ap_part p on p.part_id = i.part_id
+      join ap_state s on s.access_point_id = p.access_point_id and s.delete_change_id is null
+      join ap_type t on t.ap_type_id = s.ap_type_id
+      join ap_type tm on tm.ap_type_id = t.parent_ap_type_id
+      where ris.code = 'EXT_CHANGE' and tm.code in ('PARTY_GROUP', 'EVENT')
+      )</sql>
+      <sql dbms="postgresql">update ap_item set item_spec_id = (select item_spec_id from rul_item_spec where code = 'EXT_CANCELCHANGE')
+      where item_id in (select i.item_id from ap_item i
+       join rul_item_spec ris on ris.item_spec_id = i.item_spec_id
+       join ap_part p on p.part_id = i.part_id
+       join ap_state s on s.access_point_id = p.access_point_id and s.delete_change_id is null
+       join ap_type t on t.ap_type_id = s.ap_type_id
+       join ap_type tm on tm.ap_type_id = t.parent_ap_type_id
+       where ris.code = 'EXT_CHANGE' and tm.code in ('PARTY_GROUP', 'EVENT')
+       )</sql>
+     </changeSet>
+
+     <!-- Oprava vztahu mezi pristupovymi body -->
+     <changeSet id="20211013001500" author="ppyt">
+       <sql dbms="postgresql">delete from ap_cached_access_point where access_point_id in (
+       select distinct p.access_point_id from arr_data_record_ref drr 
+       join ap_item i on i.data_id = drr.data_id 
+       join ap_part p on p.part_id = i.part_id 
+       join ap_binding bi on bi.binding_id = drr.binding_id 
+       join ap_binding_state bs on bs.binding_id = bi.binding_id 
+       where drr.record_id is null and bs.delete_change_id is null
+       )</sql>
+       <sql dbms="postgresql">update arr_data_record_ref rr set record_id = src.access_point_id
+       from (
+       select distinct drr.data_id,bs.access_point_id  from arr_data_record_ref drr 
+       join ap_binding bi on bi.binding_id = drr.binding_id 
+       join ap_binding_state bs on bs.binding_id = bi.binding_id 
+       where drr.record_id is null and bs.delete_change_id is null
+       ) src where src.data_id = rr.data_id       
+       </sql>
+     </changeSet>
+
+    <changeSet id="20211018082800" author="sergey.iryupin">
+    	<sql dbms="postgresql">update ext_syncs_queue_item set state = 'IMPORT_OK' where state='OK'</sql>
+	</changeSet>
 
 </databaseChangeLog>

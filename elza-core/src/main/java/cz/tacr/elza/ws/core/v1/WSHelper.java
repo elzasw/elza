@@ -26,6 +26,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.ws.types.v1.ErrorDescription;
@@ -37,7 +38,10 @@ import cz.tacr.elza.ws.types.v1.ItemString;
 @Component
 public class WSHelper {
 
-    final private static Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+    final private static Logger logger = LoggerFactory.getLogger(WSHelper.class);
+
+    @Autowired
+    ArrangementInternalService arrangementIntService;
 
     @Autowired
     ArrangementService arrangementService;
@@ -54,7 +58,7 @@ public class WSHelper {
             return Integer.valueOf(fundInfo.getId());
         } else {
             Validate.notNull(fundInfo.getUuid(), "Fund ID or UUID have to be specified");
-            ArrNode node = arrangementService.findNodeByUuid(fundInfo.getUuid());
+            ArrNode node = arrangementIntService.findNodeByUuid(fundInfo.getUuid());
             return node.getFundId();
         }
     }
@@ -159,6 +163,7 @@ public class WSHelper {
             data = du;
             break;
         case STRUCTURED:
+            logger.debug("Finding structured object, uuid: {}", srcItem.getValue());
             ArrStructuredObject structuredObject = structObjService.getExistingStructObj(srcItem.getValue());
             // Validate type of structured object
             Validate.isTrue(structuredObject.getStructuredTypeId() == itemType.getEntity().getStructuredTypeId(),

@@ -7,6 +7,9 @@ import java.util.stream.Collectors;
 
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,21 +50,23 @@ public class AccessPointGeneratorService {
      * @param accessPointId identifikátor ap
      */
     public void processRequest(final Integer accessPointId) {
-        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(accessPointId);
-        ApState apState = accessPointService.getStateInternal(accessPoint);
-        logger.info("Asynchronní zpracování AP={}", accessPoint.getAccessPointId());
-        generateAndSetResult(apState);
-        logger.info("Asynchronní zpracování AP={} - END", accessPoint.getAccessPointId());
+        logger.info("Asynchronní zpracování AP={}", accessPointId);
+        CachedAccessPoint cap = accessPointCacheService.findCachedAccessPoint(accessPointId);
+        Validate.notNull(cap);
+        generateAndSetResult(cap);
+        logger.info("Asynchronní zpracování AP={} - END", accessPointId);
     }
 
-    private void generateAndSetResult(final ApState apState) {
-        ApAccessPoint accessPoint = apState.getAccessPoint();
+    private void generateAndSetResult(final CachedAccessPoint cap) {
+        // TODO: prepare new generateSync based on CachedAccessPoint
+        ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(cap.getAccessPointId());
         List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
-        accessPointService.generateSync(accessPoint, apState, partList, itemMap, true);
+        accessPointService.generateSync(accessPoint, cap.getApState(),
+                                        partList, itemMap, true);
 
-        accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
+        accessPointCacheService.createApCachedAccessPoint(cap.getAccessPointId());
     }
 }

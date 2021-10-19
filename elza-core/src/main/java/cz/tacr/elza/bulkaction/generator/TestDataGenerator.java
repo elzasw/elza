@@ -168,7 +168,8 @@ public class TestDataGenerator extends BulkAction {
 		for(ArrLevel srcLevel: childLevels)
 		{
 			ArrLevel newLevel = this.arrangementService.createLevel(getChange(), parentLevel.getNode(), pos,
-			        version.getFund());
+                                                                    null,
+                                                                    version.getFund());
 
         	eventNotificationService
             .publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, version, parentLevel, newLevel));

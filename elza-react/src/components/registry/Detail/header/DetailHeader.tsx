@@ -191,9 +191,15 @@ const DetailHeader: FC<Props> = ({
                                                 {i18n('ap.binding.action.update')}
                                             </Dropdown.Item>
                                         )}
+                                        {
+                                            // Vypnutí možnosti odpojení entity
+                                            // TODO: Odstranit relevantní kód
+                                        /*
                                         <Dropdown.Item key="disconnect" onClick={() => handleDisconnect(binding)}>
                                             {i18n('ap.binding.action.disconnect')}
                                         </Dropdown.Item>
+                                        */
+                                        }
                                         <Dropdown.Item
                                             key="take-rel-entities"
                                             onClick={() => handleTakeRelEntities(binding)}
