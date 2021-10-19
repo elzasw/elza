@@ -5,23 +5,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import cz.tacr.cam.schema.cam.BatchUpdateXml;
 import cz.tacr.cam.schema.cam.CodeXml;
 import cz.tacr.cam.schema.cam.DateTimeXml;
 import cz.tacr.cam.schema.cam.EntityIdXml;
+import cz.tacr.cam.schema.cam.EntityRecordRefXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.EntityXml;
 import cz.tacr.cam.schema.cam.LongStringXml;
 import cz.tacr.cam.schema.cam.RevInfoXml;
 import cz.tacr.cam.schema.cam.UuidXml;
-import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.AccessPointDataService;
@@ -36,9 +37,8 @@ public class EntityXmlBuilder extends CamXmlBuilder {
                             ApState apState,
                             GroovyService groovyService,
                             AccessPointDataService apDataService,
-                            ApScope scope,
-                            final ApExternalSystemType extSystemType) {
-        super(sdp, accessPoint, new ApUuidRecordRefHandler(), groovyService, apDataService, scope, extSystemType);
+                            ApScope scope) {
+        super(sdp, accessPoint, groovyService, apDataService, scope);
         this.apState = apState;
     }
 
@@ -86,7 +86,7 @@ public class EntityXmlBuilder extends CamXmlBuilder {
     }
 
     private RevInfoXml createRevInfo() {
-        RevInfoXml revInfo = CamXmlFactory.getObjectFactory().createRevInfoXml();
+        RevInfoXml revInfo = new RevInfoXml();
 
         // Set revision id to UUID of accesspoint
         // TODO: User proper UUID of revision (when will be available)
@@ -105,5 +105,31 @@ public class EntityXmlBuilder extends CamXmlBuilder {
         revInfo.setUsr(new LongStringXml(usr));
         return revInfo;
     }
+
+	@Override
+	protected EntityRecordRefXml createEntityRef(ArrDataRecordRef recordRef) {
+        String uuid;
+        if (recordRef.getBinding() == null) {
+            uuid = recordRef.getRecord().getUuid();
+        } else {
+            String bindingValue = recordRef.getBinding().getValue();
+            try {
+                // check if binding value is uuid
+                UUID.fromString(bindingValue);
+                uuid = bindingValue;
+            } catch (IllegalArgumentException e) {
+                // binding value is not UUID
+                // reference cannot be propageted
+                return null;
+            }
+        }
+
+        EntityRecordRefXml entityRecordRef = new EntityRecordRefXml();
+
+        UuidXml uuidXml = CamUtils.getObjectFactory().createUuidXml();
+        uuidXml.setValue(uuid);
+        entityRecordRef.setEuid(uuidXml);
+        return entityRecordRef;
+	}
 
 }

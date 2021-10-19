@@ -18,7 +18,6 @@ import org.apache.commons.lang3.Validate;
 
 import cz.tacr.cam.schema.cam.EntitiesXml;
 import cz.tacr.cam.schema.cam.EntityXml;
-import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.schema.SchemaManager;
@@ -27,12 +26,10 @@ import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.sections.SectionContext;
 import cz.tacr.elza.dataexchange.output.writer.ApOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
-// import cz.tacr.elza.dataexchange.output.writer.PartiesOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.GroovyService;
-import cz.tacr.elza.service.cam.CamXmlFactory;
 import cz.tacr.elza.service.cam.EntityXmlBuilder;
 
 public class CamExportBuilder implements ExportBuilder {
@@ -89,7 +86,7 @@ public class CamExportBuilder implements ExportBuilder {
     }
 
     private final void initBuilder() {
-        this.entities = CamXmlFactory.getObjectFactory().createEntitiesXml();
+        this.entities = CamUtils.getObjectFactory().createEntitiesXml();
         Validate.isTrue(apStream == null);
         this.apStream = null;
     }
@@ -101,8 +98,7 @@ public class CamExportBuilder implements ExportBuilder {
                 apInfo.getApState(),
                 groovyService,
                 apDataService,
-                apInfo.getApState().getScope(),
-                ApExternalSystemType.CAM);
+                apInfo.getApState().getScope());
 
         final Map<Integer, List<ApItem>> itemsConv = new HashMap<>();
         Map<Integer, Collection<ApItem>> items = apInfo.getItems();
@@ -133,7 +129,7 @@ public class CamExportBuilder implements ExportBuilder {
 
     @Override
     public void build(OutputStream os) throws XMLStreamException {
-        JAXBElement<EntitiesXml> jaxbEnts = CamXmlFactory.getObjectFactory().createEnts(this.entities);
+        JAXBElement<EntitiesXml> jaxbEnts = CamUtils.getObjectFactory().createEnts(this.entities);
 
         try {
             Marshaller marshaller = jaxbContext.createMarshaller();

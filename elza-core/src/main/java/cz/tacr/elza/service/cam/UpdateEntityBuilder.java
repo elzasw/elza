@@ -11,6 +11,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.ExternalSystemService;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
@@ -97,16 +99,18 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
      */
     private Map<Integer, BindingPartInfo> bindingMap = new HashMap<>();
 
-    public UpdateEntityBuilder(ApBindingItemRepository bindingItemRepository,
-                               StaticDataProvider sdp,
-                               final ApState state,
-                               ApBindingState bindingState,
-                               GroovyService groovyService,
-                               AccessPointDataService apDataService,
-                               ApScope scope,
-                               ApExternalSystem externalSystem) {
-        super(sdp, bindingState.getAccessPoint(), new BindingRecordRefHandler(bindingState.getBinding()), groovyService,
-                apDataService, scope, externalSystem.getType());
+    public UpdateEntityBuilder(final ExternalSystemService externalSystemService,
+    		final ApBindingItemRepository bindingItemRepository,
+    		final StaticDataProvider sdp,
+    		final ApState state,
+    		final ApBindingState bindingState,
+    		final GroovyService groovyService,
+    		final AccessPointDataService apDataService,
+    		final ApScope scope,
+    		final ApExternalSystem externalSystem) {
+        super(sdp, bindingState.getAccessPoint(), groovyService,
+                apDataService, scope, externalSystem,
+                externalSystemService);
         this.bindingItemRepository = bindingItemRepository;
         this.bindingState = bindingState;
         this.apState = state;
@@ -118,8 +122,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         updateItemsXml.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
 
         for (ApBindingItem bindingItem : changedItems) {
-            Object i = CamXmlFactory.createItem(sdp, bindingItem.getItem(), bindingItem.getValue(), entityRefHandler,
-                                                groovyService, apDataService, externalSystemType.toString(), scope);
+            Object i = createItem(bindingItem.getItem(), bindingItem.getValue());
             if (i != null) {
                 updateItemsXml.getItems().add(i);
             }
