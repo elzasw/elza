@@ -137,8 +137,8 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 }
                 break;
             case 'setValue':
-                if (!values.replaceValue) {
-                    errors.replaceValue = i18n('global.validation.required');
+                if (!values.replaceValueId) {
+                    errors.replaceValueId = i18n('global.validation.required');
                 }
             default:
                 break;
@@ -249,7 +249,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
         if (dataType.code === "STRUCTURED") {
 
             WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, null, 200).then(json => {
-                var valueItems = json.map(i => ({id: i, name: i}));
+                var valueItems = json.map(i => ({id: i.id, name: i.value}));
 
                 if (
                     valueSearchText === '' ||
@@ -262,7 +262,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     // u prázdného hledání a případně u hledání prázdné hodnoty doplňujeme null položku
                     valueItems = [
                         {
-                            id: 'NULL',
+                            id: -1,
                             name: i18n('arr.fund.filterSettings.value.empty'),
                         },
                         ...valueItems,
@@ -451,8 +451,8 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                 submitButtonTitle = 'arr.fund.bulkModifications.action.setSpecification';
                 operationInputs.push(
                     <Field
-                        key={'replaceValue'}
-                        name="replaceValue"
+                        key={'replaceValueId'}
+                        name="replaceValueId"
                         as={'select'}
                         component={FormInputField}
                         label={i18n('arr.fund.bulkModifications.replace.replaceEnum')}
@@ -640,7 +640,7 @@ export default connect((state, props) => {
         },
         replaceText: formSelector(state, 'replaceText'),
         replaceSpec: formSelector(state, 'replaceSpec'),
-        replaceValue: formSelector(state, 'replaceValue'),
+        replaceValueId: formSelector(state, 'replaceValueId'),
         operationType: formSelector(state, 'operationType'),
         meta: getFormMeta(formName)(state),
         descItemTypes: state.refTables.descItemTypes,

@@ -16,6 +16,7 @@ interface Props {
     parts: ApPartVO[];
     onEdit?: (part: ApPartVO) => void;
     onAdd?: () => void;
+    onDelete?: (part: ApPartVO) => void;
     editMode?: boolean;
     globalEntity: boolean;
     bindings: Bindings;
@@ -31,6 +32,7 @@ const DetailBodySection: FC<Props> = ({
     globalEntity,
     onEdit = () => console.warn("Neni definovan 'onEdit' callback"),
     onAdd = () => console.warn("Neni definovan 'onAdd' callback"),
+    onDelete = () => console.warn("Neni definovan 'onDelete' callback"),
     // partValidationErrors = [],
     bindings,
     itemTypeSettings,
@@ -55,22 +57,33 @@ const DetailBodySection: FC<Props> = ({
         return true;
     }
 
+    const renderPartActions = (part: ApPartVO) => {
+        return <>
+            {editMode &&
+                <>
+                    <SmallButton 
+                        title={i18n("ap.detail.edit", partType.name)}
+                        onClick={()=> {
+                            if(parts.length === 0) return onAdd()
+                            if(parts.length === 1) return onEdit(parts[0])
+                        }}
+                    >
+                        <Icon glyph={'fa-pencil'} />
+                    </SmallButton>
+                    <SmallButton title={i18n("ap.detail.delete")} onClick={()=> onDelete(part)}>
+                        <Icon glyph="fa-trash"/>
+                    </SmallButton>
+                </>
+            }
+        </>
+    }
+
     return (
         <div className="detail-multi-selection">
             <div className="detail-section-header" style={{display: "flex"}}>
                 <span className="">{label}</span>
                 <div className="actions" style={{fontSize: "0.8em", marginLeft: "10px"}}>
-                    { editMode && (
-                        <SmallButton 
-                            title={i18n("ap.detail.edit", partType.name)}
-                            onClick={()=> {
-                                if(parts.length === 0) return onAdd()
-                                if(parts.length === 1) return onEdit(parts[0])
-                            }}
-                        >
-                            <Icon glyph={'fa-pencil'} />
-                        </SmallButton>
-                    )}
+                    {renderPartActions(parts[0])}
                 </div>
                 <div className="actions" style={{fontSize: "0.8em", marginLeft: "10px"}}>
                     {showValidationError()}

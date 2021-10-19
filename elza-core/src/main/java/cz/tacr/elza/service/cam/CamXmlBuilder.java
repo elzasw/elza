@@ -12,30 +12,58 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.api.ApExternalSystemType;
-import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cz.tacr.cam.schema.cam.BinaryStreamXml;
+import cz.tacr.cam.schema.cam.BooleanXml;
+import cz.tacr.cam.schema.cam.CodeXml;
+import cz.tacr.cam.schema.cam.EntityRecordRefXml;
+import cz.tacr.cam.schema.cam.IntegerXml;
+import cz.tacr.cam.schema.cam.ItemBinaryXml;
+import cz.tacr.cam.schema.cam.ItemBooleanXml;
+import cz.tacr.cam.schema.cam.ItemEntityRefXml;
+import cz.tacr.cam.schema.cam.ItemEnumXml;
+import cz.tacr.cam.schema.cam.ItemIntegerXml;
+import cz.tacr.cam.schema.cam.ItemLinkXml;
+import cz.tacr.cam.schema.cam.ItemStringXml;
+import cz.tacr.cam.schema.cam.ItemUnitDateXml;
 import cz.tacr.cam.schema.cam.ItemsXml;
 import cz.tacr.cam.schema.cam.NewItemsXml;
+import cz.tacr.cam.schema.cam.ObjectFactory;
 import cz.tacr.cam.schema.cam.PartTypeXml;
 import cz.tacr.cam.schema.cam.PartXml;
 import cz.tacr.cam.schema.cam.PartsXml;
+import cz.tacr.cam.schema.cam.StringXml;
 import cz.tacr.cam.schema.cam.UuidXml;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingItem;
-import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataBit;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.GroovyService;
-import cz.tacr.elza.service.cam.CamXmlFactory.EntityRefHandler;
-import cz.tacr.elza.service.cam.UpdateEntityBuilder.BindingPartInfo;
 
 /**
  * Builder for CAM XML
@@ -45,13 +73,13 @@ import cz.tacr.elza.service.cam.UpdateEntityBuilder.BindingPartInfo;
 abstract public class CamXmlBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(CamXmlBuilder.class);
+    
+    final protected static ObjectFactory objectFactory = CamUtils.getObjectFactory();
 
     protected final StaticDataProvider sdp;
     protected final ApAccessPoint accessPoint;
     protected final ApScope scope;
-    protected final ApExternalSystemType externalSystemType;
 
-    protected final EntityRefHandler entityRefHandler;
     protected final GroovyService groovyService;
     protected final AccessPointDataService apDataService;
 
@@ -68,7 +96,7 @@ abstract public class CamXmlBuilder {
     /**
      * Map of new UUIDS for parts
      */
-    protected Map<Integer, String> partUuids = new HashMap<>();
+    protected Map<Integer, String> partUuids = new HashMap<>();    
 
     public Map<Integer, String> getItemUuids() {
         return itemUuids;
@@ -78,22 +106,18 @@ abstract public class CamXmlBuilder {
         return partUuids;
     }
 
-    CamXmlBuilder(final StaticDataProvider sdp,
+	CamXmlBuilder(final StaticDataProvider sdp,
                   final ApAccessPoint accessPoint,
-                  final EntityRefHandler entityRefHandler,
                   final GroovyService groovyService,
                   final AccessPointDataService apDataService,
-                  final ApScope scope,
-                  final ApExternalSystemType extSystemType) {
+                  final ApScope scope) {
         this.sdp = sdp;
         this.accessPoint = accessPoint;
-        this.entityRefHandler = entityRefHandler;
         this.groovyService = groovyService;
         this.apDataService = apDataService;
         this.scope = scope;
-        this.externalSystemType = extSystemType;
     }
-
+	
     protected NewItemsXml createNewItems(ApBindingItem changedPart, Collection<ApItem> itemList) {
         NewItemsXml newItems = new NewItemsXml();
         newItems.setPid(new UuidXml(changedPart.getValue()));
@@ -265,7 +289,7 @@ abstract public class CamXmlBuilder {
             parentUuid = null;
         }
 
-        PartXml part = CamXmlFactory.createPart(sdp, apPart, parentUuid, uuid);
+        PartXml part = createPart(apPart, parentUuid, uuid);
 
         ItemsXml itemsXml = createItems(apPart, partItems);
         part.setItms(itemsXml);
@@ -291,8 +315,7 @@ abstract public class CamXmlBuilder {
     public void createXmlItems(Collection<ApItem> itemList, List<Object> trgList) {
         for (ApItem item : itemList) {
             String uuid = UUID.randomUUID().toString();
-            Object i = CamXmlFactory.createItem(sdp, item, uuid, entityRefHandler, groovyService, apDataService,
-                                                externalSystemType.toString(), scope);
+            Object i = createItem(item, uuid);
             if (i != null) {
                 itemUuids.put(item.getItemId(), uuid);
                 trgList.add(i);
@@ -330,12 +353,232 @@ abstract public class CamXmlBuilder {
      * @return kolekce itemů k poslání do externího systému
      */
     protected List<ApItem> filterOutItemsWithoutExtSysMapping(ApPart part, List<ApItem> itemList) {
-        List<ApItem> filteredItems = groovyService.filterOutgoingItems(externalSystemType.toString(),
-                                                                       part,
+        List<ApItem> filteredItems = groovyService.filterOutgoingItems(part,
                                                                        itemList,
                                                                        scope.getRuleSetId());
 
         return filteredItems;
     }
 
+	protected Object createItem(ApItem item, String uuid) {
+		ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
+
+		CodeXml itemTypeCode = new CodeXml(itemType.getCode());
+		CodeXml itemSpecCode;
+		if (item.getItemSpecId() != null) {
+			RulItemSpec itemSpec = itemType.getItemSpecById(item.getItemSpecId());
+			itemSpecCode = new CodeXml(itemSpec.getCode());
+		} else {
+			itemSpecCode = null;
+		}
+		UuidXml uuidXml = new UuidXml(uuid);
+
+		ArrData data = HibernateUtils.unproxy(item.getData());
+		DataType dataType = DataType.fromId(itemType.getDataTypeId());
+		switch (dataType) {
+		case BIT:
+			return convertBoolean(data, itemTypeCode, itemSpecCode, uuidXml);
+		case URI_REF:
+			return convertUriRef(data, itemTypeCode, itemSpecCode, uuidXml);
+		case TEXT:
+			return convertText(data, itemTypeCode, itemSpecCode, uuidXml);
+		case STRING:
+			return convertString(data, itemTypeCode, itemSpecCode, uuidXml);
+		case INT:
+			return convertInteger(data, itemTypeCode, itemSpecCode, uuidXml);
+		case UNITDATE:
+			return convertUnitdate(data, itemTypeCode, itemSpecCode, uuidXml);
+		case ENUM:
+			return convertEnum(data, itemTypeCode, itemSpecCode, uuidXml);
+		case RECORD_REF:
+			return convertEntityRef(data, itemTypeCode, itemSpecCode, uuidXml);
+		case COORDINATES:
+			return convertCoordinates(data, itemTypeCode, itemSpecCode, uuidXml, apDataService);
+		default:
+			throw new BusinessException("Failed to export item, unsupported data type: " + dataType + ", itemId:"
+					+ item.getItemId() + ", class: " + data.getClass(), BaseCode.EXPORT_FAILED);
+		}
+	}
+
+
+    private static ItemBinaryXml convertCoordinates(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                                    UuidXml uuidXml,
+                                                    AccessPointDataService apDataService) {
+        if (!(data instanceof ArrDataCoordinates)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+        ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) data;
+        ItemBinaryXml itemCoordinates = new ItemBinaryXml();
+        itemCoordinates.setValue(new BinaryStreamXml(apDataService.convertGeometryToWKB(dataCoordinates.getValue())));
+        itemCoordinates.setT(itemTypeCode);
+        itemCoordinates.setS(itemSpecCode);
+        itemCoordinates.setUuid(uuidXml);
+        return itemCoordinates;
+    }
+    
+    /*
+    protected EntityRecordRefXml createEntityRef(ArrDataRecordRef dataRecordRef) {
+        // create record ref only for records with same binding
+        if (dataRecordRef.getBinding() == null || !dataRecordRef.getBinding().getApExternalSystem()
+                .getExternalSystemId().equals(binding.getApExternalSystem().getExternalSystemId())) {
+            return null;
+        }
+        EntityRecordRefXml entityRecordRef = new EntityRecordRefXml();
+        entityRecordRef.setEid(new EntityIdXml(Long.parseLong(dataRecordRef.getBinding().getValue())));
+        return entityRecordRef;
+    }
+    */
+    
+    abstract protected EntityRecordRefXml createEntityRef(ArrDataRecordRef recordRef);
+    
+    private ItemEntityRefXml convertEntityRef(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                                     UuidXml uuidXml) {
+        if (!(data instanceof ArrDataRecordRef)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+        ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
+
+        EntityRecordRefXml entityRecordRef = createEntityRef(dataRecordRef);
+        // check if we have link to external entity
+        if (entityRecordRef == null) {
+        	log.info("Failed to create entity reference for external system, dataId={}", dataRecordRef.getDataId());
+            return null;
+        }
+
+        ItemEntityRefXml itemEntityRef = new ItemEntityRefXml();
+        itemEntityRef.setRef(entityRecordRef);
+        itemEntityRef.setT(itemTypeCode);
+        itemEntityRef.setS(itemSpecCode);
+        itemEntityRef.setUuid(uuidXml);
+        return itemEntityRef;
+    }
+
+    private static ItemEnumXml convertEnum(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode, UuidXml uuidXml) {
+        if (!(data instanceof ArrDataNull)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+
+        ItemEnumXml itemEnum = new ItemEnumXml();
+        itemEnum.setT(itemTypeCode);
+        itemEnum.setS(itemSpecCode);
+        itemEnum.setUuid(uuidXml);
+        return itemEnum;
+    }
+
+    private static ItemUnitDateXml convertUnitdate(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                                   UuidXml uuidXml) {
+        if (!(data instanceof ArrDataUnitdate)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+
+        ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) data;
+        ItemUnitDateXml itemUnitDate = new ItemUnitDateXml();
+        itemUnitDate.setF(dataUnitdate.getValueFrom());
+        itemUnitDate.setFe(dataUnitdate.getValueFromEstimated());
+        itemUnitDate.setFmt(dataUnitdate.getFormat());
+        itemUnitDate.setTo(dataUnitdate.getValueTo());
+        itemUnitDate.setToe(dataUnitdate.getValueToEstimated());
+        itemUnitDate.setT(itemTypeCode);
+        itemUnitDate.setS(itemSpecCode);
+        itemUnitDate.setUuid(uuidXml);
+        return itemUnitDate;
+    }
+
+    private static ItemIntegerXml convertInteger(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                                 UuidXml uuidXml) {
+        if (!(data instanceof ArrDataInteger)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+
+        ArrDataInteger dataInteger = (ArrDataInteger) data;
+        ItemIntegerXml itemInteger = new ItemIntegerXml();
+        itemInteger.setValue(new IntegerXml(dataInteger.getValueInt().longValue()));
+        itemInteger.setT(itemTypeCode);
+        itemInteger.setS(itemSpecCode);
+        itemInteger.setUuid(uuidXml);
+        return itemInteger;
+    }
+
+    private static ItemStringXml convertString(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                               UuidXml uuidXml) {
+        if (!(data instanceof ArrDataString)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+        ArrDataString dataString = (ArrDataString) data;
+        ItemStringXml itemString = new ItemStringXml();
+        itemString.setValue(new StringXml(dataString.getStringValue()));
+        itemString.setT(itemTypeCode);
+        itemString.setS(itemSpecCode);
+        itemString.setUuid(uuidXml);
+        return itemString;
+    }
+
+    private static ItemStringXml convertText(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                             UuidXml uuidXml) {
+        if (!(data instanceof ArrDataText)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+        ArrDataText dataText = (ArrDataText) data;
+        ItemStringXml itemText = new ItemStringXml();
+        itemText.setValue(new StringXml(dataText.getTextValue()));
+        itemText.setT(itemTypeCode);
+        itemText.setS(itemSpecCode);
+        itemText.setUuid(uuidXml);
+        return itemText;
+    }
+
+    private static ItemLinkXml convertUriRef(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                             UuidXml uuidXml) {
+        if (!(data instanceof ArrDataUriRef)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+        ArrDataUriRef dataUriRef = (ArrDataUriRef) data;
+        ItemLinkXml itemLink = new ItemLinkXml();
+        itemLink.setUrl(new StringXml(dataUriRef.getUriRefValue()));
+        itemLink.setNm(new StringXml(dataUriRef.getDescription() != null ? dataUriRef.getDescription() : ""));
+        itemLink.setT(itemTypeCode);
+        itemLink.setS(itemSpecCode);
+        itemLink.setUuid(uuidXml);
+        return itemLink;
+    }
+
+    private static ItemBooleanXml convertBoolean(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                                 UuidXml uuidXml) {
+        if (!(data instanceof ArrDataBit)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+        ArrDataBit dataBit = (ArrDataBit) data;
+        ItemBooleanXml itemBoolean = new ItemBooleanXml();
+        itemBoolean.setValue(new BooleanXml(dataBit.isBitValue()));
+        itemBoolean.setT(itemTypeCode);
+        itemBoolean.setS(itemSpecCode);
+        itemBoolean.setUuid(uuidXml);
+        return itemBoolean;
+    }
+
+
+    public PartXml createPart(ApPart apPart,
+                                     final String parentUuid, String uuid) {
+        PartXml part = new PartXml();
+
+        RulPartType partType = sdp.getPartTypeById(apPart.getPartTypeId());
+        part.setT(PartTypeXml.fromValue(partType.getCode()));
+        part.setPid(new UuidXml(uuid));
+        if (parentUuid != null) {
+            UuidXml parentUuidXml = objectFactory.createUuidXml();
+            parentUuidXml.setValue(parentUuid);
+            part.setPrnt(parentUuidXml);
+        }
+
+        return part;
+    }
 }

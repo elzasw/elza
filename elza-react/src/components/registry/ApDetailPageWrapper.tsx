@@ -173,7 +173,8 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     };
 
     const handleDelete = async (part: ApPartVO) => {
-        const confirmResult = await showConfirmDialog(i18n("ap.detail.delete.confirm", part.value))
+        const message = part.value ? i18n("ap.detail.delete.confirm.value", part.value) : i18n("ap.detail.delete.confirm");
+        const confirmResult = await showConfirmDialog(message);
 
         if(confirmResult){
             if (part.id) {
@@ -332,6 +333,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                         itemTypeSettings={apViewSettingRule?.itemTypes || []}
                                         globalEntity={globalEntity}
                                         partType={partType}
+                                        onDelete={handleDelete}
                                     />
                                 );
                             }

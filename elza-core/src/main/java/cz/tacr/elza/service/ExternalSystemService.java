@@ -392,15 +392,6 @@ public class ExternalSystemService {
         return bindingStateRepository.saveAndFlush(apBindingState);
     }
 
-    public ApBindingState createNewApBindingState(ApBindingState oldbindingState,
-                                                  ApChange apChange, String revisionUuid) {
-    	return createNewApBindingState(oldbindingState, apChange,
-    			oldbindingState.getExtState(), revisionUuid,
-    			oldbindingState.getExtUser(),
-    			oldbindingState.getExtReplacedBy(),
-    			SyncState.SYNC_OK);
-    }
-
     public ApBindingItem createApBindingItem(final ApBinding binding,
                                              ApChange apChange, final String value,
                                              final ApPart part,

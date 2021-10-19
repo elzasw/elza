@@ -24,20 +24,22 @@ class RegistryListItem extends AbstractReactComponent {
     getDisplayIds = () => {
         const {eidTypes} = this.props;
         const eids = this.props.externalIds;
-        if (!eids || eids.length === 0) {
-            return [this.props.id];
+        const result = [`${this.props.id}`];
+        if(eids){
+            eids.forEach(eid => {
+                const typeId = eid.typeId;
+                const eidTypeName = eidTypes && eidTypes[typeId] ? eidTypes[typeId].name : 'eid_type_name-' + typeId;
+                result.push(eidTypeName + ':' + eid.value);
+            });
         }
-
-        let eidArr = [];
-        eids.forEach(eid => {
-            const typeId = eid.typeId;
-            const eidTypeName = eidTypes && eidTypes[typeId] ? eidTypes[typeId].name : 'eid_type_name-' + typeId;
-            eidArr.push(eidTypeName + ':' + eid.value);
-        });
-        return eidArr;
+        return result.join(', ');
     };
 
     getApTypeNames = () => {
+        if(!this.props.typeId) {
+            return '';
+        }
+
         const types = flatRecursiveMap(this.props.apTypeIdMap);
         const type = types[this.props.typeId];
 
@@ -45,7 +47,7 @@ class RegistryListItem extends AbstractReactComponent {
         if (type.parents) {
             type.parents.forEach(name => names.push(name));
         }
-        return names;
+        return names.join(' | ');
     };
 
     render() {
@@ -69,8 +71,8 @@ class RegistryListItem extends AbstractReactComponent {
             );
         }
 
-        const typeNames = this.getApTypeNames().join(' | ');
-        const displayId = this.getDisplayIds().join(', ');
+        const typeNames = this.getApTypeNames();
+        const displayId = this.getDisplayIds();
 
         return (
             <div key={'record-id-' + id} className={cls}>

@@ -25,6 +25,7 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.drools.model.PartType;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
@@ -64,6 +65,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -206,7 +208,37 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
         // set ap state
         List<ApState> apStates = stateRepository.findLastByAccessPointIds(accessPointIds);
-        Validate.isTrue(apStates.size() == accessPointIds.size(), "Found unexpected number of ap states");
+        if(apStates.size() != accessPointIds.size()) {
+        	Map<Integer, ApState> apStatesMap = new HashMap<>();
+        	for(ApState apState: apStates) {
+        		ApState otherState = apStatesMap.put(apState.getAccessPointId(), apState);
+        		if(otherState!=null) {
+        			logger.error("Multiple states for same accessPoint, accessPointId: {}, apStateIds: {}, {}",
+        					apState.getAccessPointId(), otherState.getStateId(), apState.getStateId());
+        			throw new SystemException("Multiple states for same accessPoint", BaseCode.DB_INTEGRITY_PROBLEM)
+        				.set("accessPointId", apState.getAccessPointId())
+        				.set("apStateId", apState.getStateId())
+        				.set("apStateId", otherState.getStateId());
+        		}
+        	}
+        	// Check that we have all states
+        	Set<Integer> ids = new HashSet<>();
+        	for(ApAccessPoint ap: accessPointList) {
+        		ApState apState = apStatesMap.get(ap.getAccessPointId());
+        		if(apState==null) {
+        			logger.error("Missing state for accesspoint, accessPointId: {}", ap.getAccessPointId());
+        			throw new SystemException("Missing state for accesspoint.", BaseCode.DB_INTEGRITY_PROBLEM)
+    					.set("accessPointId", ap.getAccessPointId());
+        		}
+        		if(!ids.add(ap.getAccessPointId())) {
+        			logger.error("AccessPoint was already processed, accessPointId: {}", ap.getAccessPointId());
+        			throw new SystemException("AccessPoint was already processed.", BaseCode.DB_INTEGRITY_PROBLEM)
+    					.set("accessPointId", ap.getAccessPointId());
+        		}
+        	}
+        	logger.error("Different number of apStates and accesspoints.");
+			throw new SystemException("Different number of apStates and accesspoints.", BaseCode.DB_INTEGRITY_PROBLEM);
+        }
         for (ApState apState : apStates) {
             apState = HibernateUtils.unproxy(apState);
             CachedAccessPoint cap = apMap.get(apState.getAccessPointId());

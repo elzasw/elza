@@ -246,7 +246,7 @@ public class GroovyService {
         return _self.findAllParents(recordId, itemType);
     }
 
-    public List<ApItem> filterOutgoingItems(String extSystemType, ApPart part, List<ApItem> itemList,
+    public List<ApItem> filterOutgoingItems(ApPart part, List<ApItem> itemList,
                                             Integer ruleSetId) {
         String filePath = getGroovyFilePath(RulArrangementRule.RuleType.AP_MAPPING_TYPE, ruleSetId);
         return groovyScriptService.filterOutgoingItems(part, itemList, filePath);

@@ -81,6 +81,7 @@ import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
@@ -97,6 +98,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.drools.model.ItemSpec;
 import cz.tacr.elza.drools.model.ModelAvailable;
@@ -1117,6 +1119,7 @@ public class ApController {
      */
     @Transactional
     @RequestMapping(value = "/external/synchronize/{accessPointId}", method = RequestMethod.POST)
+    @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
     public void synchronizeAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                        @RequestParam final String externalSystemCode) {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);

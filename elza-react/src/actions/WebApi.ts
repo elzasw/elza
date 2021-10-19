@@ -1264,19 +1264,19 @@ export class WebApiCls {
         );
     }
 
-    setDataValues(fundVersionId, itemTypeId, specIds, replaceValue, nodes, selectionType, values) {
+    setDataValues(fundVersionId, itemTypeId, specIds, replaceValueId, nodes, selectionType, valueIds) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/setDataValues/' + fundVersionId,
-            {itemTypeId, replaceValue},
-            {nodes, specIds, selectionType, values},
+            {itemTypeId, replaceValueId},
+            {nodes, specIds, selectionType, valueIds},
         );
     }
 
-    deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType, values) {
+    deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType, valueIds) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/deleteDataValues/' + versionId,
             {descItemTypeId},
-            {nodes, specIds: specsIds, selectionType, values},
+            {nodes, specIds: specsIds, selectionType, valueIds},
         );
     }
 
