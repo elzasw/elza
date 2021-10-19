@@ -17,13 +17,25 @@ public class ArrStructObjectWrapper implements EntityWrapper {
 
     private final String importId;
 
-    ArrStructObjectWrapper(ArrStructuredObject entity, String importId) {
+    /**
+     * Recommended SO uuid
+     */
+    private String uuid;
+
+    ArrStructObjectWrapper(final ArrStructuredObject entity,
+                           final String importId,
+                           final String uuid) {
         this.entity = Validate.notNull(entity);
         this.importId = Validate.notNull(importId);
+        this.uuid = uuid;
     }
 
     public String getImportId() {
         return importId;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 
     public EntityIdHolder<ArrStructuredObject> getIdHolder() {

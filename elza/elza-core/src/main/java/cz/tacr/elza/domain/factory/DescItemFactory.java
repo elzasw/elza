@@ -8,6 +8,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -55,6 +60,8 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.domain.table.ElzaRow;
+import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -152,9 +159,6 @@ public class DescItemFactory implements InitializingBean {
 
     @Autowired
     private DataBitRepository dataBitRepository;
-
-    @Autowired
-    private ItemService itemService;
 
     @Autowired
     private NodeRepository nodeRepository;
@@ -925,7 +929,7 @@ public class DescItemFactory implements InitializingBean {
 		}
 		// Check data
 		if (data instanceof ArrDataJsonTable) {
-			itemService.checkJsonTableData(((ArrDataJsonTable) data).getValue(), (List<ElzaColumn>) itemType.getViewDefinition());
+			checkJsonTableData(((ArrDataJsonTable) data).getValue(), (List<ElzaColumn>) itemType.getViewDefinition());
 		}
 
         if(data instanceof ArrDataUriRef) {
@@ -1026,7 +1030,7 @@ public class DescItemFactory implements InitializingBean {
 
         if (data != null) {
             if (data instanceof ArrDataJsonTable) {
-                itemService.checkJsonTableData(((ArrDataJsonTable) data).getValue(), (List<ElzaColumn>) descItem.getItemType().getViewDefinition());
+                checkJsonTableData(((ArrDataJsonTable) data).getValue(), (List<ElzaColumn>) descItem.getItemType().getViewDefinition());
             }
 
             if(data instanceof ArrDataUriRef) {
@@ -1088,4 +1092,48 @@ public class DescItemFactory implements InitializingBean {
         return valueRet;
     }
 
+    /**
+     * Kontrola sloupců v JSON tabulce.
+     *
+     * @param table   kontrolovaná tabulka
+     * @param columns seznam definicí sloupců
+     */
+    static public void checkJsonTableData(@NotNull final ElzaTable table,
+                                   @NotEmpty final List<ElzaColumn> columns) {
+        Map<String, ElzaColumn.DataType> typeMap = columns.stream().collect(Collectors.toMap(ElzaColumn::getCode, ElzaColumn::getDataType));
+        for (ElzaRow row : table.getRows()) {
+            for (Map.Entry<String, String> entry : row.getValues().entrySet()) {
+                ElzaColumn.DataType dataType = typeMap.get(entry.getKey());
+                if (dataType == null) {
+                    throw new BusinessException("Sloupec s kódem '" + entry.getKey() +  "' neexistuje v definici tabulky", BaseCode.PROPERTY_IS_INVALID)
+                    .set("property", entry.getKey());
+                }
+
+                switch (dataType) {
+                    case INTEGER:
+                        try {
+                            Integer.parseInt(entry.getValue());
+                        } catch (NumberFormatException e) {
+                            throw new BusinessException("Neplatný vstup: Hodnota sloupce '" + entry.getKey() + "' musí být celé číslo", e,
+                                    BaseCode.PROPERTY_IS_INVALID)
+                            .set("property", entry.getKey());
+                        }
+                        break;
+
+                    case TEXT:
+                        if (entry.getValue() == null) {
+                            throw new BusinessException("Neplatný vstup: Hodnota sloupce '" + entry.getKey() + "' nesmí být null",
+                                    BaseCode.PROPERTY_IS_INVALID)
+                            .set("property", entry.getKey());
+                        }
+                        break;
+
+                    default:
+                        throw new BusinessException("Neznámý typ sloupce '" + dataType.name() + "' ve validaci JSON tabulky",
+                                BaseCode.PROPERTY_IS_INVALID)
+                        .set("property", dataType.name());
+                }
+            }
+        }
+    }
 }

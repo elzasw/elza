@@ -79,6 +79,7 @@ import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -155,12 +156,6 @@ public class OutputService {
 
     @Autowired
     private ItemService itemService;
-
-    @Autowired
-    private OutputResultRepository outputResultRepository;
-
-    @Autowired
-    private OutputFileRepository outputFileRepository;
 
     @Autowired
     private OutputServiceInternal outputServiceInternal;
@@ -1085,7 +1080,7 @@ public class OutputService {
             return null;
         } else {
             if (data instanceof ArrDataJsonTable) {
-                itemService.checkJsonTableData(((ArrDataJsonTable) data).getValue(),
+            	DescItemFactory.checkJsonTableData(((ArrDataJsonTable) data).getValue(),
                                                (List<ElzaColumn>) itemType.getViewDefinition());
             }
 

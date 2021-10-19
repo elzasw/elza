@@ -2,6 +2,10 @@ package cz.tacr.elza.service;
 
 import com.google.common.eventbus.Subscribe;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.groovy.GroovyPart;
@@ -36,18 +40,16 @@ public class GroovyScriptService {
 
     private static final Logger LOG = LoggerFactory.getLogger(GroovyScriptService.class);
 
-    // groovy script pro vytvoření rejstříkového hesla
-    private final GroovyScriptFile createRecordScriptFile;
-
     // groovy script pro vytvoření DID
     private final GroovyScriptFile createDidScriptFile;
+
+    private final StaticDataService staticDataService;
 
     private final NodeCacheService nodeCacheService;
 
     private static final String PART = "PART";
-    private static final String EXT_SYSTEM_TYPE = "EXT_SYSTEM_TYPE";
-    private static final String ITEM_TYPE_CODE = "ITEM_TYPE_CODE";
-    private static final String ITEM_SPEC_CODE = "ITEM_SPEC_CODE";
+    private static final String ITEMS = "ITEMS";
+    private static final String DATA_PROVIDER = "DATA_PROVIDER";
 
     private Map<File, GroovyScriptFile> groovyScriptMap = new HashMap<>();
 
@@ -63,14 +65,14 @@ public class GroovyScriptService {
     @Autowired
     public GroovyScriptService(ResourcePathResolver resourcePathResolver,
                                NodeCacheService nodeCacheService,
-                               @Value("classpath:/script/groovy/createRecord.groovy") Resource createRecordScriptSource,
+                               StaticDataService staticDataService,
                                @Value("classpath:/script/groovy/createDid.groovy") Resource createDidScriptSource) {
         this.nodeCacheService = nodeCacheService;
+        this.staticDataService = staticDataService;
         try {
             Path groovyDir = resourcePathResolver.getGroovyDir(); // TODO: Move initialization to startup service
             Files.createDirectories(groovyDir);
 
-            this.createRecordScriptFile = GroovyScriptFile.create(createRecordScriptSource, groovyDir);
             this.createDidScriptFile = GroovyScriptFile.create(createDidScriptSource, groovyDir);
         } catch (Throwable t) {
             throw new SystemException("Failed to initialize groovy scripts", t);
@@ -115,24 +117,26 @@ public class GroovyScriptService {
         return (GroovyResult) groovyScriptFile.evaluate(input);
     }
 
-    public String findItemTypeCode(String extSystemType, String itemTypeCode, String groovyFilePath) {
+    public List<ApItem> filterOutgoingItems(ApPart part,
+                                            List<ApItem> itemList,
+                                            String groovyFilePath) {
         GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFilePath);
+        StaticDataProvider sdp = this.staticDataService.getData();
 
         Map<String, Object> input = new HashMap<>();
-        input.put(EXT_SYSTEM_TYPE, extSystemType);
-        input.put(ITEM_TYPE_CODE, itemTypeCode);
+        // input.put(EXT_SYSTEM_TYPE, extSystemType);
+        input.put(PART, part);
+        input.put(ITEMS, itemList);
+        input.put(DATA_PROVIDER, sdp);
 
-        return (String) groovyScriptFile.evaluate(input);
-    }
-
-    public String findItemSpecCode(String extSystemType, String itemSpecCode, String groovyFilePath) {
-        GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFilePath);
-
-        Map<String, Object> input = new HashMap<>();
-        input.put(EXT_SYSTEM_TYPE, extSystemType);
-        input.put(ITEM_SPEC_CODE, itemSpecCode);
-
-        return (String) groovyScriptFile.evaluate(input);
+        Object result = groovyScriptFile.evaluate(input);
+        if(result==null) {
+            throw new IllegalStateException("Result is null");
+        }
+        if (!List.class.isAssignableFrom(result.getClass())) {
+            throw new IllegalStateException("Result is not List. Received type: "+result.getClass());
+        }
+        return (List<ApItem>) result;
     }
 
     private GroovyScriptFile getGroovyScriptFile(String groovyFilePath) {
@@ -210,4 +214,5 @@ public class GroovyScriptService {
             return new GroovyScriptFile(scriptFile);
         }
     }
+
 }

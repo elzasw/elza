@@ -493,7 +493,7 @@ public class ArrangementService {
         return fundRepository.save(fund);
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_VER_WR, UsrPermission.Permission.FUND_ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE, UsrPermission.Permission.FUND_VER_WR})
     public ArrFundVersion createVersion(final ArrChange createChange,
                                         @AuthParam(type = Type.FUND) final ArrFund fund,
                                         final RulRuleSet ruleSet,
@@ -513,13 +513,14 @@ public class ArrangementService {
         level.setPosition(1);
         level.setCreateChange(createChange);
         level.setNodeParent(null);
-        level.setNode(createNode(uuid, fund, createChange));
+        level.setNode(createNode(fund, uuid, createChange));
         return levelRepository.saveAndFlush(level);
     }
 
     public ArrLevel createLevel(final ArrChange createChange,
                                 final ArrNode parentNode,
                                 final int position,
+                                final String uuid,
                                 final ArrFund fund) {
         Assert.notNull(createChange, "Change nesmí být prázdná");
 
@@ -527,7 +528,7 @@ public class ArrangementService {
         level.setPosition(position);
         level.setCreateChange(createChange);
         level.setNodeParent(parentNode);
-        level.setNode(createNode(fund, createChange));
+        level.setNode(createNode(fund, uuid, createChange));
         return levelRepository.saveAndFlush(level);
     }
 
@@ -555,12 +556,8 @@ public class ArrangementService {
         return UUID.randomUUID().toString();
     }
 
-    public ArrNode createNode(final ArrFund fund, final ArrChange createChange) {
-        ArrNode node = new ArrNode();
-        node.setLastUpdate(createChange.getChangeDate().toLocalDateTime());
-        node.setUuid(generateUuid());
-        node.setFund(fund);
-        nodeRepository.save(node);
+    public ArrNode createNode(final ArrFund fund, final String uuid, final ArrChange createChange) {
+        ArrNode node = createNodeSimple(fund, uuid, createChange);
         nodeCacheService.createEmptyNode(node);
         return node;
     }
@@ -571,21 +568,6 @@ public class ArrangementService {
         node.setUuid(uuid == null ? generateUuid() : uuid);
         node.setFund(fund);
         nodeRepository.save(node);
-        return node;
-    }
-
-    public ArrNode createNode(final String uuid,
-                              final ArrFund fund,
-                              final ArrChange change) {
-        if (StringUtils.isBlank(uuid)) {
-            return createNode(fund, change);
-        }
-        ArrNode node = new ArrNode();
-        node.setLastUpdate(change.getChangeDate().toLocalDateTime());
-        node.setUuid(uuid);
-        node.setFund(fund);
-        nodeRepository.save(node);
-        nodeCacheService.createEmptyNode(node);
         return node;
     }
 
@@ -1603,10 +1585,6 @@ public class ArrangementService {
     @Scope("session")
     public Holder<List<ArrFundToNodeList>> fundFulltextSession() {
         return new Holder<>();
-    }
-
-    public ArrNode findNodeByUuid(final String nodeUuid) {
-        return nodeRepository.findOneByUuid(nodeUuid);
     }
 
     /*

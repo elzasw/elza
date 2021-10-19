@@ -27,7 +27,7 @@ when $ae: Ap($aeParts : parts)
      $i: Item(type == "IDN_TYPE", spec == "RUIAN") from $part.items
      GeoModel(country not in ("CZ", "CZE"))
 then
-    results.addError("Kód RÚIAN v jiném označení lze použít jen u entit v ČR.");
+    results.addError("Kód RÚIAN lze použít jen u entit v ČR.");
 end
 
 /*

@@ -144,13 +144,15 @@ public class ExtSyncsQueueItem {
 
     public enum ExtAsyncQueueState {
 
-        EXPORT_NEW("Nový v ELZA"),
+        UPDATE("Aktualizováno"),
 
-        IMPORT_NEW("Nový v CAM"),
+        IMPORT_NEW("Ke stažení"),
 
-        UPDATE("Aktualizace"),
+        IMPORT_OK("Staženo"), // předchozí OK
 
-        OK("Odesláno"),
+        EXPORT_NEW("K odeslání"),
+
+        EXPORT_OK("Odesláno"),
 
         ERROR("Chyba");
 

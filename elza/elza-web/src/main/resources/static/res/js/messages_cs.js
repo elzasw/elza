@@ -515,7 +515,7 @@ var messages = {
     "arr.panel.title": "Jsou zobrazeny pouze položky pro archivní soubor {0}",
     "arr.panel.reset": "Zrušit omezení",
     "arr.panel.title.discrepancies": "Nesrovnalosti",
-    "arr.panel.title.visiblePolicies": "Kontroly",
+    "arr.panel.title.visiblePolicies": "Nastavení",
     "arr.panel.title.files": "Přílohy",
     "arr.panel.title.lecturing": "Lektorování",
 

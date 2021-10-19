@@ -1,17 +1,28 @@
 import {ExtAsyncQueueState} from "../../../../api/ExtAsyncQueueState";
 
 export function getValues(): ExtAsyncQueueState[] {
-    return [ExtAsyncQueueState.NEW, ExtAsyncQueueState.ERROR, ExtAsyncQueueState.OK]
+    return [ExtAsyncQueueState.UPDATE, 
+        ExtAsyncQueueState.IMPORT_NEW, 
+        ExtAsyncQueueState.IMPORT_OK, 
+        ExtAsyncQueueState.EXPORT_NEW, 
+        ExtAsyncQueueState.EXPORT_OK, 
+        ExtAsyncQueueState.ERROR]
 }
 
 export function getName(state: ExtAsyncQueueState): string {
     switch (state) {
-        case ExtAsyncQueueState.OK:
-            return 'Odeslaný';
+        case ExtAsyncQueueState.UPDATE:
+            return 'Aktualizováno';
+        case ExtAsyncQueueState.EXPORT_NEW:
+            return 'K odeslání';
+        case ExtAsyncQueueState.IMPORT_NEW:
+            return 'Ke stažení';
+        case ExtAsyncQueueState.IMPORT_OK:
+            return 'Staženo';
+        case ExtAsyncQueueState.EXPORT_OK:
+            return 'Odesláno';
         case ExtAsyncQueueState.ERROR:
             return 'Chyba';
-        case ExtAsyncQueueState.NEW:
-            return 'Nový';
         default:
             return 'Neznámý stav ' + state;
     }

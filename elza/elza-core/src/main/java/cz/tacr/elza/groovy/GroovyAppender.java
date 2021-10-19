@@ -1,6 +1,10 @@
 package cz.tacr.elza.groovy;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.convertor.UnitDateConvertorConsts;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -137,6 +141,34 @@ public class GroovyAppender {
                     }
                     sb.append(sbi.toString());
                 }
+            } else if (item instanceof UnitdatePart) {
+                UnitdatePart unitdatePart = ((UnitdatePart) item);
+                if (CollectionUtils.isNotEmpty(unitdatePart.items)) {
+                    StringBuilder sbi = new StringBuilder();
+                    for (GroovyItem groovyItem : unitdatePart.items) {
+                        ArrDataUnitdate dataUnitdate = ArrDataUnitdate.valueOf(UnitDateConvertor.convertToString(groovyItem.getUnitdateValue()));
+                        long normalizedDataFrom = dataUnitdate.getNormalizedFrom() + UnitDateConvertorConsts.MAX_NEGATIVE_DATE;
+                        sbi.append(String.format("%019d", normalizedDataFrom));
+                    }
+                    sb.append(sbi.toString());
+                } else {
+                    sb.append(String.format("%019d", unitdatePart.isFrom() ? 0 : Long.MAX_VALUE));
+                }
+            } else if (item instanceof ViewOrderPart) {
+                ViewOrderPart viewOrderPart = ((ViewOrderPart) item);
+                if (CollectionUtils.isNotEmpty(viewOrderPart.items)) {
+                    StringBuilder sbi = new StringBuilder();
+                    for (GroovyItem groovyItem : viewOrderPart.items) {
+                        Integer viewOrder = groovyItem.getSpecOrder();
+                        if (viewOrder == null) {
+                            viewOrder = 0;
+                        }
+                        sbi.append(String.format("%010d", viewOrder));
+                    }
+                    sb.append(sbi.toString());
+                } else {
+                    sb.append(String.format("%010d", 0));
+                }
             }
         }
         return sb.toString();
@@ -198,12 +230,33 @@ public class GroovyAppender {
         return item;
     }
 
+    public UnitdatePart addUnitdateFrom(@NotNull final String itemTypeCode) {
+        return addUnitdate(itemTypeCode, true);
+    }
+
+    public UnitdatePart addUnitdateTo(@NotNull final String itemTypeCode) {
+        return addUnitdate(itemTypeCode, false);
+    }
+
+    public UnitdatePart addUnitdate(@NotNull final String itemTypeCode, final boolean from) {
+        List<GroovyItem> groovyItems = part.getItems(itemTypeCode);
+        UnitdatePart item = new UnitdatePart(groovyItems, from);
+        items.add(item);
+        return item;
+    }
+
+    public ViewOrderPart addViewOrder(@NotNull final String itemTypeCode) {
+        List<GroovyItem> groovyItems = part.getItems(itemTypeCode);
+        ViewOrderPart item = new ViewOrderPart(groovyItems);
+        items.add(item);
+        return item;
+    }
+    
     public String getUniqueCode(final String typeCode) {
         return typeCode + UUID.randomUUID().toString();
     }
 
     public interface Item {
-
     }
 
     public static class ItemPart implements Item {
@@ -249,6 +302,33 @@ public class GroovyAppender {
 
     }
 
+    public static class UnitdatePart implements Item {
+
+        private List<GroovyItem> items;
+
+        private boolean from;
+
+        private UnitdatePart(final List<GroovyItem> items, boolean from) {
+            this.items = items;
+            this.from = from;
+        }
+
+        public boolean isFrom() {
+            return from;
+        }
+
+    }
+
+    public static class ViewOrderPart implements Item {
+
+        private List<GroovyItem> items;
+
+        private ViewOrderPart(final List<GroovyItem> items) {
+            this.items = items;
+        }
+
+    }
+
     public static class StringPart implements Item {
         private String str;
 
@@ -274,6 +354,7 @@ public class GroovyAppender {
             this.prefix = prefix;
             return this;
         }
+
     }
 
     public static class BoolPart implements Item {

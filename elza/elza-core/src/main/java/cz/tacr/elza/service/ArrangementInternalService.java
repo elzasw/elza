@@ -78,6 +78,16 @@ public class ArrangementInternalService {
     }
 
     /**
+     * Find node by UUID
+     * 
+     * @param nodeUuid
+     * @return
+     */
+    public ArrNode findNodeByUuid(final String nodeUuid) {
+        return nodeRepository.findOneByUuid(nodeUuid);
+    }
+
+    /**
      * Zjistí, jestli patří vybraný level do dané verze.
      *
      * @param level   level

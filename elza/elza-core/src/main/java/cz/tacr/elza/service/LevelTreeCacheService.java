@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -127,7 +128,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     private FundVersionRepository fundVersionRepository;
 
     @Autowired
-    private RuleService ruleService;
+    private ApplicationContext applicationContext;    
 
     @Autowired
     private ClientFactoryVO clientFactoryVO;
@@ -1891,6 +1892,7 @@ private void processEvent(AbstractEventSimple event) {
         Map<Integer, ArrNodeConformityExt> conformityInfoForNodes = Collections.emptyMap();
         List<Integer> conformityNodeIds = Collections.emptyList();
         if (param.isNodeConformity()) {
+        	RuleService ruleService = applicationContext.getBean(RuleService.class);
             conformityInfoForNodes = ruleService.getNodeConformityInfoForNodes(nodeIds, fundVersion);
             conformityNodeIds = new ArrayList<>();
         }

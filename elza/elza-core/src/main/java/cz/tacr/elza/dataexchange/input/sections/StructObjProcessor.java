@@ -38,8 +38,6 @@ public class StructObjProcessor implements ItemProcessor {
     public void process(Object item) {
         StructuredObject object = (StructuredObject) item;
         StructObjContext objectCtx = processObject(object);
-        //TODO: gotzy bylo processItems(object.getDdOrDoOrDn(), objectCtx);
-       // processItems(object.getDdOrDoOrDt(), objectCtx);
         processItems(object.getDdOrDoOrDp(), objectCtx);
     }
 
@@ -48,7 +46,7 @@ public class StructObjProcessor implements ItemProcessor {
             throw new DEImportException("Structured object id is not set");
         }
 
-        return section.addStructObject(item.getId());
+        return section.addStructObject(item.getId(), item.getUuid());
     }
 
     private void processItems(Collection<DescriptionItem> items, StructObjContext structObjCtx) {

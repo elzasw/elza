@@ -92,51 +92,6 @@ public class ItemService {
     @Autowired
     private EntityManager em;
 
-    /**
-     * Kontrola sloupců v JSON tabulce.
-     *
-     * @param table   kontrolovaná tabulka
-     * @param columns seznam definicí sloupců
-     */
-    public void checkJsonTableData(@NotNull final ElzaTable table,
-                                   @NotEmpty final List<ElzaColumn> columns) {
-        Map<String, ElzaColumn.DataType> typeMap = columns.stream().collect(Collectors.toMap(ElzaColumn::getCode, ElzaColumn::getDataType));
-        for (ElzaRow row : table.getRows()) {
-            for (Map.Entry<String, String> entry : row.getValues().entrySet()) {
-                ElzaColumn.DataType dataType = typeMap.get(entry.getKey());
-                if (dataType == null) {
-                    throw new BusinessException("Sloupec s kódem '" + entry.getKey() +  "' neexistuje v definici tabulky", BaseCode.PROPERTY_IS_INVALID)
-                    .set("property", entry.getKey());
-                }
-
-                switch (dataType) {
-                    case INTEGER:
-                        try {
-                            Integer.parseInt(entry.getValue());
-                        } catch (NumberFormatException e) {
-                            throw new BusinessException("Neplatný vstup: Hodnota sloupce '" + entry.getKey() + "' musí být celé číslo", e,
-                                    BaseCode.PROPERTY_IS_INVALID)
-                            .set("property", entry.getKey());
-                        }
-                        break;
-
-                    case TEXT:
-                        if (entry.getValue() == null) {
-                            throw new BusinessException("Neplatný vstup: Hodnota sloupce '" + entry.getKey() + "' nesmí být null",
-                                    BaseCode.PROPERTY_IS_INVALID)
-                            .set("property", entry.getKey());
-                        }
-                        break;
-
-                    default:
-                        throw new BusinessException("Neznámý typ sloupce '" + dataType.name() + "' ve validaci JSON tabulky",
-                                BaseCode.PROPERTY_IS_INVALID)
-                        .set("property", dataType.name());
-                }
-            }
-        }
-    }
-
     @SuppressWarnings("unchecked")
     @Transactional(TxType.MANDATORY)
     public ArrOutputItem moveItem(ArrOutputItem item, ArrChange change, int position) {

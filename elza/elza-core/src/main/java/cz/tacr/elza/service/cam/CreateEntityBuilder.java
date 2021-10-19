@@ -1,15 +1,17 @@
 package cz.tacr.elza.service.cam;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.cam.schema.cam.CodeXml;
 import cz.tacr.cam.schema.cam.CreateEntityXml;
 import cz.tacr.cam.schema.cam.EntityIdXml;
 import cz.tacr.cam.schema.cam.EntityRecordRefXml;
+import cz.tacr.cam.schema.cam.EntityRecordStateXml;
+import cz.tacr.cam.schema.cam.EntityRefXml;
 import cz.tacr.cam.schema.cam.UuidXml;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -19,18 +21,17 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.cam.CamXmlFactory.EntityRefHandler;
 
-public class CreateEntityBuilder extends CamXmlBuilder {
+public class CreateEntityBuilder extends BatchUpdateBuilder {
 
     final private ApState apState;
-    final private ExternalSystemService externalSystemService;
-
-    private CreateEntityXml createEntity;
+	private CreateEntityXml createEntity;
 
     private static class NewApRefHandler implements EntityRefHandler {
 
@@ -71,24 +72,35 @@ public class CreateEntityBuilder extends CamXmlBuilder {
         super(sdp, accessPoint, new NewApRefHandler(apExternalSystem), groovyService, apDataService, scope,
                 apExternalSystem.getType());
         this.apState = state;
-        this.externalSystemService = externalSystemService;
+    }
+    
+    @Override
+    protected EntityRefXml createBatchEntityRecordRef() {
+    	EntityRefXml er = new EntityRefXml(createEntity);
+    	return er;
     }
 
-    public CreateEntityXml build(List<ApPart> partList,
+    public List<Object> build(List<ApPart> partList,
                                  Map<Integer, List<ApItem>> itemMap) {
-        Validate.isTrue(this.createEntity == null);
+        Validate.isTrue(CollectionUtils.isEmpty(trgList));
 
-        CreateEntityXml createEntity = new CreateEntityXml();
+        this.createEntity = new CreateEntityXml();
         createEntity.setLid("LID" + apState.getAccessPointId());
         createEntity.setEt(new CodeXml(apState.getApType().getCode()));
         createEntity.setEuid(new UuidXml(accessPoint.getUuid()));
         createEntity.setPrts(createParts(partList, itemMap));
 
-        this.createEntity = createEntity;
-        return createEntity;
-    }
+        trgList.add(createEntity);
+        
+		// set entity state
+		if(this.apState.getStateApproval()==StateApproval.APPROVED) {			
+			this.setRecordState(EntityRecordStateXml.ERS_APPROVED);			
+			
+			bingingStates.put(apState.getAccessPointId(), EntityRecordStateXml.ERS_APPROVED.toString());
+		} else {
+			bingingStates.put(apState.getAccessPointId(), EntityRecordStateXml.ERS_NEW.toString());
+		}
 
-    public CreateEntityXml getResult() {
-        return createEntity;
+		return trgList;
     }
 }
