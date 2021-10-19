@@ -608,7 +608,9 @@ public class AccessPointService {
         }
 
         if (fund != null) {
-            Set<Integer> fundScopeIds = scopeRepository.findAllConnectedByFundId(fund.getFundId());
+            // connected scopes cannot be used to search in a fund 
+            Validate.isTrue(!includeConnetedScopes);
+            Set<Integer> fundScopeIds = scopeRepository.findIdsByFundId(fund.getFundId());
             scopeIdsToSearch.retainAll(fundScopeIds);
         }
 
