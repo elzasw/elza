@@ -227,58 +227,13 @@
         <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
-    <ap-type code="TERM_ABSTRACT" parent-ap-type="TERM">
-        <name>abstraktní entity</name>
-        <hierarchical>false</hierarchical>
-        <read-only>false</read-only>
-    </ap-type>
     <ap-type code="TERM_GENERAL" parent-ap-type="TERM">
         <name>netaxonomické obecné pojmy</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
-    <ap-type code="TERM_PERSON" parent-ap-type="TERM">
-        <name>kategorie a skupiny nepojmenovaných osob</name>
-        <hierarchical>false</hierarchical>
-        <read-only>false</read-only>
-    </ap-type>
-    <ap-type code="TERM_CORP" parent-ap-type="TERM">
-        <name>kategorie a skupiny nepojmenovaných korporací</name>
-        <hierarchical>false</hierarchical>
-        <read-only>false</read-only>
-    </ap-type>
-    <ap-type code="TERM_MATER" parent-ap-type="TERM">
-        <name>materiály a techniky</name>
-        <hierarchical>false</hierarchical>
-        <read-only>false</read-only>
-    </ap-type>
-    <ap-type code="TERM_GENRE" parent-ap-type="TERM">
-        <name>formy a žánry</name>
-        <hierarchical>false</hierarchical>
-        <read-only>false</read-only>
-    </ap-type>
-    <ap-type code="TERM_NOMENC" parent-ap-type="TERM">
-        <name>binominální nomenklatura</name>
-        <hierarchical>false</hierarchical>
-        <read-only>false</read-only>
-    </ap-type>
     <ap-type code="TERM_TAXONOMY" parent-ap-type="TERM">
         <name>archivní taxonomická kategorie</name>
-        <hierarchical>false</hierarchical>
-        <read-only>false</read-only>
-    </ap-type>
-    <ap-type code="EXTENDED">
-        <name>speciální entity</name>
-        <hierarchical>false</hierarchical>
-        <read-only>true</read-only>
-    </ap-type>
-    <ap-type code="EXT_ADDRESS" parent-ap-type="EXTENDED">
-        <name>adresní místo</name>
-        <hierarchical>false</hierarchical>
-        <read-only>false</read-only>
-    </ap-type>
-    <ap-type code="EXT_ORIGINATOR_TYPE" parent-ap-type="EXTENDED">
-        <name>druh původce</name>
         <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
