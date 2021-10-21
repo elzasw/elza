@@ -150,7 +150,15 @@ public class XmlApOutputStream extends BaseFragmentStream implements ApOutputStr
 
         AccessPointState accessPointState = AccessPointState.NEW;
         if (apState.getStateApproval() != null) {
-            accessPointState = AccessPointState.valueOf(apState.getStateApproval().toString());
+        	switch(apState.getStateApproval())
+        	{
+        	case APPROVED:
+        		accessPointState = AccessPointState.APPROVED;
+        		break;
+        	default:
+        		accessPointState = AccessPointState.NEW;
+        		break;
+        	}
         }
 
         AccessPointEntry entry = new AccessPointEntry();
