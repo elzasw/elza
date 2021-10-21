@@ -1536,5 +1536,17 @@ where no.level_id = l.level_id
     <changeSet id="20211018082800" author="sergey.iryupin">
     	<sql dbms="postgresql">update ext_syncs_queue_item set state = 'IMPORT_OK' where state='OK'</sql>
 	</changeSet>
+	
+	<changeSet id="20211021095500" author="sergey.iryupin">
+      	<sql dbms="postgresql">delete from ap_access_point where access_point_id in 
+			(select access_point_id from ap_state where ap_type_id in
+				(select ap_type_id from ap_type where code in 
+					('TERM_ABSTRACT','TERM_PERSON','TERM_CORP','TERM_MATER','TERM_GENRE','TERM_NOMENC','EXTENDED','EXT_ADDRESS','EXT_ORIGINATOR_TYPE')))</sql>
+		<sql dbms="postgresql">update ap_state set ap_type_id = (select ap_type_id from ap_type where code = 'TERM_GENERAL')
+  				where ap_type_id in (select ap_type_id from ap_type where code in 
+					('TERM_ABSTRACT','TERM_PERSON','TERM_CORP','TERM_MATER','TERM_GENRE','TERM_NOMENC','EXTENDED','EXT_ADDRESS','EXT_ORIGINATOR_TYPE'))</sql>
+		<sql dbms="postgresql">delete from ap_type where code in 
+			('TERM_ABSTRACT','TERM_PERSON','TERM_CORP','TERM_MATER','TERM_GENRE','TERM_NOMENC','EXTENDED','EXT_ADDRESS','EXT_ORIGINATOR_TYPE')</sql>
+	</changeSet>
 
 </databaseChangeLog>
