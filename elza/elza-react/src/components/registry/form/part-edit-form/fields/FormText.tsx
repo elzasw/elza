@@ -1,8 +1,9 @@
-import React, {FC} from 'react';
-// import { Field} from 'redux-form';
+import React, { FC } from 'react';
 import { Field, useForm } from 'react-final-form';
-import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
 import FormInput from '../../../../shared/form/FormInput';
+import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
+import { handleValueUpdate } from '../valueChangeMutators';
+import { RevisionFieldExample } from './RevisionFieldExample';
 
 export const FormText:FC<{
     name: string;
@@ -18,24 +19,29 @@ export const FormText:FC<{
     const form = useForm();
     return <Field
         name={`${name}.value`}
-        label={label}
     >
         {(props) => {
             const handleChange = (e: any) => { 
                 props.input.onBlur(e)
-                form.mutators.attributes?.(name);
+                handleValueUpdate(form, props);
             }
 
-            return <ReduxFormFieldErrorDecorator
-                {...props as any}
-                input={{
-                    ...props.input,
-                    onBlur: handleChange // inject modified onChange handler
-                }}
-                disabled={disabled}
-                maxLength={limitLength}
-                renderComponent={FormInput}
-                />
+            return <RevisionFieldExample 
+                label={label} 
+                prevValue="Lorem ipsum dolor sit amet, consectetuer adipiscing elit." 
+                value={props.input.value}
+            >
+                <ReduxFormFieldErrorDecorator
+                    {...props as any}
+                    input={{
+                        ...props.input,
+                        onBlur: handleChange // inject modified onChange handler
+                    }}
+                    disabled={disabled}
+                    maxLength={limitLength}
+                    renderComponent={FormInput}
+                    />
+            </RevisionFieldExample>
 
         }}
     </Field>

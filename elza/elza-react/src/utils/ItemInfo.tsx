@@ -178,7 +178,6 @@ export function sortOwnItems(
     });
 }
 
-/*
 export function findItemPlacePosition(
     item: ApItemVO,
     items: ApItemVO[],
@@ -194,24 +193,24 @@ export function findItemPlacePosition(
     const finalIndex = index >= 0 ? items.length - index : 0;
     return finalIndex;
 }
-*/
-export function findItemPlacePosition(
-    item: ApItemVO,
-    items: ApItemVO[],
-    partTypeId: number,
-    refTables: RefTablesState,
-    apViewSettings?: ApViewSettingRule,
-): number {
-    for (let index = items.length - 1; index >= 0; index--) {
-        let i = items[index];
-        let n = compareItems(item, i, partTypeId, refTables, apViewSettings);
-        if (n >= 0) {
-            return index + 1;
-        }
-    }
 
-    return 0;
-}
+// export function findItemPlacePosition(
+//     item: ApItemVO,
+//     items: ApItemVO[],
+//     partTypeId: number,
+//     refTables: RefTablesState,
+//     apViewSettings?: ApViewSettingRule,
+// ): number {
+//     for (let index = items.length - 1; index >= 0; index--) {
+//         let i = items[index];
+//         let n = compareItems(item, i, partTypeId, refTables, apViewSettings);
+//         if (n >= 0) {
+//             return index + 1;
+//         }
+//     }
+
+//     return 0;
+// }
 
 export function findViewItemType(
     itemTypeSettings: ItemType[],

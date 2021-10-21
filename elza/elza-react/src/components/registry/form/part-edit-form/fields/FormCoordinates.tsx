@@ -1,18 +1,20 @@
-import React, {FC} from 'react';
+import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
+import { WebApi } from 'actions/WebApi';
 import classNames from 'classnames';
-import { Field, useForm } from 'react-final-form';
-import {Button, Col, Row} from 'react-bootstrap';
-import {Icon} from 'components';
-import ReduxFormFieldErrorDecorator from 'components/shared/form/ReduxFormFieldErrorDecorator';
-import FormInput from 'components/shared/form/FormInput';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
-import {WebApi} from 'actions/WebApi';
-import ImportCoordinateModal from '../../../Detail/coordinate/ImportCoordinateModal';
+import { Icon } from 'components';
 import i18n from 'components/i18n';
-import { ThunkDispatch } from 'redux-thunk';
-import { AnyAction } from 'redux';
+import FormInput from 'components/shared/form/FormInput';
+import ReduxFormFieldErrorDecorator from 'components/shared/form/ReduxFormFieldErrorDecorator';
+import React, { FC } from 'react';
+import { Button, Col, Row } from 'react-bootstrap';
+import { Field, useForm } from 'react-final-form';
 import { useDispatch } from 'react-redux';
-import {AppState} from 'typings/store';
+import { AnyAction } from 'redux';
+import { ThunkDispatch } from 'redux-thunk';
+import { AppState } from 'typings/store';
+import ImportCoordinateModal from '../../../Detail/coordinate/ImportCoordinateModal';
+import { handleValueUpdate } from '../valueChangeMutators';
+import { RevisionFieldExample } from './RevisionFieldExample';
 
 type ThunkAction<R> = (dispatch: ThunkDispatch<AppState, void, AnyAction>, getState: () => AppState) => Promise<R>;
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
@@ -21,12 +23,10 @@ export const FormCoordinates:FC<{
     name: string;
     label: string;
     disabled?: boolean;
-    // onImport?: (name: string) => void;
 }> = ({
     name,
     label,
     disabled = false,
-    // onImport = () => console.warn("'onImport' undefined.")
 }) => {
     const fieldName = `${name}.value`;
     const form = useForm();
@@ -39,38 +39,45 @@ export const FormCoordinates:FC<{
         <Col>
             <Field
                 name={fieldName}
-                label={label}
             >
                 {(props) => {
                     const handleChange = (e: any) => { 
                         props.input.onBlur(e)
-                        form.mutators.attributes?.(name);
+                        handleValueUpdate(form, props);
                     }
 
-                    return <ReduxFormFieldErrorDecorator
-                        {...props as any}
-                        input={{
-                            ...props.input,
-                            onBlur: handleChange // inject modified onChange handler
-                        }}
-                        disabled={disabled}
-                        renderComponent={FormInput}
-                        as="textarea"
-                        />
+                    return <RevisionFieldExample 
+                        label={label} 
+                        prevValue={"POINT (14.0204590559006 50.6841594725847)"} 
+                        value={props.input.value}
+                    >
+                        <div style={{display: "flex"}}>
+                            <div style={{flexGrow: 1}}>
+                            <ReduxFormFieldErrorDecorator
+                                {...props as any}
+                                
+                                input={{
+                                    ...props.input,
+                                    onBlur: handleChange // inject modified onChange handler
+                                }}
+                                disabled={disabled}
+                                renderComponent={FormInput}
+                                as="textarea"
+                                />
+                            </div>
+                            <Button
+                                variant={'action' as any}
+                                className={classNames('side-container-button', 'm-1')}
+                                title={'Importovat'}
+                                onClick={handleImport}
+                            >
+                                <Icon glyph={'fa-download'} />
+                            </Button>
+                        </div>
+                    </RevisionFieldExample>
 
                 }}
             </Field>
-        </Col>
-        <Col xs="auto" className="action-buttons">
-            {/*TODO: az bude na serveru */}
-            <Button
-                variant={'action' as any}
-                className={classNames('side-container-button', 'm-1')}
-                title={'Importovat'}
-                onClick={handleImport}
-            >
-                <Icon glyph={'fa-download'} />
-            </Button>
         </Col>
     </Row>
 }
@@ -82,7 +89,7 @@ const importCoordinateFile = ():ThunkAction<any> =>
             this,
             i18n('ap.coordinate.import.title'),
             <ImportCoordinateModal
-                onSubmit={async formData => {
+                onSubmit={async (formData) => {
                     const data = await readFileAsBinaryString(formData.file)
                     try {
                         const fieldValue = await WebApi.importApCoordinates(data!, formData.format);

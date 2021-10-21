@@ -1,24 +1,25 @@
-import React, { FC, useEffect, useState } from 'react';
-import { Form } from 'react-final-form';
-import arrayMutators from 'final-form-arrays';
-import { useSelector } from "react-redux";
+import { ApCreateTypeVO } from 'api/ApCreateTypeVO';
 import { ApPartFormVO } from "api/ApPartFormVO";
-import { getPartEditDialogLabel } from "api/old/PartTypeInfo";
-import { PartType } from "api/generated/model";
-import { Modal } from 'react-bootstrap';
-import { Button } from "components/ui";
-import i18n from "components/i18n";
-import { DetailStoreState } from 'types';
 import { ApViewSettings } from 'api/ApViewSettings';
+import { PartType } from "api/generated/model";
+import { getPartEditDialogLabel } from "api/old/PartTypeInfo";
+import i18n from "components/i18n";
+import { Loading } from 'components/shared';
 import ModalDialogWrapper from 'components/shared/dialog/ModalDialogWrapper';
-import storeFromArea from 'shared/utils/storeFromArea';
+import { Button } from "components/ui";
+import arrayMutators from 'final-form-arrays';
+import React, { FC, useEffect, useState } from 'react';
+import { Modal } from 'react-bootstrap';
+import { Form } from 'react-final-form';
+import { useSelector } from "react-redux";
 import debounce from 'shared/utils/debounce';
-import {AP_VIEW_SETTINGS} from '../../../../constants';
+import storeFromArea from 'shared/utils/storeFromArea';
+import { DetailStoreState } from 'types';
+import { AppState } from 'typings/store';
+import { AP_VIEW_SETTINGS } from '../../../../constants';
 import { getUpdatedForm } from '../../form/part-edit-form/actions';
 import { PartEditForm } from "../../form/part-edit-form/PartEditForm";
-import {ApCreateTypeVO} from 'api/ApCreateTypeVO';
-import { AppState } from 'typings/store'
-import { Loading } from 'components/shared';
+import { getValueChangeMutators } from '../../form/part-edit-form/valueChangeMutators';
 
 type Props = {
     partTypeId: number;
@@ -75,11 +76,7 @@ const PartEditModal:FC<Props> = ({
         setValues(formData)
     };
 
-    const debouncedFetchAttributes = debounce(fetchAttributes, 50) as typeof fetchAttributes;
-
-    const getAttributes = (_name:string, state: any) => {
-        debouncedFetchAttributes(state.formState.values);
-    }
+    const debouncedFetchAttributes = debounce(fetchAttributes, 100) as typeof fetchAttributes;
 
     const createMode = partId != undefined ? false : true;
     const partType = refTables.partTypes.itemsMap[partTypeId];
@@ -91,8 +88,8 @@ const PartEditModal:FC<Props> = ({
     >
         <Form<ApPartFormVO> 
             mutators={{ 
-                ...arrayMutators, 
-                attributes: getAttributes
+                ...arrayMutators as any, 
+                ...getValueChangeMutators(debouncedFetchAttributes),
             }} 
             onSubmit={onSubmit}
             initialValues={values}

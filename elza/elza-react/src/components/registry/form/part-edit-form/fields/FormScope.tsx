@@ -1,9 +1,9 @@
-import React, {FC} from 'react';
-// import { Field} from 'redux-form';
+import React, { FC } from 'react';
 import { Field, useForm } from 'react-final-form';
+import { ScopeData } from "typings/store";
 import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
 import Scope from '../../../../shared/scope/Scope';
-import { ScopeData } from "typings/store";
+import { handleValueUpdate } from '../valueChangeMutators';
 
 export const FormScope:FC<{
     name: string;
@@ -24,7 +24,7 @@ export const FormScope:FC<{
         {(props) => {
             const handleChange = (e: any) => { 
                 props.input.onChange(e)
-                form.mutators.attributes?.(name);
+                handleValueUpdate(form);
             }
 
             return <ReduxFormFieldErrorDecorator

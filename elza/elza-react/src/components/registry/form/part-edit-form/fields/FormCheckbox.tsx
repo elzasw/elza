@@ -1,7 +1,9 @@
-import React, {FC} from 'react';
+import React, { FC } from 'react';
 import { Field, useForm } from 'react-final-form';
-import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
 import FormInput from '../../../../shared/form/FormInput';
+import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
+import { handleValueUpdate } from '../valueChangeMutators';
+import { RevisionFieldExample } from './RevisionFieldExample';
 
 export const FormCheckbox:FC<{
     name: string;
@@ -20,19 +22,25 @@ export const FormCheckbox:FC<{
         {(props) => {
             const handleChange = (e: any) => { 
                 props.input.onBlur(e)
-                form.mutators.attributes?.(name);
+                handleValueUpdate(form, props);
             }
 
-            return <ReduxFormFieldErrorDecorator
-                {...props as any}
-                input={{
-                    ...props.input,
-                    onBlur: handleChange // inject modified onChange handler
-                }}
-                disabled={disabled}
-                renderComponent={FormInput}
-                type="checkbox"
-                />
+            return <RevisionFieldExample 
+                label={label} 
+                prevValue={"Ano"} 
+                value={props.input.value ? "Ano" : "Ne"}
+            >
+                <ReduxFormFieldErrorDecorator
+                    {...props as any}
+                    input={{
+                        ...props.input,
+                        onBlur: handleChange // inject modified onChange handler
+                    }}
+                    disabled={disabled}
+                    renderComponent={FormInput}
+                    type="checkbox"
+                    />
+            </RevisionFieldExample>
         }}
     </Field>
 }

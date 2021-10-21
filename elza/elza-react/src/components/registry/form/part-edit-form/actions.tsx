@@ -1,23 +1,20 @@
 import './PartEditForm.scss';
-import {ApItemVO} from '../../../../api/ApItemVO';
-import {ApCreateTypeVO} from '../../../../api/ApCreateTypeVO';
-import {RulDataTypeCodeEnum} from '../../../../api/RulDataTypeCodeEnum';
-import {RulDescItemTypeExtVO} from '../../../../api/RulDescItemTypeExtVO';
-import {RulDataTypeVO} from '../../../../api/RulDataTypeVO';
-import {RequiredType} from '../../../../api/RequiredType';
-import * as ItemInfo from '../../../../utils/ItemInfo';
-import {
-    findItemPlacePosition,
-    sortOwnItems,
-} from '../../../../utils/ItemInfo';
-import {ApItemBitVO} from '../../../../api/ApItemBitVO';
-import {WebApi} from '../../../../actions/WebApi';
+import {ApItemVO} from 'api/ApItemVO';
+import {ApCreateTypeVO} from 'api/ApCreateTypeVO';
+import {RulDataTypeCodeEnum} from 'api/RulDataTypeCodeEnum';
+import {RulDescItemTypeExtVO} from 'api/RulDescItemTypeExtVO';
+import {RulDataTypeVO} from 'api/RulDataTypeVO';
+import {RequiredType} from 'api/RequiredType';
+import * as ItemInfo from 'utils/ItemInfo';
+import { findItemPlacePosition, sortOwnItems } from 'utils/ItemInfo';
+import {ApItemBitVO} from 'api/ApItemBitVO';
+import {WebApi} from 'actions/WebApi';
 import { RefTablesState } from 'typings/store'
-import {ApViewSettingRule, ApViewSettings} from '../../../../api/ApViewSettings';
-import {ApAccessPointCreateVO} from '../../../../api/ApAccessPointCreateVO';
-import { ApPartFormVO } from "../../../../api/ApPartFormVO";
-import { compareCreateTypes, hasItemValue } from '../../../../utils/ItemInfo';
-import { DetailStoreState } from '../../../../types';
+import {ApViewSettingRule, ApViewSettings} from 'api/ApViewSettings';
+import {ApAccessPointCreateVO} from 'api/ApAccessPointCreateVO';
+import { ApPartFormVO } from "api/ApPartFormVO";
+import { compareCreateTypes, hasItemValue } from 'utils/ItemInfo';
+import { DetailStoreState } from 'types';
 
 export const addItems = (
     attributes: Array<ApCreateTypeVO>,
@@ -31,7 +28,7 @@ export const addItems = (
     let newItems = getNewItems(attributes, refTables, userAction);
 
     // Vložení do formuláře - od konce
-    sortOwnItems(partTypeId, newItems, refTables, apViewSettings);
+    // sortOwnItems(partTypeId, newItems, refTables, apViewSettings);
 
     newItems.reverse().forEach(item => {
         let index = findItemPlacePosition(item, formItems, partTypeId, refTables, apViewSettings);
@@ -130,8 +127,6 @@ export const getItemsWithRequired = (
 
 const sortApItems = (items: ApItemVO[], descItemTypesMap: Record<number, RulDescItemTypeExtVO>) => {
     return [...items].sort((a, b) => {
-        if(!a){return 1;}
-        if(!b){return -1;}
         return descItemTypesMap[a.typeId].viewOrder - descItemTypesMap[b.typeId].viewOrder;
     })
 }

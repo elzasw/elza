@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
-import {FieldArray} from 'react-final-form-arrays';
+import { Button, Col, Row } from 'react-bootstrap';
 import { useForm } from 'react-final-form';
+import { FieldArray } from 'react-final-form-arrays';
 import { useSelector } from 'react-redux';
-import './PartEditForm.scss';
-import {Button, Col, Row} from 'react-bootstrap';
-import {ApItemVO} from '../../../../api/ApItemVO';
-import {ApCreateTypeVO} from '../../../../api/ApCreateTypeVO';
-import {Loading} from '../../../shared';
+import { AppState } from 'typings/store';
+import { ApCreateTypeVO } from '../../../../api/ApCreateTypeVO';
+import { ApItemVO } from '../../../../api/ApItemVO';
 import { ApViewSettings } from '../../../../api/ApViewSettings';
+import { AP_VIEW_SETTINGS } from '../../../../constants';
 import storeFromArea from '../../../../shared/utils/storeFromArea';
-import {AP_VIEW_SETTINGS} from '../../../../constants';
-import {DetailStoreState} from '../../../../types';
+import { DetailStoreState } from '../../../../types';
+import { Loading } from '../../../shared';
+import { addItems } from './actions';
+import './PartEditForm.scss';
 import { renderAddActions } from './renderAddActions';
 import { ItemsWrapper } from './renderItems';
-import { addItems } from './actions';
-import { AppState } from 'typings/store'
+import { handleValueUpdate } from './valueChangeMutators';
 
 type Props = {
     partTypeId: number;
@@ -60,7 +61,7 @@ export const PartEditForm = ({
         partTypeId,
         (index: number, value: any) => {
             arrayInsert(index, value);
-            form.mutators.attributes("arrayInsert");
+            handleValueUpdate(form);
         },
         userAction,
         apViewSettings
@@ -132,7 +133,7 @@ export const PartEditForm = ({
                             meta={meta}
                             itemTypeAttributeMap={itemTypeAttributeMap}
                             itemTypeSettings={apViewSettingRule?.itemTypes || []}
-                            onDeleteItem={() => {form.mutators.attributes("arrayDelete")}}
+                            onDeleteItem={() => {handleValueUpdate(form)}}
                             itemPrefix={arrayName}
                             partTypeId={partTypeId}
                             scopeId={scopeId}
