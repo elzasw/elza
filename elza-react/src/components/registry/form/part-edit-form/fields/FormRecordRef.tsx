@@ -1,20 +1,22 @@
-import React, {FC} from 'react';
-import { useDispatch } from 'react-redux';
-import {Icon} from '../../../../index';
-import { useForm } from 'react-final-form';
-import {Button, Col, Form, Row} from 'react-bootstrap';
-import {RulDescItemTypeExtVO} from 'api/RulDescItemTypeExtVO';
-import {ApItemAccessPointRefVO} from '../../../../../api/ApItemAccessPointRefVO';
-import {objectById} from '../../../../../shared/utils';
-import { RulDescItemSpecExtVO } from 'api/RulDescItemSpecExtVO';
-import {modalDialogHide, modalDialogShow} from '../../../../../actions/global/modalDialog';
-import {ApCreateTypeVO} from 'api/ApCreateTypeVO';
-import {AppState} from 'typings/store';
-import {Area} from 'api/Area';
-import RelationPartItemEditModalForm from '../../../modal/RelationPartItemEditModalForm';
-import { ThunkDispatch } from 'redux-thunk';
-import { AnyAction } from 'redux';
 import { ApAccessPointVO } from 'api';
+import { ApCreateTypeVO } from 'api/ApCreateTypeVO';
+import { Area } from 'api/Area';
+import { RulDescItemSpecExtVO } from 'api/RulDescItemSpecExtVO';
+import { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
+import React, { FC } from 'react';
+import { Button, Col, Form, Row } from 'react-bootstrap';
+import { useField, useForm } from 'react-final-form';
+import { useDispatch } from 'react-redux';
+import { AnyAction } from 'redux';
+import { ThunkDispatch } from 'redux-thunk';
+import { AppState } from 'typings/store';
+import { modalDialogHide, modalDialogShow } from '../../../../../actions/global/modalDialog';
+import { ApItemAccessPointRefVO } from '../../../../../api/ApItemAccessPointRefVO';
+import { objectById } from '../../../../../shared/utils';
+import { Icon } from '../../../../index';
+import RelationPartItemEditModalForm from '../../../modal/RelationPartItemEditModalForm';
+import { handleValueUpdate } from '../valueChangeMutators';
+import { RevisionFieldExample } from './RevisionFieldExample';
 
 type ThunkAction<R> = (dispatch: ThunkDispatch<AppState, void, AnyAction>, getState: () => AppState) => Promise<R>;
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
@@ -54,32 +56,39 @@ export const FormRecordRef:FC<{
 }) => {
     const dispatch = useThunkDispatch<AppState>();
     const form = useForm();
+    const field = useField(name);
     const handleEditItem = async () => {
         const fieldValue = await dispatch(handleSelectAccessPointRef(item, partTypeId, itemTypeAttributeMap, scopeId, apTypeId))
         form.change(name, fieldValue)
-        form.mutators.attributes?.(name);
+        handleValueUpdate(form);
     }
     return (
         <Row className={'d-flex'}>
             <Col>
-                <Form.Label>{label}</Form.Label>
-                <Form.Control value={getDisplayValue(item, itemType)} disabled={true} />
-            </Col>
-            <Col xs="auto" className="action-buttons">
-                <Button
-                    disabled={disabled}
-                    variant={'action'}
-                    onClick={handleEditItem}
+                <RevisionFieldExample 
+                    label={label} 
+                    prevValue={`zakladatel/zřizovatel: Neruda, Jan (1834-1891)`} 
+                    value={getDisplayValue(item, itemType)}
                 >
-                    <Icon glyph="fa-edit" />
-                </Button>
+                    <div style={{display: "flex"}}>
+                        <Form.Control style={{flexShrink: 1}} value={getDisplayValue(item, itemType)} disabled={true} />
+                        <Button
+                            disabled={disabled}
+                            variant={'action'}
+                            onClick={handleEditItem}
+                        >
+                            <Icon glyph="fa-edit" />
+                        </Button>
+                    </div>
+                </RevisionFieldExample>
             </Col>
         </Row>
     );
 }
 
 const getDisplayValue = (apItem: ApItemAccessPointRefVO, itemType: RulDescItemTypeExtVO) => {
-    const apItemName = apItem.accessPoint?.name;
+    debugger
+    const apItemName = apItem.accessPoint?.name || apItem.externalName;
 
     if (itemType.useSpecification && apItem.specId) {
         const spec:RulDescItemSpecExtVO | null = objectById(itemType.descItemSpecs, apItem.specId) || null;

@@ -1,25 +1,26 @@
-import React, { FC, useState } from 'react';
-import { Modal } from 'react-bootstrap';
-import { useSelector } from 'react-redux';
-import { Form } from 'react-final-form';
-import arrayMutators from 'final-form-arrays';
+import { ApCreateTypeVO } from 'api/ApCreateTypeVO';
 import { ApPartFormVO } from 'api/ApPartFormVO';
 import { ApTypeVO } from 'api/ApTypeVO';
+import { ApViewSettings } from 'api/ApViewSettings';
+import { RulPartTypeVO } from 'api/RulPartTypeVO';
 import i18n from 'components/i18n';
 import { Loading } from 'components/shared';
 import { Button } from 'components/ui';
-import { PartEditForm } from '../form/part-edit-form/PartEditForm';
-import { FormScope, FormAutocomplete } from './../form/part-edit-form/fields';
-import { getUpdatedForm } from '../form/part-edit-form/actions';
-import {AP_VIEW_SETTINGS} from '../../../constants';
-import storeFromArea from 'shared/utils/storeFromArea';
+import arrayMutators from 'final-form-arrays';
+import React, { FC, useState } from 'react';
+import { Modal } from 'react-bootstrap';
+import { Form } from 'react-final-form';
+import { useSelector } from 'react-redux';
 import debounce from 'shared/utils/debounce';
-import {ApViewSettings} from 'api/ApViewSettings';
-import {DetailStoreState} from 'types';
-import {RulPartTypeVO} from 'api/RulPartTypeVO';
+import storeFromArea from 'shared/utils/storeFromArea';
+import { DetailStoreState } from 'types';
 import { AppState, ScopeData, UserDetail } from "typings/store";
 import { hasItemValue } from 'utils/ItemInfo';
-import {ApCreateTypeVO} from 'api/ApCreateTypeVO';
+import { AP_VIEW_SETTINGS } from '../../../constants';
+import { getUpdatedForm } from '../form/part-edit-form/actions';
+import { PartEditForm } from '../form/part-edit-form/PartEditForm';
+import { FormAutocomplete, FormScope } from './../form/part-edit-form/fields';
+import { getValueChangeMutators } from '../form/part-edit-form/valueChangeMutators';
 
 export interface CreateAccessPointModalFields {
     apType?: any;
@@ -84,11 +85,7 @@ const CreateAccessPointModal:FC<CreateAccessPointModalProps> = ({
         })
     };
 
-    const debouncedFetchAttributes = debounce(fetchAttributes, 50) as typeof fetchAttributes;
-
-    const getAttributes = (_name:string, state: any) => {
-        debouncedFetchAttributes(state.formState.values)
-    }
+    const debouncedFetchAttributes = debounce(fetchAttributes, 100) as typeof fetchAttributes;
 
     if(loading){ return <Loading/> }
 
@@ -98,7 +95,7 @@ const CreateAccessPointModal:FC<CreateAccessPointModalProps> = ({
             onSubmit={onSubmit}
             mutators={{
                 ...arrayMutators,
-                attributes: getAttributes
+                ...getValueChangeMutators(debouncedFetchAttributes),
             }}
         >
             {({submitting, values: {apType, scopeId, partForm}, handleSubmit}) => {

@@ -1,9 +1,10 @@
-import React, {FC} from 'react';
-// import { Field} from 'redux-form';
+import React, { FC } from 'react';
 import { Field, useForm } from 'react-final-form';
+import { RulDescItemTypeExtVO } from '../../../../../api/RulDescItemTypeExtVO';
 import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
-import {RulDescItemTypeExtVO} from '../../../../../api/RulDescItemTypeExtVO';
 import SpecificationField from '../../../field/SpecificationField';
+import { handleValueUpdate } from '../valueChangeMutators';
+import { RevisionFieldExample } from './RevisionFieldExample';
 
 export const FormSpecification:FC<{
     name: string;
@@ -21,26 +22,31 @@ export const FormSpecification:FC<{
     const form = useForm();
     return <Field
         name={`${name}.specId`}
-        label={label}
     >
         {(props) => {
             const handleChange = (e: any) => { 
                 props.input.onChange(e)
-                form.mutators.attributes?.(name);
+                handleValueUpdate(form);
             }
 
-            return <ReduxFormFieldErrorDecorator
-                {...props as any}
-                input={{
-                    ...props.input,
-                    onChange: handleChange // inject modified onChange handler
-                }}
-                disabled={disabled}
-                itemTypeId={itemType.id}
-                itemSpecIds={itemSpecIds}
-                renderComponent={SpecificationField}
-                />
-
+            return <RevisionFieldExample 
+                label={label} 
+                prevValue={(59).toString()} 
+                value={props.input.value.toString()}
+            >
+                <ReduxFormFieldErrorDecorator
+                    {...props as any}
+                    input={{
+                        ...props.input,
+                        onChange: handleChange // inject modified onChange handler
+                    }}
+                    disabled={disabled}
+                    itemTypeId={itemType.id}
+                    itemSpecIds={itemSpecIds}
+                    renderComponent={SpecificationField}
+                    spellcheck={false}
+                    />
+            </RevisionFieldExample>
         }}
     </Field>
 }

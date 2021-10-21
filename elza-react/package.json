@@ -32,7 +32,7 @@
     "es6-promise": "^4.2.8",
     "fbjs": "0.8.12",
     "final-form": "^4.20.2",
-    "final-form-arrays": "^3.0.2",
+    "final-form-arrays": "^1.1.2",
     "globalize": "^1.4.2",
     "history": "^4.10.1",
     "jquery": "2.1.4",

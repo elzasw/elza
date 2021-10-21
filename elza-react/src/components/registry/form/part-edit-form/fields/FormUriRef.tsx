@@ -1,8 +1,10 @@
-import React, {FC} from 'react';
-import { Field, useForm } from 'react-final-form';
-import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
-import {Col, Row} from 'react-bootstrap';
+import React, { FC } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { Field, useForm, useField } from 'react-final-form';
 import FormInput from '../../../../shared/form/FormInput';
+import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
+import { handleValueUpdate } from '../valueChangeMutators';
+import { RevisionFieldExample } from './RevisionFieldExample';
 
 export const FormUriRef:FC<{
     name: string;
@@ -14,6 +16,8 @@ export const FormUriRef:FC<{
     disabled = false,
 }) => {
     const form = useForm();
+    const descriptionField = useField(`${name}.description`);
+    const valueField = useField(`${name}.value`)
     const validate = (value:string) => {
         if(!value?.match(/^.+:.+$/g)){
             return "Nesprávný formát odkazu";
@@ -21,56 +25,66 @@ export const FormUriRef:FC<{
         return undefined;
     }
     return <Row>
-        <Col xs={6}>
-            <Field
-                name={`${name}.value`}
+        <Col xs={10}>
+            <RevisionFieldExample
                 label={label}
-                validate={validate}
+                prevValue={"Google: https://www.google.com"}
+                value={`${descriptionField.input.value}: ${valueField.input.value}`}
             >
-                {(props) => {
-                    const handleChange = (e: any) => { 
-                        props.input.onBlur(e)
-                        form.mutators.attributes?.(name);
-                    }
+                <div style={{display: "flex"}}>
+                    <Field
+                        name={`${name}.description`}
+                        label="Název"
+                    >
+                        {(props) => {
+                            const handleChange = (e: any) => { 
+                                props.input.onBlur(e)
+                                handleValueUpdate(form, props);
+                            }
 
-                    return <ReduxFormFieldErrorDecorator
-                        {...props as any}
-                        input={{
-                            ...props.input,
-                            onBlur: handleChange // inject modified onChange handler
+                            return <div style={{display: "flex", flexGrow: 1, flexDirection: "column"}}>
+                            <ReduxFormFieldErrorDecorator
+                                {...props as any}
+                                input={{
+                                    ...props.input,
+                                    onBlur: handleChange // inject modified onChange handler
+                                }}
+                                disabled={disabled}
+                                maxLength={250}
+                                renderComponent={FormInput}
+                                />
+                                </div>
+
                         }}
-                        disabled={disabled}
-                        maxLength={1000}
-                        renderComponent={FormInput}
-                        />
+                    </Field>
+                    <Field
+                        name={`${name}.value`}
+                        label={"Odkaz"}
+                        validate={validate}
+                    >
+                        {(props) => {
+                            const handleChange = (e: any) => { 
+                                props.input.onBlur(e)
+                                handleValueUpdate(form, props);
+                            }
 
-                }}
-            </Field>
-        </Col>
-        <Col xs={6}>
-            <Field
-                name={`${name}.description`}
-                label="Název odkazu"
-            >
-                {(props) => {
-                    const handleChange = (e: any) => { 
-                        props.input.onBlur(e)
-                        form.mutators.attributes?.(name);
-                    }
+                            return <div style={{display: "flex", flexGrow: 2, flexDirection: "column"}}>
+                                <ReduxFormFieldErrorDecorator
+                                {...props as any}
+                                input={{
+                                    ...props.input,
+                                    onBlur: handleChange // inject modified onChange handler
+                                }}
+                                disabled={disabled}
+                                maxLength={1000}
+                                renderComponent={FormInput}
+                                />
+                            </div>
 
-                    return <ReduxFormFieldErrorDecorator
-                        {...props as any}
-                        input={{
-                            ...props.input,
-                            onBlur: handleChange // inject modified onChange handler
                         }}
-                        disabled={disabled}
-                        maxLength={250}
-                        renderComponent={FormInput}
-                        />
-
-                }}
-            </Field>
+                    </Field>
+                </div>
+            </RevisionFieldExample>
         </Col>
     </Row>
 }

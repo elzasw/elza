@@ -1,8 +1,8 @@
 import React from 'react';
-// import { Field} from 'redux-form';
 import { Field, useForm } from 'react-final-form';
-import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
 import { Autocomplete } from '../../../../shared';
+import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
+import { handleValueUpdate } from '../valueChangeMutators';
 
 interface FormAutocompleteProps<T> {
     name: string;
@@ -31,7 +31,7 @@ export const FormAutocomplete = <ValueType,>({
         {(props) => {
             const handleChange = (e: any) => { 
                 props.input.onChange(e)
-                form.mutators.attributes?.(name);
+                handleValueUpdate(form);
             }
 
             return <ReduxFormFieldErrorDecorator
