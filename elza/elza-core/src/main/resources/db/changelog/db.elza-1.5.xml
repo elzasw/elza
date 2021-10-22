@@ -1552,4 +1552,11 @@ where no.level_id = l.level_id
 			('TERM_ABSTRACT','TERM_PERSON','TERM_CORP','TERM_MATER','TERM_GENRE','TERM_NOMENC','EXTENDED','EXT_ADDRESS','EXT_ORIGINATOR_TYPE')</sql>
 	</changeSet>
 
+    <changeSet id="20211022133000" author="sergey.iryupin">
+        <sql dbms="postgresql">CREATE INDEX ap_binding_state_access_point_pidx 
+			ON ap_binding_state(access_point_id)
+			WHERE delete_change_id IS NULL;
+			DROP INDEX ap_binding_state_access_point_idx</sql>
+    </changeSet>
+
 </databaseChangeLog>
