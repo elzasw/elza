@@ -2213,15 +2213,31 @@ public class AccessPointService {
         case TO_AMEND:
         	break;
         default:
-        	throw new BusinessException("Entita v tomto stavu nemůže být předána do externího systému.",
-        			BaseCode.INVALID_STATE)
-        		.set("accessPointId", apState.getAccessPointId())
-        		.set("state", apState.getStateApproval());
+        	throw new BusinessException("Entita v tomto stavu nemůže být předána do externího systému.", BaseCode.INVALID_STATE)
+                .set("accessPointId", apState.getAccessPointId())
+                .set("state", apState.getStateApproval());
         }
+
         ApAccessPoint accessPoint = apState.getAccessPoint();
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ApExternalSystem extSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+
+        // check ap_binding_state
+        ApBindingState binding = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, extSystem);
+        if (binding != null) {
+            throw new BusinessException("Entita již existuje v externím systému.", BaseCode.INVALID_STATE)
+                .set("accessPointId", apState.getAccessPointId())
+                .set("externalSystemCode", externalSystemCode);
+        }
+
+        // check ext_sync_queue
+        if (extSyncsQueueItemRepository.countByAccesPointAndExternalSystemAndState(accessPoint, extSystem, ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW) != 0) {
+            throw new BusinessException("Entita již čeká na zpracování ve frontě.", BaseCode.INVALID_STATE)
+                .set("accessPointId", apState.getAccessPointId())
+                .set("externalSystemCode", externalSystemCode);
+        }
+
         UserDetail userDetail = userService.getLoggedUserDetail();
-        ExtSyncsQueueItem extSyncsQueueItem = createExtSyncsQueueItem(accessPoint, apExternalSystem, null,
+        ExtSyncsQueueItem extSyncsQueueItem = createExtSyncsQueueItem(accessPoint, extSystem, null,
                 ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW, OffsetDateTime.now(), userDetail.getUsername());
         extSyncsQueueItemRepository.save(extSyncsQueueItem);
     }
