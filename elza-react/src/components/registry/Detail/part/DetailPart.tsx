@@ -4,14 +4,13 @@ import React, { FC, useEffect, useState } from 'react';
 import { ApPartVO } from '../../../../api/ApPartVO';
 import { ItemType } from '../../../../api/ApViewSettings';
 import { PartValidationErrorsVO } from '../../../../api/PartValidationErrorsVO';
+import { SyncState } from '../../../../api/SyncState';
 import { Bindings } from '../../../../types';
-import i18n from '../../../i18n';
-import Icon from '../../../shared/icon/Icon';
+import { SyncIcon } from "../sync-icon";
 import './DetailPart.scss';
 import { DetailPartInfo } from './DetailPartInfo';
 import { PartName } from "./PartName";
-import { SyncIcon } from "../sync-icon";
-import { SyncState } from '../../../../api/SyncState';
+import { RevisionDisplay } from './RevisionDisplay';
 
 type Props = {
     label: string;
@@ -47,11 +46,8 @@ const DetailPart: FC<Props> = ({
         'detail-part-preferred': preferred,
     });
 
+
     // Rozbalený content
-    const classNameContent = classNames({
-        'detail-part-preferred': preferred,
-        'detail-part-expanded': !collapsed,
-    });
 
 
     const showValidationError = () => {
@@ -61,26 +57,53 @@ const DetailPart: FC<Props> = ({
     };
 
     const partBinding = bindings.partsMap[part.id];
+    const hasBinding = partBinding != null;
+    const isModified = hasBinding && !partBinding;
+
+    const isCollapsed = collapsed && !isModified;
+
+    const classNameContent = classNames({
+        'detail-part-preferred': preferred,
+        'detail-part-expanded': !isCollapsed,
+    });
+
+    const areValuesEqual = (value: string, prevValue: string) => value === prevValue
+    console.log(label)
 
     return (
         <div className="detail-part">
             <div className={classNameHeader}>
                 <div style={{display: "flex", alignItems: "center"}}>
-                    <PartName 
-                        label={label} 
-                        collapsed={collapsed} 
-                        preferred={preferred}
-                        onClick={() => setCollapsed(!collapsed)}
-                    />
+                    <RevisionDisplay 
+                        valuesEqual={areValuesEqual(label, label)}
+                        renderPrevValue={() => {
+                            return <PartName 
+                                label={label} 
+                                collapsed={isCollapsed} 
+                                preferred={preferred}
+                                onClick={() => setCollapsed(!collapsed)}
+                                />
+                        }} 
+                        renderValue={() => {
+                            return <PartName 
+                                label={label} 
+                                collapsed={isCollapsed} 
+                                preferred={preferred}
+                                onClick={() => setCollapsed(!collapsed)}
+                                />
+                        }} 
+                    >
+
+                    </RevisionDisplay>
                     <div className="actions">
-                        {partBinding != null && (
+                        {hasBinding && (
                             <SyncIcon 
                                 syncState={
-                                    partBinding ? 
-                                    SyncState.SYNC_OK : 
-                                    SyncState.LOCAL_CHANGE
+                                !isModified ? 
+                                SyncState.SYNC_OK : 
+                                SyncState.LOCAL_CHANGE
                                 }
-                            />
+                                />
                         )}
                         {showValidationError()}
                     </div>
@@ -90,7 +113,7 @@ const DetailPart: FC<Props> = ({
                 </div>
             </div>
 
-            {!collapsed && (
+            {!isCollapsed && (
                 <div className={classNameContent}>
                     <DetailPartInfo
                         items={part.items || []}

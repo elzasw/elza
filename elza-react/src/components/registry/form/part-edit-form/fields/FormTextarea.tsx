@@ -28,9 +28,10 @@ export const FormTextarea:FC<{
 
             return <RevisionFieldExample 
                 label={label} 
-                prevValue="Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis risus. Aenean placerat." 
+                prevValue="Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Duis risus. Aenean placerat. Etiam egestas wisi a erat. Curabitur vitae diam non enim vestibulum interdum. Mauris elementum mauris vitae tortor. Pellentesque arcu. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Etiam neque. Donec vitae arcu. Aliquam erat volutpat. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. In." 
                 value={props.input.value}
                 alignTop={true}
+                equalSplit={true}
             >
                 <ReduxFormFieldErrorDecorator
                     {...props as any}
