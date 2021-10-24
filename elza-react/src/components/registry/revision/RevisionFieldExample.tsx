@@ -1,6 +1,6 @@
 import { Icon } from 'components';
 import React, { FC } from 'react';
-import { RevisionDisplay } from '../../../Detail/part/RevisionDisplay';
+import { RevisionDisplay } from './RevisionDisplay';
 
 export const RevisionFieldExample:FC<{
     prevValue?: string;
