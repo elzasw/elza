@@ -6,7 +6,7 @@ import { Bindings } from '../../../../types';
 import { AppState } from '../../../../typings/store';
 import './DetailItem.scss';
 import DetailItemContent from './DetailItemContent';
-import { RevisionDisplay } from '../part/RevisionDisplay';
+import { RevisionDisplay } from '../../revision';
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     bindings?: Bindings;

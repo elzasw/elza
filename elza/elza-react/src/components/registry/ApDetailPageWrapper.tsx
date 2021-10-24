@@ -22,7 +22,7 @@ import { AppState } from '../../typings/store';
 import Loading from '../shared/loading/Loading';
 import { DetailBodySection, DetailMultiSection } from './Detail/section';
 import { DetailHeader } from './Detail/header';
-import { showPartCreateModal, showPartEditModal } from './modal/part-edit-modal';
+import { showPartCreateModal, showPartEditModal } from './part-edit';
 import i18n from 'components/i18n';
 import { showConfirmDialog } from "components/shared/dialog";
 import './ApDetailPageWrapper.scss';

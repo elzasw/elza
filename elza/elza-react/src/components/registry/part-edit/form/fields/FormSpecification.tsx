@@ -4,7 +4,7 @@ import { RulDescItemTypeExtVO } from '../../../../../api/RulDescItemTypeExtVO';
 import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
 import SpecificationField from '../../../field/SpecificationField';
 import { handleValueUpdate } from '../valueChangeMutators';
-import { RevisionFieldExample } from './RevisionFieldExample';
+import { RevisionFieldExample } from '../../../revision';
 
 export const FormSpecification:FC<{
     name: string;

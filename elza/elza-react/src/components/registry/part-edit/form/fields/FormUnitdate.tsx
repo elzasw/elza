@@ -3,7 +3,7 @@ import { Field, useForm } from 'react-final-form';
 import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
 import UnitdateField from '../../../field/UnitdateField';
 import { handleValueUpdate } from '../valueChangeMutators';
-import { RevisionFieldExample } from './RevisionFieldExample';
+import { RevisionFieldExample } from '../../../revision';
 
 export const FormUnitdate:FC<{
     name: string;
