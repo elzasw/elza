@@ -1,5 +1,6 @@
 import { Icon } from 'components';
 import React, { FC } from 'react';
+import { RevisionDisplay } from '../../../Detail/part/RevisionDisplay';
 
 export const RevisionFieldExample:FC<{
     prevValue?: string;
@@ -8,6 +9,7 @@ export const RevisionFieldExample:FC<{
     label: string;
     disableRevision?: boolean;
     alignTop?: boolean;
+    equalSplit?: boolean;
 }> = ({
     prevValue, 
     value,
@@ -16,8 +18,9 @@ export const RevisionFieldExample:FC<{
     children, 
     disableRevision,
     alignTop,
+    equalSplit,
 }) => {
-    const valuesEqual = value === prevValue; // fake equality with empty field
+    const valuesEqual = value === prevValue;
     // console.log(valuesEqual, prevValue, value)
     return <div>
         <label>
@@ -26,44 +29,16 @@ export const RevisionFieldExample:FC<{
                 <Icon glyph="fa-undo"/>
             </span>}
         </label>
-        <div style={{
-            display: "flex",
-            alignItems: alignTop ? undefined : "center"
-            }}>
-            {!valuesEqual && !isDeleted && !disableRevision &&
-                <>
-                    <div style={{ 
-                        padding: "0px",
-                        maxWidth: "50%"
-                        }}>
-                        {prevValue || <i>Nevyplněno</i>}
-                    </div>
-                    <div style={{margin: "0 10px"}}>
-                    🡒
-                    </div>
-                </>
-            }
-            <div style={{
-                flexGrow: 1, 
-                flexShrink: 1, 
-                display: "flex",
-                flexDirection: "column",
-            }}>
-                <div style={{flex: 1}}>
-                {children}
-                </div>
-            </div>
-            {isDeleted && !disableRevision &&
-                <>
-                    <div style={{margin: "0 10px"}}>
-                    🡒
-                    </div>
-                    <div >
-                        <i>Smazáno</i>
-                    </div>
-                </>
-            }
-        </div>
+        <RevisionDisplay
+            renderPrevValue={()=> prevValue }
+            renderValue={()=> <div style={{flex: 1}}>{children}</div>}
+            valuesEqual={valuesEqual}
+            alignTop={alignTop}
+            isDeleted={isDeleted}
+            disableRevision={disableRevision}
+            equalSplit={equalSplit}
+            isField={true}
+            />
     </div>
 }
 

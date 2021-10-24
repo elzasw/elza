@@ -1,0 +1,31 @@
+.revision-display {
+    display: flex;
+
+    &.align-center {
+        align-items: center;
+    }
+
+    .arrow {
+        margin: 0 10px;
+    }
+
+    &.equal-split {
+        .value-previous {
+            width: 50%;
+        }
+        .value-current {
+            width: 50%;
+        }
+    }
+
+    .value-current {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &.field {
+        .value-current {
+            flex: 1;
+        }
+    }
+}

@@ -30,6 +30,7 @@ export const FormText:FC<{
                 label={label} 
                 prevValue="Lorem ipsum dolor sit amet, consectetuer adipiscing elit." 
                 value={props.input.value}
+                equalSplit={true}
             >
                 <ReduxFormFieldErrorDecorator
                     {...props as any}

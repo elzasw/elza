@@ -6,6 +6,7 @@ import { Bindings } from '../../../../types';
 import { AppState } from '../../../../typings/store';
 import './DetailItem.scss';
 import DetailItemContent from './DetailItemContent';
+import { RevisionDisplay } from '../part/RevisionDisplay';
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     bindings?: Bindings;
@@ -17,6 +18,10 @@ const DetailMultipleItem: FC<Props> = ({items, globalEntity, descItemTypesMap, b
     const typeId = items.length > 0 ? items[0].typeId : undefined;
     const itemType = typeId !== undefined ? descItemTypesMap[typeId] : undefined;
     const itemTypeName = itemType ? itemType.name : `UNKNOWN_AE_TYPE: ${typeId}`;
+    // console.log(itemType?.name, typeId);
+    const areValuesEqual = (value: ApItemVO, prevValue: ApItemVO) => {
+        return value.specId === prevValue.specId
+    }
 
     return (
         <div className="detail-item">
@@ -24,14 +29,31 @@ const DetailMultipleItem: FC<Props> = ({items, globalEntity, descItemTypesMap, b
                 {itemTypeName}
             </div>
             <div className="detail-cell content">
-                {items.map((item, index) => (
-                        <DetailItemContent 
-                            item={item} 
-                            key={index}
-                            bindings={bindings} 
-                            globalEntity={globalEntity} 
-                            />
-                ))}
+                <div style={{display: "flex"}}>
+                    <div style={{}}>
+                        {items.map((item, index) => {
+                            return <RevisionDisplay 
+                                valuesEqual={areValuesEqual(item, {...item, specId: undefined})}
+                                renderPrevValue={() => {
+                                    return <DetailItemContent 
+                                        item={item} 
+                                        key={index}
+                                        globalEntity={globalEntity} 
+                                        />
+                                }}
+                                renderValue={() => {
+                                    return <DetailItemContent 
+                                        item={item} 
+                                        key={index}
+                                        bindings={bindings} 
+                                        globalEntity={globalEntity} 
+                                        />
+                                }} 
+                            >
+                            </RevisionDisplay>
+                        })}
+                    </div>
+                </div>
             </div>
         </div>
     );
