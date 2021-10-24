@@ -3,7 +3,7 @@ import { Field, useForm } from 'react-final-form';
 import FormInput from '../../../../shared/form/FormInput';
 import ReduxFormFieldErrorDecorator from '../../../../shared/form/ReduxFormFieldErrorDecorator';
 import { handleValueUpdate } from '../valueChangeMutators';
-import { RevisionFieldExample } from './RevisionFieldExample';
+import { RevisionFieldExample } from '../../../revision';
 
 export const FormCheckbox:FC<{
     name: string;

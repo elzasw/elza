@@ -17,9 +17,7 @@ import storeFromArea from 'shared/utils/storeFromArea';
 import { DetailStoreState } from 'types';
 import { AppState } from 'typings/store';
 import { AP_VIEW_SETTINGS } from '../../../../constants';
-import { getUpdatedForm } from '../../form/part-edit-form/actions';
-import { PartEditForm } from "../../form/part-edit-form/PartEditForm";
-import { getValueChangeMutators } from '../../form/part-edit-form/valueChangeMutators';
+import { getUpdatedForm, getValueChangeMutators, PartEditForm } from '../form';
 
 type Props = {
     partTypeId: number;

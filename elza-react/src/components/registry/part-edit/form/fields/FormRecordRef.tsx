@@ -16,7 +16,7 @@ import { objectById } from '../../../../../shared/utils';
 import { Icon } from '../../../../index';
 import RelationPartItemEditModalForm from '../../../modal/RelationPartItemEditModalForm';
 import { handleValueUpdate } from '../valueChangeMutators';
-import { RevisionFieldExample } from './RevisionFieldExample';
+import { RevisionFieldExample } from '../../../revision';
 
 type ThunkAction<R> = (dispatch: ThunkDispatch<AppState, void, AnyAction>, getState: () => AppState) => Promise<R>;
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()

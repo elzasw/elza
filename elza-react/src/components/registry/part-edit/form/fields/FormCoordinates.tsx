@@ -14,7 +14,7 @@ import { ThunkDispatch } from 'redux-thunk';
 import { AppState } from 'typings/store';
 import ImportCoordinateModal from '../../../Detail/coordinate/ImportCoordinateModal';
 import { handleValueUpdate } from '../valueChangeMutators';
-import { RevisionFieldExample } from './RevisionFieldExample';
+import { RevisionFieldExample } from '../../../revision';
 
 type ThunkAction<R> = (dispatch: ThunkDispatch<AppState, void, AnyAction>, getState: () => AppState) => Promise<R>;
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()

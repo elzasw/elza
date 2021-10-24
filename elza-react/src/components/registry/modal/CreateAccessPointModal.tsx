@@ -17,10 +17,10 @@ import { DetailStoreState } from 'types';
 import { AppState, ScopeData, UserDetail } from "typings/store";
 import { hasItemValue } from 'utils/ItemInfo';
 import { AP_VIEW_SETTINGS } from '../../../constants';
-import { getUpdatedForm } from '../form/part-edit-form/actions';
-import { PartEditForm } from '../form/part-edit-form/PartEditForm';
-import { FormAutocomplete, FormScope } from './../form/part-edit-form/fields';
-import { getValueChangeMutators } from '../form/part-edit-form/valueChangeMutators';
+import { getUpdatedForm } from '../part-edit/form/actions';
+import { PartEditForm } from '../part-edit/form/PartEditForm';
+import { FormAutocomplete, FormScope } from '../part-edit/form/fields';
+import { getValueChangeMutators } from '../part-edit/form/valueChangeMutators';
 
 export interface CreateAccessPointModalFields {
     apType?: any;

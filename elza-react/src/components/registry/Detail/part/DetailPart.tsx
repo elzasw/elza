@@ -10,7 +10,7 @@ import { SyncIcon } from "../sync-icon";
 import './DetailPart.scss';
 import { DetailPartInfo } from './DetailPartInfo';
 import { PartName } from "./PartName";
-import { RevisionDisplay } from './RevisionDisplay';
+import { RevisionDisplay } from '../../revision';
 
 type Props = {
     label: string;
