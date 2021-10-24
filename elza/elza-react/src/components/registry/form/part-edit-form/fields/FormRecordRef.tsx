@@ -87,7 +87,6 @@ export const FormRecordRef:FC<{
 }
 
 const getDisplayValue = (apItem: ApItemAccessPointRefVO, itemType: RulDescItemTypeExtVO) => {
-    debugger
     const apItemName = apItem.accessPoint?.name || apItem.externalName;
 
     if (itemType.useSpecification && apItem.specId) {
