@@ -16,7 +16,7 @@ export const RevisionFieldExample:FC<{
     isDeleted, 
     label,
     children, 
-    disableRevision,
+    disableRevision = true,
     alignTop,
     equalSplit,
 }) => {

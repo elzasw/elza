@@ -18,7 +18,7 @@ export const RevisionDisplay: FC<Props> = ({
     renderValue,
     isDeleted, 
     // children, 
-    disableRevision,
+    disableRevision = true,
     alignTop,
     valuesEqual,
     equalSplit,
