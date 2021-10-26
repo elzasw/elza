@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import ValidationResultIcon from 'components/ValidationResultIcon';
 import React, { FC, useEffect, useState } from 'react';
-import { ApPartVO } from '../../../../api/ApPartVO';
+// import { ApPartVO } from '../../../../api/ApPartVO';
 import { ItemType } from '../../../../api/ApViewSettings';
 import { PartValidationErrorsVO } from '../../../../api/PartValidationErrorsVO';
 import { SyncState } from '../../../../api/SyncState';
@@ -10,23 +10,21 @@ import { SyncIcon } from "../sync-icon";
 import './DetailPart.scss';
 import { DetailPartInfo } from './DetailPartInfo';
 import { PartName } from "./PartName";
-import { RevisionDisplay } from '../../revision';
+import { RevisionDisplay, RevisionPart, getRevisionItems } from '../../revision';
 
 type Props = {
-    label: string;
-    part: ApPartVO;
+    part: RevisionPart;
     globalCollapsed: boolean;
     preferred?: boolean;
     globalEntity: boolean;
     partValidationError?: PartValidationErrorsVO;
     bindings: Bindings;
     itemTypeSettings: ItemType[];
-    renderActions?: (part: ApPartVO) => React.ReactNode;
+    renderActions?: (part?: RevisionPart) => React.ReactNode;
 };
 
 const DetailPart: FC<Props> = ({
-    label,
-    part,
+    part: {part, updatedPart},
     globalCollapsed = true,
     preferred,
     globalEntity,
@@ -56,11 +54,12 @@ const DetailPart: FC<Props> = ({
         }
     };
 
-    const partBinding = bindings.partsMap[part.id];
+    const partBinding = part ? bindings.partsMap[part.id] : false;
     const hasBinding = partBinding != null;
     const isModified = hasBinding && !partBinding;
-
     const isCollapsed = collapsed && !isModified;
+    const isDeleted = updatedPart ? updatedPart.value == null : false;
+    const isNew = !part?.value && updatedPart?.value != undefined;
 
     const classNameContent = classNames({
         'detail-part-preferred': preferred,
@@ -68,17 +67,20 @@ const DetailPart: FC<Props> = ({
     });
 
     const areValuesEqual = (value: string, prevValue: string) => value === prevValue
-    console.log(label)
+
+    const items = getRevisionItems(part?.items || [], updatedPart?.items || []);
 
     return (
         <div className="detail-part">
             <div className={classNameHeader}>
                 <div style={{display: "flex", alignItems: "center"}}>
                     <RevisionDisplay 
-                        valuesEqual={areValuesEqual(label, label)}
+                        isDeleted={isDeleted}
+                        isNew={isNew}
+                        valuesEqual={areValuesEqual(part?.value || "", updatedPart ? updatedPart.value : part?.value || "")}
                         renderPrevValue={() => {
                             return <PartName 
-                                label={label} 
+                                label={part?.value || "no value"} 
                                 collapsed={isCollapsed} 
                                 preferred={preferred}
                                 onClick={() => setCollapsed(!collapsed)}
@@ -86,7 +88,7 @@ const DetailPart: FC<Props> = ({
                         }} 
                         renderValue={() => {
                             return <PartName 
-                                label={label} 
+                                label={ updatedPart ? updatedPart.value : part?.value || "no new value"} 
                                 collapsed={isCollapsed} 
                                 preferred={preferred}
                                 onClick={() => setCollapsed(!collapsed)}
@@ -108,7 +110,7 @@ const DetailPart: FC<Props> = ({
                         {showValidationError()}
                     </div>
                     <div className="actions hidable">
-                        {renderActions(part)}
+                        {renderActions({part, updatedPart})}
                     </div>
                 </div>
             </div>
@@ -116,7 +118,7 @@ const DetailPart: FC<Props> = ({
             {!isCollapsed && (
                 <div className={classNameContent}>
                     <DetailPartInfo
-                        items={part.items || []}
+                        items={items}
                         globalEntity={globalEntity}
                         bindings={bindings}
                         itemTypeSettings={itemTypeSettings}

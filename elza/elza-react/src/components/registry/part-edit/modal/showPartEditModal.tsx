@@ -16,16 +16,15 @@ import { RefTablesState } from '../../../../typings/store';
 import { PartType } from '../../../../api/generated/model';
 
 export const showPartEditModal = (
-    part: ApPartVO,
+    part: ApPartVO | undefined,
+    updatedPart: ApPartVO | undefined,
     partType: PartType,
     apId: number,
     apTypeId: number,
     ruleSetId: number,
     scopeId: number,
     refTables: RefTablesState,
-    // descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
     apViewSettings: DetailStoreState<ApViewSettings>,
-    parentPartId?: number,
     onUpdateFinish: () => void = () => {},
 ) => (dispatch:any) => dispatch(
     modalDialogShow(
@@ -33,9 +32,11 @@ export const showPartEditModal = (
         PartTypeInfo.getPartEditDialogLabel(partType, false),
         ({ onClose }) => {
             const partTypeId = objectById(refTables.partTypes.items, partType, 'code').id;
+            const mainPart = updatedPart ? updatedPart : part as ApPartVO;
+            const parentPartId = mainPart.partParentId;
 
             const handleSubmit = async (data: ApPartFormVO) => {
-                if (!part.id) { return; }
+                if (mainPart?.id == undefined) { return; }
                 const submitData = {
                     items: data.items.filter(i => {
                         if (i['@class'] === '.ApItemEnumVO') {
@@ -44,21 +45,19 @@ export const showPartEditModal = (
                             return (i as ApItemBitVO).value !== undefined;
                         }
                     }),
-                    parentPartId: parentPartId,
-                    partId: part.id,
+                    parentPartId,
+                    partId: mainPart.id,
                     partTypeCode: partType,
                 } as ApPartFormVO;
 
-                console.log('SUBMIT EDIT', apId, part.id, submitData);
+                console.log('SUBMIT EDIT', apId, mainPart.id, submitData);
 
-                const result = await WebApi.updatePart(apId, part.id, submitData)
+                const result = await WebApi.updatePart(apId, mainPart.id, submitData)
                 onClose();
                 await dispatch(registryDetailFetchIfNeeded(apId, true))
                 onUpdateFinish();
                 return result
             }
-
-            // console.log("partType", partType);
 
             /*
             const initialValues = {
@@ -74,12 +73,12 @@ export const showPartEditModal = (
             */
 
             const formData = {
-                partId: part.id,
-                parentPartId: part.partParentId,
-                partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
-                items: part.items ? sortItems(
+                partId: mainPart?.id,
+                parentPartId,
+                partTypeCode: refTables.partTypes.itemsMap[mainPart.typeId].code,
+                items: mainPart.items ? sortItems(
                     partType as any,
-                    part.items,
+                    mainPart.items,
                     refTables,
                     apViewSettings.data!.rules[ruleSetId],
                 ) : [],
@@ -91,9 +90,9 @@ export const showPartEditModal = (
                 apTypeId={apTypeId}
                 scopeId={scopeId}
                 initialValues={formData}
-                parentPartId={part.partParentId}
+                parentPartId={mainPart.partParentId}
                 apId={apId}
-                partId={part.id}
+                partId={mainPart.id}
                 onClose={() => onClose()}
                 />
         },
