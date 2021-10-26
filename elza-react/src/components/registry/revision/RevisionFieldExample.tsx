@@ -22,6 +22,8 @@ export const RevisionFieldExample:FC<{
 }) => {
     const valuesEqual = value === prevValue;
     // console.log(valuesEqual, prevValue, value)
+    const renderPrevValue = () => prevValue;
+    const renderValue = () => <div style={{flex: 1}}>{children}</div>;
     return <div>
         <label>
             {label}
@@ -30,8 +32,8 @@ export const RevisionFieldExample:FC<{
             </span>}
         </label>
         <RevisionDisplay
-            renderPrevValue={()=> prevValue }
-            renderValue={()=> <div style={{flex: 1}}>{children}</div>}
+            renderPrevValue={valuesEqual || disableRevision ? renderValue : renderPrevValue}
+            renderValue={renderValue}
             valuesEqual={valuesEqual}
             alignTop={alignTop}
             isDeleted={isDeleted}

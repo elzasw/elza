@@ -6,6 +6,7 @@ type Props = {
     renderPrevValue: () => React.ReactNode;
     renderValue: () => React.ReactNode;
     isDeleted?: boolean;
+    isNew?: boolean;
     disableRevision?: boolean;
     alignTop?: boolean;
     valuesEqual?: boolean;
@@ -17,8 +18,9 @@ export const RevisionDisplay: FC<Props> = ({
     renderPrevValue, 
     renderValue,
     isDeleted, 
+    isNew,
     // children, 
-    disableRevision = true,
+    disableRevision = false,
     alignTop,
     valuesEqual,
     equalSplit,
@@ -33,21 +35,23 @@ export const RevisionDisplay: FC<Props> = ({
     })
     return (
         <div className={className}>
-            {!valuesEqual && !isDeleted && !disableRevision &&
+            {
+                <div className="value-previous">
+                    {!isNew ? renderPrevValue() : <i>Nevyplněno</i>}
+                </div>
+            }
+            {!isDeleted && !disableRevision && !valuesEqual &&
                 <>
-                    <div className="value-previous">
-                        {renderPrevValue() || <i>Nevyplněno</i>}
-                    </div>
                     <div className="arrow">
                     🡒
                     </div>
+                    <div className="value-current">
+                        <div style={{flex: 1}}>
+                            {renderValue()}
+                        </div>
+                    </div>
                 </>
             }
-            <div className="value-current">
-                <div style={{flex: 1}}>
-                {renderValue()}
-                </div>
-            </div>
             {isDeleted && !disableRevision &&
                 <>
                     <div className="arrow">
