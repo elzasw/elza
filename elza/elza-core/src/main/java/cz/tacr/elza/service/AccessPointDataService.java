@@ -18,15 +18,11 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.security.UserDetail;
-
 
 /**
  * Datová třída pro přístupové body.
@@ -135,7 +131,7 @@ public class AccessPointDataService {
      */
     public void validationNotDeleted(final ApState state) {
         if (state.getDeleteChange() != null) {
-            throw new BusinessException("Nelze upravit přístupový bod", RegistryCode.CANT_CHANGE_DELETED_AP)
+            throw new BusinessException("Zneplatněnou archivní entitu nelze měnit", RegistryCode.CANT_CHANGE_DELETED_AP)
                     .set("accessPointId", state.getAccessPointId())
                     .set("uuid", state.getAccessPoint().getUuid());
         }

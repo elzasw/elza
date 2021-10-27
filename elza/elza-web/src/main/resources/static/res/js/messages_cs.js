@@ -182,6 +182,7 @@ var messages = {
     "exception.reg.CANT_CHANGE_DELETED_AP": "Zneplatněnou archivní entitu nelze měnit",
     "exception.reg.CANT_CHANGE_DELETED_NAME": "Zneplatněné jméno nelze měnit",
     "exception.reg.CANT_DELETE_PREFERRED_NAME": "Preferované jméno archivní entity nelze smazat",
+    "exception.reg.CANT_MERGE": "Cílová entita je schválená nebo čeká na schválení a nelze ji měnit",
     "exception.reg.EXIST_FOREIGN_DATA": "Nalezeno použití hesla v návazné tabulce",
     "exception.reg.EXIST_FOREIGN_PARTY": "Existuje vazba z osoby",
     "exception.reg.FOREIGN_ENTITY_INVALID_SCOPE":
