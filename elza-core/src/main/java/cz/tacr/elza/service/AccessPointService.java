@@ -91,7 +91,6 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApScopeRelation;
@@ -416,6 +415,10 @@ public class AccessPointService {
         if (replacedBy != null) {
             ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
             apDataService.validationNotDeleted(replacementState);
+            // při sloučení náhradní entita nemůže být ve stavu TO_APPROVE, APPROVED, REV_PREPARED
+            if (copyAll) {
+                validationMergePossibility(replacementState);
+            }
             replace(apState, replacementState);
             apState.setReplacedBy(replacedBy);
 
@@ -428,6 +431,21 @@ public class AccessPointService {
             }
         }
         deleteAccessPointPublichAndReindex(apState, accessPoint, change);
+    }
+
+    /**
+     * Validace možnosti sloučení podle stavu
+     * 
+     * @param state stav přístupového bodu
+     */
+    private void validationMergePossibility(final ApState state) {
+        if (state.getStateApproval() == StateApproval.TO_APPROVE
+                || state.getStateApproval() == StateApproval.APPROVED
+                || state.getStateApproval() == StateApproval.REV_PREPARED) {
+            throw new BusinessException("Cílová entita je schválená nebo čeká na schválení a nelze ji měnit", RegistryCode.CANT_MERGE)
+                .set("accessPointId", state.getAccessPointId())
+                .set("stateApproval", state.getStateApproval());
+        }
     }
 
     /**
