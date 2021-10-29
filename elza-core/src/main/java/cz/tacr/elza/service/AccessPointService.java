@@ -1780,6 +1780,14 @@ public class AccessPointService {
             result.removeAll(Arrays.asList(StateApproval.TO_APPROVE, StateApproval.REV_PREPARED, StateApproval.APPROVED));
         }
 
+        // zachování aktuálního stavu pro zvláštní případy
+        if (apState.getStateApproval().equals(StateApproval.NEW)
+                || apState.getStateApproval().equals(StateApproval.TO_AMEND)
+                || apState.getStateApproval().equals(StateApproval.REV_NEW)
+                || apState.getStateApproval().equals(StateApproval.REV_AMEND)) { 
+            result.add(apState.getStateApproval());
+        }
+
         return new ArrayList<>(result);
     }
 
