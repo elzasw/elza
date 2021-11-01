@@ -2450,6 +2450,9 @@ public class AccessPointService {
         Map<Integer, List<ApItem>> itemMapFrom = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
+        Map<Integer, List<ApItem>> itemMapTo = itemRepository.findValidItemsByAccessPoint(replacedBy).stream()
+                .collect(Collectors.groupingBy(ApItem::getPartId));
+
         List<ApPart> partsTo = partService.findPartsByAccessPoint(replacedBy);
         // Map source part Id to target part
         Map<Integer, ApPart> mapParent = new HashMap<>();
@@ -2465,7 +2468,7 @@ public class AccessPointService {
                 	targetPart = copyPart(part, replacedBy, null, change);
                 }
                 mapParent.put(part.getPartId(), targetPart);
-                copyItems(itemMapFrom.get(part.getPartId()), targetPart, change);                
+                copyItems(itemMapFrom.get(part.getPartId()), targetPart, itemMapTo.get(targetPart.getPartId()), change);                
             }
         }
 
@@ -2476,7 +2479,7 @@ public class AccessPointService {
                 Validate.notNull(parentTo, "Rodičovský Part musí existovat");
                 
                 ApPart targetPart = copyPart(part, replacedBy, parentTo, change);
-                copyItems(itemMapFrom.get(part.getPartId()), targetPart, change);
+                copyItems(itemMapFrom.get(part.getPartId()), targetPart, itemMapTo.get(targetPart.getPartId()), change);
             }
         }
     }
@@ -2505,13 +2508,13 @@ public class AccessPointService {
     }
 
     /**
-     * Vytvoření kopie všech Item která patří k danému ApPart
+     * Vytvoření kopie neexistujících ApItem. Kopírují se jen položky, které nemají duplicitní hodnoty
      * 
      * @param itemsFrom prvky původní part
      * @param toPart
      * @param change
      */
-    private void copyItems(List<ApItem> itemsFrom, ApPart partTo, ApChange change) {
+    private void copyItems(List<ApItem> itemsFrom, ApPart partTo, List<ApItem> itemsTo, ApChange change) {
         int position = 0;
         for (ApItem item : itemsFrom) {
             if (item.getPosition() > position) {
@@ -2520,17 +2523,39 @@ public class AccessPointService {
         }
 
         for (ApItem item : itemsFrom) {
-            ArrData newData = ArrData.makeCopyWithoutId(item.getData());
-            
-            ApItem newItem = apItemService.createItem(partTo, newData, 
-            		item.getItemType(), 
-            		item.getItemSpec(), 
-            		change, 
-            		apItemService.nextItemObjectId(), 
-            		++position);            
+            if (!existsItemInPart(item, itemsTo)) {
+                ArrData newData = ArrData.makeCopyWithoutId(item.getData());
 
-            dataRepository.save(newData);
-            itemRepository.save(newItem);
+                ApItem newItem = apItemService.createItem(partTo, newData, 
+                		item.getItemType(), 
+                		item.getItemSpec(), 
+                		change, 
+                		apItemService.nextItemObjectId(),
+                		++position);
+
+                dataRepository.save(newData);
+                itemRepository.save(newItem);
+            }
         }
+    }
+
+    /**
+     * Existuje ApItem v ApPart se stejným typem a se stejnou hodnotou?
+     * 
+     * @param item
+     * @param itemsTo
+     * @return
+     */
+    private boolean existsItemInPart(ApItem apItem, List<ApItem> itemsTo) {
+        if (!CollectionUtils.isEmpty(itemsTo)) {
+            for (ApItem item : itemsTo) {
+                if (Objects.equals(apItem.getItemTypeId(), item.getItemTypeId())
+                        && Objects.equals(apItem.getItemSpecId(), item.getItemSpecId())
+                        && apItem.getData().isEqualValue(item.getData())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
