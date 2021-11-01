@@ -443,15 +443,16 @@ public class DaoService {
     /**
      * Získání url na dao.
      * @param dao dao
-     * @param repository repository, je předáváno z důvodu výkonu při možných hromadných operacích, jinak se jedná o repository, které je v dohledatelné od DAO
+     * @param viewDaoUrl 
      * @return url
      */
-    public String getDaoUrl(final ArrDao dao, final ArrDigitalRepository repository) {
+    public String getDaoUrl(final ArrDao dao, final String viewDaoUrl) {
         ElzaTools.UrlParams params = ElzaTools.createUrlParams()
                 .add("code", dao.getCode())
                 .add("label", dao.getLabel())
                 .add("id", dao.getDaoId());
-        return ElzaTools.bindingUrlParams(repository.getViewDaoUrl(), params);
+                //.add("nodeUuid", dao.)
+        return ElzaTools.bindingUrlParams(viewDaoUrl, params);
     }
 
     /**
