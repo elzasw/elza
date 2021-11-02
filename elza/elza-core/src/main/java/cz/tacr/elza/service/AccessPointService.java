@@ -1092,7 +1092,7 @@ public class AccessPointService {
      * @param partList
      * @param itemMap
      * @param async
-     * @return
+     * @return true nebo false
      */
     public boolean updatePartValues(final ApState state,
                                     final Integer prefPartId,
