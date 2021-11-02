@@ -2544,7 +2544,7 @@ public class AccessPointService {
      * 
      * @param item
      * @param itemsTo
-     * @return
+     * @return true pokud takový ApItem již existuje
      */
     private boolean existsItemInPart(ApItem apItem, List<ApItem> itemsTo) {
         if (!CollectionUtils.isEmpty(itemsTo)) {
