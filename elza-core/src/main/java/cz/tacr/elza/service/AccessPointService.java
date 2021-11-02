@@ -2347,7 +2347,7 @@ public class AccessPointService {
      * @param entity
      * @param itemSpec
      * @param value
-     * @return
+     * @return List<ApAccessPoint>
      */
     public List<ApAccessPoint> findAccessPointsBySinglePartValues(List<Object> criterias) {
 
@@ -2358,7 +2358,7 @@ public class AccessPointService {
      * Get access point state by string
      * 
      * @param accessPointId
-     * @return
+     * @return ApState
      */
     public ApState getApState(String accessPointId) {
 
@@ -2403,13 +2403,13 @@ public class AccessPointService {
      * Metoda ověřuje uživatelská oprávnění
      * 
      * @param accessPointId
-     * @return
+     * @return ApState
      */
     public ApState getApState(Integer accessPointId) {
         ApAccessPoint ap = getAccessPointInternal(accessPointId);
         return getApState(ap);
     }
-    
+
     /**
      * Kontrola datové struktury.
      * 
