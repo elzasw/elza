@@ -122,7 +122,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleShortcuts = action => {
-        console.log('#handleShortcuts', '[' + action + ']', this);
+        // console.log('#handleShortcuts', '[' + action + ']', this);
         switch (action) {
             case 'addRegistry':
                 this.handleAddRegistry();
