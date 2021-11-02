@@ -368,7 +368,6 @@ class RegistryPage extends AbstractReactComponent {
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());
                     this.props.dispatch(registryDetailFetchIfNeeded(id, true));
-                    this.props.dispatch(registryListInvalidate());
                 }}
                 accessPointId={id}
             />
