@@ -980,8 +980,7 @@ public class AccessPointService {
                 dataRecordRefRepository.save(dataRecordRef);
             }
         }
-    }
-    */
+    }*/
 
     public ApPart findParentPart(final ApBinding binding, final String parentUuid) {
         ApBindingItem apBindingItem = externalSystemService.findByBindingAndUuid(binding, parentUuid);
