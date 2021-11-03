@@ -428,7 +428,7 @@ class RegistryPage extends AbstractReactComponent {
                 );
             }
         }
-        if (userDetail.hasOne(perms.FUND_ADMIN, perms.AP_SCOPE_WR_ALL)) {
+        if (userDetail.hasOne(perms.ADMIN)) {
             altActions.push(
                 <Button key="scopeManagement" onClick={this.handleScopeManagement}>
                     <Icon glyph="fa-wrench" />
