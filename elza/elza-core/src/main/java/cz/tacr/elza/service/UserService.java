@@ -89,7 +89,6 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
-import ma.glasnost.orika.impl.mapping.strategy.InstantiateByDefaultAndUseCustomMapperStrategy;
 
 /**
  * Service to check and manage user permissions
@@ -846,22 +845,28 @@ public class UserService {
         return group;
     }
 
-
     /**
      * Změna uživatele.
      *
-     * @param user      upravovaný uživatel
-     * @param username  uživatelské jméno
-     * @param valuesMap data autentizací
+     * @param user          upravovaný uživatel
+     * @param accessPointId id přístupového bodu
+     * @param username      uživatelské jméno
+     * @param valuesMap     data autentizací
      * @return upravený uživatel
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
     public UsrUser changeUser(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
-                              @NotEmpty final String username,
+                              @Nullable final Integer accessPointId,  
+                              @NotNull @NotEmpty final String username,
                               @NotNull final Map<UsrAuthentication.AuthType, String> valuesMap) {
         Validate.notNull(valuesMap);
         Validate.notNull(username);
         Validate.notNull(user);
+
+        if (accessPointId != null && !accessPointId.equals(user.getAccessPoint().getAccessPointId())) {
+            ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
+            user.setAccessPoint(accessPoint);
+        }
 
         Map<UsrAuthentication.AuthType, UsrAuthentication> authTypeMap = findAuthentications(user).stream()
                 .collect(Collectors.toMap(UsrAuthentication::getAuthType, Function.identity()));
@@ -920,7 +925,7 @@ public class UserService {
      *
      * @param username uživatelské jméno
      * @param valuesMap mapa typů autentizace + hodnota
-     * @param accessPointId  identifikátor osoby
+     * @param accessPointId  id přístupového bodu
      * @return vytvořený uživatel
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM})
