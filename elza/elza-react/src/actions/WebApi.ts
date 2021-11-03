@@ -1712,8 +1712,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl, null, params);
     }
 
-    updateUser(id, username, valuesMap) {
-        return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + id, null, {username, valuesMap});
+    updateUser(id, accessPointId, username, valuesMap) {
+        return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + id, null, {accessPointId, username, valuesMap});
     }
 
     changePasswordUser(oldPassword, newPassword) {
