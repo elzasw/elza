@@ -104,7 +104,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     private ApBindingItemRepository bindingItemRepository;
 
     /**
-     * Maximální počet AP, které se mají dávkově zpracovávat pro
+     * MaximĂˇlnĂ­ poÄŤet AP, kterĂ© se majĂ­ dĂˇvkovÄ› zpracovĂˇvat pro
      * synchronizaci.
      */
     @Value("${elza.ap.cache.batchsize:800}")
@@ -262,6 +262,12 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Transactional
     public void createApCachedAccessPoint(Integer accessPointId) {
+    	
+        //flush a batch of updates and release memory:
+        // prevent deadlock
+        this.entityManager.flush();
+        this.entityManager.clear();
+    	
         writeLock.lock();
         try {
             ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);

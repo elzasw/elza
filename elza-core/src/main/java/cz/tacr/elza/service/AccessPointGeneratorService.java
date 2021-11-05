@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
-import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 
@@ -27,19 +25,16 @@ public class AccessPointGeneratorService {
 
     private final AccessPointService accessPointService;
     private final PartService partService;
-    private final RuleService ruleService;
     private final ApItemRepository itemRepository;
     private final AccessPointCacheService accessPointCacheService;
 
     @Autowired
     public AccessPointGeneratorService(final AccessPointService accessPointService,
                                        final PartService partService,
-                                       final RuleService ruleService,
                                        final AccessPointCacheService accessPointCacheService,
                                        final ApItemRepository itemRepository) {
         this.accessPointService = accessPointService;
         this.partService = partService;
-        this.ruleService = ruleService;
         this.accessPointCacheService = accessPointCacheService;
         this.itemRepository = itemRepository;
     }
@@ -66,7 +61,7 @@ public class AccessPointGeneratorService {
 
         accessPointService.generateSync(accessPoint, cap.getApState(),
                                         partList, itemMap, true);
-
+                
         accessPointCacheService.createApCachedAccessPoint(cap.getAccessPointId());
     }
 }
