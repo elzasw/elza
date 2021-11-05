@@ -1572,7 +1572,7 @@ where no.level_id = l.level_id
         <sql dbms="postgresql">CREATE UNIQUE INDEX ap_binding_state_access_point_idx 
             ON ap_binding_state(access_point_id,external_system_id)
 			WHERE delete_change_id IS NULL;</sql>
-		<dropIndex tableName="ap_binding_state" indexName="ap_binding_state_access_point_pidx"/>
+        <sql dbms="postgresql">DROP INDEX ap_binding_state_access_point_pidx</sql>
     </changeSet>
 
 </databaseChangeLog>
