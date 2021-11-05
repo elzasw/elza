@@ -1868,7 +1868,7 @@ public class ClientFactoryVO {
         ArrDaoVO vo = ArrDaoVO.newInstance(arrDao, scenarios);
 
         ArrDigitalRepository digitalRepository = arrDao.getDaoPackage().getDigitalRepository();
-        String url = daoService.getDaoUrl(arrDao, digitalRepository);
+        String url = daoService.getDaoUrl(arrDao, digitalRepository.getViewDaoUrl());
         vo.setUrl(url);
 
         final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);

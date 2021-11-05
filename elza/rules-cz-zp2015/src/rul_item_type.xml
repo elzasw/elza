@@ -970,7 +970,6 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <item-aptypes>
-            <item-aptype register-type="TERM_ABSTRACT"/>
             <item-aptype register-type="TERM_GENERAL"/>
         </item-aptypes>
     </item-type>

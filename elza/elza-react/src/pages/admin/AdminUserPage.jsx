@@ -119,7 +119,7 @@ class AdminUserPage extends AbstractReactComponent {
                 userDetail: {id},
             },
         } = this.props;
-        return this.props.dispatch(userUpdate(id, data.username, data.valuesMap));
+        return this.props.dispatch(userUpdate(id, data.accessPointId, data.username, data.valuesMap));
     }
 
     handleChangeUsernameForm() {

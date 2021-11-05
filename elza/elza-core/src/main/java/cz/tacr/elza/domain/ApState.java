@@ -226,7 +226,7 @@ public class ApState extends AbstractVersionableEntity implements IApScope, Vers
         TO_AMEND,
 
         /**
-         * Revize v přípravě. 
+         * Příprava revize. 
          */
         REV_NEW,
 

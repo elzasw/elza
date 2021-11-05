@@ -902,7 +902,7 @@ class ArrPage extends ArrParentPage {
                 ref: 'fundFiles',
                 render: () => this.renderFundFiles(activeFund, readMode),
                 focus: () => this.wrappedFocus('fundFiles'),
-                condition: userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId: activeFund.id}),
+                condition: userDetail.hasOne(perms.FUND_RD_ALL, {type: perms.FUND_RD, fundId: activeFund.id}),
             },
             discrepancies: {
                 id: 'discrepancies',

@@ -138,7 +138,7 @@ public class UserController {
             throw new ObjectNotFoundException("Uživatel neexistuje", UserCode.USER_NOT_FOUND).set("id", userId);
         }
 
-        user = userService.changeUser(user, params.getUsername(), params.getValuesMap());
+        user = userService.changeUser(user, params.getAccessPointId(), params.getUsername(), params.getValuesMap());
         return factoryVO.createUser(user, true, true);
     }
 
