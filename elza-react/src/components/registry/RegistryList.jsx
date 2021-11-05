@@ -115,6 +115,7 @@ class RegistryList extends AbstractReactComponent {
                 searchFilter: searchFilter,
             }),
         );
+        dispatch(registryListInvalidate());
     };
 
     handleFilterRegistryType = item => {
@@ -183,6 +184,7 @@ class RegistryList extends AbstractReactComponent {
                 searchFilter: searchFilter,
             }),
         );
+        dispatch(registryListInvalidate());
     };
 
     handleRegistryDetail = item => {

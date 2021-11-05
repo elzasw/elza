@@ -1,7 +1,5 @@
 package cz.tacr.elza.service.cache;
 
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -65,7 +63,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -130,14 +127,14 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     }
 
     /**
-     * Synchronizace zĂˇznamĹŻ v databĂˇzi.
+     * Synchronizace záznamů v databázi.
      *
-     * SynchronnĂ­ metoda volanĂˇ z transakce.
+     * Synchronní metoda volaná z transakce.
      */
     public void syncCache() {
         writeLock.lock();
         try {
-            logger.info("SpuĹˇtÄ›nĂ­ synchronizace cache pro AP");
+            logger.info("Spuštění - synchronizace cache pro AP");
             int off = 0;
             Integer numProcessed;
             do {
@@ -147,15 +144,15 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                 off += numProcessed;
             } while (numProcessed > 0);
 
-            logger.info("VĹˇechny AP jsou synchronizovĂˇny");
-            logger.info("UkonÄŤenĂ­ synchronizace cache pro AP");
+            logger.info("Všechny AP jsou synchronizovány");
+            logger.info("Ukončení synchronizace cache pro AP");
         } finally {
             writeLock.unlock();
         }
     }
 
     /**
-     * Synchronizace zĂˇznamĹŻ v databĂˇzi.
+     * Synchronizace záznamů v databázi.
      * 
      * @param offset
      * @return Number of processed items
@@ -265,6 +262,12 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Transactional
     public void createApCachedAccessPoint(Integer accessPointId) {
+    	
+        //flush a batch of updates and release memory:
+        // prevent deadlock
+        this.entityManager.flush();
+        this.entityManager.clear();
+    	
         writeLock.lock();
         try {
             ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);

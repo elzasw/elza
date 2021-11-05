@@ -122,7 +122,7 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleShortcuts = action => {
-        console.log('#handleShortcuts', '[' + action + ']', this);
+        // console.log('#handleShortcuts', '[' + action + ']', this);
         switch (action) {
             case 'addRegistry':
                 this.handleAddRegistry();
@@ -368,7 +368,6 @@ class RegistryPage extends AbstractReactComponent {
                 onSubmitSuccess={() => {
                     this.props.dispatch(modalDialogHide());
                     this.props.dispatch(registryDetailFetchIfNeeded(id, true));
-                    this.props.dispatch(registryListInvalidate());
                 }}
                 accessPointId={id}
             />
@@ -429,7 +428,7 @@ class RegistryPage extends AbstractReactComponent {
                 );
             }
         }
-        if (userDetail.hasOne(perms.FUND_ADMIN, perms.AP_SCOPE_WR_ALL)) {
+        if (userDetail.hasOne(perms.ADMIN)) {
             altActions.push(
                 <Button key="scopeManagement" onClick={this.handleScopeManagement}>
                     <Icon glyph="fa-wrench" />
