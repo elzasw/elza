@@ -407,7 +407,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Transactional
     public CachedAccessPoint findCachedAccessPoint(Integer accessPointId) {
-        readLock.lock();
+        // readLock.lock();
         try {
             ApCachedAccessPoint apCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
             CachedAccessPoint cachedAccessPoint = null;
@@ -416,7 +416,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             }
             return cachedAccessPoint;
         } finally {
-            readLock.unlock();
+            // readLock.unlock();
         }
     }
 
