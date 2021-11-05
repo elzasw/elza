@@ -349,6 +349,7 @@ public class ExternalSystemService {
         ApBindingState apBindingState = new ApBindingState();
         apBindingState.setBinding(binding);
         apBindingState.setAccessPoint(accessPoint);
+        apBindingState.setApExternalSystem(binding.getApExternalSystem());
         apBindingState.setExtState(state);
         apBindingState.setExtRevision(revisionUuid);
         apBindingState.setExtUser(user);
@@ -374,13 +375,14 @@ public class ExternalSystemService {
                 Objects.equals(syncState, oldbindingState.getSyncOk())) {
             return oldbindingState;
         }
-        
+
         oldbindingState.setDeleteChange(apChange);
         bindingStateRepository.saveAndFlush(oldbindingState);
 
         ApBindingState apBindingState = new ApBindingState();
         apBindingState.setBinding(oldbindingState.getBinding());
         apBindingState.setAccessPoint(oldbindingState.getAccessPoint());
+        apBindingState.setApExternalSystem(oldbindingState.getApExternalSystem());
         apBindingState.setExtState(state);
         apBindingState.setExtRevision(revisionUuid);
         apBindingState.setExtUser(user);
