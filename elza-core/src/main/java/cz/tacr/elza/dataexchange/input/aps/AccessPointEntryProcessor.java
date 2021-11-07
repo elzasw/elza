@@ -1,7 +1,5 @@
 package cz.tacr.elza.dataexchange.input.aps;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -125,6 +123,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
 
             ApBindingState state = new ApBindingState();
             state.setCreateChange(context.getCreateChange());
+            state.setApExternalSystem(apExternalSystem);
             state.setBinding(entity);
 
             entities.add(state);

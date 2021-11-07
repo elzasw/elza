@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -15,7 +17,7 @@ import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.service.AccessPointDataService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang.Validate;import org.drools.core.common.InstanceEqualsConstraint.InstanceEqualsConstraintContextEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,12 +93,12 @@ abstract public class CamXmlBuilder {
     /**
      * Map of new UUIDS for items
      */
-    protected Map<Integer, String> itemUuids = new HashMap<>();
+    private Map<Integer, String> itemUuids = new HashMap<>();
 
     /**
      * Map of new UUIDS for parts
      */
-    protected Map<Integer, String> partUuids = new HashMap<>();    
+    private Map<Integer, String> partUuids = new HashMap<>();    
 
     public Map<Integer, String> getItemUuids() {
         return itemUuids;
@@ -237,6 +239,7 @@ abstract public class CamXmlBuilder {
                                       p.getPid().getValue());
 
                             availableParts.remove(p.getPid().getValue());
+                            removePart(p);
                             return false;
                         }
                         // filter empty parts without subparts
@@ -255,6 +258,7 @@ abstract public class CamXmlBuilder {
                                         subpartCounter.put(p.getPrnt().getValue(), cnt);
                                     }
                                 }
+                                removePart(p);
                                 return false;
                             }
                         }
@@ -268,6 +272,78 @@ abstract public class CamXmlBuilder {
     }
 
     /**
+     * Remove previously prepared XML part
+     * @param partXml
+     */
+    private void removePart(PartXml partXml) {
+    	String uuid = partXml.getPid().getValue();
+		for(Entry<Integer, String> ep: partUuids.entrySet()) {
+			if(Objects.equals(uuid, ep.getValue())) {
+				partUuids.remove(ep.getKey());
+				break;
+			}
+		}
+		// remove items
+		ItemsXml items = partXml.getItms();
+		if(items!=null) {
+			for(Object item: items.getItems()) {
+				removeItem(item);
+			}
+		}
+	}
+
+	private void removeItem(Object item) {
+		if(item instanceof ItemStringXml ) {
+			ItemStringXml its = (ItemStringXml)item;
+			removeItemByUuid(its.getUuid().getValue());
+		} else 
+		if(item instanceof ItemIntegerXml) {
+			ItemIntegerXml ix = (ItemIntegerXml)item;
+			removeItemByUuid(ix.getUuid().getValue());			
+		} else 
+		if(item instanceof ItemBooleanXml) {
+			ItemBooleanXml ix = (ItemBooleanXml)item;
+			removeItemByUuid(ix.getUuid().getValue());			
+		} else 
+		if(item instanceof ItemBinaryXml) {
+			ItemBinaryXml ix = (ItemBinaryXml)item;
+			removeItemByUuid(ix.getUuid().getValue());			
+		} else 
+		if(item instanceof ItemEntityRefXml) {
+			ItemEntityRefXml ix = (ItemEntityRefXml)item;
+			removeItemByUuid(ix.getUuid().getValue());			
+		} else 
+		if(item instanceof ItemEnumXml) {
+			ItemEnumXml ix = (ItemEnumXml)item;
+			removeItemByUuid(ix.getUuid().getValue());			
+		} else 
+		if(item instanceof ItemUnitDateXml) {
+			ItemUnitDateXml ix = (ItemUnitDateXml)item;
+			removeItemByUuid(ix.getUuid().getValue());			
+		} else 
+		if(item instanceof ItemLinkXml) {
+			ItemLinkXml ix = (ItemLinkXml)item;
+			removeItemByUuid(ix.getUuid().getValue());			
+		} else {
+			throw new IllegalStateException("Unrecognized item type: "+ item.getClass().toString()
+					+", item: "+item);
+		}
+	}
+
+	/**
+	 * Remove previously prepared XML item 
+	 * @param uuid
+	 */
+	private void removeItemByUuid(String uuid) {
+		for(Entry<Integer, String> ep: itemUuids.entrySet()) {
+			if(Objects.equals(uuid, ep.getValue())) {
+				itemUuids.remove(ep.getKey());
+				break;
+			}
+		}	
+	}
+
+	/**
      * Create part
      * 
      * @param apPart

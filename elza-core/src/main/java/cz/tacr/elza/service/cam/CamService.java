@@ -370,7 +370,9 @@ public class CamService {
                 this.groovyService,
                 this.apDataService,
                 state.getScope());
-        ceb.build(partList, itemMap);
+        if(!ceb.build(partList, itemMap)) {
+        	return null;
+        }
         return ceb;
     }
 

@@ -344,7 +344,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
             prefPartUuid = preferPart.getValue();
         } else {
             // preferred part is new
-            prefPartUuid = partUuids.get(accessPoint.getPreferredPartId());
+            prefPartUuid = getPartUuids().get(accessPoint.getPreferredPartId());
             Validate.notNull(prefPartUuid);
         }
         if (!Objects.equals(prefPartUuid, prefNameXml.getPid().getValue())) {

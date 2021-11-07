@@ -1559,4 +1559,20 @@ where no.level_id = l.level_id
 			DROP INDEX ap_binding_state_access_point_idx</sql>
     </changeSet>
 
+    <changeSet id="20211105113000" author="sergey.iryupin">
+        <addColumn tableName="ap_binding_state">
+            <column name="external_system_id" type="int"/>
+        </addColumn>
+        <sql dbms="postgresql">UPDATE ap_binding_state a SET external_system_id = b.external_system_id
+            FROM (SELECT external_system_id, binding_id FROM ap_binding) b
+            WHERE a.binding_id = b.binding_id;</sql>
+        <addNotNullConstraint tableName="ap_binding_state"
+            columnName="external_system_id"  
+            columnDataType="int"/> 
+        <sql dbms="postgresql">CREATE UNIQUE INDEX ap_binding_state_access_point_idx 
+            ON ap_binding_state(access_point_id,external_system_id)
+			WHERE delete_change_id IS NULL;</sql>
+        <sql dbms="postgresql">DROP INDEX ap_binding_state_access_point_pidx</sql>
+    </changeSet>
+
 </databaseChangeLog>
