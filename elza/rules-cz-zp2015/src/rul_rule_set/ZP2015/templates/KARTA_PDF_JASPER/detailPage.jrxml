@@ -196,7 +196,7 @@
 	<detail>
 		<band height="200" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField>
+			<textField textAdjust="ScaleFont">
 				<reportElement x="0" y="0" width="142" height="30" uuid="a9c7279e-d0de-489f-add5-486585a57a06">
 					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
 				</reportElement>
