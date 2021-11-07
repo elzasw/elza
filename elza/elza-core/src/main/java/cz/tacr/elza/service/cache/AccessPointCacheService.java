@@ -70,10 +70,6 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     private static final Logger logger = LoggerFactory.getLogger(AccessPointCacheService.class);
 
-    private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-    private final ReentrantReadWriteLock.ReadLock readLock = rwl.readLock();
-    private final ReentrantReadWriteLock.WriteLock writeLock = rwl.writeLock();
-
     private final ObjectMapper mapper;
 
     @PersistenceContext
@@ -131,24 +127,19 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
      *
      * Synchronní metoda volaná z transakce.
      */
-    public void syncCache() {
-        writeLock.lock();
-        try {
-            logger.info("Spuštění - synchronizace cache pro AP");
-            int off = 0;
-            Integer numProcessed;
-            do {
-                TransactionTemplate tt = new TransactionTemplate(txManager);
-                final int off2 = off;
-                numProcessed = tt.execute(t -> syncCacheInternal(off2));
-                off += numProcessed;
-            } while (numProcessed > 0);
+    synchronized public void syncCache() {
+		logger.info("Spuštění - synchronizace cache pro AP");
+		int off = 0;
+		Integer numProcessed;
+		do {
+			TransactionTemplate tt = new TransactionTemplate(txManager);
+			final int off2 = off;
+			numProcessed = tt.execute(t -> syncCacheInternal(off2));
+			off += numProcessed;
+		} while (numProcessed > 0);
 
-            logger.info("Všechny AP jsou synchronizovány");
-            logger.info("Ukončení synchronizace cache pro AP");
-        } finally {
-            writeLock.unlock();
-        }
+		logger.info("Všechny AP jsou synchronizovány");
+		logger.info("Ukončení synchronizace cache pro AP");
     }
 
     /**
@@ -261,23 +252,17 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     }
 
     @Transactional
-    public void createApCachedAccessPoint(Integer accessPointId) {
+    synchronized public void createApCachedAccessPoint(Integer accessPointId) {
     	
         //flush a batch of updates and release memory:
-        // prevent deadlock
         this.entityManager.flush();
         this.entityManager.clear();
     	
-        writeLock.lock();
-        try {
-            ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
-            if (oldApCachedAccessPoint != null) {
-                cachedAccessPointRepository.delete(oldApCachedAccessPoint);
-            }
-            processNewAPs(Collections.singletonList(accessPointId));
-        } finally {
-            writeLock.unlock();
-        }
+		ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
+		if (oldApCachedAccessPoint != null) {
+			cachedAccessPointRepository.delete(oldApCachedAccessPoint);
+		}
+		processNewAPs(Collections.singletonList(accessPointId));
     }
 
     private CachedAccessPoint createCachedAccessPoint(ApAccessPoint accessPoint) {
@@ -407,17 +392,12 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
     @Transactional
     public CachedAccessPoint findCachedAccessPoint(Integer accessPointId) {
-        // readLock.lock();
-        try {
-            ApCachedAccessPoint apCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
-            CachedAccessPoint cachedAccessPoint = null;
-            if (apCachedAccessPoint != null) {
-                cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
-            }
-            return cachedAccessPoint;
-        } finally {
-            // readLock.unlock();
-        }
+		ApCachedAccessPoint apCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
+		CachedAccessPoint cachedAccessPoint = null;
+		if (apCachedAccessPoint != null) {
+			cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
+		}
+		return cachedAccessPoint;
     }
 
     /**

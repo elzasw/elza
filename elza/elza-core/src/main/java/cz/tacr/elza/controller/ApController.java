@@ -1099,12 +1099,15 @@ public class ApController {
 
     /**
      * Zápis přistupového bodu do externího systému
+     * 
+     * Metoda zapíš nový AP nebo aktualizuje stávající.
      *
      * @param accessPointId identifikátor přístupového bodu
      * @param externalSystemCode kód externího systému
      */
     @Transactional
-    @RequestMapping(value = "/external/save/{accessPointId}", method = RequestMethod.POST)
+    @RequestMapping(value = {"/external/save/{accessPointId}",
+    		"/external/update/{accessPointId}"}, method = RequestMethod.POST)
     public void saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                 @RequestParam final String externalSystemCode) {
         accessPointService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
@@ -1136,19 +1139,6 @@ public class ApController {
         }
         ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
         camService.synchronizeAccessPoint(procCtx, state, bindingState, binding, entity, false);
-    }
-
-    /**
-     * Zápis změn do externího systému
-     *
-     * @param accessPointId identifikátor přístupového bodu
-     * @param externalSystemCode kód externího systému
-     */
-    @Transactional
-    @RequestMapping(value = "/external/update/{accessPointId}", method = RequestMethod.POST)
-    public void updateArchiveEntity(@PathVariable("accessPointId") final Integer accessPointId,
-                                    @RequestParam final String externalSystemCode) {
-        accessPointService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
     }
 
     private AbstractException prepareSystemException(ApiException e) {
