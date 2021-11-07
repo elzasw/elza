@@ -2246,14 +2246,6 @@ public class AccessPointService {
         ApAccessPoint accessPoint = apState.getAccessPoint();
         ApExternalSystem extSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
 
-        // check ap_binding_state
-        ApBindingState binding = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, extSystem);
-        if (binding != null) {
-            throw new BusinessException("Entita již existuje v externím systému.", BaseCode.INVALID_STATE)
-                .set("accessPointId", apState.getAccessPointId())
-                .set("externalSystemCode", externalSystemCode);
-        }
-
         // check ext_sync_queue
         if (extSyncsQueueItemRepository.countByAccesPointAndExternalSystemAndState(accessPoint, extSystem, ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW) != 0) {
             throw new BusinessException("Entita již čeká na zpracování ve frontě.", BaseCode.INVALID_STATE)
