@@ -50,12 +50,15 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.FileSystemUtils;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
@@ -174,11 +177,13 @@ import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.repository.WfIssueStateRepository;
 import cz.tacr.elza.repository.WfIssueTypeRepository;
 import cz.tacr.elza.search.IndexWorkProcessor;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.CacheService;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.StructObjValueService;
+import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -468,6 +473,13 @@ public class PackageService {
 
     @Autowired
     private ExportFilterRepository exportFilterRepository;
+        
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    @Qualifier("transactionManager")
+    protected PlatformTransactionManager txManager;
 
     private Set<Integer> accessPoints;
 
@@ -481,22 +493,31 @@ public class PackageService {
     @Transactional
     @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     synchronized public void importPackage(final File file) {
-        importPackageInternal(file);
+    	// check authorization
+        TransactionTemplate transactionTemplate = new TransactionTemplate(txManager);
+        transactionTemplate.executeWithoutResult(ts -> {
+            AuthorizationRequest authRequest = AuthorizationRequest.hasPermission(UsrPermission.Permission.ADMIN);        	
+        	userService.authorizeRequest(authRequest);
+        });
+        // stop services - outside transaction
+        preImportPackage();
+
+        TransactionTemplate transactionTemplate2 = new TransactionTemplate(txManager);
+        transactionTemplate2.executeWithoutResult(ts -> {
+            importPackageInternal(file);        	
+        });
     }
 
-    @Transactional
     public void importPackageInternal(final File file) {
-
+        
         // read package and do basic checks
         PackageContext pkgCtx = new PackageContext(resourcePathResolver);
 
         File oldPackageDir = null;
         File packageDir = null;
+
         try {
             pkgCtx.init(file);
-
-            // stop services and prepare update
-            preImportPackage();
 
             processRulPackage(pkgCtx);
             packageDir = pkgCtx.preparePackageDir();
@@ -537,7 +558,7 @@ public class PackageService {
 
     }
 
-    private void preImportPackage() {
+    public void preImportPackage() {
         logger.info("Stoping services before package update");
 
         // zastavit indexovani
