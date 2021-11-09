@@ -1811,6 +1811,11 @@ public class AccessPointService {
             return true;
         }
 
+        // žádná změna stavu (pouze změny ApScope a/nebo komentáře)
+        if (oldStateApproval != null && newStateApproval.equals(oldStateApproval)) {
+            return true;
+        }
+
         if (oldStateApproval != null &&
                 (oldStateApproval.equals(StateApproval.APPROVED) && newStateApproval.equals(StateApproval.REV_NEW)) ||
                 (oldStateApproval.equals(StateApproval.REV_NEW)
