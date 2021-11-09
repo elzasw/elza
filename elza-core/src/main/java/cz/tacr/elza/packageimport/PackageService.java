@@ -490,8 +490,6 @@ public class PackageService {
      *             <p>
      *             Note: only one package can be imported at a time
      */
-    @Transactional
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN})
     synchronized public void importPackage(final File file) {
     	// check authorization
         TransactionTemplate transactionTemplate = new TransactionTemplate(txManager);
