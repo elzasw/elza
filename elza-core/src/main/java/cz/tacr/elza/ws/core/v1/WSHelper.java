@@ -26,6 +26,8 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.StructObjService;
@@ -59,6 +61,11 @@ public class WSHelper {
         } else {
             Validate.notNull(fundInfo.getUuid(), "Fund ID or UUID have to be specified");
             ArrNode node = arrangementIntService.findNodeByUuid(fundInfo.getUuid());
+            if(node==null) {
+            	logger.error("Fund not found, UUID: {}", fundInfo.getUuid());
+            	throw new BusinessException("Fund not found, UUID: "+fundInfo.getUuid(), BaseCode.ID_NOT_EXIST)
+            		.set("uuid", fundInfo.getUuid());
+            }
             return node.getFundId();
         }
     }
