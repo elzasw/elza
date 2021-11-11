@@ -38,7 +38,7 @@ const DIRECTION = {
 
 const allowedDatatypes = ['INT', 'STRING', 'TEXT', 'UNITDATE', 'FORMATTED_TEXT', 'DECIMAL'];
 
-const RULE_CODE_ZP2015 = 'ZP2015';
+const RULE_ID_ZP2015 = 2;
 
 class PersistentSortForm extends AbstractReactComponent {
     constructor(props) {
@@ -56,11 +56,11 @@ class PersistentSortForm extends AbstractReactComponent {
     componentDidMount = () => {
         this.props.dispatch(descItemTypesFetchIfNeeded());
         this.props.dispatch(refRulDataTypesFetchIfNeeded());
-        this.getItemTypeCodesByRuleSet(RULE_CODE_ZP2015);
+        this.getItemTypeCodesByRuleSet(RULE_ID_ZP2015);
     };
 
-    getItemTypeCodesByRuleSet = (ruleSetCode) => {
-        WebApi.getItemTypeCodesByRuleSet(ruleSetCode).then(items => {
+    getItemTypeCodesByRuleSet = (ruleSetId) => {
+        WebApi.getItemTypeCodesByRuleSet(ruleSetId).then(items => {
             this.setState({
                 itemTypeCodes: items
             });
