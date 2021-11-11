@@ -252,17 +252,19 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     }
 
     @Transactional
-    synchronized public void createApCachedAccessPoint(Integer accessPointId) {
+    public void createApCachedAccessPoint(Integer accessPointId) {
     	
         //flush a batch of updates and release memory:
         this.entityManager.flush();
         this.entityManager.clear();
-    	
-		ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
-		if (oldApCachedAccessPoint != null) {
-			cachedAccessPointRepository.delete(oldApCachedAccessPoint);
-		}
-		processNewAPs(Collections.singletonList(accessPointId));
+    
+        synchronized (this){
+			ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
+			if (oldApCachedAccessPoint != null) {
+				cachedAccessPointRepository.delete(oldApCachedAccessPoint);
+			}
+			processNewAPs(Collections.singletonList(accessPointId));
+        }
     }
 
     private CachedAccessPoint createCachedAccessPoint(ApAccessPoint accessPoint) {
