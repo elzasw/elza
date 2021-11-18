@@ -62,7 +62,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 @Service
@@ -400,6 +399,20 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 			cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
 		}
 		return cachedAccessPoint;
+    }
+
+    @Transactional
+    public List<CachedAccessPoint> findCachedAccessPoints(Collection<Integer> accessPointIds) {
+        List<CachedAccessPoint> cachedAccessPoints = new ArrayList<>(accessPointIds.size()); 
+        List<ApCachedAccessPoint> apCachedAccessPoints = cachedAccessPointRepository.findByAccessPointIds(accessPointIds);
+        for (ApCachedAccessPoint apCachedAccessPoint : apCachedAccessPoints) {
+            CachedAccessPoint cachedAccessPoint = null;
+            if (apCachedAccessPoint != null) {
+                cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
+                cachedAccessPoints.add(cachedAccessPoint);
+            }
+        }
+        return cachedAccessPoints;
     }
 
     /**
