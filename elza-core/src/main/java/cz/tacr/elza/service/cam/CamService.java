@@ -37,8 +37,10 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
@@ -598,6 +600,15 @@ public class CamService {
                   binding.getBindingId(),
                   binding.getValue(), entity.getRevi().getRid().getValue(),
                   state, bindingState);
+
+        if (state != null) {
+            if (state.getStateApproval().equals(StateApproval.TO_APPROVE)
+                    || state.getStateApproval().equals(StateApproval.REV_PREPARED)) {
+                throw new SystemException("Entitu v tomto stavu nelze aktualizovat v externím systému", BaseCode.INSUFFICIENT_PERMISSIONS)
+                    .set("accessPointId", state.getAccessPointId())
+                    .set("state", state.getStateApproval());
+            }
+        }
 
         // Mozne stavy synchronizace
         // ApState | ApBindingState  | syncQueue 
