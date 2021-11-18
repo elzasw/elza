@@ -59,7 +59,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
-import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
@@ -2230,9 +2229,8 @@ public class AccessPointService {
         return null;
     }
 
-    public Map<Integer, ApIndex> findPreferredPartIndexMap(List<ApAccessPoint> accessPoints) {
-        return ObjectListIterator.findIterable(accessPoints,
-                ap -> indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(ap, DISPLAY_NAME)).stream()
+    public Map<Integer, ApIndex> findPreferredPartIndexMap(Collection<ApAccessPoint> accessPoints) {
+        return indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(accessPoints, DISPLAY_NAME).stream()
                 .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
     }
 
