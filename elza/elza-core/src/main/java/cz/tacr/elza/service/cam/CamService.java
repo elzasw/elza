@@ -604,7 +604,7 @@ public class CamService {
         if (state != null) {
             if (state.getStateApproval().equals(StateApproval.TO_APPROVE)
                     || state.getStateApproval().equals(StateApproval.REV_PREPARED)) {
-                throw new SystemException("Entitu v tomto stavu nelze aktualizovat v externím systému", BaseCode.INSUFFICIENT_PERMISSIONS)
+                throw new SystemException("Entitu v tomto stavu nelze aktualizovat z externího systému", BaseCode.INVALID_STATE)
                     .set("accessPointId", state.getAccessPointId())
                     .set("state", state.getStateApproval());
             }
