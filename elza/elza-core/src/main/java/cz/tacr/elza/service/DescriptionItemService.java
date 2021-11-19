@@ -14,6 +14,7 @@ import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
@@ -109,6 +110,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     @Autowired
     private NodeCacheService nodeCacheService;
+
+    @Autowired
+    private AccessPointService accessPointService;
 
     @Autowired
     private ArrangementService arrangementService;
@@ -1504,9 +1508,16 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         List<ArrDescItem> descItems = descItemRepository.findDescItemsByNodeIds(nodeIdSet, descItemTypes, changeId);
 
+        Set<ApAccessPoint> accessPoints = descItems.stream()
+                .filter(item -> item.getData() != null && DataType.fromId(item.getData().getDataTypeId()) == DataType.RECORD_REF)
+                .map(item -> ((ArrDataRecordRef) item.getData()).getRecord())
+                .collect(Collectors.toSet());
+
+        Map<Integer, ApIndex> accessPointNames = accessPointService.findPreferredPartIndexMap(accessPoints);
+
         Map<Integer, TitleItemsByType> nodeIdMap = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
-            TitleValue titleValue = serviceInternal.createTitleValue(descItem, dataExport);
+            TitleValue titleValue = serviceInternal.createTitleValue(descItem, accessPointNames, dataExport);
             Integer nodeId = descItem.getNodeId();
 
             TitleItemsByType itemsByType = nodeIdMap.computeIfAbsent(nodeId, id -> new TitleItemsByType());
