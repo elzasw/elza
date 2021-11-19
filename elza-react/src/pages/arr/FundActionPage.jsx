@@ -471,6 +471,7 @@ class FundActionPage extends ArrParentPage {
                                     onSubmit={this.submitPersistentSortForm}
                                     ref={ref => (this.refForm = ref)}
                                     versionId={versionId}
+                                    fund={fund}
                                 />,
                             ]}
                         </div>
