@@ -1893,12 +1893,19 @@ public class AccessPointService {
         }
 
         if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
-                        || (userService.hasPermission(Permission.AP_SCOPE_WR, oldApScope.getScopeId()))
-                && userService.hasPermission(Permission.AP_SCOPE_WR, newApScope.getScopeId())
-                && (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
-                        || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, newApScope.getScopeId()))) {
+                || (userService.hasPermission(Permission.AP_SCOPE_WR, oldApScope.getScopeId())
+                        && userService.hasPermission(Permission.AP_SCOPE_WR, newApScope.getScopeId()))) {
 
             if (stateApproval.equals(StateApproval.NEW) || stateApproval.equals(StateApproval.TO_AMEND)) {
+                return true;
+            }
+        }
+
+        if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
+                || (userService.hasPermission(Permission.AP_EDIT_CONFIRMED, oldApScope.getScopeId())
+                        && userService.hasPermission(Permission.AP_EDIT_CONFIRMED, newApScope.getScopeId()))) {
+
+            if (stateApproval.equals(StateApproval.REV_NEW) || stateApproval.equals(StateApproval.REV_AMEND)) {
                 return true;
             }
         }
@@ -1925,6 +1932,14 @@ public class AccessPointService {
                 || (userService.hasPermission(Permission.AP_SCOPE_WR, apScope.getScopeId()))) {
 
             if (stateApproval.equals(StateApproval.NEW) || stateApproval.equals(StateApproval.TO_AMEND)) {
+                return true;
+            }
+        }
+
+        if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
+                || (userService.hasPermission(Permission.AP_EDIT_CONFIRMED, apScope.getScopeId()))) {
+
+            if (stateApproval.equals(StateApproval.REV_NEW) || stateApproval.equals(StateApproval.REV_AMEND)) {
                 return true;
             }
         }
