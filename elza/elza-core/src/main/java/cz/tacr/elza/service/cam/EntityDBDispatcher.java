@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 
 
 import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cam.ItemUpdates.ChangedBindedItem;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
@@ -681,6 +683,11 @@ public class EntityDBDispatcher {
 
         //změna preferováného jména
         Validate.notNull(preferredName, "Missing preferredName");
+        ApPart oldPrefPart = accessPoint.getPreferredPart();
+        if(oldPrefPart!=null&&!oldPrefPart.getPartId().equals(preferredName.getPartId())) {
+        	this.partService.unsetPreferredPart(oldPrefPart);
+        }
+        accessPointService.setPreferName(accessPoint, preferredName);
         accessPoint.setPreferredPart(preferredName);
         syncResult.setAccessPoint(accessPointRepository.save(accessPoint));
 
@@ -710,6 +717,7 @@ public class EntityDBDispatcher {
             partBinding.setDeleteChange(apChange);
         }
         bindingItemRepository.saveAll(partsBinding);
+        bindingItemRepository.flush();
 
         // clear lookup
         bindingPartLookup.clear();
@@ -730,25 +738,16 @@ public class EntityDBDispatcher {
         }
     }
 
-    class ChangedBindedItem {
-        final ApBindingItem bindingItem;
-        final Object xmlItem;
-
-        public ChangedBindedItem(ApBindingItem bindingItem, Object xmlItem) {
-            super();
-            this.bindingItem = bindingItem;
-            this.xmlItem = xmlItem;
-        }
-
-        ApBindingItem getBindingItem() {
-            return bindingItem;
-        }
-
-        Object getXmlItem() {
-            return xmlItem;
-        }
-    };
-
+    /**
+     * Update part
+     * 
+     * Return list of items in part
+     * @param partXml
+     * @param apPart
+     * @param binding
+     * @param dataRefList
+     * @return
+     */
     private List<ApItem> updatePart(PartXml partXml, ApPart apPart,
                             ApBinding binding, List<ReferencedEntities> dataRefList) {
 
@@ -760,15 +759,11 @@ public class EntityDBDispatcher {
             itemsXml = Collections.emptyList();
         }
 
-        List<ApBindingItem> notChangeItems = new ArrayList<>();
-        List<ChangedBindedItem> changedItems = new ArrayList<>();
-        List<Object> newItems = findNewOrChangedItems(itemsXml,
-                                                      changedItems,
-                                                      notChangeItems);
+        ItemUpdates itemUpdates = findNewOrChangedItems(itemsXml);
 
-        List<ApItem> result = new ArrayList<>(newItems.size() + changedItems.size() + notChangeItems.size());
+        List<ApItem> result = new ArrayList<>(itemUpdates.getItemCount());
         // remove unchanged items from binding lookup and add to result
-        for (ApBindingItem notChangeItem : notChangeItems) {
+        for (ApBindingItem notChangeItem : itemUpdates.getNotChangeItems()) {
             ApBindingItem removedItem = bindingItemLookup.remove(notChangeItem.getValue());
             if (removedItem == null) {
                 throw new SystemException("Missing item in lookup.")
@@ -777,6 +772,7 @@ public class EntityDBDispatcher {
             result.add(removedItem.getItem());
         }
 
+        List<ChangedBindedItem> changedItems = itemUpdates.getChangedItems();
         if (CollectionUtils.isNotEmpty(changedItems)) {
             // drop old bindings
             List<ApBindingItem> bindedItems = changedItems.stream().map(ChangedBindedItem::getBindingItem)
@@ -789,8 +785,8 @@ public class EntityDBDispatcher {
             result.addAll(createItems(xmlItems, apPart, procCtx.getApChange(), binding, dataRefList));
         }
 
+        List<Object> newItems = itemUpdates.getNewItems();
         if (CollectionUtils.isNotEmpty(newItems)) {
-
             result.addAll(createItems(newItems, apPart, procCtx.getApChange(), binding, dataRefList));
         }
         return result;
@@ -811,7 +807,7 @@ public class EntityDBDispatcher {
                                     ApPart apPart, final ApChange change,
                                     final ApBinding binding,
                                     final List<ReferencedEntities> dataRefList) {
-        List<ApItem> itemsCreated = new ArrayList<>();
+        List<ApItem> itemsCreated = new ArrayList<>(createItems.size());
         Map<Integer, List<ApItem>> typeIdItemsMap = new HashMap<>();
 
         for (Object createItem : createItems) {
@@ -1051,17 +1047,21 @@ public class EntityDBDispatcher {
 
     }
 
-    public List<Object> findNewOrChangedItems(List<Object> items,
-                                              List<ChangedBindedItem> changedItems,
-                                              List<ApBindingItem> notChangeItems) {
-        List<Object> newItems = new ArrayList<>();
+    /**
+     * Try to map received items to existing items
+     * @param items
+     * @param partUpdater
+     * @return
+     */
+    public ItemUpdates findNewOrChangedItems(List<Object> items) {
+    	ItemUpdates result = new ItemUpdates();
         for (Object item : items) {
             if (item instanceof ItemBinaryXml) {
                 ItemBinaryXml itemBinary = (ItemBinaryXml) item;
                 ApBindingItem bindingItem = bindingItemLookup.get(itemBinary.getUuid().getValue());
 
                 if (bindingItem == null) {
-                    newItems.add(itemBinary);
+                	result.addNewItem(itemBinary);
                 } else {
                     ApItem is = bindingItem.getItem();
                     boolean processed = false;
@@ -1072,7 +1072,7 @@ public class EntityDBDispatcher {
                         // try to compare coordinates
                         try {
                             if (xmlValue.equals(value)) {
-                                notChangeItems.add(bindingItem);
+                            	result.addNotChanged(bindingItem);
                                 processed = true;
                             }
                         } catch (Exception e) {
@@ -1080,7 +1080,7 @@ public class EntityDBDispatcher {
                         }
                     }
                     if (!processed) {
-                        changedItems.add(new ChangedBindedItem(bindingItem, itemBinary));
+                    	result.addChanged(bindingItem, itemBinary);
                     }
                 }
             } else if (item instanceof ItemBooleanXml) {
@@ -1088,52 +1088,35 @@ public class EntityDBDispatcher {
                 ApBindingItem bindingItem = bindingItemLookup.get(itemBoolean.getUuid().getValue());
 
                 if (bindingItem == null) {
-                    newItems.add(itemBoolean);
+                	result.addNewItem(itemBoolean);
                 } else {
                     ApItem ib = bindingItem.getItem();
                     ArrDataBit dataBit = (ArrDataBit) ib.getData();
                     if (!(ib.getItemType().getCode().equals(itemBoolean.getT().getValue()) &&
                             compareItemSpec(ib.getItemSpec(), itemBoolean.getS()) &&
                             dataBit.isBitValue().equals(itemBoolean.getValue().isValue()))) {
-                        changedItems.add(new ChangedBindedItem(bindingItem, itemBoolean));
+                    	result.addChanged(bindingItem, itemBoolean);
                     } else {
-                        notChangeItems.add(bindingItem);
+                    	result.addNotChanged(bindingItem);
                     }
                 }
             } else if (item instanceof ItemEntityRefXml) {
                 ItemEntityRefXml itemEntityRef = (ItemEntityRefXml) item;
-                ApBindingItem bindingItem = bindingItemLookup.get(itemEntityRef.getUuid().getValue());
-
-                if (bindingItem == null) {
-                    newItems.add(itemEntityRef);
-                } else {
-                    ApItem ier = bindingItem.getItem();
-                    ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) ier.getData();
-                    EntityRecordRefXml entityRecordRef = (EntityRecordRefXml) itemEntityRef.getRef();
-                    String entityRefId = CamHelper.getEntityIdorUuid(entityRecordRef);
-                    if (!(ier.getItemType().getCode().equals(itemEntityRef.getT().getValue()) &&
-                            compareItemSpec(ier.getItemSpec(), itemEntityRef.getS()) &&
-                            dataRecordRef.getBinding().getValue().equals(entityRefId))) {
-
-                        changedItems.add(new ChangedBindedItem(bindingItem, itemEntityRef));
-                    } else {
-                        notChangeItems.add(bindingItem);
-                    }
-                }
+                prepareEntityRefUpdate(itemEntityRef, result);
             } else if (item instanceof ItemEnumXml) {
                 ItemEnumXml itemEnum = (ItemEnumXml) item;
                 ApBindingItem bindingItem = bindingItemLookup.get(itemEnum.getUuid().getValue());
 
                 if (bindingItem == null) {
-                    newItems.add(itemEnum);
+                	result.addNewItem(itemEnum);
                 } else {
                     ApItem ie = bindingItem.getItem();
                     if (!(ie.getItemType().getCode().equals(itemEnum.getT().getValue()) &&
                             compareItemSpec(ie.getItemSpec(), itemEnum.getS()))) {
 
-                        changedItems.add(new ChangedBindedItem(bindingItem, itemEnum));
+                    	result.addChanged(bindingItem, itemEnum);
                     } else {
-                        notChangeItems.add(bindingItem);
+                    	result.addNotChanged(bindingItem);
                     }
                 }
             } else if (item instanceof ItemIntegerXml) {
@@ -1141,7 +1124,7 @@ public class EntityDBDispatcher {
                 ApBindingItem bindingItem = bindingItemLookup.get(itemInteger.getUuid().getValue());
 
                 if (bindingItem == null) {
-                    newItems.add(itemInteger);
+                	result.addNewItem(itemInteger);
                 } else {
                     ApItem ii = bindingItem.getItem();
                     ArrDataInteger dataInteger = (ArrDataInteger) ii.getData();
@@ -1149,9 +1132,9 @@ public class EntityDBDispatcher {
                             compareItemSpec(ii.getItemSpec(), itemInteger.getS()) &&
                             dataInteger.getIntegerValue().equals(itemInteger.getValue().getValue().intValue()))) {
 
-                        changedItems.add(new ChangedBindedItem(bindingItem, itemInteger));
+                    	result.addChanged(bindingItem, itemInteger);
                     } else {
-                        notChangeItems.add(bindingItem);
+                    	result.addNotChanged(bindingItem);
                     }
                 }
             } else if (item instanceof ItemLinkXml) {
@@ -1159,7 +1142,7 @@ public class EntityDBDispatcher {
                 ApBindingItem bindingItem = bindingItemLookup.get(itemLink.getUuid().getValue());
 
                 if (bindingItem == null) {
-                    newItems.add(itemLink);
+                	result.addNewItem(itemLink);
                 } else {
                     ApItem il = bindingItem.getItem();
                     ArrDataUriRef dataUriRef = (ArrDataUriRef) il.getData();
@@ -1168,9 +1151,9 @@ public class EntityDBDispatcher {
                             dataUriRef.getUriRefValue().equals(itemLink.getUrl().getValue()) &&
                             dataUriRef.getDescription().equals(itemLink.getNm().getValue()))) {
 
-                        changedItems.add(new ChangedBindedItem(bindingItem, itemLink));
+                    	result.addChanged(bindingItem, itemLink);
                     } else {
-                        notChangeItems.add(bindingItem);
+                    	result.addNotChanged(bindingItem);
                     }
                 }
             } else if (item instanceof ItemStringXml) {
@@ -1178,7 +1161,7 @@ public class EntityDBDispatcher {
                 ApBindingItem bindingItem = bindingItemLookup.get(itemString.getUuid().getValue());
 
                 if (bindingItem == null) {
-                    newItems.add(itemString);
+                	result.addNewItem(itemString);
                 } else {
                     ApItem is = bindingItem.getItem();
                     String value;
@@ -1203,9 +1186,9 @@ public class EntityDBDispatcher {
                             compareItemSpec(is.getItemSpec(), itemString.getS()) &&
                             value.equals(itemString.getValue().getValue()))) {
 
-                        changedItems.add(new ChangedBindedItem(bindingItem, itemString));
+                    	result.addChanged(bindingItem, itemString);
                     } else {
-                        notChangeItems.add(bindingItem);
+                    	result.addNotChanged(bindingItem);
                     }
                 }
             } else if (item instanceof ItemUnitDateXml) {
@@ -1213,7 +1196,7 @@ public class EntityDBDispatcher {
                 ApBindingItem bindingItem = bindingItemLookup.get(itemUnitDate.getUuid().getValue());
 
                 if (bindingItem == null) {
-                    newItems.add(itemUnitDate);
+                    result.addNewItem(itemUnitDate);
                 } else {
                     ApItem iud = bindingItem.getItem();
                     ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) iud.getData();
@@ -1225,19 +1208,52 @@ public class EntityDBDispatcher {
                             dataUnitdate.getValueTo().equals(itemUnitDate.getTo().trim()) &&
                             dataUnitdate.getValueToEstimated().equals(itemUnitDate.isToe()))) {
 
-                        changedItems.add(new ChangedBindedItem(bindingItem, itemUnitDate));
+                    	result.addChanged(bindingItem, itemUnitDate);
                     } else {
-                        notChangeItems.add(bindingItem);
+                    	result.addNotChanged(bindingItem);
                     }
                 }
             } else {
                 throw new IllegalArgumentException("Invalid item type");
             }
         }
-        return newItems;
+        return result;
     }
 
-    private boolean matchItemType(ApItem is, CodeXml t, CodeXml s) {
+    private void prepareEntityRefUpdate(ItemEntityRefXml itemEntityRef, ItemUpdates result) {
+        ApBindingItem bindingItem = bindingItemLookup.get(itemEntityRef.getUuid().getValue());
+
+        if (bindingItem == null) {
+        	result.addNewItem(itemEntityRef);
+        } else {
+        	// we found mapping
+            ApItem ier = bindingItem.getItem();
+            ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) ier.getData();
+            EntityRecordRefXml entityRecordRef = (EntityRecordRefXml) itemEntityRef.getRef();
+            String entityRefId = CamHelper.getEntityIdorUuid(entityRecordRef);
+            // get binding for record
+            ApAccessPoint ap = dataRecordRef.getRecord();
+            ApBinding binding = null;
+            if(ap!=null) {
+            	ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(ap, procCtx.getApExternalSystem());
+            	if(bindingState!=null) {
+            		binding = bindingState.getBinding();
+            	}
+            } else {
+            	binding = dataRecordRef.getBinding();
+            }
+            if (!(ier.getItemType().getCode().equals(itemEntityRef.getT().getValue()) &&
+                    compareItemSpec(ier.getItemSpec(), itemEntityRef.getS()) &&
+                    binding!=null&&
+                    binding.getValue().equals(entityRefId))) {
+            	result.addChanged(bindingItem, itemEntityRef);
+            } else {
+            	result.addNotChanged(bindingItem);
+            }
+        }		
+	}
+
+	private boolean matchItemType(ApItem is, CodeXml t, CodeXml s) {
         StaticDataProvider sdp = this.procCtx.getStaticDataProvider();
         RulItemType itemType = sdp.getItemType(t.getValue());
         if (!Objects.equals(itemType.getItemTypeId(), is.getItemTypeId())) {

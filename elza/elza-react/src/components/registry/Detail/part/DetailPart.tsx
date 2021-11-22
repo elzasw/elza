@@ -1,33 +1,30 @@
 import classNames from 'classnames';
 import ValidationResultIcon from 'components/ValidationResultIcon';
 import React, { FC, useEffect, useState } from 'react';
-import { ApPartVO } from '../../../../api/ApPartVO';
+// import { ApPartVO } from '../../../../api/ApPartVO';
 import { ItemType } from '../../../../api/ApViewSettings';
 import { PartValidationErrorsVO } from '../../../../api/PartValidationErrorsVO';
+import { SyncState } from '../../../../api/SyncState';
 import { Bindings } from '../../../../types';
-import i18n from '../../../i18n';
-import Icon from '../../../shared/icon/Icon';
+import { SyncIcon } from "../sync-icon";
 import './DetailPart.scss';
 import { DetailPartInfo } from './DetailPartInfo';
 import { PartName } from "./PartName";
-import { SyncIcon } from "../sync-icon";
-import { SyncState } from '../../../../api/SyncState';
+import { RevisionDisplay, RevisionPart, getRevisionItems } from '../../revision';
 
 type Props = {
-    label: string;
-    part: ApPartVO;
+    part: RevisionPart;
     globalCollapsed: boolean;
     preferred?: boolean;
     globalEntity: boolean;
     partValidationError?: PartValidationErrorsVO;
     bindings: Bindings;
     itemTypeSettings: ItemType[];
-    renderActions?: (part: ApPartVO) => React.ReactNode;
+    renderActions?: (part?: RevisionPart) => React.ReactNode;
 };
 
 const DetailPart: FC<Props> = ({
-    label,
-    part,
+    part: {part, updatedPart},
     globalCollapsed = true,
     preferred,
     globalEntity,
@@ -47,11 +44,8 @@ const DetailPart: FC<Props> = ({
         'detail-part-preferred': preferred,
     });
 
+
     // Rozbalený content
-    const classNameContent = classNames({
-        'detail-part-preferred': preferred,
-        'detail-part-expanded': !collapsed,
-    });
 
 
     const showValidationError = () => {
@@ -60,40 +54,71 @@ const DetailPart: FC<Props> = ({
         }
     };
 
-    const partBinding = bindings.partsMap[part.id];
+    const partBinding = part ? bindings.partsMap[part.id] : false;
+    const hasBinding = partBinding != null;
+    const isModified = hasBinding && !partBinding;
+    const isCollapsed = collapsed && !isModified;
+    const isDeleted = updatedPart ? updatedPart.value == null : false;
+    const isNew = !part?.value && updatedPart?.value != undefined;
+
+    const classNameContent = classNames({
+        'detail-part-preferred': preferred,
+        'detail-part-expanded': !isCollapsed,
+    });
+
+    const areValuesEqual = (value: string, prevValue: string) => value === prevValue
+
+    const items = getRevisionItems(part?.items || [], updatedPart?.items || []);
 
     return (
         <div className="detail-part">
             <div className={classNameHeader}>
                 <div style={{display: "flex", alignItems: "center"}}>
-                    <PartName 
-                        label={label} 
-                        collapsed={collapsed} 
-                        preferred={preferred}
-                        onClick={() => setCollapsed(!collapsed)}
-                    />
+                    <RevisionDisplay 
+                        isDeleted={isDeleted}
+                        isNew={isNew}
+                        valuesEqual={areValuesEqual(part?.value || "", updatedPart ? updatedPart.value : part?.value || "")}
+                        renderPrevValue={() => {
+                            return <PartName 
+                                label={part?.value || "no value"} 
+                                collapsed={isCollapsed} 
+                                preferred={preferred}
+                                onClick={() => setCollapsed(!collapsed)}
+                                />
+                        }} 
+                        renderValue={() => {
+                            return <PartName 
+                                label={ updatedPart ? updatedPart.value : part?.value || "no new value"} 
+                                collapsed={isCollapsed} 
+                                preferred={preferred}
+                                onClick={() => setCollapsed(!collapsed)}
+                                />
+                        }} 
+                    >
+
+                    </RevisionDisplay>
                     <div className="actions">
-                        {partBinding != null && (
+                        {hasBinding && (
                             <SyncIcon 
                                 syncState={
-                                    partBinding ? 
-                                    SyncState.SYNC_OK : 
-                                    SyncState.LOCAL_CHANGE
+                                !isModified ? 
+                                SyncState.SYNC_OK : 
+                                SyncState.LOCAL_CHANGE
                                 }
-                            />
+                                />
                         )}
                         {showValidationError()}
                     </div>
                     <div className="actions hidable">
-                        {renderActions(part)}
+                        {renderActions({part, updatedPart})}
                     </div>
                 </div>
             </div>
 
-            {!collapsed && (
+            {!isCollapsed && (
                 <div className={classNameContent}>
                     <DetailPartInfo
-                        items={part.items || []}
+                        items={items}
                         globalEntity={globalEntity}
                         bindings={bindings}
                         itemTypeSettings={itemTypeSettings}

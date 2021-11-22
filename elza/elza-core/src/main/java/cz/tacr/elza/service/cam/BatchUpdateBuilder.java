@@ -5,10 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.cam.schema.cam.BatchEntityRecordRevXml;
 import cz.tacr.cam.schema.cam.BatchUpdateXml;
 import cz.tacr.cam.schema.cam.DeleteItemsXml;
 import cz.tacr.cam.schema.cam.DeletePartXml;
+import cz.tacr.cam.schema.cam.EntityIdXml;
+import cz.tacr.cam.schema.cam.EntityRecordRefXml;
 import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.schema.cam.NewItemsXml;
 import cz.tacr.cam.schema.cam.PartXml;
@@ -16,13 +17,16 @@ import cz.tacr.cam.schema.cam.SetRecordStateXml;
 import cz.tacr.cam.schema.cam.UpdateEntityXml;
 import cz.tacr.cam.schema.cam.UpdateItemsXml;
 import cz.tacr.cam.schema.cam.UuidXml;
-import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
-import cz.tacr.elza.service.cam.CamXmlFactory.EntityRefHandler;
 
 abstract public class BatchUpdateBuilder extends CamXmlBuilder {
 
@@ -33,14 +37,24 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
     
     protected List<Object> trgList = new ArrayList<>();
     
+    final private ApExternalSystem apExternalSystem;
+    
+    final private ExternalSystemService externalSystemService;
+    
 	public Map<Integer, String> getBindingStates() {
 		return bingingStates;
 	}    
 	
-    BatchUpdateBuilder(StaticDataProvider sdp, ApAccessPoint accessPoint, EntityRefHandler entityRefHandler,
-			GroovyService groovyService, AccessPointDataService apDataService, ApScope scope,
-			ApExternalSystemType extSystemType) {
-		super(sdp, accessPoint, entityRefHandler, groovyService, apDataService, scope, extSystemType);
+    BatchUpdateBuilder(final StaticDataProvider sdp, 
+    		final ApAccessPoint accessPoint, 
+    		final GroovyService groovyService, 
+    		final AccessPointDataService apDataService, 
+    		final ApScope scope,
+    		final ApExternalSystem apExternalSystem,
+    		final ExternalSystemService externalSystemService) {
+		super(sdp, accessPoint, groovyService, apDataService, scope);
+		this.apExternalSystem = apExternalSystem;
+		this.externalSystemService = externalSystemService;
 	}
     
     /**
@@ -96,6 +110,37 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
         batchUpdate.getChanges().addAll(trgList);		
 	}
 	
+	@Override
+    protected EntityRecordRefXml createEntityRef(ArrDataRecordRef recordRef) {
+    	// read binding
+    	ApAccessPoint ap = recordRef.getRecord();
+    	ApBinding binding = null;
+    	if(ap!=null) {
+    		// 
+    		ApBindingState bindingState = this.externalSystemService.findByAccessPointAndExternalSystem(ap, apExternalSystem);
+    		if(bindingState!=null) {
+    			binding = bindingState.getBinding(); 
+    		}
+    	} else {   	
+    		// create record ref only for records with same binding
+    		if ( recordRef.getBinding() != null) {
+    			ApExternalSystem bindedExtSystem = recordRef.getBinding().getApExternalSystem();
+    			if (bindedExtSystem.getExternalSystemId().equals(apExternalSystem.getExternalSystemId())) {
+    				binding = recordRef.getBinding();
+    			}
+    		}            
+        }
+    	
+    	if(binding == null) {
+    		return null;
+    	}
+
+        EntityRecordRefXml entityRecordRef = new EntityRecordRefXml();
+        long entityId = Long.parseLong(binding.getValue());
+        entityRecordRef.setEid(new EntityIdXml(entityId));
+        return entityRecordRef;
+    }
+    
 	/**
 	 * Create entity reference
 	 * @return Return reference for UpdateEntity

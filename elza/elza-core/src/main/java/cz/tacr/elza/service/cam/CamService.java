@@ -38,7 +38,6 @@ import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AbstractException;
-import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -260,6 +259,16 @@ public class CamService {
         dataRecordRefRepository.save(dataRecordRef);
     }
 
+    /**
+     * Update entity status after succesfull transfer to external system
+     * Transfer: Elza -> ES 
+     * 
+     * @param extSyncsQueueItem
+     * @param batchUpdateSaved
+     * @param itemUuidMap
+     * @param partUuidMap
+     * @param stateMap
+     */
     @Transactional
     public void updateBinding(ExtSyncsQueueItem extSyncsQueueItem,
                               BatchUpdateSavedXml batchUpdateSaved, 
@@ -290,7 +299,6 @@ public class CamService {
                                                             			 SyncState.SYNC_OK                                                                         
                                                                          );
         } else {
-            ApState state = accessPointService.getStateInternal(accessPoint);
             binding = externalSystemService.createApBinding(Long.toString(batchEntityRecordRev.getEid().getValue()), apExternalSystem);
             bindingState = externalSystemService.createApBindingState(binding, accessPoint, change, camApState,
                                                                       batchEntityRecordRev.getRev().getValue(),
@@ -307,7 +315,7 @@ public class CamService {
             this.externalSystemService.createApBindingItem(binding, change, value, part, null);
         });
 
-        setQueueItemState(extSyncsQueueItem, ExtSyncsQueueItem.ExtAsyncQueueState.IMPORT_OK, OffsetDateTime.now(), null);
+        setQueueItemState(extSyncsQueueItem, ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_OK, OffsetDateTime.now(), null);
 
         accessPointCacheService.createApCachedAccessPoint(extSyncsQueueItem.getAccessPointId());
     }
@@ -377,6 +385,7 @@ public class CamService {
                 .collect(Collectors.groupingBy(i -> i.getPartId()));
 
         UpdateEntityBuilder ueb = new UpdateEntityBuilder(
+        		this.externalSystemService,
                 this.bindingItemRepository,
                 this.staticDataService.getData(),
                 state,
@@ -839,7 +848,7 @@ public class CamService {
 
         }
         setQueueItemState(queueItem,
-                          ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_OK,
+                          ExtSyncsQueueItem.ExtAsyncQueueState.IMPORT_OK,
                           OffsetDateTime.now(),
                           "Synchronized: ES -> ELZA");
         return true;
@@ -873,7 +882,7 @@ public class CamService {
         importNew(externalSystem, entities, bindingMap);
 
         setQueueItemState(queueItems,
-                         ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_OK,
+                         ExtSyncsQueueItem.ExtAsyncQueueState.IMPORT_OK,
                          OffsetDateTime.now(),
                          "Synchronized: ES -> ELZA");
     }
