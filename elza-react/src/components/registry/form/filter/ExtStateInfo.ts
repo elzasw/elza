@@ -12,13 +12,13 @@ export function getValues(): ExtAsyncQueueState[] {
 export function getName(state: ExtAsyncQueueState): string {
     switch (state) {
         case ExtAsyncQueueState.UPDATE:
-            return 'Aktualizováno';
+            return 'K aktualizaci';
         case ExtAsyncQueueState.EXPORT_NEW:
             return 'K odeslání';
         case ExtAsyncQueueState.IMPORT_NEW:
             return 'Ke stažení';
         case ExtAsyncQueueState.IMPORT_OK:
-            return 'Staženo';
+            return 'Aktualizováno/Staženo';
         case ExtAsyncQueueState.EXPORT_OK:
             return 'Odesláno';
         case ExtAsyncQueueState.ERROR:

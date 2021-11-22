@@ -167,12 +167,11 @@ class RegistryPage extends AbstractReactComponent {
                             scopeId: data.scopeId,
                             typeId: data.apType.id,
                         };
-                        return WebApi.createAccessPoint(submitData);
-                    }}
-                    onSubmitSuccess={data => {
-                        dispatch(modalDialogHide());
-                        this.props.dispatch(registryDetailFetchIfNeeded(data.id));
-                        this.props.dispatch(registryListInvalidate());
+                        return WebApi.createAccessPoint(submitData).then((data)=>{
+                            dispatch(modalDialogHide());
+                            this.props.dispatch(registryDetailFetchIfNeeded(data.id));
+                            this.props.dispatch(registryListInvalidate());
+                        });
                     }}
                 />,
                 MODAL_DIALOG_SIZE.LG,

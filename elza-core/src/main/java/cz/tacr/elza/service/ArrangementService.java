@@ -846,18 +846,35 @@ public class ArrangementService {
     }
 
     /**
+     * Vyhledání ArrNode podle uuid
+     * 
+     * @param uuid
+     * @return
+     */
+    public ArrNode findNodeByUUID(String uuid) {
+        return nodeRepository.findOneByUuid(uuid);
+    }
+
+    /**
      * Vyhledání id nodů podle hodnoty atributu.
      *
+     * @param searchValue
      * @param fundList id fondů, do kterých uzly patří
+     * @param additionalFundToNodeList
      * @return seznam id uzlů které vyhovují parametrům
      */
-    public List<ArrFundFulltextResult> findFundsByFulltext(final String searchValue, final Collection<ArrFund> fundList) {
+    public List<ArrFundFulltextResult> findFundsByFulltext(final String searchValue, 
+                                                           final Collection<ArrFund> fundList,
+                                                           final List<ArrFundToNodeList> additionalFundToNodeList) {
 
         // TODO: find all nodes in Lucene - has to be grouped by folder  
         QueryResults<ArrDescItemInfo> foundItems = nodeRepository.findFundIdsByFulltext(searchValue, fundList,
                                                                                         null, null);
 
         List<ArrFundToNodeList> fundToNodeList = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(additionalFundToNodeList)) {
+            fundToNodeList.addAll(additionalFundToNodeList);
+        }
         Map<Integer, ArrFundToNodeList> mapFund = new HashMap<>();
         Set<Integer> processedNodes = new HashSet<>();
         for (ArrDescItemInfo r : foundItems.getRecords()) {

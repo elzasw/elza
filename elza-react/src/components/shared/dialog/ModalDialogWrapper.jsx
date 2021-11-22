@@ -20,19 +20,20 @@ class ModalDialogWrapper extends React.Component {
         });
     }
 
-    dialogWillHide = () => {
-        this.refs.modal._onHide();
-    };
+    // dialogWillHide = () => {
+    //     this.refs.modal._onHide();
+    // };
 
     /**
      * Zajistí aby se callback na zavření dialogu zavolal vždy jen jednou! Bootstrap bug.
      */
     onHide = e => {
         const {onHide} = this.props;
-        if (!this.hide) {
-            onHide && onHide(e);
-            this.hide = true;
-        }
+        onHide && onHide(e);
+        // if (!this.hide) {
+        //     onHide && onHide(e);
+        //     this.hide = true;
+        // }
     };
 
     render() {
@@ -42,11 +43,12 @@ class ModalDialogWrapper extends React.Component {
 
         return (
             <Modal
-                backdrop={this.onHide ? true : 'static'}
+                backdrop={'static'}
                 className={className}
                 ref="modal"
                 show={true}
-                onHide={this.onHide}
+                // onHide={this.onHide}
+                maskClosable={false}
             >
                 {renderHeader && (
                     <Modal.Header closeButton onHide={this.onHide}>

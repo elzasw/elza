@@ -44,6 +44,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import cz.tacr.elza.common.FileDownload;
+import cz.tacr.elza.common.UuidUtils;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.AddLevelParam;
@@ -103,6 +104,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
+import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
@@ -1720,13 +1722,26 @@ public class ArrangementController {
 
         UserDetail userDetail = userService.getLoggedUserDetail();
 
+        // získání seznamu všech dostupných ArrFund pro vyhledávání
         List<ArrFund> fundList = fundRepository.findFundByFulltext(null, userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL) ? null : userDetail.getId());
 
-        if (fundList.isEmpty()) {
+        List<ArrFundToNodeList> additionalFundToNodeList = null;
+        if (UuidUtils.isUUID(input.getSearchValue())) {
+            ArrNode node = arrangementService.findNodeByUUID(input.getSearchValue());
+            if (node != null) {
+                // kontrola přístupových práv pro Fund
+                if (fundList.contains(node.getFund())) {
+                    ArrFundToNodeList arrFundToNodeList = new ArrFundToNodeList(node.getFundId(), Collections.singletonList(node.getNodeId()));
+                    additionalFundToNodeList = Collections.singletonList(arrFundToNodeList);
+                }
+            }
+        }
+
+        if (CollectionUtils.isEmpty(fundList) && CollectionUtils.isEmpty(additionalFundToNodeList)) {
             return Collections.emptyList();
         }
 
-        return arrangementService.findFundsByFulltext(input.getSearchValue(), fundList);
+        return arrangementService.findFundsByFulltext(input.getSearchValue(), fundList, additionalFundToNodeList);
     }
 
     /**
