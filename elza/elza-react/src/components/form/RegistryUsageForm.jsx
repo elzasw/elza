@@ -28,6 +28,8 @@ class RegistryUsageForm extends React.Component {
             WebApi.replaceRegistry(this.props.detail.id, selectedReplacementNode.id).then(() => {
                 this.props.dispatch(addToastrSuccess(i18n('registry.replaceSuccess')));
                 this.props.dispatch(modalDialogHide());
+            }).catch(() => {
+                this.props.dispatch(modalDialogHide());
             });
         }
     };

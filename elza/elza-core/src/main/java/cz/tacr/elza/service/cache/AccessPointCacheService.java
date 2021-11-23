@@ -62,7 +62,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 @Service
@@ -252,17 +251,19 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
     }
 
     @Transactional
-    synchronized public void createApCachedAccessPoint(Integer accessPointId) {
+    public void createApCachedAccessPoint(Integer accessPointId) {
     	
         //flush a batch of updates and release memory:
         this.entityManager.flush();
         this.entityManager.clear();
-    	
-		ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
-		if (oldApCachedAccessPoint != null) {
-			cachedAccessPointRepository.delete(oldApCachedAccessPoint);
-		}
-		processNewAPs(Collections.singletonList(accessPointId));
+    
+        synchronized (this){
+			ApCachedAccessPoint oldApCachedAccessPoint = cachedAccessPointRepository.findByAccessPointId(accessPointId);
+			if (oldApCachedAccessPoint != null) {
+				cachedAccessPointRepository.delete(oldApCachedAccessPoint);
+			}
+			processNewAPs(Collections.singletonList(accessPointId));
+        }
     }
 
     private CachedAccessPoint createCachedAccessPoint(ApAccessPoint accessPoint) {
@@ -398,6 +399,20 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 			cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
 		}
 		return cachedAccessPoint;
+    }
+
+    @Transactional
+    public List<CachedAccessPoint> findCachedAccessPoints(Collection<Integer> accessPointIds) {
+        List<CachedAccessPoint> cachedAccessPoints = new ArrayList<>(accessPointIds.size()); 
+        List<ApCachedAccessPoint> apCachedAccessPoints = cachedAccessPointRepository.findByAccessPointIds(accessPointIds);
+        for (ApCachedAccessPoint apCachedAccessPoint : apCachedAccessPoints) {
+            CachedAccessPoint cachedAccessPoint = null;
+            if (apCachedAccessPoint != null) {
+                cachedAccessPoint = deserialize(apCachedAccessPoint.getData());
+                cachedAccessPoints.add(cachedAccessPoint);
+            }
+        }
+        return cachedAccessPoints;
     }
 
     /**

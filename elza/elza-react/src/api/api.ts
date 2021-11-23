@@ -27,7 +27,7 @@ axios.interceptors.response.use(undefined, error => {
     if (exception.unauthorized && !error.config.noPending) {
         return createPendingPromise(error.config);
     }
-    return exception;
+    throw exception;
 });
 
 interface IError {
