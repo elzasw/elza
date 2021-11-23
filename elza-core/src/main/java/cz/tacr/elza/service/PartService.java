@@ -171,7 +171,7 @@ public class PartService {
         return newPart;
     }
 
-    private RulPartType getPartTypeByCode(final String partTypeCode) {
+    public RulPartType getPartTypeByCode(final String partTypeCode) {
         RulPartType partType = partTypeRepository.findByCode(partTypeCode);
         if (partType == null) {
             throw new ObjectNotFoundException("Typ části neexistuje: " + partTypeCode, BaseCode.ID_NOT_EXIST).setId(partTypeCode);

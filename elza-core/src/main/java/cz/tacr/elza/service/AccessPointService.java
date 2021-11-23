@@ -33,6 +33,8 @@ import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
+import cz.tacr.elza.domain.ItemGroovy;
+import cz.tacr.elza.domain.PartGroovy;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.UserDetail;
@@ -91,7 +93,6 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApScopeRelation;
@@ -1087,7 +1088,9 @@ public class AccessPointService {
             List<ApItem> items = getItemsForParts(part, childrenParts, itemMap);
 
             boolean preferred = prefPartId == null || Objects.equals(prefPartId, part.getPartId());
-            GroovyResult result = groovyService.processGroovy(state, part, childrenParts, items, preferred);
+            List<PartGroovy> childParts = new ArrayList<>(childrenParts);
+            List<ItemGroovy> itemGroovyList = new ArrayList<>(items);
+            GroovyResult result = groovyService.processGroovy(state, part, childParts, itemGroovyList, preferred);
             if (!partService.updatePartValue(part, result, state, state.getScope(),
                                              async, preferred)) {
                 success = false;
@@ -1149,9 +1152,9 @@ public class AccessPointService {
             ApState state = partWrapper.getPartInfo().getApInfo().getApState();
 
             List<PartWrapper> childrenPartWrappers = findChildrenParts(apPart, partWrappers);
-            List<ApPart> childrenParts = getChildrenParts(childrenPartWrappers);
+            List<PartGroovy> childrenParts = getChildrenParts(childrenPartWrappers);
 
-            List<ApItem> items = getItemsFromPartWrappers(partWrapper, childrenPartWrappers);
+            List<ItemGroovy> items = getItemsFromPartWrappers(partWrapper, childrenPartWrappers);
 
             boolean preferred = false;
             Integer accessPointId = state.getAccessPoint().getAccessPointId();
@@ -1182,16 +1185,16 @@ public class AccessPointService {
         return childrenPartWrappers;
     }
 
-    private List<ApPart> getChildrenParts(List<PartWrapper> childrenPartWrappers) {
-        List<ApPart> childrenPart = new ArrayList<>();
+    private List<PartGroovy> getChildrenParts(List<PartWrapper> childrenPartWrappers) {
+        List<PartGroovy> childrenPart = new ArrayList<>();
         for (PartWrapper partWrapper : childrenPartWrappers) {
             childrenPart.add(partWrapper.getEntity());
         }
         return childrenPart;
     }
 
-    private List<ApItem> getItemsFromPartWrappers(PartWrapper partWrapper, List<PartWrapper> childrenPartWrappers) {
-        List<ApItem> items = new ArrayList<>(getItemsFromPartWrapper(partWrapper));
+    private List<ItemGroovy> getItemsFromPartWrappers(PartWrapper partWrapper, List<PartWrapper> childrenPartWrappers) {
+        List<ItemGroovy> items = new ArrayList<>(getItemsFromPartWrapper(partWrapper));
         for (PartWrapper pw : childrenPartWrappers) {
             items.addAll(getItemsFromPartWrapper(pw));
         }
@@ -1218,7 +1221,9 @@ public class AccessPointService {
         List<ApItem> items = apItemService.findItemsByParts(parts);
 
         boolean preferred = preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), apPart.getPartId());
-        GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items, preferred);
+        List<PartGroovy> childParts = new ArrayList<>(childrenParts);
+        List<ItemGroovy> itemGroovyList = new ArrayList<>(items);
+        GroovyResult result = groovyService.processGroovy(state, apPart, childParts, itemGroovyList, preferred);
 
         return partService.updatePartValue(apPart, result, state, state.getScope(), false, preferred);
     }

@@ -361,33 +361,8 @@ public class AccessPointItemService {
         List<ApItem> itemsCreated = new ArrayList<>();
         for (ApItemVO createItem : createItems) {
             ItemType itemType = sdp.getItemTypeById(createItem.getTypeId());
-            RulItemSpec itemSpec;
-            if (itemType.hasSpecifications()) {
-                if (createItem.getSpecId() == null) {
-                    throw new BusinessException("Received item without specification, itemType: " + itemType.getEntity()
-                            .getName(),
-                            BaseCode.PROPERTY_IS_INVALID)
-                                    .set("itemType", itemType.getCode());
-                }
-                itemSpec = itemType.getItemSpecById(createItem.getSpecId());
-                if (itemSpec == null) {
-                    throw new BusinessException("Received item without valid specification, itemType: " + itemType
-                            .getEntity().getName(),
-                            BaseCode.PROPERTY_IS_INVALID)
-                                    .set("itemType", itemType.getCode())
-                                    .set("itemSpecId", createItem.getSpecId());
-                }
-            } else {
-                // item type without specification
-                if (createItem.getSpecId() != null) {
-                    throw new BusinessException("Received item with unexpected specification, itemType: " + itemType
-                            .getEntity()
-                            .getName(),
-                            BaseCode.PROPERTY_IS_INVALID)
-                                    .set("itemType", itemType.getCode());
-                }
-                itemSpec = null;
-            }
+            RulItemSpec itemSpec = getItemSpecification(itemType, createItem);
+
             // if(itemType.get)= createItem.getSpecId() == null ? null : sdp.getItemSpecById(createItem.getSpecId());
             List<ApItem> existsItems = typeIdItemsMap.computeIfAbsent(itemType.getItemTypeId(), k -> new ArrayList<>());
 
@@ -428,6 +403,37 @@ public class AccessPointItemService {
         changeBindingItemsItems(itemsMap, bindingItemList);
         log.debug("Items created, ItemIds: {}", itemsCreated.stream().map(ApItem::getItemId).collect(Collectors.toList()));
         return itemsCreated;
+    }
+
+    public RulItemSpec getItemSpecification(final ItemType itemType, final ApItemVO createItem) {
+        RulItemSpec itemSpec;
+        if (itemType.hasSpecifications()) {
+            if (createItem.getSpecId() == null) {
+                throw new BusinessException("Received item without specification, itemType: " + itemType.getEntity()
+                        .getName(),
+                        BaseCode.PROPERTY_IS_INVALID)
+                        .set("itemType", itemType.getCode());
+            }
+            itemSpec = itemType.getItemSpecById(createItem.getSpecId());
+            if (itemSpec == null) {
+                throw new BusinessException("Received item without valid specification, itemType: " + itemType
+                        .getEntity().getName(),
+                        BaseCode.PROPERTY_IS_INVALID)
+                        .set("itemType", itemType.getCode())
+                        .set("itemSpecId", createItem.getSpecId());
+            }
+        } else {
+            // item type without specification
+            if (createItem.getSpecId() != null) {
+                throw new BusinessException("Received item with unexpected specification, itemType: " + itemType
+                        .getEntity()
+                        .getName(),
+                        BaseCode.PROPERTY_IS_INVALID)
+                        .set("itemType", itemType.getCode());
+            }
+            itemSpec = null;
+        }
+        return itemSpec;
     }
 
     /**

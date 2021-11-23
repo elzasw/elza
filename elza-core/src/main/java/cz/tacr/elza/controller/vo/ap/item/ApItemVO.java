@@ -3,6 +3,7 @@ package cz.tacr.elza.controller.vo.ap.item;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ChangeType;
 
 import java.util.Objects;
 
@@ -39,6 +40,11 @@ public abstract class ApItemVO {
      * specifikace atributu
      */
     private Integer specId;
+
+    /**
+     * typ změny
+     */
+    private ChangeType changeType;
 
     public ApItemVO() {
     }
@@ -89,6 +95,14 @@ public abstract class ApItemVO {
 
     public void setTypeId(final Integer typeId) {
         this.typeId = typeId;
+    }
+
+    public ChangeType getChangeType() {
+        return changeType;
+    }
+
+    public void setChangeType(ChangeType changeType) {
+        this.changeType = changeType;
     }
 
     /**
