@@ -1,28 +1,24 @@
 package cz.tacr.elza.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 
-import javax.persistence.*;
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
-/**
- * Prvek popisu pro přístupové body.
- * Prvek popisu je abstraktní a z něj jsou odvozeny jeho jednotlivé varianty.
- *
- * @since 17.07.2018
- */
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-@Table(name = "ap_item")
+@Table(name = "ap_rev_item")
 @JsonIgnoreProperties(ignoreUnknown = true, value = { "hibernateLazyInitializer", "handler" })
-public class ApItem implements Item, AccessPointCacheSerializable, ItemGroovy {
-
-    public static final String PART_ID = "partId";
-    public static final String PART = "part";
-    public static final String DELETE_CHANGE_ID = "deleteChangeId";
-    public static final String FIELD_DATA = "data";
-    public static final String ITEM_TYPE = "itemType";
-    public static final String ITEM_SPEC = "itemSpec";
+public class ApRevItem implements ItemGroovy{
 
     @Id
     @GeneratedValue
@@ -30,58 +26,61 @@ public class ApItem implements Item, AccessPointCacheSerializable, ItemGroovy {
     protected Integer itemId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
-    @JoinColumn(name = "createChangeId", nullable = false)
+    @JoinColumn(name = "create_change_id", nullable = false)
     protected ApChange createChange;
 
-    @Column(name = "createChangeId", nullable = false, updatable = false, insertable = false)
+    @Column(name = "create_change_id", nullable = false, updatable = false, insertable = false)
     protected Integer createChangeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
-    @JoinColumn(name = "deleteChangeId")
+    @JoinColumn(name = "delete_change_id")
     protected ApChange deleteChange;
 
-    @Column(name = "deleteChangeId", updatable = false, insertable = false)
+    @Column(name = "delete_change_id", updatable = false, insertable = false)
     protected Integer deleteChangeId;
 
-    @Column(nullable = false)
+    @Column
     protected Integer objectId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemType.class)
-    @JoinColumn(name = "itemTypeId", nullable = false)
+    @JoinColumn(name = "item_type_id", nullable = false)
     protected RulItemType itemType;
 
-    @Column(name = "itemTypeId", nullable = false, updatable = false, insertable = false)
+    @Column(name = "item_type_id", nullable = false, updatable = false, insertable = false)
     protected Integer itemTypeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulItemSpec.class)
-    @JoinColumn(name = "itemSpecId")
+    @JoinColumn(name = "item_spec_id")
     protected RulItemSpec itemSpec;
 
-    @Column(name = "itemSpecId", updatable = false, insertable = false)
+    @Column(name = "item_spec_id", updatable = false, insertable = false)
     protected Integer itemSpecId;
 
     @Column(nullable = false)
     protected Integer position;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrData.class)
-    @JoinColumn(name = "dataId")
+    @JoinColumn(name = "data_id")
     protected ArrData data;
 
-    @Column(name = "dataId", updatable = false, insertable = false)
+    @Column(name = "data_id", updatable = false, insertable = false)
     protected Integer dataId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApPart.class)
-    @JoinColumn(name = "partId", nullable = false)
-    protected ApPart part;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApRevPart.class)
+    @JoinColumn(name = "part_id", nullable = false)
+    protected ApRevPart part;
 
-    @Column(nullable = false, updatable = false, insertable = false)
+    @Column(name = "part_id", nullable = false, updatable = false, insertable = false)
     private Integer partId;
 
-    public ApItem() {
+    @Column
+    private Integer origObjectId;
+
+    public ApRevItem() {
 
     }
 
-    public ApItem(final ApItem other) {
+    public ApRevItem(final ApRevItem other) {
         this.createChange = other.createChange;
         this.createChangeId = other.createChangeId;
         this.deleteChange = other.deleteChange;
@@ -94,10 +93,13 @@ public class ApItem implements Item, AccessPointCacheSerializable, ItemGroovy {
         this.position = other.position;
         this.data = other.data;
         this.dataId = other.dataId;
+        this.part = other.part;
+        this.partId = other.partId;
+        this.origObjectId = other.origObjectId;
     }
 
-    public ApItem copy() {
-        return new ApItem(this);
+    public ApRevItem copy() {
+        return new ApRevItem(this);
     }
 
     public Integer getItemId() {
@@ -184,11 +186,11 @@ public class ApItem implements Item, AccessPointCacheSerializable, ItemGroovy {
         return deleteChangeId;
     }
 
-    public ApPart getPart() {
+    public ApRevPart getPart() {
         return part;
     }
 
-    public void setPart(ApPart part) {
+    public void setPart(ApRevPart part) {
         this.part = part;
         this.partId = part != null ? part.getPartId() : null;
     }
@@ -203,7 +205,11 @@ public class ApItem implements Item, AccessPointCacheSerializable, ItemGroovy {
         }
     }
 
-    public boolean isUndefined() {
-        return data == null;
+    public Integer getOrigObjectId() {
+        return origObjectId;
+    }
+
+    public void setOrigObjectId(Integer origObjectId) {
+        this.origObjectId = origObjectId;
     }
 }

@@ -21,7 +21,9 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.domain.ApCachedAccessPoint;
+import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
+import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
@@ -183,6 +185,9 @@ public class ApController {
 
     @Autowired
     private AccessPointCacheService accessPointCacheService;
+
+    @Autowired
+    private RevisionService revisionService;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -822,9 +827,14 @@ public class ApController {
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         accessPointService.hasPermissionForEditingConfirmed(state);
-        ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
-        accessPointService.generateSync(apAccessPoint, apPart);
-        accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        ApRevision revision = revisionService.findRevisionByState(state);
+        if (revision != null) {
+            revisionService.createPart(revision, apPartFormVO);
+        } else {
+            ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
+            accessPointService.generateSync(apAccessPoint, apPart);
+            accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        }
     }
 
     /**
@@ -863,9 +873,15 @@ public class ApController {
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         accessPointService.hasPermissionForEditingConfirmed(state);
-        partService.deletePart(apAccessPoint, partId);
-        accessPointService.generateSync(accessPointId);
-        accessPointCacheService.createApCachedAccessPoint(accessPointId);
+
+        ApRevision revision = revisionService.findRevisionByState(state);
+        if (revision != null) {
+            revisionService.deletePart(revision, partId);
+        } else {
+            partService.deletePart(apAccessPoint, partId);
+            accessPointService.generateSync(accessPointId);
+            accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        }
     }
 
     /**

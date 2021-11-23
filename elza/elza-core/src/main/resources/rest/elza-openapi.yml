@@ -169,6 +169,68 @@ paths:
           description: Potvrzení o úspěšném odstranění
         404:
           description: AP neexistuje
+  /revision/{id}:
+    post:
+      summary: Vytvoření nové revize přístupového bodu
+      operationId: createRevision
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: Potvrzení o úspěšném založení
+        404:
+          description: AP neexistuje
+    delete:
+      summary: Smazání revize přístupového bodu
+      operationId: deleteRevision
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: Potvrzení o úspěšném smazání
+        404:
+          description: AP nebo revize neexistuje
+  /revision/{id}/state:
+    post:
+      summary: Změna stavu revize přístupového bodu
+      operationId: changeStateRevision
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: revisionState
+          description: Nový stav revize
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/RevisionState'
+      responses:
+        200:
+          description: Potvrzení o úspěšné změně stavu revize
+        404:
+          description: AP nebo revize neexistuje
   /daos/{id}/change-scenario:
     post:
       summary: Změna scénáře napojení dao
@@ -603,3 +665,10 @@ components:
       required:
         - count
       title: Result«EntityRef»
+    RevisionState:
+      title: Stav revize
+      type: string
+      enum:
+        - ACTIVE
+        - TO_APPROVE
+        - TO_AMEND

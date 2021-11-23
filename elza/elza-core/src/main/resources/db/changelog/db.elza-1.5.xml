@@ -1559,4 +1559,163 @@ where no.level_id = l.level_id
 			DROP INDEX ap_binding_state_access_point_idx</sql>
     </changeSet>
 
+    <changeSet id="20211115162900" author="fantis">
+        <createTable tableName="ap_revision">
+            <column name="revision_id" type="int">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_ap_revision"
+                             nullable="false"/>
+            </column>
+            <column name="state_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_revision_state"
+                             referencedTableName="ap_state"
+                             referencedColumnNames="state_id"/>
+            </column>
+            <column name="type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_revision_type"
+                             referencedTableName="ap_type"
+                             referencedColumnNames="ap_type_id"/>
+            </column>
+            <column name="preferred_part_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_revision_preferred_part"
+                             referencedTableName="ap_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints foreignKeyName="fk_ap_revision_create_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"
+                             nullable="false"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints foreignKeyName="fk_ap_revision_delete_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="state_approval" type="char(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="ap_rev_part">
+            <column name="part_id" type="int">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_ap_rev_part"
+                             nullable="false"/>
+            </column>
+            <column name="part_type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_rev_part_rul_part_type"
+                             referencedTableName="rul_part_type"
+                             referencedColumnNames="part_type_id"/>
+            </column>
+            <column name="parent_part_id" type="int">
+                <constraints foreignKeyName="fk_ap_rev_part_parent_part"
+                             referencedTableName="ap_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+            <column name="rev_parent_part_id" type="int">
+                <constraints foreignKeyName="fk_ap_rev_part_rev_parent_part"
+                             referencedTableName="ap_rev_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints foreignKeyName="fk_ap_rev_part_create_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"
+                             nullable="false"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints foreignKeyName="fk_ap_rev_part_delete_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="revision_id" type="int">
+                <constraints foreignKeyName="fk_ap_rev_part_revision"
+                             referencedTableName="ap_revision"
+                             referencedColumnNames="revision_id"
+                             nullable="false"/>
+            </column>
+            <column name="orig_part_id" type="int">
+                <constraints foreignKeyName="fk_ap_rev_part_orig_part"
+                             referencedTableName="ap_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+        </createTable>
+        <createTable tableName="ap_rev_item">
+            <column name="item_id" type="int">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_ap_rev_item"
+                             nullable="false"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints foreignKeyName="fk_ap_rev_item_create_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"
+                             nullable="false"/>
+            </column>
+            <column name="delete_change_id" type="int">
+                <constraints foreignKeyName="fk_ap_rev_item_delete_change"
+                             referencedTableName="ap_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="object_id" type="int"/>
+            <column name="item_type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_rev_item_item_type"
+                             referencedTableName="rul_item_type"
+                             referencedColumnNames="item_type_id"/>
+            </column>
+            <column name="item_spec_id" type="int">
+                <constraints foreignKeyName="fk_ap_rev_item_item_spec"
+                             referencedTableName="rul_item_spec"
+                             referencedColumnNames="item_spec_id"/>
+            </column>
+            <column name="position" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_id" type="int">
+                <constraints foreignKeyName="fk_ap_rev_item_data"
+                             referencedTableName="arr_data"
+                             referencedColumnNames="data_id"/>
+            </column>
+            <column name="part_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_rev_item_part"
+                             referencedTableName="ap_rev_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+            <column name="orig_object_id" type="int"/>
+        </createTable>
+        <createTable tableName="ap_rev_index">
+            <column name="index_id" type="int">
+                <constraints primaryKey="true"
+                             primaryKeyName="pk_ap_rev_index"
+                             nullable="false"/>
+            </column>
+            <column name="part_id" type="int">
+                <constraints foreignKeyName="fk_ap_rev_index_part"
+                             referencedTableName="ap_rev_part"
+                             referencedColumnNames="part_id"
+                             nullable="false"/>
+            </column>
+            <column name="index_type" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="nvarchar(4000)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addColumn tableName="ap_revision">
+            <column name="rev_preferred_part_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_revision_rev_preferred_part"
+                             referencedTableName="ap_rev_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
