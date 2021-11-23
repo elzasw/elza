@@ -53,6 +53,8 @@ export const AccessPointDeleteForm:FC<{
             }).then(() => {
                 dispatch(addToastrSuccess(i18n('registry.replaceSuccess')));
                 dispatch(modalDialogHide());
+            }).catch(() => {
+                dispatch(modalDialogHide());
             });
         }
     }

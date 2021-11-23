@@ -15,7 +15,7 @@ class PersistentSortDialog extends AbstractReactComponent {
     };
 
     render() {
-        const {onClose, node, versionId} = this.props;
+        const {onClose, node, versionId, fund} = this.props;
 
         return (
             <div>
@@ -24,7 +24,7 @@ class PersistentSortDialog extends AbstractReactComponent {
                         <label>{i18n('arr.history.title.nodeChanges') + ':'} &nbsp;</label>
                         {node.name}
                     </span>
-                    <PersistentSortForm versionId={versionId} node={node} />
+                    <PersistentSortForm fund={fund} versionId={versionId} node={node} />
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" onClick={this.handleSubmit}>
