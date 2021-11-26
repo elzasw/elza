@@ -215,7 +215,7 @@ const renderItem = (
                                 showImportDialog(`${name}.value`);
                             }}
                         >
-                            <Icon glyph={'fa-download'} />
+                            <Icon glyph={'fa-file'} />
                         </Button>
                     </Col>
                 </Row>
