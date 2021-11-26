@@ -1868,7 +1868,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param allNodes         vložit u všech JP
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void setDataValues(final ArrFundVersion fundVersion,
+    public void setDataValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                               final RulItemType itemType,
                               final Collection<ArrNode> nodes,
                               final Integer replaceValueId,
