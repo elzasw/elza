@@ -61,8 +61,24 @@ export function validateCoordinatePoint(value) {
         } else {
             return null;
         }
+    } else if (value.indexOf('POLYGON') || value.indexOf('LINESTRING')) {
+        let left = value.indexOf('(') + 1;
+        let right = value.indexOf(')');
+        if (right - left === 0) {
+            return i18n('subNodeForm.validate.value.notEmpty');
+        }
+        let data = value.substr(left, value.indexOf(')') - left).split(' ');
+        if (
+            value === '' ||
+            value === ' ' ||
+            data.length % 2 !== 0
+        ) {
+            return i18n('subNodeForm.errorPointCoordinates');
+        } else {
+            return null;
+        }
     }
-    return null;
+    return i18n('subNodeForm.errorPointCoordinates');
 }
 
 /**
