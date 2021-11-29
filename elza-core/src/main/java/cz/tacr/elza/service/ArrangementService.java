@@ -6,6 +6,7 @@ import static cz.tacr.elza.repository.ExceptionThrow.refTemplate;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplateMapType;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 
+import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,6 +32,8 @@ import javax.persistence.LockModeType;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
+import cz.tacr.elza.controller.vo.FileType;
+import cz.tacr.elza.repository.DataCoordinatesRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -41,6 +44,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -217,6 +222,9 @@ public class ArrangementService {
     
     @Autowired
     DaoService daoService;
+
+    @Autowired
+    private DataCoordinatesRepository dataCoordinatesRepository;
 
     public static final String UNDEFINED = "Nezjištěno";
 
@@ -1941,6 +1949,30 @@ public class ArrangementService {
     public Set<Integer> findLinkedNodes(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
                                         final Integer nodeId) {
         return nodeRepository.findLinkedNodes(nodeId);
+    }
+
+    public Resource exportCoordinates(FileType fileType, Integer itemId) {
+        ArrDescItem item = descItemRepository.findById(itemId).orElseThrow(() ->
+                new ObjectNotFoundException("ArrDescItem nenalezen", BaseCode.ID_NOT_EXIST));
+        String coordinates;
+
+        if (fileType.equals(FileType.WKT)) {
+            coordinates = item.getData().getFulltextValue();
+        } else {
+            coordinates = convertCoordinates(fileType, item.getData().getDataId());
+        }
+        return new ByteArrayResource(coordinates.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private String convertCoordinates(FileType fileType, Integer dataId) {
+        switch (fileType) {
+            case KML:
+                return dataCoordinatesRepository.convertCoordinatesToKml(dataId);
+            case GML:
+                return dataCoordinatesRepository.convertCoordinatesToGml(dataId);
+            default:
+                throw new IllegalStateException("Nepovolený typ souboru pro export souřadnic");
+        }
     }
 
     public static class Holder<T> {
