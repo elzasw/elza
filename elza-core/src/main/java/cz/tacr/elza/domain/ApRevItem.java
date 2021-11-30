@@ -18,7 +18,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "ap_rev_item")
 @JsonIgnoreProperties(ignoreUnknown = true, value = { "hibernateLazyInitializer", "handler" })
-public class ApRevItem implements ItemGroovy{
+public class ApRevItem implements AccessPointItem {
 
     @Id
     @GeneratedValue

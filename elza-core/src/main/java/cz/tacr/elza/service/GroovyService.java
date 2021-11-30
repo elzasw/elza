@@ -9,8 +9,8 @@ import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
 
-import cz.tacr.elza.domain.ItemGroovy;
-import cz.tacr.elza.domain.PartGroovy;
+import cz.tacr.elza.domain.AccessPointItem;
+import cz.tacr.elza.domain.AccessPointPart;
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -92,7 +92,7 @@ public class GroovyService {
         List<GroovyPart> groovyParts = new ArrayList<>(parts.size());
         Integer preferredPartId = state.getAccessPoint().getPreferredPartId();
         for (ApPart part : parts) {
-            List<PartGroovy> childrenParts = new ArrayList<>();
+            List<AccessPointPart> childrenParts = new ArrayList<>();
             for (ApPart p : parts) {
                 if (p.getParentPart() != null && part.getPartId().equals(p.getParentPart().getPartId())) {
                     childrenParts.add(p);
@@ -100,31 +100,31 @@ public class GroovyService {
             }
 
             boolean preferred = Objects.equals(preferredPartId, part.getPartId());
-            List<ItemGroovy> itemGroovyList = new ArrayList<>(items);
-            groovyParts.add(convertPart(state, part, childrenParts, itemGroovyList, preferred));
+            List<AccessPointItem> accessPointItemList = new ArrayList<>(items);
+            groovyParts.add(convertPart(state.getApTypeId(), part, childrenParts, accessPointItemList, preferred));
         }
         return new GroovyAe(apType.getCode(), groovyParts);
     }
 
-    public GroovyResult processGroovy(@NotNull final ApState state,
-                                      @NotNull final PartGroovy part,
-                                      @Nullable final List<PartGroovy> childrenParts,
-                                      @NotNull final List<ItemGroovy> items,
+    public GroovyResult processGroovy(@NotNull final Integer apTypeId,
+                                      @NotNull final AccessPointPart part,
+                                      @Nullable final List<AccessPointPart> childrenParts,
+                                      @NotNull final List<AccessPointItem> items,
                                       final boolean preferred) {
-        GroovyPart groovyPart = convertPart(state, part, childrenParts, items, preferred);
+        GroovyPart groovyPart = convertPart(apTypeId, part, childrenParts, items, preferred);
         return groovyScriptService.process(groovyPart, getGroovyFilePath(groovyPart));
     }
 
-    public GroovyPart convertPart(@NotNull final ApState state,
-                                  @NotNull final PartGroovy part,
-                                  @Nullable final List<PartGroovy> childrenParts,
-                                  @NotNull final List<ItemGroovy> items,
+    public GroovyPart convertPart(@NotNull final Integer apTypeId,
+                                  @NotNull final AccessPointPart part,
+                                  @Nullable final List<AccessPointPart> childrenParts,
+                                  @NotNull final List<AccessPointItem> items,
                                   final boolean preferred) {
         StaticDataProvider sdp = staticDataService.getData();
 
         GroovyItems groovyItems = new GroovyItems();
-        for (ItemGroovy item : items) {
-            PartGroovy itemPart = item.getPart();
+        for (AccessPointItem item : items) {
+            AccessPointPart itemPart = item.getPart();
             if (Objects.equals(itemPart.getPartId(), part.getPartId())) {
                 ArrData data = item.getData();
                 ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
@@ -205,12 +205,12 @@ public class GroovyService {
         List<GroovyPart> groovyParts = Collections.emptyList();
         if (childrenParts != null) {
             groovyParts = new ArrayList<>();
-            for (PartGroovy childPart : childrenParts) {
-                groovyParts.add(convertPart(state, childPart, null, items, false));
+            for (AccessPointPart childPart : childrenParts) {
+                groovyParts.add(convertPart(apTypeId, childPart, null, items, false));
             }
         }
 
-        ApType apType = sdp.getApTypeById(state.getApTypeId());
+        ApType apType = sdp.getApTypeById(apTypeId);
         RulPartType partType = sdp.getPartTypeById(part.getPartTypeId());
 
         return new GroovyPart(apType.getCode(),

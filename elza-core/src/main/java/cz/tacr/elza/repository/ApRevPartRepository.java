@@ -21,4 +21,7 @@ public interface ApRevPartRepository extends JpaRepository<ApRevPart, Integer> {
 
     @Query("SELECT p FROM ApRevPart p WHERE p.revParentPart = :revParentPart AND p.deleteChange IS NULL")
     List<ApRevPart> findByRevParentPart(@Param("revParentPart") ApRevPart revParentPart);
+
+    @Query("SELECT p FROM ApRevPart p WHERE p.originalPart = :part AND p.deleteChange IS NULL")
+    ApRevPart findByOriginalPart(@Param("part") ApPart part);
 }

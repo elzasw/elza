@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ChangeType;
@@ -49,7 +50,7 @@ public abstract class ApItemVO {
     public ApItemVO() {
     }
 
-    public ApItemVO(final ApItem item) {
+    public ApItemVO(final AccessPointItem item) {
         id = item.getItemId();
         objectId = item.getObjectId();
         position = item.getPosition();

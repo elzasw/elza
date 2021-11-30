@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
@@ -16,12 +17,12 @@ public class ApItemBitVO extends ApItemVO {
     public ApItemBitVO() {
     }
 
-    public ApItemBitVO(final ApItem item) {
+    public ApItemBitVO(final AccessPointItem item) {
         super(item);
         value = getBitValue(item);
     }
 
-    final public Boolean getBitValue(final ApItem item) {
+    final public Boolean getBitValue(final AccessPointItem item) {
         ArrDataBit data = (ArrDataBit) item.getData();
         return data == null ? null : data.isBitValue();
     }

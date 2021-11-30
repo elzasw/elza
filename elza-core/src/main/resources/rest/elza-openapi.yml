@@ -231,6 +231,58 @@ paths:
           description: Potvrzení o úspěšné změně stavu revize
         404:
           description: AP nebo revize neexistuje
+  /revision/{id}/part/{partId}:
+    delete:
+      summary: Smazání části popisu z revize
+      operationId: deleteRevisionPart
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: partId
+          description: Identifikátor části popisu
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+         200:
+           description: Potvrzení o úspěšném smažání částí popisu
+         404:
+           description: AP nebo revize neexistuje
+  /revision/{id}/part/{partId}/prefer-name:
+    post:
+      summary: Nastavení preferovaného jména
+      operationId: setPreferNameRevision
+      tags:
+        - accesspoints
+      parameters:
+        - name: id
+          description: Identifikátor archivní entity
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: partId
+          description: Identifikátor části popisu
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: Potvrzení o úspěšném nastavení preferovaného jména
+        404:
+          description: AP nebo revize neexistuje
   /daos/{id}/change-scenario:
     post:
       summary: Změna scénáře napojení dao

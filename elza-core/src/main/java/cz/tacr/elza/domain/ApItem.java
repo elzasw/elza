@@ -15,7 +15,7 @@ import javax.persistence.*;
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "ap_item")
 @JsonIgnoreProperties(ignoreUnknown = true, value = { "hibernateLazyInitializer", "handler" })
-public class ApItem implements Item, AccessPointCacheSerializable, ItemGroovy {
+public class ApItem implements Item, AccessPointCacheSerializable, AccessPointItem {
 
     public static final String PART_ID = "partId";
     public static final String PART = "part";

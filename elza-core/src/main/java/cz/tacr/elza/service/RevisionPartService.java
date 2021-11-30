@@ -54,10 +54,10 @@ public class RevisionPartService {
         }
     }
 
-    public ApRevPart getPart(final Integer partId) {
-        Validate.notNull(partId);
-        return revPartRepository.findById(partId)
-                .orElseThrow(revPart(partId));
+    @Transactional
+    public void deleteRevisionPart(ApRevPart revPart, ApChange apChange) {
+        revPart.setDeleteChange(apChange);
+        revPartRepository.save(revPart);
     }
 
     public ApRevPart createPart(final RulPartType partType,
@@ -77,6 +77,22 @@ public class RevisionPartService {
         return revPartRepository.save(revPart);
     }
 
+    public ApRevPart createPart(final ApRevision revision,
+                                final ApChange apChange,
+                                final ApPart apPart) {
+        ApRevPart revParentPart = apPart.getParentPart() != null ? findByOriginalPart(apPart.getParentPart()) : null;
+
+        ApRevPart revPart = new ApRevPart();
+        revPart.setRevision(revision);
+        revPart.setPartType(apPart.getPartType());
+        revPart.setOriginalPart(apPart);
+        revPart.setCreateChange(apChange);
+        revPart.setParentPart(apPart.getParentPart());
+        revPart.setRevParentPart(revParentPart);
+
+        return revPartRepository.save(revPart);
+    }
+
     public void updatePartValue(ApRevPart part,
                                 GroovyResult result) {
 
@@ -87,7 +103,7 @@ public class RevisionPartService {
             throw new SystemException("Povinný index typu [" + DISPLAY_NAME + "] není vyplněn");
         }
 
-        Map<String, ApRevIndex> indexMapByType = revIndexRepository.findByPartId(part.getPartId()).stream()
+        Map<String, ApRevIndex> indexMapByType = revIndexRepository.findByPart(part).stream()
                 .collect(Collectors.toMap(ApRevIndex::getIndexType, Function.identity()));
 
         for (Map.Entry<String, String> entry : indexMap.entrySet()) {
@@ -135,5 +151,15 @@ public class RevisionPartService {
 
     public List<ApRevPart> findPartsByRevParentPart(ApRevPart part) {
         return revPartRepository.findByRevParentPart(part);
+    }
+
+    public ApRevPart findByOriginalPart(ApPart part) {
+        return revPartRepository.findByOriginalPart(part);
+    }
+
+    public ApRevPart findById(Integer partId) {
+        Validate.notNull(partId);
+        return revPartRepository.findById(partId)
+                .orElseThrow(revPart(partId));
     }
 }

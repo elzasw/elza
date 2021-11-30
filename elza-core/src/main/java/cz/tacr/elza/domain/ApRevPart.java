@@ -13,7 +13,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "ap_rev_part")
-public class ApRevPart implements PartGroovy {
+public class ApRevPart implements AccessPointPart {
 
     @Id
     @GeneratedValue

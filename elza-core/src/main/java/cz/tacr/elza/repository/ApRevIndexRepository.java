@@ -7,14 +7,18 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
 public interface ApRevIndexRepository extends JpaRepository<ApRevIndex, Integer> {
 
-    @Query("SELECT i FROM ApRevIndex i WHERE i.part IN :parts AND i.deleteChange IS NULL")
+    @Query("SELECT i FROM ap_rev_index i WHERE i.part IN :parts")
     List<ApRevIndex> findByParts(@Param("parts") List<ApRevPart> parts);
 
-    @Query("SELECT i FROM ApRevIndex i WHERE i.part.partId = :partId")
-    List<ApRevIndex> findByPartId(@Param("partId") Integer partId);
+    @Query("SELECT i FROM ap_rev_index i WHERE i.part = :part")
+    List<ApRevIndex> findByPart(@Param("part") ApRevPart part);
+
+    @Query("SELECT i FROM ap_rev_index i WHERE i.part IN :parts AND i.indexType = :indexType")
+    List<ApRevIndex> findByPartsAndIndexType(@Param("parts") Collection<ApRevPart> parts, @Param("indexType") String indexType);
 }

@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUriRef;
@@ -42,7 +43,7 @@ public class ApItemUriRefVO extends ApItemVO {
         this.description = description;
     }
 
-    public ApItemUriRefVO(final ApItem item) {
+    public ApItemUriRefVO(final AccessPointItem item) {
         super(item);
         ArrDataUriRef data = (ArrDataUriRef) item.getData();
         if (data != null) {

@@ -80,4 +80,20 @@ public class AccessPointController implements AccesspointsApi {
         return ResponseEntity.ok().build();
     }
 
+    @Override
+    @Transactional
+    public ResponseEntity<Void> deleteRevisionPart(Integer id, Integer partId) {
+        ApState state = accessPointService.getStateInternal(id);
+        revisionService.deletePart(state, partId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Void> setPreferNameRevision(Integer id, Integer partId) {
+        ApState state = accessPointService.getStateInternal(id);
+        revisionService.setPreferName(state, partId);
+        return ResponseEntity.ok().build();
+    }
+
 }
