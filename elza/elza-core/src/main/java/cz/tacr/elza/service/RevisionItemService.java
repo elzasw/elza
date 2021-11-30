@@ -176,4 +176,8 @@ public class RevisionItemService {
         }
         return newItems;
     }
+
+    public List<ApRevItem> findByPart(ApRevPart revPart) {
+        return revItemRepository.findByPart(revPart);
+    }
 }

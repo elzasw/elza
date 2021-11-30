@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataJsonTable;
@@ -20,12 +21,12 @@ public class ApItemJsonTableVO extends ApItemVO {
     public ApItemJsonTableVO() {
     }
 
-    public ApItemJsonTableVO(final ApItem item) {
+    public ApItemJsonTableVO(final AccessPointItem item) {
         super(item);
         value = getElzaTableValue(item);
     }
 
-    final public ElzaTable getElzaTableValue(final ApItem item) {
+    final public ElzaTable getElzaTableValue(final AccessPointItem item) {
         ArrDataJsonTable data = (ArrDataJsonTable) item.getData();
         return data == null ? null : data.getValue();
     }

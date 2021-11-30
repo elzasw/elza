@@ -44,6 +44,12 @@ public class ApPartVO {
     private Integer partParentId;
 
     /**
+     * Identifikátor nadřazeného partu z revize
+     */
+    @Nullable
+    private Integer revPartParentId;
+
+    /**
      * Identifikátor původního partu
      */
     @Nullable
@@ -107,6 +113,15 @@ public class ApPartVO {
 
     public void setPartParentId(@Nullable Integer partParentId) {
         this.partParentId = partParentId;
+    }
+
+    @Nullable
+    public Integer getRevPartParentId() {
+        return revPartParentId;
+    }
+
+    public void setRevPartParentId(@Nullable Integer revPartParentId) {
+        this.revPartParentId = revPartParentId;
     }
 
     @Nullable

@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import javax.persistence.EntityManager;
 
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -19,7 +20,7 @@ public class ApItemUnitdateVO extends ApItemVO {
     public ApItemUnitdateVO() {
     }
 
-    public ApItemUnitdateVO(final ApItem item) {
+    public ApItemUnitdateVO(final AccessPointItem item) {
         super(item);
         ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
         if (data != null) {

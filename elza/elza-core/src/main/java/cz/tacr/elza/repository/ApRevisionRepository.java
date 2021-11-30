@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ApRevisionRepository extends JpaRepository<ApRevision, Integer> {
 
-    @Query("SELECT r FROM ApRevison r WHERE r.state = :state AND r.deleteChange IS NULL")
+    @Query("SELECT r FROM ap_revision r WHERE r.state = :state AND r.deleteChange IS NULL")
     ApRevision findByState(@Param("state") ApState state);
 }

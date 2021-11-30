@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-public interface ItemGroovy {
+public interface AccessPointItem {
 
     Integer getItemId();
 
@@ -10,8 +10,12 @@ public interface ItemGroovy {
 
     ArrData getData();
 
-    PartGroovy getPart();
+    AccessPointPart getPart();
 
     RulItemSpec getItemSpec();
+
+    Integer getObjectId();
+
+    Integer getPosition();
 
 }

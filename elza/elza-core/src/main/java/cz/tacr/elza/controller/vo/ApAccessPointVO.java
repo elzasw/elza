@@ -110,6 +110,11 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     /**
      * Identifikátor nové preferované části z revize
      */
+    private Integer newPreferredPart;
+
+    /**
+     * Identifikátor nové preferované části, která existuje pouze v revizi
+     */
     private Integer revPreferredPart;
 
     /**
@@ -269,6 +274,14 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setRevStateApproval(ApRevision.StateApproval revStateApproval) {
         this.revStateApproval = revStateApproval;
+    }
+
+    public Integer getNewPreferredPart() {
+        return newPreferredPart;
+    }
+
+    public void setNewPreferredPart(Integer newPreferredPart) {
+        this.newPreferredPart = newPreferredPart;
     }
 
     public Integer getRevPreferredPart() {

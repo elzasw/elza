@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-public interface PartGroovy {
+public interface AccessPointPart {
 
     Integer getPartId();
 

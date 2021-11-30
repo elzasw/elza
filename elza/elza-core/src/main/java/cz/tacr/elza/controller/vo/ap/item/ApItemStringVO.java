@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo.ap.item;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataString;
@@ -19,12 +20,12 @@ public class ApItemStringVO extends ApItemVO {
     public ApItemStringVO() {
     }
 
-    public ApItemStringVO(final ApItem item) {
+    public ApItemStringVO(final AccessPointItem item) {
         super(item);
         value = getStringValue(item);
     }
 
-    final public String getStringValue(final ApItem item) {
+    final public String getStringValue(final AccessPointItem item) {
         ArrDataString data = (ArrDataString) item.getData();
         return data == null ? null : data.getStringValue();
     }

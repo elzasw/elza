@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo.ap.item;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataDate;
@@ -21,12 +22,12 @@ public class ApItemDateVO extends ApItemVO {
     public ApItemDateVO() {
     }
 
-    public ApItemDateVO(final ApItem item) {
+    public ApItemDateVO(final AccessPointItem item) {
         super(item);
         value = getLocalDateValue(item);
     }
 
-    final public LocalDate getLocalDateValue(final ApItem item) {
+    final public LocalDate getLocalDateValue(final AccessPointItem item) {
         ArrDataDate data = (ArrDataDate) item.getData();
         return data == null ? null : data.getValue();
     }

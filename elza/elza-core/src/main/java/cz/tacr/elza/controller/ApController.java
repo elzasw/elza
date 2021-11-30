@@ -446,11 +446,19 @@ public class ApController {
     public ApAccessPointVO getAccessPoint(@PathVariable final String accessPointId) {
         ApState apState = accessPointService.getApState(accessPointId);
 
+        ApAccessPointVO vo;
         CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(apState.getAccessPointId());
         if (cachedAccessPoint != null) {
-            return apFactory.createVO(cachedAccessPoint);
+            vo = apFactory.createVO(cachedAccessPoint);
+        } else {
+            vo = apFactory.createVO(apState, true);
         }
-        ApAccessPointVO vo = apFactory.createVO(apState, true);
+
+        ApRevision revision = revisionService.findRevisionByState(apState);
+        if (revision != null) {
+            vo = apFactory.createVO(vo, revision);
+        }
+
         return vo;
     }
 
@@ -899,9 +907,14 @@ public class ApController {
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         accessPointService.hasPermissionForEditingConfirmed(state);
-        ApPart apPart = partService.getPart(partId);
-        accessPointService.setPreferName(apAccessPoint, apPart);
-        accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        ApRevision revision = revisionService.findRevisionByState(state);
+        if (revision != null) {
+            revisionService.setPreferName(revision, partId);
+        } else {
+            ApPart apPart = partService.getPart(partId);
+            accessPointService.setPreferName(apAccessPoint, apPart);
+            accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        }
     }
 
     /**
