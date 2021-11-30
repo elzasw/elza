@@ -145,6 +145,7 @@ import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.merge.PartWithSubParts;
 
 /**
  * Servisní třída pro registry.
@@ -402,7 +403,7 @@ public class AccessPointService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_WR_ALL, UsrPermission.Permission.AP_SCOPE_WR})
     public void deleteAccessPoint(@AuthParam(type = AuthParam.Type.AP_STATE) final ApState apState,
-                                  final ApAccessPoint replacedBy, boolean copyAll) {
+                                  final ApAccessPoint replacedBy, boolean mergeAp) {
 
         ApChange.Type changeType = replacedBy != null ? ApChange.Type.AP_REPLACE : ApChange.Type.AP_DELETE; 
         ApChange change = apDataService.createChange(changeType);
@@ -415,15 +416,15 @@ public class AccessPointService {
             ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
             apDataService.validationNotDeleted(replacementState);
             // při sloučení náhradní entita nemůže být ve stavu TO_APPROVE, APPROVED, REV_PREPARED
-            if (copyAll) {
+            if (mergeAp) {
                 validationMergePossibility(replacementState);
             }
             replace(apState, replacementState);
             apState.setReplacedBy(replacedBy);
 
             // kopírování všechny Part z accessPoint->replacedBy
-            if (copyAll) {
-                copyParts(accessPoint, replacedBy, change);
+            if (mergeAp) {
+                mergeParts(accessPoint, replacedBy, change);
                 // vygenerování indexů a aktualizace záznamů v cache
                 generateSync(replacedBy.getAccessPointId());        
                 accessPointCacheService.createApCachedAccessPoint(replacedBy.getAccessPointId());
@@ -2528,49 +2529,189 @@ public class AccessPointService {
     }
 
     /**
-     * kopírování všechny Part z accessPoint do replacedBy
+     * Sloučení Parts z accessPoint do targetAccessPoint
      * 
      * @param accessPoint
-     * @param replacedBy
+     * @param targetAccessPoint
      * @param change
      */
-    private void copyParts(ApAccessPoint accessPoint, ApAccessPoint replacedBy, ApChange change) {
+    private void mergeParts(ApAccessPoint accessPoint, ApAccessPoint targetAccessPoint, ApChange change) {
         List<ApPart> partsFrom = partService.findPartsByAccessPoint(accessPoint);
         Map<Integer, List<ApItem>> itemMapFrom = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
-        Map<Integer, List<ApItem>> itemMapTo = itemRepository.findValidItemsByAccessPoint(replacedBy).stream()
+        List<ApPart> partsTo = partService.findPartsByAccessPoint(targetAccessPoint);
+        Map<Integer, List<ApItem>> itemMapTo = itemRepository.findValidItemsByAccessPoint(targetAccessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
-        List<ApPart> partsTo = partService.findPartsByAccessPoint(replacedBy);
-        // Map source part Id to target part
-        Map<Integer, ApPart> mapParent = new HashMap<>();
+        // příprava seznamu objektů ke sloučení
+        List<PartWithSubParts> partsWSFrom = prepareListPartWithSubParts(partsFrom);
+        List<PartWithSubParts> partsWSTo = prepareListPartWithSubParts(partsTo);
+        Map<Integer, PartWithSubParts> partsWSMapTo = partsWSTo.stream()
+                .collect(Collectors.toMap(p -> p.getPart().getPartId(), p -> p));
 
-        // kopírování Part bez rodičů
-        for (ApPart part : partsFrom) {
-            if (part.getParentPart() == null) {
-            	ApPart targetPart = null;
-                if (!part.getPartType().getRepeatable()) {
-                	targetPart = partService.findFirstPartByCode(part.getPartType().getCode(), partsTo);
+        for (PartWithSubParts partWSFrom : partsWSFrom) {
+            ApPart partFrom = partWSFrom.getPart();
+            ApPart targetPart = null;
+            if (!partFrom.getPartType().getRepeatable()) {
+                targetPart = partService.findFirstPartByCode(partFrom.getPartType().getCode(), partsTo);
+            } else {
+                // try to find the same part
+                PartWithSubParts targetPartWS = findPartWSInList(partWSFrom, partsWSTo, itemMapFrom, itemMapTo);
+                // if exists -> merge is not needed
+                if (targetPartWS != null) {
+                    continue;
                 }
-                if (targetPart == null) {
-                	targetPart = copyPart(part, replacedBy, null, change);
+            }
+
+            // kopírování Part
+            if (targetPart == null) {
+                copyPartWithItems(partFrom, targetAccessPoint, null, itemMapFrom.get(partFrom.getPartId()), change);
+
+                // kopírování podřízených Part
+                List<ApPart> subPartsFrom = partWSFrom.getSubParts();
+                for (ApPart subPart : subPartsFrom) {
+                    copyPartWithItems(subPart, targetAccessPoint, partFrom, itemMapFrom.get(subPart.getPartId()), change);
                 }
-                mapParent.put(part.getPartId(), targetPart);
-                copyItems(itemMapFrom.get(part.getPartId()), targetPart, itemMapTo.get(targetPart.getPartId()), change);                
+            } else {
+                // sloučení ApItems dvou Part
+                mergeItems(itemMapFrom.get(partFrom.getPartId()), targetPart, itemMapTo.get(targetPart.getPartId()), change);
+
+                // sloučení podřízených Part
+                List<ApPart> targetSubParts = partsWSMapTo.get(targetPart.getPartId()).getSubParts();
+                List<ApPart> subPartsFrom = partWSFrom.getSubParts();
+                for (ApPart subPartFrom : subPartsFrom) {
+                    ApPart findPart = findApPartInList(subPartFrom, targetSubParts, itemMapFrom.get(subPartFrom.getPartId()), itemMapTo);
+                    if (findPart == null) {
+                        copyPartWithItems(subPartFrom, targetAccessPoint, targetPart, itemMapFrom.get(subPartFrom.getPartId()), change);
+                    }
+                }
             }
         }
+    }
 
-        // kopírování Part s rodiči
-        for (ApPart part : partsFrom) {
+    /**
+     * Získání seznamu objektů PartWithSubParts ze seznamu objektů ApPart
+     * 
+     * @param parts
+     * @return
+     */
+    private List<PartWithSubParts> prepareListPartWithSubParts(List<ApPart> parts) {
+        Map<Integer, PartWithSubParts> mapPartsWithSubParts = new HashMap<>();
+        for (ApPart part : parts) {
             if (part.getParentPart() != null) {
-                ApPart parentTo = mapParent.get(part.getParentPartId());
-                Validate.notNull(parentTo, "Rodičovský Part musí existovat");
-                
-                ApPart targetPart = copyPart(part, replacedBy, parentTo, change);
-                copyItems(itemMapFrom.get(part.getPartId()), targetPart, itemMapTo.get(targetPart.getPartId()), change);
+                PartWithSubParts target = mapPartsWithSubParts.computeIfAbsent(part.getParentPartId(), p -> new PartWithSubParts());
+                target.addSubPart(part);
+            } else {
+                PartWithSubParts target = mapPartsWithSubParts.computeIfAbsent(part.getPartId(), p -> new PartWithSubParts());
+                target.setPart(part);
             }
         }
+
+        return new ArrayList<>(mapPartsWithSubParts.values());
+    }
+
+    /**
+     * Vyhledavání úplně shodné ApPart v seznamu parts včetně prvků popisu
+     * 
+     * @param part
+     * @param parts
+     * @param items
+     * @param itemMap
+     * @return
+     */
+    private ApPart findApPartInList(ApPart part, List<ApPart> parts, List<ApItem> items, Map<Integer, List<ApItem>> itemMap) {
+        for (ApPart p : parts) {
+            if (equalsPart(part, p, items, itemMap.get(p.getPartId()))) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Vyhledavání úplně shodné části v seznamu parts včetně podřízených parts a prvků popisu 
+     * 
+     * @param partF
+     * @param partsTo
+     * @param itemMapFrom
+     * @param itemMapTo
+     * @return
+     */
+    private PartWithSubParts findPartWSInList(PartWithSubParts partF, List<PartWithSubParts> partsTo, Map<Integer, List<ApItem>> itemMapFrom, Map<Integer, List<ApItem>> itemMapTo) {
+        for (PartWithSubParts p : partsTo) {
+            if (equalsPart(partF.getPart(), p.getPart(), itemMapFrom.get(partF.getPart().getPartId()), itemMapTo.get(p.getPart().getPartId()))
+                    && equalsParts(partF.getSubParts(), p.getSubParts(), itemMapFrom, itemMapTo)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Porovnání dvou seznamů ApParts
+     * 
+     * @param partsF
+     * @param partsT
+     * @param itemMapF
+     * @param itemMapT
+     * @return
+     */
+    private boolean equalsParts(List<ApPart> partsF, List<ApPart> partsT, Map<Integer, List<ApItem>> itemMapF, Map<Integer, List<ApItem>> itemMapT) {
+        for (ApPart pF : partsF) {
+            boolean foundPart = false;
+            for (ApPart pT : partsT) {
+                if (equalsPart(pF, pT, itemMapF.get(pF.getPartId()), itemMapT.get(pT.getPartId()))) {
+                    foundPart = true;
+                }
+            }
+            if (!foundPart) {
+                return false;
+            }
+        }
+        return true;
+    }    
+
+    /**
+     * Porovnání dvou ApPart (s ApItems) 
+     * 
+     * @param partOne
+     * @param partTwo
+     * @param itemsOne
+     * @param itemsTwo
+     * @return
+     */
+    private boolean equalsPart(ApPart partOne, ApPart partTwo, List<ApItem> itemsOne, List<ApItem> itemsTwo) {
+        if (!partOne.getPartTypeId().equals(partTwo.getPartTypeId())) {
+            return false;
+        }
+        if (itemsOne.size() != itemsTwo.size()) {
+            return false;
+        }
+        for (ApItem itemOne : itemsOne) {
+            if (!isApItemInList(itemOne, itemsTwo)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Kontrola, zda seznam ApItems obsahuje prvek ApItem
+     * 
+     * @param item
+     * @param items
+     * @return
+     */
+    private boolean isApItemInList(ApItem item, List<ApItem> items) {
+        for (ApItem i : items) {
+            if (Objects.equals(item.getItemTypeId(), i.getItemTypeId())
+                    && Objects.equals(item.getItemSpecId(), i.getItemSpecId())
+                    && item.getData().isEqualValue(i.getData())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -2597,13 +2738,50 @@ public class AccessPointService {
     }
 
     /**
-     * Vytvoření kopie neexistujících ApItem. Kopírují se jen položky, které nemají duplicitní hodnoty
+     * Vytvoření kopie ApPart spolu s ApItems
+     * 
+     * @param part
+     * @param accessPoint
+     * @param parent
+     * @param itemsFrom
+     * @param change
+     */
+    private void copyPartWithItems(ApPart part, ApAccessPoint accessPoint, ApPart parent, List<ApItem> itemsFrom, ApChange change) {
+        ApPart partTo = copyPart(part, accessPoint, parent, change);
+        copyItems(itemsFrom, partTo, change);
+    }
+
+    /**
+     * Kopírování všech položek ApItem
+     * 
+     * @param itemsFrom prvky původní part
+     * @param partTo
+     * @param change
+     */
+    private void copyItems(List<ApItem> itemsFrom, ApPart partTo, ApChange change) {
+        for (ApItem item : itemsFrom) {
+            ArrData newData = ArrData.makeCopyWithoutId(item.getData());
+
+            ApItem newItem = apItemService.createItem(partTo, newData, 
+                    item.getItemType(), 
+                    item.getItemSpec(), 
+                    change, 
+                    apItemService.nextItemObjectId(),
+                    item.getPosition());
+
+            dataRepository.save(newData);
+            itemRepository.save(newItem);
+        }
+    }
+
+    /**
+     * Sloučení ApItem z dva Party. Kopírují se jen položky, které nemají duplicitní hodnoty
      * 
      * @param itemsFrom prvky původní part
      * @param toPart
      * @param change
      */
-    private void copyItems(List<ApItem> itemsFrom, ApPart partTo, List<ApItem> itemsTo, ApChange change) {
+    private void mergeItems(List<ApItem> itemsFrom, ApPart partTo, List<ApItem> itemsTo, ApChange change) {
         int position = 0;
         for (ApItem item : itemsFrom) {
             if (item.getPosition() > position) {
@@ -2616,11 +2794,11 @@ public class AccessPointService {
                 ArrData newData = ArrData.makeCopyWithoutId(item.getData());
 
                 ApItem newItem = apItemService.createItem(partTo, newData, 
-                		item.getItemType(), 
-                		item.getItemSpec(), 
-                		change, 
-                		apItemService.nextItemObjectId(),
-                		++position);
+                    item.getItemType(), 
+                    item.getItemSpec(), 
+                    change, 
+                    apItemService.nextItemObjectId(),
+                    ++position);
 
                 dataRepository.save(newData);
                 itemRepository.save(newItem);
