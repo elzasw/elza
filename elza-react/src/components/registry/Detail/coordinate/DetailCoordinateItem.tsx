@@ -57,7 +57,7 @@ const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
             modalDialogShow(
                 this,
                 i18n('ap.coordinate.export.title'),
-                <ExportCoordinateModal onClose={() => dispatch(modalDialogHide())} item={item} />,
+                <ExportCoordinateModal onClose={() => dispatch(modalDialogHide())} itemId={item.id} arrangement={false} />,
             ),
         ),
 });

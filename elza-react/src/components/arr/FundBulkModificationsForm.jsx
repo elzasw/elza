@@ -248,7 +248,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
 
         if (dataType.code === "STRUCTURED") {
 
-            WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, null, 200).then(json => {
+            WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, null, 1000).then(json => {
                 var valueItems = json.map(i => ({id: i.id, name: i.value}));
 
                 if (
