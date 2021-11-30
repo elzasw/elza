@@ -116,32 +116,17 @@ class ValueCheckListBox extends AbstractReactComponent {
         });
     }
 
-    getValue = () => {
-        let {value} = this.props;
-        if (typeof value === 'undefined') {
-            value = {type: 'unselected', ids: []};
-        }
-
-        return {
-            type: value.type || 'unselected',
-            ids: value.ids || [],
-        };
-    };
-
     render() {
         const {isFetchingItemTypeValues, valueItems} = this.state;
-
-        const value = this.getValue();
 
         return (
             <FilterableListBox
                 className="filter-content-container"
                 searchable
                 items={valueItems}
-                selectionType={value.type}
-                selectedIds={value.ids}
                 onChange={this.handleValueItemsChange}
                 onSearch={this.handleValueSearch}
+                supportInverseSelection={false}
             >
                 {isFetchingItemTypeValues && <HorizontalLoader hover showText={false} />}
             </FilterableListBox>

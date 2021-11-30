@@ -598,17 +598,7 @@ export function objectFromWKT(value) {
     const state = {type: null, data: null};
     const start = value.indexOf('(');
     state.type = value.substr(0, start).trim();
-    const data = value.substr(start + 1, value.length - start - 2)
-    if (state.type === 'POINT') {
-        const xy = data.split(' ');
-        if (xy.length == 2) {
-            state.data = xy[1] + ',' + xy[0]; // výměna párů hodnot
-        } else {
-            state.data = data;
-        }
-    } else {
-        state.data = data;
-    }
+    state.data = value;
     return state;
 }
 
@@ -626,6 +616,9 @@ export function objectFromWKT(value) {
  * @returns string WK Text
  */
 export function wktFromTypeAndData(type, value) {
+    if (value.includes('POINT') || value.includes('POLYGON') || value.includes('LINESTRING') || !value.match(/^\d/)) {
+        return value;
+    }
     const pairs = value.split('\n');
     let points = [];
     pairs.forEach(function(pair, index, array) {
