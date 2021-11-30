@@ -2025,6 +2025,9 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         RulItemType descItemType = ruleService.getItemTypeById(itemTypeId);
+        if (descItemType.getStructuredType().getAnonymous()) {
+            throw new IllegalArgumentException("U anonymních strukturovaných typů nelze hromadně nastavit hodnotu.");
+        }
 
         replaceDataBody.getNodes()
                 .forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getId(), node.getVersion()));
