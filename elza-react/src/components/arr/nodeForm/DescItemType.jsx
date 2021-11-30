@@ -28,6 +28,8 @@ import {validateUnitDate} from '../../registry/field/UnitdateField';
 import {RulItemTypeType} from '../../../api/RulItemTypeType';
 
 import {registerField, unregisterField} from "../text-fragments";
+import {modalDialogHide, modalDialogShow} from "../../../actions/global/modalDialog";
+import ImportCoordinateModal from "../../registry/Detail/coordinate/ImportCoordinateModal";
 
 const placeholder = document.createElement('div');
 placeholder.className = 'placeholder';
@@ -109,6 +111,7 @@ class DescItemType extends AbstractReactComponent {
         this.state = {
             currentEditDescItemIndex: null,
             descItemType: {...props.descItemType},
+            coordinatesUpdate: null,
         };
         this.bindMethods(
             'focus',
@@ -136,6 +139,7 @@ class DescItemType extends AbstractReactComponent {
             'removePlaceholder',
             'renderDescItem',
             'renderLabel',
+            'showImportDialog',
         );
     }
 
@@ -662,6 +666,7 @@ class DescItemType extends AbstractReactComponent {
             versionId,
             fundId,
         } = this.props;
+        const {coordinatesUpload} = this.state;
 
         let specName = null;
         if (descItem.descItemSpecId) {
@@ -711,6 +716,7 @@ class DescItemType extends AbstractReactComponent {
                 onDownload: value => {
                     this.props.onCoordinatesDownload(descItem.descItemObjectId, value);
                 },
+                coordinatesUpload: coordinatesUpload,
             },
             INT: {
                 refType,
@@ -928,6 +934,31 @@ class DescItemType extends AbstractReactComponent {
         return descItemsShowDeleteItem;
     }
 
+    showImportDialog() {
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('ap.coordinate.import.title'),
+                <ImportCoordinateModal
+                    onSubmit={async formData => {
+                        const reader = new FileReader();
+                        reader.onload = async () => {
+                            const data = reader.result;
+                            try {
+                                const fieldValue = await WebApi.importApCoordinates(data, formData.format);
+                                this.setState({coordinatesUpload: fieldValue});
+                            } catch (e) {
+                                //notification.error({message: 'Nepodařilo se importovat souřadnice'});
+                            }
+                        };
+                        reader.readAsBinaryString(formData.file);
+                    }}
+                    onSubmitSuccess={(result, dispatch) => dispatch(modalDialogHide())}
+                />,
+            ),
+        )
+    };
+
     /**
      * Renderování nadpisu atributu - včetně akcí pro atribut.
      * @return {Object} view
@@ -1061,7 +1092,7 @@ class DescItemType extends AbstractReactComponent {
                         </NoFocusButton>,
                         <NoFocusButton
                             key="upload"
-                            onClick={this.handleCoordinatesUploadButtonClick}
+                            onClick={() => {this.showImportDialog()}}
                             title={i18n('subNodeForm.descItemType.title.add')}
                         >
                             <Icon glyph="fa-upload" />

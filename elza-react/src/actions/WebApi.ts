@@ -2257,6 +2257,16 @@ export class UrlFactory {
         );
     }
 
+    static exportArrCoordinates(itemId, fileType: CoordinateFileType = CoordinateFileType.KML) {
+        return (
+            UrlBuilder.bindParams(WebApiCls.arrangementUrl + '/export/coordinates/{itemId}', {
+                itemId,
+            }) +
+            '?fileType=' +
+            fileType
+        );
+    }
+
     static exportItemCsvExport(objectId, versionId, typePrefix) {
         return (
             serverContextPath +
