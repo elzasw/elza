@@ -81,7 +81,7 @@ public class ApItemUriRefVO extends ApItemVO {
     }
 
     @Override
-    public boolean equalsValue(ApItem item) {
+    public boolean equalsValue(AccessPointItem item) {
         String value = null;
         String schema = null;
         String description = null;

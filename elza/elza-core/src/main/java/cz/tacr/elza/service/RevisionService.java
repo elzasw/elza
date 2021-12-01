@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.RevStateChange;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApChange;
@@ -85,10 +86,22 @@ public class RevisionService {
 
         ApChange change = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
         List<ApRevPart> parts = revisionPartService.findByRevision(revision);
+        List<ApRevItem> items = null;
+        List<ApRevIndex> indices = null;
         if (CollectionUtils.isNotEmpty(parts)) {
-            List<ApRevItem> items = revisionItemService.findByParts(parts);
-            List<ApRevIndex> indices = revIndexRepository.findByParts(parts);
+            items = revisionItemService.findByParts(parts);
+            indices = revIndexRepository.findByParts(parts);
+        }
 
+        deleteRevision(revision, change, parts, items, indices);
+    }
+
+    private void deleteRevision(ApRevision revision,
+                                ApChange change,
+                                List<ApRevPart> parts,
+                                List<ApRevItem> items,
+                                List<ApRevIndex> indices) {
+        if (CollectionUtils.isNotEmpty(parts)) {
             deleteRevisionIndices(indices);
             revisionItemService.deleteRevisionItems(items, change);
             revisionPartService.deleteRevisionParts(parts, change);
@@ -149,7 +162,7 @@ public class RevisionService {
         ApChange apChange = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
 
         ApRevPart newPart = revisionPartService.createPart(partType, revision, apChange, revParentPart, parentPart);
-        revisionItemService.createItems(newPart, apPartFormVO.getItems(), apChange);
+        revisionItemService.createItems(newPart, apPartFormVO.getItems(), apChange, false);
         updatePartValue(newPart, revision);
     }
 
@@ -280,6 +293,9 @@ public class RevisionService {
     @Transactional
     public void deletePart(ApState state, Integer partId) {
         ApRevision revision = revisionRepository.findByState(state);
+        if (revision == null) {
+            throw new IllegalArgumentException("Neexistuje revize");
+        }
         if (revision.getRevPreferredPartId() != null && revision.getRevPreferredPartId().equals(partId)) {
             throw new IllegalArgumentException("Preferované jméno nemůže být odstraněno");
         }
@@ -330,6 +346,9 @@ public class RevisionService {
     @Transactional
     public void setPreferName(ApState state, Integer partId) {
         ApRevision revision = revisionRepository.findByState(state);
+        if (revision == null) {
+            throw new IllegalArgumentException("Neexistuje revize");
+        }
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         RulPartType defaultPartType = sdp.getDefaultPartType();
 
@@ -356,9 +375,81 @@ public class RevisionService {
         updatePartValues(revision);
     }
 
-    public void updatePart(ApState state, Integer partId, ApPartFormVO apPartFormVO) {
+    @Transactional
+    public void updatePart(ApRevision revision, Integer partId, ApPartFormVO apPartFormVO) {
+        if (revision == null) {
+            throw new IllegalArgumentException("Neexistuje revize");
+        }
+        ApRevPart revPart = revisionPartService.findById(partId);
+
+        List<ApRevItem> deleteItems = revisionItemService.findByPart(revPart);
+
+        Map<Integer, ApRevItem> itemMap = deleteItems.stream().collect(Collectors.toMap(ApRevItem::getItemId, i -> i));
+
+        List<ApItemVO> itemListVO = apPartFormVO.getItems();
+        List<ApItemVO> createItems = new ArrayList<>();
+
+        // určujeme, které záznamy: přidat, odstranit, nebo ponechat
+        for (ApItemVO itemVO : itemListVO) {
+            if (itemVO.getId() == null) {
+                createItems.add(itemVO); // new -> add
+            } else {
+                ApRevItem item = itemMap.get(itemVO.getId());
+                if (item != null) {
+                    if (itemVO.equalsValue(item)) {
+                        deleteItems.remove(item); // no change -> don't delete
+                    } else {
+                        createItems.add(itemVO); // changed -> add + delete
+                    }
+                }
+            }
+        }
+
+        // pokud nedojde ke změně
+        if (!createItems.isEmpty() || !deleteItems.isEmpty()) {
+            ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
+
+            revisionItemService.createItems(revPart, createItems, change, false);
+
+            revisionItemService.deleteRevisionItems(deleteItems, change);
+
+            updatePartValue(revPart, revision);
+        }
     }
 
+    @Transactional
+    public void updatePart(ApRevision revision, ApPart apPart, ApPartFormVO apPartFormVO) {
+        ApRevPart revPart = revisionPartService.findByOriginalPart(apPart);
+        if (revPart != null) {
+            updatePart(revision, revPart.getPartId(), apPartFormVO);
+        } else {
+            ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
+
+            revPart = revisionPartService.createPart(revision, change, apPart);
+
+            revisionItemService.createItems(revPart, apPartFormVO.getItems(), change, true);
+
+            updatePartValue(revPart, revision);
+        }
+    }
+
+    @Transactional
     public void mergeRevision(ApState apState, ApState.StateApproval state) {
+        ApRevision revision = findRevisionByState(apState);
+        if (revision == null) {
+            throw new IllegalArgumentException("Neexistuje revize");
+        }
+
+        ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
+        List<ApRevPart> parts = revisionPartService.findByRevision(revision);
+        List<ApRevItem> items = null;
+        List<ApRevIndex> indices = null;
+        if (CollectionUtils.isNotEmpty(parts)) {
+            items = revisionItemService.findByParts(parts);
+            indices = revIndexRepository.findByParts(parts);
+        }
+
+
+        deleteRevision(revision, change, parts, items, indices);
     }
 }

@@ -65,8 +65,9 @@ public class RevisionItemService {
     }
 
     public List<ApRevItem> createItems(final ApRevPart part,
-                                    final List<ApItemVO> createItems,
-                                    final ApChange change) {
+                                       final List<ApItemVO> createItems,
+                                       final ApChange change,
+                                       final boolean updateOrigItems) {
         if (createItems.isEmpty()) {
             return Collections.emptyList();
         }
@@ -104,8 +105,9 @@ public class RevisionItemService {
 
             itemService.checkItemLengthLimit(itemType.getEntity(), data);
 
-            //todo nextItemObjectId???
-            ApRevItem itemCreated = createItem(part, data, itemType.getEntity(), itemSpec, change, accessPointItemService.nextItemObjectId(), position);
+            Integer origObjectId = updateOrigItems ? createItem.getObjectId() : createItem.getOrigObjectId();
+
+            ApRevItem itemCreated = createItem(part, data, itemType.getEntity(), itemSpec, change, accessPointItemService.nextItemObjectId(), position, origObjectId);
             itemsCreated.add(itemCreated);
 
             existsItems.add(itemCreated);
@@ -121,7 +123,7 @@ public class RevisionItemService {
     private ApRevItem createItem(final ApRevPart part,
                                 final ArrData data,
                                 final RulItemType it, final RulItemSpec is, final ApChange c,
-                                final int objectId, final int position) {
+                                final int objectId, final int position, final Integer origObjectId) {
         ApRevItem item = new ApRevItem();
         item.setData(data);
         item.setItemType(it);
@@ -130,6 +132,7 @@ public class RevisionItemService {
         item.setObjectId(objectId);
         item.setPosition(position);
         item.setPart(part);
+        item.setOrigObjectId(origObjectId);
         return item;
     }
 

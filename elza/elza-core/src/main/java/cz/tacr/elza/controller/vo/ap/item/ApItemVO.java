@@ -146,7 +146,7 @@ public abstract class ApItemVO {
      * @param apItem
      * @return true if equals
      */
-    public abstract boolean equalsValue(ApItem apItem);
+    public abstract boolean equalsValue(AccessPointItem apItem);
 
     /**
      * Comparison of base fields: position, typeId, specId
@@ -154,7 +154,7 @@ public abstract class ApItemVO {
      * @param apItem
      * @return true if equals in three fields
      */
-    public boolean equalsBase(@NotNull ApItem apItem) {
+    public boolean equalsBase(@NotNull AccessPointItem apItem) {
         return Objects.equals(position, apItem.getPosition()) 
                 && Objects.equals(typeId, apItem.getItemTypeId())
                 && Objects.equals(specId, apItem.getItemSpecId());

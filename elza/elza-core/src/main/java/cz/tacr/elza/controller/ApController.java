@@ -861,8 +861,13 @@ public class ApController {
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.getPart(partId);
-        if (accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO)) {
-            accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        ApRevision revision = revisionService.findRevisionByState(state);
+        if (revision != null) {
+            revisionService.updatePart(revision, apPart, apPartFormVO);
+        } else {
+            if (accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO)) {
+                accessPointCacheService.createApCachedAccessPoint(accessPointId);
+            }
         }
     }
 
@@ -879,7 +884,8 @@ public class ApController {
                               @PathVariable final Integer partId,
                               @RequestBody final ApPartFormVO apPartFormVO) {
         ApState state = accessPointService.getStateInternal(id);
-        revisionService.updatePart(state, partId, apPartFormVO);
+        ApRevision revision = revisionService.findRevisionByState(state);
+        revisionService.updatePart(revision, partId, apPartFormVO);
     }
 
     /**

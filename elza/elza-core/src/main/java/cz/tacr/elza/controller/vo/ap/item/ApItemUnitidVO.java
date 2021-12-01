@@ -47,7 +47,7 @@ public class ApItemUnitidVO extends ApItemVO {
     }
 
     @Override
-    public boolean equalsValue(ApItem item) {
+    public boolean equalsValue(AccessPointItem item) {
         return equalsBase(item) && Objects.equals(value, getStringValue(item));
     }
 }
