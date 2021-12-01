@@ -68,7 +68,7 @@ public class ApRevision {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "state_approval", length = StringLength.LENGTH_ENUM, nullable = false)
-    private ApRevision.StateApproval stateApproval;
+    private RevStateApproval stateApproval;
 
     public Integer getRevisionId() {
         return revisionId;
@@ -132,11 +132,11 @@ public class ApRevision {
         this.deleteChangeId = deleteChange != null ? deleteChange.getChangeId() : null;
     }
 
-    public StateApproval getStateApproval() {
+    public RevStateApproval getStateApproval() {
         return stateApproval;
     }
 
-    public void setStateApproval(StateApproval stateApproval) {
+    public void setStateApproval(RevStateApproval stateApproval) {
         this.stateApproval = stateApproval;
     }
 
@@ -162,28 +162,6 @@ public class ApRevision {
 
     public Integer getDeleteChangeId() {
         return deleteChangeId;
-    }
-
-    /**
-     * Stav revize.
-     */
-    public enum StateApproval {
-
-        /**
-         * Nová revize přístupového bodu.
-         */
-        ACTIVE,
-
-        /**
-         * Připraven ke schválení.
-         */
-        TO_APPROVE,
-
-        /**
-         * K doplnění.
-         */
-        TO_AMEND;
-
     }
 
 }

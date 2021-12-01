@@ -220,12 +220,12 @@ paths:
           schema:
             type: integer
             format: int32
-        - name: revisionState
+        - name: revStateChange
           description: Nový stav revize
           in: query
           required: true
           schema:
-            $ref: '#/components/schemas/RevisionState'
+            $ref: '#/components/schemas/RevStateChange'
       responses:
         200:
           description: Potvrzení o úspěšné změně stavu revize
@@ -717,6 +717,20 @@ components:
       required:
         - count
       title: Result«EntityRef»
+    RevStateChange:
+      type: object
+      properties:
+        typeId:
+          description: Identifikátor typu archivní entity
+          type: integer
+          format: int32
+        scopeId:
+          description: Identifikátor oblasti archivní entity
+          type: integer
+          format: int32
+        state:
+          description: Stav revize
+          $ref: "#/components/schemas/RevisionState"
     RevisionState:
       title: Stav revize
       type: string

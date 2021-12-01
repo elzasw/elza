@@ -994,6 +994,7 @@ public class ApFactory {
                 changeType = ChangeType.UPDATED;
             }
             itemVO.setChangeType(changeType);
+            itemVO.setOrigObjectId(item.getOrigObjectId());
             items.add(itemVO);
         }
         fillRefEntities(items);

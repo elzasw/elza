@@ -166,3 +166,55 @@ export function registryDelete(id) {
         });
     };
 }
+
+export function registryCreateRevision(id) {
+    return (dispatch, getState) => {
+        Api.accesspoints.createRevision(id).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
+            const list = storeFromArea(store, AREA_REGISTRY_LIST);
+            if (detail.id == id) {
+                dispatch(registryDetailInvalidate());
+            }
+
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
+                dispatch(registryListInvalidate());
+            }
+        });
+    };
+}
+
+export function registryDeleteRevision(id) {
+    return (dispatch, getState) => {
+        Api.accesspoints.deleteRevision(id).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
+            const list = storeFromArea(store, AREA_REGISTRY_LIST);
+            if (detail.id == id) {
+                dispatch(registryDetailInvalidate());
+            }
+
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
+                dispatch(registryListInvalidate());
+            }
+        });
+    };
+}
+
+export function registryChangeStateRevision(id, revisionState) {
+    return (dispatch, getState) => {
+
+        Api.accesspoints.changeStateRevision(id, revisionState).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
+            const list = storeFromArea(store, AREA_REGISTRY_LIST);
+            if (detail.id == id) {
+                dispatch(registryDetailInvalidate());
+            }
+
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
+                dispatch(registryListInvalidate());
+            }
+        });
+    };
+}

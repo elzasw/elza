@@ -28,6 +28,7 @@ import { showConfirmDialog } from "components/shared/dialog";
 import './ApDetailPageWrapper.scss';
 import { RevisionPart, getRevisionParts } from './revision';
 import { ApStateVO } from 'api/ApStateVO';
+import {Api} from '../../api';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     const bindingsMaps: Bindings = {
@@ -110,7 +111,9 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     fetchViewSettings,
     refreshValidation,
     setPreferred,
+    setRevisionPreferred,
     deletePart,
+    deleteRevisionPart,
     // deleteParts,
     showConfirmDialog,
     showPartEditModal,
@@ -161,7 +164,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         const nextPreferredPart = updatedPart ? updatedPart : part;
         if (nextPreferredPart?.id) {
             saveScrollPosition();
-            await setPreferred(id, nextPreferredPart.id);
+            part ? await setPreferred(id, nextPreferredPart.id) : await setRevisionPreferred(id, nextPreferredPart.id);
             restoreScrollPosition();
             refreshValidation(id);
         }
@@ -175,7 +178,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         if(confirmResult){
             if (deletedPart?.id) {
                 saveScrollPosition();
-                await deletePart(id, deletedPart.id);
+                part ? await deletePart(id, deletedPart.id) : await deleteRevisionPart(id, deletedPart.id);
                 restoreScrollPosition();
             }
 
@@ -195,7 +198,8 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     }
 
     const handleEdit = (part: RevisionPart) => {
-        const partType = refTables.partTypes.itemsMap && part.part?.typeId ? refTables.partTypes.itemsMap[part.part.typeId].code : null;
+        const partTypeId = part.part?.typeId ? part.part.typeId : part.updatedPart?.typeId;
+        const partType = refTables.partTypes.itemsMap && partTypeId ? refTables.partTypes.itemsMap[partTypeId].code : null;
 
         saveScrollPosition();
         detail.data &&
@@ -315,9 +319,9 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         }
     ]
 
-    const allParts = sortPrefer( detail.data ? detail.data.parts : [], detail.data?.preferredPart)
-    const allRevisionParts = revisionTest ? getRevisionParts(allParts, exampleUpdatedParts) : getRevisionParts(allParts, [])
-    const filteredRevisionParts = allRevisionParts.filter(({part, updatedPart}) => !part?.partParentId && !updatedPart?.partParentId )
+    const allParts = sortPrefer( detail.data ? detail.data.parts : [], detail.data?.preferredPart);
+    const allRevisionParts = detail.data.revStateApproval ? getRevisionParts(allParts, detail.data.revParts) : getRevisionParts(allParts, []);
+    const filteredRevisionParts = allRevisionParts.filter(({part, updatedPart}) => !part?.partParentId && !updatedPart?.partParentId );
 
     /*
     const getRelatedPartSections = (parentParts: ApPartVO[]) => {
@@ -518,8 +522,16 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
         await WebApi.setPreferPartName(apId, partId);
         return dispatch(registryDetailFetchIfNeeded(apId, true));
     },
+    setRevisionPreferred: async (apId: number, partId: number) => {
+        await Api.accesspoints.setPreferNameRevision(apId, partId);
+        return dispatch(registryDetailFetchIfNeeded(apId, true));
+    },
     deletePart: async (apId: number, partId: number) => {
         await WebApi.deletePart(apId, partId);
+        return dispatch(registryDetailFetchIfNeeded(apId, true));
+    },
+    deleteRevisionPart: async (apId: number, partId: number) => {
+        await Api.accesspoints.deleteRevisionPart(apId, partId);
         return dispatch(registryDetailFetchIfNeeded(apId, true));
     },
     deleteParts: async (apId: number, parts: ApPartVO[]) => {
