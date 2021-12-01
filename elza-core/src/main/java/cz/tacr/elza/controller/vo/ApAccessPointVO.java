@@ -9,6 +9,7 @@ import java.util.List;
 
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.RevStateApproval;
 
 
 /**
@@ -105,7 +106,7 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     /**
      * Stav revize
      */
-    private ApRevision.StateApproval revStateApproval;
+    private RevStateApproval revStateApproval;
 
     /**
      * Identifikátor nové preferované části z revize
@@ -268,11 +269,11 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.ruleSetId = ruleSetId;
     }
 
-    public ApRevision.StateApproval getRevStateApproval() {
+    public RevStateApproval getRevStateApproval() {
         return revStateApproval;
     }
 
-    public void setRevStateApproval(ApRevision.StateApproval revStateApproval) {
+    public void setRevStateApproval(RevStateApproval revStateApproval) {
         this.revStateApproval = revStateApproval;
     }
 

@@ -43,6 +43,11 @@ public abstract class ApItemVO {
     private Integer specId;
 
     /**
+     * identifikátor původní hodnoty atributu
+     */
+    private Integer origObjectId;
+
+    /**
      * typ změny
      */
     private ChangeType changeType;
@@ -96,6 +101,14 @@ public abstract class ApItemVO {
 
     public void setTypeId(final Integer typeId) {
         this.typeId = typeId;
+    }
+
+    public Integer getOrigObjectId() {
+        return origObjectId;
+    }
+
+    public void setOrigObjectId(Integer origObjectId) {
+        this.origObjectId = origObjectId;
     }
 
     public ChangeType getChangeType() {

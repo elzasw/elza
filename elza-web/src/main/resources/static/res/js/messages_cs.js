@@ -1016,6 +1016,13 @@ var messages = {
     "registry.detail.variantRegistry": "Variantní rejstříková hesla",
     "registry.replaceSuccess": "Rejstříkové heslo bylo úspěšně nahrazeno",
 
+    "registry.createRevision": "Vytvořit revizi",
+    "registry.deleteRevision": "Smazat revizi",
+    "registry.createRevisionQuestion": "Opravdu chcete vytvořit revizi archivní entity?",
+    "registry.deleteRevisionQuestion": "Opravdu chcete smazat revizi archivní entity?",
+    "registry.changeStateRevision": "Změna stavu revize",
+    "registry.mergeRevision": "Merge revize",
+
     "registry.entity.notFound": "Archivní entita nenalezena",
 
     "registry.list.itemsVisibleCountFrom": "Zobrazeno {0} z {1}, zpřesněte vyhledávací filtr",

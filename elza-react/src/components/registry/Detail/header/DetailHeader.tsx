@@ -18,6 +18,7 @@ import DetailDescriptionsItem from './DetailDescriptionsItem';
 import './DetailHeader.scss';
 import DetailState from './DetailState';
 import { SyncIcon } from "../sync-icon";
+import DetailRevState from "./DetailRevState";
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     item: ApAccessPointVO;
@@ -261,6 +262,11 @@ const DetailHeader: FC<Props> = ({
                                 {item.stateApproval && (
                                     <DetailDescriptionsItem>
                                         <DetailState state={item.stateApproval} />
+                                    </DetailDescriptionsItem>
+                                )}
+                                {item.revStateApproval && (
+                                    <DetailDescriptionsItem>
+                                        <DetailRevState state={item.revStateApproval} />
                                     </DetailDescriptionsItem>
                                 )}
                                 {scope && (

@@ -866,6 +866,36 @@ public class ApController {
         }
     }
 
+    /**
+     * Úprava části přístupového bodu.
+     *
+     * @param id identifikátor přístupového bodu (PK)
+     * @param partId identifikátor upravované části
+     * @param apPartFormVO data pro úpravu části
+     */
+    @Transactional
+    @RequestMapping(value = "/revision/{id}/part/{partId}", method = RequestMethod.POST)
+    public void updateRevisionPart(@PathVariable final Integer id,
+                              @PathVariable final Integer partId,
+                              @RequestBody final ApPartFormVO apPartFormVO) {
+        ApState state = accessPointService.getStateInternal(id);
+        revisionService.updatePart(state, partId, apPartFormVO);
+    }
+
+    /**
+     * Úprava části přístupového bodu.
+     *
+     * @param id identifikátor přístupového bodu (PK)
+     * @param state stav do kterého se má entita po merge uvést
+     */
+    @Transactional
+    @RequestMapping(value = "/revision/{id}/merge", method = RequestMethod.POST)
+    public void mergeRevision(@PathVariable final Integer id,
+                              @RequestParam(required = false) @Nullable final ApState.StateApproval state) {
+        ApState apState = accessPointService.getStateInternal(id);
+        revisionService.mergeRevision(apState, state);
+    }
+
 
     /**
      * Smazání části přístupového bodu.

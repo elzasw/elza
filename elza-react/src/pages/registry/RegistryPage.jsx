@@ -6,7 +6,8 @@ import Ribbon from '../../components/page/Ribbon';
 import ImportForm from '../../components/form/ImportForm';
 import RegistryList from '../../components/registry/RegistryList';
 import {Button} from '../../components/ui';
-import {registryDelete, registryDetailFetchIfNeeded, registryListInvalidate} from '../../actions/registry/registry.jsx';
+import {registryDelete, registryDetailFetchIfNeeded, registryListInvalidate, registryCreateRevision,
+    registryDeleteRevision, registryChangeStateRevision} from '../../actions/registry/registry.jsx';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog.jsx';
 import {refRecordTypesFetchIfNeeded} from '../../actions/refTables/recordTypes.jsx';
 import {Shortcuts} from 'react-shortcuts';
@@ -22,6 +23,8 @@ import * as eidTypes from '../../actions/refTables/eidTypes';
 import ScopeLists from '../../components/arr/ScopeLists';
 import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
 import ApStateChangeForm from '../../components/registry/ApStateChangeForm';
+import RevStateChangeForm from '../../components/registry/RevStateChangeForm';
+import RevMergeForm from '../../components/registry/RevMergeForm';
 import {WebApi} from '../../actions';
 import ApDetailPageWrapper from '../../components/registry/ApDetailPageWrapper';
 import {refApTypesFetchIfNeeded} from '../../actions/refTables/apTypes';
@@ -375,6 +378,85 @@ class RegistryPage extends AbstractReactComponent {
         this.props.dispatch(modalDialogShow(this, i18n('ap.state.change'), form));
     };
 
+    handleCreateRevision = () => {
+        if (window.confirm(i18n('registry.createRevisionQuestion'))) {
+            const {
+                registryDetail: {
+                    data: {id},
+                },
+            } = this.props;
+            this.props.dispatch(registryCreateRevision(id));
+        }
+    };
+
+    handleDeleteRevision = () => {
+        if (window.confirm(i18n('registry.deleteRevisionQuestion'))) {
+            const {
+                registryDetail: {
+                    data: {id},
+                },
+            } = this.props;
+            this.props.dispatch(registryDeleteRevision(id));
+        }
+    };
+
+    handleChangeStateRevision = () => {
+        const {
+            registryDetail: {
+                data: {id, typeId, scopeId, revStateApproval},
+            },
+        } = this.props;
+        const form = (
+            <RevStateChangeForm
+                initialValues={{
+                    state: revStateApproval,
+                    typeId: typeId,
+                    scopeId: scopeId,
+                }}
+                onSubmit={data => {
+                    const finalData = {
+                        state: data.state,
+                        typeId: data.typeId,
+                        scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
+                    };
+                    this.props.dispatch(registryChangeStateRevision(id, finalData));
+                }}
+                onSubmitSuccess={() => {
+                    this.props.dispatch(modalDialogHide());
+                    this.props.dispatch(registryDetailFetchIfNeeded(id, true));
+                    this.props.dispatch(registryListInvalidate());
+                }}
+                accessPointId={id}
+            />
+        );
+        this.props.dispatch(modalDialogShow(this, i18n('registry.changeStateRevision'), form));
+    };
+
+    handleMergeRevision = () => {
+        const {
+            registryDetail: {
+                data: {id, stateApproval},
+            },
+        } = this.props;
+        const form = (
+            <RevMergeForm
+                initialValues={{
+                    state: stateApproval,
+                }}
+                onSubmit={data => {
+                    return WebApi.mergeRevision(id, data.state);
+                }}
+                onSubmitSuccess={() => {
+                    this.props.dispatch(modalDialogHide());
+                    this.props.dispatch(registryDetailFetchIfNeeded(id, true));
+                    this.props.dispatch(registryListInvalidate());
+                }}
+                accessPointId={id}
+            />
+        );
+        this.props.dispatch(modalDialogShow(this, i18n('registry.mergeRevision'), form));
+    };
+
     buildRibbon = () => {
         const {
             registryDetail: {data, id},
@@ -528,6 +610,42 @@ class RegistryPage extends AbstractReactComponent {
                         <Icon glyph="fa-upload" />
                         <div>
                             <span className="btnText">{i18n('ap.push-to-ext')}</span>
+                        </div>
+                    </Button>,
+                );
+            }
+
+            if (data.revStateApproval) {
+                itemActions.push(
+                    <Button disabled={data.invalid} key="revisionDelete" onClick={this.handleDeleteRevision}>
+                        <Icon glyph="fa-trash" />
+                        <div>
+                            <span className="btnText">{i18n('registry.deleteRevision')}</span>
+                        </div>
+                    </Button>,
+                );
+                itemActions.push(
+                    <Button disabled={data.invalid} key="revisionChangeState" onClick={this.handleChangeStateRevision}>
+                        <Icon glyph="fa-pencil" />
+                        <div>
+                            <span className="btnText">{i18n('registry.changeStateRevision')}</span>
+                        </div>
+                    </Button>,
+                );
+                itemActions.push(
+                    <Button disabled={data.invalid} key="revisionMerge" onClick={this.handleMergeRevision}>
+                        <Icon glyph="fa-arrow-left" />
+                        <div>
+                            <span className="btnText">{i18n('registry.mergeRevision')}</span>
+                        </div>
+                    </Button>,
+                );
+            } else {
+                itemActions.push(
+                    <Button disabled={data.invalid} key="revisionCreate" onClick={this.handleCreateRevision}>
+                        <Icon glyph="fa-plus" />
+                        <div>
+                            <span className="btnText">{i18n('registry.createRevision')}</span>
                         </div>
                     </Button>,
                 );

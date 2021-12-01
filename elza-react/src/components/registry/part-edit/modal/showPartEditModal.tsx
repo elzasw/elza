@@ -52,7 +52,7 @@ export const showPartEditModal = (
 
                 console.log('SUBMIT EDIT', apId, mainPart.id, submitData);
 
-                const result = await WebApi.updatePart(apId, mainPart.id, submitData)
+                const result = part ? await WebApi.updatePart(apId, mainPart.id, submitData) : await WebApi.updateRevisionPart(apId, mainPart.id, submitData);
                 onClose();
                 await dispatch(registryDetailFetchIfNeeded(apId, true))
                 onUpdateFinish();

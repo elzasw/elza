@@ -25,4 +25,9 @@ export interface ApItemVO {
      * specifikace atributu
      */
     specId?: number;
+
+    /**
+     * identifikátor původní hodnoty atributu
+     */
+    origObjectId?: number;
 }

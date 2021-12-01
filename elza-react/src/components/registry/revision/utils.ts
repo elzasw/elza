@@ -7,13 +7,13 @@ export const getRevisionParts = (parts: ApPartVO[] = [], updatedParts: ApPartVO[
 
     // add updated items
     parts.forEach((part)=>{
-        const updatedPart = updatedParts.find((updatedPart) => updatedPart.id === part.id);
+        const updatedPart = updatedParts.find((updatedPart) => updatedPart.origPartId === part.id);
         revisionItems.push({part, updatedPart});
     })
 
     // add newly added items
     updatedParts.forEach((updatedPart)=>{
-        const item = parts.find((item)=> item.id === updatedPart.id)
+        const item = parts.find((item)=> item.id === updatedPart.origPartId)
         if(!item){
             revisionItems.push({updatedPart});
         }
@@ -27,13 +27,13 @@ export const getRevisionItems = (items: ApItemVO[] = [], updatedItems: ApItemVO[
 
     // add updated items
     items.forEach((item)=>{
-        const updatedItem = updatedItems.find((updatedItem) => updatedItem.id === item.id);
+        const updatedItem = updatedItems.find((updatedItem) => updatedItem.origObjectId === item.id);
         revisionItems.push({item, updatedItem});
     })
 
     // add potentially added items
     updatedItems.forEach((updatedItem)=>{
-        const item = items.find((item)=> item.id === updatedItem.id)
+        const item = items.find((item)=> item.id === updatedItem.origObjectId)
         if(!item){
             revisionItems.push({updatedItem});
         }

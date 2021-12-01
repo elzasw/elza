@@ -1,8 +1,9 @@
 package cz.tacr.elza.service;
 
 import cz.tacr.elza.controller.vo.ApPartFormVO;
-import cz.tacr.elza.controller.vo.RevisionState;
+import cz.tacr.elza.controller.vo.RevStateChange;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevIndex;
@@ -12,6 +13,8 @@ import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.AccessPointPart;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApRevIndexRepository;
@@ -46,6 +49,9 @@ public class RevisionService {
     private GroovyService groovyService;
 
     @Autowired
+    private StaticDataService staticDataService;
+
+    @Autowired
     private ApRevisionRepository revisionRepository;
 
     @Autowired
@@ -64,7 +70,7 @@ public class RevisionService {
         revision.setCreateChange(change);
         revision.setState(state);
         revision.setType(state.getApType());
-        revision.setStateApproval(ApRevision.StateApproval.ACTIVE);
+        revision.setStateApproval(RevStateApproval.ACTIVE);
         revision.setPreferredPart(state.getAccessPoint().getPreferredPart());
 
         revisionRepository.save(revision);
@@ -99,14 +105,24 @@ public class RevisionService {
     }
 
     @Transactional
-    public void changeStateRevision(ApState state, RevisionState revisionState) {
+    public void changeStateRevision(ApState state, RevStateChange revStateChange) {
         ApRevision revision = findRevisionByState(state);
         if (revision == null) {
             throw new IllegalStateException("Pro tento přístupový bod neexistuje revize");
         }
 
-        ApRevision.StateApproval stateApproval = ApRevision.StateApproval.valueOf(revisionState.getValue());
-        revision.setStateApproval(stateApproval);
+        StaticDataProvider sdp = staticDataService.createProvider();
+
+        if (revStateChange.getState() != null) {
+            RevStateApproval stateApproval = RevStateApproval.valueOf(revStateChange.getState().getValue());
+            revision.setStateApproval(stateApproval);
+        }
+
+        if (revStateChange.getTypeId() != null) {
+            ApType type = sdp.getApTypeById(revStateChange.getTypeId());
+            revision.setType(type);
+        }
+
         revisionRepository.save(revision);
     }
 
@@ -137,7 +153,8 @@ public class RevisionService {
         updatePartValue(newPart, revision);
     }
 
-    private void updatePartValue(final ApRevPart part, final ApRevision revision) {
+    @Transactional(Transactional.TxType.MANDATORY)
+    public void updatePartValue(final ApRevPart part, final ApRevision revision) {
         //todo ????? parentPart
         //todo add child appart and apitem
         List<ApRevPart> childrenParts = revisionPartService.findPartsByParentPart(part.getOriginalPart());
@@ -156,7 +173,8 @@ public class RevisionService {
         updatePartValue(revision, part, childrenParts, items);
     }
 
-    private void updatePartValues(final ApRevision revision) {
+    @Transactional(Transactional.TxType.MANDATORY)
+    public void updatePartValues(final ApRevision revision) {
         //todo add child appart and apitem
         List<ApRevPart> partList = revisionPartService.findByRevision(revision);
         Map<Integer, List<ApRevItem>> itemMap = revisionItemService.findByParts(partList).stream()
@@ -336,5 +354,11 @@ public class RevisionService {
         revisionRepository.save(revision);
 
         updatePartValues(revision);
+    }
+
+    public void updatePart(ApState state, Integer partId, ApPartFormVO apPartFormVO) {
+    }
+
+    public void mergeRevision(ApState apState, ApState.StateApproval state) {
     }
 }

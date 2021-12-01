@@ -5,7 +5,7 @@ import java.util.List;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
-import cz.tacr.elza.controller.vo.RevisionState;
+import cz.tacr.elza.controller.vo.RevStateChange;
 import cz.tacr.elza.service.RevisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -74,9 +74,9 @@ public class AccessPointController implements AccesspointsApi {
 
     @Override
     @Transactional
-    public ResponseEntity<Void> changeStateRevision(Integer id, @Valid RevisionState revisionState) {
+    public ResponseEntity<Void> changeStateRevision(Integer id, RevStateChange revStateChange) {
         ApState state = accessPointService.getStateInternal(id);
-        revisionService.changeStateRevision(state, revisionState);
+        revisionService.changeStateRevision(state, revStateChange);
         return ResponseEntity.ok().build();
     }
 
