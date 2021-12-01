@@ -43,7 +43,7 @@ public class ApItemUnitdateVO extends ApItemVO {
     }
 
     @Override
-    public boolean equalsValue(ApItem item) {
+    public boolean equalsValue(AccessPointItem item) {
         String value = null;
         ArrDataUnitdate data = (ArrDataUnitdate) item.getData();
         if (data != null) {

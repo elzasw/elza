@@ -26,7 +26,7 @@ public class ApItemEnumVO extends ApItemVO {
     }
 
     @Override
-    public boolean equalsValue(ApItem apItem) {
+    public boolean equalsValue(AccessPointItem apItem) {
         return equalsBase(apItem); 
     }
 }

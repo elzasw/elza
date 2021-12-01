@@ -96,7 +96,7 @@ public class ApItemAccessPointRefVO extends ApItemVO {
     }
 
     @Override
-    public boolean equalsValue(ApItem item) {
+    public boolean equalsValue(AccessPointItem item) {
         ArrDataRecordRef data = (ArrDataRecordRef) item.getData();
         return equalsBase(item) && Objects.equals(value, data.getRecordId());
     }
