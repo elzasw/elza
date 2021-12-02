@@ -166,6 +166,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
+import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs.FavoriteItem;
 import cz.tacr.elza.repository.AuthenticationRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.DaoFileGroupRepository;
@@ -846,9 +847,12 @@ public class ClientFactoryVO {
             SettingFavoriteItemSpecs setting = SettingFavoriteItemSpecs.newInstance(favoritesItemType, staticDataService);
             if (CollectionUtils.isNotEmpty(setting.getFavoriteItems())) {
                 StaticDataProvider sdp = staticDataService.getData();
-                List<Integer> itemSpecsIds = setting.getFavoriteItems().stream()
-                        .map(fi -> sdp.getItemSpecByCode(fi.getValue()).getItemSpecId())
-                        .collect(Collectors.toList());
+                List<Integer> itemSpecsIds = new ArrayList<>();
+                for (FavoriteItem fi : setting.getFavoriteItems()) {
+                    RulItemSpec ris = sdp.getItemSpecByCode(fi.getValue());
+                    Validate.notNull(ris);
+                    itemSpecsIds.add(ris.getItemSpecId());
+                }
                 typeSpecsMap.put(favoritesItemType.getEntityId(), itemSpecsIds);
             }
         }
