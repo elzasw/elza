@@ -12,8 +12,10 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -60,13 +62,16 @@ public class ApStateSpecification implements Specification<ApState> {
     private Set<Integer> apTypeIdTree;
     private Set<Integer> scopeIds;
     private ApState.StateApproval state;
+    private RevStateApproval revState;
     private StaticDataProvider sdp;
 
-    public ApStateSpecification(final SearchFilterVO searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds, ApState.StateApproval state, final StaticDataProvider sdp) {
+    public ApStateSpecification(final SearchFilterVO searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
+                                ApState.StateApproval state, RevStateApproval revState, final StaticDataProvider sdp) {
         this.searchFilterVO = searchFilterVO;
         this.apTypeIdTree = apTypeIdTree;
         this.scopeIds = scopeIds;
         this.state = state;
+        this.revState = revState;
         this.sdp = sdp;
     }
 
@@ -82,12 +87,6 @@ public class ApStateSpecification implements Specification<ApState> {
 
         Predicate condition = cb.conjunction();
 
-        String user = searchFilterVO.getUser();
-        if (StringUtils.isNotEmpty(user)) {
-            Join<ApState, ApChange> apChangeJoin = stateRoot.join(ApState.FIELD_CREATE_CHANGE, JoinType.INNER);
-            condition = cb.and(condition, cb.like(cb.lower(apChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%"));
-        }
-
         // omezení dle oblasti
         Validate.isTrue(!scopeIds.isEmpty());
         condition = cb.and(condition, stateRoot.get(ApState.FIELD_SCOPE_ID).in(scopeIds));
@@ -102,21 +101,39 @@ public class ApStateSpecification implements Specification<ApState> {
             condition = cb.and(condition, stateRoot.get(ApState.FIELD_STATE_APPROVAL).in(state));
         }
 
-        // omezení dle konkrétních archivních entit
-        String code = searchFilterVO.getCode();
-        if (StringUtils.isNotEmpty(code)) {
-            try {
-                Integer id = Integer.parseInt(code);
-                condition = cb.and(condition, accessPointJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID).in(id));
-            } catch (NumberFormatException e) {
+        if (revState != null) {
+            Root<ApRevision> revisionRoot = q.from(ApRevision.class);
+            Join<ApRevision, ApState> revisionApStateJoin = revisionRoot.join(ApRevision.FIELD_STATE, JoinType.INNER);
 
-            }
+            condition = cb.and(condition,
+                    cb.equal(stateRoot.get(ApState.FIELD_STATE_ID), revisionApStateJoin.get(ApState.FIELD_STATE_ID)),
+                    cb.isNull(revisionRoot.get(ApRevision.FIELD_DELETE_CHANGE_ID)),
+                    revisionRoot.get(ApRevision.FIELD_STATE_APPROVAL).in(revState));
         }
 
         // pouze aktuální state
         condition = cb.and(condition, cb.isNull(stateRoot.get(ApState.FIELD_DELETE_CHANGE_ID)));
 
-        condition = cb.and(condition, process(cb.conjunction(), ctx));
+        if (searchFilterVO != null) {
+            String user = searchFilterVO.getUser();
+            if (StringUtils.isNotEmpty(user)) {
+                Join<ApState, ApChange> apChangeJoin = stateRoot.join(ApState.FIELD_CREATE_CHANGE, JoinType.INNER);
+                condition = cb.and(condition, cb.like(cb.lower(apChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%"));
+            }
+
+            // omezení dle konkrétních archivních entit
+            String code = searchFilterVO.getCode();
+            if (StringUtils.isNotEmpty(code)) {
+                try {
+                    Integer id = Integer.parseInt(code);
+                    condition = cb.and(condition, accessPointJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID).in(id));
+                } catch (NumberFormatException e) {
+
+                }
+            }
+
+            condition = cb.and(condition, process(cb.conjunction(), ctx));
+        }
 
         Join<ApIndex, ApPart> indexJoin = preferredPartJoin.join(ApPart.INDICES, JoinType.INNER);
         indexJoin.on(cb.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));

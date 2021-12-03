@@ -689,6 +689,7 @@ export class WebApiCls {
         state = null,
         searchTypeName?: ApSearchType,
         searchTypeUsername?: ApSearchType,
+        revState = null,
         searchFilter?: SearchFilterVO,
     ): Promise<FilteredResultVO<ApAccessPointVO>> {
         return AjaxUtils.ajaxPost(
@@ -707,6 +708,7 @@ export class WebApiCls {
                 state,
                 searchTypeName,
                 searchTypeUsername,
+                revState,
             },
             searchFilter,
         );

@@ -22,6 +22,7 @@ import javax.transaction.Transactional;
 
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApRevision;
+import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
@@ -217,7 +218,8 @@ public class ApController {
                                                              @RequestParam(required = false) @Nullable final Integer lastRecordNr,
                                                              @RequestParam(required = false) @Nullable final SearchType searchTypeName,
                                                              @RequestParam(required = false) @Nullable final SearchType searchTypeUsername,
-                                                             @RequestBody(required = false) @Nullable final SearchFilterVO searchFilter) {
+                                                             @RequestParam(required = false) @Nullable final RevStateApproval revState,
+                                                             @RequestBody(required = false)@Nullable final SearchFilterVO searchFilter) {
         final long foundRecordsCount;
         final List<ApState> foundRecords;
 
@@ -271,7 +273,7 @@ public class ApController {
             return findAccessPointFulltext(search, from, count, fund, apTypeIds, state, scopeId, searchFilter, sdp);
         }
 
-        if (searchFilter == null) {
+        if (searchFilter == null && revState == null) {
 
             Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
 
@@ -291,7 +293,7 @@ public class ApController {
             Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
 
             Page<ApState> page = accessPointService.findApAccessPointBySearchFilter(searchFilter, apTypeIds, scopeIds,
-                                                                                    state, from, count, sdp);
+                                                                                    state, revState, from, count, sdp);
             foundRecords = page.getContent();
             foundRecordsCount = page.getTotalElements();
         }

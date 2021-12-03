@@ -30,6 +30,7 @@ interface OwnProps extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
     globalEntity: boolean;
     bindings?: Bindings;
+    updatedItem: boolean;
 }
 
 type Props = OwnProps & ReturnType<typeof mapDispatchToProps>;
@@ -40,7 +41,8 @@ const DetailItemContent: FC<Props> = ({
     rulDataTypes, 
     descItemTypes, 
     bindings, 
-    selectAp
+    selectAp,
+    updatedItem
 }) => {
     const itemType = descItemTypes.itemsMap[item.typeId];
     const dataType: RulDataTypeVO = rulDataTypes.itemsMap[itemType.dataTypeId];
@@ -167,7 +169,7 @@ const DetailItemContent: FC<Props> = ({
             {valueSpecification}
             {valueSpecification && valueField && ': '}
             {valueField}
-            {itemBinding != null && (
+            {(itemBinding != null && !updatedItem) && (
                 <span className="sync-wrapper">
                     <SyncIcon syncState={ itemBinding ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
                 </span>

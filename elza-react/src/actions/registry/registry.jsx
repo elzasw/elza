@@ -71,6 +71,7 @@ export function registryListFetchIfNeeded(from = 0, size = DEFAULT_REGISTRY_LIST
             filter.state,
             undefined,
             undefined,
+            filter.revState,
             searchFilter,
         );
     });

@@ -62,6 +62,7 @@ const DetailBodySection: FC<Props> = ({
         return true;
     }
 
+    const isModified = (part.part != null && part.updatedPart != null);
     const revisionItems = getRevisionItems(part.part?.items || undefined, part.updatedPart?.items || undefined);
 
     const renderPartActions = (part: RevisionPart) => {
@@ -105,6 +106,7 @@ const DetailBodySection: FC<Props> = ({
                         itemTypeSettings={itemTypeSettings}
                         bindings={bindings}
                         items={revisionItems}
+                        isModified={isModified}
                         />
                 </div>
                 }

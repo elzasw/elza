@@ -16,6 +16,6 @@ public interface ApRevItemRepository extends JpaRepository<ApRevItem, Integer> {
     @Query("SELECT i FROM ApRevItem i LEFT JOIN FETCH i.data d WHERE i.part IN :parts AND i.deleteChange IS NULL")
     List<ApRevItem> findByParts(@Param("parts") Collection<ApRevPart> parts);
 
-    @Query("SELECT i FROM ApRevItem i WHERE i.part = :part AND i.deleteChange IS NULL")
+    @Query("SELECT i FROM ApRevItem i LEFT JOIN FETCH i.data d WHERE i.part = :part AND i.deleteChange IS NULL")
     List<ApRevItem> findByPart(@Param("part") ApRevPart part);
 }

@@ -35,6 +35,7 @@ import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.AccessPointPart;
+import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.UserDetail;
@@ -2264,9 +2265,9 @@ public class AccessPointService {
     }
 
     public Page<ApState> findApAccessPointBySearchFilter(SearchFilterVO searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
-                                                         StateApproval state, Integer from, Integer count, StaticDataProvider sdp) {
+                                                         StateApproval state, RevStateApproval revState, Integer from, Integer count, StaticDataProvider sdp) {
         int page = from / count;
-        ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds, state, sdp);
+        ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds, state, revState, sdp);
         return stateRepository.findAll(specification, PageRequest.of(page, count));
     }
 

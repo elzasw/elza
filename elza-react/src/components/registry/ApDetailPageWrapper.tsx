@@ -161,7 +161,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     }
 
     const handleSetPreferred = async ({part, updatedPart}: RevisionPart) => {
-        const nextPreferredPart = updatedPart ? updatedPart : part;
+        const nextPreferredPart = part ? part : updatedPart;
         if (nextPreferredPart?.id) {
             saveScrollPosition();
             part ? await setPreferred(id, nextPreferredPart.id) : await setRevisionPreferred(id, nextPreferredPart.id);
@@ -171,7 +171,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     };
 
     const handleDelete = async ({part, updatedPart}: RevisionPart) => {
-        const deletedPart = updatedPart ? updatedPart : part;
+        const deletedPart = part ? part : updatedPart;
         const message = deletedPart?.value ? i18n("ap.detail.delete.confirm.value", deletedPart.value) : i18n("ap.detail.delete.confirm");
         const confirmResult = await showConfirmDialog(message);
 
