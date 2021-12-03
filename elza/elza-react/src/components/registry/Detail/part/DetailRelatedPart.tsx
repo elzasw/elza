@@ -55,7 +55,7 @@ const DetailRelatedPart: FC<Props> = ({
 
     const partBinding = !updatedPart && part ? bindings.partsMap[part.id] : false;
     const hasBinding = partBinding != null;
-    const isModified = hasBinding && !partBinding;
+    const isModified = (hasBinding && !partBinding) || (part != null && updatedPart != null);
     const isCollapsed = collapsed && !isModified;
     const isDeleted = updatedPart ? updatedPart.value == null : false;
     const isNew = !part?.value && updatedPart?.value != undefined;
@@ -93,7 +93,7 @@ const DetailRelatedPart: FC<Props> = ({
 
                 <div className="actions">
                     {partBinding != null && 
-                        <SyncIcon syncState={partBinding ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
+                        <SyncIcon syncState={(partBinding || updatedPart) ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
                     }
                     {showValidationError()}
                 </div>
@@ -126,6 +126,7 @@ const DetailRelatedPart: FC<Props> = ({
                     globalEntity={globalEntity}
                     bindings={bindings}
                     itemTypeSettings={itemTypeSettings}
+                    isModified={isModified}
                 />
             </div>
         </div>}

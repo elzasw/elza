@@ -19,6 +19,10 @@ import javax.persistence.ManyToOne;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "preferredPart", "lastUpdate"})
 public class ApRevision {
 
+    public static final String FIELD_STATE = "state";
+    public static final String FIELD_STATE_APPROVAL = "stateApproval";
+    public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)

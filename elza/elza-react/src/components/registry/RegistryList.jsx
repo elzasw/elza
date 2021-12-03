@@ -25,6 +25,7 @@ import {
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus';
 import {getTreeItemById} from './../../components/registry/registryUtils';
 import {StateApproval, StateApprovalCaption} from '../../api/StateApproval';
+import {RevStateApproval, RevStateApprovalCaption} from '../../api/RevStateApproval';
 import './RegistryList.scss';
 import RegistryListItem from './RegistryListItem';
 import ListPager from '../shared/listPager/ListPager';
@@ -149,6 +150,16 @@ class RegistryList extends AbstractReactComponent {
         );
     };
 
+    handleFilterRegistryRevState = revState => {
+        this.props.dispatch(
+            registryListFilter({
+                ...this.props.registryList.filter,
+                from: 0,
+                revState: revState,
+            }),
+        );
+    };
+
     handleFilterPrev = () => {
         let from = this.props.registryList.filter.from;
         if (this.props.registryList.filter.from >= DEFAULT_REGISTRY_LIST_MAX_SIZE) {
@@ -252,6 +263,19 @@ class RegistryList extends AbstractReactComponent {
                 return {
                     id: item,
                     name: StateApprovalCaption(item),
+                };
+            }),
+        ];
+    }
+
+    getRevStateWithAll() {
+        const defaultValue = {name: i18n('registry.allRevisionStates')};
+        return [
+            defaultValue,
+            ...Object.values(RevStateApproval).map(item => {
+                return {
+                    id: item,
+                    name: RevStateApprovalCaption(item),
                 };
             }),
         ];
@@ -363,6 +387,13 @@ class RegistryList extends AbstractReactComponent {
                         items={this.getStateWithAll()}
                         onChange={this.handleFilterRegistryState}
                         value={filter.state}
+                        useIdAsValue
+                    />
+                    <Autocomplete
+                        placeholder={filter.revState ? RevStateApprovalCaption(filter.revState) : i18n('registry.allRevisionStates')}
+                        items={this.getRevStateWithAll()}
+                        onChange={this.handleFilterRegistryRevState}
+                        value={filter.revState}
                         useIdAsValue
                     />
                     <Autocomplete

@@ -33,6 +33,7 @@ export const showPartEditModal = (
         ({ onClose }) => {
             const partTypeId = objectById(refTables.partTypes.items, partType, 'code').id;
             const mainPart = updatedPart ? updatedPart : part as ApPartVO;
+            const partId = part ? part.id : updatedPart?.id as number;
             const parentPartId = mainPart.partParentId;
 
             const handleSubmit = async (data: ApPartFormVO) => {
@@ -52,7 +53,7 @@ export const showPartEditModal = (
 
                 console.log('SUBMIT EDIT', apId, mainPart.id, submitData);
 
-                const result = part ? await WebApi.updatePart(apId, mainPart.id, submitData) : await WebApi.updateRevisionPart(apId, mainPart.id, submitData);
+                const result = part ? await WebApi.updatePart(apId, partId, submitData) : await WebApi.updateRevisionPart(apId, partId, submitData);
                 onClose();
                 await dispatch(registryDetailFetchIfNeeded(apId, true))
                 onUpdateFinish();

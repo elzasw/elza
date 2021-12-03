@@ -1022,6 +1022,7 @@ var messages = {
     "registry.deleteRevisionQuestion": "Opravdu chcete smazat revizi archivní entity?",
     "registry.changeStateRevision": "Změna stavu revize",
     "registry.mergeRevision": "Merge revize",
+    "registry.allRevisionStates": "Všechny stavy revize",
 
     "registry.entity.notFound": "Archivní entita nenalezena",
 

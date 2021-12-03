@@ -6,12 +6,15 @@ import { AppState } from '../../../../typings/store';
 import './DetailItem.scss';
 import DetailItemContent from './DetailItemContent';
 import { RevisionDisplay, RevisionItem } from '../../revision';
+import {SyncIcon} from "../sync-icon";
+import {SyncState} from "../../../../api/SyncState";
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     bindings?: Bindings;
     items: RevisionItem[];
     globalEntity: boolean;
     typeId?: number;
+    isPartModified?: boolean | undefined;
 }
 
 const DetailMultipleItem: FC<Props> = ({
@@ -20,6 +23,7 @@ const DetailMultipleItem: FC<Props> = ({
     descItemTypesMap, 
     bindings,
     typeId,
+    isPartModified,
 }) => {
     const itemType = typeId !== undefined ? descItemTypesMap[typeId] : undefined;
     const itemTypeName = itemType ? itemType.name : `UNKNOWN_AE_TYPE: ${typeId}`;
@@ -28,10 +32,6 @@ const DetailMultipleItem: FC<Props> = ({
         if(item && !updatedItem) {return false};
         if(!item && updatedItem) {return true};
         return item?.value !== updatedItem?.value || item?.specId !== updatedItem?.specId;
-    }
-
-    const isValueEmpty = (item?:any) => {
-        return item.value === null && item.specId === null;
     }
 
     const isValueNew = (item?: any, updatedItem?: any) => {
@@ -48,31 +48,44 @@ const DetailMultipleItem: FC<Props> = ({
                 <div style={{display: "flex"}}>
                     <div style={{}}>
                         {items.map(({item, updatedItem}, index) => {
-                            const isDeleted = updatedItem ? isValueEmpty(updatedItem) : false;
+                            const isDeleted = isPartModified ? updatedItem == null : false;
                             const isNew = isValueNew(item, updatedItem);
                             const isModified = isValueModified(item, updatedItem);
-                            return <RevisionDisplay 
-                                valuesEqual={!isModified}
-                                isDeleted={isDeleted}
-                                isNew={isNew}
-                                renderPrevValue={() => {
-                                    return item ? <DetailItemContent 
-                                        item={item} 
-                                        key={index}
-                                        globalEntity={globalEntity} 
-                                        bindings={!isModified ? bindings : undefined} 
+                            return <div style={{display: "flex", alignItems: "center"}}>
+                                <RevisionDisplay
+                                    valuesEqual={!isModified}
+                                    isDeleted={isDeleted}
+                                    isNew={isNew}
+                                    renderPrevValue={() => {
+                                        return item ? <DetailItemContent
+                                            item={item}
+                                            key={index}
+                                            globalEntity={globalEntity}
+                                            bindings={!isModified ? bindings : undefined}
+                                            updatedItem={updatedItem !== null}
                                         /> : "no prev"
-                                }}
-                                renderValue={() => {
-                                    return updatedItem ? <DetailItemContent 
-                                        item={updatedItem} 
-                                        key={index}
-                                        bindings={bindings} 
-                                        globalEntity={globalEntity} 
+                                    }}
+                                    renderValue={() => {
+                                        return updatedItem ? <DetailItemContent
+                                            item={updatedItem}
+                                            key={index}
+                                            bindings={bindings}
+                                            globalEntity={globalEntity}
+                                            updatedItem={true}
                                         /> : "no current"
-                                }} 
-                            >
-                            </RevisionDisplay>
+                                    }}
+                                >
+                                </RevisionDisplay>
+                                <div className="actions">
+                                    {(updatedItem || isDeleted) && (
+                                        <SyncIcon
+                                            syncState={
+                                                SyncState.LOCAL_CHANGE
+                                            }
+                                        />
+                                    )}
+                                </div>
+                        </div>
                         })}
                     </div>
                 </div>

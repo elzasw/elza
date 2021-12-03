@@ -56,7 +56,7 @@ const DetailPart: FC<Props> = ({
 
     const partBinding = part ? bindings.partsMap[part.id] : false;
     const hasBinding = partBinding != null;
-    const isModified = hasBinding && !partBinding;
+    const isModified = (hasBinding && !partBinding) || (part != null && updatedPart != null);
     const isCollapsed = collapsed && !isModified;
     const isDeleted = updatedPart ? updatedPart.value == null : false;
     const isNew = !part?.value && updatedPart?.value != undefined;
@@ -98,7 +98,7 @@ const DetailPart: FC<Props> = ({
 
                     </RevisionDisplay>
                     <div className="actions">
-                        {hasBinding && (
+                        {(hasBinding || updatedPart) && (
                             <SyncIcon 
                                 syncState={
                                 !isModified ? 
@@ -122,6 +122,7 @@ const DetailPart: FC<Props> = ({
                         globalEntity={globalEntity}
                         bindings={bindings}
                         itemTypeSettings={itemTypeSettings}
+                        isModified={isModified}
                         />
                 </div>
             )}
