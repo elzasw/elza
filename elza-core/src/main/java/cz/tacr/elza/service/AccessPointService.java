@@ -1970,7 +1970,7 @@ public class AccessPointService {
             }
         }
 
-        throw new SystemException("Entitu v tomto stavu nelze aktualizovat z externího systému", BaseCode.INVALID_STATE)
+        throw new SystemException("Uživatel nemá oprávnění na synchronizaci přístupového bodu z externího systému", BaseCode.INSUFFICIENT_PERMISSIONS)
             .set("accessPointId", state.getAccessPointId())
             .set("scopeId", state.getScopeId())
             .set("state", state.getStateApproval());
