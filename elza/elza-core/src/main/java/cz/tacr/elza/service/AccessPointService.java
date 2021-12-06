@@ -2594,12 +2594,12 @@ public class AccessPointService {
 
             // kopírování Part
             if (targetPart == null) {
-                copyPartWithItems(partFrom, targetAccessPoint, null, itemMapFrom.get(partFrom.getPartId()), change);
+                ApPart partTo = copyPartWithItems(partFrom, targetAccessPoint, null, itemMapFrom.get(partFrom.getPartId()), change);
 
                 // kopírování podřízených Part
                 List<ApPart> subPartsFrom = partWSFrom.getSubParts();
                 for (ApPart subPart : subPartsFrom) {
-                    copyPartWithItems(subPart, targetAccessPoint, partFrom, itemMapFrom.get(subPart.getPartId()), change);
+                    copyPartWithItems(subPart, targetAccessPoint, partTo, itemMapFrom.get(subPart.getPartId()), change);
                 }
             } else {
                 // sloučení ApItems dvou Part
@@ -2646,7 +2646,7 @@ public class AccessPointService {
      * @param parts
      * @param items
      * @param itemMap
-     * @return
+     * @return ApPart
      */
     private ApPart findApPartInList(ApPart part, List<ApPart> parts, List<ApItem> items, Map<Integer, List<ApItem>> itemMap) {
         for (ApPart p : parts) {
@@ -2664,7 +2664,7 @@ public class AccessPointService {
      * @param partsTo
      * @param itemMapFrom
      * @param itemMapTo
-     * @return
+     * @return PartWithSubParts
      */
     private PartWithSubParts findPartWSInList(PartWithSubParts partF, List<PartWithSubParts> partsTo, Map<Integer, List<ApItem>> itemMapFrom, Map<Integer, List<ApItem>> itemMapTo) {
         for (PartWithSubParts p : partsTo) {
@@ -2683,7 +2683,7 @@ public class AccessPointService {
      * @param partsT
      * @param itemMapF
      * @param itemMapT
-     * @return
+     * @return boolean 
      */
     private boolean equalsParts(List<ApPart> partsF, List<ApPart> partsT, Map<Integer, List<ApItem>> itemMapF, Map<Integer, List<ApItem>> itemMapT) {
         for (ApPart pF : partsF) {
@@ -2707,7 +2707,7 @@ public class AccessPointService {
      * @param partTwo
      * @param itemsOne
      * @param itemsTwo
-     * @return
+     * @return boolean
      */
     private boolean equalsPart(ApPart partOne, ApPart partTwo, List<ApItem> itemsOne, List<ApItem> itemsTwo) {
         if (!partOne.getPartTypeId().equals(partTwo.getPartTypeId())) {
@@ -2729,7 +2729,7 @@ public class AccessPointService {
      * 
      * @param item
      * @param items
-     * @return
+     * @return boolean
      */
     private boolean isApItemInList(ApItem item, List<ApItem> items) {
         for (ApItem i : items) {
@@ -2773,10 +2773,12 @@ public class AccessPointService {
      * @param parent
      * @param itemsFrom
      * @param change
+     * @return ApPart
      */
-    private void copyPartWithItems(ApPart part, ApAccessPoint accessPoint, ApPart parent, List<ApItem> itemsFrom, ApChange change) {
+    private ApPart copyPartWithItems(ApPart part, ApAccessPoint accessPoint, ApPart parent, List<ApItem> itemsFrom, ApChange change) {
         ApPart partTo = copyPart(part, accessPoint, parent, change);
         copyItems(itemsFrom, partTo, change);
+        return partTo;
     }
 
     /**
