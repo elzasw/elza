@@ -2,7 +2,10 @@ package cz.tacr.elza.connector;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +91,18 @@ public class CamConnector {
                                              final ApExternalSystem externalSystem) throws ApiException {
         Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL);
         File xmlFile = JaxbUtils.asFile(batchUpdate, schema);
-
+        
+        if(logger.isDebugEnabled()) {
+        	// log file content if needed
+        	byte[] encoded;
+			try {
+				encoded = Files.readAllBytes(xmlFile.toPath());
+				String data = new String(encoded, "utf-8");
+				logger.debug("Sending data: {}", data);
+			} catch (IOException e) {
+				logger.debug("Failed to log data", e);
+			}        	
+        }
         try {
             ApiResponse<File> fileApiResponse = get(externalSystem)
                 .getBatchUpdatesApi()
