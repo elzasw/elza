@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,7 +99,7 @@ public class CamConnector {
 				String data = new String(encoded, "utf-8");
 				logger.debug("Sending data: {}", data);
 			} catch (IOException e) {
-				logger.debug("Failed to log data", e);
+				logger.error("Failed to log data", e);
 			}        	
         }
         try {
@@ -146,7 +145,7 @@ public class CamConnector {
                 (apExternalSystem.getType() == ApExternalSystemType.CAM ||
                         apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
                         apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE)) {
-            instanceMap.remove(code);
+            instanceMap.remove(apExternalSystem.getExternalSystemId());
         }
     }
 
@@ -155,7 +154,7 @@ public class CamConnector {
         if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
                 apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
                 apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
-            CamInstance camInstance = instanceMap.get(apExternalSystem.getCode());
+            CamInstance camInstance = instanceMap.get(apExternalSystem.getExternalSystemId());
             if (camInstance == null) {
                 camInstance = new CamInstance(apExternalSystem.getUrl(), apExternalSystem.getApiKeyId(),
                         apExternalSystem.getApiKeyValue());
@@ -176,12 +175,13 @@ public class CamConnector {
         }
     }
 
+    // TODO: rework to use id and not code
     public CamInstance findById(String code) {
-        CamInstance camInstance = instanceMap.get(code);
+    	ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(code);
+        CamInstance camInstance = instanceMap.get(apExternalSystem.getExternalSystemId());
         if (camInstance != null) {
             return camInstance;
         }
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(code);
         if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
                 apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
                 apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {

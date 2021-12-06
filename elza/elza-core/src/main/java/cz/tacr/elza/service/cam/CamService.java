@@ -87,7 +87,7 @@ import java.util.stream.Collectors;
 @Service
 public class CamService {
 
-    private final Logger log = LoggerFactory.getLogger(CamService.class);
+    static private final Logger log = LoggerFactory.getLogger(CamService.class);
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
