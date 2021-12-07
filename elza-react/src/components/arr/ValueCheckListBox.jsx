@@ -41,7 +41,9 @@ class ValueCheckListBox extends AbstractReactComponent {
 
         let resultValueItems = [];
         if (filtered) {
-            resultValueItems = value.ids.filter(item => valueItemsMap.indexOf(item) === -1);
+            if (value.ids) {
+                resultValueItems = value.ids.filter(item => valueItemsMap.indexOf(item) === -1);
+            }
             if (prevType === 'selected') {
                 if (type === 'selected') {
                     resultValueItems.push(...ids);
