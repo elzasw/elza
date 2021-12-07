@@ -87,7 +87,7 @@ import java.util.stream.Collectors;
 @Service
 public class CamService {
 
-    private final Logger log = LoggerFactory.getLogger(CamService.class);
+    static private final Logger log = LoggerFactory.getLogger(CamService.class);
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
@@ -601,15 +601,6 @@ public class CamService {
                   binding.getValue(), entity.getRevi().getRid().getValue(),
                   state, bindingState);
 
-        if (state != null) {
-            if (state.getStateApproval().equals(StateApproval.TO_APPROVE)
-                    || state.getStateApproval().equals(StateApproval.REV_PREPARED)) {
-                throw new SystemException("Entitu v tomto stavu nelze aktualizovat z externího systému", BaseCode.INVALID_STATE)
-                    .set("accessPointId", state.getAccessPointId())
-                    .set("state", state.getStateApproval());
-            }
-        }
-
         // Mozne stavy synchronizace
         // ApState | ApBindingState  | syncQueue 
         // ---------------------------------------
@@ -650,7 +641,23 @@ public class CamService {
             }
         }
 
+        // TODO: Pokud je state!=null, tak musi byt vzdy bindingState!=null
         if (state != null && bindingState != null) {
+            if (state.getStateApproval().equals(StateApproval.TO_APPROVE)
+                    || state.getStateApproval().equals(StateApproval.REV_PREPARED)) {
+                if (syncQueue) {
+                    if (!SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())) {
+                        bindingState.setSyncOk(SyncState.NOT_SYNCED);
+                        bindingStateRepository.save(bindingState);
+                    }
+                    return;                	
+                } else {
+                	throw new SystemException("Entitu v tomto stavu nelze aktualizovat z externího systému", BaseCode.INVALID_STATE)
+                		.set("accessPointId", state.getAccessPointId())
+                		.set("state", state.getStateApproval());
+                }
+            }
+
             boolean localChanges = checkLocalChanges(state, bindingState);
 
             if (state.getDeleteChangeId() != null || // do not sync deleted aps, mark as not synced

@@ -9,8 +9,12 @@ import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 
 import './DescItemCoordinates.scss';
 import {DescItemComponentProps} from './DescItemTypes';
+import {modalDialogHide, modalDialogShow} from "../../../actions/global/modalDialog";
+import ExportCoordinateModal from "../../registry/Detail/coordinate/ExportCoordinateModal";
+import {Action, Dispatch} from "redux";
+import {connect} from "react-redux";
 
-type Props = DescItemComponentProps<string> & {onUpload: Function; onDownload: Function};
+type Props = DescItemComponentProps<string> & {onUpload: Function; onDownload: Function; coordinatesUpload: null | string; itemId: number | undefined;} & ReturnType<typeof mapDispatchToProps>;
 type State = {type: null | string; data: null | string};
 
 /**
@@ -33,6 +37,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
         onUpload: PropTypes.func,
         descItem: PropTypes.object.isRequired,
         repeatable: PropTypes.bool.isRequired,
+        coordinatesUpload: PropTypes.string,
     };
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -50,7 +55,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
     };
 
     handleChangeData = e => {
-        const val = e.target.value;
+        const val = wktFromTypeAndData(this.state.type, e.target.value);
         if (val !== this.props.descItem.value) {
             this.props.onChange(val);
         }
@@ -64,7 +69,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
     };
 
     render() {
-        const {descItem, locked, repeatable, onUpload, readMode, cal} = this.props;
+        const {descItem, locked, repeatable, onUpload, readMode, cal, coordinatesUpload} = this.props;
         const {type, data} = this.state;
         let value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : descItem.value;
 
@@ -72,28 +77,26 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
             return <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />;
         }
 
+        let inputValue = coordinatesUpload ? coordinatesUpload : data;
+
         return (
             <div className="desc-item-value-coordinates">
                 <div className="desc-item-value" key="cords">
                     <Button variant="default" disabled>
                         {wktType(type)}
                     </Button>
-                    {type === 'POINT' ? (
-                        <ItemTooltipWrapper tooltipTitle="dataType.coordinates.format">
-                            <input
-                                {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
-                                ref={this.focusEl}
-                                disabled={locked || descItem.undefined}
-                                onChange={this.handleChangeData}
-                                value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : data}
-                            />
-                        </ItemTooltipWrapper>
-                    ) : (
-                        <span className="textvalue">{data}</span>
-                    )}
+                    <ItemTooltipWrapper tooltipTitle="dataType.coordinates.format">
+                        <input
+                            {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked)}
+                            ref={this.focusEl}
+                            disabled={locked || descItem.undefined}
+                            onChange={this.handleChangeData}
+                            value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : inputValue}
+                        />
+                    </ItemTooltipWrapper>
                     {!descItem.undefined && descItem.descItemObjectId && (
                         <div className="desc-item-coordinates-action" key="download-action">
-                            <NoFocusButton onClick={this.props.onDownload}>
+                            <NoFocusButton onClick={() => this.props.showExportDialog(descItem.id)}>
                                 <Icon glyph="fa-download" />
                             </NoFocusButton>
                         </div>
@@ -121,4 +124,17 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
     }
 }
 
-export default DescItemCoordinates;
+const mapDispatchToProps = (dispatch: Dispatch<Action>) => ({
+    showExportDialog: (
+        itemId: number | undefined,
+    ) =>
+        dispatch(
+            modalDialogShow(
+                this,
+                i18n('ap.coordinate.export.title'),
+                <ExportCoordinateModal onClose={() => dispatch(modalDialogHide())} itemId={itemId} arrangement={true} />,
+            ),
+        ),
+});
+
+export default connect(null, mapDispatchToProps)(DescItemCoordinates as any);

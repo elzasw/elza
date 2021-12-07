@@ -4,11 +4,11 @@
           xmlns:ns8="parts-order" xmlns:ns9="item-types" xmlns:ns10="dao-import-level">
     <favorite-item-specs code="ZP2015_LANGUAGE">
         <!-- čeština -->
-        <favorite-item>ZP2015_LANGUAGE_43</favorite-item>
+        <favorite-item>LNG_cze</favorite-item>
         <!-- němčina -->
-        <favorite-item>ZP2015_LANGUAGE_18</favorite-item>
+        <favorite-item>LNG_ger</favorite-item>
         <!-- latina -->
-        <favorite-item>ZP2015_LANGUAGE_32</favorite-item>
+        <favorite-item>LNG_lat</favorite-item>
     </favorite-item-specs>
 
     <!-- Výchozí prvky pro tabulkové zobrazení -->
