@@ -25,6 +25,7 @@ type Props = {
     availableAttributes?: ApCreateTypeVO[];
     editErrors?: string[];
     arrayName?: string;
+    partItems: ApItemVO[] | null | undefined;
 };
 
 const renderValidationErrors = (errors: Array<string>) => {
@@ -45,6 +46,7 @@ export const PartEditForm = ({
     availableAttributes,
     editErrors,
     arrayName = "items",
+    partItems,
 }: Props) => {
     const handleAddItems = (
         attributes: Array<ApCreateTypeVO>,
@@ -138,6 +140,7 @@ export const PartEditForm = ({
                             partTypeId={partTypeId}
                             scopeId={scopeId}
                             apTypeId={apTypeId}
+                            partItems={partItems}
                             />
                     </Row>
                 </div>

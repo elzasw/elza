@@ -136,6 +136,7 @@ const CreateAccessPointModal:FC<CreateAccessPointModalProps> = ({
                                     availableAttributes={availableAttributes}
                                     editErrors={editErrors}
                                     arrayName="partForm.items"
+                                    partItems={null}
                                     />
                                 </>
                         )}

@@ -61,6 +61,7 @@ export const showPartCreateModal = (
                 initialValues={formData}
                 onSubmit={handleSubmit}
                 onClose={handleClose}
+                partItems={null}
                 />},
         'dialog-lg',
         dispatch(globalFundTreeInvalidate()),

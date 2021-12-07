@@ -14,6 +14,7 @@ interface Props {
     bindings: Bindings;
     itemTypeSettings: ItemType[];
     isModified: boolean | undefined;
+    revision?: boolean;
 }
 
 export const DetailPartInfo: FC<Props> = ({
@@ -22,6 +23,7 @@ export const DetailPartInfo: FC<Props> = ({
     bindings,
     itemTypeSettings,
     isModified,
+    revision,
 }) => {
     const descItemTypesMap = useSelector((state: AppState) => state.refTables.descItemTypes.itemsMap || {})
 
@@ -67,6 +69,7 @@ export const DetailPartInfo: FC<Props> = ({
                         bindings={bindings}
                         typeId={typeId}
                         isPartModified={isModified}
+                        revision={revision}
                         />
                 )
             }

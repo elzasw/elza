@@ -18,6 +18,7 @@ import { DetailStoreState } from 'types';
 import { AppState } from 'typings/store';
 import { AP_VIEW_SETTINGS } from '../../../../constants';
 import { getUpdatedForm, getValueChangeMutators, PartEditForm } from '../form';
+import {ApItemVO} from "../../../../api/ApItemVO";
 
 type Props = {
     partTypeId: number;
@@ -29,6 +30,7 @@ type Props = {
     partId?: number;
     onClose: () => void;
     onSubmit: (data:any) => Promise<void>;
+    partItems: ApItemVO[] | null | undefined;
 }
 
 const PartEditModal:FC<Props> = ({
@@ -40,6 +42,7 @@ const PartEditModal:FC<Props> = ({
     parentPartId,
     apId,
     partId,
+    partItems,
     onSubmit,
 }) => {
     const apViewSettings = useSelector((state: AppState) => storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>);
@@ -102,6 +105,7 @@ const PartEditModal:FC<Props> = ({
                             submitting={submitting}
                             availableAttributes={availableAttributes}
                             editErrors={editErrors}
+                            partItems={partItems}
                             />
                     </Modal.Body>
                     <Modal.Footer>

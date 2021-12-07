@@ -90,7 +90,7 @@ class RevMergeForm extends React.Component<Props> {
 }
 
 const mapStateToProps = (state:AppState) => {
-    const selector = formValueSelector('apStateChangeForm');
+    const selector = formValueSelector('revMergeForm');
 
     return {
         state: selector(state, 'state'),

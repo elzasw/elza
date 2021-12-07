@@ -84,7 +84,6 @@ public class RevisionItemService {
             RulItemSpec itemSpec = accessPointItemService.getItemSpecification(itemType, createItem);
             List<ApRevItem> existsItems = typeIdItemsMap.computeIfAbsent(itemType.getItemTypeId(), k -> new ArrayList<>());
 
-            //todo check if position works
             Integer positionWant = createItem.getPosition();
             int position = nextPosition(existsItems);
 

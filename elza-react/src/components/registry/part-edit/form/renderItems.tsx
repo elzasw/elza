@@ -22,6 +22,7 @@ interface RenderItemsProps extends FieldArrayRenderProps<ApItemVO, any> {
     partTypeId: number;
     scopeId: number;
     apTypeId: number;
+    partItems: ApItemVO[] | null | undefined;
 }
 
 export const ItemsWrapper:FC<RenderItemsProps> = ({
@@ -35,6 +36,7 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
     partTypeId, 
     scopeId,
     apTypeId,
+    partItems,
 }) => {
     if (!fields.value) { return <></>; }
 

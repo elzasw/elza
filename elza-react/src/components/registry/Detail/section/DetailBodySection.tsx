@@ -24,6 +24,7 @@ interface Props {
     partValidationErrors?: PartValidationErrorsVO[];
     itemTypeSettings: ItemType[];
     partType: RulPartTypeVO;
+    revision?: boolean;
 }
 
 const DetailBodySection: FC<Props> = ({
@@ -39,6 +40,7 @@ const DetailBodySection: FC<Props> = ({
     itemTypeSettings,
     partType,
     partValidationErrors = [],
+    revision,
 }) => {
     if (!editMode && !part) {
         return null;
@@ -107,6 +109,7 @@ const DetailBodySection: FC<Props> = ({
                         bindings={bindings}
                         items={revisionItems}
                         isModified={isModified}
+                        revision={revision}
                         />
                 </div>
                 }
