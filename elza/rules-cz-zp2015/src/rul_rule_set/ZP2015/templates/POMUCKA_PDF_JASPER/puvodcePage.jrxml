@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.14.0.final using JasperReports Library version 6.14.0-2ab0d8625be255bf609c78e1181801213e51db8f  -->
+<!-- Created with Jaspersoft Studio version 6.16.0.final using JasperReports Library version 6.16.0-48579d909b7943b64690c65c71e07e0b80981928  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="puvodce" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="5e68af3a-e344-406e-924e-15876401d3ae">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -68,8 +68,8 @@
 	</subDataset>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
-	<parameter name="formatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()]]></defaultValueExpression>
+	<parameter name="formatterNameForms" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter().setItemSeparator(". ").addValue("NM_TYPE").addValue("NM_LANG").addValue("NM_USED_FROM").addValue("NM_USED_TO")]]></defaultValueExpression>
 	</parameter>
 	<field name="structObj" class="cz.tacr.elza.print.Structured">
 		<fieldDescription><![CDATA[_THIS]]></fieldDescription>
@@ -95,6 +95,12 @@
 	<variable name="partsIdent" class="java.util.List">
 		<variableExpression><![CDATA[$V{record}.getParts("PT_IDENT")]]></variableExpression>
 	</variable>
+	<variable name="prefNameTypes" class="java.lang.String">
+		<variableExpression><![CDATA[$P{formatterNameForms}.format( $V{record}.getPreferredPart().getItems() )]]></variableExpression>
+	</variable>
+	<variable name="partsRel" class="java.util.List">
+		<variableExpression><![CDATA[$V{record}.getParts("PT_REL")]]></variableExpression>
+	</variable>
 	<title>
 		<band height="50">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -111,23 +117,26 @@
 		</band>
 	</title>
 	<detail>
-		<band height="145" splitType="Immediate">
+		<band height="120" splitType="Immediate">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="70" width="455" height="20" isRemoveLineWhenBlank="true" uuid="abfcb9c6-78f2-40fa-b097-11ae0c52884f"/>
-				<textElement markup="html">
+				<reportElement style="Text" positionType="Float" x="0" y="70" width="455" height="20" isRemoveLineWhenBlank="true" uuid="abfcb9c6-78f2-40fa-b097-11ae0c52884f">
+					<printWhenExpression><![CDATA[$V{record}.getPart("PT_BODY")!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Preferovaná forma jména: </b>"+$V{record}.getPreferredPart().getValue()]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{record}.getPart("PT_BODY").getValue()]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="90" width="455" height="20" isRemoveLineWhenBlank="true" uuid="19ed5bf0-79ad-459a-8caf-927314b8f4be">
-					<printWhenExpression><![CDATA[StringUtils.isNotBlank($V{record}.getPreferredPart().getSingleItemValue("NM_TYPE"))]]></printWhenExpression>
+				<reportElement style="Text" positionType="Float" x="123" y="90" width="332" height="15" isRemoveLineWhenBlank="true" uuid="19ed5bf0-79ad-459a-8caf-927314b8f4be">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[StringUtils.isNotBlank($V{prefNameTypes})]]></printWhenExpression>
 				</reportElement>
-				<textElement markup="html">
+				<textElement markup="none">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>Typ preferované formy jména: </b>"+$V{record}.getPreferredPart().getSingleItemValue("NM_TYPE")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{prefNameTypes}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="50" width="455" height="20" isRemoveLineWhenBlank="true" uuid="034bd6a6-f9b1-41c3-9d72-45f64a1bb28b">
@@ -147,17 +156,8 @@
 				<textFieldExpression><![CDATA[$V{record}.getPreferredPart().getValue()]]></textFieldExpression>
 				<anchorNameExpression><![CDATA[$V{record}.getPreferredPart().getValue()]]></anchorNameExpression>
 			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="110" width="455" height="20" isRemoveLineWhenBlank="true" uuid="c9328994-3313-40c9-937a-692b67b4c4ed">
-					<printWhenExpression><![CDATA[$V{record}.getPreferredPart().getSingleItem("NM_USED_FROM")!=null && $V{record}.getPreferredPart().getSingleItem("NM_USED_TO")!=null]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Datace použití jména od-do: </b>"+$V{record}.getPreferredPart().getSingleItemValue("NM_USED_FROM")+" - "+ $V{record}.getPreferredPart().getSingleItemValue("NM_USED_TO")]]></textFieldExpression>
-			</textField>
 			<componentElement>
-				<reportElement key="" style="Text" positionType="Float" mode="Transparent" x="136" y="130" width="319" height="15" isRemoveLineWhenBlank="true" uuid="e1b765e6-d2c6-4883-9d2d-3c49f53bc325">
+				<reportElement key="" style="Text" positionType="Float" stretchType="ContainerHeight" mode="Transparent" x="123" y="105" width="332" height="15" isRemoveLineWhenBlank="true" uuid="e1b765e6-d2c6-4883-9d2d-3c49f53bc325">
 					<property name="net.sf.jasperreports.export.headertoolbar.table.name" value=""/>
 					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -173,9 +173,9 @@
 						</datasetParameter>
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partsName})]]></dataSourceExpression>
 					</datasetRun>
-					<jr:listContents height="15" width="319">
+					<jr:listContents height="15" width="332">
 						<textField textAdjust="StretchHeight">
-							<reportElement style="Text" x="0" y="0" width="319" height="15" isRemoveLineWhenBlank="true" uuid="1f1cff8f-eb25-489d-8cef-1bcd72abe735">
+							<reportElement style="Text" x="0" y="0" width="332" height="15" isRemoveLineWhenBlank="true" uuid="1f1cff8f-eb25-489d-8cef-1bcd72abe735">
 								<printWhenExpression><![CDATA[$F{partObj}.getPartId()!=$P{preferredPart}.getPartId()]]></printWhenExpression>
 							</reportElement>
 							<textElement>
@@ -187,41 +187,25 @@
 				</jr:list>
 			</componentElement>
 			<staticText>
-				<reportElement style="Label" positionType="Float" x="0" y="130" width="136" height="15" uuid="113f6a10-3a45-4397-8dfc-0743169bdd41">
+				<reportElement style="Label" positionType="Float" x="0" y="105" width="120" height="15" uuid="113f6a10-3a45-4397-8dfc-0743169bdd41">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<printWhenExpression><![CDATA[$V{partsName}.size()>1]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
-				<text><![CDATA[Variantní forma jména:]]></text>
+				<text><![CDATA[Variantní označení:]]></text>
 			</staticText>
-		</band>
-		<band height="15">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[($V{partsIdent}!=null)&&($V{partsIdent}.size()>0)]]></printWhenExpression>
-			<componentElement>
-				<reportElement x="0" y="0" width="455" height="15" uuid="e20a5dde-2ddc-45c1-82d2-8201d37b40e3">
+			<staticText>
+				<reportElement x="0" y="90" width="120" height="15" isRemoveLineWhenBlank="true" uuid="6b326594-39dd-42ba-aede-19fd33dc5c7f">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[StringUtils.isNotBlank($V{prefNameTypes})]]></printWhenExpression>
 				</reportElement>
-				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
-					<datasetRun subDataset="OtherIdents" uuid="09ac9eba-466d-4162-9195-91d10d5be27c">
-						<datasetParameter name="record">
-							<datasetParameterExpression><![CDATA[$V{record}]]></datasetParameterExpression>
-						</datasetParameter>
-						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partsIdent})]]></dataSourceExpression>
-					</datasetRun>
-					<jr:listContents height="15" width="455">
-						<textField textAdjust="StretchHeight">
-							<reportElement x="0" y="0" width="455" height="15" uuid="0d07f0e5-5165-445c-9ec5-dcafa5627a9e"/>
-							<textElement>
-								<font pdfEncoding="Cp1250"/>
-							</textElement>
-							<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
-						</textField>
-					</jr:listContents>
-				</jr:list>
-			</componentElement>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Typ formy jména:]]></text>
+			</staticText>
 		</band>
 		<band height="65" splitType="Immediate">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -246,16 +230,16 @@
 				<textFieldExpression><![CDATA["<b>Poznámka ke vzniku: </b>"+$V{partCre}.getSingleItemValue("NOTE")]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement style="Text" positionType="Float" x="0" y="45" width="455" height="20" isRemoveLineWhenBlank="true" uuid="f4c7f221-6022-4e84-bd50-ad08f26fc2c4">
+				<reportElement style="Text" positionType="Float" stretchType="ContainerHeight" x="30" y="45" width="425" height="20" isRemoveLineWhenBlank="true" uuid="f4c7f221-6022-4e84-bd50-ad08f26fc2c4">
 					<printWhenExpression><![CDATA[$V{partCre}.getParts().size()>0]]></printWhenExpression>
 				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
 					<datasetRun subDataset="RelationTo" uuid="bf1e8775-c988-4092-8953-bb10e0c2a489">
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partCre}.getParts())]]></dataSourceExpression>
 					</datasetRun>
-					<jr:listContents height="20" width="455">
+					<jr:listContents height="20" width="425">
 						<textField textAdjust="StretchHeight">
-							<reportElement positionType="Float" x="0" y="0" width="455" height="20" isRemoveLineWhenBlank="true" uuid="26f2a3a5-09e4-4c78-95cc-47bfbd1ae5cd"/>
+							<reportElement positionType="Float" x="0" y="0" width="425" height="20" isRemoveLineWhenBlank="true" uuid="26f2a3a5-09e4-4c78-95cc-47bfbd1ae5cd"/>
 							<textElement markup="html">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
@@ -288,16 +272,16 @@
 				<textFieldExpression><![CDATA["<b>Poznámka k zániku: </b>"+$V{partExt}.getSingleItemValue("NOTE")]]></textFieldExpression>
 			</textField>
 			<componentElement>
-				<reportElement style="Text" positionType="Float" x="0" y="45" width="455" height="20" isRemoveLineWhenBlank="true" uuid="62123a0a-b2d4-4852-8746-088467159d46">
+				<reportElement style="Text" positionType="Float" stretchType="ContainerHeight" x="30" y="45" width="425" height="20" isRemoveLineWhenBlank="true" uuid="62123a0a-b2d4-4852-8746-088467159d46">
 					<printWhenExpression><![CDATA[$V{partExt}.getParts().size()>0]]></printWhenExpression>
 				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
 					<datasetRun subDataset="RelationTo" uuid="9441cf8f-87f4-45b8-a89e-8fb17a2f505e">
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partExt}.getParts())]]></dataSourceExpression>
 					</datasetRun>
-					<jr:listContents height="20" width="455">
+					<jr:listContents height="20" width="425">
 						<textField textAdjust="StretchHeight">
-							<reportElement positionType="Float" x="0" y="0" width="455" height="20" isRemoveLineWhenBlank="true" uuid="a05c2199-e83d-4171-9904-1be59ba11db4"/>
+							<reportElement positionType="Float" x="0" y="0" width="425" height="20" isRemoveLineWhenBlank="true" uuid="a05c2199-e83d-4171-9904-1be59ba11db4"/>
 							<textElement markup="html">
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
@@ -307,53 +291,88 @@
 				</jr:list>
 			</componentElement>
 		</band>
-		<band height="60" splitType="Immediate">
+		<band height="50" splitType="Immediate">
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[$V{partsEvent}!=null&&$V{partsEvent}.size()>0]]></printWhenExpression>
 			<componentElement>
-				<reportElement x="0" y="0" width="455" height="60" isRemoveLineWhenBlank="true" uuid="6b7a304d-f4f3-4ee0-bd8a-03112b4e7074">
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				<reportElement x="0" y="20" width="455" height="30" isRemoveLineWhenBlank="true" uuid="6b7a304d-f4f3-4ee0-bd8a-03112b4e7074">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
 					<datasetRun subDataset="RelationsByType" uuid="c415f8f9-d228-40c4-accf-d1275950b391">
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partsEvent})]]></dataSourceExpression>
 					</datasetRun>
-					<jr:listContents height="60" width="455">
-						<textField>
-							<reportElement style="Heading 3" x="0" y="0" width="455" height="30" isPrintInFirstWholeBand="true" uuid="10c60050-e159-4a3a-80eb-282530fc2b91">
-								<printWhenExpression><![CDATA[$F{part}.getSingleItem("EV_TYPE")!=null]]></printWhenExpression>
-							</reportElement>
-							<textElement verticalAlignment="Middle">
-								<font pdfEncoding="Cp1250"/>
-							</textElement>
-							<textFieldExpression><![CDATA[StringUtils.capitalize($F{part}.getSingleItem("EV_TYPE").getSpecification().getName())]]></textFieldExpression>
-						</textField>
+					<jr:listContents height="30" width="455">
 						<textField textAdjust="StretchHeight">
-							<reportElement x="0" y="30" width="455" height="15" isRemoveLineWhenBlank="true" uuid="b00cab13-4b29-4fc4-8af9-c10b034be759">
+							<reportElement x="0" y="0" width="455" height="15" isRemoveLineWhenBlank="true" uuid="b00cab13-4b29-4fc4-8af9-c10b034be759">
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+								<property name="com.jaspersoft.studio.unit.y" value="px"/>
 							</reportElement>
 							<textFieldExpression><![CDATA[$F{part}.getValue()]]></textFieldExpression>
 						</textField>
 						<componentElement>
-							<reportElement positionType="Float" x="0" y="45" width="455" height="15" isRemoveLineWhenBlank="true" uuid="73fb0229-b1e8-47ac-a074-78a83da01886">
+							<reportElement positionType="Float" x="30" y="15" width="425" height="15" isRemoveLineWhenBlank="true" uuid="73fb0229-b1e8-47ac-a074-78a83da01886">
 								<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+								<property name="com.jaspersoft.studio.unit.y" value="px"/>
 								<printWhenExpression><![CDATA[$F{part}.getParts().size()>0]]></printWhenExpression>
 							</reportElement>
 							<jr:list printOrder="Vertical">
 								<datasetRun subDataset="Relation" uuid="12505b82-cc84-4379-bfa7-8040449c1abd">
 									<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{part}.getParts())]]></dataSourceExpression>
 								</datasetRun>
-								<jr:listContents height="15" width="455">
+								<jr:listContents height="15" width="425">
 									<textField>
-										<reportElement x="0" y="0" width="455" height="15" uuid="7a4fc7e2-7240-42f9-84de-8e5316a887c0"/>
+										<reportElement x="0" y="0" width="425" height="15" uuid="7a4fc7e2-7240-42f9-84de-8e5316a887c0"/>
 										<textFieldExpression><![CDATA[$F{part}.getValue()]]></textFieldExpression>
 									</textField>
 								</jr:listContents>
 							</jr:list>
 						</componentElement>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+			<staticText>
+				<reportElement x="0" y="0" width="455" height="20" uuid="d2787530-121f-4fc2-a15a-abd27ab39a7d">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Události:]]></text>
+			</staticText>
+		</band>
+		<band height="35">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$V{partsRel}!=null&&$V{partsRel}.size()>0]]></printWhenExpression>
+			<staticText>
+				<reportElement x="0" y="0" width="455" height="20" uuid="13af2f82-22ff-4da5-9e73-5fd3d6f600a2">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Vztahy:]]></text>
+			</staticText>
+			<componentElement>
+				<reportElement x="0" y="20" width="455" height="15" isRemoveLineWhenBlank="true" uuid="c7f47fdd-955a-42fd-9239-aa41d05be76b">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="RelationsByType" uuid="516ed7bc-7b08-45ce-9e2b-98052e434bf7">
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partsRel})]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="15" width="455">
+						<textField textAdjust="StretchHeight">
+							<reportElement x="0" y="0" width="455" height="15" isRemoveLineWhenBlank="true" uuid="453335f4-779a-4404-9c3a-3882df0dc031">
+								<property name="com.jaspersoft.studio.unit.height" value="px"/>
+								<property name="com.jaspersoft.studio.unit.y" value="px"/>
+							</reportElement>
+							<textFieldExpression><![CDATA[$F{part}.getValue()]]></textFieldExpression>
+						</textField>
 					</jr:listContents>
 				</jr:list>
 			</componentElement>
@@ -385,6 +404,39 @@
 					</jr:listContents>
 				</jr:list>
 			</componentElement>
+		</band>
+		<band height="35">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[($V{partsIdent}!=null)&&($V{partsIdent}.size()>0)]]></printWhenExpression>
+			<componentElement>
+				<reportElement x="0" y="20" width="455" height="15" uuid="e20a5dde-2ddc-45c1-82d2-8201d37b40e3">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
+					<datasetRun subDataset="OtherIdents" uuid="09ac9eba-466d-4162-9195-91d10d5be27c">
+						<datasetParameter name="record">
+							<datasetParameterExpression><![CDATA[$V{record}]]></datasetParameterExpression>
+						</datasetParameter>
+						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partsIdent})]]></dataSourceExpression>
+					</datasetRun>
+					<jr:listContents height="15" width="455">
+						<textField textAdjust="StretchHeight">
+							<reportElement x="0" y="0" width="455" height="15" uuid="0d07f0e5-5165-445c-9ec5-dcafa5627a9e"/>
+							<textElement>
+								<font pdfEncoding="Cp1250"/>
+							</textElement>
+							<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
+						</textField>
+					</jr:listContents>
+				</jr:list>
+			</componentElement>
+			<staticText>
+				<reportElement x="0" y="0" width="454" height="20" uuid="4bfe16bb-6989-45a8-9118-aedb457e331a"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Identifikátory:]]></text>
+			</staticText>
 		</band>
 	</detail>
 	<pageFooter>
