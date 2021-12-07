@@ -21,6 +21,7 @@ import FormInputField from '../shared/form/FormInputField';
 import FF from '../shared/form/FF';
 import ReduxFormFieldErrorDecorator from '../shared/form/ReduxFormFieldErrorDecorator';
 import {WebApi} from 'actions/index';
+import objectById from "../../shared/utils/objectById";
 
 const getDefaultOperationType = props => {
     const {dataType} = props;
@@ -211,11 +212,16 @@ class FundBulkModificationsForm extends AbstractReactComponent {
     };
 
     supportSetValue = () => {
-        const {dataType} = this.props;
+        const {dataType, structureTypes, refType, versionId} = this.props;
         let result;
 
         switch (dataType.code) {
             case 'STRUCTURED':
+                if (structureTypes) {
+                    let structTypes = objectById(structureTypes.data, versionId, 'versionId');
+                    let structureType = structTypes ? objectById(structTypes.data, refType.structureTypeId) : null;
+                    return structureType ? !structureType.anonymous : false;
+                }
                 result = true;
                 break;
             default:
@@ -238,7 +244,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
     };
 
     callValueSearch() {
-        const {versionId, refType, dataType} = this.props;
+        const {versionId, refType, dataType, structureTypes} = this.props;
         const {valueSearchText} = this.state;
 
         if (!hasDescItemTypeValue(dataType)) {
@@ -248,17 +254,13 @@ class FundBulkModificationsForm extends AbstractReactComponent {
 
         if (dataType.code === "STRUCTURED") {
 
-            WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, null, 1000).then(json => {
+            WebApi.getDescItemTypeValues(versionId, refType.id, valueSearchText, null, 200).then(json => {
                 var valueItems = json.map(i => ({id: i.id, name: i.value}));
 
                 if (
                     valueSearchText === '' ||
                     i18n('arr.fund.filterSettings.value.empty').toLowerCase().indexOf(valueSearchText) !== -1
                 ) {
-
-                    this.setState({
-                        allValueItems: valueItems,
-                    });
                     // u prázdného hledání a případně u hledání prázdné hodnoty doplňujeme null položku
                     valueItems = [
                         {
@@ -273,6 +275,23 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                     valueItems: valueItems,
                 });
             });
+
+            if (structureTypes) {
+                let structTypes = objectById(structureTypes.data, versionId, 'versionId');
+                if (structTypes) {
+                    let structureType = objectById(structTypes.data, refType.structureTypeId);
+                    if (structureType) {
+                        WebApi.findStructureData(versionId, structureType.code, "", true, 0, 200).then(json => {
+                            const valueItems = json.rows.map(i => ({id: i.id, name: i.value}));
+
+                            this.setState({
+                                allValueItems: valueItems,
+                            });
+
+                        });
+                    }
+                }
+            }
         }
     }
 
@@ -644,5 +663,6 @@ export default connect((state, props) => {
         operationType: formSelector(state, 'operationType'),
         meta: getFormMeta(formName)(state),
         descItemTypes: state.refTables.descItemTypes,
+        structureTypes: state.refTables.structureTypes,
     };
 })(RF);
