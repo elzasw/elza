@@ -15,6 +15,7 @@ interface Props extends ReturnType<typeof mapStateToProps> {
     globalEntity: boolean;
     typeId?: number;
     isPartModified?: boolean | undefined;
+    revision?: boolean;
 }
 
 const DetailMultipleItem: FC<Props> = ({
@@ -24,6 +25,7 @@ const DetailMultipleItem: FC<Props> = ({
     bindings,
     typeId,
     isPartModified,
+    revision,
 }) => {
     const itemType = typeId !== undefined ? descItemTypesMap[typeId] : undefined;
     const itemTypeName = itemType ? itemType.name : `UNKNOWN_AE_TYPE: ${typeId}`;
@@ -62,7 +64,7 @@ const DetailMultipleItem: FC<Props> = ({
                                             key={index}
                                             globalEntity={globalEntity}
                                             bindings={!isModified ? bindings : undefined}
-                                            updatedItem={updatedItem !== null}
+                                            revision={revision}
                                         /> : "no prev"
                                     }}
                                     renderValue={() => {
@@ -71,16 +73,18 @@ const DetailMultipleItem: FC<Props> = ({
                                             key={index}
                                             bindings={bindings}
                                             globalEntity={globalEntity}
-                                            updatedItem={true}
+                                            revision={revision}
                                         /> : "no current"
                                     }}
                                 >
                                 </RevisionDisplay>
                                 <div className="actions">
-                                    {(updatedItem || isDeleted) && (
+                                    {(revision) && (
                                         <SyncIcon
                                             syncState={
-                                                SyncState.LOCAL_CHANGE
+                                                !isModified && !isDeleted ?
+                                                    SyncState.SYNC_OK :
+                                                    SyncState.LOCAL_CHANGE
                                             }
                                         />
                                     )}

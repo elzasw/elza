@@ -25,6 +25,7 @@ export const showPartEditModal = (
     scopeId: number,
     refTables: RefTablesState,
     apViewSettings: DetailStoreState<ApViewSettings>,
+    revision: boolean,
     onUpdateFinish: () => void = () => {},
 ) => (dispatch:any) => dispatch(
     modalDialogShow(
@@ -95,6 +96,7 @@ export const showPartEditModal = (
                 apId={apId}
                 partId={mainPart.id}
                 onClose={() => onClose()}
+                partItems={updatedPart ? part?.items : null}
                 />
         },
         'dialog-lg',

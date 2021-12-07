@@ -16,6 +16,7 @@ type Props = {
     part: RevisionPart;
     globalCollapsed: boolean;
     preferred?: boolean;
+    revision?: boolean;
     globalEntity: boolean;
     partValidationError?: PartValidationErrorsVO;
     bindings: Bindings;
@@ -27,6 +28,7 @@ const DetailPart: FC<Props> = ({
     part: {part, updatedPart},
     globalCollapsed = true,
     preferred,
+    revision,
     globalEntity,
     partValidationError,
     bindings,
@@ -98,7 +100,7 @@ const DetailPart: FC<Props> = ({
 
                     </RevisionDisplay>
                     <div className="actions">
-                        {(hasBinding || updatedPart) && (
+                        {(hasBinding || revision) && (
                             <SyncIcon 
                                 syncState={
                                 !isModified ? 
@@ -123,6 +125,7 @@ const DetailPart: FC<Props> = ({
                         bindings={bindings}
                         itemTypeSettings={itemTypeSettings}
                         isModified={isModified}
+                        revision={revision}
                         />
                 </div>
             )}

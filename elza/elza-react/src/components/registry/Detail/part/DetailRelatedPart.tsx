@@ -24,6 +24,7 @@ type Props = {
   globalEntity: boolean;
   partValidationError?: PartValidationErrorsVO;
   bindings: Bindings;
+  revision?: boolean;
   itemTypeSettings: ItemType[];
 };
 
@@ -37,6 +38,7 @@ const DetailRelatedPart: FC<Props> = ({
     globalCollapsed = true,
     partValidationError,
     bindings,
+    revision,
     itemTypeSettings,
 }) => {
     const [collapsed, setCollapsed] = useState(true);
@@ -127,6 +129,7 @@ const DetailRelatedPart: FC<Props> = ({
                     bindings={bindings}
                     itemTypeSettings={itemTypeSettings}
                     isModified={isModified}
+                    revision={revision}
                 />
             </div>
         </div>}

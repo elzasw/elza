@@ -213,6 +213,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 detail.data.scopeId,
                 refTables,
                 apViewSettings,
+                !!detail.data.revStateApproval,
                 () => restoreScrollPosition()
             );
         refreshValidation(id);
@@ -463,6 +464,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                         globalEntity={globalEntity}
                                         partType={partType}
                                         onDelete={handleDelete}
+                                        revision={detail.data ? !!detail.data.revStateApproval : false}
                                     />
                                 );
                             }
@@ -475,6 +477,9 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                     parts={revisionParts}
                                     relatedParts={getRelatedPartSections(revisionParts)}
                                     preferred={detail.data ? detail.data.preferredPart : undefined}
+                                    newPreferred={detail.data ? detail.data.newPreferredPart : undefined}
+                                    revPreferred={detail.data ? detail.data.revPreferredPart : undefined}
+                                    revision={detail.data ? !!detail.data.revStateApproval : false}
                                     globalCollapsed={globalCollapsed}
                                     onSetPreferred={handleSetPreferred}
                                     onEdit={handleEdit}
@@ -508,8 +513,9 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
         scopeId: number,
         refTables: unknown,
         apViewSettings: DetailStoreState<ApViewSettings>,
+        revision: boolean,
         onUpdateFinish: () => void = () => {},
-    ) => dispatch(showPartEditModal(part, updatedPart, partType as any, apId, apTypeId, ruleSetId, scopeId, refTables as any, apViewSettings, onUpdateFinish)),
+    ) => dispatch(showPartEditModal(part, updatedPart, partType as any, apId, apTypeId, ruleSetId, scopeId, refTables as any, apViewSettings, revision, onUpdateFinish)),
     showPartCreateModal: (
         partType: RulPartTypeVO,
         apId: number,

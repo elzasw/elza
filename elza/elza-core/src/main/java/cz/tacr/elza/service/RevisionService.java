@@ -5,6 +5,7 @@ import cz.tacr.elza.controller.vo.RevStateChange;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevIndex;
@@ -17,7 +18,9 @@ import cz.tacr.elza.domain.AccessPointPart;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.groovy.GroovyResult;
+import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApRevIndexRepository;
 import cz.tacr.elza.repository.ApRevisionRepository;
 import org.apache.commons.collections4.CollectionUtils;
@@ -58,6 +61,9 @@ public class RevisionService {
     @Autowired
     private ApRevIndexRepository revIndexRepository;
 
+    @Autowired
+    private ApBindingStateRepository bindingStateRepository;
+
     @Transactional
     public void createRevision(ApState state) {
         ApRevision revision = findRevisionByState(state);
@@ -75,6 +81,12 @@ public class RevisionService {
         revision.setPreferredPart(state.getAccessPoint().getPreferredPart());
 
         revisionRepository.save(revision);
+
+        List<ApBindingState> bindingStateList = bindingStateRepository.findByAccessPoint(state.getAccessPoint());
+        if (CollectionUtils.isNotEmpty(bindingStateList)) {
+            bindingStateList.forEach(eid -> eid.setSyncOk(SyncState.NOT_SYNCED));
+            bindingStateRepository.saveAll(bindingStateList);
+        }
     }
 
     @Transactional
@@ -148,7 +160,6 @@ public class RevisionService {
         ApPart parentPart = apPartFormVO.getParentPartId() == null ? null : partService.getPart(apPartFormVO.getParentPartId());
         ApRevPart revParentPart = apPartFormVO.getRevParentPartId() == null ? null : revisionPartService.findById(apPartFormVO.getParentPartId());
 
-        //todo ????? parentPart
         if ((parentPart != null && parentPart.getParentPart() != null)
                 || (revParentPart != null && revParentPart.getParentPart() != null)) {
             throw new IllegalArgumentException("Nadřazená část nesmí zároveň být podřazená část");
@@ -168,8 +179,6 @@ public class RevisionService {
 
     @Transactional(Transactional.TxType.MANDATORY)
     public void updatePartValue(final ApRevPart part, final ApRevision revision) {
-        //todo ????? parentPart
-        //todo add child appart and apitem
         List<ApRevPart> childrenParts = revisionPartService.findPartsByParentPart(part.getOriginalPart());
         List<ApRevPart> revChildrenParts = revisionPartService.findPartsByRevParentPart(part);
         if (CollectionUtils.isEmpty(childrenParts)) {
@@ -188,7 +197,6 @@ public class RevisionService {
 
     @Transactional(Transactional.TxType.MANDATORY)
     public void updatePartValues(final ApRevision revision) {
-        //todo add child appart and apitem
         List<ApRevPart> partList = revisionPartService.findByRevision(revision);
         Map<Integer, List<ApRevItem>> itemMap = revisionItemService.findByParts(partList).stream()
                 .collect(Collectors.groupingBy(ApRevItem::getPartId));
@@ -224,7 +232,6 @@ public class RevisionService {
     private List<ApRevPart> findChildrenParts(final ApRevPart part, final List<ApRevPart> partList) {
         List<ApRevPart> childrenParts = new ArrayList<>();
         for (ApRevPart p : partList) {
-            //todo ????? parentPart
             if (p.getRevParentPart() != null && p.getRevParentPart().getPartId().equals(part.getPartId())) {
                 childrenParts.add(p);
             }
@@ -266,11 +273,6 @@ public class RevisionService {
         ApPart apPart = partService.getPart(partId);
         ApRevPart revPart = revisionPartService.findByOriginalPart(apPart);
 
-        //todo check children parts
-//        if (partRepository.countApPartsByParentPartAndDeleteChangeIsNull(apPart) > 0) {
-//            throw new IllegalArgumentException("Nelze smazat part, který má aktivní návazné party");
-//        }
-
         if (revPart != null) {
             // smazat itemy a indexi
             if (revision.getRevPreferredPartId() != null && revision.getRevPreferredPartId().equals(revPart.getPartId())) {
@@ -300,11 +302,6 @@ public class RevisionService {
             throw new IllegalArgumentException("Preferované jméno nemůže být odstraněno");
         }
         ApRevPart revPart = revisionPartService.findById(partId);
-
-        //todo check children parts
-//        if (partRepository.countApPartsByParentPartAndDeleteChangeIsNull(apPart) > 0) {
-//            throw new IllegalArgumentException("Nelze smazat part, který má aktivní návazné party");
-//        }
 
         ApChange apChange = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
         List<ApRevIndex> indices = revIndexRepository.findByPart(revPart);
@@ -359,7 +356,6 @@ public class RevisionService {
             throw new IllegalArgumentException("Preferované jméno musí být typu " + defaultPartType.getCode());
         }
 
-        //todo ????? parentPart
         if (revPart.getParentPart() != null || revPart.getRevParentPart() != null) {
             throw new IllegalArgumentException("Návazný part nelze změnit na preferovaný.");
         }
