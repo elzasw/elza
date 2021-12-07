@@ -1575,4 +1575,32 @@ where no.level_id = l.level_id
         <sql dbms="postgresql">DROP INDEX ap_binding_state_access_point_pidx</sql>
     </changeSet>
 
+    <changeSet id="20211202113000" author="sergey.iryupin">
+        <!-- opravy pro speciální případy -->
+        <sql dbms="postgresql">UPDATE rul_item_spec SET name='blíže neurčený eskymácko-aleutský jazyk' WHERE code='ZP2015_LANGUAGE_154'</sql>
+        <sql dbms="postgresql">UPDATE rul_item_spec SET name='blíže neurčený izolovaný jazyk' WHERE code='ZP2015_LANGUAGE_157'</sql>
+        <!-- změna balíčku -->
+		<sql dbms="postgresql">UPDATE rul_item_type SET package_id = (SELECT package_id FROM rul_package WHERE code = 'CZ_BASE')
+                WHERE code = 'ZP2015_LANGUAGE'</sql>
+        <!-- vytvoření migrační tabulky jazyků -->
+        <sql dbms="postgresql">CREATE TABLE mig_lng_table (src_spec_id INTEGER NOT NULL PRIMARY KEY, trg_spec_id INTEGER);
+            INSERT INTO mig_lng_table
+                SELECT s.item_spec_id, sz.item_spec_id FROM rul_item_spec s
+                LEFT JOIN rul_item_spec sz ON lower(s.name)=lower(sz.name)
+                WHERE s.code LIKE 'ZP2015_LANGUAGE_%' AND sz.code like 'LNG_%'
+                ORDER BY s.item_spec_id</sql>
+        <!-- změna jazykových specifikací na nové -->
+        <sql dbms="postgresql">UPDATE rul_item_type_spec_assign rul SET item_spec_id = mig.trg_spec_id
+                FROM mig_lng_table mig
+                WHERE mig.src_spec_id=rul.item_spec_id</sql>
+        <!-- změna hodnot na nové -->
+		<sql dbms="postgresql">UPDATE arr_item i SET item_spec_id = mig.trg_spec_id
+                FROM mig_lng_table mig
+                WHERE mig.src_spec_id=i.item_spec_id</sql>
+        <!-- závěrečný úklid -->
+		<sql dbms="postgresql">DROP TABLE mig_lng_table</sql>
+        <sql dbms="postgresql">DELETE FROM rul_item_spec WHERE code LIKE 'ZP2015_LANGUAGE_%'</sql>
+		<sql dbms="postgresql">DELETE FROM arr_cached_node</sql>
+    </changeSet>
+
 </databaseChangeLog>

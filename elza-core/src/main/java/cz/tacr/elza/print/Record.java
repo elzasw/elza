@@ -161,8 +161,8 @@ public class Record {
         Map<Part, List<Part>> subPartMap = new HashMap<>();
         // process sub parts
         for (Part subPart : subParts) {
-            Part parent = partIdMap.get(subPart.getPartId());
-            Validate.notNull(parent, "Parent part not found, partId = %i", subPart.getPartId());
+            Part parent = partIdMap.get(subPart.getParentPartId());
+            Validate.notNull(parent, "Parent part not found, partId = %i", subPart.getParentPartId());
             List<Part> partList = subPartMap.computeIfAbsent(parent, p -> new ArrayList<>());
             partList.add(subPart);
         }

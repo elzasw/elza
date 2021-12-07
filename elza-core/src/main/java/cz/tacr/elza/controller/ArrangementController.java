@@ -22,6 +22,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Transactional;
 
+import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.UniqueValue;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -29,9 +30,14 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -2034,6 +2040,9 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         RulItemType descItemType = ruleService.getItemTypeById(itemTypeId);
+        if (descItemType.getStructuredType().getAnonymous()) {
+            throw new IllegalArgumentException("U anonymních strukturovaných typů nelze hromadně nastavit hodnotu.");
+        }
 
         replaceDataBody.getNodes()
                 .forEach(node -> descriptionItemService.checkNodeWritePermission(fundVersionId, node.getId(), node.getVersion()));
@@ -2735,6 +2744,46 @@ public class ArrangementController {
                                  @RequestParam (value = "childrenNodes") final Boolean childrenNodes) {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.SYNCHRONIZE_JP);
         arrangementService.synchronizeNodes(nodeId, nodeVersion, childrenNodes, change);
+    }
+
+    /**
+     * Export souřadnic do formátu KML/GML
+     *
+     * @param fileType Typ souboru
+     * @param itemId Identifikátor itemu
+     * @return Soubor se souřadnicemi
+     */
+    @Transactional
+    @RequestMapping(value = "/export/coordinates/{itemId}",
+            consumes = {"*/*"},
+            produces = { "application/octet-stream", "application/gml+xml", "application/vnd.google-earth.kml+xml" },
+            method = RequestMethod.GET)
+    public ResponseEntity<Resource> exportCoordinates(@RequestParam final FileType fileType,
+                                                      @PathVariable("itemId") final Integer itemId) {
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        String extension;
+        String contentType;
+
+        switch (fileType) {
+            case WKT:
+                extension = "wkt";
+                contentType = "application/octet-stream";
+                break;
+            case GML:
+                extension = "gml";
+                contentType = "application/gml+xml";
+                break;
+            case KML:
+                extension = "kml";
+                contentType = "application/vnd.google-earth.kml+xml";
+                break;
+            default:
+                throw new IllegalStateException("Nepovolený typ souboru pro export souřadnic");
+        }
+
+        headers.add("Content-type",  contentType + "; charset=utf-8");
+        headers.add("Content-disposition", "attachment; filename=file." + extension);
+        return new ResponseEntity<>(arrangementService.exportCoordinates(fileType, itemId), headers, HttpStatus.OK);
     }
 
     /**
