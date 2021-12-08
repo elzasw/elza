@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.toMap;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2355,52 +2354,6 @@ public class AccessPointService {
         return extSyncsQueueItemVO;
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
-    public void createExtSyncsQueueItem(Integer accessPointId, String externalSystemCode) {        
-        // check AP state
-        ApState apState = getApState(accessPointId);
-        switch(apState.getStateApproval()) {
-        case APPROVED:
-        case NEW:
-        case TO_AMEND:
-        	break;
-        default:
-        	throw new BusinessException("Entita v tomto stavu nemůže být předána do externího systému.", BaseCode.INVALID_STATE)
-                .set("accessPointId", apState.getAccessPointId())
-                .set("state", apState.getStateApproval());
-        }
-
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-        ApExternalSystem extSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-
-        // check ext_sync_queue
-        if (extSyncsQueueItemRepository.countByAccesPointAndExternalSystemAndState(accessPoint, extSystem, ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW) != 0) {
-            throw new BusinessException("Entita již čeká na zpracování ve frontě.", BaseCode.INVALID_STATE)
-                .set("accessPointId", apState.getAccessPointId())
-                .set("externalSystemCode", externalSystemCode);
-        }
-
-        UserDetail userDetail = userService.getLoggedUserDetail();
-        ExtSyncsQueueItem extSyncsQueueItem = createExtSyncsQueueItem(accessPoint, extSystem, null,
-                ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW, OffsetDateTime.now(), userDetail.getUsername());
-        extSyncsQueueItemRepository.save(extSyncsQueueItem);
-    }
-
-    public ExtSyncsQueueItem createExtSyncsQueueItem(final ApAccessPoint accessPoint,
-                                                     final ApExternalSystem apExternalSystem,
-                                                     final String stateMessage,
-                                                     final ExtSyncsQueueItem.ExtAsyncQueueState state,
-                                                     final OffsetDateTime date,
-                                                     final String userName) {
-        ExtSyncsQueueItem extSyncsQueueItem = new ExtSyncsQueueItem();
-        extSyncsQueueItem.setAccessPoint(accessPoint);
-        extSyncsQueueItem.setExternalSystem(apExternalSystem);
-        extSyncsQueueItem.setStateMessage(stateMessage);
-        extSyncsQueueItem.setState(state);
-        extSyncsQueueItem.setDate(date);
-        extSyncsQueueItem.setUsername(userName);
-        return extSyncsQueueItem;
-    }
 
     public Page<ApState> findApAccessPointBySearchFilter(SearchFilterVO searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
                                                          StateApproval state, Integer from, Integer count, StaticDataProvider sdp) {

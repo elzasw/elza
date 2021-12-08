@@ -39,6 +39,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.exception.AbstractException;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -50,6 +51,7 @@ import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
@@ -408,7 +410,14 @@ public class CamService {
         return ueb;
     }
 
-    private BatchInfoXml createBatchInfo(String userName) {
+    /**
+     * Create batch info
+     * @param externalSystem External system where to send data
+     * @param userName User changing data
+     * @return
+     */
+    private BatchInfoXml createBatchInfo(ApExternalSystem externalSystem, 
+    									 String userName) {
         BatchInfoXml batchInfo = new BatchInfoXml();
         batchInfo.setBatchUserInfo(new LongStringXml(userName));
         batchInfo.setBid(new UuidXml(UUID.randomUUID().toString()));
@@ -758,7 +767,7 @@ public class CamService {
         ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint,
                                                                                                externalSystem);
         BatchUpdateXml batchUpdate = new BatchUpdateXml();
-        batchUpdate.setInf(createBatchInfo(extSyncsQueueItem.getUsername()));
+        batchUpdate.setInf(createBatchInfo(externalSystem, extSyncsQueueItem.getUsername()));
         BatchUpdateBuilder xmlBuilder;
         if (bindingState == null) {
             // create new item
@@ -939,5 +948,52 @@ public class CamService {
                  TRANSACTION_UUID);
         bindingSync.setLastTransaction(TRANSACTION_UUID);
         bindingSyncRepository.save(bindingSync);
+    }
+
+    @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
+    public void createExtSyncsQueueItem(Integer accessPointId, String externalSystemCode) {        
+        // check AP state
+        ApState apState = accessPointService.getApState(accessPointId);
+        switch(apState.getStateApproval()) {
+        case APPROVED:
+        case NEW:
+        case TO_AMEND:
+        	break;
+        default:
+        	throw new BusinessException("Entita v tomto stavu nemůže být předána do externího systému.", BaseCode.INVALID_STATE)
+                .set("accessPointId", apState.getAccessPointId())
+                .set("state", apState.getStateApproval());
+        }
+
+        ApAccessPoint accessPoint = apState.getAccessPoint();
+        ApExternalSystem extSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+
+        // check ext_sync_queue
+        if (extSyncsQueueItemRepository.countByAccesPointAndExternalSystemAndState(accessPoint, extSystem, ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW) != 0) {
+            throw new BusinessException("Entita již čeká na zpracování ve frontě.", BaseCode.INVALID_STATE)
+                .set("accessPointId", apState.getAccessPointId())
+                .set("externalSystemCode", externalSystemCode);
+        }
+
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        ExtSyncsQueueItem extSyncsQueueItem = createExtSyncsQueueItem(accessPoint, extSystem, null,
+                ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW, OffsetDateTime.now(), userDetail.getUsername());
+        extSyncsQueueItemRepository.save(extSyncsQueueItem);
+    }
+
+    private ExtSyncsQueueItem createExtSyncsQueueItem(final ApAccessPoint accessPoint,
+                                                     final ApExternalSystem apExternalSystem,
+                                                     final String stateMessage,
+                                                     final ExtSyncsQueueItem.ExtAsyncQueueState state,
+                                                     final OffsetDateTime date,
+                                                     final String userName) {
+        ExtSyncsQueueItem extSyncsQueueItem = new ExtSyncsQueueItem();
+        extSyncsQueueItem.setAccessPoint(accessPoint);
+        extSyncsQueueItem.setExternalSystem(apExternalSystem);
+        extSyncsQueueItem.setStateMessage(stateMessage);
+        extSyncsQueueItem.setState(state);
+        extSyncsQueueItem.setDate(date);
+        extSyncsQueueItem.setUsername(userName);
+        return extSyncsQueueItem;
     }
 }
