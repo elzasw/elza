@@ -1108,7 +1108,7 @@ public class ApController {
     		"/external/update/{accessPointId}"}, method = RequestMethod.POST)
     public void saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                 @RequestParam final String externalSystemCode) {
-        accessPointService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
+        camService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
     }
 
     /**
