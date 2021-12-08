@@ -929,6 +929,7 @@ var messages = {
     "subNodeForm.descItemType.spec.favorite": "Oblíbené",
     "subNodeForm.descItemType.spec.all": "Všechny záznamy",
     "subNodeForm.descItemType.notIdentified": "Nezjištěno",
+    "subNodeForm.descItemType.title.importCoord": "Načtení souřadnic ze souboru",
     "subNodeForm.addNodeAfter": "JP za",
     "subNodeForm.digitizationRequest": "Požadavek na digitalizaci",
     "subNodeForm.digitizationSync": "Synchronizovat DAO",
