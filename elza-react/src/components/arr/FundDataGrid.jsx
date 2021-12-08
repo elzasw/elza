@@ -49,6 +49,7 @@ import {
 } from 'actions/arr/fundDataGrid';
 import {contextMenuHide, contextMenuShow} from 'actions/global/contextMenu';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes';
+import {structureTypesFetchIfNeeded} from 'actions/refTables/structureTypes';
 import {nodeFormActions} from 'actions/arr/subNodeForm';
 import {fundSelectSubNode} from 'actions/arr/node';
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes';
@@ -83,6 +84,7 @@ class FundDataGrid extends AbstractReactComponent {
         readMode: PropTypes.bool.isRequired,
         closed: PropTypes.bool.isRequired,
         fundDataGrid: PropTypes.object.isRequired, // store
+        structureTypes: PropTypes.object.isRequired,
     };
 
     constructor(props) {
@@ -138,6 +140,7 @@ class FundDataGrid extends AbstractReactComponent {
     fetchData(props) {
         const {fundDataGrid, descItemTypes, fund, versionId, ruleSet} = props;
         this.props.dispatch(descItemTypesFetchIfNeeded());
+        this.props.dispatch(structureTypesFetchIfNeeded(this.props.versionId));
         this.props.dispatch(groups.fetchIfNeeded(this.props.versionId));
         this.props.dispatch(refRulDataTypesFetchIfNeeded());
         this.props.dispatch(fundDataGridFetchFilterIfNeeded(versionId));
@@ -581,7 +584,7 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleBulkModifications(refType, dataType) {
-        const {versionId, fundDataGrid} = this.props;
+        const {versionId, fundDataGrid, structureTypes} = this.props;
 
         const submit = data => {
             // Sestavení seznamu node s id a verzí, pro které se má daná operace provést
@@ -683,6 +686,7 @@ class FundDataGrid extends AbstractReactComponent {
                     allItemsCount={fundDataGrid.items.length}
                     checkedItemsCount={fundDataGrid.selectedIds.length}
                     versionId={versionId}
+                    structureTypes={structureTypes}
                 />,
             ),
         );
