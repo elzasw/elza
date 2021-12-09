@@ -442,7 +442,7 @@ public class CamService {
         String lastTransaction;
 
         try {
-            UpdatesFromXml updatesFromXml = camConnector.getUpdatesFrom(apBindingSync.getLastTransaction(), externalSystem.getCode());
+            UpdatesFromXml updatesFromXml = camConnector.getUpdatesFrom(apBindingSync.getLastTransaction(), externalSystem);
             if (updatesFromXml.getUps() != null && CollectionUtils.isNotEmpty(updatesFromXml.getUps().getRevisions())) {
                 entityRecordRevInfoXmls = updatesFromXml.getUps().getRevisions();
                 lastTransaction = updatesFromXml.getInf().getTo().getValue();
@@ -453,7 +453,7 @@ public class CamService {
                 int page = 1;
 
                 while (count > 0) {
-                    UpdatesXml updatesXml = camConnector.getUpdatesFromTo(apBindingSync.getLastTransaction(), lastTransaction, page, PAGE_SIZE, externalSystem.getCode());
+                    UpdatesXml updatesXml = camConnector.getUpdatesFromTo(apBindingSync.getLastTransaction(), lastTransaction, page, PAGE_SIZE, externalSystem);
                     entityRecordRevInfoXmls.addAll(updatesXml.getRevisions());
 
                     page++;
@@ -775,7 +775,7 @@ public class CamService {
         } else {
             // update entity
             // TODO: try to prepare update without downloading current entity
-            EntityXml entity = camConnector.getEntityById(bindingState.getBinding().getValue(), externalSystem);
+            EntityXml entity = camConnector.getEntity(bindingState.getBinding().getValue(), externalSystem);
             // update existing item
             xmlBuilder = createEntityUpdateBuilder(accessPoint, bindingState, entity,
                                                                            externalSystem);
@@ -845,7 +845,7 @@ public class CamService {
         try {
             // download entity from CAM
             log.debug("Download entity from CAM, bindingValue: {} externalSystem: {}", bindingValue, externalSystem.getCode());
-            entity = camConnector.getEntityById(bindingValue, externalSystem.getCode());
+            entity = camConnector.getEntity(bindingValue, externalSystem);
         } catch (ApiException e) {
             // if ApiException -> it means we connected server and it is logical failure 
             setQueueItemState(queueItem,
@@ -906,7 +906,7 @@ public class CamService {
         List<String> bindingValues = bindings.stream().map(p -> p.getValue()).collect(Collectors.toList());
         log.debug("Download entity from CAM, bindingValues: {} externalSystem: {}", bindingValues, externalSystem.getCode());
 
-        EntitiesXml entities = camConnector.getEntitiesByIds(bindingValues, externalSystem.getCode());
+        EntitiesXml entities = camConnector.getEntities(bindingValues, externalSystem);
         
         importNew(externalSystem, entities, bindingMap);
 

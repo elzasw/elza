@@ -131,6 +131,21 @@ public class ExternalSystemService {
     }
 
     /**
+     * Vyhledání externího systému podle id.
+     *
+     * @param id identifikátor externího systému, který hledáme
+     * @return nalezený externí systém
+     */
+    public ApExternalSystem findApExternalSystemById(final Integer id) {
+        Optional<ApExternalSystem> extSystem = apExternalSystemRepository.findById(id);
+        if (!extSystem.isPresent()) {
+            throw new BusinessException("External system not found, id: " + id, BaseCode.ID_NOT_EXIST)
+                    .set("id", id);
+        }
+        return extSystem.get();
+    }
+
+    /**
      * Vyhledání externího systému podle identifikátoru bez kontroly práv.
      *
      * @param id identifikátor externího systému

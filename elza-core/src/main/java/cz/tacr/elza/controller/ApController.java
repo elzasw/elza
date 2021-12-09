@@ -983,9 +983,11 @@ public class ApController {
             throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
         }
         int fromPage = from / max;
+
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         QueryResultXml result;
         try {
-            result = camConnector.search(fromPage + 1, max, searchFilterFactory.createQueryParamsDef(filter), externalSystemCode);
+            result = camConnector.search(fromPage + 1, max, searchFilterFactory.createQueryParamsDef(filter), apExternalSystem);
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
@@ -1032,7 +1034,7 @@ public class ApController {
 
         EntityXml entity;
         try {
-            entity = camConnector.getEntityById(archiveEntityId, externalSystemCode);
+            entity = camConnector.getEntity(archiveEntityId, apExternalSystem);
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
@@ -1088,7 +1090,7 @@ public class ApController {
 
         EntityXml entity;
         try {
-            entity = camConnector.getEntityById(archiveEntityId, externalSystemCode);
+            entity = camConnector.getEntity(archiveEntityId, apExternalSystem);
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
@@ -1133,7 +1135,7 @@ public class ApController {
 
         EntityXml entity;
         try {
-            entity = camConnector.getEntityById(binding.getValue(), externalSystemCode);
+            entity = camConnector.getEntity(binding.getValue(), apExternalSystem);
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
@@ -1173,6 +1175,7 @@ public class ApController {
                                        @RequestParam final String externalSystemCode) {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
         ApState state = accessPointService.getStateInternal(accessPoint);
+        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
 
         List<String> archiveEntities = accessPointService.findRelArchiveEntities(accessPoint);
         List<EntityXml> entities = new ArrayList<>();
@@ -1180,13 +1183,12 @@ public class ApController {
         try {
             if (CollectionUtils.isNotEmpty(archiveEntities)) {
                 for (String archiveEntityId : archiveEntities) {
-                    entities.add(camConnector.getEntityById(archiveEntityId, externalSystemCode));
+                    entities.add(camConnector.getEntity(archiveEntityId, apExternalSystem));
                 }
             }
         } catch (ApiException e) {
             throw prepareSystemException(e);
         }
-        ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
         camService.createAccessPoints(procCtx, entities);
     }
