@@ -1,24 +1,15 @@
 <item-types>
-    <item-type code="COORD_POINT" data-type="COORDINATES">
-        <name>Definiční bod</name>
-        <shortcut>Definiční bod</shortcut>
+    <item-type code="BRIEF_DESC" data-type="STRING">
+        <name>Stručná charakteristika</name>
+        <shortcut>Stručná charakteristika</shortcut>
         <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="COORD_BORDER" data-type="COORDINATES">
-        <name>Hranice</name>
-        <shortcut>Hranice</shortcut>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="COORD_NOTE" data-type="TEXT">
-        <name>Poznámka k souřadnicím</name>
-        <shortcut>Poznámka k souřadnicím</shortcut>
-        <use-specification>false</use-specification>
+        <string-length-limit>250</string-length-limit>
     </item-type>
     <item-type code="GEO_TYPE" data-type="ENUM">
         <name>Typ geografického objektu</name>
         <shortcut>Typ geografického objektu</shortcut>
         <use-specification>true</use-specification>
-    </item-type>
+    </item-type>    
     <item-type code="GEO_ADMIN_CLASS" data-type="RECORD_REF">
         <name>Administrativní zařazení</name>
         <shortcut>Administrativní zařazení</shortcut>
@@ -27,9 +18,84 @@
             <item-aptype register-type="GEO"/>
         </item-aptypes>
     </item-type>
+    <item-type code="COORD_BORDER" data-type="COORDINATES">
+        <name>Hranice</name>
+        <shortcut>Hranice</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="COORD_POINT" data-type="COORDINATES">
+        <name>Definiční bod</name>
+        <shortcut>Definiční bod</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="COORD_NOTE" data-type="TEXT">
+        <name>Poznámka k souřadnicím</name>
+        <shortcut>Poznámka k souřadnicím</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="BIOGRAPHY" data-type="TEXT">
+        <name>Životopis</name>
+        <shortcut>Životopis</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="GENEALOGY" data-type="TEXT">
+        <name>Genealogie</name>
+        <shortcut>Genealogie</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="DESCRIPTION" data-type="TEXT">
+        <name>Popis</name>
+        <shortcut>Popis</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="HISTORY" data-type="TEXT">
+        <name>Dějiny</name>
+        <shortcut>Dějiny</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="LANG" data-type="ENUM">
+        <name>Jazyk díla</name>
+        <shortcut>Jazyk díla</shortcut>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="CORP_PURPOSE" data-type="TEXT">
+        <name>Funkce korporace</name>
+        <shortcut>Funkce korporace</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="FOUNDING_NORMS" data-type="TEXT">
+        <name>Normy – konstitutivní</name>
+        <shortcut>Normy – konstitutivní</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="SCOPE_NORMS" data-type="TEXT">
+        <name>Normy – působnost korporace</name>
+        <shortcut>Normy – působnost korporace</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="CORP_STRUCTURE" data-type="TEXT">
+        <name>Vnitřní struktury korporace</name>
+        <shortcut>Vnitřní struktury korporace</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="SOURCE_INFO" data-type="TEXT">
+        <name>Zdroje informací</name>
+        <shortcut>Zdroje informací</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="SOURCE_LINK" data-type="URI_REF">
+        <name>Odkaz na zdroje informací</name>
+        <shortcut>Odkaz na zdroje informací</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
     <item-type code="NOTE" data-type="TEXT">
         <name>Poznámka</name>
         <shortcut>Poznámka</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="NOTE_INTERNAL" data-type="TEXT">
+        <name>Služební poznámka</name>
+        <shortcut>Služební poznámka</shortcut>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="IDN_TYPE" data-type="ENUM">
@@ -148,23 +214,12 @@
         <use-specification>false</use-specification>
         <string-length-limit>50</string-length-limit>
     </item-type>
-    <item-type code="BRIEF_DESC" data-type="STRING">
-        <name>Stručná charakteristika</name>
-        <shortcut>Stručná charakteristika</shortcut>
-        <use-specification>false</use-specification>
-        <string-length-limit>250</string-length-limit>
-    </item-type>
     <item-type code="GENDER" data-type="ENUM">
         <name>Pohlaví</name>
         <shortcut>Pohlaví</shortcut>
         <description>Pohlaví</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
-        <use-specification>true</use-specification>
-    </item-type>
-    <item-type code="LANG" data-type="ENUM">
-        <name>Jazyk díla</name>
-        <shortcut>Jazyk díla</shortcut>
         <use-specification>true</use-specification>
     </item-type>
     <item-type code="EV_TYPE" data-type="ENUM">
@@ -225,61 +280,6 @@
     <item-type code="EXT_DATE" data-type="UNITDATE">
         <name>Datace zániku</name>
         <shortcut>Datace</shortcut>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="CORP_PURPOSE" data-type="TEXT">
-        <name>Funkce korporace</name>
-        <shortcut>Funkce korporace</shortcut>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="FOUNDING_NORMS" data-type="TEXT">
-        <name>Normy – konstitutivní</name>
-        <shortcut>Normy – konstitutivní</shortcut>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="SCOPE_NORMS" data-type="TEXT">
-        <name>Normy – působnost korporace</name>
-        <shortcut>Normy – působnost korporace</shortcut>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="CORP_STRUCTURE" data-type="TEXT">
-        <name>Vnitřní struktury korporace</name>
-        <shortcut>Vnitřní struktury korporace</shortcut>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="NOTE_INTERNAL" data-type="TEXT">
-        <name>Služební poznámka</name>
-        <shortcut>Služební poznámka</shortcut>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="SOURCE_INFO" data-type="TEXT">
-        <name>Zdroje informací</name>
-        <shortcut>Zdroje informací</shortcut>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="SOURCE_LINK" data-type="URI_REF">
-        <name>Odkaz na zdroje informací</name>
-        <shortcut>Odkaz na zdroje informací</shortcut>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="HISTORY" data-type="TEXT">
-        <name>Dějiny</name>
-        <shortcut>Dějiny</shortcut>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="GENEALOGY" data-type="TEXT">
-        <name>Genealogie</name>
-        <shortcut>Genealogie</shortcut>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="BIOGRAPHY" data-type="TEXT">
-        <name>Životopis</name>
-        <shortcut>Životopis</shortcut>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="DESCRIPTION" data-type="TEXT">
-        <name>Popis</name>
-        <shortcut>Popis</shortcut>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_LANGUAGE" data-type="ENUM">
