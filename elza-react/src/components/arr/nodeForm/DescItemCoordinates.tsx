@@ -61,6 +61,10 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
         }
     };
 
+    handleImportChangeData = value => {
+        this.props.onChange(value);
+    };
+
     handleChangeSelect = e => {
         const val = wktFromTypeAndData(e.target.value, this.state.data);
         if (val !== this.props.descItem.value) {
@@ -77,7 +81,9 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
             return <DescItemLabel value={value} cal={cal} notIdentified={descItem.undefined} />;
         }
 
-        let inputValue = coordinatesUpload ? coordinatesUpload : data;
+        if (coordinatesUpload) {
+            this.handleImportChangeData(coordinatesUpload);
+        }
 
         return (
             <div className="desc-item-value-coordinates">
@@ -91,7 +97,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
                             ref={this.focusEl}
                             disabled={locked || descItem.undefined}
                             onChange={this.handleChangeData}
-                            value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : inputValue}
+                            value={descItem.undefined ? i18n('subNodeForm.descItemType.notIdentified') : data}
                         />
                     </ItemTooltipWrapper>
                     {!descItem.undefined && descItem.descItemObjectId && (

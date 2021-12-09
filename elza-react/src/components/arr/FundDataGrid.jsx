@@ -57,6 +57,7 @@ import {
     createFundRoot,
     createReferenceMarkFromArray,
     getSpecsIds,
+    getValueIds,
     hasDescItemTypeValue,
 } from 'components/arr/ArrUtils';
 import {getMapFromList, getSetFromIdsList} from 'stores/app/utils';
@@ -583,6 +584,10 @@ class FundDataGrid extends AbstractReactComponent {
         this.props.dispatch(fundDataGridFilterChange(versionId, refType.id, filter));
     }
 
+    handleChangeStructValue(valueItems) {
+        this.setState({valueItems: valueItems});
+    }
+
     handleBulkModifications(refType, dataType) {
         const {versionId, fundDataGrid, structureTypes} = this.props;
 
@@ -656,6 +661,7 @@ class FundDataGrid extends AbstractReactComponent {
             };
             let specsIds = getSpecsIds(refTypeX, data.specs.type, data.specs.ids);
             specsIds = specsIds.map(specsId => (specsId !== FILTER_NULL_VALUE ? specsId : null));
+            let valuesIds = getValueIds(this.state.valueItems, data.values.type, data.values.ids);
             if (selectionType !== 'FUND' || window.confirm(i18n('arr.fund.bulkModifications.warn'))) {
                 return this.props.dispatch(
                     fundBulkModifications(
@@ -669,7 +675,7 @@ class FundDataGrid extends AbstractReactComponent {
                         nodes,
                         selectionType,
                         data.replaceValueId,
-                        data.values.ids,
+                        valuesIds,
                     ),
                 );
             }
@@ -687,6 +693,7 @@ class FundDataGrid extends AbstractReactComponent {
                     checkedItemsCount={fundDataGrid.selectedIds.length}
                     versionId={versionId}
                     structureTypes={structureTypes}
+                    onStructValueChange={this.handleChangeStructValue.bind(this)}
                 />,
             ),
         );
