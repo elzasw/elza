@@ -17,8 +17,11 @@ public class ApBindingVO {
 
     private Integer id;
 
-    private String externalSystemCode;
-    
+    private Integer externalSystemId;
+
+    @Deprecated
+    private String externalSystemCode; 
+
     private String value;
 
     private String detailUrl;
@@ -45,10 +48,20 @@ public class ApBindingVO {
         this.id = id;
     }
 
+    public Integer getExternalSystemId() {
+        return externalSystemId;
+    }
+
+    public void setExternalSystemId(Integer externalSystemId) {
+        this.externalSystemId = externalSystemId;
+    }
+
+    @Deprecated
     public String getExternalSystemCode() {
         return externalSystemCode;
     }
 
+    @Deprecated
     public void setExternalSystemCode(String externalSystemCode) {
         this.externalSystemCode = externalSystemCode;
     }
@@ -135,6 +148,7 @@ public class ApBindingVO {
     public static ApBindingVO newInstance(ApBindingState bindingState, ApChange lastChange) {
         ApBindingVO vo = new ApBindingVO();
         vo.setId(bindingState.getBinding().getBindingId());
+        vo.setExternalSystemId(bindingState.getBinding().getApExternalSystem().getExternalSystemId());
         vo.setExternalSystemCode(bindingState.getBinding().getApExternalSystem().getCode());
         vo.setValue(bindingState.getBinding().getValue());
         vo.setExtState(bindingState.getExtState());

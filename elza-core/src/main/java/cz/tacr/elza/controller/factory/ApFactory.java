@@ -429,9 +429,11 @@ public class ApFactory {
     }
 
     private void fillBindingUrls(final List<ApBindingVO> bindings) {
+        StaticDataProvider sdp = staticDataService.getData();
         if (CollectionUtils.isNotEmpty(bindings)) {
             for (ApBindingVO binding : bindings) {
-                CamInstance camInstance = camConnector.findById(binding.getExternalSystemCode());
+                ApExternalSystem externalSystem = sdp.getApExternalSystemById(binding.getExternalSystemId());
+                CamInstance camInstance = camConnector.get(externalSystem);
                 if (camInstance != null) {
                     String value = binding.getValue();
                     if (StringUtils.isNotEmpty(value)) {
@@ -758,7 +760,7 @@ public class ApFactory {
             case RECORD_REF:
                 item = new ApItemAccessPointRefVO(apItem, ((externalSystemId, value) -> {
                     ApExternalSystem externalSystem = sdp.getApExternalSystemById(externalSystemId);
-                    CamInstance camInstance = camConnector.getByCode(externalSystem.getCode());
+                    CamInstance camInstance = camConnector.get(externalSystem);
                     return camInstance.getEntityDetailUrl(value);
                 }));
                 break;
