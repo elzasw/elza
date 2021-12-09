@@ -94,6 +94,23 @@ export function getSpecsIds(refType, selectionType, selectedIds) {
     return specIds;
 }
 
+export function getValueIds(valueItems, selectionType, selectedIds) {
+    let valueIds = [];
+    if (valueItems) {
+        if (selectionType === 'selected') {
+            valueIds = selectedIds;
+        } else {
+            let set = getSetFromIdsList(selectedIds);
+            valueItems.forEach(i => {
+                if ((!set[i.id] && selectionType === 'unselected') || (!set[i.id] && selectionType === 'unselected')) {
+                    valueIds.push(i.id);
+                }
+            });
+        }
+    }
+    return valueIds;
+}
+
 export function getNodeParent(nodes, nodeId) {
     var result = null;
 
