@@ -299,6 +299,7 @@ class DescItemType extends AbstractReactComponent {
     handleChange(descItemIndex, value, callback) {
         //this.props.onChange(descItemIndex, value);
         // Switched to local value change. Value update in "handleBlur"
+        this.setState({coordinatesUpload: null});
 
         const {rulDataType, refType} = this.props;
         let newDescItemType = {...this.state.descItemType};

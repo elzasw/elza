@@ -536,6 +536,7 @@ class FundBulkModificationsForm extends AbstractReactComponent {
                                 refType={refType}
                                 versionId={versionId}
                                 name={'values'}
+                                onStructValueChange={this.props.onStructValueChange}
                             />
                         </FormGroup>
                     )}
