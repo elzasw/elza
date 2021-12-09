@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -578,12 +579,11 @@ public class EntityDBDispatcher {
                                                    final EntityXml entity,
                                                    final ApBindingState bindingState,
                                                    final ApAccessPoint accessPoint) {
-        log.debug("Synchronizing parts, accessPointId: {}, version: {}", accessPoint.getAccessPointId(), accessPoint
-                .getVersion());
+        log.debug("Synchronizing parts, accessPointId: {}, version: {}", accessPoint.getAccessPointId(), accessPoint.getVersion());
 
         Integer accessPointId = accessPoint.getAccessPointId();
         PartsXml partsXml = entity.getPrts();
-        if(partsXml==null) {
+        if (partsXml == null) {
             log.error("Element parts is empty, accessPointId: {}, entityUuid: {}",
                       accessPointId,
                       entity.getEuid().toString());
@@ -591,7 +591,7 @@ public class EntityDBDispatcher {
                     BaseCode.INVALID_STATE)
                             .set("accessPointId", accessPoint.getAccessPointId());
         }
-        
+
         log.debug("Synchronizing parts, accessPointId: {}, number of parts: {}", accessPointId,
                   partsXml.getList().size());
 
@@ -650,7 +650,7 @@ public class EntityDBDispatcher {
 
         // smazání partů dle externího systému
         // mažou se zbývající party
-        deletePartsInLookup(apChange);
+        deletePartsInLookup(apChange, accessPoint);
 
         // smazání zbývajících nezpracovaných item
         Collection<ApBindingItem> remainingBindingItems = bindingItemLookup.values();
@@ -684,7 +684,7 @@ public class EntityDBDispatcher {
         //změna preferováného jména
         Validate.notNull(preferredName, "Missing preferredName");
         ApPart oldPrefPart = accessPoint.getPreferredPart();
-        if(oldPrefPart!=null&&!oldPrefPart.getPartId().equals(preferredName.getPartId())) {
+        if (oldPrefPart!=null&&!oldPrefPart.getPartId().equals(preferredName.getPartId())) {
         	this.partService.unsetPreferredPart(oldPrefPart);
         }
         accessPointService.setPreferName(accessPoint, preferredName);
@@ -701,23 +701,43 @@ public class EntityDBDispatcher {
         return syncResult;
     }
 
-    private void deletePartsInLookup(ApChange apChange) {
+    private void deletePartsInLookup(ApChange apChange, ApAccessPoint accessPoint) {
         if (bindingPartLookup.isEmpty()) {
             return;
         }
 
         Collection<ApBindingItem> partsBinding = bindingPartLookup.values();
+
+        // získání seznamu podřízených ApPart
+        List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
+        List<ApPart> subParts = parts.stream().filter(p -> p.getParentPartId() != null).collect(Collectors.toList());
+
         List<ApPart> partList = new ArrayList<>();
         for (ApBindingItem partBinding : partsBinding) {
             ApPart part = partBinding.getPart();
-            log.debug("Deleting part binding, bindingItemId: {}, partId: {}",
-                      partBinding.getBindingItemId(),
-                      part.getPartId());
             partList.add(part);
             partBinding.setDeleteChange(apChange);
+            log.debug("Deleting part binding, bindingItemId: {}, partId: {}", partBinding.getBindingItemId(), part.getPartId());
         }
         bindingItemRepository.saveAll(partsBinding);
         bindingItemRepository.flush();
+
+        // získání seznamu ID, která odstraníme
+        Set<Integer> deletedPartIds = partList.stream().map(p -> p.getPartId()).collect(Collectors.toSet());
+
+        for (ApPart subPart : subParts) {
+            if (subPart.getParentPartId() != null
+                    && deletedPartIds.contains(subPart.getParentPartId())
+                    && !deletedPartIds.contains(subPart.getPartId())) {
+                log.error("Removed part has subordinate part(s), accessPointId: {}, partId: {}", 
+                          accessPoint.getAccessPointId(), 
+                          subPart.getParentPartId());
+                throw new BusinessException("Removed part has subordinate part(s), accessPointId: " + 
+                          accessPoint.getAccessPointId() + ", partId: " + subPart.getParentPartId(), BaseCode.EXPORT_FAILED)
+                    .set("accessPointId", accessPoint.getAccessPointId())
+                    .set("partId", subPart.getParentPartId());
+            }
+        }
 
         // clear lookup
         bindingPartLookup.clear();
