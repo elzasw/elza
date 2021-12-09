@@ -5,7 +5,9 @@ export interface ApBindingVO {
 
     id: number;
 
-    externalSystemCode: string;
+    externalSystemId: number;
+
+    externalSystemCode: string; // TODO odstranit po dokončení všech změn
 
     value: string;
 

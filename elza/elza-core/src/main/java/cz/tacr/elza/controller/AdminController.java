@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.SysExternalSystem;
@@ -145,7 +146,9 @@ public class AdminController {
         ApScope apScope = accessPointService.getApScope(externalSystemVO);
         SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope);
         externalSystem = externalSystemService.update(externalSystem);
-        camConnector.invalidate(externalSystem.getCode());
+        if (externalSystem instanceof ApExternalSystem) {
+            camConnector.invalidate((ApExternalSystem) externalSystem);
+        }
         return factoryVo.createExtSystem(externalSystem);
     }
 
@@ -159,7 +162,9 @@ public class AdminController {
     public void deleteExternalSystemById(@PathVariable("externalSystemId") final Integer externalSystemId) {
         SysExternalSystem externalSystem = externalSystemService.findOne(externalSystemId);
         externalSystemService.delete(externalSystemId);
-        camConnector.invalidate(externalSystem.getCode());
+        if (externalSystem instanceof ApExternalSystem) {
+            camConnector.invalidate((ApExternalSystem) externalSystem);
+        }
     }
 
     /**
