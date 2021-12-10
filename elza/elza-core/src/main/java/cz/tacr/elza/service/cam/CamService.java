@@ -280,16 +280,15 @@ public class CamService {
                               Map<Integer, String> partUuidMap, 
                               Map<Integer, String> stateMap) {
         ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(extSyncsQueueItem.getAccessPointId());
-        ApExternalSystem apExternalSystem = externalSystemService.getExternalSystemInternal(extSyncsQueueItem
-                .getExternalSystemId());
-        
+        ApExternalSystem apExternalSystem = externalSystemService.getExternalSystemInternal(extSyncsQueueItem.getExternalSystemId());
+
         BatchEntityRecordRevXml batchEntityRecordRev = batchUpdateSaved.getRevisions().get(0);
 
         String camApState = stateMap.get(extSyncsQueueItem.getAccessPointId());
         if(camApState==null) {
         	camApState = EntityRecordStateXml.ERS_NEW.toString();	
         }
-        
+
         ApChange change = apDataService.createChange(ApChange.Type.AP_SYNCH);
         ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint,
                                                                                                 apExternalSystem);
@@ -303,12 +302,15 @@ public class CamService {
                                                             			 SyncState.SYNC_OK                                                                         
                                                                          );
         } else {
+            UsrUser user = userService.getUserInternal(extSyncsQueueItem.getUserId());
+            String userName = user == null? "admin" : user.getUsername();
+
             binding = externalSystemService.createApBinding(Long.toString(batchEntityRecordRev.getEid().getValue()), apExternalSystem);
             bindingState = externalSystemService.createApBindingState(binding, accessPoint, change, camApState,
                                                                       batchEntityRecordRev.getRev().getValue(),
-                                                                      extSyncsQueueItem.getUsername(), null, SyncState.SYNC_OK);
+                                                                      userName, null, SyncState.SYNC_OK);
         }
-        
+
         // Create bindings        
         itemUuidMap.forEach((itemId, value) -> {
             ApItem item = entityManager.getReference(ApItem.class, itemId);
@@ -413,15 +415,30 @@ public class CamService {
     /**
      * Create batch info
      * @param externalSystem External system where to send data
-     * @param userName User changing data
+     * @param user who to send data
      * @return
      */
-    private BatchInfoXml createBatchInfo(ApExternalSystem externalSystem, 
-    									 String userName) {
+    private BatchInfoXml createBatchInfo(ApExternalSystem externalSystem, UsrUser user) {
         BatchInfoXml batchInfo = new BatchInfoXml();
-        batchInfo.setBatchUserInfo(new LongStringXml(userName));
+        batchInfo.setBatchUserInfo(new LongStringXml(createUserInfo(externalSystem.getUserInfo(), user)));
         batchInfo.setBid(new UuidXml(UUID.randomUUID().toString()));
         return batchInfo;
+    }
+
+    /**
+     * Vytváření informací o uživateli na základě šablony  
+     * 
+     * @param userInfo šablona
+     * @param user uživatel
+     * @return
+     */
+    public String createUserInfo(String userInfo, UsrUser user) {
+        if (user == null) {
+            return "admin";
+        }
+        return userInfo.replaceAll("%i", String.format("%d", user.getUserId()))
+                .replaceAll("%u", user.getUsername())
+                .replaceAll("%n", accessPointService.findPreferredPartDisplayName(user.getAccessPoint()));
     }
 
     /**
@@ -522,7 +539,7 @@ public class CamService {
                 }
                 extSyncsQueue.setExternalSystem(externalSystem);
                 extSyncsQueue.setDate(OffsetDateTime.now());
-                extSyncsQueue.setUsername(user == null? "admin" : user.getUsername());
+                extSyncsQueue.setUser(user);
                 extSyncsQueueItems.add(extSyncsQueue);
             }
         }
@@ -766,8 +783,9 @@ public class CamService {
         ApState state = accessPointService.getStateInternal(accessPoint);
         ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint,
                                                                                                externalSystem);
+        UsrUser user = userService.getUserInternal(extSyncsQueueItem.getUserId());
         BatchUpdateXml batchUpdate = new BatchUpdateXml();
-        batchUpdate.setInf(createBatchInfo(externalSystem, extSyncsQueueItem.getUsername()));
+        batchUpdate.setInf(createBatchInfo(externalSystem, user));
         BatchUpdateBuilder xmlBuilder;
         if (bindingState == null) {
             // create new item
@@ -975,9 +993,9 @@ public class CamService {
                 .set("externalSystemCode", externalSystemCode);
         }
 
-        UserDetail userDetail = userService.getLoggedUserDetail();
+        UsrUser user = userService.getLoggedUser();
         ExtSyncsQueueItem extSyncsQueueItem = createExtSyncsQueueItem(accessPoint, extSystem, null,
-                ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW, OffsetDateTime.now(), userDetail.getUsername());
+                ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW, OffsetDateTime.now(), user);
         extSyncsQueueItemRepository.save(extSyncsQueueItem);
     }
 
@@ -986,14 +1004,14 @@ public class CamService {
                                                      final String stateMessage,
                                                      final ExtSyncsQueueItem.ExtAsyncQueueState state,
                                                      final OffsetDateTime date,
-                                                     final String userName) {
+                                                     final UsrUser user) {
         ExtSyncsQueueItem extSyncsQueueItem = new ExtSyncsQueueItem();
         extSyncsQueueItem.setAccessPoint(accessPoint);
         extSyncsQueueItem.setExternalSystem(apExternalSystem);
         extSyncsQueueItem.setStateMessage(stateMessage);
         extSyncsQueueItem.setState(state);
         extSyncsQueueItem.setDate(date);
-        extSyncsQueueItem.setUsername(userName);
+        extSyncsQueueItem.setUser(user);
         return extSyncsQueueItem;
     }
 }
