@@ -243,12 +243,8 @@ public class RevisionPartService {
             List<ApItem> deletedItems = new ArrayList<>();
 
             for (ApRevPart revPart : updatedParts) {
-                List<Integer> origObjectIds = revItemMap.get(revPart.getPartId()).stream()
-                        .map(ApRevItem::getOrigObjectId)
-                        .collect(Collectors.toList());
                 List<ApItem> partItems = items.stream()
                         .filter(i -> i.getPartId().equals(revPart.getOriginalPartId()))
-                        .filter(i -> !origObjectIds.contains(i.getObjectId()))
                         .collect(Collectors.toList());
                 if (CollectionUtils.isNotEmpty(partItems)) {
                     deletedItems.addAll(partItems);
