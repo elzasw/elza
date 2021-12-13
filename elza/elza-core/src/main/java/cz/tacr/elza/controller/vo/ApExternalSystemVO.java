@@ -15,6 +15,8 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
 
     private Integer scopeId;
 
+    private String userInfo;
+
     public ApExternalSystemType getType() {
         return type;
     }
@@ -31,11 +33,20 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         this.scopeId = scopeId;
     }
 
+    public String getUserInfo() {
+        return userInfo;
+    }
+
+    public void setUserInfo(String userInfo) {
+        this.userInfo = userInfo;
+    }
+
     @Override
     public SysExternalSystem createEntity(ApScope scope) {
         ApExternalSystem entity = new ApExternalSystem();
         entity.setType(type);
         entity.setScope(scope);
+        entity.setUserInfo(userInfo);
         this.fillEntity(entity);
         return entity;
     }
@@ -56,6 +67,7 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         vo.setUsername(src.getUsername());
         vo.setApiKeyId(src.getApiKeyId());
         vo.setApiKeyValue(src.getApiKeyValue());
+        vo.setUserInfo(src.getUserInfo());
         return vo;
     }
 }
