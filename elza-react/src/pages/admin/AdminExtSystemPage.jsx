@@ -53,7 +53,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
     };
 
     /**
-     * ADD EXTERNAL SYSTEM
+     * EDIT EXTERNAL SYSTEM
      * *********************************************
      * Upravení systému
      */
