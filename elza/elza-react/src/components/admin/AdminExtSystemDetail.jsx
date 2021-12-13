@@ -131,6 +131,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                         {this.renderValue(extSystem, 'apiKeyId')}
                         {this.renderValue(extSystem, 'apiKeyValue')}
                         {this.renderValue(extSystem, 'elzaCode')}
+                        {this.renderValue(extSystem, 'userInfo')}
                     </div>
                 </div>
             );
