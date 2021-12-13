@@ -31,7 +31,7 @@ const AP_EXT_SYSTEM_LABEL = {
 };
 
 const FIELDS = {
-    abstractExtSystem: [JAVA_ATTR_CLASS, 'id', 'code', 'name', 'url', 'username', 'password', 'apiKeyId', 'apiKeyValue', 'elzaCode'],
+    abstractExtSystem: [JAVA_ATTR_CLASS, 'id', 'code', 'name', 'url', 'username', 'password', 'apiKeyId', 'apiKeyValue', 'elzaCode', 'userInfo'],
     [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type'],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['viewDaoUrl', 'viewFileUrl', 'viewThumbnailUrl', 'sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
@@ -233,6 +233,15 @@ class ExtSystemForm extends AbstractReactComponent {
                             label={i18n('admin.extSystem.elzaCode')}
                         />
                     )}
+                    <div
+                        title={i18n('admin.extSystem.userInfo.title')}>
+                        <Field
+                            name="userInfo" 
+                            type="text" 
+                            component={FormInputField} 
+                            label={i18n('admin.extSystem.userInfo')}
+                        />
+                    </div>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>

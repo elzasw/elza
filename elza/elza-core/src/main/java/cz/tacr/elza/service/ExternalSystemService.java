@@ -30,6 +30,7 @@ import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -358,7 +359,7 @@ public class ExternalSystemService {
                                                final ApChange apChange,
                                                final String state,
                                                final String revisionUuid,
-                                               final String user,
+                                               final String userName,
                                                final Long replacedById,
                                                final SyncState syncState) {
         ApBindingState apBindingState = new ApBindingState();
@@ -367,7 +368,7 @@ public class ExternalSystemService {
         apBindingState.setApExternalSystem(binding.getApExternalSystem());
         apBindingState.setExtState(state);
         apBindingState.setExtRevision(revisionUuid);
-        apBindingState.setExtUser(user);
+        apBindingState.setExtUser(userName);
         apBindingState.setExtReplacedBy(replacedById == null ? null : String.valueOf(replacedById));
         apBindingState.setSyncChange(apChange);
         apBindingState.setCreateChange(apChange);

@@ -49,8 +49,12 @@ public class ExtSyncsQueueItem {
     @Column(nullable = false)
     private OffsetDateTime date;
 
-    @Column(length = StringLength.LENGTH_250, nullable = false)
-    private String username;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = UsrUser.class, optional = false)
+    @JoinColumn(name = "userId", nullable = true)
+    private UsrUser user;
+
+    @Column(nullable = true, updatable = false, insertable = false)
+    private Integer userId;
 
     @Column(length = StringLength.LENGTH_50, nullable = true)
     private String batchId;
@@ -134,12 +138,17 @@ public class ExtSyncsQueueItem {
         this.date = date;
     }
 
-    public String getUsername() {
-        return username;
+    public UsrUser getUser() {
+        return user;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUser(UsrUser user) {
+        this.user = user;
+        this.userId = user != null ? user.getUserId() : null;
+    }
+
+    public Integer getUserId() {
+        return userId;
     }
 
     public enum ExtAsyncQueueState {
