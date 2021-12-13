@@ -1302,6 +1302,8 @@ var messages = {
     "admin.extSystem.username": "Username",
     "admin.extSystem.password": "Heslo",
     "admin.extSystem.elzaCode": "Kód ELZA",
+    "admin.extSystem.userInfo": "Autor změny - šablona",
+    "admin.extSystem.userInfo.title": "Šablona pro označení uživatele, které je předáváno do externího systému, jako osoby zodpovědné za provedení a zaslání změny.\nStandardně obsahuje 'název instituce: jméno uživatele', pro vyplnění jména lze použít proměnné:\n%u - uživatelské jméno\n%i - ID uživatele\n%n - preferované označení osoby uživatele",
     "admin.extSystem.type": "Typ",
     "admin.extSystem.sysScope": "Oblast entit",
     "admin.extSystem.viewDaoUrl": "DaoURL",
