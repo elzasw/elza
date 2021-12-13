@@ -433,12 +433,25 @@ public class CamService {
      * @return
      */
     public String createUserInfo(String userInfo, UsrUser user) {
-        if (user == null) {
-            return "admin";
-        }
-        return userInfo.replaceAll("%i", String.format("%d", user.getUserId()))
-                .replaceAll("%u", user.getUsername())
-                .replaceAll("%n", accessPointService.findPreferredPartDisplayName(user.getAccessPoint()));
+    	String userName;
+    	String userId;
+    	String prefName;
+    	if(user==null) {
+    		userName = "admin";
+    		userId = "0";
+    		prefName = "Admin";
+    	} else {
+    		userName = user.getUsername();
+    		userId = Integer.toString(user.getUserId());
+    		prefName = accessPointService.findPreferredPartDisplayName(user.getAccessPoint());
+    	}
+    	if(userInfo==null) { 
+    		return userName; 
+    	}
+
+        return userInfo.replaceAll("%i", userId)
+                .replaceAll("%u", userName)
+                .replaceAll("%n", prefName);
     }
 
     /**
