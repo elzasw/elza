@@ -197,14 +197,14 @@
 				<text><![CDATA[Variantní označení:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="90" width="120" height="15" isRemoveLineWhenBlank="true" uuid="6b326594-39dd-42ba-aede-19fd33dc5c7f">
+				<reportElement positionType="Float" x="0" y="90" width="120" height="15" isRemoveLineWhenBlank="true" uuid="6b326594-39dd-42ba-aede-19fd33dc5c7f">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<printWhenExpression><![CDATA[StringUtils.isNotBlank($V{prefNameTypes})]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font isBold="true"/>
 				</textElement>
-				<text><![CDATA[Typ formy jména:]]></text>
+				<text><![CDATA[Forma užití jména:]]></text>
 			</staticText>
 		</band>
 		<band height="65" splitType="Immediate">
