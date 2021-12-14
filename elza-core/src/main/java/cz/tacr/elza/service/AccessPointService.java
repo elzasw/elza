@@ -1104,8 +1104,7 @@ public class AccessPointService {
 
             boolean preferred = prefPartId == null || Objects.equals(prefPartId, part.getPartId());
             GroovyResult result = groovyService.processGroovy(state, part, childrenParts, items, preferred);
-            if (!partService.updatePartValue(part, result, state, state.getScope(),
-                                             async, preferred)) {
+            if (!partService.updatePartValue(part, result, state, state.getScope(), async, preferred)) {
                 success = false;
             }
         }

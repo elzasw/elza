@@ -595,6 +595,9 @@ public class EntityDBDispatcher {
         log.debug("Synchronizing parts, accessPointId: {}, number of parts: {}", accessPointId,
                   partsXml.getList().size());
 
+        List<ApItem> itemsByAp = accessPointItemService.findItems(accessPoint);
+        Map<Integer, List<ApItem>> itemsMap = itemsByAp.stream().collect(Collectors.groupingBy(ApItem::getPartId));
+
         ApChange apChange = procCtx.getApChange();
         ApBinding binding = bindingState.getBinding();
         readBindingItems(binding);
@@ -626,7 +629,7 @@ public class EntityDBDispatcher {
                           partBinding.getBindingItemId());
                 part = partBinding.getPart();
                 // Binding found -> update
-                itemList = updatePart(partXml, part, binding, dataRefList);
+                itemList = updatePart(partXml, part, itemsMap.get(part.getPartId()), binding, dataRefList);
             } else {
                 log.debug("Part with binding does not exists, creating new binding, accessPointId: {}", accessPointId);
 
@@ -764,12 +767,13 @@ public class EntityDBDispatcher {
      * Return list of items in part
      * @param partXml
      * @param apPart
+     * @param srcItems
      * @param binding
      * @param dataRefList
      * @return
      */
-    private List<ApItem> updatePart(PartXml partXml, ApPart apPart,
-                            ApBinding binding, List<ReferencedEntities> dataRefList) {
+    private List<ApItem> updatePart(PartXml partXml, ApPart apPart, List<ApItem> srcItems,
+                                    ApBinding binding, List<ReferencedEntities> dataRefList) {
 
         List<Object> itemsXml;
 
@@ -777,6 +781,11 @@ public class EntityDBDispatcher {
             itemsXml = partXml.getItms().getItems();
         } else {
             itemsXml = Collections.emptyList();
+        }
+
+        Map<Integer, ApItem> srcItemsMap = new HashMap<>();
+        if (srcItems != null) {
+            srcItemsMap = srcItems.stream().collect(Collectors.toMap(i -> i.getItemId(), i -> i));
         }
 
         ItemUpdates itemUpdates = findNewOrChangedItems(itemsXml);
@@ -790,7 +799,11 @@ public class EntityDBDispatcher {
                         .set("missingValue", notChangeItem.getValue());
             }
             result.add(removedItem.getItem());
+            srcItemsMap.remove(removedItem.getItem().getItemId());
         }
+
+        // added all items without binding
+        result.addAll(srcItemsMap.values());
 
         List<ChangedBindedItem> changedItems = itemUpdates.getChangedItems();
         if (CollectionUtils.isNotEmpty(changedItems)) {
