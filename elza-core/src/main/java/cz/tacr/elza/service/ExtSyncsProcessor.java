@@ -86,28 +86,45 @@ public class ExtSyncsProcessor implements Runnable {
             List<ExtSyncsQueueItem> items = newToElza.getContent();
             try {
                 camService.importNew(items);
+                // návrat standardní dávky po úspěšném zpracování
+                importListSize = DEFAULT_IMPORT_LIST_SIZE;
             } catch (ApiException e) {
                 // if ApiException -> it means we connected server and it is logical failure 
                 logger.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
-                camService.setQueueItemStateTA(items,
-                                               null, // state se nemění
-                                               OffsetDateTime.now(),
-                                               e.getMessage());
-                return false;
+                // pokud došlo k chybě při čtení 1 záznam najednou
+                if (items.size() == 1) {
+                    // check if item not found
+                    if(e.getCode()==404) {
+                    	camService.setQueueItemStateTA(items,
+                    			ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
+                    			OffsetDateTime.now(),
+                    			e.getMessage());
+                    	return true;
+                    }
+                    // we can retry later
+                	camService.setQueueItemStateTA(items,
+                			null,
+                			OffsetDateTime.now(),
+                			e.getMessage());
+                	return false;
+                } else {
+                    // zmenšení velikosti dávky
+                    importListSize = 1;
+                    return true;
+                }                
             } catch (Exception e) {
                 // handling other errors -> if it is one record - write the error
                 logger.error("Failed to synchronize item(s), list size: {}", items.size(), e);
-                // zmenšení velikosti dávky
-                importListSize = 1;
                 // pokud došlo k chybě při čtení 1 záznam najednou
                 if (items.size() == 1) {
                     camService.setQueueItemStateTA(items,
                                                    ExtSyncsQueueItem.ExtAsyncQueueState.ERROR, 
                                                    OffsetDateTime.now(),
                                                    e.getMessage());
-                    // chybný záznam je označen, návrat standardní dávky
-                    importListSize = DEFAULT_IMPORT_LIST_SIZE;
                     return true;
+                } else {
+                    // zmenšení velikosti dávky
+                    importListSize = 1;                	
                 }
                 return true;
             }
