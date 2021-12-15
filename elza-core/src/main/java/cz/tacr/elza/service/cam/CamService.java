@@ -467,11 +467,11 @@ public class CamService {
         if (apBindingSync == null) {
             apBindingSync = createApBindingSync(externalSystem);
         }
-
-        List<EntityRecordRevInfoXml> entityRecordRevInfoXmls;
+        
         String lastTransaction;
 
         try {
+        	List<EntityRecordRevInfoXml> entityRecordRevInfoXmls;
             UpdatesFromXml updatesFromXml = camConnector.getUpdatesFrom(apBindingSync.getLastTransaction(), externalSystem);
             if (updatesFromXml.getUps() != null && CollectionUtils.isNotEmpty(updatesFromXml.getUps().getRevisions())) {
                 entityRecordRevInfoXmls = updatesFromXml.getUps().getRevisions();
@@ -490,11 +490,17 @@ public class CamService {
                     count = count - PAGE_SIZE;
                 }
             }
+            synchronizeAccessPointsForExternalSystem(externalSystem, entityRecordRevInfoXmls);
         } catch (ApiException e) {
-            throw prepareSystemException(e);
+        	if(e.getCode()==404) {
+        		// Transaction not found, check if autorestart is enabled
+        		log.error("Transaction not found, transaction={}, resetting transaction.", apBindingSync.getLastTransaction(), e);
+        		lastTransaction =  TRANSACTION_UUID;
+        	} else {
+        		throw prepareSystemException(e);
+        	}
         }
-
-        synchronizeAccessPointsForExternalSystem(externalSystem, entityRecordRevInfoXmls);
+        
         apBindingSync.setLastTransaction(lastTransaction);
         bindingSyncRepository.save(apBindingSync);
 
