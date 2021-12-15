@@ -1624,4 +1624,13 @@ where no.level_id = l.level_id
         <dropColumn tableName="ext_syncs_queue_item" columnName="username"/>
     </changeSet>
 
+    <!-- V 2.3.6, ulozene smazane binding v cache -->
+    <changeSet id="20211215112200" author="ppyt">
+		<delete tableName="ap_cached_access_point" />
+    </changeSet>
+    <changeSet id="20211215115000" author="ppyt">
+        <sql dbms="postgresql">CREATE INDEX ap_binding_item_binding_pidx 
+			ON ap_binding_item(binding_id, delete_change_id)
+			WHERE delete_change_id IS NULL</sql>
+    </changeSet>
 </databaseChangeLog>

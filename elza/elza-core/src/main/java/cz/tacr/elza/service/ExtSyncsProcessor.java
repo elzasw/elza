@@ -117,6 +117,8 @@ public class ExtSyncsProcessor implements Runnable {
                 logger.error("Failed to synchronize item(s), list size: {}", items.size(), e);
                 // pokud došlo k chybě při čtení 1 záznam najednou
                 if (items.size() == 1) {
+                	// TODO: rework this as not permanent error but try same operation later
+                	// In general this should not happend - some kind of inconsistency?
                     camService.setQueueItemStateTA(items,
                                                    ExtSyncsQueueItem.ExtAsyncQueueState.ERROR, 
                                                    OffsetDateTime.now(),
