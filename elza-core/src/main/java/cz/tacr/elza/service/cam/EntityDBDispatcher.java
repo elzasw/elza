@@ -688,7 +688,7 @@ public class EntityDBDispatcher {
         Validate.notNull(preferredName, "Missing preferredName");
         ApPart oldPrefPart = accessPoint.getPreferredPart();
         if (oldPrefPart!=null&&!oldPrefPart.getPartId().equals(preferredName.getPartId())) {
-        	this.partService.unsetPreferredPart(oldPrefPart);
+        	partService.unsetPreferredPart(oldPrefPart);
         }
         accessPointService.setPreferName(accessPoint, preferredName);
         accessPoint.setPreferredPart(preferredName);

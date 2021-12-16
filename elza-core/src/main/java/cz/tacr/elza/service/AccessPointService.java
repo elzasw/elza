@@ -2004,7 +2004,7 @@ public class AccessPointService {
             throw new IllegalArgumentException("Návazný part nelze změnit na preferovaný.");
         }
         ApPart oldPrefName = accessPoint.getPreferredPart();
-        if(oldPrefName!=null&&oldPrefName.getKeyValue()!=null) {
+        if(oldPrefName!=null) {
         	partService.unsetPreferredPart(oldPrefName);
         }
         accessPoint.setPreferredPart(apPart);
