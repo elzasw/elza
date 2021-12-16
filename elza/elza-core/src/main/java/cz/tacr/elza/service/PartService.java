@@ -6,7 +6,6 @@ import static cz.tacr.elza.groovy.GroovyResult.PT_PREFER_NAME;
 import static cz.tacr.elza.repository.ExceptionThrow.part;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,19 +24,14 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApStateEnum;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.exception.BusinessException;
@@ -50,21 +44,16 @@ import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
-import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApKeyValueRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
-import cz.tacr.elza.service.AccessPointItemService.DeletedItems;
-import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
-import cz.tacr.elza.service.vo.DataRef;
 
 @Service
 public class PartService {
 
     private final ApPartRepository partRepository;
     private final PartTypeRepository partTypeRepository;
-    private final ApItemRepository itemRepository;
     private final AccessPointItemService apItemService;
     private final AccessPointDataService apDataService;
     private final ApKeyValueRepository keyValueRepository;
@@ -83,7 +72,6 @@ public class PartService {
     @Autowired
     public PartService(final ApPartRepository partRepository,
                        final PartTypeRepository partTypeRepository,
-                       final ApItemRepository itemRepository,
                        final AccessPointItemService apItemService,
                        final AccessPointDataService apDataService,
                        final ApKeyValueRepository keyValueRepository,
@@ -94,7 +82,6 @@ public class PartService {
                        final ApBindingItemRepository bindingItemRepository) {
         this.partRepository = partRepository;
         this.partTypeRepository = partTypeRepository;
-        this.itemRepository = itemRepository;
         this.apItemService = apItemService;
         this.apDataService = apDataService;
         this.keyValueRepository = keyValueRepository;
