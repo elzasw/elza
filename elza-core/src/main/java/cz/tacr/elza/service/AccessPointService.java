@@ -1992,7 +1992,18 @@ public class AccessPointService {
         }
     }
 
-    public void changePrefName(final ApAccessPoint accessPoint, final ApPart apPart) {
+    /**
+     * Nastaví část přístupového bodu na preferovanou
+     *
+     * @param accessPoint přístupový bod
+     * @param apPart část
+     */
+    public ApAccessPoint setPreferName(final ApAccessPoint accessPoint, final ApPart apPart) {
+    	Integer oldPrefNameId = accessPoint.getPreferredPartId();
+    	if(Objects.equals(oldPrefNameId, apPart.getPartId())) {
+    		return accessPoint;
+    	}
+    	
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         RulPartType defaultPartType = sdp.getDefaultPartType();
 
@@ -2002,24 +2013,13 @@ public class AccessPointService {
 
         if (apPart.getParentPart() != null) {
             throw new IllegalArgumentException("Návazný part nelze změnit na preferovaný.");
-        }
-        Integer oldPrefNameId = accessPoint.getPreferredPartId();
-        if(oldPrefNameId!=null) {
-        	partService.unsetPreferredPart(oldPrefNameId);
-        }
+        }        
+       	partService.unsetPreferredPart(oldPrefNameId);
         accessPoint.setPreferredPart(apPart);
-    }
 
-    /**
-     * Nastaví část přístupového bodu na preferovanou
-     *
-     * @param accessPoint přístupový bod
-     * @param apPart část
-     */
-    public void setPreferName(final ApAccessPoint accessPoint, final ApPart apPart) {
-    	changePrefName(accessPoint, apPart);
-        saveWithLock(accessPoint);
-        generateSync(accessPoint.getAccessPointId());
+        ApAccessPoint ret = saveWithLock(accessPoint);
+        generateSync(ret.getAccessPointId());
+        return ret;
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})

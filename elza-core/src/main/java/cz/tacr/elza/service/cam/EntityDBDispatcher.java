@@ -578,7 +578,7 @@ public class EntityDBDispatcher {
     private SynchronizationResult synchronizeParts(final ProcessingContext procCtx,
                                                    final EntityXml entity,
                                                    final ApBindingState bindingState,
-                                                   final ApAccessPoint accessPoint) {
+                                                   ApAccessPoint accessPoint) {
         log.debug("Synchronizing parts, accessPointId: {}, version: {}", accessPoint.getAccessPointId(), accessPoint.getVersion());
 
         Integer accessPointId = accessPoint.getAccessPointId();
@@ -686,13 +686,8 @@ public class EntityDBDispatcher {
 
         //změna preferováného jména
         Validate.notNull(preferredName, "Missing preferredName");
-        ApPart oldPrefPart = accessPoint.getPreferredPart();
-        if (oldPrefPart!=null&&!oldPrefPart.getPartId().equals(preferredName.getPartId())) {
-        	partService.unsetPreferredPart(oldPrefPart.getPartId());
-        }
-        accessPointService.setPreferName(accessPoint, preferredName);
-        accessPoint.setPreferredPart(preferredName);
-        syncResult.setAccessPoint(accessPointRepository.save(accessPoint));
+        accessPoint = accessPointService.setPreferName(accessPoint, preferredName);
+        syncResult.setAccessPoint(accessPoint);
 
         log.debug("Parts were updated, accessPointId: {}, version: {}",
                   syncResult.getAccessPoint().getAccessPointId(),
