@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -532,6 +533,7 @@ public class FundLevelService {
      * @param scenarionName     Název scénáře, ze kterého se mají převzít výchozí hodnoty atributů.
      * @param descItemCopyTypes id typů atributl, které budou zkopírovány z uzlu přímo nadřazeným nad přidaným uzlem (jeho mladší sourozenec).
      * @param count             počet přidaných úrovní (pokud je null, přidáme jeden)
+     * @param uuids             seznam UUID pro nové uzly, může být null
      */
     @Transactional(value = TxType.MANDATORY)
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
@@ -542,7 +544,8 @@ public class FundLevelService {
                                 @Nullable final String scenarionName,
                                 final Set<RulItemType> descItemCopyTypes,
                                 @Nullable final DesctItemProvider desctItemProvider,
-                                @Nullable final Integer countNewLevel) {
+                                @Nullable final Integer countNewLevel,
+                                @Nullable final List<String> uuids) {
 
         Assert.notNull(baseNode, "Refereční JP musí být vyplněna");
         Assert.notNull(staticNodeParent, "Rodič JP musí být vyplněn");
@@ -553,7 +556,7 @@ public class FundLevelService {
         List<ArrLevel> levels = new ArrayList<>(count);
         switch (direction){
             case CHILD:
-                levels = addLevelUnder(version, baseNode, count);
+                levels = addLevelUnder(version, baseNode, count, uuids);
                 break;
             case BEFORE:
             case AFTER:
@@ -680,9 +683,11 @@ public class FundLevelService {
      */
     public List<ArrLevel> addLevelUnder(final ArrFundVersion version,
                                   final ArrNode staticNode, 
-                                  int count) {
-        Assert.notNull(version, "Verze AS musí být vyplněna");
-        Assert.notNull(staticNode, "Refereční JP musí být vyplněna");
+                                  int count,
+                                  List<String> uuids) {
+        Validate.notNull(version, "Verze AS musí být vyplněna");
+        Validate.notNull(staticNode, "Refereční JP musí být vyplněna");
+        Validate.isTrue(count>0, "Level count has to be greater then zero, %d", count);
 
         arrangementService.isValidAndOpenVersion(version);
 
@@ -695,10 +700,24 @@ public class FundLevelService {
             maxPosition = 0;
         }
 
+        
+        Iterator<String> uuidsIter; 
+        if(uuids!=null) {
+        	uuidsIter = uuids.iterator();
+        } else {
+        	uuidsIter = null;
+        }
+        
         List<ArrLevel> levels = new ArrayList<>(count);
         for (int i = 1; i <= count; i++) {
+        	String uuid;
+        	if(uuidsIter!=null&&uuidsIter.hasNext()) {
+        		uuid = uuidsIter.next(); 
+        	} else {
+        		uuid = null;
+        	}
             ArrLevel level = arrangementService.createLevel(change, staticLevel.getNode(),
-                                                            maxPosition + i, null,
+                                                            maxPosition + i, uuid,
                                                             version.getFund());
             levels.add(level);
         }
