@@ -504,7 +504,11 @@ public class EntityDBDispatcher {
 
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
 
-        ApType type = sdp.getApTypeByCode(entity.getEnt().getValue());
+        String apTypeCode = entity.getEnt().getValue();
+        ApType type = sdp.getApTypeByCode(apTypeCode);
+        if(type==null) {
+        	Validate.notNull(type, "Invalid apTypeCode, value: %s, uuid: %s", apTypeCode, uuid);
+        }
         ApState apState = accessPointService.createAccessPoint(procCtx.getScope(), type, entity.getEns(), apChange, uuid);
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
