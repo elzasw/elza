@@ -549,7 +549,7 @@ public class DaoService {
             FundLevelService fundLevelService = appCtx.getBean(FundLevelService.class);
             List<ArrLevel> levels = fundLevelService.addNewLevel(fundVersion, node, node,
                                                           AddLevelDirection.CHILD, null, null,
-                                                          descItemProvider, null);
+                                                          descItemProvider, null, null);
             linkNode = levels.get(0).getNode();
             scenario = descItemProvider.getScenario();
             break;
