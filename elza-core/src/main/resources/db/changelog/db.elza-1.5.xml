@@ -1633,4 +1633,19 @@ where no.level_id = l.level_id
 			ON ap_binding_item(binding_id, delete_change_id)
 			WHERE delete_change_id IS NULL</sql>
     </changeSet>
+    <!-- Oprava nekonzistence v DB, prazdne party bez item -->
+    <changeSet id="20211218223400" author="ppyt">
+       <sql>delete from ap_binding_item where part_id in (select p.part_id from ap_part p 
+          left join ap_item i on i.part_id = p.part_id 
+          where p.delete_change_id is null and i.delete_change_id is null
+          group by p.part_id 
+          having count(i.item_id)=0)       
+       </sql>
+       <sql>delete from ap_part where part_id in (select p.part_id from ap_part p 
+          left join ap_item i on i.part_id = p.part_id 
+          where p.delete_change_id is null and i.delete_change_id is null
+          group by p.part_id 
+          having count(i.item_id)=0)       
+       </sql>
+    </changeSet>
 </databaseChangeLog>
