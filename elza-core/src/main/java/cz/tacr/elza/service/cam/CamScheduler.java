@@ -58,10 +58,13 @@ public class CamScheduler
 
     private void configureTask(SynchronizationInfo syncConfig,
                                  ScheduledTaskRegistrar taskRegistrar) {
+    	// Switching to automaticly detected reset when transaction not found
+    	/*
         if (StringUtils.isNotBlank(syncConfig.resetAt)) {
             taskRegistrar.addCronTask(() -> camService.resetSynchronization(syncConfig.getCode()),
                                       syncConfig.resetAt);
         }
+        */
         if (StringUtils.isNotBlank(syncConfig.syncAt)) {
             taskRegistrar.addCronTask(() -> runSync(syncConfig.getCode()),
                                       syncConfig.resetAt);
