@@ -884,13 +884,22 @@ public class CamService {
             log.debug("Download entity from CAM, bindingValue: {} externalSystem: {}", bindingValue, externalSystem.getCode());
             entity = camConnector.getEntity(bindingValue, externalSystem);
         } catch (ApiException e) {
-            // if ApiException -> it means we connected server and it is logical failure 
-            setQueueItemState(queueItem,
-                              ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
-                              OffsetDateTime.now(),
-                              e.getMessage());
-            log.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
-            return true;
+            // if ApiException and code >=400 && <500 =-> it means we connected server and it is logical failure
+            if (e.getCode() >= 400 && e.getCode() < 500) {
+                setQueueItemState(queueItem,
+                                  ExtSyncsQueueItem.ExtAsyncQueueState.ERROR,
+                                  OffsetDateTime.now(),
+                                  e.getMessage());
+                log.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
+                return true;
+            } else {
+                // other exception -> retry later
+                setQueueItemState(queueItem,
+                                  queueItem.getState(),
+                                  OffsetDateTime.now(),
+                                  e.getMessage());
+                return false;
+            }
         } catch (Exception e) {
             // other exception -> retry later
             setQueueItemState(queueItem,
