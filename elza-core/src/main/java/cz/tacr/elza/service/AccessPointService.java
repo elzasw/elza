@@ -414,6 +414,24 @@ public class AccessPointService {
         if (replacedBy != null) {
             ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
             apDataService.validationNotDeleted(replacementState);
+            
+            // check binding states
+            // both APs cannot be binded to the same external system
+            // in such case we have to solve deduplication in external system
+            List<ApBindingState> srcBindings = bindingStateRepository.findByAccessPoint(accessPoint);
+            List<ApBindingState> replacedByBindings = bindingStateRepository.findByAccessPoint(replacedBy);
+            for(ApBindingState srcBinding: srcBindings) {
+            	for(ApBindingState replacedByBinding: replacedByBindings) {
+            		if(srcBinding.getExternalSystemId().equals(replacedByBinding.getExternalSystemId())) {
+                        throw new BusinessException("Cannot replace entity with other entity from same external system", RegistryCode.EXT_SYSTEM_CONNECTED)
+                        	.set("accessPointId", apState.getAccessPointId())
+                        	.set("uuid", apState.getAccessPoint().getUuid())
+                        	.set("replacedById", replacedBy.getAccessPointId())
+                        	.set("externalSystemId", srcBinding.getExternalSystemId());
+            		}
+            	}
+            }
+            
             // při sloučení náhradní entita nemůže být ve stavu TO_APPROVE, APPROVED, REV_PREPARED
             if (mergeAp) {
                 validationMergePossibility(replacementState);
