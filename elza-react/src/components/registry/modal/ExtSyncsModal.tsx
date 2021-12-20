@@ -153,12 +153,13 @@ const ExtSyncsModal = ({handleSubmit, onClose, submitting, extSystems, scopes, s
 
     const renderResultItem = (item: ExtSyncsQueueItemVO, index: number) => {
         const date = utcToDateTime(item.date);
+        const exception = item.stateMessage && item.state !== ExtAsyncQueueState.EXPORT_OK && item.state !== ExtAsyncQueueState.IMPORT_OK;
         return <Row key={index} className="result-item">
             <Col>
                 <Row>
                     <Col xs={12}><Button className="ap" variant="link" onClick={() => onNavigateAp(item.accessPointId)}>{item.accessPointName}</Button></Col>
                 </Row>
-                <Row>
+                <Row className={exception? "font-red" : "font-black"}>
                     <Col xs={6}><span className="label">{i18n('ap.ext-syncs.date')}</span>{date ? dateToDateTimeString(date) : '-'}</Col>
                     <Col xs={3}><span className="label">{i18n('ap.ext-syncs.scope')}</span>{scopesMap[item.scopeId].name}</Col>
                     <Col xs={3} title={item.stateMessage}><span className="label">{i18n('ap.ext-syncs.state')}</span>{ExtStateInfo.getName(item.state)}</Col>

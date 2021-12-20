@@ -1113,7 +1113,7 @@ var messages = {
     "ap.ext-syncs.ext-system": "Externí systém",
     "ap.ext-syncs.state": "Stav",
     "ap.ext-syncs.scope": "Oblast",
-    "ap.ext-syncs.date": "Datum požadavku",
+    "ap.ext-syncs.date": "Poslední změna",
 
     "ap.ext-search.title": "Vyhledávání v externím systému",
     "ap.ext-search.title-connect": "Propojení s externím systémem",
