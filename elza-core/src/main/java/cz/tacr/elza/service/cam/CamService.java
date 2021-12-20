@@ -693,6 +693,7 @@ public class CamService {
                     if (!SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())) {
                         bindingState.setSyncOk(SyncState.NOT_SYNCED);
                         bindingStateRepository.save(bindingState);
+                        accessPointCacheService.createApCachedAccessPoint(state.getAccessPointId());
                     }
                     return;                	
                 } else {
@@ -710,6 +711,7 @@ public class CamService {
                 if (!SyncState.NOT_SYNCED.equals(bindingState.getSyncOk())) {
                     bindingState.setSyncOk(SyncState.NOT_SYNCED);
                     bindingStateRepository.save(bindingState);
+                    accessPointCacheService.createApCachedAccessPoint(state.getAccessPointId());
                 }
                 return;
             }
@@ -744,14 +746,13 @@ public class CamService {
 
     // PPy: Toto vyzaduje revizi
     private boolean checkLocalChanges(final ApState state, final ApBindingState bindingState) {
-        //TODO fantiš možná není nutné koukat na party
         List<ApPart> partList = partService.findNewerPartsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
         if (CollectionUtils.isNotEmpty(partList)) {
-            return CollectionUtils.isNotEmpty(bindingItemRepository.findByParts(partList));
+            return true;
         }
         List<ApItem> itemList = itemRepository.findNewerValidItemsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
         if (CollectionUtils.isNotEmpty(itemList)) {
-            return CollectionUtils.isNotEmpty(bindingItemRepository.findByItems(itemList));
+            return true;
         }
 
         return false;
