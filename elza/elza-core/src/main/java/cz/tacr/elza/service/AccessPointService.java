@@ -1970,6 +1970,13 @@ public class AccessPointService {
      * @param state
      */
     public void hasPermissionToSynchronizeFromExternaSystem(final ApState state) {
+        BaseCode baseCode = BaseCode.INVALID_STATE;
+        String errorMessage = "Entitu v tomto stavu nelze aktualizovat z externího systému";
+
+        // Uživatel, který MÁ OPRÁVNĚNÍ "Zakládání a změny nových" (AP_SCOPE_WR)
+        // může provést operaci "Aktualizace údajů z externího systému" u entit ve stavech:
+        // - Nová
+        // - K doplnění
         if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL) 
                 || userService.hasPermission(Permission.AP_SCOPE_WR, state.getScopeId())) {
             if (state.getStateApproval().equals(StateApproval.NEW)
@@ -1977,16 +1984,24 @@ public class AccessPointService {
                 return;
             }
         }
+        // Uživatel, který MÁ OPRÁVNĚNÍ "Změna schválených archivních entit" (AP_EDIT_CONFIRMED)
+        // může provést operaci "Aktualizace údajů z externího systému" u entit ve stavech:
+        // - Schválená
+        // - Příprava revize
+        // - Revize k doplnění
         if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
                 || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId())) {
             if (state.getStateApproval().equals(StateApproval.APPROVED)
                     || state.getStateApproval().equals(StateApproval.REV_NEW)
                     || state.getStateApproval().equals(StateApproval.REV_AMEND)) {
                 return;
+            } else {
+                baseCode = BaseCode.INSUFFICIENT_PERMISSIONS;
+                errorMessage = "Uživatel nemá oprávnění na synchronizaci přístupového bodu z externího systému";
             }
         }
 
-        throw new SystemException("Uživatel nemá oprávnění na synchronizaci přístupového bodu z externího systému", BaseCode.INSUFFICIENT_PERMISSIONS)
+        throw new SystemException(errorMessage, baseCode)
             .set("accessPointId", state.getAccessPointId())
             .set("scopeId", state.getScopeId())
             .set("state", state.getStateApproval());
