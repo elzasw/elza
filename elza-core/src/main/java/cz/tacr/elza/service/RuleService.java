@@ -333,7 +333,8 @@ public class RuleService {
      * @param version           verze, do které spadá uzel
      * @param validationResults seznam validačních chyb
      */
-    private ArrNodeConformityExt updateNodeConformityInfo(final ArrLevel level,
+    // Only one thread can update data in the nodeConformity tables
+    synchronized private ArrNodeConformityExt updateNodeConformityInfo(final ArrLevel level,
                                                           final ArrFundVersion version,
                                                           final List<DataValidationResult> validationResults) {
 
@@ -603,10 +604,12 @@ public class RuleService {
 
 
         if (!deleteNodes.isEmpty()) {
-            List<ArrNodeConformity> deleteInfos = nodeConformityInfoRepository
-                    .findByNodesAndFundVersion(deleteNodes, version);
+            synchronized(this) {
+                List<ArrNodeConformity> deleteInfos = nodeConformityInfoRepository
+                        .findByNodesAndFundVersion(deleteNodes, version);
 
-            deleteConformityInfo(deleteInfos);
+                deleteConformityInfo(deleteInfos);
+            }
             asyncRequestService.enqueue(version, deleteNodes.stream().collect(Collectors.toList()), validationPriority);
         }
     }
@@ -614,6 +617,8 @@ public class RuleService {
     /**
      * Smaže všechny vybrané stavy.
      *
+     * This method can be called only within synchronized block !!!
+     * 
      * @param infos stavy ke smazání
      */
     private void deleteConformityInfo(final Collection<ArrNodeConformity> infos) {
