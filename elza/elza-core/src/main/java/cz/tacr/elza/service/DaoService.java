@@ -1,6 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,10 +61,8 @@ import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RequestQueueItemRepository;
-import cz.tacr.elza.repository.vo.DaoExternalSystemVO;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
-import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -443,15 +440,24 @@ public class DaoService {
     /**
      * Získání url na dao.
      * @param dao dao
+     * @param daoLink Optional DAO Link
      * @param viewDaoUrl 
      * @return url
      */
-    public String getDaoUrl(final ArrDao dao, final String viewDaoUrl) {
+    public String getDaoUrl(final ArrDao dao, 
+    						final ArrDaoLink daoLink, 
+    						final String viewDaoUrl) {
         ElzaTools.UrlParams params = ElzaTools.createUrlParams()
                 .add("code", dao.getCode())
                 .add("label", dao.getLabel())
                 .add("id", dao.getDaoId());
-                //.add("nodeUuid", dao.)
+        if(daoLink!=null) {
+        	params.add("nodeId", daoLink.getNodeId())
+        		.add("nodeUuid", daoLink.getNode().getUuid());
+        } else {
+        	params.add("nodeId", "")
+    			.add("nodeUuid", "");        	
+        }
         return ElzaTools.bindingUrlParams(viewDaoUrl, params);
     }
 
@@ -543,7 +549,7 @@ public class DaoService {
             FundLevelService fundLevelService = appCtx.getBean(FundLevelService.class);
             List<ArrLevel> levels = fundLevelService.addNewLevel(fundVersion, node, node,
                                                           AddLevelDirection.CHILD, null, null,
-                                                          descItemProvider, null);
+                                                          descItemProvider, null, null);
             linkNode = levels.get(0).getNode();
             scenario = descItemProvider.getScenario();
             break;

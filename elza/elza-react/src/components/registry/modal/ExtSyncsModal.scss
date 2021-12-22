@@ -57,6 +57,13 @@ $max-height: 600px;
                     content: ':';
                 }
             }
+
+            .font-red {
+                color: red;
+            }
+            .font-black {
+                color: black;
+            }
         }
         .result-items {
             min-height: $max-height;

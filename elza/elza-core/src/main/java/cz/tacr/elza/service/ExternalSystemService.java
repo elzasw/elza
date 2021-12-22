@@ -30,6 +30,7 @@ import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -128,6 +129,21 @@ public class ExternalSystemService {
                     .set("code", code);
         }
         return extSystem;
+    }
+
+    /**
+     * Vyhledání externího systému podle id.
+     *
+     * @param id identifikátor externího systému, který hledáme
+     * @return nalezený externí systém
+     */
+    public ApExternalSystem findApExternalSystemById(final Integer id) {
+        Optional<ApExternalSystem> extSystem = apExternalSystemRepository.findById(id);
+        if (!extSystem.isPresent()) {
+            throw new BusinessException("External system not found, id: " + id, BaseCode.ID_NOT_EXIST)
+                    .set("id", id);
+        }
+        return extSystem.get();
     }
 
     /**
@@ -343,7 +359,7 @@ public class ExternalSystemService {
                                                final ApChange apChange,
                                                final String state,
                                                final String revisionUuid,
-                                               final String user,
+                                               final String userName,
                                                final Long replacedById,
                                                final SyncState syncState) {
         ApBindingState apBindingState = new ApBindingState();
@@ -352,7 +368,7 @@ public class ExternalSystemService {
         apBindingState.setApExternalSystem(binding.getApExternalSystem());
         apBindingState.setExtState(state);
         apBindingState.setExtRevision(revisionUuid);
-        apBindingState.setExtUser(user);
+        apBindingState.setExtUser(userName);
         apBindingState.setExtReplacedBy(replacedById == null ? null : String.valueOf(replacedById));
         apBindingState.setSyncChange(apChange);
         apBindingState.setCreateChange(apChange);

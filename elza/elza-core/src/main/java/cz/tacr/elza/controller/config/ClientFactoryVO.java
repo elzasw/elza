@@ -347,13 +347,6 @@ public class ClientFactoryVO {
         return mapper.map(template, RulTemplateVO.class);
     }
 
-    private void nameBuilderHelper(final StringBuilder a, final String b) {
-        if (b != null) {
-            a.append(b);
-            a.append(" ");
-        }
-    }
-
     /**
      * Vytvoří seznam VO objektů z objektů.
      *
@@ -1871,22 +1864,24 @@ public class ClientFactoryVO {
 
         ArrDaoVO vo = ArrDaoVO.newInstance(arrDao, scenarios);
 
-        ArrDigitalRepository digitalRepository = arrDao.getDaoPackage().getDigitalRepository();
-        String url = daoService.getDaoUrl(arrDao, digitalRepository.getViewDaoUrl());
-        vo.setUrl(url);
-
+        ArrDaoLink daoLink;
         final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
         if (CollectionUtils.isNotEmpty(daoLinkList)) {
             if (daoLinkList.size() > 1) {
                 throw new SystemException("Nalezen více než jeden platný link pro arrDao ID=" + arrDao.getDaoId() + ".");
             }
-            final ArrDaoLink daoLink = daoLinkList.iterator().next();
+            daoLink = daoLinkList.iterator().next();
 
             ArrDaoLinkVO daoLinkVo = createDaoLink(daoLink, version);
 
             vo.setDaoLink(daoLinkVo);
+        } else {
+        	daoLink = null;
         }
 
+        ArrDigitalRepository digitalRepository = arrDao.getDaoPackage().getDigitalRepository();
+        String url = daoService.getDaoUrl(arrDao, daoLink, digitalRepository.getViewDaoUrl());
+        vo.setUrl(url);
 
         if (detail) {
             final List<ArrDaoFile> daoFileList = daoFileRepository.findByDaoAndDaoFileGroupIsNull(arrDao);

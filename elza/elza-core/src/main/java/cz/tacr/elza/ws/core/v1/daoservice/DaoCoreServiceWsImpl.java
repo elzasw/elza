@@ -54,7 +54,6 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
-import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoSyncService;
@@ -431,7 +430,7 @@ public class DaoCoreServiceWsImpl {
         List<ArrLevel> levels = fundLevelService.addNewLevel(fundVersion, rootNode, rootNode,
                                                       AddLevelDirection.CHILD,
                                                       lis.getScenarioName(), Collections.emptySet(),
-                                                      descProvider, null);
+                                                      descProvider, null, null);
         ArrChange change = levels.get(0).getCreateChange();
         ArrNode parentNode = levels.get(0).getNode();
 
@@ -467,9 +466,11 @@ public class DaoCoreServiceWsImpl {
             DaoDesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
             String scenario = descItemProvider.getScenario();
             if (linkNodeLevel == null) {
+            	List<String> uuids = (uuid!=null)?Collections.singletonList(uuid): null;
+            	
                 levels = fundLevelService.addNewLevel(fundVersion, parentNode, parentNode,
                                                       AddLevelDirection.CHILD, null, null,
-                                                      descItemProvider, null);
+                                                      descItemProvider, null, uuids);
                 linkNode = levels.get(0).getNode();
             } else {
                 if (scenario != null) {

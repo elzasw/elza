@@ -1603,4 +1603,49 @@ where no.level_id = l.level_id
 		<sql dbms="postgresql">DELETE FROM arr_cached_node</sql>
     </changeSet>
 
+    <changeSet id="20211210162200" author="sergey.iryupin">
+        <addColumn tableName="ap_external_system">
+            <column name="user_info" type="nvarchar(50)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+        <addColumn tableName="ext_syncs_queue_item">
+            <column name="user_id" type="int">
+                <constraints nullable="true"
+                foreignKeyName="fk_ext_syncs_queue_item_user"
+                referencedTableName="usr_user"
+                referencedColumnNames="user_id" />
+            </column>
+        </addColumn>
+        <sql dbms="postgresql">UPDATE ext_syncs_queue_item i
+                SET user_id = u.user_id
+                FROM usr_user u
+                WHERE i.username = u.username</sql>
+        <dropColumn tableName="ext_syncs_queue_item" columnName="username"/>
+    </changeSet>
+
+    <!-- V 2.3.6, ulozene smazane binding v cache -->
+    <changeSet id="20211215112200" author="ppyt">
+		<delete tableName="ap_cached_access_point" />
+    </changeSet>
+    <changeSet id="20211215115000" author="ppyt">
+        <sql dbms="postgresql">CREATE INDEX ap_binding_item_binding_pidx 
+			ON ap_binding_item(binding_id, delete_change_id)
+			WHERE delete_change_id IS NULL</sql>
+    </changeSet>
+    <!-- Oprava nekonzistence v DB, prazdne party bez item -->
+    <changeSet id="20211218223400" author="ppyt">
+       <sql>delete from ap_binding_item where part_id in (select p.part_id from ap_part p 
+          left join ap_item i on i.part_id = p.part_id 
+          where p.delete_change_id is null and i.delete_change_id is null
+          group by p.part_id 
+          having count(i.item_id)=0)       
+       </sql>
+       <sql>delete from ap_part where part_id in (select p.part_id from ap_part p 
+          left join ap_item i on i.part_id = p.part_id 
+          where p.delete_change_id is null and i.delete_change_id is null
+          group by p.part_id 
+          having count(i.item_id)=0)       
+       </sql>
+    </changeSet>
 </databaseChangeLog>

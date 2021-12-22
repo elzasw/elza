@@ -35,6 +35,9 @@ public class ApExternalSystem extends SysExternalSystem {
     @Column(updatable = false, insertable = false, nullable = true)
     private Integer scopeId;
 
+    @Column(length = StringLength.LENGTH_50, nullable = true)
+    private String userInfo;
+
     public ApExternalSystemType getType() {
         return type;
     }
@@ -53,6 +56,14 @@ public class ApExternalSystem extends SysExternalSystem {
 
     public Integer getScopeId() {
         return scopeId;
+    }
+
+    public String getUserInfo() {
+        return userInfo;
+    }
+
+    public void setUserInfo(String userInfo) {
+        this.userInfo = userInfo;
     }
 
     @Override

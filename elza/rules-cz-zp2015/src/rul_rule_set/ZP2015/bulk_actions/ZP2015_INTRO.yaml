@@ -94,12 +94,6 @@ actions:
             - ZP2015_ARRANGEMENT_INFO
         outputType: ZP2015_ARRANGEMENT_INFO
 
-    - !TextAggregation
-        createEmpty: false
-        inputTypes:
-            - ZP2015_EDITION
-        outputType: ZP2015_EDITION
-
     # 4.7.2 Pravidla zpracování jednotky popisu
     - !TextAggregation
         inputTypes:

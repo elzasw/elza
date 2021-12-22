@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<!-- Created with Jaspersoft Studio version 6.16.0.final using JasperReports Library version 6.16.0-48579d909b7943b64690c65c71e07e0b80981928  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="contentPage" language="groovy" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="71cc9236-0f65-4a0a-bb66-bbfe841a66c1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -140,14 +140,6 @@
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
-	<parameter name="datationFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
-		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
-	.setTitleSeparator(": ")
-	.setItemSeparator(", ")
-	.addValueWithTitle("ZP2015_UNIT_DATE_PRE")
-	.addValueWithTitle("ZP2015_UNIT_DATE_POST")]]></defaultValueExpression>
-	</parameter>
 	<parameter name="otherIdFormatter" class="cz.tacr.elza.print.format.HtmlFormatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
@@ -175,20 +167,20 @@
 		<parameterDescription><![CDATA[]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
-	.setItemSeparator("<br>")
+	.setItemSeparator("\n")
 	.setSpecSeparator(": ")
-	.setBlockSeparators("", "<br>")
+	.setBlockSeparators("", "\n")
 	.beginBlock()
 		.setItemSeparator(", ")
 		.addValueWithTitle("ZP2015_ORIGINATOR")
 	.endBlock()
-	.setItemSeparator("<br>")
+	.setItemSeparator("\n")
 	.addValueWithTitle("ZP2015_UNIT_COUNT")
 	.setItemSeparator(", ")
 	.setSpecFormat(" (", ")",true)
 	.addValueWithTitle("ZP2015_EXTRA_UNITS")
 	.setSpecFormat("", ": ", false)
-	.setItemSeparator("<br>")
+	.setItemSeparator("\n")
 	.setTitleSeparator(" - ")
     .setSpecName("ZP2015_DATE_OF_CONTENT", "datace obsahu")
 	.setSpecName("ZP2015_DATE_DECLARED", "datace deklarovaná")
@@ -224,12 +216,18 @@
 	.addValueWithTitle("ZP2015_SIZE_HEIGHT")
 	.addValueWithTitle("ZP2015_SIZE_DEPTH")
 	.addValueWithTitle("ZP2015_SIZE_UNITS")
-	.addValueWithTitle("ZP2015_WEIGHT")
-	.setItemSeparator(", ")
-	.setSpecFormat("", "", true)		
-	.addValueWithTitle("ZP2015_AMOUNT" )
+    .setItemSeparator(", ")
+	.setSpecFormat(" ", "", true)		
+    .beginBlock()
+    	.addValueWithTitle("ZP2015_WEIGHT")
+	.endBlock()
+	.setSpecTitleSource(cz.tacr.elza.print.format.SpecTitleSource.NAME)
+	.setSpecFormat(" (", ")", true)		
+    .beginBlock()
+    	.addValueWithTitle("ZP2015_AMOUNT" )
+	.endBlock()
 	.setSpecFormat("", ": ", false)
-	.setItemSeparator("<br>")		
+	.setItemSeparator("\n")
 	.addValueWithTitle("ZP2015_IMPRINT_COUNT")
 	.addValueWithTitle("ZP2015_EXERQUE")
 	.addValueWithTitle("ZP2015_PAINTING_CHAR")
@@ -250,16 +248,6 @@
 	.addValueWithTitle("ZP2015_ARRANGER")
 	.addValueWithTitle("ZP2015_DESCRIPTION_DATE")]]></defaultValueExpression>
 	</parameter>
-	<parameter name="outputInfoFotmatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
-		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
-	.setTitleSeparator(": ")
-	.setItemSeparator(", ")
-	.addValueWithTitle("ZP2015_UNIT_DATE_PRE")
-	.addValueWithTitle("ZP2015_UNIT_DATE_POST")
-	.addValueWithTitle("ZP2015_UNIT_DATE")
-	.addValueWithTitle("ZP2015_UNIT_DATE_TEXT")]]></defaultValueExpression>
-	</parameter>
 	<parameter name="storageFormatter" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
@@ -272,7 +260,7 @@
 		<parameterDescription><![CDATA[]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
-	.setItemSeparator("<br>")
+	.setItemSeparator("\n")
 	.setSpecSeparator(": ")
 	.setBlockSeparators("","")
 	.beginBlock()
@@ -295,7 +283,6 @@
 		.addValueWithTitle("ZP2015_MOVIE_LENGTH")
 		.addValueWithTitle("ZP2015_EXISTING_COPY")
 		.addValueWithTitle("ZP2015_COPY_SOURCE")
-		.addValueWithTitle("ZP2015_EDITION")
 		.addValueWithTitle("ZP2015_NOTE")
 	.endBlock()]]></defaultValueExpression>
 	</parameter>
@@ -307,17 +294,6 @@
 	.setBlockSeparators("","; ")
 	.beginBlock().addValue("ZP2015_LANGUAGE").endBlock()]]></defaultValueExpression>
 	</parameter>
-	<parameter name="outputDetailFormatter" class="cz.tacr.elza.print.format.HtmlFormatter" isForPrompting="false">
-		<parameterDescription><![CDATA[]]></parameterDescription>
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
-	.setTitleSeparator(": ")
-	.setItemSeparator("<br>")
-	.setSpecSeparator(": ")
-	.setBlockSeparators("","")
-	.beginBlock()
-		.addValueWithTitle("ZP2015_UNIT_COUNT")
-	.endBlock()]]></defaultValueExpression>
-	</parameter>
 	<parameter name="templateVariant" class="java.lang.String">
 		<defaultValueExpression><![CDATA["B"]]></defaultValueExpression>
 	</parameter>
@@ -325,7 +301,7 @@
 		<parameterDescription><![CDATA[]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter()
 	.setTitleSeparator(": ")
-	.setItemSeparator("<br>")
+	.setItemSeparator("\n")
 	.setSpecSeparator(": ")
 	.setBlockSeparators("","")
 	.beginBlock()
@@ -382,12 +358,6 @@
 	</variable>
 	<variable name="serialNumber" class="java.lang.String">
 		<variableExpression><![CDATA[$F{node}.getSingleItemValue("ZP2015_SERIAL_NUMBER")]]></variableExpression>
-	</variable>
-	<variable name="datation" class="java.lang.String">
-		<variableExpression><![CDATA[$P{datationFormatter}.format($F{node})]]></variableExpression>
-	</variable>
-	<variable name="outputDetail" class="java.lang.String">
-		<variableExpression><![CDATA[$P{outputDetailFormatter}.format($P{output})]]></variableExpression>
 	</variable>
 	<variable name="shortDetail" class="java.lang.String">
 		<variableExpression><![CDATA[$V{isRoot} ? $P{rootShortDetailFormatter}.format($P{output}): $P{shortDetailFormatter}.format($F{node})]]></variableExpression>
@@ -625,31 +595,6 @@
 				<reportElement style="Item" x="0" y="0" width="50" height="13" isRemoveLineWhenBlank="true" uuid="4fad29fe-addb-415e-a76f-44c104c5e58c"/>
 				<text><![CDATA[Spojeno s:]]></text>
 			</staticText>
-		</band>
-		<band height="13">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField textAdjust="StretchHeight" pattern="">
-				<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="13" isRemoveLineWhenBlank="true" backcolor="#00FFFF" uuid="a3510bac-f867-49ff-ae62-c4bcef03c80d">
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0]]></printWhenExpression>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{outputDetail}]]></textFieldExpression>
-			</textField>
-		</band>
-		<band height="13">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField textAdjust="StretchHeight" pattern="">
-				<reportElement key="" style="Item" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="13" isRemoveLineWhenBlank="true" backcolor="#FF99CC" uuid="c493609b-f050-40e3-9f11-701aae268a31">
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{datation}]]></textFieldExpression>
-			</textField>
 		</band>
 		<band height="13">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>

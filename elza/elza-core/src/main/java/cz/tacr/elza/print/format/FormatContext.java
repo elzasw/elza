@@ -225,10 +225,10 @@ public class FormatContext {
     public void appendSpecWithValues(String spec, List<String> values) {
         log.debug("Append values, spec: {}, values: {}", spec, values);
 
-        boolean hasPrefix = StringUtils.isNotBlank(specificationPrefix);
+        boolean hasPrefix = StringUtils.isNotEmpty(specificationPrefix);
         String value = String.join(sameSpecItemSeparator, values);
         boolean hasValue = StringUtils.isNotBlank(value);
-        boolean hasPostfix = StringUtils.isNotBlank(specificationPostfix);
+        boolean hasPostfix = StringUtils.isNotEmpty(specificationPostfix);
 
         if (specificationAfterValue) {
             if (hasValue) {
@@ -287,8 +287,8 @@ public class FormatContext {
         // get result of the block
         String appendText = resultBuffer.toString();
         
-        // Restore from stack
-        Block restoredBlock = blockStack.remove(0); 
+        // Restore last from stack
+        Block restoredBlock = blockStack.remove(blockStack.size()-1); 
         resultBuffer = restoredBlock.getResultBuffer();
         pendingSeparator = restoredBlock.getPendingSeparator(); 
 
@@ -304,7 +304,7 @@ public class FormatContext {
                 }
             }
 
-            appendResult(appendText);
+            appendBlockResult(appendText);
 
             // end block
             if (endBlockSeparator != null) {
@@ -314,32 +314,53 @@ public class FormatContext {
                     this.pendingSeparator = endBlockSeparator;
                 }
             }
-        }        
+        }
     }
 
     /**
+     * Append block result
+     * @param appendText
+     */
+    protected void appendBlockResult(String appendText) {
+		appendResult(appendText);
+	}
+
+	/**
      * Append text to the result
      * 
      * Other functions should not directly manipulate with resultBuffer
      * @param value
      */
-    protected void appendResult(String value) {
-        if (StringUtils.isNotEmpty(value)) {
-            // append pending separator
-            if (pendingSeparator != null) {
-                resultBuffer.append(pendingSeparator);
-                pendingSeparator = null;
-            }
-
-            // replace unexpected characters
-            value = value.replace('\t', ' ');
-
-            // append result
-            resultBuffer.append(value);
+    final protected void appendResult(String value) {
+        if (StringUtils.isEmpty(value)) {
+        	return;
         }
+        
+        // append pending separator
+        if (StringUtils.isNotEmpty(pendingSeparator)) {
+        	pendingSeparator = preprocessText(pendingSeparator);
+        	resultBuffer.append(pendingSeparator);
+            pendingSeparator = null;
+        }
+            
+        value = preprocessText(value);
+
+        // append result
+        resultBuffer.append(value);
     }
 
     /**
+     * Preprocess value
+     * @param value
+     * @return
+     */
+    protected String preprocessText(String value) {
+        // replace unexpected characters
+        value = value.replace('\t', ' ');
+		return value;
+	}
+
+	/**
      * Set group by specification flag
      * 
      * @param groupBySpec

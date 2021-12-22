@@ -299,6 +299,7 @@ class DescItemType extends AbstractReactComponent {
     handleChange(descItemIndex, value, callback) {
         //this.props.onChange(descItemIndex, value);
         // Switched to local value change. Value update in "handleBlur"
+        this.setState({coordinatesUpload: null});
 
         const {rulDataType, refType} = this.props;
         let newDescItemType = {...this.state.descItemType};
@@ -1093,9 +1094,9 @@ class DescItemType extends AbstractReactComponent {
                         <NoFocusButton
                             key="upload"
                             onClick={() => {this.showImportDialog()}}
-                            title={i18n('subNodeForm.descItemType.title.add')}
+                            title={i18n('subNodeForm.descItemType.title.importCoord')}
                         >
-                            <Icon glyph="fa-upload" />
+                            <Icon glyph="fa-file" />
                         </NoFocusButton>,
                         <FormInput
                             key="upload-field"
