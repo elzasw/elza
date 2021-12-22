@@ -49,6 +49,7 @@
 	</subDataset>
 	<subDataset name="BodyItems" uuid="7ef7dc62-adda-4a62-9eb4-f89f1c577242">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+		<parameter name="structObj" class="cz.tacr.elza.print.Structured"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
@@ -406,6 +407,9 @@
 				</reportElement>
 				<jr:list xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" printOrder="Vertical">
 					<datasetRun subDataset="BodyItems" uuid="37552c24-7663-4907-9c4d-f2b9a98b5a68">
+						<datasetParameter name="structObj">
+							<datasetParameterExpression><![CDATA[$F{structObj}]]></datasetParameterExpression>
+						</datasetParameter>
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partBody}.getItemsWithout(Arrays.asList("BRIEF_DESC", "NOTE_INTERNAL")))]]></dataSourceExpression>
 					</datasetRun>
 					<jr:listContents height="35" width="455">
@@ -420,7 +424,7 @@
 								<property name="com.jaspersoft.studio.unit.height" value="px"/>
 								<printWhenExpression><![CDATA[StringUtils.isNotBlank($F{item}.getSerializedValue())]]></printWhenExpression>
 							</reportElement>
-							<textFieldExpression><![CDATA[$F{item}.getSerializedValue()]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$P{structObj}.hasItem( $F{item}.getType().getCode() )?$P{structObj}.getSingleItem( $F{item}.getType().getCode() ).getSerializedValue():$F{item}.getSerializedValue()]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
