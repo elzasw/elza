@@ -225,10 +225,10 @@ public class FormatContext {
     public void appendSpecWithValues(String spec, List<String> values) {
         log.debug("Append values, spec: {}, values: {}", spec, values);
 
-        boolean hasPrefix = StringUtils.isNotBlank(specificationPrefix);
+        boolean hasPrefix = StringUtils.isNotEmpty(specificationPrefix);
         String value = String.join(sameSpecItemSeparator, values);
         boolean hasValue = StringUtils.isNotBlank(value);
-        boolean hasPostfix = StringUtils.isNotBlank(specificationPostfix);
+        boolean hasPostfix = StringUtils.isNotEmpty(specificationPostfix);
 
         if (specificationAfterValue) {
             if (hasValue) {
