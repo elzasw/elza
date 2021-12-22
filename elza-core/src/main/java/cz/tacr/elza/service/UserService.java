@@ -54,6 +54,7 @@ import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
@@ -1370,6 +1371,19 @@ public class UserService {
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
 	public UsrUser getUser(@AuthParam(type = AuthParam.Type.USER) final Integer userId) {
 		Validate.notNull(userId, "Identifikátor uživatele musí být vyplněno");
+        return userRepository.getOneCheckExist(userId);
+    }
+
+    /**
+     * Načtení objektu uživatele dle id pro vnitřní použití.
+     * 
+     * @param userId
+     * @return objekt nebo null
+     */
+    public UsrUser getUserInternal(final Integer userId) {
+        if (userId == null) {
+            return null;
+        }
         return userRepository.getOneCheckExist(userId);
     }
 

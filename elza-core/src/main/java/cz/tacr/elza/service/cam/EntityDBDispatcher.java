@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -503,7 +504,11 @@ public class EntityDBDispatcher {
 
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
 
-        ApType type = sdp.getApTypeByCode(entity.getEnt().getValue());
+        String apTypeCode = entity.getEnt().getValue();
+        ApType type = sdp.getApTypeByCode(apTypeCode);
+        if(type==null) {
+        	Validate.notNull(type, "Invalid apTypeCode, value: %s, uuid: %s", apTypeCode, uuid);
+        }
         ApState apState = accessPointService.createAccessPoint(procCtx.getScope(), type, entity.getEns(), apChange, uuid);
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
@@ -577,13 +582,12 @@ public class EntityDBDispatcher {
     private SynchronizationResult synchronizeParts(final ProcessingContext procCtx,
                                                    final EntityXml entity,
                                                    final ApBindingState bindingState,
-                                                   final ApAccessPoint accessPoint) {
-        log.debug("Synchronizing parts, accessPointId: {}, version: {}", accessPoint.getAccessPointId(), accessPoint
-                .getVersion());
+                                                   ApAccessPoint accessPoint) {
+        log.debug("Synchronizing parts, accessPointId: {}, version: {}", accessPoint.getAccessPointId(), accessPoint.getVersion());
 
         Integer accessPointId = accessPoint.getAccessPointId();
         PartsXml partsXml = entity.getPrts();
-        if(partsXml==null) {
+        if (partsXml == null) {
             log.error("Element parts is empty, accessPointId: {}, entityUuid: {}",
                       accessPointId,
                       entity.getEuid().toString());
@@ -591,9 +595,12 @@ public class EntityDBDispatcher {
                     BaseCode.INVALID_STATE)
                             .set("accessPointId", accessPoint.getAccessPointId());
         }
-        
+
         log.debug("Synchronizing parts, accessPointId: {}, number of parts: {}", accessPointId,
                   partsXml.getList().size());
+
+        List<ApItem> itemsByAp = accessPointItemService.findItems(accessPoint);
+        Map<Integer, List<ApItem>> itemsMap = itemsByAp.stream().collect(Collectors.groupingBy(ApItem::getPartId));
 
         ApChange apChange = procCtx.getApChange();
         ApBinding binding = bindingState.getBinding();
@@ -626,7 +633,7 @@ public class EntityDBDispatcher {
                           partBinding.getBindingItemId());
                 part = partBinding.getPart();
                 // Binding found -> update
-                itemList = updatePart(partXml, part, binding, dataRefList);
+                itemList = updatePart(partXml, part, itemsMap.get(part.getPartId()), binding, dataRefList);
             } else {
                 log.debug("Part with binding does not exists, creating new binding, accessPointId: {}", accessPointId);
 
@@ -650,7 +657,7 @@ public class EntityDBDispatcher {
 
         // smazání partů dle externího systému
         // mažou se zbývající party
-        deletePartsInLookup(apChange);
+        deletePartsInLookup(apChange, accessPoint);
 
         // smazání zbývajících nezpracovaných item
         Collection<ApBindingItem> remainingBindingItems = bindingItemLookup.values();
@@ -683,13 +690,8 @@ public class EntityDBDispatcher {
 
         //změna preferováného jména
         Validate.notNull(preferredName, "Missing preferredName");
-        ApPart oldPrefPart = accessPoint.getPreferredPart();
-        if(oldPrefPart!=null&&!oldPrefPart.getPartId().equals(preferredName.getPartId())) {
-        	this.partService.unsetPreferredPart(oldPrefPart);
-        }
-        accessPointService.setPreferName(accessPoint, preferredName);
-        accessPoint.setPreferredPart(preferredName);
-        syncResult.setAccessPoint(accessPointRepository.save(accessPoint));
+        accessPoint = accessPointService.setPreferName(accessPoint, preferredName);
+        syncResult.setAccessPoint(accessPoint);
 
         log.debug("Parts were updated, accessPointId: {}, version: {}",
                   syncResult.getAccessPoint().getAccessPointId(),
@@ -701,23 +703,43 @@ public class EntityDBDispatcher {
         return syncResult;
     }
 
-    private void deletePartsInLookup(ApChange apChange) {
+    private void deletePartsInLookup(ApChange apChange, ApAccessPoint accessPoint) {
         if (bindingPartLookup.isEmpty()) {
             return;
         }
 
         Collection<ApBindingItem> partsBinding = bindingPartLookup.values();
+
+        // získání seznamu podřízených ApPart
+        List<ApPart> parts = partService.findPartsByAccessPoint(accessPoint);
+        List<ApPart> subParts = parts.stream().filter(p -> p.getParentPartId() != null).collect(Collectors.toList());
+
         List<ApPart> partList = new ArrayList<>();
         for (ApBindingItem partBinding : partsBinding) {
             ApPart part = partBinding.getPart();
-            log.debug("Deleting part binding, bindingItemId: {}, partId: {}",
-                      partBinding.getBindingItemId(),
-                      part.getPartId());
             partList.add(part);
             partBinding.setDeleteChange(apChange);
+            log.debug("Deleting part binding, bindingItemId: {}, partId: {}", partBinding.getBindingItemId(), part.getPartId());
         }
         bindingItemRepository.saveAll(partsBinding);
         bindingItemRepository.flush();
+
+        // získání seznamu ID, která odstraníme
+        Set<Integer> deletedPartIds = partList.stream().map(p -> p.getPartId()).collect(Collectors.toSet());
+
+        for (ApPart subPart : subParts) {
+            if (subPart.getParentPartId() != null
+                    && deletedPartIds.contains(subPart.getParentPartId())
+                    && !deletedPartIds.contains(subPart.getPartId())) {
+                log.error("Removed part has subordinate part(s), accessPointId: {}, partId: {}", 
+                          accessPoint.getAccessPointId(), 
+                          subPart.getParentPartId());
+                throw new BusinessException("Removed part has subordinate part(s), accessPointId: " + 
+                          accessPoint.getAccessPointId() + ", partId: " + subPart.getParentPartId(), BaseCode.EXPORT_FAILED)
+                    .set("accessPointId", accessPoint.getAccessPointId())
+                    .set("partId", subPart.getParentPartId());
+            }
+        }
 
         // clear lookup
         bindingPartLookup.clear();
@@ -744,12 +766,13 @@ public class EntityDBDispatcher {
      * Return list of items in part
      * @param partXml
      * @param apPart
+     * @param srcItems
      * @param binding
      * @param dataRefList
      * @return
      */
-    private List<ApItem> updatePart(PartXml partXml, ApPart apPart,
-                            ApBinding binding, List<ReferencedEntities> dataRefList) {
+    private List<ApItem> updatePart(PartXml partXml, ApPart apPart, List<ApItem> srcItems,
+                                    ApBinding binding, List<ReferencedEntities> dataRefList) {
 
         List<Object> itemsXml;
 
@@ -757,6 +780,11 @@ public class EntityDBDispatcher {
             itemsXml = partXml.getItms().getItems();
         } else {
             itemsXml = Collections.emptyList();
+        }
+
+        Map<Integer, ApItem> srcItemsMap = new HashMap<>();
+        if (srcItems != null) {
+            srcItemsMap = srcItems.stream().collect(Collectors.toMap(i -> i.getItemId(), i -> i));
         }
 
         ItemUpdates itemUpdates = findNewOrChangedItems(itemsXml);
@@ -770,7 +798,11 @@ public class EntityDBDispatcher {
                         .set("missingValue", notChangeItem.getValue());
             }
             result.add(removedItem.getItem());
+            srcItemsMap.remove(removedItem.getItem().getItemId());
         }
+
+        // added all items without binding
+        result.addAll(srcItemsMap.values());
 
         List<ChangedBindedItem> changedItems = itemUpdates.getChangedItems();
         if (CollectionUtils.isNotEmpty(changedItems)) {

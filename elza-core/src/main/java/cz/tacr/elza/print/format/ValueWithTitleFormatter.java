@@ -80,9 +80,7 @@ public class ValueWithTitleFormatter implements FormatAction {
         if (firstItem) {
             // get name
             String name = item.getType().getName();
-            if (StringUtils.isEmpty(name)) {
-                name = item.getType().getName();
-            }
+
             // convert name
             if (titleLowerCase) {
                 name = name.toLowerCase();

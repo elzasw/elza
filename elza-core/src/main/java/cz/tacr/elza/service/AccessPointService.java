@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.toMap;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -415,6 +414,24 @@ public class AccessPointService {
         if (replacedBy != null) {
             ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
             apDataService.validationNotDeleted(replacementState);
+            
+            // check binding states
+            // both APs cannot be binded to the same external system
+            // in such case we have to solve deduplication in external system
+            List<ApBindingState> srcBindings = bindingStateRepository.findByAccessPoint(accessPoint);
+            List<ApBindingState> replacedByBindings = bindingStateRepository.findByAccessPoint(replacedBy);
+            for(ApBindingState srcBinding: srcBindings) {
+            	for(ApBindingState replacedByBinding: replacedByBindings) {
+            		if(srcBinding.getExternalSystemId().equals(replacedByBinding.getExternalSystemId())) {
+                        throw new BusinessException("Cannot replace entity with other entity from same external system", RegistryCode.EXT_SYSTEM_CONNECTED)
+                        	.set("accessPointId", apState.getAccessPointId())
+                        	.set("uuid", apState.getAccessPoint().getUuid())
+                        	.set("replacedById", replacedBy.getAccessPointId())
+                        	.set("externalSystemId", srcBinding.getExternalSystemId());
+            		}
+            	}
+            }
+            
             // při sloučení náhradní entita nemůže být ve stavu TO_APPROVE, APPROVED, REV_PREPARED
             if (mergeAp) {
                 validationMergePossibility(replacementState);
@@ -1105,8 +1122,7 @@ public class AccessPointService {
 
             boolean preferred = prefPartId == null || Objects.equals(prefPartId, part.getPartId());
             GroovyResult result = groovyService.processGroovy(state, part, childrenParts, items, preferred);
-            if (!partService.updatePartValue(part, result, state, state.getScope(),
-                                             async, preferred)) {
+            if (!partService.updatePartValue(part, result, state, state.getScope(), async, preferred)) {
                 success = false;
             }
         }
@@ -1954,26 +1970,42 @@ public class AccessPointService {
      * @param state
      */
     public void hasPermissionToSynchronizeFromExternaSystem(final ApState state) {
-        if (userService.hasPermission(Permission.AP_SCOPE_WR_ALL) 
-                || userService.hasPermission(Permission.AP_SCOPE_WR, state.getScopeId())) {
-            if (state.getStateApproval().equals(StateApproval.NEW)
-                    || state.getStateApproval().equals(StateApproval.TO_AMEND)) {
-                return;
-            }
-        }
-        if (userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
-                || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId())) {
-            if (state.getStateApproval().equals(StateApproval.APPROVED)
-                    || state.getStateApproval().equals(StateApproval.REV_NEW)
-                    || state.getStateApproval().equals(StateApproval.REV_AMEND)) {
-                return;
-            }
+
+        // Uživatel, který NEMÁ OPRÁVNĚNÍ "Zakládání a změny nových" (AP_SCOPE_WR)
+        // nemůže provést operaci "Aktualizace údajů z externího systému" u entit ve stavech:
+        // - Nová
+        // - K doplnění
+        boolean hasCreateAndChangeNewAp = 
+                userService.hasPermission(Permission.AP_SCOPE_WR_ALL)
+                || userService.hasPermission(Permission.AP_SCOPE_WR, state.getScopeId());
+        boolean stateNewOrToAmend = 
+                state.getStateApproval().equals(StateApproval.NEW)
+                || state.getStateApproval().equals(StateApproval.TO_AMEND);
+        if (!hasCreateAndChangeNewAp && stateNewOrToAmend) {
+            throw new SystemException("Entitu v tomto stavu nelze aktualizovat z externího systému", BaseCode.INVALID_STATE)
+                .set("accessPointId", state.getAccessPointId())
+                .set("scopeId", state.getScopeId())
+                .set("state", state.getStateApproval());
         }
 
-        throw new SystemException("Uživatel nemá oprávnění na synchronizaci přístupového bodu z externího systému", BaseCode.INSUFFICIENT_PERMISSIONS)
-            .set("accessPointId", state.getAccessPointId())
-            .set("scopeId", state.getScopeId())
-            .set("state", state.getStateApproval());
+        // Uživatel, který NEMÁ OPRÁVNĚNÍ "Změna schválených archivních entit" (AP_EDIT_CONFIRMED)
+        // nemůže provést operaci "Aktualizace údajů z externího systému" u entit ve stavech:
+        // - Schválená
+        // - Příprava revize
+        // - Revize k doplnění
+        boolean hasEditConfirmedAp =
+                userService.hasPermission(Permission.AP_EDIT_CONFIRMED_ALL) 
+                || userService.hasPermission(Permission.AP_EDIT_CONFIRMED, state.getScopeId());
+        boolean stateApprovedOrRewNewOrRevAmend =
+                state.getStateApproval().equals(StateApproval.APPROVED)
+                || state.getStateApproval().equals(StateApproval.REV_NEW)
+                || state.getStateApproval().equals(StateApproval.REV_AMEND);
+        if (!hasEditConfirmedAp && stateApprovedOrRewNewOrRevAmend) {
+            throw new SystemException("Uživatel nemá oprávnění na synchronizaci přístupového bodu z externího systému", BaseCode.INSUFFICIENT_PERMISSIONS)
+                .set("accessPointId", state.getAccessPointId())
+                .set("scopeId", state.getScopeId())
+                .set("state", state.getStateApproval());
+        }
     }
 
     /**
@@ -1994,7 +2026,18 @@ public class AccessPointService {
         }
     }
 
-    public void changePrefName(final ApAccessPoint accessPoint, final ApPart apPart) {
+    /**
+     * Nastaví část přístupového bodu na preferovanou
+     *
+     * @param accessPoint přístupový bod
+     * @param apPart část
+     */
+    public ApAccessPoint setPreferName(final ApAccessPoint accessPoint, final ApPart apPart) {
+    	Integer oldPrefNameId = accessPoint.getPreferredPartId();
+    	if(Objects.equals(oldPrefNameId, apPart.getPartId())) {
+    		return accessPoint;
+    	}
+    	
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         RulPartType defaultPartType = sdp.getDefaultPartType();
 
@@ -2004,24 +2047,13 @@ public class AccessPointService {
 
         if (apPart.getParentPart() != null) {
             throw new IllegalArgumentException("Návazný part nelze změnit na preferovaný.");
-        }
-        ApPart oldPrefName = accessPoint.getPreferredPart();
-        if(oldPrefName!=null&&oldPrefName.getKeyValue()!=null) {
-        	partService.unsetPreferredPart(oldPrefName);
-        }
+        }        
+       	partService.unsetPreferredPart(oldPrefNameId);
         accessPoint.setPreferredPart(apPart);
-    }
 
-    /**
-     * Nastaví část přístupového bodu na preferovanou
-     *
-     * @param accessPoint přístupový bod
-     * @param apPart část
-     */
-    public void setPreferName(final ApAccessPoint accessPoint, final ApPart apPart) {
-    	changePrefName(accessPoint, apPart);
-        saveWithLock(accessPoint);
-        generateSync(accessPoint.getAccessPointId());
+        ApAccessPoint ret = saveWithLock(accessPoint);
+        generateSync(ret.getAccessPointId());
+        return ret;
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
@@ -2355,52 +2387,6 @@ public class AccessPointService {
         return extSyncsQueueItemVO;
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
-    public void createExtSyncsQueueItem(Integer accessPointId, String externalSystemCode) {        
-        // check AP state
-        ApState apState = getApState(accessPointId);
-        switch(apState.getStateApproval()) {
-        case APPROVED:
-        case NEW:
-        case TO_AMEND:
-        	break;
-        default:
-        	throw new BusinessException("Entita v tomto stavu nemůže být předána do externího systému.", BaseCode.INVALID_STATE)
-                .set("accessPointId", apState.getAccessPointId())
-                .set("state", apState.getStateApproval());
-        }
-
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-        ApExternalSystem extSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-
-        // check ext_sync_queue
-        if (extSyncsQueueItemRepository.countByAccesPointAndExternalSystemAndState(accessPoint, extSystem, ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW) != 0) {
-            throw new BusinessException("Entita již čeká na zpracování ve frontě.", BaseCode.INVALID_STATE)
-                .set("accessPointId", apState.getAccessPointId())
-                .set("externalSystemCode", externalSystemCode);
-        }
-
-        UserDetail userDetail = userService.getLoggedUserDetail();
-        ExtSyncsQueueItem extSyncsQueueItem = createExtSyncsQueueItem(accessPoint, extSystem, null,
-                ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW, OffsetDateTime.now(), userDetail.getUsername());
-        extSyncsQueueItemRepository.save(extSyncsQueueItem);
-    }
-
-    public ExtSyncsQueueItem createExtSyncsQueueItem(final ApAccessPoint accessPoint,
-                                                     final ApExternalSystem apExternalSystem,
-                                                     final String stateMessage,
-                                                     final ExtSyncsQueueItem.ExtAsyncQueueState state,
-                                                     final OffsetDateTime date,
-                                                     final String userName) {
-        ExtSyncsQueueItem extSyncsQueueItem = new ExtSyncsQueueItem();
-        extSyncsQueueItem.setAccessPoint(accessPoint);
-        extSyncsQueueItem.setExternalSystem(apExternalSystem);
-        extSyncsQueueItem.setStateMessage(stateMessage);
-        extSyncsQueueItem.setState(state);
-        extSyncsQueueItem.setDate(date);
-        extSyncsQueueItem.setUsername(userName);
-        return extSyncsQueueItem;
-    }
 
     public Page<ApState> findApAccessPointBySearchFilter(SearchFilterVO searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
                                                          StateApproval state, Integer from, Integer count, StaticDataProvider sdp) {
