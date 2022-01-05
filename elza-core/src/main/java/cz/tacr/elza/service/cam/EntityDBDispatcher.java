@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -50,6 +51,7 @@ import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
@@ -358,7 +360,7 @@ public class EntityDBDispatcher {
             state = stateRepository.save(stateNew);
         }
 
-        String extReplacedBy = (entity.getReid() != null) ? Long.toString(entity.getReid().getValue()): null;
+        String extReplacedBy = (entity.getReid() != null) ? Long.toString(entity.getReid().getValue()) : null;
         //vytvoření nového stavu propojení
         bindingState = externalSystemService.createNewApBindingState(bindingState, procCtx.getApChange(),
                                                                      entity.getEns().value(),
@@ -371,13 +373,45 @@ public class EntityDBDispatcher {
         // při synchronizaci dochází ke změně objektu accessPoint, je nutné používat vrácený
         accessPoint = syncRes.getAccessPoint();
 
+        switch (entity.getEns()) {
+        case ERS_REPLACED:
+            // entita je nahrazena v CAM -> musíme nahradit v ELZA
+            ApBinding binding = bindingRepository.findByValueAndExternalSystem(extReplacedBy, procCtx.getApExternalSystem());
+            if (binding != null) {
+                Optional<ApBindingState> replacedBindingState = externalSystemService.getBindingState(binding);
+                if (replacedBindingState.isPresent()) {
+                    ApAccessPoint replacedBy = replacedBindingState.get().getAccessPoint();
+                    ApState replacementState = stateRepository.findByAccessPointId(replacedBy.getAccessPointId());
+                    accessPointService.replace(state, replacementState);
+                    state.setReplacedBy(replacedBy);
+                    break;
+                }
+            }
+            accessPointService.deleteAccessPoint(state, accessPoint, procCtx.getApChange());
+            break;
+
+        case ERS_INVALID:
+            // odstranění entity, která v CAM označena jako neplatná
+            accessPointService.deleteAccessPoint(state, accessPoint, procCtx.getApChange());
+            break;
+
+        default:
+            // synchronizace stavu entity
+            StateApproval newStateApproval = camService.convertStateXmlToStateApproval(entity.getEns());
+            if (!newStateApproval.equals(state.getStateApproval())) {
+                state.setStateApproval(newStateApproval);
+                state = stateRepository.save(state);
+            }
+            break;
+        }
+
         accessPointService.generateSync(accessPoint, state,
                                         syncRes.getParts(), syncRes.getItemMap(),
                                         syncQueue);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         this.procCtx = null;
-    };
+    }
 
     /**
      * Restore access point which was alreay deleted
@@ -397,8 +431,9 @@ public class EntityDBDispatcher {
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
 
         ApType type = sdp.getApTypeByCode(entity.getEnt().getValue());
+        StateApproval state = camService.convertStateXmlToStateApproval(entity.getEns());
         accessPoint = accessPointService.saveWithLock(accessPoint);
-        ApState apState = accessPointService.createAccessPointState(accessPoint, procCtx.getScope(), type, entity.getEns(), apChange);
+        ApState apState = accessPointService.createAccessPointState(accessPoint, procCtx.getScope(), type, state, apChange);
 
         createPartsFromEntityXml(entity, accessPoint, apChange, apState, binding, async);
 
@@ -506,10 +541,11 @@ public class EntityDBDispatcher {
 
         String apTypeCode = entity.getEnt().getValue();
         ApType type = sdp.getApTypeByCode(apTypeCode);
-        if(type==null) {
+        if (type == null) {
         	Validate.notNull(type, "Invalid apTypeCode, value: %s, uuid: %s", apTypeCode, uuid);
         }
-        ApState apState = accessPointService.createAccessPoint(procCtx.getScope(), type, entity.getEns(), apChange, uuid);
+        StateApproval state = camService.convertStateXmlToStateApproval(entity.getEns());
+        ApState apState = accessPointService.createAccessPoint(procCtx.getScope(), type, state, apChange, uuid);
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         createPartsFromEntityXml(entity, accessPoint, apChange, apState, binding, async);
