@@ -77,6 +77,7 @@ import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -104,9 +105,6 @@ public class CamService {
 
     @Autowired
     private ApStateRepository stateRepository;
-
-    @Autowired
-    private ApBindingStateRepository bindingStateRepository;
 
     @Autowired
     private ApBindingItemRepository bindingItemRepository;
@@ -140,6 +138,9 @@ public class CamService {
 
     @Autowired
     private ApBindingSyncRepository bindingSyncRepository;
+
+    @Autowired
+    private ApBindingStateRepository bindingStateRepository;
 
     @Autowired
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
@@ -491,7 +492,7 @@ public class CamService {
             }
             synchronizeAccessPointsForExternalSystem(externalSystem, entityRecordRevInfoXmls);
         } catch (ApiException e) {
-        	if(e.getCode()==404) {
+        	if (e.getCode() == 404) {
         		// Transaction not found, check if autorestart is enabled
         		log.error("Transaction not found, transaction={}, resetting transaction.", apBindingSync.getLastTransaction(), e);
         		lastTransaction =  TRANSACTION_UUID;
@@ -515,13 +516,13 @@ public class CamService {
         if (CollectionUtils.isEmpty(entityRecordRevInfoXmls)) {
             return;
         }
-        List<String> recordCodes = getRecordCodes(externalSystem, entityRecordRevInfoXmls);
-        List<ApBinding> bindings = externalSystemService.findBindings(recordCodes, externalSystem);
+        Map<String, EntityRecordRevInfoXml> recordCodesMap = getRecordCodesMap(externalSystem, entityRecordRevInfoXmls);
+        List<ApBinding> bindings = externalSystemService.findBindings(new ArrayList<>(recordCodesMap.keySet()), externalSystem);
         final Map<String, ApBinding> bindingMap = bindings.stream()
                 .collect(Collectors.toMap(p -> p.getValue(), p -> p));
-        
+
         Map<Integer, ApBindingState> bindingStateMap;
-        if(bindings.size()>0) {
+        if (bindings.size() > 0) {
             List<ApBindingState> bindingStateList = externalSystemService.findBindingStates(bindings);
             bindingStateMap = bindingStateList.stream()
                     .collect(Collectors.toMap(p -> p.getBindingId(), p -> p));
@@ -531,10 +532,10 @@ public class CamService {
 
         UsrUser user = userService.getLoggedUser();
         List<ExtSyncsQueueItem> extSyncsQueueItems = new ArrayList<>();
-        for (String recordCode : recordCodes) {
+        for (String recordCode : recordCodesMap.keySet()) {
             ApBinding binding = bindingMap.get(recordCode);
             ApAccessPoint ap = null;
-            if(binding==null) {
+            if (binding == null) {
                 // prepare binding for CAM Complete
                 if (externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
                     binding = externalSystemService.createApBinding(recordCode, externalSystem);
@@ -543,6 +544,16 @@ public class CamService {
                 ApBindingState bindingState = bindingStateMap.get(binding.getBindingId());
                 if (bindingState != null) {
                     ap = bindingState.getAccessPoint();
+                    // kontrola uuid revizi, pokud se rovná extRevizion(), pak aktualizace není potřeba
+                    String uuidRev = recordCodesMap.get(recordCode).getRev().getValue();
+                    if (bindingState.getExtRevision().equals(uuidRev)) {
+                        continue;
+                    }
+                }
+                // entita mohla být smazána, hledáme ji jinak
+                if (ap == null) {
+                    String uuid = recordCodesMap.get(recordCode).getEuid().getValue();
+                    ap = apAccessPointRepository.findApAccessPointByUuid(uuid);
                 }
             }
             // update or add new items from CAM_COMPLETE
@@ -552,9 +563,9 @@ public class CamService {
                     extSyncsQueue.setAccessPoint(ap);
                     extSyncsQueue.setState(ExtAsyncQueueState.UPDATE);
                 } else {
-                    extSyncsQueue.setBinding(binding);
                     extSyncsQueue.setState(ExtAsyncQueueState.IMPORT_NEW);
                 }
+                extSyncsQueue.setBinding(binding);
                 extSyncsQueue.setExternalSystem(externalSystem);
                 extSyncsQueue.setDate(OffsetDateTime.now());
                 extSyncsQueue.setUser(user);
@@ -566,10 +577,10 @@ public class CamService {
         }
     }
 
-    private List<String> getRecordCodes(final ApExternalSystem externalSystem,
+    private Map<String, EntityRecordRevInfoXml> getRecordCodesMap(final ApExternalSystem externalSystem,
                                         List<EntityRecordRevInfoXml> entityRecordRevInfoXmls) {
         if (CollectionUtils.isEmpty(entityRecordRevInfoXmls)) {
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
         Function<EntityRecordRevInfoXml, String> idGetter;
         if (externalSystem.getType().equals(ApExternalSystemType.CAM_UUID)) {
@@ -578,11 +589,11 @@ public class CamService {
             idGetter = (x) -> Long.toString(x.getEid().getValue());
         }
 
-        List<String> recordCodes = new ArrayList<>(entityRecordRevInfoXmls.size());
+        Map<String, EntityRecordRevInfoXml> recordCodesMap = new HashMap<>(entityRecordRevInfoXmls.size());
         for (EntityRecordRevInfoXml entityRecordRevInfoXml : entityRecordRevInfoXmls) {
-            recordCodes.add(idGetter.apply(entityRecordRevInfoXml));
+            recordCodesMap.put(idGetter.apply(entityRecordRevInfoXml), entityRecordRevInfoXml);
         }
-        return recordCodes;
+        return recordCodesMap;
     }
 
     static public Function<EntityXml, String> getEntityIdGetter(final ApExternalSystem externalSystem) {
@@ -638,7 +649,7 @@ public class CamService {
             binding = bindingState.getBinding();
         }
         if (bindingState == null) {
-            Validate.isTrue(state == null);
+            Validate.isTrue(state == null || state.getDeleteChangeId() != null);
         }
         log.debug("Entity synchronization request, bindingId: {}, value: {}, revId: {}, apState: {}, bindingState: {}",
                   binding.getBindingId(),
@@ -733,6 +744,14 @@ public class CamService {
             //apChange = apDataService.createChange(bindingState != null? ApChange.Type.AP_UPDATE : ApChange.Type.AP_CREATE);
         }
         procCtx.setApChange(apChange);
+
+        // pokud state != null && bindingState == null mohlo by jít o obnovení neplatné entity
+        if (state != null && bindingState == null) {
+            if (state.getDeleteChangeId() != null) {
+                state = accessPointService.copyState(state, apChange);
+                bindingState = bindingStateRepository.findLastByAccessPointAndExternalSystem(state.getAccessPoint(), procCtx.getApExternalSystem());
+            }
+        }
 
         EntityDBDispatcher ec = createEntityDBDispatcher();
         if (state == null) {
@@ -867,9 +886,14 @@ public class CamService {
 
             state = accessPointService.getStateInternal(accessPoint);
             bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
-            bindingValue = bindingState.getBinding().getValue();
+            if (bindingState == null) {
+                binding = bindingRepository.findById(queueItem.getBindingId()).get();
+                bindingValue = binding.getValue();
+            } else {
+                bindingValue = bindingState.getBinding().getValue();
+                binding = null;
+            }
             scope = state.getScope();
-            binding = null;
         } else {
             state = null;
             bindingState = null;
@@ -1041,5 +1065,17 @@ public class CamService {
         extSyncsQueueItem.setDate(date);
         extSyncsQueueItem.setUser(user);
         return extSyncsQueueItem;
+    }
+
+    public StateApproval convertStateXmlToStateApproval(EntityRecordStateXml state) {
+        switch (state) {
+        case ERS_APPROVED:
+            return StateApproval.APPROVED;
+        case ERS_NEW:
+            return StateApproval.NEW;
+        default:
+            throw new BusinessException("Entita nemá žádný odpovídající status v ELZA.", BaseCode.INVALID_STATE)
+                .set("state", state);
+        }
     }
 }
