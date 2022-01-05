@@ -30,6 +30,13 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
     @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding bin WHERE bis.accessPoint = :accessPoint AND bis.deleteChangeId IS NULL AND bin.apExternalSystem = :externalSystem")
     ApBindingState findByAccessPointAndExternalSystem(@Param("accessPoint") ApAccessPoint accessPoint, @Param("externalSystem") ApExternalSystem externalSystem);
 
+    @Query("SELECT b1" +
+            " FROM ap_binding_state b1" +
+            " WHERE b1.accessPoint = :accessPoint" +
+            " AND b1.createChangeId = (SELECT max(b2.createChangeId) FROM ap_binding_state b2 WHERE b2.accessPoint = b1.accessPoint AND b2.apExternalSystem = :externalSystem)" +
+            " AND b1.apExternalSystem = :externalSystem")
+    ApBindingState findLastByAccessPointAndExternalSystem(@Param("accessPoint") ApAccessPoint accessPoint, @Param("externalSystem") ApExternalSystem externalSystem);
+
     @Modifying
     @Query("UPDATE ap_binding_state bis SET bis.deleteChange=?2 WHERE bis.accessPointId IN ?1 AND bis.deleteChangeId IS NULL")
     void invalidateByAccessPointIdIn(Collection<Integer> apIds, ApChange deleteChange);
