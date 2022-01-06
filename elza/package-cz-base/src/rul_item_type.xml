@@ -58,6 +58,11 @@
         <shortcut>Jazyk díla</shortcut>
         <use-specification>true</use-specification>
     </item-type>
+    <item-type code="CORP_STRUCTURE" data-type="TEXT">
+        <name>Vnitřní struktury korporace</name>
+        <shortcut>Vnitřní struktury korporace</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
     <item-type code="CORP_PURPOSE" data-type="TEXT">
         <name>Funkce korporace</name>
         <shortcut>Funkce korporace</shortcut>
@@ -71,11 +76,6 @@
     <item-type code="SCOPE_NORMS" data-type="TEXT">
         <name>Normy – působnost korporace</name>
         <shortcut>Normy – působnost korporace</shortcut>
-        <use-specification>false</use-specification>
-    </item-type>
-    <item-type code="CORP_STRUCTURE" data-type="TEXT">
-        <name>Vnitřní struktury korporace</name>
-        <shortcut>Vnitřní struktury korporace</shortcut>
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="SOURCE_INFO" data-type="TEXT">
