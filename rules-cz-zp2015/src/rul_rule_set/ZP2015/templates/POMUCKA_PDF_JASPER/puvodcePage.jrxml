@@ -70,7 +70,7 @@
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
 	<parameter name="formatterNameForms" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter().setItemSeparator(", ").setTitleSeparator(": ").addValue("NM_TYPE").addValue("NM_LANG").addValueWithTitle("NM_USED_FROM").addValueWithTitle("NM_USED_TO")]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter().setItemSeparator(", ").setTitleSeparator(": ").addValue("NM_TYPE").addValue("NM_LANG").addValueWithOtherTitle("od", "NM_USED_FROM").addValueWithOtherTitle("do", "NM_USED_TO")]]></defaultValueExpression>
 	</parameter>
 	<field name="structObj" class="cz.tacr.elza.print.Structured">
 		<fieldDescription><![CDATA[_THIS]]></fieldDescription>
