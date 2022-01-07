@@ -60,6 +60,17 @@ public class Formatter {
 	 * @param itemType
 	 * @return
 	 */
+	public Formatter addValueWithOtherTitle(String title, String itemType) {
+		ValueWithTitleFormatter f = new ValueWithTitleFormatter(itemType);
+		f.setOtherTitle(title);
+		return addAction(f);
+	}
+	
+	/**
+	 * Add specification and value for given type
+	 * @param itemType
+	 * @return
+	 */
 	public Formatter addValueWithTitle(String itemType) {
 		return addAction(new ValueWithTitleFormatter(itemType));
 	}
