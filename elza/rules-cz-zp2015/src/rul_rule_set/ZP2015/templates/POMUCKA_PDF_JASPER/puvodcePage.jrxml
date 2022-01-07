@@ -221,7 +221,7 @@
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($V{partCre}.getSingleItem("CRE_CLASS").getSpecification().getName())+": </b>"+$V{partCre}.getSingleItemValue("CRE_DATE")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($V{partCre}.getSingleItem("CRE_CLASS").getSpecification().getName()+($V{partCre}.getSingleItem("CRE_TYPE")!=null?", "+$V{partCre}.getSingleItem("CRE_TYPE").getSpecification().getName():"") )+": </b>"+$V{partCre}.getSingleItemValue("CRE_DATE")]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="45" width="455" height="20" isRemoveLineWhenBlank="true" uuid="066f0355-bd2b-4328-ac97-52ec55458007">
@@ -265,7 +265,7 @@
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($V{partExt}.getSingleItem("EXT_CLASS").getSpecification().getName())+": </b>"+$V{partExt}.getSingleItemValue("EXT_DATE")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($V{partExt}.getSingleItem("EXT_CLASS").getSpecification().getName())+($V{partExt}.getSingleItem("EXT_TYPE")!=null?", "+$V{partExt}.getSingleItem("EXT_TYPE").getSpecification().getName():"")+": </b>"+$V{partExt}.getSingleItemValue("EXT_DATE")]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="45" width="455" height="20" isRemoveLineWhenBlank="true" uuid="6a019459-1eba-43cc-b95b-8f42c185f959">
