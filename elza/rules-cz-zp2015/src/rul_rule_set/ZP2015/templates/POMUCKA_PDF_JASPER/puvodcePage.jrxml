@@ -22,12 +22,16 @@
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 		<parameter name="preferredPart" class="cz.tacr.elza.print.part.Part"/>
 		<parameter name="record" class="cz.tacr.elza.print.Record"/>
+		<parameter name="formatterNameForms" class="cz.tacr.elza.print.format.Formatter"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
 		<field name="partObj" class="cz.tacr.elza.print.part.Part">
 			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
 		</field>
+		<variable name="nameTypes" class="java.lang.String">
+			<variableExpression><![CDATA[$P{formatterNameForms}.format( $F{partObj}.getItems())]]></variableExpression>
+		</variable>
 	</subDataset>
 	<subDataset name="RelationTo" uuid="9835813e-0034-49fc-8272-9aa2927bb305">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
@@ -173,6 +177,9 @@
 						<datasetParameter name="preferredPart">
 							<datasetParameterExpression><![CDATA[$V{record}.getPreferredPart()]]></datasetParameterExpression>
 						</datasetParameter>
+						<datasetParameter name="formatterNameForms">
+							<datasetParameterExpression><![CDATA[$P{formatterNameForms}]]></datasetParameterExpression>
+						</datasetParameter>
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partsName})]]></dataSourceExpression>
 					</datasetRun>
 					<jr:listContents height="15" width="332">
@@ -183,7 +190,7 @@
 							<textElement>
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA[$F{partObj}.getValue()]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$F{partObj}.getValue() + (StringUtils.isBlank($V{nameTypes})?"":(", užití: "+$V{nameTypes}))]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
