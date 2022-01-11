@@ -147,7 +147,8 @@ public class DaoCoreServiceWsImpl {
             repoCode = repoCodes.iterator().next();
         }
         
-        if(daoImport.getDaoPackages()!=null&&!CollectionUtils.isEmpty(daoImport.getDaoLinks().getDaoLink())) {
+        if(daoImport.getDaoPackages()!=null&&daoImport.getDaoLinks()!=null&&
+        		!CollectionUtils.isEmpty(daoImport.getDaoLinks().getDaoLink())) {
             final List<DaoLink> daoLinkList = daoImport.getDaoLinks().getDaoLink();
             Set<String> repoCodes = daoLinkList.stream()
                     .map(dl -> dl.getRepositoryIdentifier()).collect(Collectors.toSet());
