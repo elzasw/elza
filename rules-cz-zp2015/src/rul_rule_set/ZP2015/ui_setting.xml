@@ -179,7 +179,7 @@
                 <!-- ZP5.2.5 Měřítko -->
                 <type code="ZP2015_SCALE" width="1"/>
                 <!-- 5.2.6 Souřadnice - tvar a souřadnice -->
-                <type code="ZP2015_POSITION" width="1"/>
+                <type code="ZP2015_POSITION" width="2"/>
                 <!-- 5.2.7 Orientace z hlediska světových stran -->
                 <type code="ZP2015_ORIENTATION" width="1"/>
                 <!-- 5.2.8 Technika, adjustace, nosič a látka záznamu -->

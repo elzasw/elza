@@ -22,12 +22,16 @@
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 		<parameter name="preferredPart" class="cz.tacr.elza.print.part.Part"/>
 		<parameter name="record" class="cz.tacr.elza.print.Record"/>
+		<parameter name="formatterNameForms" class="cz.tacr.elza.print.format.Formatter"/>
 		<queryString>
 			<![CDATA[]]>
 		</queryString>
 		<field name="partObj" class="cz.tacr.elza.print.part.Part">
 			<fieldDescription><![CDATA[_THIS]]></fieldDescription>
 		</field>
+		<variable name="nameTypes" class="java.lang.String">
+			<variableExpression><![CDATA[$P{formatterNameForms}.format( $F{partObj}.getItems())]]></variableExpression>
+		</variable>
 	</subDataset>
 	<subDataset name="RelationTo" uuid="9835813e-0034-49fc-8272-9aa2927bb305">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
@@ -70,7 +74,7 @@
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
 	<parameter name="formatterNameForms" class="cz.tacr.elza.print.format.Formatter" isForPrompting="false">
-		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter().setItemSeparator(", ").setTitleSeparator(": ").addValue("NM_TYPE").addValue("NM_LANG").addValueWithTitle("NM_USED_FROM").addValueWithTitle("NM_USED_TO")]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.HtmlFormatter().setItemSeparator(", ").setTitleSeparator(": ").addValue("NM_TYPE").addValue("NM_LANG").addValueWithOtherTitle("od", "NM_USED_FROM").addValueWithOtherTitle("do", "NM_USED_TO")]]></defaultValueExpression>
 	</parameter>
 	<field name="structObj" class="cz.tacr.elza.print.Structured">
 		<fieldDescription><![CDATA[_THIS]]></fieldDescription>
@@ -137,7 +141,7 @@
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Forma užití jména: " + $V{prefNameTypes}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Užití jména: " + $V{prefNameTypes}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="50" width="455" height="20" isRemoveLineWhenBlank="true" uuid="034bd6a6-f9b1-41c3-9d72-45f64a1bb28b">
@@ -173,6 +177,9 @@
 						<datasetParameter name="preferredPart">
 							<datasetParameterExpression><![CDATA[$V{record}.getPreferredPart()]]></datasetParameterExpression>
 						</datasetParameter>
+						<datasetParameter name="formatterNameForms">
+							<datasetParameterExpression><![CDATA[$P{formatterNameForms}]]></datasetParameterExpression>
+						</datasetParameter>
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($V{partsName})]]></dataSourceExpression>
 					</datasetRun>
 					<jr:listContents height="15" width="332">
@@ -183,7 +190,7 @@
 							<textElement>
 								<font pdfEncoding="Cp1250"/>
 							</textElement>
-							<textFieldExpression><![CDATA[$F{partObj}.getValue()]]></textFieldExpression>
+							<textFieldExpression><![CDATA[$F{partObj}.getValue() + (StringUtils.isBlank($V{nameTypes})?"":(", užití: "+$V{nameTypes}))]]></textFieldExpression>
 						</textField>
 					</jr:listContents>
 				</jr:list>
@@ -221,7 +228,7 @@
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($V{partCre}.getSingleItem("CRE_CLASS").getSpecification().getName())+": </b>"+$V{partCre}.getSingleItemValue("CRE_DATE")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($V{partCre}.getSingleItem("CRE_CLASS").getSpecification().getName()+($V{partCre}.getSingleItem("CRE_TYPE")!=null?", "+$V{partCre}.getSingleItem("CRE_TYPE").getSpecification().getName():"") )+": </b>"+$V{partCre}.getSingleItemValue("CRE_DATE")]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="45" width="455" height="20" isRemoveLineWhenBlank="true" uuid="066f0355-bd2b-4328-ac97-52ec55458007">
@@ -265,7 +272,7 @@
 				<textElement markup="html">
 					<font pdfEncoding="Cp1250"/>
 				</textElement>
-				<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($V{partExt}.getSingleItem("EXT_CLASS").getSpecification().getName())+": </b>"+$V{partExt}.getSingleItemValue("EXT_DATE")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["<b>"+StringUtils.capitalize($V{partExt}.getSingleItem("EXT_CLASS").getSpecification().getName())+($V{partExt}.getSingleItem("EXT_TYPE")!=null?", "+$V{partExt}.getSingleItem("EXT_TYPE").getSpecification().getName():"")+": </b>"+$V{partExt}.getSingleItemValue("EXT_DATE")]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Text" positionType="Float" x="0" y="45" width="455" height="20" isRemoveLineWhenBlank="true" uuid="6a019459-1eba-43cc-b95b-8f42c185f959">

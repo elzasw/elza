@@ -117,6 +117,11 @@ public class UnitDateConvertorTest {
         result = UnitDateConvertor.convertToString(unitDate);
         assertEquals(result, "1. st.");
 
+        sourceDate = "17st-20st";
+        unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
+        result = UnitDateConvertor.convertToString(unitDate);
+        assertEquals(result, "17. st./20. st.");
+
         sourceDate = "[1900]-[1910]";
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
         result = UnitDateConvertor.convertToString(unitDate);

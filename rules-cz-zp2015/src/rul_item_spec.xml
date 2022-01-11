@@ -1597,9 +1597,9 @@
         <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
     <item-spec code="ZP2015_DATE_INSERT">
-        <name>insertu/transeptu</name>
-        <description>datace insertu/transeptu</description>
-        <shortcut>insert/transept</shortcut>
+        <name>insertu/transumptu</name>
+        <description>datace insertu/transumptu</description>
+        <shortcut>insert/transumptu</shortcut>
         <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
     <item-spec code="ZP2015_DATE_MOLD_CREATION">

@@ -355,7 +355,8 @@ public class UnitDateConvertor {
         }
         switch (format) {
             case CENTURY:
-                result = String.format(CENTURY_TEMPLATE, date.getYear() / 100 + 1);
+            	int century = (date.getYear()+99) / 100; 
+                result = String.format(CENTURY_TEMPLATE, century);
                 addEstimate = false;
                 break;
             case YEAR:
