@@ -42,6 +42,16 @@ public class DroidService {
 
     public String getMimeType(final Path file, final BufferedWriter protocol) throws IOException {
         String mimeType = null;
+        
+        // Simplified mimetype detection from extension
+        String fileName = file.getFileName().toString().toLowerCase();
+        if(fileName.endsWith("jpg")||fileName.endsWith("jpeg")) {
+        	return "image/jpeg";
+        }
+        
+        if(fileName.endsWith("tif")||fileName.endsWith("tiff")) {
+        	return "image/tiff";
+        }
 
         /*
         if (droidCore == null) {

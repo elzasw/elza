@@ -57,7 +57,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import cz.tacr.cam.schema.cam.EntityRecordStateXml;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
@@ -480,19 +479,17 @@ public class AccessPointService {
     }
 
     /**
-     * Mazání ApAccessPoint, zveřejnění a reindexování
-     * 
+     * Mazání ApAccessPoint
+     *
      * @param apState
      * @param accessPoint
      * @param change
      */
-    private void deleteAccessPointPublichAndReindex(final ApState apState, ApAccessPoint accessPoint, final ApChange change) {
+    public void deleteAccessPoint(final ApState apState, ApAccessPoint accessPoint, final ApChange change) {
         checkDeletion(accessPoint);
         partService.deleteParts(accessPoint, change);
         apState.setDeleteChange(change);
         apStateRepository.save(apState);
-
-        accessPoint = saveWithLock(accessPoint);
 
         List<ApBindingState> eids = bindingStateRepository.findByAccessPoint(accessPoint);
         if (CollectionUtils.isNotEmpty(eids)) {
@@ -502,7 +499,19 @@ public class AccessPointService {
         }
 
         accessPointCacheService.deleteCachedAccessPoint(accessPoint);
+    }
 
+    /**
+     * Mazání ApAccessPoint, zveřejnění a reindexování
+     *
+     * @param apState
+     * @param accessPoint
+     * @param change
+     */
+    private void deleteAccessPointPublichAndReindex(final ApState apState, ApAccessPoint accessPoint, final ApChange change) {
+        deleteAccessPoint(apState, accessPoint, change);
+
+        accessPoint = saveWithLock(accessPoint);
         publishAccessPointDeleteEvent(accessPoint);
         reindexDescItem(accessPoint);
     }
@@ -939,7 +948,7 @@ public class AccessPointService {
         }
 
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
-        ApState apState = createAccessPoint(scope, type, EntityRecordStateXml.ERS_NEW, apChange, null);
+        ApState apState = createAccessPoint(scope, type, StateApproval.NEW, apChange, null);
         ApAccessPoint accessPoint = apState.getAccessPoint();
 
         ApPart apPart = partService.createPart(partType, accessPoint, apChange, null);
@@ -1532,7 +1541,7 @@ public class AccessPointService {
      * @param change změna
      * @return přístupový bod
      */
-    public ApState createAccessPoint(final ApScope scope, final ApType type, final EntityRecordStateXml state,
+    public ApState createAccessPoint(final ApScope scope, final ApType type, final StateApproval state,
                                      final ApChange change,
                                      String uuid) {
         ApAccessPoint accessPoint = new ApAccessPoint();
@@ -1545,21 +1554,12 @@ public class AccessPointService {
         return createAccessPointState(accessPoint, scope, type, state, change);
     }
 
-    public ApState createAccessPointState(ApAccessPoint ap, ApScope scope, ApType type, EntityRecordStateXml state, ApChange change) {
+    public ApState createAccessPointState(ApAccessPoint ap, ApScope scope, ApType type, StateApproval state, ApChange change) {
         ApState apState = new ApState();
         apState.setAccessPoint(ap);
         apState.setScope(scope);
         apState.setApType(type);
-        switch (state) {
-        case ERS_APPROVED:
-            apState.setStateApproval(StateApproval.APPROVED);
-            break;
-        case ERS_NEW:
-        default:
-            apState.setStateApproval(StateApproval.NEW);
-            break;
-        }
-        // apState.setComment(comment);
+        apState.setStateApproval(state);
         apState.setCreateChange(change);
         apState.setDeleteChange(null);
         return stateRepository.save(apState);

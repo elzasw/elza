@@ -25,6 +25,11 @@ public class ValueWithTitleFormatter implements FormatAction {
      */
     private boolean titleLowerCase = true;
 
+    /**
+     * Optional other title which can overried default item type title
+     */
+	private String otherTitle;
+
     public ValueWithTitleFormatter(String itemType) {
         this(itemType, null);
     }
@@ -79,7 +84,7 @@ public class ValueWithTitleFormatter implements FormatAction {
         // Append title
         if (firstItem) {
             // get name
-            String name = item.getType().getName();
+            String name = otherTitle!=null?otherTitle:item.getType().getName();
 
             // convert name
             if (titleLowerCase) {
@@ -111,4 +116,8 @@ public class ValueWithTitleFormatter implements FormatAction {
         
         return true;
     }
+
+	public void setOtherTitle(final String title) {
+		this.otherTitle = title;		
+	}
 }
