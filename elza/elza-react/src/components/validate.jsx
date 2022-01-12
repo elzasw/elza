@@ -37,6 +37,35 @@ export function validateDuration(duration) {
 }
 
 /**
+ * Validace jednoho bodu X Y
+ * 
+ * Vstupem je hodnota bez závorek s možnými mezerami před a za
+ * @param point 
+ */
+function validateSinglePoint(point) {
+  if(typeof point !== 'string' && ! (point instanceof String) ) {
+      return false;
+  }
+  while(point.startsWith(' ')) {
+      point = point.substring(1);
+  }
+  while(point.endsWith(' ')) {
+    point = point.substring(0, point.length-1);
+  }
+  let coords = point.split(' ');
+  if(coords.length!==2)  {
+      return false;
+  }
+  if(isNaN(Number(coords[0]))) {
+      return false;
+  }
+  if(isNaN(Number(coords[1]))) {
+    return false;
+  }
+  return true;
+}
+
+/**
  * Validace souřadnice typu bod.
  * @param value
  */
@@ -47,16 +76,8 @@ export function validateCoordinatePoint(value) {
         if (right - left === 0) {
             return i18n('subNodeForm.validate.value.notEmpty');
         }
-        let data = value.substr(left, value.indexOf(')') - left).split(' ');
-        if (
-            value === '' ||
-            value === ' ' ||
-            data.length !== 2 ||
-            data[0] == null ||
-            data[0] === '' ||
-            data[1] == null ||
-            data[1] === ''
-        ) {
+        let data = value.substr(left, value.indexOf(')') - left);
+        if(!validateSinglePoint(data)) {
             return i18n('subNodeForm.errorPointCoordinates');
         } else {
             return null;
@@ -67,16 +88,21 @@ export function validateCoordinatePoint(value) {
         if (right - left === 0) {
             return i18n('subNodeForm.validate.value.notEmpty');
         }
-        let data = value.substr(left, value.indexOf(')') - left).split(' ');
+        let data = value.substr(left, right - left).split(',');
         if (
             value === '' ||
             value === ' ' ||
-            data.length % 2 !== 0
+            data.length == 0
         ) {
             return i18n('subNodeForm.errorPointCoordinates');
-        } else {
-            return null;
         }
+        // Kontrola, zda jsou vzdy uvedeny dve souradnice [x y]
+        for(var i = 0; i<data.length; i++) {
+            if(!validateSinglePoint(data[i])) {
+                return i18n('subNodeForm.errorPointCoordinates');
+            }
+        }
+        return null;
     }
     return i18n('subNodeForm.errorPointCoordinates');
 }
