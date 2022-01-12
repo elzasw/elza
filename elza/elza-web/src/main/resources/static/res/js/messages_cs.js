@@ -69,7 +69,7 @@ var messages = {
     "autocomplete.list.favoriteItems": "Oblíbené",
 
     "dataType.coordinates.format":
-        '<div>Použijte <b>Načtení souřadnic ze souboru</b> ve formátu<br />KML, GML nebo WKT<br />Zkopírujte souřadnice z portálu <b>Mapy.cz</b> ve tvaru dle systému WGS84<br /><i>příklad: 49.5765442N, 14.3965617E</i><br />Vložte <b>text ve značkovacím jazyku WKT</b><br /><i>příklady: POINT (14.3965617 49.5765442)</i><br /><i>POLYGON ((8.714264091262805 49.41101795501453, 8.71389931083678 49.41033386288761,<br />8.71476566434859 49.40938274957471, 8.716192599544513 49.41023089921664<br />8.714264091262805 49.41101795501453))</i></div>',
+        '<div><b>Načtení souřadnic ze souboru</b> ve formátu<br />KML, GML nebo WKT<br /><b>Systém WGS84</b> (např. Mapy.cz)<br /><i>příklad: 49.5765442N, 14.3965617E</i><br /><b>Značkovací jazyk WKT</b><br /><i>příklady: POINT (14.3965617 49.5765442)</i><br /><i>LINESTRING(14.3965528 49.5765909,14.4172300 49.5551484)</i><br /><i>POLYGON ((14.3828494 49.5976066,14.3829031 49.5971094,<br />14.3842817 49.5971546,14.3842281 49.5976379,<br />14.3828494 49.5976066))</i></div>',
     "dataType.decimal.format": null,
     "dataType.fileRef.format": null,
     "dataType.int.format": null,
