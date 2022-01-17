@@ -66,41 +66,83 @@ function validateSinglePoint(point) {
 }
 
 /**
+ * Validate list of points
+ * 
+ * Example: 10 15, 11 15
+ * @param points 
+ */
+function validateListOfPoints(points) {
+    if(typeof points !== 'string' && ! (points instanceof String) ) {
+        return false;
+    }
+
+    let data = points.split(',');
+    if (data.length == 0) {
+        return false;
+    }
+
+    // Kontrola, zda jsou vzdy uvedeny dve souradnice [x y]
+    for(var i = 0; i<data.length; i++) {
+        if(!validateSinglePoint(data[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
  * Validace souřadnice typu bod.
  * @param value
  */
 export function validateCoordinatePoint(value) {
     if (value.indexOf('POINT') === 0) {
-        let left = value.indexOf('(') + 1;
+        let left = value.indexOf('(');
         let right = value.indexOf(')');
-        if (right - left === 0) {
+        if (left<0 || left > right) {
             return i18n('subNodeForm.validate.value.notEmpty');
         }
-        let data = value.substr(left, value.indexOf(')') - left);
+        let data = value.substring(left + 1, right);
         if(!validateSinglePoint(data)) {
             return i18n('subNodeForm.errorPointCoordinates');
         } else {
             return null;
         }
-    } else if (value.indexOf('POLYGON') || value.indexOf('LINESTRING')) {
-        let left = value.indexOf('(') + 1;
+    } else if (value.indexOf('LINESTRING') === 0) {
+        let left = value.indexOf('(');
         let right = value.indexOf(')');
-        if (right - left === 0) {
+        if (left<0 || left > right) {
             return i18n('subNodeForm.validate.value.notEmpty');
         }
-        let data = value.substr(left, right - left).split(',');
-        if (
-            value === '' ||
-            value === ' ' ||
-            data.length == 0
-        ) {
+        let data = value.substring(left + 1, right);
+        if (!validateListOfPoints(data)) {
             return i18n('subNodeForm.errorPointCoordinates');
         }
-        // Kontrola, zda jsou vzdy uvedeny dve souradnice [x y]
-        for(var i = 0; i<data.length; i++) {
-            if(!validateSinglePoint(data[i])) {
+        return null;
+    } else if(value.indexOf('POLYGON') === 0) {
+        let left = value.indexOf('(');
+        let right = value.lastIndexOf(')');
+        if (left<0 || left > right) {
+            return i18n('subNodeForm.validate.value.notEmpty');
+        }
+        let data = value.substring(left + 1, right);
+        // check lines
+        left = data.indexOf('(');
+        let count = 0;
+        while(left>=0) {
+            right = data.indexOf(')');
+            if(right<left) {
+                return i18n('subNodeForm.validate.value.notEmpty');
+            }
+            let points = data.substring(left + 1, right);
+            if (!validateListOfPoints(points)) {
                 return i18n('subNodeForm.errorPointCoordinates');
             }
+            data = data.substring(right+1);
+            left = data.indexOf('(');
+            count++;
+        }
+        if(count==0) {
+            return i18n('subNodeForm.validate.value.notEmpty');
         }
         return null;
     }
