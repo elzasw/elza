@@ -790,7 +790,7 @@ public class ArrangementService {
      * @param level        uzel, na který nastavíme hodnoty ze staršího bratra
      * @return vytvořené hodnoty
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrDescItem> copyOlderSiblingAttribute(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                                        final RulItemType descItemType,
                                                        final ArrLevel level,
@@ -819,6 +819,10 @@ public class ArrangementService {
         List<ArrDescItem> nodeDescItems = descItemRepository.findOpenByNodeAndTypes(level.getNode(), typeSet);
         if (CollectionUtils.isNotEmpty(nodeDescItems)) {
             for (ArrDescItem descItem : nodeDescItems) {
+                if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
+                    throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+                }
+            	
                 descriptionItemService.deleteDescriptionItem(descItem, version,
                         change, false, changeContext);
             }
