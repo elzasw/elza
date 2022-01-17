@@ -17,6 +17,8 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
 
     private String userInfo;
 
+	private Boolean publishOnlyApproved;
+
     public ApExternalSystemType getType() {
         return type;
     }
@@ -32,6 +34,14 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
     public void setScope(Integer scopeId) {
         this.scopeId = scopeId;
     }
+    
+    public Boolean getPublishOnlyApproved() {
+		return publishOnlyApproved;
+	}
+    
+	private void setPublishOnlyApproved(final Boolean publishOnlyApproved) {
+		this.publishOnlyApproved = publishOnlyApproved;		
+	}    
 
     public String getUserInfo() {
         return userInfo;
@@ -47,6 +57,7 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         entity.setType(type);
         entity.setScope(scope);
         entity.setUserInfo(userInfo);
+        entity.setPublishOnlyApproved(publishOnlyApproved);
         this.fillEntity(entity);
         return entity;
     }
@@ -67,6 +78,7 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         vo.setUsername(src.getUsername());
         vo.setApiKeyId(src.getApiKeyId());
         vo.setApiKeyValue(src.getApiKeyValue());
+        vo.setPublishOnlyApproved(src.getPublishOnlyApproved());
         vo.setUserInfo(src.getUserInfo());
         return vo;
     }
