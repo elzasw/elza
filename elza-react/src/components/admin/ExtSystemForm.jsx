@@ -31,8 +31,8 @@ const AP_EXT_SYSTEM_LABEL = {
 };
 
 const FIELDS = {
-    abstractExtSystem: [JAVA_ATTR_CLASS, 'id', 'code', 'name', 'url', 'username', 'password', 'apiKeyId', 'apiKeyValue', 'elzaCode', 'userInfo'],
-    [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type'],
+    abstractExtSystem: [JAVA_ATTR_CLASS, 'id', 'code', 'name', 'url', 'username', 'password', 'elzaCode'],
+    [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue', 'publishOnlyApproved', 'userInfo'],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['viewDaoUrl', 'viewFileUrl', 'viewThumbnailUrl', 'sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
 };
@@ -213,6 +213,16 @@ class ExtSystemForm extends AbstractReactComponent {
                             />
                         </>
                     )}
+                    {classJ !== EXT_SYSTEM_CLASS.ApExternalSystem && (
+                        <Field
+                            name="elzaCode"
+                            type="text"
+                            component={FormInputField}
+                            label={i18n('admin.extSystem.elzaCode')}
+                        />
+                    )}
+                    {classJ === EXT_SYSTEM_CLASS.ApExternalSystem && (
+                        <>
                     <Field
                         name="apiKeyId"
                         type="text"
@@ -225,16 +235,7 @@ class ExtSystemForm extends AbstractReactComponent {
                         component={FormInputField}
                         label={i18n('admin.extSystem.apiKeyValue')}
                     />
-                    {classJ !== EXT_SYSTEM_CLASS.ApExternalSystem && (
-                        <Field
-                            name="elzaCode"
-                            type="text"
-                            component={FormInputField}
-                            label={i18n('admin.extSystem.elzaCode')}
-                        />
-                    )}
-                    <div
-                        title={i18n('admin.extSystem.userInfo.title')}>
+                    <div title={i18n('admin.extSystem.userInfo.title')}>
                         <Field
                             name="userInfo" 
                             type="text" 
@@ -242,6 +243,22 @@ class ExtSystemForm extends AbstractReactComponent {
                             label={i18n('admin.extSystem.userInfo')}
                         />
                     </div>
+                    <Field
+                            name="publishOnlyApproved"
+                            type="select"
+                            component={FormInputField}
+                            label={i18n('admin.extSystem.publishOnlyApproved')}
+                        >
+                            <option key={null} />
+                            <option key="true" value={true}>
+                                {i18n('admin.extSystem.publishOnlyApproved.true')}
+                            </option>
+                            <option key="false" value={false}>
+                                {i18n('admin.extSystem.publishOnlyApproved.false')}
+                            </option>
+                    </Field>
+                    </>
+                    )}
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>

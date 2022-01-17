@@ -132,6 +132,12 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                         {this.renderValue(extSystem, 'apiKeyValue')}
                         {this.renderValue(extSystem, 'elzaCode')}
                         {this.renderValue(extSystem, 'userInfo')}
+                        {extSystem.publishOnlyApproved != null && (
+                            <>
+                            <h4>{i18n('admin.extSystem.publishOnlyApproved')}</h4>
+                            <span>{extSystem.publishOnlyApproved?i18n('admin.extSystem.publishOnlyApproved.true'):i18n('admin.extSystem.publishOnlyApproved.false')}</span>
+                            </>
+                        )}
                     </div>
                 </div>
             );
