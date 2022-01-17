@@ -251,7 +251,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         // kontrola zákazu změn
         if (!forceUpdate) {
-            if (descItem.getReadOnly()) {
+            if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
                 throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
             }
         }
@@ -328,7 +328,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         for (ArrDescItem descItem : descItems) {
             // kontrola zákazu změn
             if (!forceUpdate) {
-                if (descItem.getReadOnly()) {
+                if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
                     throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
                 }
             }
@@ -338,60 +338,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         }
 
         changeContext.flush();
-        return node;
-    }
-
-    /**
-     * Smaže hodnoty atributu podle typu.
-     * - s kontrolou verze uzlu
-     * - se spuštěním validace uzlu
-     *
-     * @param fundVersionId  identifikátor verze archivní pomůcky
-     * @param nodeId         identifikátor uzlu
-     * @param nodeVersion    verze uzlu (optimistické zámky)
-     * @param descItemTypeId identifikátor typu hodnoty atributu
-     * @return upravený uzel
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
-    public ArrNode deleteDescriptionItemsByTypeWithoutVersion(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
-                                                              @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
-                                                              final Integer nodeVersion,
-                                                              final Integer descItemTypeId) {
-
-        Assert.notNull(descItemTypeId, "Nebyl vyplněn typ hodnoty atributu");
-        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-        Assert.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-
-        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
-        ArrNode node = arrangementService.getNode(nodeId);
-
-        if (!node.getFundId().equals(fundVersion.getFundId())) {
-            throw new BusinessException("Verze JP neodpovídá dané verzi AS", BaseCode.INVALID_STATE);
-        }
-
-        StaticDataProvider sdp = staticDataService.getData();
-        ItemType descItemType = sdp.getItemTypeById(descItemTypeId);
-        Validate.notNull(descItemType, "Typ hodnoty atributu neexistuje");
-
-        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_DESC_ITEM, node);
-
-        List<ArrDescItem> descItems = descItemRepository.findOpenDescItemsByItemType(descItemType.getEntity(), node);
-
-        if (descItems.size() == 0) {
-            throw new SystemException("Nebyla nalezena žádná hodnota atributu ke smazání");
-        }
-
-        MultiplItemChangeContext changeContext = createChangeContext(fundVersionId);
-
-        for (ArrDescItem descItem : descItems) {
-            deleteDescriptionItem(descItem, fundVersion, change, false, changeContext);
-
-            changeContext.flushIfNeeded();
-        }
-
-        changeContext.flush();
-
         return node;
     }
 
@@ -814,6 +760,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * Smaže hodnotu atributu.
      *
      *
+     * Interní metoda, již nekontroluje oprávnění.
+     * 
      * @param descItem
      *            hodnota atributu
      * @param version
@@ -912,8 +860,12 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                         "Některý z prvků popisu pro vymazání nebyl nalezen, %s", itemObjectIds);
 
         List<ArrDescItem> results = new ArrayList<>();
-        for (ArrDescItem deleteDescItem : deleteDescItems) {
-            ArrDescItem deletedItem = deleteDescriptionItem(deleteDescItem, fundVersion, change, moveAfter,
+        for (ArrDescItem descItem : deleteDescItems) {
+            if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
+                throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+            }
+        	
+            ArrDescItem deletedItem = deleteDescriptionItem(descItem, fundVersion, change, moveAfter,
                                                             changeContext);
 
             results.add(deletedItem);
@@ -1682,6 +1634,10 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
         for (ArrDescItem descItem : descItems) {
+            if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
+                throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+            }
+        	
             deleteDescriptionItem(descItem, version, change, false, changeContext);
             changeContext.flushIfNeeded();
         }
@@ -2107,6 +2063,10 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
 
             for (ArrDescItem descItem : descItems) {
+                if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
+                    throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
+                }
+            	
                 deleteDescriptionItem(descItem, version, change, false, changeContext);
             }
 

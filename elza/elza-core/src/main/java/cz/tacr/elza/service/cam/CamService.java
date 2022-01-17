@@ -1021,22 +1021,29 @@ public class CamService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.AP_EXTERNAL_WR})
-    public void createExtSyncsQueueItem(Integer accessPointId, String externalSystemCode) {        
+    public void createExtSyncsQueueItem(Integer accessPointId, String externalSystemCode) {
+    	ApExternalSystem extSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         // check AP state
         ApState apState = accessPointService.getApState(accessPointId);
         switch(apState.getStateApproval()) {
         case APPROVED:
+        	break;
         case NEW:
         case TO_AMEND:
-        	break;
+        	// Kontrola pripustnosti stavu
+        	if(extSystem.getPublishOnlyApproved()==null||
+        		!extSystem.getPublishOnlyApproved()) {
+        		// pokud neni omezeni definovano nebo neni nastaveno 
+        		//  -> lze publikovat
+        		break;
+        	}
         default:
         	throw new BusinessException("Entita v tomto stavu nemůže být předána do externího systému.", BaseCode.INVALID_STATE)
                 .set("accessPointId", apState.getAccessPointId())
                 .set("state", apState.getStateApproval());
         }
 
-        ApAccessPoint accessPoint = apState.getAccessPoint();
-        ApExternalSystem extSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
+        ApAccessPoint accessPoint = apState.getAccessPoint();        
 
         // check ext_sync_queue
         if (extSyncsQueueItemRepository.countByAccesPointAndExternalSystemAndState(accessPoint, extSystem, ExtSyncsQueueItem.ExtAsyncQueueState.EXPORT_NEW) != 0) {

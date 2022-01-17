@@ -1648,4 +1648,10 @@ where no.level_id = l.level_id
           having count(i.item_id)=0)       
        </sql>
     </changeSet>
+    
+    <changeSet id="20220115003800" author="ppyt">
+        <addColumn tableName="ap_external_system">
+            <column name="publish_only_approved" type="boolean"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>
