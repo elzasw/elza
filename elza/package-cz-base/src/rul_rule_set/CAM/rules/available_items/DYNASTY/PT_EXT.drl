@@ -10,7 +10,7 @@ import cz.tacr.elza.drools.model.PartType;
 
 rule "R_EXT_002 Použití způsobu zániku"
 when $it: ItemType(code == "EXT_CLASS")
-     $is : ItemSpec(code in ("EXC_ENDSCOPE","EXC_LASTMDEATH")) from $it.specs
+     $is : ItemSpec(code in ("EXC_ENDSCOPE","EXC_LASTMDEATH","EXC_EXTINCTION")) from $it.specs
 then
     $is.setPossible();
 end
