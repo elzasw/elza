@@ -1455,13 +1455,14 @@ public class RuleService {
             String country = findEntityCountry(ap);
             if (parentGeoId != null) {
                 String parentGeoType = findEntityGeoType(parentGeoId);
+                boolean parentExtinct = isParentExtinct(parentGeoId);                
                 if (country == null) {
                     country = findEntityCountry(parentGeoId);
                 }
-                return new GeoModel(parentGeoType, country);
+                return new GeoModel(parentGeoType, country, parentExtinct);
             }
             if (country != null) {
-                return new GeoModel(null, country);
+                return new GeoModel(null, country, false);
             }
         }
         return null;
@@ -1495,6 +1496,14 @@ public class RuleService {
             return recordRef.getRecordId();
         }
         return null;
+    }
+
+    // TODO: use cache
+    private boolean isParentExtinct(Integer recordId) {
+    	ApAccessPoint ap = this.accessPointService.getAccessPointInternal(recordId);
+        List<ApPart> parts = partService.findPartsByAccessPoint(ap);
+        ApPart ptExt = partService.findFirstPartByCode(PartType.PT_EXT.toString(), parts);
+        return ptExt!=null;
     }
 
     @Nullable
