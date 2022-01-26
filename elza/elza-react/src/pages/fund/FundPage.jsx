@@ -339,7 +339,7 @@ class FundPage extends AbstractReactComponent {
                 );
                 itemActions.push(
                     <Button key="fa-deletehistory" onClick={this.handleDeleteFundHistory}>
-                        <Icon glyph="fa-trash" />
+                        <Icon glyph="fa-times-circle-o" />
                         <div>
                             <span className="btnText">{i18n('arr.fund.action.deletehistory')}</span>
                         </div>
