@@ -255,7 +255,7 @@ public class RuleService {
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
-    public synchronized ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId, final Long asyncRequestId) {
+    public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId, final Long asyncRequestId) {
         return setConformityInfo(faLevelId, fundVersionId);
     }
 
@@ -334,7 +334,7 @@ public class RuleService {
      * @param validationResults seznam validačních chyb
      */
     // Only one thread can update data in the nodeConformity tables
-    synchronized private ArrNodeConformityExt updateNodeConformityInfo(final ArrLevel level,
+    private ArrNodeConformityExt updateNodeConformityInfo(final ArrLevel level,
                                                           final ArrFundVersion version,
                                                           final List<DataValidationResult> validationResults) {
 
@@ -604,12 +604,11 @@ public class RuleService {
 
 
         if (!deleteNodes.isEmpty()) {
-            synchronized(this) {
-                List<ArrNodeConformity> deleteInfos = nodeConformityInfoRepository
+            List<ArrNodeConformity> deleteInfos = nodeConformityInfoRepository
                         .findByNodesAndFundVersion(deleteNodes, version);
 
-                deleteConformityInfo(deleteInfos);
-            }
+            deleteConformityInfo(deleteInfos);
+            
             asyncRequestService.enqueue(version, deleteNodes.stream().collect(Collectors.toList()), validationPriority);
         }
     }
@@ -617,7 +616,6 @@ public class RuleService {
     /**
      * Smaže všechny vybrané stavy.
      *
-     * This method can be called only within synchronized block !!!
      * 
      * @param infos stavy ke smazání
      */
@@ -636,6 +634,10 @@ public class RuleService {
             }
 
             nodeConformityInfoRepository.deleteAll(infos);
+            
+            // Vymazane stavy je nutne propagovat do DB - pred zapisem novych pozadavku
+            // jinak hrozi konflikt s validacnim vlaknem
+            nodeConformityInfoRepository.flush();
         }
     }
 
