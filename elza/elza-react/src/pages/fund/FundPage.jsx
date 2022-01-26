@@ -305,13 +305,13 @@ class FundPage extends AbstractReactComponent {
                         </div>
                     </Button>,
                     <Button key="rule-set-version" onClick={this.handleRuleSetUpdateFundVersion}>
-                        <Icon glyph="fa-code-fork" />
+                        <Icon glyph="fa-calendar-check-o" />
                         <div>
                             <span className="btnText">{i18n('ribbon.action.arr.fund.ruleSet')}</span>
                         </div>
                     </Button>,
                     <Button key="approve-version" onClick={this.handleApproveFundVersion}>
-                        <Icon glyph="fa-calendar-check-o" />
+                        <Icon glyph="fa-code-fork" />
                         <div>
                             <span className="btnText">{i18n('ribbon.action.arr.fund.approve')}</span>
                         </div>

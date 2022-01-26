@@ -402,7 +402,7 @@ class RegistryPage extends AbstractReactComponent {
         if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL) || userDetail.hasOne(perms.AP_SCOPE_WR)) {
             altActions.push(
                 <Button key="registryImport" onClick={this.handleRegistryImport}>
-                    <Icon glyph="fa-download" />
+                    <Icon glyph="fa-file" />
                     <div>
                         <span className="btnText">{i18n('ribbon.action.registry.import')}</span>
                     </div>
@@ -412,7 +412,7 @@ class RegistryPage extends AbstractReactComponent {
             if (extSystems && extSystems.length > 0) {
                 altActions.push(
                     <Button key="ap-ext-search" onClick={this.handleApExtSearch}>
-                        <Icon glyph="fa-download" />
+                        <Icon glyph="fa-cloud-download" />
                         <div>
                             <span className="btnText">{i18n('ribbon.action.ap.ext-search')}</span>
                         </div>
@@ -474,7 +474,7 @@ class RegistryPage extends AbstractReactComponent {
             ) {
                 itemActions.push(
                     <Button key="deleteReplaceAccessPoint" onClick={() => this.handleDeleteAccessPoint(registryDetail)}>
-                        <Icon glyph="fa-trash" />
+                        <Icon glyph="fa-ban" />
                         <div>
                             <span className="btnText">{i18n('accesspoint.removeDuplicity')}</span>
                         </div>
@@ -525,7 +525,7 @@ class RegistryPage extends AbstractReactComponent {
             if (userDetail.hasOne(perms.AP_EXTERNAL_WR)) {
                 itemActions.push(
                     <Button key="push-ap-to-ext" onClick={this.handlePushApToExt}>
-                        <Icon glyph="fa-upload" />
+                        <Icon glyph="fa-cloud-upload" />
                         <div>
                             <span className="btnText">{i18n('ap.push-to-ext')}</span>
                         </div>
