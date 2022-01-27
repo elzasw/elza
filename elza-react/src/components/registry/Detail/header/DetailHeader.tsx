@@ -145,7 +145,8 @@ const DetailHeader: FC<Props> = ({
                 <div className="bindings" key="bindings">
                     {item.bindings.map(binding => {
                         const externalSystem = objectById(externalSystems, binding.externalSystemCode, 'code');
-                        const tooltip = ('id: '+binding.value)+(binding.extRevision?(', uuid: '+binding.extRevision):'');
+                        const tooltip = ('id: '+binding.value)+(binding.extRevision?(', uuid: '+binding.extRevision):'')
+                                      + (binding.extUser?(', '+i18n('ap.binding.user')+': '+binding.extUser):'');
                         return (
                             <div className="binding" key={'binding-' + binding.id}>
                                 <div className="info" title={tooltip}>
@@ -171,8 +172,7 @@ const DetailHeader: FC<Props> = ({
                                             </a>
                                             )
                                         </span>
-                                    )}
-                                    , {i18n('ap.binding.user')}: <span className="user">{binding.extUser}</span>
+                                    )}                                    
                                 </div>
                                 <div className="action">
                                     <SyncIcon syncState={binding.syncState || undefined}/>

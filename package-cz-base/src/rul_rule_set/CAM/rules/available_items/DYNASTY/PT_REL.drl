@@ -28,7 +28,7 @@ end
 rule "R_CRE_005 Použití vztahů u vzniku"
 when $part: Part(parent != null)
      $parent: Part(type == PartType.PT_CRE) from $part.parent
-     $parentItem: Item(type == "CRE_CLASS", spec == "CRC_FIRSTMBIRTH") from $parent.items
+     $parentItem: Item(type == "CRE_CLASS", spec in ("CRC_BEGINSCOPE","CRC_RISE")) from $parent.items
      $it: ItemType(code == "REL_ENTITY")
      $is : ItemSpec(code in ("RT_FIRSTKMEMBER")) from $it.specs
 then
@@ -38,9 +38,20 @@ end
 rule "R_CRE_005.2 Použití vztahů u vzniku"
 when $part: Part(parent != null)
      $parent: Part(type == PartType.PT_CRE) from $part.parent
-     $parentItem: Item(type == "CRE_CLASS", spec == "CRC_BEGINSCOPE") from $parent.items
+     $parentItem: Item(type == "CRE_CLASS", spec in ("CRC_BEGINSCOPE","CRC_RISE")) from $parent.items
      $it: ItemType(code == "REL_ENTITY")
      $is : ItemSpec(code in ("RT_DOCUMENT")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_CRE_005.3 Použití vztahů u vzniku"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_CRE) from $part.parent
+     $parentItem: Item(type == "CRE_CLASS", spec in ("CRC_RISE")) from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_ENTITYRISE")) from $it.specs
 then
     $is.setPossible();
     $is.setRepeatable(true);
@@ -49,7 +60,7 @@ end
 rule "R_EXT_005 Použití vztahů u zániku"
 when $part: Part(parent != null)
      $parent: Part(type == PartType.PT_EXT) from $part.parent
-     $parentItem: Item(type == "EXT_CLASS", spec == "EXC_LASTMDEATH") from $parent.items
+     $parentItem: Item(type == "EXT_CLASS", spec in("EXC_LASTMDEATH","EXC_EXTINCTION")) from $parent.items
      $it: ItemType(code == "REL_ENTITY")
      $is : ItemSpec(code in ("RT_LASTKMEMBER")) from $it.specs
 then
@@ -59,9 +70,20 @@ end
 rule "R_EXT_005.2 Použití vztahů u zániku"
 when $part: Part(parent != null)
      $parent: Part(type == PartType.PT_EXT) from $part.parent
-     $parentItem: Item(type == "EXT_CLASS", spec == "EXC_ENDSCOPE") from $parent.items
+     $parentItem: Item(type == "EXT_CLASS", spec in("EXC_ENDSCOPE","EXC_EXTINCTION")) from $parent.items
      $it: ItemType(code == "REL_ENTITY")
      $is : ItemSpec(code in ("RT_DOCUMENT")) from $it.specs
+then
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "R_EXT_005.3 Použití vztahů u zániku"
+when $part: Part(parent != null)
+     $parent: Part(type == PartType.PT_EXT) from $part.parent
+     $parentItem: Item(type == "EXT_CLASS", spec in("EXC_EXTINCTION")) from $parent.items
+     $it: ItemType(code == "REL_ENTITY")
+     $is : ItemSpec(code in ("RT_ENTITYEXTINCTION")) from $it.specs
 then
     $is.setPossible();
     $is.setRepeatable(true);

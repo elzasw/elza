@@ -165,11 +165,10 @@
         <use-specification>false</use-specification>
         <string-length-limit>50</string-length-limit>
     </item-type>
-    <item-type code="NM_SUP_DIFF" data-type="STRING">
+    <item-type code="NM_SUP_DIFF" data-type="INT">
         <name>Odlišující doplněk</name>
         <shortcut>Odlišující doplněk</shortcut>
         <use-specification>false</use-specification>
-        <string-length-limit>50</string-length-limit>
     </item-type>
     <item-type code="NM_ORDER" data-type="INT">
         <name>Pořadí události</name>

@@ -1654,4 +1654,33 @@ where no.level_id = l.level_id
             <column name="publish_only_approved" type="boolean"/>
         </addColumn>
     </changeSet>
+    <changeSet id="20220119233800" author="ppyt">
+      <sql dbms="postgresql">insert into arr_data_integer (data_id, value)
+          select ai.data_id as data_id, ai.data_id as value from rul_item_type rit
+          join ap_item ai on ai.item_type_id = rit.item_type_id
+          where rit.code = 'NM_SUP_DIFF'
+      </sql>
+      <sql dbms="postgresql">delete from arr_data_string where data_id in (
+         select ai.data_id as data_id from rul_item_type rit
+         join ap_item ai on ai.item_type_id = rit.item_type_id
+         where rit.code = 'NM_SUP_DIFF' )
+      </sql>
+      <sql dbms="postgresql">update arr_data set data_type_id = (select data_type_id from rul_data_type where code = 'INT')
+         where data_id in (
+           select ai.data_id as data_id from rul_item_type rit
+           join ap_item ai on ai.item_type_id = rit.item_type_id 
+           where rit.code = 'NM_SUP_DIFF'
+           )
+      </sql>
+      <sql dbms="postgresql">delete from ap_cached_access_point where access_point_id in 
+          (select distinct p.access_point_id from rul_item_type rit
+           join ap_item ai on ai.item_type_id = rit.item_type_id
+           join ap_part p on p.part_id = ai.part_id
+           where rit.code = 'NM_SUP_DIFF'
+           )
+      </sql>
+      <sql dbms="postgresql">update rul_item_type set data_type_id = (select data_type_id from rul_data_type where code = 'INT')
+          where code = 'NM_SUP_DIFF'
+      </sql>
+    </changeSet>
 </databaseChangeLog>

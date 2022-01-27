@@ -103,28 +103,28 @@ class AdminExtSystemPage extends AbstractReactComponent {
                 title={i18n('ribbon.action.admin.extSystem.add.title')}
                 variant={'default'}
             >
-                <Icon glyph="fa-download" />
+                <Icon glyph="fa-plus-circle" />
                 <div>
                     <span className="btnText">{i18n('ribbon.action.admin.extSystem.add')}</span>
                 </div>
             </Button>,
         );
         if (id && fetched) {
-            itemActions.push(
+            altActions.push(
                 <Button
                     key="edit-ext-system"
                     onClick={this.handleEditExtSystem}
                     title={i18n('ribbon.action.admin.extSystem.edit.title')}
                     variant={'default'}
                 >
-                    <Icon glyph="fa-download" />
+                    <Icon glyph="fa-pencil" />
                     <div>
                         <span className="btnText">{i18n('ribbon.action.admin.extSystem.edit')}</span>
                     </div>
                 </Button>,
             );
 
-            itemActions.push(
+            altActions.push(
                 <Button
                     key="delete-ext-system"
                     onClick={this.handleDeleteExtSystem}

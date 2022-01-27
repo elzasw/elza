@@ -4,6 +4,7 @@ import cz.tacr.elza.drools.model.ItemType;
 import cz.tacr.elza.drools.model.ItemSpec
 import cz.tacr.elza.drools.model.RequiredType;
 import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.item.IntItem;
 import cz.tacr.elza.drools.model.Ap;
 import cz.tacr.elza.drools.model.Part;
 import cz.tacr.elza.drools.model.PartType;
@@ -134,3 +135,27 @@ when $ae: Ap( $aeParts : parts)
 then 
     results.addError("U události neexistuje ani jeden z následujícího popisu: poznámka, datace, návazná entita.");
 end  
+
+rule "R_BDG_003 nadřízená entita nesmí být zaniklá"
+when $ae: Ap( $aeParts : parts)
+     $part: Part(type == PartType.PT_BODY) from $aeParts
+     $i: IntItem(type == "GEO_ADMIN_CLASS") from $part.items
+     $geo: GeoModel(extinct == true)
+then
+    results.addError("Pro administrativní zařazení je možné vybrat pouze nezaniklé entity.");
+end
+
+rule "R_BDG_003 nadřízená entita musí být daného typu"
+when $ae: Ap( $aeParts : parts)
+     $part: Part(type == PartType.PT_BODY) from $aeParts
+     $i: IntItem(type == "GEO_ADMIN_CLASS") from $part.items
+     $geo: GeoModel(parentGeoType not in ("GT_ADMREGION","GT_AREA","GT_AUTONOMOUSPART","GT_CANTON","GT_CONTINENT","GT_COUNTRY","GT_COUNTY","GT_DEPARTEMENT","GT_DISTRICT","GT_LAND","GT_MILITARYAREA","GT_MUNIP","GT_MUNIPDISTR","GT_MUNIPPART","GT_OKRUH","GT_PLANET","GT_PROVINCE","GT_REGION","GT_SHIRE","GT_TERRITORIALUNIT","GT_VOJVODSTVI"))
+then
+    results.addError("Pro administrativní zařazení je možné vybrat pouze entity s následujícím typem geografického objektu: GT_ADMREGION, GT_AREA, GT_AUTONOMOUSPART, GT_CANTON, GT_CONTINENT, GT_COUNTRY, GT_COUNTY, GT_DEPARTEMENT, GT_DISTRICT, GT_LAND, GT_MILITARYAREA, GT_MUNIP, GT_MUNIPDISTR, GT_MUNIPPART, GT_OKRUH, GT_PLANET, GT_PROVINCE, GT_REGION, GT_SHIRE, GT_TERRITORIALUNIT, GT_VOJVODSTVI.");
+end
+
+rule "R_NAM_004 Kontrola hodnoty odlišujícího doplňku na kladné celé číslo > 0"
+when $i: IntItem(value < 1, type in ("NM_SUP_DIFF"))
+then
+    results.addError("Hodnota odlišujícího doplňku musí být kladné celé číslo > 0.");
+end

@@ -255,7 +255,7 @@ public class RuleService {
 
     private static final Logger logger = LoggerFactory.getLogger(RuleService.class);
 
-    public synchronized ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId, final Long asyncRequestId) {
+    public ArrNodeConformityExt setConformityInfo(final Integer faLevelId, final Integer fundVersionId, final Long asyncRequestId) {
         return setConformityInfo(faLevelId, fundVersionId);
     }
 
@@ -334,7 +334,7 @@ public class RuleService {
      * @param validationResults seznam validačních chyb
      */
     // Only one thread can update data in the nodeConformity tables
-    synchronized private ArrNodeConformityExt updateNodeConformityInfo(final ArrLevel level,
+    private ArrNodeConformityExt updateNodeConformityInfo(final ArrLevel level,
                                                           final ArrFundVersion version,
                                                           final List<DataValidationResult> validationResults) {
 
@@ -604,12 +604,11 @@ public class RuleService {
 
 
         if (!deleteNodes.isEmpty()) {
-            synchronized(this) {
-                List<ArrNodeConformity> deleteInfos = nodeConformityInfoRepository
+            List<ArrNodeConformity> deleteInfos = nodeConformityInfoRepository
                         .findByNodesAndFundVersion(deleteNodes, version);
 
-                deleteConformityInfo(deleteInfos);
-            }
+            deleteConformityInfo(deleteInfos);
+            
             asyncRequestService.enqueue(version, deleteNodes.stream().collect(Collectors.toList()), validationPriority);
         }
     }
@@ -617,7 +616,6 @@ public class RuleService {
     /**
      * Smaže všechny vybrané stavy.
      *
-     * This method can be called only within synchronized block !!!
      * 
      * @param infos stavy ke smazání
      */
@@ -636,6 +634,10 @@ public class RuleService {
             }
 
             nodeConformityInfoRepository.deleteAll(infos);
+            
+            // Vymazane stavy je nutne propagovat do DB - pred zapisem novych pozadavku
+            // jinak hrozi konflikt s validacnim vlaknem
+            nodeConformityInfoRepository.flush();
         }
     }
 
@@ -1455,13 +1457,14 @@ public class RuleService {
             String country = findEntityCountry(ap);
             if (parentGeoId != null) {
                 String parentGeoType = findEntityGeoType(parentGeoId);
+                boolean parentExtinct = isParentExtinct(parentGeoId);                
                 if (country == null) {
                     country = findEntityCountry(parentGeoId);
                 }
-                return new GeoModel(parentGeoType, country);
+                return new GeoModel(parentGeoType, country, parentExtinct);
             }
             if (country != null) {
-                return new GeoModel(null, country);
+                return new GeoModel(null, country, false);
             }
         }
         return null;
@@ -1495,6 +1498,14 @@ public class RuleService {
             return recordRef.getRecordId();
         }
         return null;
+    }
+
+    // TODO: use cache
+    private boolean isParentExtinct(Integer recordId) {
+    	ApAccessPoint ap = this.accessPointService.getAccessPointInternal(recordId);
+        List<ApPart> parts = partService.findPartsByAccessPoint(ap);
+        ApPart ptExt = partService.findFirstPartByCode(PartType.PT_EXT.toString(), parts);
+        return ptExt!=null;
     }
 
     @Nullable
