@@ -970,7 +970,7 @@ public class DescItemFactory implements InitializingBean {
 	 *            source data object. Can be null
 	 * @return
 	 */
-	// TODO: copy data types based on itemTypem such code already somewhere exists
+	// TODO: copy data types based on itemType such code already somewhere exists
 	public ArrData saveDataAsNew(RulItemType itemType, ArrData srcData) {
 		if (srcData == null) {
 			return null;
@@ -1027,6 +1027,7 @@ public class DescItemFactory implements InitializingBean {
      */
     public ArrDescItem saveItemVersionWithData(final ArrDescItem descItem, final Boolean createNewVersion) {
         ArrData data = descItem.getData();
+        ArrData savedData;
 
         if (data != null) {
             if (data instanceof ArrDataJsonTable) {
@@ -1064,8 +1065,11 @@ public class DescItemFactory implements InitializingBean {
                 dataNew = descItem.getData();
             }
 
-            saveData(descItem.getItemType(), dataNew);
+            savedData = saveData(descItem.getItemType(), dataNew);
+        } else {
+        	savedData = null;
         }
+        descItem.setData(savedData);
 
         return descItemRepository.save(descItem);
     }
