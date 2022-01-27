@@ -44,4 +44,4 @@ static GroovyResult generate(final GroovyPart part) {
         result.setKeyValue("PT_IDENT", shortn);
     }
     return result
-}
+}    

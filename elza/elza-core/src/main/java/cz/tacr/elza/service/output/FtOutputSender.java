@@ -27,7 +27,7 @@ public class FtOutputSender implements OutputSender {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FtOutputSender.class); 
 	
-    @Value("${elza.findingAid.upload.url}")
+    @Value("${elza.findingAid.upload.url:null}")
     private String url;
 
     @Value("${elza.findingAid.upload.username:null}")
@@ -46,6 +46,12 @@ public class FtOutputSender implements OutputSender {
     
     @PostConstruct
     public void initializeClient() {
+    	if(url==null) {
+    		return;
+    	}
+    	
+    	logger.info("Initializing FileTranferOutputSender, url: {}", url);
+    	
     	ClientConfig clientConfig = new ClientConfig(url);
     	clientConfig.setRecoveryDelay(10);
     	if(username!=null) {
@@ -65,12 +71,23 @@ public class FtOutputSender implements OutputSender {
     
     @PreDestroy
     public void destroyClient() {
-    	ftClient.stop();
-    	ftClient = null;
+    	if(ftClient!=null) {
+    		logger.info("Stoping FileTranferOutputSender ...");
+    		
+    		ftClient.stop();
+    		
+    		logger.info("FileTranferOutputSender stopped.");
+    		
+    		ftClient = null;
+    	}
     }
 
     @Override
 	public void send(ArrOutput output) {
+    	if(ftClient==null) {
+    		logger.error("FileTranferOutputSender not initialized");
+			throw new SystemException("FileTranferOutputSender not initialized");    		
+    	}
 		// prepare data
     	List<ArrOutputFile> files = dmsService.findOutputFiles(output.getFundId(), output);
     	

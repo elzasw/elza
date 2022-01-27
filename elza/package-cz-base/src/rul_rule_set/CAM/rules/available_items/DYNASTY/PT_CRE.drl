@@ -9,7 +9,7 @@ import cz.tacr.elza.drools.model.PartType;
 
 rule "R_CRE_002 Použití způsobu vzniku"
 when $it: ItemType(code == "CRE_CLASS")
-     $is : ItemSpec(code in ("CRC_BEGINSCOPE","CRC_FIRSTMBIRTH")) from $it.specs
+     $is : ItemSpec(code in ("CRC_BEGINSCOPE","CRC_FIRSTMBIRTH","CRC_RISE")) from $it.specs
 then
     $is.setPossible();
 end
