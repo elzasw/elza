@@ -1354,7 +1354,10 @@ when $activeLevel: ActiveLevel( )
         // 4.7.1 Zpracovatel     
         "ZP2015_ARRANGER", 
         // 4.7.2 Pravidla zpracování jednotky popisu
-        "ZP2015_ARRANGE_RULES", "ZP2015_LANGUAGE") )
+        "ZP2015_ARRANGE_RULES", 
+        // ZP4.7.3 Datum (data) popisu 
+        "ZP2015_DESCRIPTION_DATE",
+        "ZP2015_LANGUAGE") )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
