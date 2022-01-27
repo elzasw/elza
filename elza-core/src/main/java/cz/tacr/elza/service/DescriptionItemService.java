@@ -63,7 +63,7 @@ import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.search.SearchIndexSupport;
 import cz.tacr.elza.service.ItemService.FundContext;
 import cz.tacr.elza.service.arrangement.BatchChangeContext;
-import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
+import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.arrangement.SingleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -269,7 +269,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         // uložení uzlu (kontrola optimistických zámků)
         saveNode(node, change);
 
-        MultiplItemChangeContext changeContext = createChangeContext(fundVersionId);
+        MultipleItemChangeContext changeContext = createChangeContext(fundVersionId);
 
         ArrDescItem descItemDeleted = deleteDescriptionItem(descItem, fundVersion, change, true, changeContext);
 
@@ -323,7 +323,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             throw new SystemException("Nebyla nalezena žádná hodnota atributu ke smazání");
         }
 
-        MultiplItemChangeContext changeContext = createChangeContext(fundVersionId);
+        MultipleItemChangeContext changeContext = createChangeContext(fundVersionId);
 
         for (ArrDescItem descItem : descItems) {
             // kontrola zákazu změn
@@ -519,7 +519,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     final ArrFundVersion version,
                                                     @Nullable final ArrChange createChange) {
 
-        MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
+        MultipleItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
 
         ArrChange change = createChange == null ? arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node) : createChange;
         List<ArrDescItem> createdItems = new ArrayList<>();
@@ -851,7 +851,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         Validate.notNull(fundVersion);
         Validate.notNull(change);
 
-        MultiplItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
+        MultipleItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
 
         List<Integer> itemObjectIds = descItemsToDelete.stream().map(ArrDescItem::getDescItemObjectId).collect(Collectors.toList());
         List<ArrDescItem> deleteDescItems = descItemRepository.findOpenDescItemsByIds(itemObjectIds);
@@ -1276,7 +1276,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     public List<ArrDescItem> updateDescriptionItems(final List<ArrDescItem> updateDescItems,
                                                     final ArrFundVersion fundVersion,
                                                     final ArrChange change) {
-        MultiplItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
+        MultipleItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
 
         List<ArrDescItem> results = new ArrayList<>();
         for (ArrDescItem updateDescItem : updateDescItems) {
@@ -1539,7 +1539,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
-            MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
+            MultipleItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
 
             for (ArrDescItem descItem: descItemsToReplaceText) {
                 // kontrola zákazu změn
@@ -1632,7 +1632,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
-        MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
+        MultipleItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
         for (ArrDescItem descItem : descItems) {
             if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
                 throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
@@ -1786,7 +1786,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
-        MultiplItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
+        MultipleItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
 
         for (ArrDescItem descItem : descItems) {
 			ArrDescItem updatedDescItem = updateItemValueAsNewVersion(fundVersion, change, descItem, setSpecification,
@@ -1869,7 +1869,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
-            MultiplItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
+            MultipleItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
             List<ArrStructuredObject> structuredObjects = structuredObjectRepository.findByIdAndFund(fundVersion.getFund(), replaceValueId);
             ArrStructuredObject structuredObject;
 
@@ -2060,7 +2060,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         if (!descItems.isEmpty()) {
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_DELETE_DESC_ITEM);
 
-            MultiplItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
+            MultipleItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
 
             for (ArrDescItem descItem : descItems) {
                 if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
@@ -2219,8 +2219,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         }
     }
 
-    public MultiplItemChangeContext createChangeContext(int fundVersionId) {
-        return new MultiplItemChangeContext(fundVersionId,
+    public MultipleItemChangeContext createChangeContext(int fundVersionId) {
+        return new MultipleItemChangeContext(fundVersionId,
                 descItemRepository, nodeCacheService, ruleService,
                 eventNotificationService);
     }

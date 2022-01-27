@@ -25,12 +25,12 @@ import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DescriptionItemServiceInternal;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.arrangement.BatchChangeContext;
-import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
+import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -39,7 +39,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 /**
  * Bulk action to generate test data
  *
- * @author Petr Pytelka
  *
  */
 public class TestDataGenerator extends BulkAction {
@@ -61,7 +60,7 @@ public class TestDataGenerator extends BulkAction {
     @PersistenceContext
     private EntityManager entityManager;
     @Autowired
-    private ArrangementService arrangementService;
+    private FundLevelService fundLevelService;
     @Autowired
     private IEventNotificationService eventNotificationService;
     @Autowired
@@ -158,7 +157,7 @@ public class TestDataGenerator extends BulkAction {
     private Collection<? extends ArrLevel> copyLevels(List<ArrLevel> childLevels, int startPos,
                                                       ArrLevel parentLevel) {
 
-        MultiplItemChangeContext createChange = this.descriptionItemService.createChangeContext(version
+        MultipleItemChangeContext createChange = this.descriptionItemService.createChangeContext(version
                 .getFundVersionId());
 
 		List<ArrLevel> result = new LinkedList<>();
@@ -167,7 +166,7 @@ public class TestDataGenerator extends BulkAction {
 		// Copy child nodes
 		for(ArrLevel srcLevel: childLevels)
 		{
-			ArrLevel newLevel = this.arrangementService.createLevel(getChange(), parentLevel.getNode(), pos,
+			ArrLevel newLevel = fundLevelService.createLevel(getChange(), parentLevel.getNode(), pos,
                                                                     null,
                                                                     version.getFund());
 

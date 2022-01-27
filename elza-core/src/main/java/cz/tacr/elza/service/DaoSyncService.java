@@ -74,7 +74,7 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
-import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
+import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.ws.WsClient;
 import cz.tacr.elza.ws.core.v1.WSHelper;
 import cz.tacr.elza.ws.types.v1.ChecksumType;
@@ -204,7 +204,7 @@ public class DaoSyncService {
 
         @Override
         public void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
-                            MultiplItemChangeContext changeContext) {
+                            MultipleItemChangeContext changeContext) {
             String filtredScenario = getFirstOrGivenScenario(items, scenario);
             // zadaný scenar nebyl nalezen
             if (scenario != null && filtredScenario == null) {
@@ -221,7 +221,7 @@ public class DaoSyncService {
         }
 
         public void remove(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
-                           MultiplItemChangeContext changeContext) {
+                           MultipleItemChangeContext changeContext) {
             String filtredScenario = getFirstOrGivenScenario(items, scenario);
             // zadaný scenar nebyl nalezen
             if (scenario != null && filtredScenario == null) {
@@ -331,7 +331,7 @@ public class DaoSyncService {
         
         Items items = unmarshalItemsFromAttributes(dao.getAttributes(), daoId);
 
-        MultiplItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
+        MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
         // odstraneni puvodnich zaznamu
         DaoDesctItemProvider daoDesctItemProviderOrig = new DaoDesctItemProvider(items, daoLink.getScenario());
         daoDesctItemProviderOrig.remove(level, change, fundVersion, changeContext);
