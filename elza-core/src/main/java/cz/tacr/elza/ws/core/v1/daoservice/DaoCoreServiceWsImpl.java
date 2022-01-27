@@ -65,7 +65,7 @@ import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
-import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
+import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.ws.types.v1.Dao;
@@ -393,7 +393,7 @@ public class DaoCoreServiceWsImpl {
 
             @Override
             public void provide(ArrLevel level, ArrChange change, ArrFundVersion fundVersion,
-                                MultiplItemChangeContext changeContext) {
+                                MultipleItemChangeContext changeContext) {
                 ArrDescItem descItem = new ArrDescItem();
                 ItemType itemType = sdp.getItemTypeByCode(lis.getDescItemType());
                 ArrData data = null;
@@ -432,8 +432,9 @@ public class DaoCoreServiceWsImpl {
                                                       AddLevelDirection.CHILD,
                                                       lis.getScenarioName(), Collections.emptySet(),
                                                       descProvider, null, null);
-        ArrChange change = levels.get(0).getCreateChange();
-        ArrNode parentNode = levels.get(0).getNode();
+        ArrLevel parentLevel = levels.get(0); 
+        ArrChange change = parentLevel.getCreateChange();        
+        ArrNode parentNode = parentLevel.getNode();
 
         List<ArrDaoLink> daoLinks = new ArrayList<>(levelDaos.size());
         // attach to the parent
@@ -449,17 +450,11 @@ public class DaoCoreServiceWsImpl {
                 // check if node and level exists
                 ArrNode node = arrangementInternalService.findNodeByUuid(uuid);
                 if(node!=null&&node.getFundId().equals(fundVersion.getFundId())) {
+                	linkNode = node;
                     // check if has active level                    
                     ArrLevel level = fundLevelService.findLevelByNode(node);
-                    if (level != null) {
-                        linkNode = node;
+                    if (level != null) {                        
                         linkNodeLevel = level;
-                    } else {
-                        // Node exists but level is missing
-                        // New level has to be created for the existing node
-                        logger.error("Unsupported scenario, node with given UUID already exists, uuid: {}", uuid);
-                        Validate.isTrue(false, "Unsupported scenario, node with given UUID already exists, uuid: "
-                                + uuid);
                     }
                 }
             }
@@ -467,12 +462,16 @@ public class DaoCoreServiceWsImpl {
             DaoDesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
             String scenario = descItemProvider.getScenario();
             if (linkNodeLevel == null) {
-            	List<String> uuids = (uuid!=null)?Collections.singletonList(uuid): null;
+            	if(linkNode==null) {
+            		List<String> uuids = (uuid!=null)?Collections.singletonList(uuid): null;
+                    levels = fundLevelService.addNewLevel(fundVersion, parentNode, parentNode,
+                            AddLevelDirection.CHILD, null, null,
+                            descItemProvider, null, uuids);
+                    linkNode = levels.get(0).getNode();
+            	} else {
+            		linkNodeLevel = fundLevelService.addNewLevelForNode(fundVersion, parentLevel, change, linkNode, descItemProvider);
+            	}
             	
-                levels = fundLevelService.addNewLevel(fundVersion, parentNode, parentNode,
-                                                      AddLevelDirection.CHILD, null, null,
-                                                      descItemProvider, null, uuids);
-                linkNode = levels.get(0).getNode();
             } else {
                 if (scenario != null) {
                     logger.debug("Connecting DAO to existing Node, daoCode: {}, nodeId: {}",
