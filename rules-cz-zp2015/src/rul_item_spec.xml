@@ -1656,6 +1656,30 @@
         <shortcut>odnětí / vrácení faleristického předmětu</shortcut>
         <item-type-assign code="ZP2015_DATE_OTHER"/>
     </item-spec>
+    <item-spec code="ZP2015_DATE_LEGALLY_EFFECTIVE_FROM">
+        <name>nabytí právní účinnosti</name>
+        <description>datace nabytí právní účinnosti</description>
+        <shortcut>nabytí právní účinnosti</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_VALID_FROM">
+        <name>nabytí právní platnosti</name>
+        <description>datace nabytí právní platnosti</description>
+        <shortcut>nabytí právní platnosti</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_LEGALLY_EFFECTIVE_TO">
+        <name>pozbytí právní účinnosti</name>
+        <description>datace pozbytí právní účinnosti</description>
+        <shortcut>pozbytí právní účinnosti</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
+    </item-spec>
+    <item-spec code="ZP2015_DATE_VALID_TO">
+        <name>pozbytí právní platnosti</name>
+        <description>datace pozbytí právní platnosti</description>
+        <shortcut>pozbytí právní platnosti</shortcut>
+        <item-type-assign code="ZP2015_DATE_OTHER"/>
+    </item-spec>
     <!-- Typ ukládací jednotky -->
     <item-spec code="ZP2015_PACKET_TYPE_SAMOST">
         <name>samostatně</name>
