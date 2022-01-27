@@ -101,7 +101,7 @@ public abstract class ArrItem implements NodeCacheSerializable, Item {
     @Column(name = "dataId", nullable = false, updatable = false, insertable = false)
     private Integer dataId;
 
-    @Column(name = FIELD_READ_ONLY, nullable = false, updatable = false, insertable = false)
+    @Column(name = FIELD_READ_ONLY, nullable = false)
     private Boolean readOnly = false;
 
 	/**
