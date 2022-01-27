@@ -197,7 +197,7 @@ public class WSHelper {
         Validate.notNull(itemType, "Item type not found: {}", type);
 
         trgItem.setItemType(itemType.getEntity());
-        trgItem.setReadOnly(readOnly);
+        trgItem.setReadOnly(readOnly==null?false:readOnly);
 
         if (itemType.hasSpecifications()) {
             Validate.notNull(spec, "Missing specification for item type: %s", type);

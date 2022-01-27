@@ -196,6 +196,8 @@
                 <type code="ZP2015_WRITING" width="2"/>
                 <!-- 5.2.11 Edice a literatura -->
                 <type code="ZP2015_EDITION" width="0"/>
+                <!-- 5.2.10 Prameny literatura -->
+                <type code="ZP2015_SOURCES" width="0"/>
                 <!-- 5.3-5.6 Role entit (specifikace + hodnota) -->
                 <type code="ZP2015_ENTITY_ROLE" width="0"/>
                 <!-- Matrika -->

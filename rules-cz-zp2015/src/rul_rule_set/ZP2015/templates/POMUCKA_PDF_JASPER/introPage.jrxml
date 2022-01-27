@@ -258,7 +258,7 @@
 		<band height="95" splitType="Prevent">
 			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{arrangerFormatter}.format($P{output}))||
 StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_DESCRIPTION_DATE" ))||
-StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_EDITION" ))||
+StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_SOURCES" ))||
 StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></printWhenExpression>
 			<textField textAdjust="StretchHeight" bookmarkLevel="1">
 				<reportElement style="Heading 1" positionType="Float" x="0" y="0" width="455" height="50" isPrintInFirstWholeBand="true" uuid="94323b71-a6d1-430e-ac07-24a7cae72910">
@@ -296,7 +296,7 @@ StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" 
 		</band>
 		<band height="38">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue("ZP2015_EDITION"))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue("ZP2015_SOURCES"))]]></printWhenExpression>
 			<textField textAdjust="StretchHeight">
 				<reportElement style="Heading 3" x="0" y="0" width="455" height="19" uuid="06108af3-8986-4fd5-8158-ac42a04476bb">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -313,7 +313,7 @@ StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" 
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<box bottomPadding="7"/>
-				<textFieldExpression><![CDATA[$P{formatter}.format($P{output}.getSingleItemValue( "ZP2015_EDITION" ))]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{formatter}.format($P{output}.getSingleItemValue( "ZP2015_SOURCES" ))]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="24">

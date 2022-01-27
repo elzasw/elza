@@ -5232,6 +5232,20 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
+rule "Možné jiné datace pro neevidované jednotlivosti a část jednotlivosti."
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_OTHER", "ZP2015_UNIT_TYPE_PART") ) from $ownItems
+    $itemType: RulItemTypeExt( code in ( "ZP2015_DATE_OTHER" ) )
+    $itemSpec: RulItemSpecExt( code in ( "ZP2015_DATE_LEGALLY_EFFECTIVE_FROM",
+                                         "ZP2015_DATE_VALID_FROM",
+                                         "ZP2015_DATE_LEGALLY_EFFECTIVE_TO",
+                                         "ZP2015_DATE_VALID_TO"
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
 
 rule "Možné role entit pro neevidované jednotlivosti a část jednotlivosti."
 no-loop
