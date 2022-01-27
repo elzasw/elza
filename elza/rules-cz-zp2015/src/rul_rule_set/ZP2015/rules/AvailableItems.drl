@@ -1430,16 +1430,6 @@ then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
-rule "Datace u starší pomůcky nemusí být zjištěna (sine dato)"
-salience 100
-no-loop
-when $activeLevel: ActiveLevel( )
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $activeLevel.descItems
-    $itemType : RulItemTypeExt(code in ("ZP2015_UNIT_DATE"))
-then
-    $itemType.setIndefinable(true);
-end
-
 rule "Zneplatněný záznam možný pro složky a jednotlivosti"
 no-loop
 when $activeLevel: ActiveLevel( )
