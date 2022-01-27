@@ -130,7 +130,7 @@ import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.repository.NodeRepositoryCustom.ArrDescItemInfo;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
-import cz.tacr.elza.service.arrangement.MultiplItemChangeContext;
+import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -148,14 +148,11 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 public class ArrangementService {
 
     private static final Pattern UUID_PATTERN = Pattern.compile("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}");
-
-    @Autowired
-    private FundRegisterScopeRepository faRegisterRepository;
-
-    //TODO smazat závislost až bude DescItemService
-    @Autowired
-    protected FundRegisterScopeRepository fundRegisterScopeRepository;
+    
     final private static Logger logger = LoggerFactory.getLogger(ArrangementService.class);
+
+    @Autowired
+    protected FundRegisterScopeRepository fundRegisterScopeRepository;    
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
     @Autowired
@@ -391,7 +388,7 @@ public class ArrangementService {
         Assert.notNull(fund, "AS musí být vyplněn");
 
         Map<Integer, ArrFundRegisterScope> dbIdentifiersMap = ElzaTools
-                .createEntityMap(faRegisterRepository.findByFund(fund), i -> i.getScope().getScopeId());
+                .createEntityMap(fundRegisterScopeRepository.findByFund(fund), i -> i.getScope().getScopeId());
         Set<ArrFundRegisterScope> removeScopes = new HashSet<>(dbIdentifiersMap.values());
 
         for (ApScope newScope : newApScopes) {
@@ -405,10 +402,10 @@ public class ArrangementService {
                 removeScopes.remove(oldScope);
             }
 
-            faRegisterRepository.save(oldScope);
+            fundRegisterScopeRepository.save(oldScope);
         }
 
-        faRegisterRepository.deleteAll(removeScopes);
+        fundRegisterScopeRepository.deleteAll(removeScopes);
     }
 
     /**
@@ -525,35 +522,6 @@ public class ArrangementService {
         return levelRepository.saveAndFlush(level);
     }
 
-    public ArrLevel createLevel(final ArrChange createChange,
-                                final ArrNode parentNode,
-                                final int position,
-                                final String uuid,
-                                final ArrFund fund) {
-        Assert.notNull(createChange, "Change nesmí být prázdná");
-
-        ArrLevel level = new ArrLevel();
-        level.setPosition(position);
-        level.setCreateChange(createChange);
-        level.setNodeParent(parentNode);
-        level.setNode(createNode(fund, uuid, createChange));
-        return levelRepository.saveAndFlush(level);
-    }
-
-    public ArrLevel createLevelSimple(final ArrChange createChange,
-                                      final ArrNode parentNode,
-                                      final int position,
-                                      final String uuid,
-                                      final ArrFund fund) {
-        Assert.notNull(createChange, "Change nesmí být prázdná");
-
-        ArrLevel level = new ArrLevel();
-        level.setPosition(position);
-        level.setCreateChange(createChange);
-        level.setNodeParent(parentNode);
-        level.setNode(createNodeSimple(fund, uuid, createChange));
-        return levelRepository.save(level);
-    }
 
     /**
      * Vytvoření jednoznačného identifikátoru požadavku.
@@ -812,7 +780,7 @@ public class ArrangementService {
         // Read source data
         List<ArrDescItem> siblingDescItems = descItemRepository.findOpenByNodeAndTypes(olderSibling.getNode(), typeSet);
 
-        MultiplItemChangeContext changeContext = descriptionItemService.createChangeContext(version.getFundVersionId());
+        MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(version.getFundVersionId());
 
         // Delete old values for these items
         // ? Can we use descriptionItemService.deleteDescriptionItemsByType
