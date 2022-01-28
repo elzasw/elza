@@ -9,7 +9,6 @@ import static java.util.stream.Collectors.toSet;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,6 @@ import java.util.Objects;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -28,12 +26,10 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import com.google.common.collect.Lists;
 
@@ -61,7 +57,6 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.exception.codes.PackageCode;
-import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DaoFileGroupRepository;
 import cz.tacr.elza.repository.DaoFileRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
@@ -72,7 +67,6 @@ import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.ws.WsClient;
@@ -135,9 +129,6 @@ public class DaoSyncService {
 
     @Autowired
     DescItemRepository descItemRepository;
-
-    @Autowired
-    private ChangeRepository changeRepository;
 
     // --- services ---
 
@@ -378,7 +369,7 @@ public class DaoSyncService {
                 DaosSyncRequest daosSyncRequest = createDaosSyncRequest(fundVersion, list, dids);
                 DaosSyncResponse daosSyncResponse = wsClient.syncDaos(daosSyncRequest, digitalRepository);
 
-                processDaosSyncResponse(fundVersion.getFund(), daosSyncResponse);
+                processDaosSyncResponse(fundVersion, daosSyncResponse);
             }
         }
     }
@@ -430,23 +421,23 @@ public class DaoSyncService {
     /**
      * Provede aktualizaci metadat.
      * 
-     * @param arrFund
-     *            fund
+     * @param fundVersion
+     *            open version
      *
      * @param daosSyncResponse
      *            response z WS {@code syncDaos}
      */
-    public void processDaosSyncResponse(ArrFund arrFund, DaosSyncResponse daosSyncResponse) {
-        deleteDaos(arrFund, daosSyncResponse.getNonExistDaos());
+    public void processDaosSyncResponse(ArrFundVersion fundVersion, DaosSyncResponse daosSyncResponse) {
+        deleteDaos(fundVersion, daosSyncResponse.getNonExistDaos());
         updateDaos(daosSyncResponse.getDaos());
     }
 
-    private void deleteDaos(ArrFund arrFund, NonexistingDaos nonexistingDaos) {
+    private void deleteDaos(ArrFundVersion fundVersion, NonexistingDaos nonexistingDaos) {
         if (nonexistingDaos != null) {
             List<String> daoCodes = nonexistingDaos.getDaoId();
             if (!daoCodes.isEmpty()) {
                 List<ArrDao> arrDaos = daoRepository.findByCodes(daoCodes);
-                daoService.deleteDaos(arrFund, arrDaos, false);
+                daoService.deleteDaos(fundVersion, arrDaos, false);
             }
         }
     }

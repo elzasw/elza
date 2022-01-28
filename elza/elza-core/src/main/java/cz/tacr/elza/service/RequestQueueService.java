@@ -103,9 +103,6 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     private ThreadPoolTaskExecutor taskExecutor;
 
     @Autowired
-    private FundVersionRepository fundVerRepos;
-
-    @Autowired
     private WsClient wsClient;
 
     @Autowired
@@ -526,11 +523,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
             request = HibernateUtils.unproxy(request);
 
             // get active version
-            ArrFundVersion openVersion = fundVerRepos.findByFundIdAndLockChangeIsNull(request.getFund().getFundId());
-            if (openVersion == null) {
-                throw new SystemException("Cannot find open version", BaseCode.DB_INTEGRITY_PROBLEM)
-                        .set("fundId", request.getFund().getFundId());
-            }
+            ArrFundVersion openVersion = arrangementInternalService.getOpenVersionByFund(request.getFund());
 
             sendNotification(openVersion, request, queueItem, EventType.REQUEST_ITEM_QUEUE_CHANGE);
 
@@ -552,7 +545,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
                 } else if (ArrDaoRequest.Type.SYNC == arrDaoRequest.getType()) {
                     DaosSyncRequest daosSyncRequest = deserializeData(queueItem.getData(), DaosSyncRequest.class);
                     DaosSyncResponse daosSyncResponse = wsClient.syncDaos(daosSyncRequest, arrDaoRequest.getDigitalRepository());
-                    daoSyncService.processDaosSyncResponse(arrDaoRequest.getFund(), daosSyncResponse);
+                    daoSyncService.processDaosSyncResponse(openVersion, daosSyncResponse);
                 } else {
                     throw new SystemException("Neplatný typ: " + arrDaoRequest.getType(), BaseCode.SYSTEM_ERROR);
                 }

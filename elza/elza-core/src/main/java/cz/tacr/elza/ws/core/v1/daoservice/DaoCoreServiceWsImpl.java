@@ -385,7 +385,7 @@ public class DaoCoreServiceWsImpl {
                                               Map<Integer, String> daoNodeUuidMap) {
         logger.debug("Prepare DAO levels, fundId: " + fund.getFundId());
         // prepare parent level
-        final ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fund.getFundId());
+        final ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fund.getFundId());
         final ArrNode rootNode = fundVersion.getRootNode();
         final StaticDataProvider sdp = staticDataService.getData();
 
@@ -433,92 +433,109 @@ public class DaoCoreServiceWsImpl {
                                                       lis.getScenarioName(), Collections.emptySet(),
                                                       descProvider, null, null);
         ArrLevel parentLevel = levels.get(0); 
-        ArrChange change = parentLevel.getCreateChange();        
-        ArrNode parentNode = parentLevel.getNode();
+        ArrChange change = parentLevel.getCreateChange();
 
         List<ArrDaoLink> daoLinks = new ArrayList<>(levelDaos.size());
         // attach to the parent
         for (ArrDao dao : levelDaos) {
-            logger.debug("Preparing DAO level, fundId: {}, daoId: {}", fund.getFundId().toString(), dao.getDaoId());
-
-            Validate.isTrue(dao.getDaoType() == DaoType.LEVEL);
-
-            ArrNode linkNode = null;
-            ArrLevel linkNodeLevel = null;
-            String uuid = daoNodeUuidMap.get(dao.getDaoId());
-            if(uuid!=null) {
-                // check if node and level exists
-                ArrNode node = arrangementInternalService.findNodeByUuid(uuid);
-                if(node!=null&&node.getFundId().equals(fundVersion.getFundId())) {
-                	linkNode = node;
-                    // check if has active level                    
-                    ArrLevel level = fundLevelService.findLevelByNode(node);
-                    if (level != null) {                        
-                        linkNodeLevel = level;
-                    }
-                }
-            }
-
-            DaoDesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
-            String scenario = descItemProvider.getScenario();
-            if (linkNodeLevel == null) {
-            	if(linkNode==null) {
-            		List<String> uuids = (uuid!=null)?Collections.singletonList(uuid): null;
-                    levels = fundLevelService.addNewLevel(fundVersion, parentNode, parentNode,
-                            AddLevelDirection.CHILD, null, null,
-                            descItemProvider, null, uuids);
-                    linkNode = levels.get(0).getNode();
-            	} else {
-            		linkNodeLevel = fundLevelService.addNewLevelForNode(fundVersion, parentLevel, change, linkNode, descItemProvider);
-            	}
-            	
-            } else {
-                if (scenario != null) {
-                    logger.debug("Connecting DAO to existing Node, daoCode: {}, nodeId: {}",
-                                 dao.getCode(), linkNode.getNodeId());
-                    // get current data
-                    RestoredNode rn = nodeCacheService.getNode(linkNode.getNodeId());
-                    List<ArrDescItem> descItems = rn.getDescItems();
-                    MatchedScenario ms = daoSyncService.matchScenario(descItemProvider.getItems(), descItems);
-                    if (ms == null) {
-                        logger.error("Failed to match scenario to current data, daoCode: {}, nodeId: {}",
-                                     dao.getCode(), linkNode.getNodeId());
-                        throw new ObjectNotFoundException("Digitalizát s ID=" + dao.getCode() +
-                                " nelze napojit na uzel nodeId = " + linkNode.getNodeId() +
-                                " z důvodu nenalezení vhodného scénáře.",
-                                DigitizationCode.DAO_NOT_FOUND).set("code", dao.getCode());
-                    }
-                    scenario = ms.getScenario();
-                    logger.debug("Found matching scenario: {}", scenario);
-                    List<ArrDescItem> readOnlyItems = ms.getReadOnlyItems();
-                    if(CollectionUtils.isNotEmpty(readOnlyItems)) {
-                        logger.debug("Changing selected items to readonly, nodeId: {}, items: {}",
-                                     linkNode.getNodeId(), readOnlyItems);
-
-                        List<ArrDescItem> updatedItems = new ArrayList<>(readOnlyItems.size());
-                        for(ArrDescItem src: readOnlyItems) {
-                            ArrDescItem di = new ArrDescItem(src);
-                            di.setReadOnly(true);
-                            updatedItems.add(di);
-                        }
-                        this.descriptionItemService.updateDescriptionItems(updatedItems, fundVersion, change);
-                    }
-                    List<ArrDescItem> missingItems = ms.getMissingItems();
-                    if (!CollectionUtils.isEmpty(missingItems)) {
-                        logger.debug("Adding items to , nodeId: {}, items: {}",
-                                     linkNode.getNodeId(), missingItems);
-                        this.descriptionItemService.createDescriptionItems(missingItems, linkNode, fundVersion, change);
-                    }
-                }
-            }
-
-            ArrDaoLink daoLink = daoService.createOrFindDaoLink(fundVersion, dao, linkNode, scenario);
+        	String uuid = daoNodeUuidMap.get(dao.getDaoId());
+        	
+        	ArrDaoLink daoLink = prepareDaoLevel(fundVersion, parentLevel, change, dao, uuid);
             daoLinks.add(daoLink);
         }
         return daoLinks;
     }
 
-    private List<ArrDao> createDaos(Daoset daoset, ArrDaoPackage arrDaoPackage) {
+    /**
+     * Prepare single DAO level
+     * @param fundVersion
+     * @param parentLevel
+     * @param change
+     * @param dao
+     * @param uuid
+     * @return
+     */
+    private ArrDaoLink prepareDaoLevel(ArrFundVersion fundVersion, ArrLevel parentLevel, 
+    								   ArrChange change, ArrDao dao, String uuid) {
+        logger.debug("Preparing DAO level, fundId: {}, daoId: {}", fundVersion.getFundId().toString(), dao.getDaoId());
+
+        Validate.isTrue(dao.getDaoType() == DaoType.LEVEL);
+        
+        ArrNode parentNode = parentLevel.getNode();
+
+        ArrNode linkNode = null;
+        ArrLevel linkNodeLevel = null;            
+        if(uuid!=null) {
+            // check if node and level exists
+            ArrNode node = arrangementInternalService.findNodeByUuid(uuid);
+            if(node!=null&&node.getFundId().equals(fundVersion.getFundId())) {
+            	linkNode = node;
+                // check if has active level                    
+                ArrLevel level = fundLevelService.findLevelByNode(node);
+                if (level != null) {                        
+                    linkNodeLevel = level;
+                }
+            }
+        }
+
+        DaoDesctItemProvider descItemProvider = daoSyncService.createDescItemProvider(dao);
+        String scenario = descItemProvider.getScenario();
+        if (linkNodeLevel == null) {
+        	if(linkNode==null) {
+        		List<String> uuids = (uuid!=null)?Collections.singletonList(uuid): null;
+                List<ArrLevel> levels = fundLevelService.addNewLevel(fundVersion, parentNode, parentNode,
+                        AddLevelDirection.CHILD, null, null,
+                        descItemProvider, null, uuids);
+                linkNode = levels.get(0).getNode();
+        	} else {
+        		linkNodeLevel = fundLevelService.addNewLevelForNode(fundVersion, parentLevel, change, linkNode, descItemProvider);
+        	}
+        	
+        } else {
+            if (scenario != null) {
+                logger.debug("Connecting DAO to existing Node, daoCode: {}, nodeId: {}",
+                             dao.getCode(), linkNode.getNodeId());
+                // get current data
+                RestoredNode rn = nodeCacheService.getNode(linkNode.getNodeId());
+                List<ArrDescItem> descItems = rn.getDescItems();
+                MatchedScenario ms = daoSyncService.matchScenario(descItemProvider.getItems(), descItems);
+                if (ms == null) {
+                    logger.error("Failed to match scenario to current data, daoCode: {}, nodeId: {}",
+                                 dao.getCode(), linkNode.getNodeId());
+                    throw new ObjectNotFoundException("Digitalizát s ID=" + dao.getCode() +
+                            " nelze napojit na uzel nodeId = " + linkNode.getNodeId() +
+                            " z důvodu nenalezení vhodného scénáře.",
+                            DigitizationCode.DAO_NOT_FOUND).set("code", dao.getCode());
+                }
+                scenario = ms.getScenario();
+                logger.debug("Found matching scenario: {}", scenario);
+                List<ArrDescItem> readOnlyItems = ms.getReadOnlyItems();
+                if(CollectionUtils.isNotEmpty(readOnlyItems)) {
+                    logger.debug("Changing selected items to readonly, nodeId: {}, items: {}",
+                                 linkNode.getNodeId(), readOnlyItems);
+
+                    List<ArrDescItem> updatedItems = new ArrayList<>(readOnlyItems.size());
+                    for(ArrDescItem src: readOnlyItems) {
+                        ArrDescItem di = new ArrDescItem(src);
+                        di.setReadOnly(true);
+                        updatedItems.add(di);
+                    }
+                    this.descriptionItemService.updateDescriptionItems(updatedItems, fundVersion, change);
+                }
+                List<ArrDescItem> missingItems = ms.getMissingItems();
+                if (!CollectionUtils.isEmpty(missingItems)) {
+                    logger.debug("Adding items to , nodeId: {}, items: {}",
+                                 linkNode.getNodeId(), missingItems);
+                    this.descriptionItemService.createDescriptionItems(missingItems, linkNode, fundVersion, change);
+                }
+            }
+        }
+
+        ArrDaoLink daoLink = daoService.createOrFindDaoLink(fundVersion, change, dao, linkNode, scenario);
+        return daoLink;
+	}
+
+	private List<ArrDao> createDaos(Daoset daoset, ArrDaoPackage arrDaoPackage) {
         if (daoset == null) {
             return Collections.emptyList();
         }
@@ -566,6 +583,7 @@ public class DaoCoreServiceWsImpl {
         return daoLinkRepository.save(arrDaoLink);
     }
 
+    /*
     private void deleteArrDaoLink(ArrDao arrDao, ArrNode arrNode) {
 
         // kontrola existence linku, zrušení
@@ -582,7 +600,7 @@ public class DaoCoreServiceWsImpl {
                     + ") bylo automaticky zneplatněno novou změnou.");
             final ArrDaoLink resultDaoLink = daoLinkRepository.save(arrDaoLink);
         }
-    }
+    }*/
 
     @Transactional
     public void removeDao(String daoIdentifier) {
@@ -597,8 +615,10 @@ public class DaoCoreServiceWsImpl {
 
         ArrDaoPackage daoPackage = arrDao.getDaoPackage();
         ArrFund fund = daoPackage.getFund();
+        
+        ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fund.getFundId());
 
-        daoService.deleteDaosWithoutLinks(fund, Collections.singletonList(arrDao));
+        daoService.deleteDaosWithoutLinks(fundVersion, Collections.singletonList(arrDao));
 
         /* TODO: Maji se automaticky mazat daoPackage?            
         // check if whole package can be deleted and delete it
@@ -620,11 +640,11 @@ public class DaoCoreServiceWsImpl {
             throw new ObjectNotFoundException("Balíček digitalizátů s ID=" + packageIdentifier + " nenalezen",
                     DigitizationCode.PACKAGE_NOT_FOUND).set("code", packageIdentifier);
         }
+        
+        ArrFund fund = arrDaoPackage.getFund();
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFund(fund);
 
-        // původní zneplatnění - nahrazeno skutečným kaskádovým smazáním - výslovně požadováno 10.1. LightCompem
-        // final List<ArrDao> arrDaoList = daoService.deleteDaosWithoutLinks(arrDaos);
-
-        daoService.deleteDaoPackageWithCascade(arrDaoPackage);
+        daoService.deleteDaoPackageWithCascade(fundVersion, arrDaoPackage);
 
     }
 

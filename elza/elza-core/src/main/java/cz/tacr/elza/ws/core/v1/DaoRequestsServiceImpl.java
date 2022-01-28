@@ -20,11 +20,13 @@ import org.springframework.transaction.annotation.Transactional;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DaoRequestRepository;
+import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.RequestService;
 
 
@@ -50,6 +52,9 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
 
     @Autowired
     private DaoRequestDaoRepository daoRequestDaoRepository;
+
+    @Autowired
+    private ArrangementService arrangementService;
 
     @Autowired
     private RequestService requestService;
@@ -160,15 +165,17 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
 
     private void finishDaoRequest(final ArrDaoRequest arrDaoRequest) {
         requestService.setRequestState(arrDaoRequest, arrDaoRequest.getState(), ArrRequest.State.PROCESSED);
+        
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFund(arrDaoRequest.getFund());
 
         List<ArrDao> daoByDaoRequest = daoRequestDaoRepository.findDaoByDaoRequest(arrDaoRequest);
         if (daoByDaoRequest.size() == 1) {
             ArrDao arrDao = daoByDaoRequest.get(0);
             ArrDaoPackage daoPackage = arrDao.getDaoPackage();
-            daoService.deleteDaoPackageWithCascade(daoPackage);
+            daoService.deleteDaoPackageWithCascade(fundVersion, daoPackage);
         } else {
             // Označí všechny DAO z požadavku jako neplatné a ukončí jeho případné linky na JP bez notifikace
-            daoService.deleteDaos(arrDaoRequest.getFund(), daoByDaoRequest, true);
+            daoService.deleteDaos(fundVersion, daoByDaoRequest, true);
         }
     }
 }

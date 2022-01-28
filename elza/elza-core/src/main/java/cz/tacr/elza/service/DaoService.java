@@ -116,9 +116,6 @@ public class DaoService {
     private RequestQueueItemRepository requestQueueItemRepository;
 
     @Autowired
-    private FundVersionRepository fundVersionRepository;
-
-    @Autowired
     private NodeRepository nodeRepository;
 
     @Autowired
@@ -173,6 +170,8 @@ public class DaoService {
     /**
      * Najde existující platné propojení nebo jej vytvoří.
      *
+     * @param fundVersion
+     * @param change optional current change
      * @param dao  digitalizát
      * @param node node
      * @param scenario jak se připojit k DAO
@@ -180,6 +179,7 @@ public class DaoService {
      */
     @Transactional(value = TxType.MANDATORY)
     public ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+    									   @Nullable final ArrChange change,
                                            final ArrDao dao, final ArrNode node, final String scenario) {
         if (!dao.getValid()) {
             throw new BusinessException("Nelze připojit digitální entitu k JP, protože je nevalidní", ArrangementCode.INVALID_DAO).level(Level.WARNING);
@@ -194,11 +194,11 @@ public class DaoService {
             // měla by být jen jedna, ale cyklus ošetří i případnou chybu v datech
             for (ArrDaoLink arrDaoLink : linkList) {
                 nodeIds.add(arrDaoLink.getNodeId());
-                deleteDaoLink(Collections.singletonList(fundVersion), arrDaoLink, true);
+                deleteDaoLink(fundVersion, change, arrDaoLink, true);
             }
         }
 
-        final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, dao, node, scenario);
+        final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, change, dao, node, scenario);
 
         nodeIds.add(node.getNodeId());
         updateNodeCacheDaoLinks(nodeIds);
@@ -206,10 +206,14 @@ public class DaoService {
         return resultDaoLink;
     }
 
-    private ArrDaoLink createArrDaoLink(ArrFundVersion fundVersion, ArrDao dao,
+    private ArrDaoLink createArrDaoLink(ArrFundVersion fundVersion,
+    									@Nullable ArrChange createChange,
+    								    ArrDao dao,
                                         ArrNode node, String scenario) {
         // vytvořit změnu
-        final ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
+    	if(createChange==null) {
+    		createChange = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
+    	}
 
         // vytvořit připojení
         final ArrDaoLink daoLink = new ArrDaoLink();
@@ -246,6 +250,7 @@ public class DaoService {
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void deleteDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+    						  @Nullable ArrChange change, 
                               final ArrDaoLink daoLink) {
 
         final ArrDao dao = daoLink.getDao();
@@ -258,7 +263,7 @@ public class DaoService {
             fundLevelService.deleteLevel(fundVersion, deleteNode, null, true);
             break;
         case ATTACHMENT:
-            ArrDaoLink result = deleteDaoLink(Collections.singletonList(fundVersion), daoLink, true);
+            ArrDaoLink result = deleteDaoLink(fundVersion, change, daoLink, true);
             updateNodeCacheDaoLinks(Collections.singletonList(daoLink.getNodeId()));
             break;
         default:
@@ -267,16 +272,21 @@ public class DaoService {
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public List<ArrDaoLink> deleteDaoLinkByNode(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, final ArrNode node) {
+    public List<ArrDaoLink> deleteDaoLinkByNode(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion, 
+    		ArrChange deleteChange, final ArrNode node) {
         List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdInAndDeleteChangeIsNull(Collections.singletonList(node.getNodeId()));
         for (ArrDaoLink daoLink : daoLinks) {
-            deleteDaoLink(Collections.singletonList(fundVersion), daoLink, true);
+            ArrDaoLink savedDaoLink = deleteDaoLink(fundVersion, deleteChange, daoLink, true);
+            if(deleteChange==null) {
+            	deleteChange = savedDaoLink.getDeleteChange();
+            }
         }
         arrangementCacheService.clearDaoLinks(node.getNodeId());
         return daoLinks;
     }
 
-    private ArrDaoLink deleteDaoLink(final List<ArrFundVersion> fundVersionList, final ArrDaoLink daoLink, boolean notify) {
+    private ArrDaoLink deleteDaoLink(final ArrFundVersion fundVersion, 
+    								 @Nullable ArrChange deleteChange, final ArrDaoLink daoLink, boolean notify) {
 
         // kontrola, že ještě existuje
         if (daoLink.getDeleteChange() != null) {
@@ -285,22 +295,21 @@ public class DaoService {
         }
 
         // rozpojit připojení - vytvořit změnu a nastavit na link
-        final ArrChange deleteChange = arrangementInternalService.createChange(ArrChange.Type.DELETE_DAO_LINK, daoLink.getNode());
+        if(deleteChange==null) {
+        	deleteChange = arrangementInternalService.createChange(ArrChange.Type.DELETE_DAO_LINK, daoLink.getNode());
+        }
         daoLink.setDeleteChange(deleteChange);
         logger.debug("Zadané propojení arrDaoLink(ID=" + daoLink.getDaoLinkId() + ") bylo zneplatněno novou změnou.");
         final ArrDaoLink resultDaoLink = daoLinkRepository.save(daoLink);
 
-        for (ArrFundVersion arrFundVersion : fundVersionList) {
+        // poslat websockety o odpojení
+        publishEvent(EventType.DAO_LINK_DELETE, fundVersion, daoLink.getDao(), daoLink.getNode());
 
-            // poslat websockety o odpojení
-            publishEvent(EventType.DAO_LINK_DELETE, arrFundVersion, daoLink.getDao(), daoLink.getNode());
-
-            // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště
-            if (notify && daoLink.getDao().getDaoPackage().getDigitalRepository().getSendNotification()) {
-                // vytvořit požadavek pro externí systém na odpojení
-                final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(arrFundVersion, daoLink.getDao(), deleteChange, Type.UNLINK, daoLink.getNode());
-                requestQueueService.sendRequest(request, arrFundVersion);
-            }
+        // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště
+        if (notify && daoLink.getDao().getDaoPackage().getDigitalRepository().getSendNotification()) {
+        	// vytvořit požadavek pro externí systém na odpojení
+            final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(fundVersion, daoLink.getDao(), deleteChange, Type.UNLINK, daoLink.getNode());
+            requestQueueService.sendRequest(request, fundVersion);
         }
 
         return resultDaoLink;
@@ -327,12 +336,14 @@ public class DaoService {
      * Zneplatní všechny nebo nic.
      * Po zneplatnněí DAO zruší jejich návazné linky a pošle notifikace.
      * 
-     * @param fund
+     * @param fundVersion
      *
      * @param arrDaos
      *            seznam dao pro zneplatnění
      */
-    public void deleteDaosWithoutLinks(ArrFund fund, final List<ArrDao> arrDaos) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR, 
+    		UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.ADMIN})
+    public void deleteDaosWithoutLinks(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, final List<ArrDao> arrDaos) {
 
         // kontrola, že neexistuje DAO navázané na požadavek ve stavu Příprava, Odesílaný, Odeslaný
         final List<ArrDaoLinkRequest> daoLinkRequests = daoLinkRequestRepository.findByDaosAndStates(arrDaos,
@@ -345,10 +356,13 @@ public class DaoService {
                             .set("NumRequest", daoLinkRequests.size());
         }
 
-        deleteDaos(fund, arrDaos, true);
+        deleteDaos(fundVersion, arrDaos, true);
     }
 
-    public void deleteDaoPackageWithCascade(ArrDaoPackage arrDaoPackage) {
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR, 
+    		UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.ADMIN})
+    public void deleteDaoPackageWithCascade(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, 
+    									    ArrDaoPackage arrDaoPackage) {
         // kontrola, že neexistuje DAO navázané na požadavek ve stavu Příprava, Odesílaný, Odeslaný
         final List<ArrDao> arrDaos = daoRepository.findByPackage(arrDaoPackage);
         final List<ArrDaoLinkRequest> daoLinkRequests = daoLinkRequestRepository.findByDaosAndStates(arrDaos,
@@ -360,6 +374,8 @@ public class DaoService {
         }
 
         Set<Integer> nodeIds = new HashSet<>();
+        
+        ArrChange change = null;
 
         for (ArrDao arrDao : arrDaos) {
             // smazat arr_dao_link
@@ -368,8 +384,7 @@ public class DaoService {
             for (ArrDaoLink arrDaoLink : arrDaoLinkList) {
                 if (arrDaoLink.getDeleteChangeId() == null) {
                     Integer fundId = arrDaoLink.getNode().getFundId();
-                    ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
-                    deleteDaoLink(fundVersion, arrDaoLink);
+                    deleteDaoLink(fundVersion, change, arrDaoLink);
                 }
             }
             daoLinkRepository.deleteAll(arrDaoLinkList);
@@ -407,7 +422,7 @@ public class DaoService {
     /**
      * Zneplatní DAO a zruší jejich návazné linky a pošle notifikace.
      * 
-     * @param arrFund
+     * @param fundVersion
      *
      * @param arrDaos
      *            seznam dao pro zneplatnění
@@ -417,7 +432,7 @@ public class DaoService {
      * 
      */
     @AuthMethod(permission = { Permission.FUND_ARR_ALL, Permission.FUND_ARR })
-    public void deleteDaos(@AuthParam(type = AuthParam.Type.FUND) ArrFund arrFund,
+    public void deleteDaos(@AuthParam(type = AuthParam.Type.FUND) ArrFundVersion fundVersion,
                            final List<ArrDao> arrDaos,
                            boolean notify) {
         Set<Integer> nodeIds = new HashSet<>();
@@ -425,12 +440,17 @@ public class DaoService {
         for (ArrDao arrDao : arrDaos) {
             arrDao.setValid(false);
             daoRepository.save(arrDao);
+            
+            ArrChange change = null;
 
             // zrušit linky a poslat notifikace
             final List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
             for (ArrDaoLink arrDaoLink : arrDaoLinkList) {
                 ArrNode node = arrDaoLink.getNode();
-                deleteDaoLink(node.getFund().getVersions(), arrDaoLink, notify);
+                ArrDaoLink savedDaoLink = deleteDaoLink(fundVersion, change, arrDaoLink, notify);
+                if(change==null) {
+                	change = savedDaoLink.getDeleteChange();
+                }
                 nodeIds.add(node.getNodeId());
             }
         }
@@ -526,7 +546,7 @@ public class DaoService {
     public ArrDaoLink createDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) Integer fundVersionId,
                                     Integer daoId,
                                     @AuthParam(type = AuthParam.Type.NODE) Integer nodeId) {
-        final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
+        final ArrFundVersion fundVersion = arrangementInternalService.getFundVersionById(fundVersionId);
         final ArrDao dao = daoRepository.getOneCheckExist(daoId);
         final ArrNode node = nodeRepository.getOneCheckExist(nodeId);
 
@@ -541,6 +561,7 @@ public class DaoService {
                                     @AuthParam(type = AuthParam.Type.NODE) ArrNode node) {
         String scenario = null;
         ArrNode linkNode;
+        ArrChange change = null;
         // specializace dle typu DAO
         switch (dao.getDaoType()) {
         case LEVEL:
@@ -550,7 +571,9 @@ public class DaoService {
             List<ArrLevel> levels = fundLevelService.addNewLevel(fundVersion, node, node,
                                                           AddLevelDirection.CHILD, null, null,
                                                           descItemProvider, null, null);
-            linkNode = levels.get(0).getNode();
+            ArrLevel newLevel = levels.get(0);
+            change = newLevel.getCreateChange();
+            linkNode = newLevel.getNode();
             scenario = descItemProvider.getScenario();
             break;
         case ATTACHMENT:
@@ -559,7 +582,7 @@ public class DaoService {
         default:
             throw new SystemException("Unrecognized dao type");
         }
-        return createOrFindDaoLink(fundVersion, dao, linkNode, scenario);
+        return createOrFindDaoLink(fundVersion, change, dao, linkNode, scenario);
     }
 
     public List<ArrDao> findDaosByRepository(ArrDigitalRepository repository, List<String> daoCodes) {
