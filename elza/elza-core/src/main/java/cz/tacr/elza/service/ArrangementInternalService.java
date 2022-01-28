@@ -3,6 +3,8 @@ package cz.tacr.elza.service;
 import com.google.common.collect.Iterables;
 import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -113,11 +115,42 @@ public class ArrangementInternalService {
      * @return verze
      */
     public List<ArrFundVersion> getOpenVersionsByFundIds(final Collection<Integer> fundIds) {
-        Assert.notNull(fundIds, "Nebyl vyplněn identifikátor AS");
+        Validate.notNull(fundIds, "Nebyl vyplněn identifikátor AS");
         if (fundIds.isEmpty()) {
             return Collections.emptyList();
         }
         return fundVersionRepository.findByFundIdsAndLockChangeIsNull(fundIds);
+    }
+    
+    /**
+     * Načte neuzavřenou verzi AS
+     *
+     * @param fund AS
+     * @return verze
+     */
+    public ArrFundVersion getOpenVersionByFund(final ArrFund fund) {
+    	Validate.notNull(fund, "Nebyl vyplněn AS");
+        return getOpenVersionByFundId(fund.getFundId());
+    }
+        
+    /**
+     * Načte neuzavřenou verzi AS
+     *
+     * @param fundId id AS
+     * @return verze
+     */
+    public ArrFundVersion getOpenVersionByFundId(final Integer fundId) {
+    	Validate.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
+        if(fundVersion==null) {
+        	throw new SystemException("Cannot find open version", BaseCode.DB_INTEGRITY_PROBLEM)
+                        .set("fundId", fundId);
+        }
+        return fundVersion;
+    }
+
+    public ArrFundVersion getFundVersionById(final Integer fundVersionId) {
+        return fundVersionRepository.getOneCheckExist(fundVersionId);
     }
 
     public List<ArrNode> findNodesByStructuredObjectId(Integer structuredObjectId) {
