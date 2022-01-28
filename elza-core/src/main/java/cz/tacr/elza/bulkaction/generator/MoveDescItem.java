@@ -116,7 +116,7 @@ public class MoveDescItem extends BulkActionDFS {
 			descriptionItemService.createDescriptionItem(descItem, currNode, version, getChange());
 			// delete old one
             List<ArrDescItem> items = Collections.singletonList(srcDescItem);
-            descriptionItemService.deleteDescriptionItems(items, currNode, version, getChange(), true);
+            descriptionItemService.deleteDescriptionItems(items, currNode, version, getChange(), true, false);
 
 			// validace uzlu
 			ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(descItem.getNode().getNodeId()),
