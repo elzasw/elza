@@ -52,8 +52,26 @@ public class DescriptionItemServiceInternal {
      */
     public List<ArrDescItem> getDescItems(final ArrChange lockChange, final ArrNode node) {
         Validate.notNull(lockChange);
+        Validate.notNull(node);
         List<ArrDescItem> itemList;
         itemList = descItemRepository.findByNodeAndChange(node, lockChange);
+        return itemList;
+    }
+
+    /**
+     * Return list of description items for node
+     * 
+     * Description items are returned including data
+     * 
+     * Method will return only valid / non deleted items.
+     * 
+     * @param node
+     * @return
+     */
+    public List<ArrDescItem> getDescItems(final ArrNode node) {
+        Validate.notNull(node);
+        List<ArrDescItem> itemList;
+        itemList = descItemRepository.findByNodeAndDeleteChangeIsNull(node);
         return itemList;
     }
 

@@ -60,6 +60,7 @@ import cz.tacr.elza.service.DaoSyncService;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.DaoSyncService.MatchedScenario;
 import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.DescriptionItemServiceInternal;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.GroovyScriptService;
@@ -127,6 +128,9 @@ public class DaoCoreServiceWsImpl {
 
     @Autowired
     private DescriptionItemService descriptionItemService;
+
+    @Autowired
+    private DescriptionItemServiceInternal descriptionItemServiceInternal;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -488,6 +492,12 @@ public class DaoCoreServiceWsImpl {
                         descItemProvider, null, uuids);
                 linkNode = levels.get(0).getNode();
         	} else {
+        		// remove previous items
+        		List<ArrDescItem> descItems = descriptionItemServiceInternal.getDescItems(linkNode);
+        		if(CollectionUtils.isNotEmpty(descItems)) {
+        			descriptionItemService.deleteDescriptionItems(descItems, linkNode, fundVersion, change, false);
+        		}
+        		
         		linkNodeLevel = fundLevelService.addNewLevelForNode(fundVersion, parentLevel, change, linkNode, descItemProvider);
         	}
         	
