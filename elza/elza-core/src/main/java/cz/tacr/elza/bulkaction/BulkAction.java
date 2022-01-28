@@ -242,6 +242,6 @@ public abstract class BulkAction {
     public void deleteDescItem(ArrDescItem oldDescItem) {
         List<ArrDescItem> items = Collections.singletonList(oldDescItem);
         descriptionItemService.deleteDescriptionItems(items, oldDescItem.getNode(), getFundVersion(), getChange(),
-                                                      true);
+                                                      true, false);
     }
 }
