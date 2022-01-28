@@ -116,7 +116,7 @@ public class ItemGeneratorAction extends Action {
                     structObjsToDelete.add(data.getStructuredObject());
                 }
                 ArrNode node = itemList.get(0).getNode();
-                descriptionItemService.deleteDescriptionItems(itemList, node, fundVersion, change, false);
+                descriptionItemService.deleteDescriptionItems(itemList, node, fundVersion, change, false, false);
             }
         }
 

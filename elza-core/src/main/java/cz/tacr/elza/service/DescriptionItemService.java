@@ -846,7 +846,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                                     final ArrNode node,
                                                     final ArrFundVersion fundVersion,
                                                     final ArrChange change,
-                                                    final boolean moveAfter) {
+                                                    final boolean moveAfter,
+                                                    final boolean force) {
         Validate.notEmpty(descItemsToDelete);
         Validate.notNull(fundVersion);
         Validate.notNull(change);
@@ -861,7 +862,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         List<ArrDescItem> results = new ArrayList<>();
         for (ArrDescItem descItem : deleteDescItems) {
-            if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
+            if (!force && descItem.getReadOnly()!=null && descItem.getReadOnly()) {
                 throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
             }
         	
