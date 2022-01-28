@@ -58,14 +58,12 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
-import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
@@ -353,9 +351,9 @@ public class ArrangementService {
         originalFund.setUnitdate(fund.getUnitdate());
         originalFund.setMark(fund.getMark());
 
-        fundRepository.save(originalFund);
+        ArrFund savedFund = fundRepository.save(originalFund);
 
-        ArrFundVersion openVersion = getOpenVersionByFundId(originalFund.getFundId());
+        ArrFundVersion openVersion = arrangementInternalService.getOpenVersionByFund(savedFund);
         if (!ruleSet.equals(openVersion.getRuleSet())) {
             openVersion.setRuleSet(ruleSet);
             fundVersionRepository.save(openVersion);
@@ -375,9 +373,9 @@ public class ArrangementService {
         }
 
         eventNotificationService
-                .publishEvent(EventFactory.createIdEvent(EventType.FUND_UPDATE, originalFund.getFundId()));
+                .publishEvent(EventFactory.createIdEvent(EventType.FUND_UPDATE, savedFund.getFundId()));
 
-        return originalFund;
+        return savedFund;
     }
 
     /**
@@ -651,21 +649,23 @@ public class ArrangementService {
      * @param fundId id archivní pomůcky
      * @return verze
      */
-    public ArrFundVersion getOpenVersionByFundId(final Integer fundId) {
-        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.ADMIN})
+    public ArrFundVersion getOpenVersionByFundId(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId) {
+        Validate.notNull(fundId, "Nebyl vyplněn identifikátor AS");
         return fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
     }
 
     /**
-     * Načte neuzavřené verze archivních pomůcek.
+     * Načte neuzavřenou verzi archivní pomůcky.
      *
-     * @param fundIds ids archivních pomůcek
+     * @param fundId id archivní pomůcky
      * @return verze
-     * @deprecated use cz.tacr.elza.service.ArrangementInternalService#getOpenVersionsByFundIds(java.util.Collection)
      */
-    @Deprecated
-    public List<ArrFundVersion> getOpenVersionsByFundIds(final Collection<Integer> fundIds) {
-        return arrangementInternalService.getOpenVersionsByFundIds(fundIds);
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.ADMIN})
+    public ArrFundVersion getOpenVersionByFund(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) {
+        Validate.notNull(fund, "Nebyl vyplněn AS");
+        Validate.notNull(fund.getFundId(), "Nebyl vyplněn identifikator AS");
+        return fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
     }
 
     /**
@@ -687,7 +687,7 @@ public class ArrangementService {
 
         ArrNode node = baselevel.getNode();
         ArrFund fund = baselevel.getNode().getFund();
-        ArrFundVersion fundVersion = getOpenVersionByFundId(fund.getFundId());
+        ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(fund);
 
         // check if connected Dao(type=Level) exists
         if (!deleteLevelsWithAttachedDao && daoRepository.existsDaoByNodeAndDaoTypeIsLevel(node.getNodeId())) {
@@ -700,7 +700,7 @@ public class ArrangementService {
             descItemRepository.save(descItem);
         }
 
-        daoService.deleteDaoLinkByNode(fundVersion, node);
+        daoService.deleteDaoLinkByNode(fundVersion, deleteChange, node);
 
         // vyhledani node, ktere odkazuji na mazany
         List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNode(node);
@@ -876,7 +876,7 @@ public class ArrangementService {
 
         if (!fundToNodeList.isEmpty()) {
             List<Integer> fundIds = fundList.stream().map(ArrFund::getFundId).collect(Collectors.toList());
-            Map<Integer, ArrFundVersion> fundIdVersionsMap = getOpenVersionsByFundIds(fundIds).stream()
+            Map<Integer, ArrFundVersion> fundIdVersionsMap = arrangementInternalService.getOpenVersionsByFundIds(fundIds).stream()
                     .collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
             Map<Integer, ArrFund> fundMap = fundList.stream().collect(Collectors.toMap(ArrFund::getFundId, Function.identity()));
 
@@ -913,7 +913,7 @@ public class ArrangementService {
         ArrFundToNodeList fundToNodeList = getFundToNodeListFromSession(fundId);
         if (fundToNodeList != null) {
             List<Integer> nodeIdList = fundToNodeList.getNodeIdList();
-            ArrFundVersion fundVersion = getOpenVersionByFundId(fundToNodeList.getFundId());
+            ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundToNodeList.getFundId());
             List<Integer> sortedList = levelTreeCacheService.sortNodesByTreePosition(nodeIdList, fundVersion);
             return levelTreeCacheService.getNodesByIds(sortedList, fundVersion);
         }
@@ -975,8 +975,9 @@ public class ArrangementService {
         return versionNodeIds;
     }
 
+    // TODO: check permissions here
     public ArrFundVersion getFundVersionById(final Integer fundVersionId) {
-        return fundVersionRepository.getOneCheckExist(fundVersionId);
+        return arrangementInternalService.getFundVersionById(fundVersionId);
     }
 
     /**
@@ -1857,7 +1858,7 @@ public class ArrangementService {
 
                 if (CollectionUtils.isNotEmpty(sourceNodeItems)) {
                     List<ArrDescItem> nodeItems = nodeItemMap.getOrDefault(refTemplateMapType.getToItemType().getItemTypeId(), new ArrayList<>());
-                    ArrFundVersion fundVersion = getOpenVersionByFundId(node.getFundId());
+                    ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(node.getFundId());
 
                     if (CollectionUtils.isEmpty(nodeItems)) {
                         // vytvoření nových itemů

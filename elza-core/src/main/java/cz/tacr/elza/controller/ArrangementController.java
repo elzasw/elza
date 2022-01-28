@@ -538,7 +538,7 @@ public class ArrangementController {
         final ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         final ArrDaoLink daoLink = daoLinkRepository.getOneCheckExist(daoLinkId);
 
-        daoService.deleteDaoLink(fundVersion, daoLink);
+        daoService.deleteDaoLink(fundVersion, null, daoLink);
     }
 
     /**
