@@ -878,7 +878,7 @@ public class AccessPointService {
         if (fundsAll.isEmpty()) {
             fundVersions = Collections.emptyMap();
         } else {
-            fundVersions = arrangementService.getOpenVersionsByFundIds(fundsAll).stream()
+            fundVersions = arrangementInternalService.getOpenVersionsByFundIds(fundsAll).stream()
                     .collect(toMap(ArrFundVersion::getFundId, Function.identity()));
         }
 

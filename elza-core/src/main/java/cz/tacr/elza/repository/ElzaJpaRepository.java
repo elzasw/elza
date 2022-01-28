@@ -6,11 +6,13 @@ import java.lang.reflect.ParameterizedType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
+
 
 /**
  * Rozšíření JpaRepository o vlastní metody.
  *
- * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
  * @since 03.02.2016
  */
 @NoRepositoryBean
@@ -25,7 +27,11 @@ public interface ElzaJpaRepository<T, ID extends Serializable> extends JpaReposi
      */
     default T getOneCheckExist(final ID id) throws IllegalStateException {
         return findById(id)
-                .orElseThrow(() -> new IllegalStateException("Nebyla nalezena entita v úložišti " + getClassName() + " s id " + id));
+                .orElseThrow(() -> new BusinessException("Nebyla nalezena entita v úložišti " + getClassName() + " s id " + id,
+                		BaseCode.ID_NOT_EXIST)
+                		.set("ID", id)
+                		.set("Class", getClassName())
+                		);
     }
 
     /**
