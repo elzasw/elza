@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +46,7 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
+import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -81,6 +83,9 @@ public class FundLevelService {
     
     @Autowired
     private DescriptionItemService descriptionItemService;
+    
+    @Autowired
+    private NodeCacheService nodeCacheService;
 
     /**
      * Přesunutí uzlů před jiný.
@@ -933,6 +938,8 @@ public class FundLevelService {
 			ArrChange change, ArrNode linkNode,
 			DaoDesctItemProvider descItemProvider) {
 		
+		// TODO: Check that no items exists for node
+		
         Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
         Validate.notNull(parentLevel, "Rodičovká JP musí být vyplněna");
         Validate.notNull(change, "Change musí existovat");
@@ -946,6 +953,9 @@ public class FundLevelService {
 
         ArrLevel newLevel = createLevel(change, parentLevel.getNode(), 
         		maxPosition + 1, linkNode);
+
+        // create/update node cache
+        nodeCacheService.syncNodes(Collections.singletonList(linkNode.getNodeId()));
 		
 		createItemsForNewLevel(fundVersion, AddLevelDirection.CHILD, parentLevel, newLevel, change, null, null, descItemProvider);
     	
