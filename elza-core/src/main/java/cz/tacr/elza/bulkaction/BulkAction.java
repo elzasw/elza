@@ -161,7 +161,8 @@ public abstract class BulkAction {
             } else {
                 result = descriptionItemService.updateValueAsNewVersion(version, getChange(),
                                                                         descItem,
-                                                                        multipleItemChangeContext);
+                                                                        multipleItemChangeContext,
+                                                                        false);
             }
             multipleItemChangeContext.flushIfNeeded();
         }
