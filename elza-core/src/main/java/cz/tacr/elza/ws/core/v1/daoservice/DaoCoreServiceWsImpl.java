@@ -530,7 +530,7 @@ public class DaoCoreServiceWsImpl {
                         di.setReadOnly(true);
                         updatedItems.add(di);
                     }
-                    this.descriptionItemService.updateDescriptionItems(updatedItems, fundVersion, change);
+                    this.descriptionItemService.updateDescriptionItems(updatedItems, fundVersion, change, true);
                 }
                 List<ArrDescItem> missingItems = ms.getMissingItems();
                 if (!CollectionUtils.isEmpty(missingItems)) {
