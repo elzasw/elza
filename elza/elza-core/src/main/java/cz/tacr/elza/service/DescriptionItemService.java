@@ -1259,7 +1259,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         SingleItemChangeContext sicc = new SingleItemChangeContext(this.ruleService, this.eventNotificationService,
                                                                    fundVersion.getFundVersionId(), descItem.getNodeId());
 
-        ArrDescItem descItemUpdated = updateValueAsNewVersion(fundVersion, change, descItem, sicc);
+        ArrDescItem descItemUpdated = updateValueAsNewVersion(fundVersion, change, descItem, sicc, false);
 
         sicc.validateAndPublish();
 
@@ -1272,16 +1272,18 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param updateDescItems hodnoty atributů k úpravě
      * @param fundVersion     verze AS
      * @param change          změna
+     * @param forceUpdate     vynuceni zmeny
      * @return upravěné hodnoty
      */
     public List<ArrDescItem> updateDescriptionItems(final List<ArrDescItem> updateDescItems,
                                                     final ArrFundVersion fundVersion,
-                                                    final ArrChange change) {
+                                                    final ArrChange change,
+                                                    final boolean forceUpdate ) {
         MultipleItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
 
         List<ArrDescItem> results = new ArrayList<>();
         for (ArrDescItem updateDescItem : updateDescItems) {
-            results.add(updateValueAsNewVersion(fundVersion, change, updateDescItem, changeContext));
+            results.add(updateValueAsNewVersion(fundVersion, change, updateDescItem, changeContext, forceUpdate));
         }
         changeContext.flush();
         return results;
@@ -1361,7 +1363,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 	 */
     public ArrDescItem updateValueAsNewVersion(final ArrFundVersion fundVersion, final ArrChange change,
                                                final ArrDescItem descItem,
-                                               BatchChangeContext batchChangeContext) {
+                                               BatchChangeContext batchChangeContext,
+                                               final boolean forceUpdate) {
         Validate.notNull(descItem, "Hodnota atributu musí být vyplněna");
         Validate.notNull(descItem.getPosition(), "Pozice musí být vyplněna");
         Validate.notNull(descItem.getDescItemObjectId(), "Identifikátor hodnoty atributu musí být vyplněn");
@@ -1378,6 +1381,13 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		// position have to be same
 		if (!Objects.equal(descItemCurr.getPosition(), descItem.getPosition())) {
 			throw new SystemException("Different item positions, cannot update value");
+		}
+		
+		if(!forceUpdate) {
+			// check if not read-only
+			if(descItemCurr.getReadOnly()!=null&&descItemCurr.getReadOnly()) {
+				throw new SystemException("Item is read-only");
+			}
 		}
 
 		// save new data
