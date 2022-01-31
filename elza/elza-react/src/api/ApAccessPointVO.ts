@@ -4,6 +4,7 @@ import {ApPartVO} from "./ApPartVO";
 import {StateApproval} from "./StateApproval";
 import {UserVO} from "./UserVO";
 import {ApChangeVO} from "./ApChangeVO";
+import {RevStateApproval} from "./RevStateApproval";
 
 /**
  * VO rejstříkového záznamu.
@@ -97,4 +98,24 @@ export interface ApAccessPointVO {
      * Počet komentářů
      */
     comments: number;
+
+    /**
+     * Stav revize
+     */
+    revStateApproval: RevStateApproval;
+
+    /**
+     * Identifikátor nové preferované části z revize
+     */
+    newPreferredPart: number;
+
+    /**
+     * Identifikátor nové preferované části, která existuje pouze v revizi
+     */
+    revPreferredPart: number;
+
+    /**
+     * Seznam částí přístupového bodu z revize
+     */
+    revParts: ApPartVO[];
 }

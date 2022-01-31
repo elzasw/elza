@@ -2,7 +2,7 @@ import i18n from 'components/i18n';
 import { SmallButton } from 'components/shared/button/small-button';
 import ValidationResultIcon from 'components/ValidationResultIcon';
 import React, { FC } from 'react';
-import { ApPartVO } from '../../../../api/ApPartVO';
+// import { ApPartVO } from '../../../../api/ApPartVO';
 import { ItemType } from '../../../../api/ApViewSettings';
 import { PartValidationErrorsVO } from '../../../../api/PartValidationErrorsVO';
 import { RulPartTypeVO } from '../../../../api/RulPartTypeVO';
@@ -10,36 +10,39 @@ import { Bindings } from '../../../../types';
 import Icon from '../../../shared/icon/Icon';
 import './DetailMultiSelection.scss';
 import { DetailPartInfo } from '../part';
+import { RevisionPart, getRevisionItems } from '../../revision';
 
 interface Props {
     label: string;
-    parts: ApPartVO[];
-    onEdit?: (part: ApPartVO) => void;
+    part: RevisionPart;
+    onEdit?: (part: RevisionPart) => void;
     onAdd?: () => void;
-    onDelete?: (part: ApPartVO) => void;
+    onDelete?: (part: RevisionPart) => void;
     editMode?: boolean;
     globalEntity: boolean;
     bindings: Bindings;
     partValidationErrors?: PartValidationErrorsVO[];
     itemTypeSettings: ItemType[];
     partType: RulPartTypeVO;
+    revision?: boolean;
 }
 
 const DetailBodySection: FC<Props> = ({
     editMode,
     label,
-    parts,
+    part,
     globalEntity,
     onEdit = () => console.warn("Neni definovan 'onEdit' callback"),
-    onAdd = () => console.warn("Neni definovan 'onAdd' callback"),
+    // onAdd = () => console.warn("Neni definovan 'onAdd' callback"),
     onDelete = () => console.warn("Neni definovan 'onDelete' callback"),
     // partValidationErrors = [],
     bindings,
     itemTypeSettings,
     partType,
     partValidationErrors = [],
+    revision,
 }) => {
-    if (!editMode && parts.length === 0) {
+    if (!editMode && !part) {
         return null;
     }
 
@@ -51,21 +54,28 @@ const DetailBodySection: FC<Props> = ({
         })
     };
 
-    const hasInfo = (parts: ApPartVO[]) => {
-        if(parts.length === 0) return false;
-        if(parts.length === 1 && (parts[0].items?.length === 0 || parts[0].items === null)) return false;
+    const hasInfo = (part: RevisionPart) => {
+        if(
+            part.part?.items?.length === 0 
+            || part.part?.items === null
+            || part.updatedPart?.items?.length === 0
+            || part.updatedPart?.items === null
+        ) return false;
         return true;
     }
 
-    const renderPartActions = (part: ApPartVO) => {
+    const isModified = (part.part != null && part.updatedPart != null);
+    const revisionItems = getRevisionItems(part.part?.items || undefined, part.updatedPart?.items || undefined);
+
+    const renderPartActions = (part: RevisionPart) => {
         return <>
             {editMode &&
                 <>
                     <SmallButton 
                         title={i18n("ap.detail.edit", partType.name)}
                         onClick={()=> {
-                            if(parts.length === 0) return onAdd()
-                            if(parts.length === 1) return onEdit(parts[0])
+                            // if(part.length === 0) return onAdd()
+                            if(part) return onEdit(part)
                         }}
                     >
                         <Icon glyph={'fa-pencil'} />
@@ -83,7 +93,7 @@ const DetailBodySection: FC<Props> = ({
             <div className="detail-section-header" style={{display: "flex"}}>
                 <span className="">{label}</span>
                 <div className="actions" style={{fontSize: "0.8em", marginLeft: "10px"}}>
-                    {renderPartActions(parts[0])}
+                    {part.part && renderPartActions(part)}
                 </div>
                 <div className="actions" style={{fontSize: "0.8em", marginLeft: "10px"}}>
                     {showValidationError()}
@@ -91,21 +101,18 @@ const DetailBodySection: FC<Props> = ({
             </div>
 
             <div className={`parts single-part`}>
-                {!hasInfo(parts) ? <span className="no-info-msg">{i18n("ap.detail.noInfo")}</span> :
-                parts.map((part, index) => {
-                    if(part.items){
-                        return (
-                            <div key={index} className={`part`}>
-                                <DetailPartInfo
-                                    globalEntity={globalEntity}
-                                    itemTypeSettings={itemTypeSettings}
-                                    bindings={bindings}
-                                    items={part.items}
-                                    />
-                            </div>
-                        );
-                    }
-                })}
+                {!hasInfo(part) ? <span className="no-info-msg">{i18n("ap.detail.noInfo")}</span> :
+                <div className={`part`}>
+                    <DetailPartInfo
+                        globalEntity={globalEntity}
+                        itemTypeSettings={itemTypeSettings}
+                        bindings={bindings}
+                        items={revisionItems}
+                        isModified={isModified}
+                        revision={revision}
+                        />
+                </div>
+                }
             </div>
         </div>
     );

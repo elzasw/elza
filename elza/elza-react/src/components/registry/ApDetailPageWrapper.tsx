@@ -3,37 +3,32 @@ import { connect } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { objectByProperty } from "stores/app/utils";
-import { globalFundTreeInvalidate } from '../../actions/arr/globalFundTree';
-import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
 import * as registry from '../../actions/registry/registry';
 import { registryDetailFetchIfNeeded } from '../../actions/registry/registry';
 import { WebApi } from '../../actions/WebApi';
 import { ApAccessPointVO } from '../../api/ApAccessPointVO';
-import { ApItemBitVO } from '../../api/ApItemBitVO';
-import { ApPartFormVO } from '../../api/ApPartFormVO';
 import { ApPartVO } from '../../api/ApPartVO';
 import { ApValidationErrorsVO } from '../../api/ApValidationErrorsVO';
 import { ApViewSettingRule, ApViewSettings } from '../../api/ApViewSettings';
-import { PartType } from '../../api/generated/model';
-import * as PartTypeInfo from '../../api/old/PartTypeInfo';
 import { PartValidationErrorsVO } from '../../api/PartValidationErrorsVO';
-import { RulDescItemTypeExtVO } from '../../api/RulDescItemTypeExtVO';
 import { RulPartTypeVO } from '../../api/RulPartTypeVO';
 import { AP_VALIDATION, AP_VIEW_SETTINGS } from '../../constants';
 import { DetailActions } from '../../shared/detail';
-import { indexById, objectById } from '../../shared/utils';
+import { indexById } from '../../shared/utils';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import { Bindings, DetailStoreState } from '../../types';
 import { BaseRefTableStore } from '../../typings/BaseRefTableStore';
 import { AppState } from '../../typings/store';
-import { sortItems } from '../../utils/ItemInfo';
 import Loading from '../shared/loading/Loading';
 import { DetailBodySection, DetailMultiSection } from './Detail/section';
 import { DetailHeader } from './Detail/header';
-import PartEditModal from './modal/PartEditModal';
+import { showPartCreateModal, showPartEditModal } from './part-edit';
 import i18n from 'components/i18n';
 import { showConfirmDialog } from "components/shared/dialog";
 import './ApDetailPageWrapper.scss';
+import { RevisionPart, getRevisionParts } from './revision';
+import { ApStateVO } from 'api/ApStateVO';
+import {Api} from '../../api';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     const bindingsMaps: Bindings = {
@@ -116,7 +111,9 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     fetchViewSettings,
     refreshValidation,
     setPreferred,
+    setRevisionPreferred,
     deletePart,
+    deleteRevisionPart,
     // deleteParts,
     showConfirmDialog,
     showPartEditModal,
@@ -163,23 +160,25 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         return <div className={'detail-page-wrapper'} />;
     }
 
-    const handleSetPreferred = async (part: ApPartVO) => {
-        if (part.id) {
+    const handleSetPreferred = async ({part, updatedPart}: RevisionPart) => {
+        const nextPreferredPart = part ? part : updatedPart;
+        if (nextPreferredPart?.id) {
             saveScrollPosition();
-            await setPreferred(id, part.id);
+            part ? await setPreferred(id, nextPreferredPart.id) : await setRevisionPreferred(id, nextPreferredPart.id);
             restoreScrollPosition();
             refreshValidation(id);
         }
     };
 
-    const handleDelete = async (part: ApPartVO) => {
-        const message = part.value ? i18n("ap.detail.delete.confirm.value", part.value) : i18n("ap.detail.delete.confirm");
+    const handleDelete = async ({part, updatedPart}: RevisionPart) => {
+        const deletedPart = part ? part : updatedPart;
+        const message = deletedPart?.value ? i18n("ap.detail.delete.confirm.value", deletedPart.value) : i18n("ap.detail.delete.confirm");
         const confirmResult = await showConfirmDialog(message);
 
         if(confirmResult){
-            if (part.id) {
+            if (deletedPart?.id) {
                 saveScrollPosition();
-                await deletePart(id, part.id);
+                part ? await deletePart(id, deletedPart.id) : await deleteRevisionPart(id, deletedPart.id);
                 restoreScrollPosition();
             }
 
@@ -198,22 +197,23 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         }
     }
 
-    const handleEdit = (part: ApPartVO) => {
-        const partType = refTables.partTypes.itemsMap ? refTables.partTypes.itemsMap[part.typeId].code : null;
+    const handleEdit = (part: RevisionPart) => {
+        const partTypeId = part.part?.typeId ? part.part.typeId : part.updatedPart?.typeId;
+        const partType = refTables.partTypes.itemsMap && partTypeId ? refTables.partTypes.itemsMap[partTypeId].code : null;
 
         saveScrollPosition();
-        part.id && detail.data &&
+        detail.data &&
             showPartEditModal(
-                part,
+                part.part,
+                part.updatedPart,
                 partType,
                 id,
                 apTypeId,
                 detail.data.ruleSetId,
                 detail.data.scopeId,
                 refTables,
-                descItemTypesMap as any,
                 apViewSettings,
-                part.partParentId,
+                !!detail.data.revStateApproval,
                 () => restoreScrollPosition()
             );
         refreshValidation(id);
@@ -242,8 +242,89 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     };
     */
 
-    const allParts = detail.data ? detail.data.parts : [];
+   /**
+    *   Prikladova data pro revize
+    *
+    *   Mela by fungovat s archivni entitou Tomas Garrigue Masaryk z camu.
+    *   Pro zprovozneni je potreba upravit id, aby odpovidala databazi a
+    *   zmenit promennou revisionTest na true.
+    */
+    const revisionTest = false;
+    const exampleUpdatedParts = [
+        {
+            // Preferovane jmeno
+            id: 1169,
+            value: "modified name",
+            state: ApStateVO.OK,
+            typeId: 1,
+            items: [{
+                "@class": ".ApItemStringVO",
+                id: 2403,
+                typeId: 24,
+                value: "modified value",
+                position: 1,
+                specId: null,
+            }] as any
+        },
+        {
+            // 2. jmeno (Masaryk, T. G.)
+            id: 1170,
+            value: null as any,
+            specId: null as any,
+            state: ApStateVO.OK,
+            typeId: 1,
+            items: [] as any
+        },
+        {
+            // Pridane jmeno - neni potreba menit id
+            id: 9999,
+            value: "new name",
+            state: ApStateVO.OK,
+            typeId: 1,
+            items: [{
+                typeId: 29,
+                specId: 18,
+                id: 9875,
+            }]
+        },
+        {
+            // Udalost - manzelstvi, upraveny item - misto uzavreni
+            id: 1175,
+            value: "modified relation",
+            parentPartId: 1124,
+            typeId: 5,
+            state: null as any,
+            items: [{
+                "@class": ".ApItemAccessPointRefVO",
+                externalName: "modified ref item",
+                externalUrl: "https://www.google.com",
+                id: 2415,
+                position: 1,
+                specId: 384,
+                typeId: 32,
+            }] as any
+        },
+        {
+            // Telo - Strucna charakteristika
+            id: 1163,
+            value: "modified body",
+            typeId: 7,
+            state: null as any,
+            items: [{
+                "@class": ".ApItemStringVO",
+                id: 2385,
+                position: 1,
+                typeId: 26,
+                value: "modified body value",
+            }] as any
+        }
+    ]
 
+    const allParts = sortPrefer( detail.data ? detail.data.parts : [], detail.data?.preferredPart);
+    const allRevisionParts = detail.data.revStateApproval ? getRevisionParts(allParts, detail.data.revParts) : getRevisionParts(allParts, []);
+    const filteredRevisionParts = allRevisionParts.filter(({part, updatedPart}) => !part?.partParentId && !updatedPart?.partParentId );
+
+    /*
     const getRelatedPartSections = (parentParts: ApPartVO[]) => {
         if (parentParts.length === 0) { return []; }
 
@@ -254,30 +335,77 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         return allParts
             .filter(value => value.partParentId && parentIds.includes(value.partParentId));
     };
+    */
+
+    const getRelatedPartSections = (parentParts: RevisionPart[]) => {
+        if (parentParts.length === 0) { return []; }
+        const parentIds: number[] = [];
+        const updatedParentIds: number[] = [];
+
+        parentParts.forEach(({part, updatedPart})=>{
+            if(part){parentIds.push(part.id)}
+            if(updatedPart){updatedParentIds.push(updatedPart.id)}
+        })
+
+        return allRevisionParts
+            .filter(value => 
+                value.part?.partParentId && parentIds.includes(value.part?.partParentId)
+                || value.part?.partParentId && updatedParentIds.includes(value.part?.partParentId)
+                || value.updatedPart?.partParentId && parentIds.includes(value.updatedPart?.partParentId)
+                || value.updatedPart?.partParentId && updatedParentIds.includes(value.updatedPart?.partParentId)
+        );
+    };
 
     const bindings = createBindings(detail.data);
 
+    const groupPartsByType = (data: RevisionPart[]) => {
+        return data.reduce<Record<string, RevisionPart[]>>((accumulator, value) => {
+            const typeId = value.part?.typeId || value.updatedPart?.typeId;
+            if(typeId != undefined){
+                const currentValue = accumulator[typeId] || [];
+                accumulator[typeId.toString()] = [...currentValue, value];
+            }
+            return accumulator;
+        }, {});
+    }
 
+    /*
     const groupPartsByType = (data: ApPartVO[]):Record<string, ApPartVO[]> => 
         data.reduce<Record<string, ApPartVO[]>>((accumulator, value) => {
             (accumulator[value.typeId.toString()] = accumulator[value.typeId] || []).push(value);
             return accumulator;
         }, {});
+    */
 
+    /*
     const groupedParts = groupPartsByType(
         sortPrefer(
             allParts.filter(part => !part.partParentId),
             detail.data?.preferredPart,
         )
     );
+    */
 
+    const groupedRevisionParts = groupPartsByType(filteredRevisionParts);
     const validationResult = apValidation.data;
 
+    /*
     const getSectionValidationErrors = (parts:ApPartVO[] = []) => {
         const errors:PartValidationErrorsVO[] = [];
         parts.forEach((part)=>{
             const error = objectByProperty(validationResult?.partErrors, part.id, "id");
             if(error){errors.push(error)}
+        })
+        return errors;
+    };
+    */
+    const getSectionValidationErrors = (parts:RevisionPart[] = []) => {
+        const errors:PartValidationErrorsVO[] = [];
+        parts.forEach(({part, updatedPart})=>{
+            const error = part && objectByProperty(validationResult?.partErrors, part.id, "id");
+            const updatedError = updatedPart && objectByProperty(validationResult?.partErrors, updatedPart.id, "id");
+            if(error){errors.push(error)}
+            if(updatedError){errors.push(updatedError)}
         })
         return errors;
     };
@@ -303,7 +431,9 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 {allParts && (
                     <div key="part-sections">
                         {sortedParts.map((partType: RulPartTypeVO) => {
-                            const parts = groupedParts[partType.id] || [];
+                            // const parts = groupedParts[partType.id] || [];
+                            const revisionParts = groupedRevisionParts[partType.id] || [];
+
                             const onAddRelated = partType.childPartId
                             ? (parentPartId:number) => {
                                 const childPartType = partType.childPartId ? objectByProperty(
@@ -319,21 +449,22 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                             }
                             : undefined;
                             const apViewSettingRule = apViewSettings.data!.rules[detail.data!.ruleSetId];
-                            if(partType.code === "PT_BODY" && parts.length === 1){
+                            if(partType.code === "PT_BODY" && revisionParts.length === 1){
                                 return (
                                     <DetailBodySection
                                         key={partType.code}
                                         label={partType.name}
                                         editMode={editMode}
-                                        parts={parts}
+                                        part={revisionParts[0]}
                                         onEdit={handleEdit}
                                         bindings={bindings}
                                         onAdd={() => handleAdd(partType)}
-                                        partValidationErrors={getSectionValidationErrors(parts)}
+                                        partValidationErrors={getSectionValidationErrors(revisionParts)}
                                         itemTypeSettings={apViewSettingRule?.itemTypes || []}
                                         globalEntity={globalEntity}
                                         partType={partType}
                                         onDelete={handleDelete}
+                                        revision={detail.data ? !!detail.data.revStateApproval : false}
                                     />
                                 );
                             }
@@ -341,11 +472,14 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                 <DetailMultiSection
                                     key={partType.code}
                                     label={partType.name}
-                                    singlePart={!partType.repeatable && parts.length === 1}
+                                    singlePart={!partType.repeatable && revisionParts.length === 1}
                                     editMode={editMode}
-                                    parts={parts}
-                                    relatedParts={getRelatedPartSections(parts)}
+                                    parts={revisionParts}
+                                    relatedParts={getRelatedPartSections(revisionParts)}
                                     preferred={detail.data ? detail.data.preferredPart : undefined}
+                                    newPreferred={detail.data ? detail.data.newPreferredPart : undefined}
+                                    revPreferred={detail.data ? detail.data.revPreferredPart : undefined}
+                                    revision={detail.data ? !!detail.data.revStateApproval : false}
                                     globalCollapsed={globalCollapsed}
                                     onSetPreferred={handleSetPreferred}
                                     onEdit={handleEdit}
@@ -353,7 +487,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                     bindings={bindings}
                                     onAdd={() => handleAdd(partType)}
                                     onAddRelated={onAddRelated}
-                                    partValidationErrors={getSectionValidationErrors(parts)}
+                                    partValidationErrors={getSectionValidationErrors(revisionParts)}
                                     itemTypeSettings={apViewSettingRule?.itemTypes || []}
                                     globalEntity={globalEntity}
                                     partType={partType}
@@ -367,93 +501,21 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     );
 };
 
-interface ApPartData {
-    partForm: ApPartFormVO;
-}
-
 const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<string>>) => ({
     showConfirmDialog: (message: string) => dispatch(showConfirmDialog(message)),
     showPartEditModal: (
-        part: ApPartVO,
-        partType,
+        part: ApPartVO | undefined,
+        updatedPart: ApPartVO | undefined,
+        partType: unknown,
         apId: number,
         apTypeId: number,
         ruleSetId: number,
         scopeId: number,
-        refTables,
-        descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+        refTables: unknown,
         apViewSettings: DetailStoreState<ApViewSettings>,
-        parentPartId?: number,
+        revision: boolean,
         onUpdateFinish: () => void = () => {},
-    ) => {
-        dispatch(
-            modalDialogShow(
-                this,
-                PartTypeInfo.getPartEditDialogLabel(partType, false),
-                <PartEditModal
-                    partTypeId={objectById(refTables.partTypes.items, partType, 'code').id}
-                    onSubmit={({ partForm }: ApPartData) => {
-                        if (!part.id) { return; }
-                        const submitData = {
-                            items: partForm.items.filter(i => {
-                                if (i['@class'] === '.ApItemEnumVO') {
-                                    return i.specId !== undefined;
-                                } else {
-                                    return (i as ApItemBitVO).value !== undefined;
-                                }
-                            }),
-                            parentPartId: parentPartId,
-                            partId: part.id,
-                            partTypeCode: partType,
-                        } as ApPartFormVO;
-
-                        console.log('SUBMIT EDIT', apId, part.id, submitData);
-
-                        return WebApi.updatePart(apId, part.id, submitData).then(() => {
-                            dispatch(modalDialogHide());
-                            dispatch(registryDetailFetchIfNeeded(apId, true)).then(()=>{
-                                onUpdateFinish();
-                            });
-                        });
-                    }}
-                    apTypeId={apTypeId}
-                    scopeId={scopeId}
-                    initialValues={{
-                        partForm: {
-                            items: part.items?sortItems(
-                                partType,
-                                part.items,
-                                refTables,
-                                descItemTypesMap,
-                                apViewSettings.data!.rules[ruleSetId],
-                            ):[],
-                        },
-                    }}
-                    formData={
-                        {
-                            partId: part.id,
-                            parentPartId: part.partParentId,
-                            partTypeCode: refTables.partTypes.itemsMap[part.typeId].code,
-                            items: part.items?sortItems(
-                                partType,
-                                part.items,
-                                refTables,
-                                descItemTypesMap,
-                                apViewSettings.data!.rules[ruleSetId],
-                            ):[],
-                        } as ApPartFormVO
-                    }
-                    parentPartId={part.partParentId}
-                    apId={apId}
-                    partId={part.id}
-                    onClose={() => {
-                        dispatch(modalDialogHide());
-                    }}
-                />,
-                'dialog-lg',
-            ),
-        );
-    },
+    ) => dispatch(showPartEditModal(part, updatedPart, partType as any, apId, apTypeId, ruleSetId, scopeId, refTables as any, apViewSettings, revision, onUpdateFinish)),
     showPartCreateModal: (
         partType: RulPartTypeVO,
         apId: number,
@@ -461,64 +523,21 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action<strin
         scopeId: number,
         parentPartId?: number,
         onUpdateFinish: () => void = () => {},
-    ) => {
-        dispatch(
-            modalDialogShow(
-                this,
-                // TODO: není rozmyšleno, kde brát skloňované popisky!
-                PartTypeInfo.getPartEditDialogLabel(partType.code as PartType, true),
-                <PartEditModal
-                    partTypeId={partType.id}
-                    onSubmit={data => {
-                        const formData: ApPartFormVO = data.partForm;
-
-                        const submitData = {
-                            items: formData.items.filter(i => {
-                                if (i['@class'] === '.ApItemEnumVO') {
-                                    return i.specId !== undefined;
-                                } else {
-                                    return (i as ApItemBitVO).value !== undefined;
-                                }
-                            }),
-                            parentPartId: parentPartId,
-                            partTypeCode: partType.code,
-                        } as ApPartFormVO;
-
-                        console.log('SUBMIT ADD', apId, submitData);
-
-                        return WebApi.createPart(apId, submitData).then(() => {
-                            dispatch(modalDialogHide());
-                            dispatch(registryDetailFetchIfNeeded(apId, true)).then(()=>{
-                                onUpdateFinish();
-                            })
-                        });
-                    }}
-                    apTypeId={apTypeId}
-                    scopeId={scopeId}
-                    formData={
-                        {
-                            partTypeCode: partType.code,
-                            items: [],
-                        } as ApPartFormVO
-                    }
-                    parentPartId={parentPartId}
-                    initialValues={{}}
-                    apId={apId}
-                    onClose={() => {
-                        dispatch(modalDialogHide());
-                    }}
-                />,
-                'dialog-lg',
-                dispatch(globalFundTreeInvalidate()),
-            ),
-        );
-    },
+    ) => dispatch(showPartCreateModal(partType, apId, apTypeId, scopeId, parentPartId, onUpdateFinish)),
     setPreferred: async (apId: number, partId: number) => {
         await WebApi.setPreferPartName(apId, partId);
         return dispatch(registryDetailFetchIfNeeded(apId, true));
     },
+    setRevisionPreferred: async (apId: number, partId: number) => {
+        await Api.accesspoints.setPreferNameRevision(apId, partId);
+        return dispatch(registryDetailFetchIfNeeded(apId, true));
+    },
     deletePart: async (apId: number, partId: number) => {
         await WebApi.deletePart(apId, partId);
+        return dispatch(registryDetailFetchIfNeeded(apId, true));
+    },
+    deleteRevisionPart: async (apId: number, partId: number) => {
+        await Api.accesspoints.deleteRevisionPart(apId, partId);
         return dispatch(registryDetailFetchIfNeeded(apId, true));
     },
     deleteParts: async (apId: number, parts: ApPartVO[]) => {

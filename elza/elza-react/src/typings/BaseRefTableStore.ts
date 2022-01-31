@@ -3,6 +3,7 @@ export interface BaseRefTableStore<T> {
     fetched: boolean;
     isFetching: boolean;
     items?: T[];
-    itemsMap?: {[key: number]: T};
+    // itemsMap?: {[key: number]: T};
+    itemsMap: Record<number, T>;
     lastUpdated?: number;
 }

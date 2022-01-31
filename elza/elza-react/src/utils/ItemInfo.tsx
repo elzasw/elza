@@ -17,6 +17,7 @@ import {ApItemDecimalVO} from '../api/ApItemDecimalVO';
 import {ApItemUnitidVO} from '../api/ApItemUnitidVO';
 import {ApViewSettingRule, ItemType} from '../api/ApViewSettings';
 import {RulPartTypeVO} from '../api/RulPartTypeVO';
+import {RefTablesState} from 'typings/store';
 
 export const ApItemAccessPointRefClass = '.ApItemAccessPointRefVO';
 export const ApItemBitClass = '.ApItemBitVO';
@@ -77,17 +78,17 @@ export function compareItems(
     a: ApItemVO,
     b: ApItemVO,
     partTypeId: number,
-    refTables: any,
-    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    apViewSettings: ApViewSettingRule,
+    refTables: RefTablesState,
+    apViewSettings?: ApViewSettingRule,
 ): number {
     const part: RulPartTypeVO | undefined = refTables.partTypes.itemsMap[partTypeId];
+    const descItemTypesMap = refTables.descItemTypes.itemsMap;
 
     const aInfo = descItemTypesMap[a.typeId];
     const bInfo = descItemTypesMap[b.typeId];
 
     if (aInfo && bInfo && part) {
-        let itemTypes = apViewSettings.itemTypes || [];
+        let itemTypes = apViewSettings?.itemTypes || [];
         let aIt = findViewItemType(itemTypes, part, aInfo.code);
         let bIt = findViewItemType(itemTypes, part, bInfo.code);
         if (aIt && bIt) {
@@ -118,11 +119,11 @@ export function compareCreateTypes(
     a: ApCreateTypeVO,
     b: ApCreateTypeVO,
     partTypeId: number,
-    refTables: any,
-    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
+    refTables: RefTablesState,
     apViewSettings: ApViewSettingRule,
 ): number {
     const part: RulPartTypeVO | undefined = refTables.partTypes.itemsMap[partTypeId];
+    const descItemTypesMap = refTables.descItemTypes.itemsMap;
 
     const aInfo = descItemTypesMap[a.itemTypeId];
     const bInfo = descItemTypesMap[b.itemTypeId];
@@ -158,45 +159,58 @@ export function compareCreateTypes(
 export function sortItems(
     partTypeId: number,
     items: ApItemVO[],
-    refTables: any,
-    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    apViewSettings: ApViewSettingRule,
+    refTables: RefTablesState,
+    apViewSettings?: ApViewSettingRule,
 ): ApItemVO[] {
     return [...items].sort((a, b) => {
-        return compareItems(a, b, partTypeId, refTables, descItemTypesMap, apViewSettings);
+        return compareItems(a, b, partTypeId, refTables, apViewSettings);
     });
 }
 
 export function sortOwnItems(
     partTypeId: number,
     items: ApItemVO[],
-    refTables: any,
-    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    apViewSettings: ApViewSettingRule,
+    refTables: RefTablesState,
+    apViewSettings?: ApViewSettingRule,
 ): ApItemVO[] {
     return items.sort((a, b) => {
-        return compareItems(a, b, partTypeId, refTables, descItemTypesMap, apViewSettings);
+        return compareItems(a, b, partTypeId, refTables, apViewSettings);
     });
 }
 
 export function findItemPlacePosition(
     item: ApItemVO,
     items: ApItemVO[],
-    partTypeId: number,
-    refTables: any,
-    descItemTypesMap: Record<number, RulDescItemTypeExtVO>,
-    apViewSettings: ApViewSettingRule,
+    _partTypeId: number,
+    refTables: RefTablesState,
+    _apViewSettings?: ApViewSettingRule,
 ): number {
-    for (let index = items.length - 1; index >= 0; index--) {
-        let i = items[index];
-        let n = compareItems(item, i, partTypeId, refTables, descItemTypesMap, apViewSettings);
-        if (n >= 0) {
-            return index + 1;
-        }
-    }
-
-    return 0;
+    const itemType = refTables.descItemTypes.itemsMap[item.typeId];
+    const index = [...items].reverse().findIndex((comparedItem)=>{
+        const comparedItemType = refTables.descItemTypes.itemsMap[comparedItem.typeId];
+        return comparedItemType.viewOrder < itemType.viewOrder;
+    })
+    const finalIndex = index >= 0 ? items.length - index : 0;
+    return finalIndex;
 }
+
+// export function findItemPlacePosition(
+//     item: ApItemVO,
+//     items: ApItemVO[],
+//     partTypeId: number,
+//     refTables: RefTablesState,
+//     apViewSettings?: ApViewSettingRule,
+// ): number {
+//     for (let index = items.length - 1; index >= 0; index--) {
+//         let i = items[index];
+//         let n = compareItems(item, i, partTypeId, refTables, apViewSettings);
+//         if (n >= 0) {
+//             return index + 1;
+//         }
+//     }
+
+//     return 0;
+// }
 
 export function findViewItemType(
     itemTypeSettings: ItemType[],

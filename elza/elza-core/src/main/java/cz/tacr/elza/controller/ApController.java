@@ -21,7 +21,10 @@ import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 
 import cz.tacr.elza.domain.ApCachedAccessPoint;
+import cz.tacr.elza.domain.ApRevision;
+import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
+import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import org.apache.commons.collections4.CollectionUtils;
@@ -182,6 +185,9 @@ public class ApController {
     @Autowired
     private AccessPointCacheService accessPointCacheService;
 
+    @Autowired
+    private RevisionService revisionService;
+
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
      * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
@@ -210,7 +216,8 @@ public class ApController {
                                                              @RequestParam(required = false) @Nullable final Integer lastRecordNr,
                                                              @RequestParam(required = false) @Nullable final SearchType searchTypeName,
                                                              @RequestParam(required = false) @Nullable final SearchType searchTypeUsername,
-                                                             @RequestBody(required = false) @Nullable final SearchFilterVO searchFilter) {
+                                                             @RequestParam(required = false) @Nullable final RevStateApproval revState,
+                                                             @RequestBody(required = false)@Nullable final SearchFilterVO searchFilter) {
         final long foundRecordsCount;
         final List<ApState> foundRecords;
 
@@ -264,7 +271,7 @@ public class ApController {
             return findAccessPointFulltext(search, from, count, fund, apTypeIds, state, scopeId, searchFilter, sdp);
         }
 
-        if (searchFilter == null) {
+        if (searchFilter == null && revState == null) {
 
             Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
 
@@ -284,7 +291,7 @@ public class ApController {
             Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, scopeId, false);
 
             Page<ApState> page = accessPointService.findApAccessPointBySearchFilter(searchFilter, apTypeIds, scopeIds,
-                                                                                    state, from, count, sdp);
+                                                                                    state, revState, from, count, sdp);
             foundRecords = page.getContent();
             foundRecordsCount = page.getTotalElements();
         }
@@ -439,11 +446,19 @@ public class ApController {
     public ApAccessPointVO getAccessPoint(@PathVariable final String accessPointId) {
         ApState apState = accessPointService.getApState(accessPointId);
 
+        ApAccessPointVO vo;
         CachedAccessPoint cachedAccessPoint = accessPointCacheService.findCachedAccessPoint(apState.getAccessPointId());
         if (cachedAccessPoint != null) {
-            return apFactory.createVO(cachedAccessPoint);
+            vo = apFactory.createVO(cachedAccessPoint);
+        } else {
+            vo = apFactory.createVO(apState, true);
         }
-        ApAccessPointVO vo = apFactory.createVO(apState, true);
+
+        ApRevision revision = revisionService.findRevisionByState(apState);
+        if (revision != null) {
+            vo = apFactory.createVO(vo, revision);
+        }
+
         return vo;
     }
 
@@ -820,9 +835,14 @@ public class ApController {
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         accessPointService.hasPermissionForEditingConfirmed(state);
-        ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
-        accessPointService.generateSync(apAccessPoint, apPart);
-        accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        ApRevision revision = revisionService.findRevisionByState(state);
+        if (revision != null) {
+            revisionService.createPart(revision, apPartFormVO);
+        } else {
+            ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
+            accessPointService.generateSync(apAccessPoint, apPart);
+            accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        }
     }
 
     /**
@@ -841,9 +861,45 @@ public class ApController {
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         accessPointService.hasPermissionForEditingConfirmed(state);
         ApPart apPart = partService.getPart(partId);
-        if (accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO)) {
-            accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        ApRevision revision = revisionService.findRevisionByState(state);
+        if (revision != null) {
+            revisionService.updatePart(revision, apPart, apPartFormVO);
+        } else {
+            if (accessPointService.updatePart(apAccessPoint, apPart, apPartFormVO)) {
+                accessPointCacheService.createApCachedAccessPoint(accessPointId);
+            }
         }
+    }
+
+    /**
+     * Úprava části přístupového bodu.
+     *
+     * @param id identifikátor přístupového bodu (PK)
+     * @param partId identifikátor upravované části
+     * @param apPartFormVO data pro úpravu části
+     */
+    @Transactional
+    @RequestMapping(value = "/revision/{id}/part/{partId}", method = RequestMethod.POST)
+    public void updateRevisionPart(@PathVariable final Integer id,
+                              @PathVariable final Integer partId,
+                              @RequestBody final ApPartFormVO apPartFormVO) {
+        ApState state = accessPointService.getStateInternal(id);
+        ApRevision revision = revisionService.findRevisionByState(state);
+        revisionService.updatePart(revision, partId, apPartFormVO);
+    }
+
+    /**
+     * Úprava části přístupového bodu.
+     *
+     * @param id identifikátor přístupového bodu (PK)
+     * @param state stav do kterého se má entita po merge uvést
+     */
+    @Transactional
+    @RequestMapping(value = "/revision/{id}/merge", method = RequestMethod.POST)
+    public void mergeRevision(@PathVariable final Integer id,
+                              @RequestParam(required = false) @Nullable final ApState.StateApproval state) {
+        ApState apState = accessPointService.getStateInternal(id);
+        revisionService.mergeRevision(apState, state);
     }
 
 
@@ -861,9 +917,15 @@ public class ApController {
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         accessPointService.hasPermissionForEditingConfirmed(state);
-        partService.deletePart(apAccessPoint, partId);
-        accessPointService.generateSync(accessPointId);
-        accessPointCacheService.createApCachedAccessPoint(accessPointId);
+
+        ApRevision revision = revisionService.findRevisionByState(state);
+        if (revision != null) {
+            revisionService.deletePart(revision, partId);
+        } else {
+            partService.deletePart(apAccessPoint, partId);
+            accessPointService.generateSync(accessPointId);
+            accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        }
     }
 
     /**
@@ -881,9 +943,14 @@ public class ApController {
                 .orElseThrow(ap(accessPointId));
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         accessPointService.hasPermissionForEditingConfirmed(state);
-        ApPart apPart = partService.getPart(partId);
-        accessPointService.setPreferName(apAccessPoint, apPart);
-        accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        ApRevision revision = revisionService.findRevisionByState(state);
+        if (revision != null) {
+            revisionService.setPreferName(revision, partId);
+        } else {
+            ApPart apPart = partService.getPart(partId);
+            accessPointService.setPreferName(apAccessPoint, apPart);
+            accessPointCacheService.createApCachedAccessPoint(accessPointId);
+        }
     }
 
     /**

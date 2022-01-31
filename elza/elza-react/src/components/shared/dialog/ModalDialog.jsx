@@ -39,16 +39,22 @@ class ModalDialog extends AbstractReactComponent {
                 }),
             );
 
-            return (
-                <ModalDialogWrapper
-                    key={index}
-                    className={`${visible ? 'dialog-visible' : 'dialog-hidden'} ${dialog.dialogClassName}`}
-                    title={dialog.title}
-                    onHide={this.handleClose.bind(this, 'DIALOG')}
-                >
-                    {children}
-                </ModalDialogWrapper>
-            );
+            if(typeof dialog.content === "function"){
+                return dialog.content({
+                    onClose: this.handleClose.bind(this, 'DIALOG_CONTENT'),
+                })
+            } else {
+                return (
+                    <ModalDialogWrapper
+                        key={index}
+                        className={`${visible ? 'dialog-visible' : 'dialog-hidden'} ${dialog.dialogClassName}`}
+                        title={dialog.title}
+                        onHide={this.handleClose.bind(this, 'DIALOG')}
+                    >
+                        {children}
+                    </ModalDialogWrapper>
+                );
+            }
         });
 
         return <div>{dialogs}</div>;

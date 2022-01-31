@@ -1,7 +1,6 @@
 import classNames from "classnames";
 import { SmallButton } from "components/shared/button/small-button";
 import React, { FC, useEffect, useState } from 'react';
-import { ApPartVO } from "../../../../api/ApPartVO";
 import { ItemType } from "../../../../api/ApViewSettings";
 import { PartValidationErrorsVO } from "../../../../api/PartValidationErrorsVO";
 import { Bindings } from "../../../../types";
@@ -12,23 +11,26 @@ import { DetailPartInfo } from "./DetailPartInfo";
 import "./DetailRelatedPart.scss";
 import { SyncIcon } from "../sync-icon";
 import { SyncState } from '../../../../api/SyncState';
+import { PartName } from "./PartName";
+import { RevisionPart, RevisionDisplay, getRevisionItems } from '../../revision';
 
 type Props = {
   label: string;
-  part: ApPartVO;
+  part: RevisionPart;
   globalCollapsed: boolean;
-  onDelete?: (part: ApPartVO) => void;
-  onEdit?: (part: ApPartVO) => void;
+  onDelete?: (part?: RevisionPart) => void;
+  onEdit?: (part?: RevisionPart) => void;
   editMode?: boolean;
   globalEntity: boolean;
   partValidationError?: PartValidationErrorsVO;
   bindings: Bindings;
+  revision?: boolean;
   itemTypeSettings: ItemType[];
 };
 
 const DetailRelatedPart: FC<Props> = ({
     label,
-    part,
+    part: {part, updatedPart},
     globalEntity,
     editMode,
     onDelete,
@@ -36,6 +38,7 @@ const DetailRelatedPart: FC<Props> = ({
     globalCollapsed = true,
     partValidationError,
     bindings,
+    revision,
     itemTypeSettings,
 }) => {
     const [collapsed, setCollapsed] = useState(true);
@@ -45,10 +48,6 @@ const DetailRelatedPart: FC<Props> = ({
         setCollapsed(globalCollapsed);
     }, [globalCollapsed]);
 
-    const classNameHeader = classNames( "detail-part-header",);
-
-    // Rozbalený content
-    const classNameContent = classNames( { "detail-part-expanded": !collapsed });
 
     const showValidationError = () => {
         if (editMode && partValidationError && partValidationError.errors && partValidationError.errors.length > 0) {
@@ -56,27 +55,47 @@ const DetailRelatedPart: FC<Props> = ({
         }
     };
 
-    const partBinding = bindings.partsMap[part.id];
+    const partBinding = !updatedPart && part ? bindings.partsMap[part.id] : false;
+    const hasBinding = partBinding != null;
+    const isModified = (hasBinding && !partBinding) || (part != null && updatedPart != null);
+    const isCollapsed = collapsed && !isModified;
+    const isDeleted = updatedPart ? updatedPart.value == null : false;
+    const isNew = !part?.value && updatedPart?.value != undefined;
+    const areValuesEqual = (value: string, prevValue: string) => value === prevValue
+    
+    const revisionItems = getRevisionItems(part?.items || undefined, updatedPart?.items || undefined)
 
+    const classNameHeader = classNames( "detail-part-header",);
+    const classNameContent = classNames( { "detail-part-expanded": !isCollapsed }); // Rozbalený content
+    
     return <div className="detail-related-part">
         <div className={classNameHeader + " align-items-center"}>
             <div style={{display: "flex", alignItems: "center"}}>
-                <div
-                    className={'detail-part-label d-inline-block'}
-                    onClick={() => setCollapsed(!collapsed)}
-                    title={collapsed ? "Zobrazit podrobnosti" : "Skrýt podrobnosti"}
+                <RevisionDisplay 
+                    isDeleted={isDeleted}
+                    isNew={isNew}
+                    valuesEqual={areValuesEqual(part?.value || "", updatedPart ? updatedPart.value : part?.value || "")}
+                    renderPrevValue={() => {
+                        return <PartName 
+                            label={part?.value || "no value"} 
+                            collapsed={isCollapsed} 
+                            onClick={() => setCollapsed(!collapsed)}
+                            />
+                    }} 
+                    renderValue={() => {
+                        return <PartName 
+                            label={ updatedPart ? updatedPart.value : part?.value || "no new value"} 
+                            collapsed={isCollapsed} 
+                            onClick={() => setCollapsed(!collapsed)}
+                            />
+                    }} 
                 >
-                    <span className={classNames('detail-part-label', '', collapsed ? false : 'opened')}>
-                        <Icon className=""
-                            glyph={'fa-link'}
-                            />&nbsp;
-                        {label || <i>Popis záznamu entity</i>}
-                    </span>
-                </div>
+
+                </RevisionDisplay>
 
                 <div className="actions">
                     {partBinding != null && 
-                        <SyncIcon syncState={partBinding ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
+                        <SyncIcon syncState={(partBinding || updatedPart) ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
                     }
                     {showValidationError()}
                 </div>
@@ -84,7 +103,7 @@ const DetailRelatedPart: FC<Props> = ({
                 <div className="actions hidable">
                     { editMode &&
                         <SmallButton
-                            onClick={() => onEdit && onEdit(part)}
+                            onClick={() => onEdit && onEdit({part, updatedPart})}
                             title={i18n("ap.detail.edit", "")}
                         >
                             <Icon glyph={'fa-pencil'} />
@@ -92,7 +111,7 @@ const DetailRelatedPart: FC<Props> = ({
                     }
                     {editMode && (
                         <SmallButton
-                            onClick={() => onDelete && onDelete(part)}
+                            onClick={() => onDelete && onDelete({part, updatedPart})}
                             title={i18n("ap.detail.delete")}
                         >
                             <Icon glyph={'fa-trash'} />
@@ -102,13 +121,15 @@ const DetailRelatedPart: FC<Props> = ({
             </div>
         </div>
 
-        {!collapsed && <div className={classNameContent}>
+        {!isCollapsed && <div className={classNameContent}>
             <div>
                 <DetailPartInfo
-                    items={part.items || []}
+                    items={revisionItems}
                     globalEntity={globalEntity}
                     bindings={bindings}
                     itemTypeSettings={itemTypeSettings}
+                    isModified={isModified}
+                    revision={revision}
                 />
             </div>
         </div>}

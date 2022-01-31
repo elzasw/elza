@@ -10,16 +10,20 @@ import { Bindings } from '../../../../types';
 import Icon from '../../../shared/icon/Icon';
 import { DetailPart, DetailRelatedPart } from '../part';
 import './DetailMultiSelection.scss';
+import { RevisionPart } from '../../revision';
 
 interface Props {
     label: string;
-    parts: ApPartVO[];
-    relatedParts?: ApPartVO[];
+    parts: RevisionPart[];
+    relatedParts?: RevisionPart[];
     preferred?: number;
+    newPreferred?: number;
+    revPreferred?: number;
+    revision?: boolean;
     globalCollapsed: boolean;
-    onSetPreferred?: (part: ApPartVO) => void;
-    onDelete?: (part: ApPartVO) => void;
-    onEdit?: (part: ApPartVO) => void;
+    onSetPreferred?: (part: RevisionPart) => void;
+    onDelete?: (part: RevisionPart) => void;
+    onEdit?: (part: RevisionPart) => void;
     onAdd?: () => void;
     onAddRelated?: (parentPartId: number) => void;
     editMode?: boolean;
@@ -39,6 +43,9 @@ const DetailMultiSection: FC<Props> = ({
     globalEntity,
     relatedParts = [],
     preferred,
+    newPreferred,
+    revPreferred,
+    revision,
     onSetPreferred = () => console.error('Není definován set preferred callback'),
     onDelete = () => console.warn("Neni definovan 'onDelte' callback"),
     onEdit = () => console.warn("Neni definovan 'onEdit' callback"),
@@ -54,6 +61,7 @@ const DetailMultiSection: FC<Props> = ({
         return null;
     }
 
+    /*
     let relatedPartsMap: Record<number, ApPartVO[]> = {};
     if (relatedParts && relatedParts.length > 0) {
         relatedParts.forEach(rp => {
@@ -65,6 +73,19 @@ const DetailMultiSection: FC<Props> = ({
             }
         });
     }
+    */
+
+    const groupRelatedPartsByParent = (data: RevisionPart[]):Record<string, RevisionPart[]> => 
+    data.reduce<Record<string, RevisionPart[]>>((accumulator, value) => {
+        const parentId = value.part?.partParentId || value.updatedPart?.partParentId;
+        if(parentId != undefined){
+            const currentValue = accumulator[parentId] || [];
+            accumulator[parentId.toString()] = [...currentValue, value];
+        }
+        return accumulator;
+    }, {});
+
+    const relatedRevisionPartsMap = groupRelatedPartsByParent(relatedParts)
 
     const renderHeaderActions = () => {
         return <>
@@ -84,21 +105,39 @@ const DetailMultiSection: FC<Props> = ({
             </>
     }
 
-    const renderPartActions = (part: ApPartVO, forceRender: boolean = false) => {
+    const isPartPreferred = (part: ApPartVO | undefined, updatedPart: ApPartVO | undefined) => {
+        let isPreferred;
+        if (revPreferred) {
+            isPreferred = updatedPart ? updatedPart.id === revPreferred : false;
+        } else if (newPreferred) {
+            isPreferred = part ? part.id === newPreferred : false;
+        } else {
+            isPreferred = part ? part.id === preferred : false;
+        }
+        return isPreferred;
+    };
+
+    const renderPartActions = (part: RevisionPart, forceRender: boolean = false) => {
         if(singlePart && !forceRender){
             return undefined;
         }
+        const typeId = part.updatedPart ? part.updatedPart.typeId : part.part?.typeId;
+        const id = part.updatedPart ? part.updatedPart.id : part.part?.id;
+
+        if(typeId == undefined || id == undefined) { 
+            return; 
+        }
 
         let showPreferredSwitch = false;
-        if (part.typeId === partType.id && partType?.code === 'PT_NAME') {
+        if (typeId === partType.id && partType?.code === 'PT_NAME') {
             showPreferredSwitch = !singlePart;
         }
-        const isPreferred = part.id === preferred;
+        let isPreferred = isPartPreferred(part.part, part.updatedPart);
 
         return <>
             {editMode &&
                 <>
-                    {showPreferredSwitch && part.id !== preferred && (
+                    {showPreferredSwitch && !isPreferred && (
                         <SmallButton title={i18n("ap.detail.setPreferred")} onClick={()=> onSetPreferred(part)}>
                             <Icon glyph={'fa-star'} />
                         </SmallButton>
@@ -111,7 +150,7 @@ const DetailMultiSection: FC<Props> = ({
                             <Icon glyph="fa-trash"/>
                         </SmallButton>}
                     {onAddRelated && (
-                        <SmallButton title={i18n("ap.detail.add.related")} onClick={() => onAddRelated(part.id)}>
+                        <SmallButton title={i18n("ap.detail.add.related")} onClick={() => onAddRelated(id)}>
                             <Icon glyph="fa-link"/>
                         </SmallButton>
                     )}
@@ -120,32 +159,35 @@ const DetailMultiSection: FC<Props> = ({
         </>
     }
 
+    const firstPart = parts.length > 0 && parts[0];
+
     return (
         <div className="detail-multi-selection">
             <div className="detail-section-header" style={{display: "flex"}}>
                 <span className="">{label}</span>
                 <div className="actions" style={{fontSize: "0.8em", marginLeft: "10px"}}>
                     {renderHeaderActions()}
-                    { singlePart && parts.length === 1 &&
-                        renderPartActions(parts[0], true)
+                    { singlePart && firstPart &&
+                        renderPartActions(firstPart, true)
                     }
                 </div>
             </div>
 
             <div className={`parts ${singlePart ? "single-part" : ""}`}>
             {parts.length === 0 && <span className="no-info-msg">{i18n("ap.detail.noInfo")}</span>}
-            {parts.map((part, index) => {
-                    const relatedParts = part.id != null && relatedPartsMap[part.id] ? relatedPartsMap[part.id] : []
+            {parts.map(({part, updatedPart}, index) => {
+                    const relatedParts = part?.id != null && relatedRevisionPartsMap[part.id] ? relatedRevisionPartsMap[part.id] : [];
+                    let isPreferred = isPartPreferred(part, updatedPart);
                     return (
-                        <div key={index} className={`part ${part.id === preferred ? "preferred" : ""}`}>
+                        <div key={index} className={`part ${isPreferred ? "preferred" : ""}`}>
                             {!singlePart && <div className="bracket"/>}
                             <DetailPart
                                 key={index}
-                                part={part}
-                                label={part.value}
-                                preferred={part.id === preferred}
+                                part={{part, updatedPart}}
+                                preferred={isPreferred}
+                                revision={revision}
                                 globalCollapsed={globalCollapsed}
-                                partValidationError={part.id && objectById(partValidationErrors, part.id)}
+                                partValidationError={part?.id && objectById(partValidationErrors, part.id)}
                                 globalEntity={globalEntity}
                                 bindings={bindings}
                                 itemTypeSettings={itemTypeSettings}
@@ -153,20 +195,21 @@ const DetailMultiSection: FC<Props> = ({
                                 />
                             {relatedParts.length > 0 &&
                                 <div className="related-parts">
-                                    {relatedParts.map((relatedPart, index) => {
+                                    {relatedParts.map(({part, updatedPart}, index) => {
                                         return (
                                             <DetailRelatedPart
                                                 key={index}
-                                                part={relatedPart}
-                                                label={relatedPart.value}
+                                                part={{part, updatedPart}}
+                                                label={updatedPart ? updatedPart.value : part?.value as any}
                                                 editMode={editMode}
                                                 globalCollapsed={globalCollapsed}
                                                 onDelete={onDelete}
                                                 onEdit={onEdit}
-                                                partValidationError={relatedPart.id && objectById(partValidationErrors, relatedPart.id)}
+                                                partValidationError={part?.id && objectById(partValidationErrors, part.id)}
                                                 globalEntity={globalEntity}
                                                 bindings={bindings}
                                                 itemTypeSettings={itemTypeSettings}
+                                                revision={revision}
                                                 />
                                         );
                                     })}

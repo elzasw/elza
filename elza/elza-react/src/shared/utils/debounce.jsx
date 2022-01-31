@@ -1,7 +1,7 @@
 export default function debounce(fn, delay) {
     let timer = null;
     return function() {
-        console.log('debouncetimer', timer);
+        // console.log('debouncetimer', timer);
         return new Promise((resolve, reject) => {
             let context = this,
                 args = arguments;

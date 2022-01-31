@@ -5,6 +5,8 @@ import java.util.List;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
+import cz.tacr.elza.controller.vo.RevStateChange;
+import cz.tacr.elza.service.RevisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +24,9 @@ public class AccessPointController implements AccesspointsApi {
 
     @Autowired
     AccessPointService accessPointService;
+
+    @Autowired
+    RevisionService revisionService;
 
     @Override
     @Transactional
@@ -48,6 +53,46 @@ public class AccessPointController implements AccesspointsApi {
         List<ApState> apStates = accessPointService.getStatesInternal(accessPoints);
         accessPointService.deleteAccessPoints(apStates);
 
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Void> createRevision(Integer id) {
+        ApState state = accessPointService.getStateInternal(id);
+        revisionService.createRevision(state);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Void> deleteRevision(Integer id) {
+        ApState state = accessPointService.getStateInternal(id);
+        revisionService.deleteRevision(state);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Void> changeStateRevision(Integer id, RevStateChange revStateChange) {
+        ApState state = accessPointService.getStateInternal(id);
+        revisionService.changeStateRevision(state, revStateChange);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Void> deleteRevisionPart(Integer id, Integer partId) {
+        ApState state = accessPointService.getStateInternal(id);
+        revisionService.deletePart(state, partId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Void> setPreferNameRevision(Integer id, Integer partId) {
+        ApState state = accessPointService.getStateInternal(id);
+        revisionService.setPreferName(state, partId);
         return ResponseEntity.ok().build();
     }
 

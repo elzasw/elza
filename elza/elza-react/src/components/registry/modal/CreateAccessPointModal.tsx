@@ -1,80 +1,54 @@
-import React, { FC, useEffect } from 'react';
-import { Form, Modal } from 'react-bootstrap';
-import { connect } from 'react-redux';
-import {
-    ConfigProps,
-    Field,
-    Form as ReduxForm,
-    FormSection,
-    formValueSelector,
-    InjectedFormProps,
-    reduxForm,
-} from 'redux-form';
-import { ApPartFormVO } from '../../../api/ApPartFormVO';
-import { ApTypeVO } from '../../../api/ApTypeVO';
-// import { objectById } from '../../../shared/utils';
-import requireFields from '../../../shared/utils/requireFields';
-import i18n from '../../i18n';
-import { Autocomplete, Loading } from '../../shared';
-import ReduxFormFieldErrorDecorator from '../../shared/form/ReduxFormFieldErrorDecorator';
-import Scope from '../../shared/scope/Scope';
-import { Button } from '../../ui';
-import PartEditForm from './../form/PartEditForm';
-import {AP_VIEW_SETTINGS} from '../../../constants';
-import storeFromArea from '../../../shared/utils/storeFromArea';
-import {ApViewSettings} from '../../../api/ApViewSettings';
-import {DetailStoreState} from '../../../types';
-import {RulPartTypeVO} from '../../../api/RulPartTypeVO';
-import { AppState, ScopeData, UserDetail } from "../../../typings/store";
-
-const FORM_NAME = 'createAccessPointForm';
-
-const formConfig: ConfigProps<CreateAccessPointModalFields, CreateAccessPointModalProps> = {
-    form: FORM_NAME,
-    validate: (values) => {
-        return requireFields<string>('apType', 'scopeId')(values) as any;
-    },
-};
+import { ApCreateTypeVO } from 'api/ApCreateTypeVO';
+import { ApPartFormVO } from 'api/ApPartFormVO';
+import { ApTypeVO } from 'api/ApTypeVO';
+import { ApViewSettings } from 'api/ApViewSettings';
+import { RulPartTypeVO } from 'api/RulPartTypeVO';
+import i18n from 'components/i18n';
+import { Loading } from 'components/shared';
+import { Button } from 'components/ui';
+import arrayMutators from 'final-form-arrays';
+import React, { FC, useState } from 'react';
+import { Modal } from 'react-bootstrap';
+import { Form } from 'react-final-form';
+import { useSelector } from 'react-redux';
+import debounce from 'shared/utils/debounce';
+import storeFromArea from 'shared/utils/storeFromArea';
+import { DetailStoreState } from 'types';
+import { AppState, ScopeData, UserDetail } from "typings/store";
+import { hasItemValue } from 'utils/ItemInfo';
+import { AP_VIEW_SETTINGS } from '../../../constants';
+import { getUpdatedForm } from '../part-edit/form/actions';
+import { PartEditForm } from '../part-edit/form/PartEditForm';
+import { FormAutocomplete, FormScope } from '../part-edit/form/fields';
+import { getValueChangeMutators } from '../part-edit/form/valueChangeMutators';
 
 export interface CreateAccessPointModalFields {
-    apType: any;
-    scopeId: any;
-    partForm: ApPartFormVO;
+    apType?: any;
+    scopeId?: any;
+    partForm?: ApPartFormVO;
 }
 
 export interface CreateAccessPointModalProps {
     apTypeFilter?: string[];
     apTypeId?: number;
     onClose?: () => void;
+    initialValues?: any;
+    onSubmit: (data: any) => any;
 }
 
-type Props = CreateAccessPointModalProps & 
-ReturnType<typeof mapStateToProps> &
-InjectedFormProps<CreateAccessPointModalFields>;
-
-const CreateAccessPointModal:FC<Props> = ({
-    apViewSettings,
-    handleSubmit,
+const CreateAccessPointModal:FC<CreateAccessPointModalProps> = ({
     onClose,
-    refTables,
     apTypeId,
-    apType,
     apTypeFilter,
-    scopeId,
-    partForm,
-    submitting,
-    change,
-    userDetail,
+    onSubmit,
 }) => {
     const partTypeCode = "PT_NAME";
-
-    useEffect(() => {
-        // const partType = getPartTypeId(refTables.partTypes.items, "PT_NAME");
-        change('partForm', {
-            partTypeCode,
-            items: [],
-        } as ApPartFormVO);
-    }, [apTypeId, apType, change]);
+    const apViewSettings = useSelector((state: AppState) => storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>);
+    const refTables = useSelector((state:AppState) => state.refTables);
+    const userDetail = useSelector((state:AppState) => state.userDetail);
+    const [values, setValues] = useState<CreateAccessPointModalFields>({partForm:{partTypeCode, items: []}});
+    const [availableAttributes, setAvailableAttributes] = useState<ApCreateTypeVO[] | undefined>();
+    const [editErrors, setEditErrors] = useState<Array<string> | undefined>(undefined);
 
     const loading = 
         !refTables.apTypes.fetched || 
@@ -84,73 +58,101 @@ const CreateAccessPointModal:FC<Props> = ({
         !refTables.descItemTypes.fetched || 
         !apViewSettings.fetched;
 
-    const filteredApTypes = filterApTypes(refTables.apTypes.fetched ? refTables.apTypes.items : [], apTypeFilter);
-    const filteredScopes = filterScopes(refTables.scopesData.scopes, userDetail);
-    const partTypeId = getPartTypeId(refTables.partTypes.items, partTypeCode);
+    const apTypes = filterApTypes(refTables.apTypes.fetched ? refTables.apTypes.items : [], apTypeFilter);
+    const scopes = getScopes(refTables.scopesData.scopes, userDetail);
+    const partTypeId = getPartTypeId(refTables.partTypes.items, partTypeCode) as number;
+
+    const fetchAttributes = async (data: CreateAccessPointModalFields) => {
+        if(data.apType?.id == null || data.scopeId == null){return;}
+        const items = data.partForm?.items ? [...data.partForm.items] : [];
+        const form = data.partForm || {
+            partTypeCode,
+            items: items.filter(hasItemValue),
+        }
+        const { attributes, errors, data: partForm } = await getUpdatedForm(
+            form,
+            data.apType?.id, 
+            data.scopeId, 
+            apViewSettings, 
+            refTables, 
+            partTypeId
+        )
+        setAvailableAttributes(attributes);
+        setEditErrors(errors);
+        setValues({
+            ...data,
+            partForm,
+        })
+    };
+
+    const debouncedFetchAttributes = debounce(fetchAttributes, 100) as typeof fetchAttributes;
+
+    if(loading){ return <Loading/> }
 
     return (
-        <ReduxForm onSubmit={handleSubmit}>
-            { loading ? <Loading/> :
-            <Modal.Body>
-                <p>
-                    {i18n('accesspoint.create.titleMessage')}
-                </p>
-                <Form.Label>{i18n('registry.add.type')}</Form.Label>
-                <Field
-                    name={'apType'}
-                    disabled={submitting || apTypeId}
-                    component={ReduxFormFieldErrorDecorator}
-                    renderComponent={Autocomplete}
-                    passOnly
-                    items={filteredApTypes}
-                    tree
-                    alwaysExpanded
-                    allowSelectItem={(item: ApTypeVO) => item.addRecord}
-                    value={apTypeId ? apTypeId : apType ? apType.id : null}
-                />
+        <Form<CreateAccessPointModalFields> 
+            initialValues={values} 
+            onSubmit={onSubmit}
+            mutators={{
+                ...arrayMutators,
+                ...getValueChangeMutators(debouncedFetchAttributes),
+            }}
+        >
+            {({submitting, values: {apType, scopeId, partForm}, handleSubmit}) => {
+                return <>
+                    <Modal.Body>
+                        <p>
+                            {i18n('accesspoint.create.titleMessage')}
+                        </p>
+                        <FormAutocomplete
+                            name={'apType'}
+                            label={i18n('registry.add.type')}
+                            disabled={submitting || apTypeId != null}
+                            items={apTypes}
+                            tree
+                            alwaysExpanded
+                            allowSelectItem={(item: ApTypeVO) => item.addRecord}
+                            />
 
-                <Field
-                    name={'scopeId'}
-                    disabled={submitting}
-                    label={i18n('registry.scopeClass')}
-                    component={ReduxFormFieldErrorDecorator}
-                    renderComponent={Scope}
-                    passOnly
-                    items={filteredScopes}
-                    tree
-                    alwaysExpanded
-                    allowSelectItem={(item: ApTypeVO) => item.addRecord}
-                    value={scopeId}
-                />
+                        <FormScope
+                            name={'scopeId'}
+                            disabled={submitting}
+                            label={i18n('registry.scopeClass')}
+                            items={scopes}
+                            />
 
-                {(apTypeId || (apType && apType.id)) && scopeId && partForm && partTypeId !== undefined && (
-                    <FormSection name="partForm">
-                        <hr />
-                        <PartEditForm
-                            formInfo={{
-                                formName: FORM_NAME,
-                                sectionName: 'partForm',
-                            }}
-                            partTypeId={partTypeId}
-                            apTypeId={apType.id}
-                            scopeId={scopeId}
-                            formData={partForm}
-                            submitting={submitting}
-                        />
-                    </FormSection>
-                )}
-            </Modal.Body>
-            }
-            <Modal.Footer>
-                <Button type="submit" variant="outline-secondary" onClick={handleSubmit} disabled={submitting}>
-                    {i18n('global.action.store')}
-                </Button>
+                        {(apTypeId || (apType && apType.id)) && scopeId && partForm && partTypeId !== undefined && (
+                            <>
+                                <hr />
+                                <PartEditForm
+                                    // formInfo={{
+                                    //     formName: FORM_NAME,
+                                    //     sectionName: 'partForm',
+                                    // }}
+                                    partTypeId={partTypeId}
+                                    apTypeId={apType.id}
+                                    scopeId={scopeId}
+                                    submitting={submitting}
+                                    availableAttributes={availableAttributes}
+                                    editErrors={editErrors}
+                                    arrayName="partForm.items"
+                                    partItems={null}
+                                    />
+                                </>
+                        )}
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button type="submit" variant="outline-secondary" onClick={handleSubmit} disabled={submitting}>
+                            {i18n('global.action.store')}
+                        </Button>
 
-                <Button variant="link" onClick={onClose} disabled={submitting}>
-                    {i18n('global.action.cancel')}
-                </Button>
-            </Modal.Footer>
-        </ReduxForm>
+                        <Button variant="link" onClick={onClose} disabled={submitting}>
+                            {i18n('global.action.cancel')}
+                        </Button>
+                    </Modal.Footer>
+                    </>
+            }}
+        </Form>
     );
 };
 
@@ -159,7 +161,7 @@ const getPartTypeId = (partTypes: RulPartTypeVO[] = [], partTypeName: "PT_NAME")
     return partType ? partType.id : undefined;
 }
 
-const filterScopes = (scopes: ScopeData[] = [], userDetail: UserDetail) => {
+const getScopes = (scopes: ScopeData[] = [], userDetail: UserDetail) => {
     // Don't filter, when user is admin, or has permission to write to all scopes.
     if(userDetail.isAdmin() || userDetail.permissionsMap.AP_SCOPE_WR_ALL){return scopes;}
     const userWritableScopes = userDetail.permissionsMap.AP_SCOPE_WR?.scopeIdsMap;
@@ -196,16 +198,4 @@ const filterApTypes = (apTypes: ApTypeVO[] = [], apTypeCodes: string[] = []) => 
     return filteredTypes;
 }
 
-const selector = formValueSelector(FORM_NAME);
-const mapStateToProps = (state: AppState) => {
-    return {
-        refTables: state.refTables,
-        apType: selector(state, 'apType') as ApTypeVO,
-        scopeId: selector(state, 'scopeId'),
-        partForm: selector(state, 'partForm'),
-        apViewSettings: storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>,
-        userDetail: state.userDetail,
-    };
-};
-
-export default reduxForm<CreateAccessPointModalFields, CreateAccessPointModalProps>(formConfig)(connect(mapStateToProps)(CreateAccessPointModal));
+export default CreateAccessPointModal;
