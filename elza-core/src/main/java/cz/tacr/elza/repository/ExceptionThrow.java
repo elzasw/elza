@@ -123,4 +123,8 @@ public class ExceptionThrow {
         return () -> new ObjectNotFoundException("Filter výstupu nenalezen: " + outputFilterId, BaseCode.ID_NOT_EXIST).setId(outputFilterId);
     }
 
+    public static Supplier<ObjectNotFoundException> revPart(final Integer partId) {
+        return () -> new ObjectNotFoundException("Part revize nenalezen: " + partId, BaseCode.ID_NOT_EXIST).setId(partId);
+    }
+
 }

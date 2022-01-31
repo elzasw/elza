@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.RevStateApproval;
 
 
 /**
@@ -100,6 +102,26 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      * Identifikátor pravidel.
      */
     private Integer ruleSetId;
+
+    /**
+     * Stav revize
+     */
+    private RevStateApproval revStateApproval;
+
+    /**
+     * Identifikátor nové preferované části z revize
+     */
+    private Integer newPreferredPart;
+
+    /**
+     * Identifikátor nové preferované části, která existuje pouze v revizi
+     */
+    private Integer revPreferredPart;
+
+    /**
+     * Seznam částí přístupového bodu z revize
+     */
+    private List<ApPartVO> revParts = new ArrayList<>();
 
     public Integer getId() {
         return id;
@@ -245,5 +267,37 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setRuleSetId(final Integer ruleSetId) {
         this.ruleSetId = ruleSetId;
+    }
+
+    public RevStateApproval getRevStateApproval() {
+        return revStateApproval;
+    }
+
+    public void setRevStateApproval(RevStateApproval revStateApproval) {
+        this.revStateApproval = revStateApproval;
+    }
+
+    public Integer getNewPreferredPart() {
+        return newPreferredPart;
+    }
+
+    public void setNewPreferredPart(Integer newPreferredPart) {
+        this.newPreferredPart = newPreferredPart;
+    }
+
+    public Integer getRevPreferredPart() {
+        return revPreferredPart;
+    }
+
+    public void setRevPreferredPart(Integer revPreferredPart) {
+        this.revPreferredPart = revPreferredPart;
+    }
+
+    public List<ApPartVO> getRevParts() {
+        return revParts;
+    }
+
+    public void setRevParts(List<ApPartVO> revParts) {
+        this.revParts = revParts;
     }
 }

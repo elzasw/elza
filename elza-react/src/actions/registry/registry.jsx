@@ -71,6 +71,7 @@ export function registryListFetchIfNeeded(from = 0, size = DEFAULT_REGISTRY_LIST
             filter.state,
             undefined,
             undefined,
+            filter.revState,
             searchFilter,
         );
     });
@@ -158,6 +159,58 @@ export function registryDelete(id) {
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
             if (detail.id == id) {
                 dispatch(registryDetailClear());
+            }
+
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
+                dispatch(registryListInvalidate());
+            }
+        });
+    };
+}
+
+export function registryCreateRevision(id) {
+    return (dispatch, getState) => {
+        Api.accesspoints.createRevision(id).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
+            const list = storeFromArea(store, AREA_REGISTRY_LIST);
+            if (detail.id == id) {
+                dispatch(registryDetailInvalidate());
+            }
+
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
+                dispatch(registryListInvalidate());
+            }
+        });
+    };
+}
+
+export function registryDeleteRevision(id) {
+    return (dispatch, getState) => {
+        Api.accesspoints.deleteRevision(id).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
+            const list = storeFromArea(store, AREA_REGISTRY_LIST);
+            if (detail.id == id) {
+                dispatch(registryDetailInvalidate());
+            }
+
+            if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
+                dispatch(registryListInvalidate());
+            }
+        });
+    };
+}
+
+export function registryChangeStateRevision(id, revisionState) {
+    return (dispatch, getState) => {
+
+        Api.accesspoints.changeStateRevision(id, revisionState).then(() => {
+            const store = getState();
+            const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
+            const list = storeFromArea(store, AREA_REGISTRY_LIST);
+            if (detail.id == id) {
+                dispatch(registryDetailInvalidate());
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {

@@ -5,6 +5,7 @@ import java.util.Objects;
 import javax.persistence.EntityManager;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitid;
@@ -19,12 +20,12 @@ public class ApItemUnitidVO extends ApItemVO {
     public ApItemUnitidVO() {
     }
 
-    public ApItemUnitidVO(final ApItem item) {
+    public ApItemUnitidVO(final AccessPointItem item) {
         super(item);
         value = getStringValue(item);
     }
 
-    final public String getStringValue(final ApItem item) {
+    final public String getStringValue(final AccessPointItem item) {
         ArrDataUnitid data = (ArrDataUnitid) item.getData();
         return data == null ? null : data.getUnitId();
     }
@@ -46,7 +47,7 @@ public class ApItemUnitidVO extends ApItemVO {
     }
 
     @Override
-    public boolean equalsValue(ApItem item) {
+    public boolean equalsValue(AccessPointItem item) {
         return equalsBase(item) && Objects.equals(value, getStringValue(item));
     }
 }

@@ -32,6 +32,9 @@ import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
+import cz.tacr.elza.domain.AccessPointItem;
+import cz.tacr.elza.domain.AccessPointPart;
+import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.UserDetail;
@@ -1130,7 +1133,9 @@ public class AccessPointService {
             List<ApItem> items = getItemsForParts(part, childrenParts, itemMap);
 
             boolean preferred = prefPartId == null || Objects.equals(prefPartId, part.getPartId());
-            GroovyResult result = groovyService.processGroovy(state, part, childrenParts, items, preferred);
+            List<AccessPointPart> childParts = new ArrayList<>(childrenParts);
+            List<AccessPointItem> accessPointItemList = new ArrayList<>(items);
+            GroovyResult result = groovyService.processGroovy(state.getApTypeId(), part, childParts, accessPointItemList, preferred);
             if (!partService.updatePartValue(part, result, state, state.getScope(), async, preferred)) {
                 success = false;
             }
@@ -1191,9 +1196,9 @@ public class AccessPointService {
             ApState state = partWrapper.getPartInfo().getApInfo().getApState();
 
             List<PartWrapper> childrenPartWrappers = findChildrenParts(apPart, partWrappers);
-            List<ApPart> childrenParts = getChildrenParts(childrenPartWrappers);
+            List<AccessPointPart> childrenParts = getChildrenParts(childrenPartWrappers);
 
-            List<ApItem> items = getItemsFromPartWrappers(partWrapper, childrenPartWrappers);
+            List<AccessPointItem> items = getItemsFromPartWrappers(partWrapper, childrenPartWrappers);
 
             boolean preferred = false;
             Integer accessPointId = state.getAccessPoint().getAccessPointId();
@@ -1204,7 +1209,7 @@ public class AccessPointService {
                 preferred = true;
             }
 
-            GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items, preferred);
+            GroovyResult result = groovyService.processGroovy(state.getApTypeId(), apPart, childrenParts, items, preferred);
 
             if (!partService.updatePartValue(apPart, result, state, state.getScope(), false, preferred)) {
                 success = false;
@@ -1224,16 +1229,16 @@ public class AccessPointService {
         return childrenPartWrappers;
     }
 
-    private List<ApPart> getChildrenParts(List<PartWrapper> childrenPartWrappers) {
-        List<ApPart> childrenPart = new ArrayList<>();
+    private List<AccessPointPart> getChildrenParts(List<PartWrapper> childrenPartWrappers) {
+        List<AccessPointPart> childrenPart = new ArrayList<>();
         for (PartWrapper partWrapper : childrenPartWrappers) {
             childrenPart.add(partWrapper.getEntity());
         }
         return childrenPart;
     }
 
-    private List<ApItem> getItemsFromPartWrappers(PartWrapper partWrapper, List<PartWrapper> childrenPartWrappers) {
-        List<ApItem> items = new ArrayList<>(getItemsFromPartWrapper(partWrapper));
+    private List<AccessPointItem> getItemsFromPartWrappers(PartWrapper partWrapper, List<PartWrapper> childrenPartWrappers) {
+        List<AccessPointItem> items = new ArrayList<>(getItemsFromPartWrapper(partWrapper));
         for (PartWrapper pw : childrenPartWrappers) {
             items.addAll(getItemsFromPartWrapper(pw));
         }
@@ -1260,7 +1265,9 @@ public class AccessPointService {
         List<ApItem> items = apItemService.findItemsByParts(parts);
 
         boolean preferred = preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), apPart.getPartId());
-        GroovyResult result = groovyService.processGroovy(state, apPart, childrenParts, items, preferred);
+        List<AccessPointPart> childParts = new ArrayList<>(childrenParts);
+        List<AccessPointItem> accessPointItemList = new ArrayList<>(items);
+        GroovyResult result = groovyService.processGroovy(state.getApTypeId(), apPart, childParts, accessPointItemList, preferred);
 
         return partService.updatePartValue(apPart, result, state, state.getScope(), false, preferred);
     }
@@ -2389,9 +2396,9 @@ public class AccessPointService {
 
 
     public Page<ApState> findApAccessPointBySearchFilter(SearchFilterVO searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
-                                                         StateApproval state, Integer from, Integer count, StaticDataProvider sdp) {
+                                                         StateApproval state, RevStateApproval revState, Integer from, Integer count, StaticDataProvider sdp) {
         int page = from / count;
-        ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds, state, sdp);
+        ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds, state, revState, sdp);
         return stateRepository.findAll(specification, PageRequest.of(page, count));
     }
 

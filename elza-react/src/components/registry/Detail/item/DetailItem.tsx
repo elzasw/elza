@@ -28,7 +28,7 @@ const DetailItem: FC<Props> = ({
                 {itemTypeName}
             </div>
             <div className="detail-item-content">
-                <DetailItemContent item={item} bindings={bindings} globalEntity={globalEntity}/>
+                <DetailItemContent item={item} bindings={bindings} globalEntity={globalEntity} revision={false}/>
             </div>
         </div>
     );

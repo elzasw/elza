@@ -3,6 +3,7 @@ package cz.tacr.elza.controller.vo;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ChangeType;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -41,6 +42,23 @@ public class ApPartVO {
      */
     @Nullable
     private Integer partParentId;
+
+    /**
+     * Identifikátor nadřazeného partu z revize
+     */
+    @Nullable
+    private Integer revPartParentId;
+
+    /**
+     * Identifikátor původního partu
+     */
+    @Nullable
+    private Integer origPartId;
+
+    /**
+     * typ změny
+     */
+    private ChangeType changeType;
 
     /**
      * Seznam hodnot atributů
@@ -95,6 +113,32 @@ public class ApPartVO {
 
     public void setPartParentId(@Nullable Integer partParentId) {
         this.partParentId = partParentId;
+    }
+
+    @Nullable
+    public Integer getRevPartParentId() {
+        return revPartParentId;
+    }
+
+    public void setRevPartParentId(@Nullable Integer revPartParentId) {
+        this.revPartParentId = revPartParentId;
+    }
+
+    @Nullable
+    public Integer getOrigPartId() {
+        return origPartId;
+    }
+
+    public void setOrigPartId(@Nullable Integer origPartId) {
+        this.origPartId = origPartId;
+    }
+
+    public ChangeType getChangeType() {
+        return changeType;
+    }
+
+    public void setChangeType(ChangeType changeType) {
+        this.changeType = changeType;
     }
 
     public List<ApItemVO> getItems() {

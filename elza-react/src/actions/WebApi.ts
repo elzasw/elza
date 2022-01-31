@@ -689,6 +689,7 @@ export class WebApiCls {
         state = null,
         searchTypeName?: ApSearchType,
         searchTypeUsername?: ApSearchType,
+        revState = null,
         searchFilter?: SearchFilterVO,
     ): Promise<FilteredResultVO<ApAccessPointVO>> {
         return AjaxUtils.ajaxPost(
@@ -707,6 +708,7 @@ export class WebApiCls {
                 state,
                 searchTypeName,
                 searchTypeUsername,
+                revState,
             },
             searchFilter,
         );
@@ -893,6 +895,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/state', null, data);
     }
 
+    mergeRevision(accessPointId, state) {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/revision' + accessPointId + '/merge', state, null);
+    }
+
     updateAccessPoint(accessPointId, data) {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId, null, data);
     }
@@ -968,6 +974,17 @@ export class WebApiCls {
      */
     updatePart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO): Promise<void> {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId, null, apPartFormVO);
+    }
+
+    /**
+     * Úprava části přístupového bodu.
+     *
+     * @param accessPointId identifikátor přístupového bodu (PK)
+     * @param partId identifikátor upravované části
+     * @param apPartFormVO data pro úpravu části
+     */
+    updateRevisionPart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/revision/' + accessPointId + '/part/' + partId, null, apPartFormVO);
     }
 
     /**
