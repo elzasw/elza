@@ -11,6 +11,7 @@ import { ItemType } from 'api/ApViewSettings';
 import { ApDescItem } from './renderItem'
 import { useSelector } from 'react-redux';
 import { AppState } from 'typings/store'
+import {getRevisionItems, RevisionItem} from "../../revision";
 
 interface RenderItemsProps extends FieldArrayRenderProps<ApItemVO, any> {
     disabled: boolean;
@@ -33,7 +34,7 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
     itemTypeSettings,
     onDeleteItem,
     itemPrefix = "items",
-    partTypeId, 
+    partTypeId,
     scopeId,
     apTypeId,
     partItems,
@@ -45,7 +46,8 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
         onDeleteItem?.(index);
     };
 
-    const itemGroups = groupItemsByType(fields.value);
+    const revisionItems = getRevisionItems(partItems || undefined, fields.value);
+    const itemGroups = groupItemsByType(revisionItems);
     let absoluteIndex = 0;
 
     return <>
@@ -64,7 +66,9 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
                         disabled={disabled}
                         name={`${itemPrefix}[${index}]`}
                         index={index}
-                        item={item}
+                        item={item.updatedItem}
+                        prevItem={item.item}
+                        disableRevision={partItems === null}
                         onDeleteItem={handleDeleteItem}
                         itemTypeAttributeMap={itemTypeAttributeMap}
                         partTypeId={partTypeId}
@@ -78,9 +82,9 @@ export const ItemsWrapper:FC<RenderItemsProps> = ({
 };
 
 const ApDescItemGroup: FC<{
-    items: ApItemVO[];
+    items: RevisionItem[];
     itemTypeSettings: ItemType[];
-    children: (item: ApItemVO, index: number) => ReactNode;
+    children: (item: RevisionItem, index: number) => ReactNode;
 }> = ({
     items,
     itemTypeSettings,
@@ -89,17 +93,17 @@ const ApDescItemGroup: FC<{
     const descItemTypesMap = useSelector((state:AppState) => state.refTables.descItemTypes.itemsMap)
 
     return <Col
-        xs={getItemWidth(items.length > 0 ? items[0] : undefined, descItemTypesMap, itemTypeSettings)}
+        xs={getItemWidth(items.length > 0 ? items[0].updatedItem : undefined, descItemTypesMap, itemTypeSettings)}
         className="item-wrapper"
     >
         {items.map(children)}
     </Col>
 }
 
-const groupItemsByType = (items: ApItemVO[]) => {
-    const groups: ApItemVO[][] = [];
+const groupItemsByType = (items: RevisionItem[]) => {
+    const groups: RevisionItem[][] = [];
     items.forEach((item)=>{
-        const existingGroupIndex = groups.findIndex((group) => item.typeId === group[0]?.typeId)
+        const existingGroupIndex = groups.findIndex((group) => item.updatedItem?.typeId === group[0]?.updatedItem?.typeId)
         if(existingGroupIndex >= 0){
             groups[existingGroupIndex].push(item);
         } else {

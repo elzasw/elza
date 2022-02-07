@@ -896,7 +896,7 @@ export class WebApiCls {
     }
 
     mergeRevision(accessPointId, state) {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/revision' + accessPointId + '/merge', state, null);
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/revision/' + accessPointId + '/merge', {state: state}, null);
     }
 
     updateAccessPoint(accessPointId, data) {
@@ -2112,7 +2112,7 @@ export class WebApiCls {
 
     /**
      * Odebrání existujícího protokolu
-     * 
+     *
      * @param issueListId identifikátor protokolu
      */
     deleteIssueList(issueListId: number) {

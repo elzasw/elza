@@ -10,10 +10,10 @@ import {RulDataTypeCodeEnum} from 'api/RulDataTypeCodeEnum';
 import {RulDescItemTypeExtVO} from 'api/RulDescItemTypeExtVO';
 import {RulDataTypeVO} from 'api/RulDataTypeVO';
 import { AppState, RefTablesState } from 'typings/store';
-import { computeAllowedItemSpecIds } from '../../../../utils/ItemInfo';
+import {computeAllowedItemSpecIds, itemValue} from '../../../../utils/ItemInfo';
 import {ApItemAccessPointRefVO} from 'api/ApItemAccessPointRefVO';
-import { 
-    FormUnitdate, 
+import {
+    FormUnitdate,
     FormTextarea,
     FormText,
     FormRecordRef,
@@ -30,7 +30,9 @@ export const ApDescItem:FC<{
     deleteMode: boolean;
     name: string;
     index: number;
-    item: ApItemVO;
+    item?: ApItemVO;
+    prevItem?: ApItemVO;
+    disableRevision?: boolean;
     itemTypeAttributeMap: Record<number, ApCreateTypeVO>;
     onDeleteItem: (index: number) => void;
     partTypeId: number;
@@ -46,16 +48,17 @@ export const ApDescItem:FC<{
     onDeleteItem,
     partTypeId,
     scopeId,
-    apTypeId, 
+    apTypeId,
+    prevItem,
+    disableRevision,
 }) => {
     const refTables = useSelector(({refTables}:AppState) => refTables);
-    return renderItem(name, index, item, refTables, disabled, deleteMode, onDeleteItem, itemTypeAttributeMap, partTypeId, scopeId, apTypeId);
+    return renderItem(name, index, refTables, disabled, deleteMode, onDeleteItem, itemTypeAttributeMap, partTypeId, scopeId, apTypeId, item, prevItem, disableRevision);
 }
 
 export const renderItem = (
     name: string,
     index: number,
-    item: ApItemVO,
     refTables: RefTablesState,
     disabled: boolean,
     deleteMode: boolean,
@@ -64,11 +67,16 @@ export const renderItem = (
     partTypeId: number,
     scopeId: number,
     apTypeId: number,
+    item?: ApItemVO,
+    prevItem?: ApItemVO,
+    disableRevision?: boolean,
 ) => {
-    const itemType = refTables.descItemTypes.itemsMap[item.typeId] as RulDescItemTypeExtVO;
+    const typeId = item ? item.typeId : 0;
+    const itemType = refTables.descItemTypes.itemsMap[typeId] as RulDescItemTypeExtVO;
     const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
     const dataTypeCode = dataType.code;
     const fieldDisabled = disabled || deleteMode;
+    const prevValue = prevItem ? itemValue(prevItem) : '';
 
     // pro ty, co chtějí jinak renderovat skupinu...,  pokud je true, task se nerenderuje specifikace, ale pouze valueField a v tom musí být již vše...
     let customFieldRender = false;
@@ -77,7 +85,9 @@ export const renderItem = (
         name,
         disabled: fieldDisabled,
         label: itemType.shortcut,
-        onChange: (a: any) => { console.log("field on change", a);}
+        onChange: (a: any) => { console.log("field on change", a);},
+        prevValue,
+        disableRevision,
     }
 
     let valueField: ReactNode;
@@ -86,7 +96,7 @@ export const renderItem = (
             valueField = <FormUnitdate {...commonFieldProps} />
             break;
         case RulDataTypeCodeEnum.TEXT:
-            valueField = <FormTextarea 
+            valueField = <FormTextarea
                 {...commonFieldProps}
                 limitLength={dataType.textLengthLimitUse || undefined}
             />
@@ -133,7 +143,7 @@ export const renderItem = (
 
     let valueSpecification: ReactNode;
     if (!customFieldRender && itemType.useSpecification) {
-        const useItemSpecIds = computeAllowedItemSpecIds(itemTypeAttributeMap, itemType, item.specId);
+        const useItemSpecIds = computeAllowedItemSpecIds(itemTypeAttributeMap, itemType, item?.specId);
 
         valueSpecification = (
             <FormSpecification
@@ -147,13 +157,13 @@ export const renderItem = (
     }
 
     const deleteAction = deleteMode ?
-        <Button 
-            className={'item-delete-action'} 
-            onClick={() => onDeleteItem(index)} 
+        <Button
+            className={'item-delete-action'}
+            onClick={() => onDeleteItem(index)}
             variant={'action'}
         >
             <Icon glyph={'fa-trash'} />
-        </Button> 
+        </Button>
         : undefined;
 
     const cls = classNames('item-value-wrapper', {

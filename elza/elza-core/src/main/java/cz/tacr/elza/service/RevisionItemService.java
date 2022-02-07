@@ -5,11 +5,13 @@ import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.DataRepository;
 import org.apache.commons.collections4.CollectionUtils;
@@ -46,6 +48,9 @@ public class RevisionItemService {
 
     @Autowired
     private DataRepository dataRepository;
+
+    @Autowired
+    private ApItemRepository itemRepository;
 
     @Autowired
     private EntityManager em;
@@ -133,6 +138,26 @@ public class RevisionItemService {
         item.setPart(part);
         item.setOrigObjectId(origObjectId);
         return item;
+    }
+
+    public void createItems(List<ApRevPart> createdParts,
+                            Map<Integer, List<ApRevItem>> revItemMap) {
+        List<ApItem> createdItems = new ArrayList<>();
+        List<ArrData> dataList = new ArrayList<>();
+        for (ApRevPart revPart : createdParts) {
+            List<ApRevItem> revItems = revItemMap.get(revPart.getPartId());
+
+            for (ApRevItem revItem : revItems) {
+                ArrData newData = revItem.getData().makeCopy();
+                dataList.add(newData);
+                createdItems.add(accessPointItemService.createItem(revPart.getOriginalPart(),
+                        newData, revItem.getItemType(), revItem.getItemSpec(),
+                        revItem.getCreateChange(), revItem.getObjectId(), revItem.getPosition()));
+            }
+        }
+
+        dataRepository.saveAll(dataList);
+        itemRepository.saveAll(createdItems);
     }
 
     private int nextPosition(final List<ApRevItem> existsItems) {

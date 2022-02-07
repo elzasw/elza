@@ -5,8 +5,10 @@ import cz.tacr.elza.controller.vo.RevStateChange;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevIndex;
 import cz.tacr.elza.domain.ApRevItem;
@@ -21,8 +23,11 @@ import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApRevIndexRepository;
 import cz.tacr.elza.repository.ApRevisionRepository;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,6 +61,12 @@ public class RevisionService {
     private StaticDataService staticDataService;
 
     @Autowired
+    private AccessPointService accessPointService;
+
+    @Autowired
+    private AccessPointCacheService accessPointCacheService;
+
+    @Autowired
     private ApRevisionRepository revisionRepository;
 
     @Autowired
@@ -63,6 +74,12 @@ public class RevisionService {
 
     @Autowired
     private ApBindingStateRepository bindingStateRepository;
+
+    @Autowired
+    private ApItemRepository itemRepository;
+
+    @Autowired
+    private ApStateRepository stateRepository;
 
     @Transactional
     public void createRevision(ApState state) {
@@ -435,17 +452,61 @@ public class RevisionService {
         if (revision == null) {
             throw new IllegalArgumentException("Neexistuje revize");
         }
+        ApAccessPoint accessPoint = apState.getAccessPoint();
 
         ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
-        List<ApRevPart> parts = revisionPartService.findByRevision(revision);
-        List<ApRevItem> items = null;
-        List<ApRevIndex> indices = null;
-        if (CollectionUtils.isNotEmpty(parts)) {
-            items = revisionItemService.findByParts(parts);
-            indices = revIndexRepository.findByParts(parts);
+        List<ApRevPart> revParts = revisionPartService.findByRevision(revision);
+        List<ApRevItem> revItems = null;
+        List<ApRevIndex> revIndices = null;
+
+        //změna částí entity
+        if (CollectionUtils.isNotEmpty(revParts)) {
+            revItems = revisionItemService.findByParts(revParts);
+            revIndices = revIndexRepository.findByParts(revParts);
+
+            Map<Integer, List<ApRevItem>> revItemMap = revItems.stream()
+                    .collect(Collectors.groupingBy(ApRevItem::getPartId));
+
+            List<ApItem> items = itemRepository.findValidItemsByAccessPoint(accessPoint);
+
+            List<ApRevPart> createdParts = new ArrayList<>();
+            List<ApRevPart> updatedParts = new ArrayList<>();
+            List<ApRevPart> deletedParts = new ArrayList<>();
+
+            for (ApRevPart revPart : revParts) {
+                if (revPart.getOriginalPart() == null) {
+                    createdParts.add(revPart);
+                } else {
+                    List<ApRevItem> revPartItems = revItemMap.get(revPart.getPartId());
+
+                    if (CollectionUtils.isNotEmpty(revPartItems)) {
+                        updatedParts.add(revPart);
+                    } else {
+                        deletedParts.add(revPart);
+                    }
+                }
+            }
+
+            revisionPartService.createParts(createdParts, revItemMap, accessPoint);
+            revisionPartService.updateParts(updatedParts, revItemMap, items, change);
+            revisionPartService.deleteParts(deletedParts, items, change);
+
+
         }
 
+        //změna stavu entity
+        apState.setDeleteChange(change);
+        stateRepository.save(apState);
 
-        deleteRevision(revision, change, parts, items, indices);
+        ApState newState = accessPointService.copyState(apState, change);
+        newState.setStateApproval(state);
+        newState.setApType(revision.getType());
+        stateRepository.save(newState);
+
+        accessPointService.generateSync(accessPoint.getAccessPointId());
+        accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
+
+        //smazání revize
+        deleteRevision(revision, change, revParts, revItems, revIndices);
     }
 }
