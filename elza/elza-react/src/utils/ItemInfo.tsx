@@ -293,3 +293,38 @@ export function hasItemValue(item: ApItemVO): boolean {
             return false;
     }
 }
+
+export function itemValue(item: ApItemVO): string {
+    switch (item['@class']) {
+        case ApItemAccessPointRefClass:
+            return (item as ApItemAccessPointRefVO).value.toString();
+        case ApItemBitClass:
+            return (item as ApItemBitVO).value.toString();
+        case ApItemCoordinatesClass:
+            return (item as ApItemCoordinatesVO).value;
+        case ApItemDateClass:
+            return (item as ApItemDateVO).value;
+        case ApItemDecimalClass:
+            return (item as ApItemDecimalVO).value.toString();
+        case ApItemFormattedTextClass:
+            return (item as ApItemFormattedTextVO).value;
+        case ApItemIntClass:
+            return (item as ApItemIntVO).value.toString();
+        case ApItemStringClass:
+            return (item as ApItemStringVO).value;
+        case ApItemTextClass:
+            return (item as ApItemTextVO).value;
+        case ApItemUnitdateClass:
+            return (item as ApItemUnitdateVO).value;
+        case ApItemUnitidClass:
+            return (item as ApItemUnitidVO).value;
+        case ApItemUriRefClass:
+            return (item as ApItemUriRefVO).value;
+
+        case ApItemEnumClass:
+        case ApItemJsonTableClass:
+        default:
+            console.error('Chybí podpora typu class', item['@class']);
+            return '';
+    }
+}
