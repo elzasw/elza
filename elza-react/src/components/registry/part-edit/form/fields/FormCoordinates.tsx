@@ -23,10 +23,14 @@ export const FormCoordinates:FC<{
     name: string;
     label: string;
     disabled?: boolean;
+    prevValue?: string;
+    disableRevision?: boolean;
 }> = ({
     name,
     label,
     disabled = false,
+    prevValue,
+    disableRevision,
 }) => {
     const fieldName = `${name}.value`;
     const form = useForm();
@@ -41,21 +45,22 @@ export const FormCoordinates:FC<{
                 name={fieldName}
             >
                 {(props) => {
-                    const handleChange = (e: any) => { 
+                    const handleChange = (e: any) => {
                         props.input.onBlur(e)
                         handleValueUpdate(form, props);
                     }
 
-                    return <RevisionFieldExample 
-                        label={label} 
-                        prevValue={"POINT (14.0204590559006 50.6841594725847)"} 
+                    return <RevisionFieldExample
+                        label={label}
+                        prevValue={prevValue}
+                        disableRevision={disableRevision}
                         value={props.input.value}
                     >
                         <div style={{display: "flex"}}>
                             <div style={{flexGrow: 1}}>
                             <ReduxFormFieldErrorDecorator
                                 {...props as any}
-                                
+
                                 input={{
                                     ...props.input,
                                     onBlur: handleChange // inject modified onChange handler
@@ -82,7 +87,7 @@ export const FormCoordinates:FC<{
     </Row>
 }
 
-const importCoordinateFile = ():ThunkAction<any> => 
+const importCoordinateFile = ():ThunkAction<any> =>
 (dispatch) => new Promise((resolve) =>
     dispatch(
         modalDialogShow(
@@ -99,9 +104,9 @@ const importCoordinateFile = ():ThunkAction<any> =>
                         console.error(error)
                     }
                 }}
-                onSubmitSuccess={(result, dispatch) => { 
+                onSubmitSuccess={(result, dispatch) => {
                     console.log(result);
-                    dispatch(modalDialogHide()) 
+                    dispatch(modalDialogHide())
                 }}
                 />
         ))
