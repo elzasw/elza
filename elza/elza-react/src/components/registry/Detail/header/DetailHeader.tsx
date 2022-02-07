@@ -19,6 +19,10 @@ import './DetailHeader.scss';
 import DetailState from './DetailState';
 import { SyncIcon } from "../sync-icon";
 import DetailRevState from "./DetailRevState";
+import {RulDescItemTypeExtVO} from 'api/RulDescItemTypeExtVO';
+import { AppState, RefTablesState } from 'typings/store';
+import {RulDataTypeVO} from 'api/RulDataTypeVO';
+import {RulDataTypeCodeEnum} from 'api/RulDataTypeCodeEnum';
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     item: ApAccessPointVO;
@@ -40,6 +44,20 @@ const getProcessingMessage = (key: string) => {
     return <h4 className="processing">{i18n(key)}</h4>;
 };
 
+const hasUnimportedEntity = (accessPoint: ApAccessPointVO, refTables: RefTablesState) => {
+    const externalEntity = accessPoint.parts.find((part)=>{
+        return part.items?.find((item: any)=>{
+            const itemType = refTables.descItemTypes.itemsMap[item.typeId] as RulDescItemTypeExtVO;
+            const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
+            const isRef = dataType.code === RulDataTypeCodeEnum.RECORD_REF;
+            if(isRef && !item.accessPoint || isRef && !item.value){
+                return item;
+            }
+        })
+    })
+    return !!externalEntity;
+}
+
 const DetailHeader: FC<Props> = ({
     dispatch,
     onInvalidateDetail,
@@ -52,6 +70,7 @@ const DetailHeader: FC<Props> = ({
     scopes,
     externalSystems,
     userDetail,
+    refTables,
 }) => {
     const apType = apTypesMap[item.typeId];
 
@@ -113,18 +132,18 @@ const DetailHeader: FC<Props> = ({
         );
     };
 
-    const handleDisconnect = (binding: ApBindingVO) => {
-        dispatch(
-            showAsyncWaiting(
-                null,
-                getProcessingMessage('ap.binding.processing.disconnect'),
-                WebApi.disconnectAccessPoint(id!, binding.externalSystemCode),
-                () => {
-                    onInvalidateDetail && onInvalidateDetail();
-                },
-            ),
-        );
-    };
+    // const handleDisconnect = (binding: ApBindingVO) => {
+    //     dispatch(
+    //         showAsyncWaiting(
+    //             null,
+    //             getProcessingMessage('ap.binding.processing.disconnect'),
+    //             WebApi.disconnectAccessPoint(id!, binding.externalSystemCode),
+    //             () => {
+    //                 onInvalidateDetail && onInvalidateDetail();
+    //             },
+    //         ),
+    //     );
+    // };
 
     const handleTakeRelEntities = (binding: ApBindingVO) => {
         dispatch(
@@ -138,6 +157,10 @@ const DetailHeader: FC<Props> = ({
             ),
         );
     };
+
+    const hasState = (state: string, approvedStates: string[]) => {
+        return approvedStates.indexOf(state) >= 0;
+    }
 
     const renderBindings = () => {
         if (item.bindings.length > 0 && externalSystems.length > 0) {
@@ -184,13 +207,16 @@ const DetailHeader: FC<Props> = ({
                                         id={'binding-action-' + binding.id}
                                         title={((<Icon glyph="fa-ellipsis-h" />) as any) as string}
                                     >
-                                        <Dropdown.Item key="synchronize" onClick={() => handleSynchronize(binding)}>
-                                            {i18n('ap.binding.action.synchronize')}
-                                        </Dropdown.Item>
-                                        {apExternalWr && (
-                                            <Dropdown.Item key="update" onClick={() => handleUpdate(binding)}>
-                                                {i18n('ap.binding.action.update')}
-                                            </Dropdown.Item>
+                                        { hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED", "REV_NEW", "REV_AMEND"]) &&
+                                            <Dropdown.Item key="synchronize" onClick={() => handleSynchronize(binding)}>
+                                                {i18n('ap.binding.action.synchronize')}
+                                            </Dropdown.Item>}
+                                        { apExternalWr && hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED"]) 
+                                            && binding.syncState === SyncState.LOCAL_CHANGE 
+                                            && (
+                                                <Dropdown.Item key="update" onClick={() => handleUpdate(binding)}>
+                                                    {i18n('ap.binding.action.update')}
+                                                </Dropdown.Item>
                                         )}
                                         {
                                             // Vypnutí možnosti odpojení entity
@@ -201,12 +227,15 @@ const DetailHeader: FC<Props> = ({
                                         </Dropdown.Item>
                                         */
                                         }
-                                        <Dropdown.Item
-                                            key="take-rel-entities"
-                                            onClick={() => handleTakeRelEntities(binding)}
-                                        >
-                                            {i18n('ap.binding.action.take-rel-entities')}
-                                        </Dropdown.Item>
+
+                                        {hasUnimportedEntity(item, refTables) &&
+                                            <Dropdown.Item
+                                                key="take-rel-entities"
+                                                onClick={() => handleTakeRelEntities(binding)}
+                                            >
+                                                {i18n('ap.binding.action.take-rel-entities')}
+                                            </Dropdown.Item>
+                                        }
                                     </DropdownButton>
                                 </div>
                             </div>
@@ -221,6 +250,7 @@ const DetailHeader: FC<Props> = ({
     if (item.scopeId) {
         scope = objectById(scopes, item.scopeId);
     }
+
 
     return (
         <div className={'detail-header-wrapper'}>
@@ -306,19 +336,19 @@ const DetailHeader: FC<Props> = ({
     );
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state: AppState) => {
     const scopesData = state.refTables.scopesData;
     const id = scopesData && indexById(scopesData.scopes, -1, 'versionId'); // všechny scope
-    let scopes = [];
-    if (id !== null) {
-        scopes = scopesData.scopes[id].scopes;
-    }
+    const scopes = id === null ? [] : scopesData.scopes[id].scopes;
+    const recordTypes = state.refTables.recordTypes as any;
+    const app = state.app as any;
 
     return {
-        externalSystems: state.app.apExtSystemList.rows,
-        apTypesMap: state.refTables.recordTypes.typeIdMap,
+        externalSystems: app.apExtSystemList.rows as any,
+        apTypesMap: recordTypes.typeIdMap as any,
         scopes: scopes,
         userDetail: state.userDetail,
+        refTables: state.refTables,
     };
 };
 
