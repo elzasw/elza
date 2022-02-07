@@ -9,24 +9,29 @@ export const FormUnitdate:FC<{
     name: string;
     label: string;
     disabled?: boolean;
+    prevValue?: string;
+    disableRevision?: boolean;
 }> = ({
     name,
     label,
     disabled = false,
+    prevValue,
+    disableRevision,
 }) => {
     const form = useForm();
     return <Field
         name={`${name}.value`}
     >
         {(props) => {
-            const handleChange = (e: any) => { 
+            const handleChange = (e: any) => {
                 props.input.onBlur(e)
                 handleValueUpdate(form, props);
             }
 
-            return <RevisionFieldExample 
-                label={label} 
-                prevValue="1234" 
+            return <RevisionFieldExample
+                label={label}
+                prevValue={prevValue}
+                disableRevision={disableRevision}
                 value={props.input.value}
             >
                 <ReduxFormFieldErrorDecorator

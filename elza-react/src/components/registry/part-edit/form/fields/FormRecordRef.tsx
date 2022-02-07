@@ -43,6 +43,8 @@ export const FormRecordRef:FC<{
     partTypeId: number;
     scopeId: number;
     apTypeId: number;
+    prevValue?: string;
+    disableRevision?: boolean;
 }> = ({
     name,
     label,
@@ -53,6 +55,8 @@ export const FormRecordRef:FC<{
     partTypeId,
     scopeId,
     apTypeId,
+    prevValue,
+    disableRevision,
 }) => {
     const dispatch = useThunkDispatch<AppState>();
     const form = useForm();
@@ -65,9 +69,10 @@ export const FormRecordRef:FC<{
     return (
         <Row className={'d-flex'}>
             <Col>
-                <RevisionFieldExample 
-                    label={label} 
-                    prevValue={`zakladatel/zřizovatel: Neruda, Jan (1834-1891)`} 
+                <RevisionFieldExample
+                    label={label}
+                    prevValue={prevValue}
+                    disableRevision={disableRevision}
                     value={getDisplayValue(item, itemType)}
                 >
                     <div style={{display: "flex"}}>
@@ -92,7 +97,7 @@ const getDisplayValue = (apItem: ApItemAccessPointRefVO, itemType: RulDescItemTy
     if (itemType.useSpecification && apItem.specId) {
         const spec:RulDescItemSpecExtVO | null = objectById(itemType.descItemSpecs, apItem.specId) || null;
         return `${spec?.shortcut}: ${ apItemName }`
-    } 
+    }
 
     return apItemName;
 }
