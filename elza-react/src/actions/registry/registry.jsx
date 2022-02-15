@@ -176,6 +176,7 @@ export function registryCreateRevision(id) {
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
             if (detail.id == id) {
                 dispatch(registryDetailInvalidate());
+                dispatch(registryDetailFetchIfNeeded(id, true));
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
@@ -193,6 +194,7 @@ export function registryDeleteRevision(id) {
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
             if (detail.id == id) {
                 dispatch(registryDetailInvalidate());
+                dispatch(registryDetailFetchIfNeeded(id, true));
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
@@ -211,6 +213,7 @@ export function registryChangeStateRevision(id, revisionState) {
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
             if (detail.id == id) {
                 dispatch(registryDetailInvalidate());
+                dispatch(registryDetailFetchIfNeeded(id, true));
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {

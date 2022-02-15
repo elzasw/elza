@@ -242,12 +242,12 @@ paths:
           schema:
             type: integer
             format: int32
-        - name: revStateChange
-          description: Nový stav revize
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/RevStateChange'
+      requestBody:
+        description: Nový stav revize
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/RevStateChange'
       responses:
         200:
           description: Potvrzení o úspěšné změně stavu revize
@@ -628,7 +628,7 @@ components:
         - filterType
     FieldValueFilter:
       title: FieldValueFilter
-      description: Compares specified attribute of the entity with specified value using specified operation.      
+      description: Compares specified attribute of the entity with specified value using specified operation.
       allOf:
         - $ref: '#/components/schemas/AbstractFilter'
         - type: object
@@ -675,7 +675,7 @@ components:
       description: Join subfilters using logical operator, result may be used in other LogicalFilter as one of subfilter.
       allOf:
         - $ref: '#/components/schemas/AbstractFilter'
-        - type: object      
+        - type: object
           properties:
             filters:
               description: Collection of filters
@@ -692,11 +692,11 @@ components:
             - filters
             - operation
     SearchParams:
-      type: object      
+      type: object
       properties:
         filters:
           description: Array of conditions. Conditions are joined by AND operator.
-          type: array          
+          type: array
           items:
             $ref: "#/components/schemas/AbstractFilter"
         offset:
@@ -709,7 +709,7 @@ components:
           format: int32
         sort:
           description: Array of sort conditions
-          type: array          
+          type: array
           items:
             $ref: "#/components/schemas/Sorting"
       title: Search parameters
@@ -739,7 +739,7 @@ components:
         id:
           description: ID of entity
           type: string
-        label:          
+        label:
           description: Visible name of entity
           type: string
         note:
@@ -766,10 +766,6 @@ components:
       properties:
         typeId:
           description: Identifikátor typu archivní entity
-          type: integer
-          format: int32
-        scopeId:
-          description: Identifikátor oblasti archivní entity
           type: integer
           format: int32
         state:

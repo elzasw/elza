@@ -4,8 +4,6 @@ import {DecoratedFormProps, Field, FormErrors, formValueSelector, InjectedFormPr
 import {Autocomplete, i18n} from 'components/shared';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
-import {indexByProperty} from 'stores/app/utils';
-import Scope from '../shared/scope/Scope';
 import FormInputField from '../../components/shared/form/FormInputField';
 import {connect} from 'react-redux';
 import FF from '../shared/form/FF';
@@ -28,7 +26,6 @@ type OwnProps = {
 type RevStateChangeVO = {
     state: RevStateApproval;
     typeId: number;
-    scopeId: number;
 };
 
 type ConnectedProps = ReturnType<typeof mapStateToProps>;
@@ -60,17 +57,6 @@ class RevStateChangeForm extends React.Component<Props> {
             RevStateApproval.TO_APPROVE,
         ];
         this.props.change('states', data);
-        if (!this.props.scopeId) {
-            const {
-                refTables: {scopesData},
-                versionId,
-            } = this.props;
-
-            let index = scopesData.scopes ? indexByProperty(scopesData.scopes, versionId, "versionId") : false;
-            if (index && scopesData.scopes[index].scopes && scopesData.scopes[index].scopes[0].id) {
-                this.props.change('scopeId', scopesData.scopes[index].scopes[0].id);
-            }
-        }
     }
 
     render() {
@@ -86,13 +72,6 @@ class RevStateChangeForm extends React.Component<Props> {
         return (
             <Form onSubmit={handleSubmit}>
                 <Modal.Body>
-                    <FF
-                        field={Scope}
-                        disabled={submitting}
-                        versionId={versionId}
-                        label={i18n('ap.state.title.scope')}
-                        name={'scopeId'}
-                    />
                     {!hideType && (
                         <FF
                             field={Autocomplete}
@@ -134,7 +113,6 @@ const mapStateToProps = (state:AppState) => {
     const selector = formValueSelector('revStateChangeForm');
 
     return {
-        scopeId: selector(state, 'scopeId'),
         typeId: selector(state, 'typeId'),
         state: selector(state, 'state'),
         refTables: state.refTables,
