@@ -487,11 +487,16 @@ public class RevisionService {
                 }
             }
 
-            revisionPartService.createParts(createdParts, revItemMap, accessPoint);
+            revisionPartService.createParts(createdParts, revItemMap, accessPoint, revision);
             revisionPartService.updateParts(updatedParts, revItemMap, items, change);
             revisionPartService.deleteParts(deletedParts, items, change);
 
 
+        }
+
+        if (revision.getPreferredPart() != null) {
+            ApPart newPrefferdPart = partService.getPart(revision.getPreferredPart().getPartId());
+            accessPoint.setPreferredPart(newPrefferdPart);
         }
 
         //změna stavu entity

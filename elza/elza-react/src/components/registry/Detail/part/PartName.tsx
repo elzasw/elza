@@ -7,15 +7,29 @@ export const PartName:FC<{
     label: string,
     collapsed?: boolean,
     preferred?: boolean,
+    newPreferred?: boolean,
+    oldPreferred?: boolean,
     onClick?: (event: React.MouseEvent) => void,
 }> = ({
-    label, 
-    collapsed = true, 
+    label,
+    collapsed = true,
     preferred = false,
+    newPreferred = false,
+    oldPreferred = false,
     onClick,
 }) => {
 
     // label = label.replace(/^\w/, (c) => c.toUpperCase())
+
+    const preferredText = () => {
+        if (newPreferred) {
+            return '(nové preferované)';
+        } else if (oldPreferred) {
+            return '(předchozí preferované)';
+        } else if (preferred) {
+            return '(preferované)';
+        }
+    };
 
     return <div
         title={collapsed ? i18n("ap.detail.expandInfo") : i18n("ap.detail.collapseInfo")}
@@ -30,10 +44,10 @@ export const PartName:FC<{
         >
             {label || <i>{i18n("ap.detail.info")}</i>}
         </span>
-        {preferred && (
+        {(preferred || oldPreferred || newPreferred) && (
             <span className={classNames('detail-part-label-alt', collapsed ? false : 'opened')}>
                 {' '}
-                (preferované)
+                {preferredText()}
             </span>
         )}
     </div>
